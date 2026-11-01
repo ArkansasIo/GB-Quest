@@ -3,12 +3,12 @@
   "style": "8-bit top-down fantasy",
   "tileSizePixels": 16,
   "worldDimensionsTiles": [
-    4096,
-    2560
+    2048,
+    5120
   ],
   "worldDimensionsPixels": [
-    65536,
-    40960
+    32768,
+    81920
   ],
   "continentGrid": [
     2,
@@ -1501,5 +1501,19 @@
         "unloadRadiusChunks": 5
       }
     }
-  ]
+  ],
+  "zoneGrid": [
+    4,
+    10
+  ],
+  "continentLayout": {
+    "zonesPerContinent": [
+      2,
+      5
+    ],
+    "arrangement": [
+      2,
+      2
+    ]
+  }
 }
