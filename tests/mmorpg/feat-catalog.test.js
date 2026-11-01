@@ -34,3 +34,31 @@ test("feat catalog rejects malformed or duplicate feat records", () => {
   assert.throws(() => createFeatCatalog([{ id: "bad", name: "Bad", prerequisites: [{ type: "level", level: 21 }] }]), /invalid level/i);
   assert.throws(() => createFeatCatalog({}), /array/i);
 });
+
+
+test("feat granting is prerequisite-gated, duplicate-safe and non-mutating on failure", () => {
+  const catalog = createFeatCatalog(feats);
+  const character = { level: 3, abilities: { int: 12 }, feats: [] };
+  assert.deepEqual(catalog.grant(character, "feat.keen-mind"), {
+    ok: false, reason: "prerequisites_not_met",
+    missing: [{ type: "ability_score", ability: "int", minimum: 13, reason: "ability_score_too_low" }]
+  });
+  assert.deepEqual(character.feats, []);
+  character.abilities.int = 13;
+  assert.deepEqual(catalog.grant(character, "feat.keen-mind"), { ok: true, featId: "feat.keen-mind" });
+  assert.deepEqual(catalog.grant(character, "feat.keen-mind"), { ok: false, reason: "already_owned" });
+  assert.deepEqual(catalog.grant(character, "missing"), { ok: false, reason: "feat_not_found" });
+});
+
+test("feat prerequisite chains accept previously granted feat identifiers", () => {
+  const catalog = createFeatCatalog(feats);
+  const character = { level: 4, feats: [] };
+  assert.equal(catalog.grant(character, "feat.master").reason, "prerequisites_not_met");
+  assert.deepEqual(catalog.grant(character, "feat.athlete"), { ok: true, featId: "feat.athlete" });
+  assert.deepEqual(catalog.grant(character, "feat.master"), { ok: true, featId: "feat.master" });
+});
+
+test("feat records deeply freeze nested metadata", () => {
+  const catalog = createFeatCatalog([{ id: "feat.deep", name: "Deep", prerequisites: [], metadata: { tags: ["test"] } }]);
+  assert.equal(Object.isFrozen(catalog.get("feat.deep").metadata.tags), true);
+});
