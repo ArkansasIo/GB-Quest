@@ -53,6 +53,9 @@ export function advanceClassLevel(characterState, classDefinition, progression, 
   if (progression.subclass && targetLevel > progression.subclass.unlockLevel && !character.subclassId) {
     throw new Error("A subclass choice is required before advancing beyond its unlock level");
   }
+  if (character.subclassId && progression.subclass && !progression.subclass.options?.some(option => option.id === character.subclassId)) {
+    throw new RangeError("Selected subclass is not valid for this class");
+  }
 
   character.classId = classDefinition.id;
   character.classLevel = targetLevel;
@@ -76,7 +79,6 @@ export function advanceClassLevel(characterState, classDefinition, progression, 
       }
     }
     const option = (subclass.options ?? []).find(item => item.id === character.subclassId);
-    if (!option) throw new RangeError("Selected subclass is not valid for this class");
     for (const feature of (option.levels ?? []).filter(entry => entry.level === targetLevel).flatMap(entry => entry.features ?? [])) {
       if (addFeature(character, { ...feature, level: targetLevel }, "subclass")) granted.push(feature.id);
     }
