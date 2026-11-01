@@ -1,0 +1,602 @@
+{
+  "id": "antarctica",
+  "name": "Antarctica",
+  "realm": "The Frostveil",
+  "capital": {
+    "id": "antarctica-capital",
+    "name": "Aurora Citadel",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "antarctica-zone-01",
+      "name": "Whiteout Plateau",
+      "continentId": "antarctica",
+      "levelRange": [
+        81,
+        95
+      ],
+      "biomeId": "polar_ice",
+      "subZones": [
+        {
+          "id": "antarctica-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "polar_ice",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "polar_ice",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "polar_ice",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "polar_ice",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-01-road-gate",
+        "antarctica-zone-01-caravan-post",
+        "antarctica-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-02",
+      "name": "Blue Glacier Reach",
+      "continentId": "antarctica",
+      "levelRange": [
+        86,
+        100
+      ],
+      "biomeId": "glacier",
+      "subZones": [
+        {
+          "id": "antarctica-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "glacier",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "glacier",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "glacier",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "glacier",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-02-road-gate",
+        "antarctica-zone-02-caravan-post",
+        "antarctica-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-03",
+      "name": "Aurora Shelf",
+      "continentId": "antarctica",
+      "levelRange": [
+        91,
+        105
+      ],
+      "biomeId": "ice_shelf",
+      "subZones": [
+        {
+          "id": "antarctica-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "ice_shelf",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "ice_shelf",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "ice_shelf",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "ice_shelf",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-03-road-gate",
+        "antarctica-zone-03-caravan-post",
+        "antarctica-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-04",
+      "name": "Black Ice Mountains",
+      "continentId": "antarctica",
+      "levelRange": [
+        96,
+        110
+      ],
+      "biomeId": "polar_mountains",
+      "subZones": [
+        {
+          "id": "antarctica-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "polar_mountains",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "polar_mountains",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "polar_mountains",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "polar_mountains",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-04-road-gate",
+        "antarctica-zone-04-caravan-post",
+        "antarctica-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-05",
+      "name": "The Buried Sea",
+      "continentId": "antarctica",
+      "levelRange": [
+        101,
+        115
+      ],
+      "biomeId": "subglacial_lake",
+      "subZones": [
+        {
+          "id": "antarctica-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-05-road-gate",
+        "antarctica-zone-05-caravan-post",
+        "antarctica-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-06",
+      "name": "Crystal Crevasse",
+      "continentId": "antarctica",
+      "levelRange": [
+        106,
+        120
+      ],
+      "biomeId": "ice_caves",
+      "subZones": [
+        {
+          "id": "antarctica-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "ice_caves",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "ice_caves",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "ice_caves",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "ice_caves",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-06-road-gate",
+        "antarctica-zone-06-caravan-post",
+        "antarctica-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-07",
+      "name": "Southern Lights Basin",
+      "continentId": "antarctica",
+      "levelRange": [
+        111,
+        125
+      ],
+      "biomeId": "polar_tundra",
+      "subZones": [
+        {
+          "id": "antarctica-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "polar_tundra",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "polar_tundra",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "polar_tundra",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "polar_tundra",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-07-road-gate",
+        "antarctica-zone-07-caravan-post",
+        "antarctica-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-08",
+      "name": "Hollow Earth Gate",
+      "continentId": "antarctica",
+      "levelRange": [
+        116,
+        130
+      ],
+      "biomeId": "geothermal_icefield",
+      "subZones": [
+        {
+          "id": "antarctica-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "antarctica-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "antarctica-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "antarctica-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "antarctica-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-08-road-gate",
+        "antarctica-zone-08-caravan-post",
+        "antarctica-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "antarctica-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "antarctica-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "antarctica-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "antarctica-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "antarctica-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "antarctica-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "antarctica-isles-east",
+      "islands": 8
+    }
+  ]
+}
