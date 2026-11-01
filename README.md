@@ -100,3 +100,13 @@ This is a structured catalog foundation, not yet the complete character builder:
 The D20 class progression ends at level 20. Levels 21-720 are GB Quest Paragon ranks, focused on mastery, professions, exploration, collections, cosmetics and world renown. This preserves bounded accuracy while supporting long-term MMORPG progression.
 
 Run `npm test` with Node.js 20+. Run `python tools/generate_pixel_assets.py` to generate starter atlases. These are original procedural placeholders, not final production art.
+
+### 350 bosses, monster taxonomy and world-scale map
+
+- `src/mmorpg/data/bosses-350.json` — 300 world bosses and 50 arc bosses.
+- `src/mmorpg/data/monster-taxonomy.json` — 14 D&D-style creature types and 20 original monster combat classes with subclass archetypes.
+- `world/manifests/world-scale.json` — four continents, 40 zones, 512x512 tiles per zone, 32x32 tile chunks and 10,240 streamable chunks.
+- `docs/BOSSES_MONSTERS_AND_WORLD_MAP.md` — encounter and world-map design.
+- `tests/mmorpg/bosses-world.test.js` — catalogue and map integrity tests.
+
+The map target is 2,048 x 5,120 logical tiles at 16 source pixels per tile, rendered through the existing 160 x 144 handheld viewport with nearest-neighbor integer zoom. All boss names and encounter concepts are original GB Quest content; D&D creature-type taxonomy is used as the rules classification.
