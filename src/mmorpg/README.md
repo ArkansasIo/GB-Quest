@@ -54,3 +54,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Spell execution runtime
 `rules/spell-runtime.js` resolves supplied spell records against one or more targets. It validates range, known/prepared state when populated, slot availability, action economy, dice expressions and condition IDs before spending costs. Supported effects include spell attacks, saving throws, damage and resistance, critical hits, upcast damage, healing capped at maximum HP, timed conditions and concentration. This is an execution engine, not a complete spell catalog; full SRD spell records, class access/preparation rules and spell-specific exceptions remain separate work.
+
+
+### SRD spell records
+`data/spells.json` and `systems/spell-catalog.js` provide a compact, searchable mechanical catalog of eight SRD 5.2.1 spells across cantrips and levels 1–2. Records include casting action, range, components, damage/save/healing/concentration metadata. `rules/spell-runtime.js` resolves supported fields. This is a starter subset, not the complete SRD spell list; spell-specific targeting geometry, class preparation/access, material components, and every unique spell rider still need implementation.
