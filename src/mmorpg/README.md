@@ -80,3 +80,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Class feature progression catalog
 `rules/class-feature-catalog.js` validates authored class and subclass feature tables, stable IDs, unique progression levels, subclass options and prerequisite records. It exposes features available through a selected class level/subclass and checks feature ownership, class-level and ability-score prerequisites without mutating character state. No class feature tables are fabricated by this module; populate it with reviewed SRD 5.2.1 progression data before enabling those features in-game.
+
+
+### Feat and subclass catalog API
+`systems/feat-catalog.js` validates explicitly authored feat records, indexes them by ID, filters by category/text, and checks ability-score, character-level and prerequisite-feat requirements. It re-exports the class feature catalog factory for consumers that want a shared content entry point. The repository currently has no claim of a complete authored feat dataset; this module is the validated data layer, not a complete feat rules implementation.
