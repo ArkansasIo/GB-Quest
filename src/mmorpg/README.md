@@ -50,3 +50,7 @@ The MMO systems are original implementations inspired by common MMORPG design pa
 
 ### Economy transaction boundaries
 Auction listing requires `sellerInventory` and `sellerWallet`; the listed quantity is removed immediately and the listing fee is charged. `buyAuction` adds the item to the buyer inventory before debiting the buyer; pass the seller wallet as the final argument to credit proceeds in the same in-memory operation. If omitted, the result returns `sellerProceedsCopper` for an external settlement adapter. `cancelAuction` requires the seller inventory to receive escrow back. `expireAuctions` returns expired escrow payloads to the caller for delivery; a persistent server must process that delivery idempotently before acknowledging expiry. Use `claimMailToCharacter` for inventory-and-wallet delivery; `claimMail` is retained only as a legacy payload API for callers that implement their own transaction.
+
+
+### Spell execution runtime
+`rules/spell-runtime.js` resolves supplied spell records against one or more targets. It validates range, known/prepared state when populated, slot availability, action economy, dice expressions and condition IDs before spending costs. Supported effects include spell attacks, saving throws, damage and resistance, critical hits, upcast damage, healing capped at maximum HP, timed conditions and concentration. This is an execution engine, not a complete spell catalog; full SRD spell records, class access/preparation rules and spell-specific exceptions remain separate work.
