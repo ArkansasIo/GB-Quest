@@ -40,6 +40,7 @@ test("subclass unlock requests a choice and prevents skipping it", () => {
   assert.equal(unlock.choiceRequired, true);
   assert.deepEqual(unlock.choices.map(x => x.id), ["champion", "battle-master"]);
   assert.throws(() => advanceClassLevel(character, { id: "fighter" }, fighter, 4), /subclass choice/i);
+  assert.equal(character.level, 3, "failed advancement must not mutate character level");
 });
 
 test("subclass selection grants current-level features and later level features", () => {
@@ -55,6 +56,7 @@ test("subclass selection grants current-level features and later level features"
 test("subclass selection rejects invalid and repeated choices", () => {
   const character = { classId: "fighter", level: 3, features: [] };
   assert.throws(() => chooseSubclass(character, fighter, "wizard"), /unknown subclass/i);
+  assert.throws(() => chooseSubclass({ classId: "wizard", level: 3, features: [] }, fighter, "champion"), /does not match/i);
   chooseSubclass(character, fighter, "battle-master");
   assert.throws(() => chooseSubclass(character, fighter, "champion"), /already been selected/i);
 });
