@@ -76,3 +76,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Class ability catalog
 `systems/class-abilities.js` builds a validated lookup catalog from explicitly authored ability records. It supports lookup by stable ID and filtering by class, subclass, level, action economy and text. The catalog validates records through the same definition validator used by the runtime; it intentionally contains no fabricated class feature data.
+
+
+### Class feature progression catalog
+`rules/class-feature-catalog.js` validates authored class and subclass feature tables, stable IDs, unique progression levels, subclass options and prerequisite records. It exposes features available through a selected class level/subclass and checks feature ownership, class-level and ability-score prerequisites without mutating character state. No class feature tables are fabricated by this module; populate it with reviewed SRD 5.2.1 progression data before enabling those features in-game.
