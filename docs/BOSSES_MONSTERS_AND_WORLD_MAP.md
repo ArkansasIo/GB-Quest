@@ -12,15 +12,15 @@ The 14 creature type labels follow the D&D 5e taxonomy: Aberration, Beast, Celes
 The first world-scale target is 4 continents, 10 zones per continent and 40 zones total.
 - Each zone: 512 x 512 logical tiles.
 - Each tile: 16 x 16 source pixels.
-- Whole world: 4096 x 2560 tiles, or 65,536 x 40,960 source pixels.
+- Whole world: 2,048 x 5,120 tiles, or 32,768 x 81,920 source pixels.
 - Chunk: 32 x 32 tiles.
 - Each zone: 16 x 16 chunks; world total: 10,240 chunks.
 - Legacy handheld viewport: 160 x 144 pixels, with integer nearest-neighbor zoom.
 
-This produces a very large seamless-feeling world without loading all map pixels or entities at once. The client loads nearby chunks and the server remains authoritative for collision, creatures, combat and loot.
+The 40 zones form a 4 x 10 grid. This produces a very large seamless-feeling world without loading all map pixels or entities at once. The client loads nearby chunks and the server remains authoritative for collision, creatures, combat and loot.
 
 ## World layout
-The four original continents are Westreach, Highcrown, Sunscar and Umbraldeep. Each has ten regions with distinct biomes, settlements, dungeons, travel routes and boss arenas. Zone level ranges are distributed across the 1-720 character journey.
+The four original continents are Westreach, Highcrown, Sunscar and Umbraldeep. Each continent occupies a 2 x 5 zone block in the 4 x 10 world grid, with distinct biomes, settlements, dungeons, travel routes and boss arenas. Zone level ranges are distributed across the 1-720 character journey.
 
 ## 8-bit presentation
 - Top-down tile-based world, 16px base tiles.
