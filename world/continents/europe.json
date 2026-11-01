@@ -54,28 +54,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-0"
+        "europe-zone-01-city",
+        "europe-zone-01-town-1",
+        "europe-zone-01-town-2",
+        "europe-zone-01-village-1",
+        "europe-zone-01-village-2",
+        "europe-zone-01-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-01-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Kingsroad Heartlands",
+          "type": "dungeon",
+          "level": 101,
+          "repeatable": true
         },
         {
           "id": "europe-zone-01-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Kingsroad Heartlands",
+          "type": "ruins",
+          "level": 103,
+          "repeatable": false
         },
         {
           "id": "europe-zone-01-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Kingsroad Heartlands",
+          "type": "landmark",
+          "level": 105,
+          "repeatable": false
         },
         {
           "id": "europe-zone-01-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Kingsroad Heartlands",
+          "type": "resource_site",
+          "level": 107,
+          "repeatable": false
         },
         {
           "id": "europe-zone-01-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Kingsroad Heartlands",
+          "type": "world_boss_lair",
+          "level": 109,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -122,28 +142,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-1"
+        "europe-zone-02-city",
+        "europe-zone-02-town-1",
+        "europe-zone-02-town-2",
+        "europe-zone-02-village-1",
+        "europe-zone-02-village-2",
+        "europe-zone-02-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-02-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Silverpine Marches",
+          "type": "dungeon",
+          "level": 106,
+          "repeatable": true
         },
         {
           "id": "europe-zone-02-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Silverpine Marches",
+          "type": "ruins",
+          "level": 108,
+          "repeatable": false
         },
         {
           "id": "europe-zone-02-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Silverpine Marches",
+          "type": "landmark",
+          "level": 110,
+          "repeatable": false
         },
         {
           "id": "europe-zone-02-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Silverpine Marches",
+          "type": "resource_site",
+          "level": 112,
+          "repeatable": false
         },
         {
           "id": "europe-zone-02-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Silverpine Marches",
+          "type": "world_boss_lair",
+          "level": 114,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -190,28 +230,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-2"
+        "europe-zone-03-city",
+        "europe-zone-03-town-1",
+        "europe-zone-03-town-2",
+        "europe-zone-03-village-1",
+        "europe-zone-03-village-2",
+        "europe-zone-03-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-03-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Crown of Peaks",
+          "type": "dungeon",
+          "level": 111,
+          "repeatable": true
         },
         {
           "id": "europe-zone-03-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Crown of Peaks",
+          "type": "ruins",
+          "level": 113,
+          "repeatable": false
         },
         {
           "id": "europe-zone-03-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Crown of Peaks",
+          "type": "landmark",
+          "level": 115,
+          "repeatable": false
         },
         {
           "id": "europe-zone-03-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Crown of Peaks",
+          "type": "resource_site",
+          "level": 117,
+          "repeatable": false
         },
         {
           "id": "europe-zone-03-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Crown of Peaks",
+          "type": "world_boss_lair",
+          "level": 119,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -258,28 +318,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-3"
+        "europe-zone-04-city",
+        "europe-zone-04-town-1",
+        "europe-zone-04-town-2",
+        "europe-zone-04-village-1",
+        "europe-zone-04-village-2",
+        "europe-zone-04-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-04-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Violet Coast",
+          "type": "dungeon",
+          "level": 116,
+          "repeatable": true
         },
         {
           "id": "europe-zone-04-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Violet Coast",
+          "type": "ruins",
+          "level": 118,
+          "repeatable": false
         },
         {
           "id": "europe-zone-04-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Violet Coast",
+          "type": "landmark",
+          "level": 120,
+          "repeatable": false
         },
         {
           "id": "europe-zone-04-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Violet Coast",
+          "type": "resource_site",
+          "level": 122,
+          "repeatable": false
         },
         {
           "id": "europe-zone-04-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Violet Coast",
+          "type": "world_boss_lair",
+          "level": 124,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -326,28 +406,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-4"
+        "europe-zone-05-city",
+        "europe-zone-05-town-1",
+        "europe-zone-05-town-2",
+        "europe-zone-05-village-1",
+        "europe-zone-05-village-2",
+        "europe-zone-05-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-05-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Old Empire Vale",
+          "type": "dungeon",
+          "level": 121,
+          "repeatable": true
         },
         {
           "id": "europe-zone-05-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Old Empire Vale",
+          "type": "ruins",
+          "level": 123,
+          "repeatable": false
         },
         {
           "id": "europe-zone-05-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Old Empire Vale",
+          "type": "landmark",
+          "level": 125,
+          "repeatable": false
         },
         {
           "id": "europe-zone-05-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Old Empire Vale",
+          "type": "resource_site",
+          "level": 127,
+          "repeatable": false
         },
         {
           "id": "europe-zone-05-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Old Empire Vale",
+          "type": "world_boss_lair",
+          "level": 129,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -394,28 +494,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-5"
+        "europe-zone-06-city",
+        "europe-zone-06-town-1",
+        "europe-zone-06-town-2",
+        "europe-zone-06-village-1",
+        "europe-zone-06-village-2",
+        "europe-zone-06-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-06-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Misty Moorlands",
+          "type": "dungeon",
+          "level": 126,
+          "repeatable": true
         },
         {
           "id": "europe-zone-06-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Misty Moorlands",
+          "type": "ruins",
+          "level": 128,
+          "repeatable": false
         },
         {
           "id": "europe-zone-06-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Misty Moorlands",
+          "type": "landmark",
+          "level": 130,
+          "repeatable": false
         },
         {
           "id": "europe-zone-06-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Misty Moorlands",
+          "type": "resource_site",
+          "level": 132,
+          "repeatable": false
         },
         {
           "id": "europe-zone-06-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Misty Moorlands",
+          "type": "world_boss_lair",
+          "level": 134,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -462,28 +582,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-6"
+        "europe-zone-07-city",
+        "europe-zone-07-town-1",
+        "europe-zone-07-town-2",
+        "europe-zone-07-village-1",
+        "europe-zone-07-village-2",
+        "europe-zone-07-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-07-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Amber Riverlands",
+          "type": "dungeon",
+          "level": 131,
+          "repeatable": true
         },
         {
           "id": "europe-zone-07-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Amber Riverlands",
+          "type": "ruins",
+          "level": 133,
+          "repeatable": false
         },
         {
           "id": "europe-zone-07-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Amber Riverlands",
+          "type": "landmark",
+          "level": 135,
+          "repeatable": false
         },
         {
           "id": "europe-zone-07-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Amber Riverlands",
+          "type": "resource_site",
+          "level": 137,
+          "repeatable": false
         },
         {
           "id": "europe-zone-07-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Amber Riverlands",
+          "type": "world_boss_lair",
+          "level": 139,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -530,28 +670,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-7"
+        "europe-zone-08-city",
+        "europe-zone-08-town-1",
+        "europe-zone-08-town-2",
+        "europe-zone-08-village-1",
+        "europe-zone-08-village-2",
+        "europe-zone-08-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "europe-zone-08-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Stormwall Isles",
+          "type": "dungeon",
+          "level": 136,
+          "repeatable": true
         },
         {
           "id": "europe-zone-08-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Stormwall Isles",
+          "type": "ruins",
+          "level": 138,
+          "repeatable": false
         },
         {
           "id": "europe-zone-08-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Stormwall Isles",
+          "type": "landmark",
+          "level": 140,
+          "repeatable": false
         },
         {
           "id": "europe-zone-08-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Stormwall Isles",
+          "type": "resource_site",
+          "level": 142,
+          "repeatable": false
         },
         {
           "id": "europe-zone-08-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Stormwall Isles",
+          "type": "world_boss_lair",
+          "level": 144,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -566,27 +726,40 @@
   "factions": [
     {
       "id": "europe-faction-1",
-      "type": "kingdom"
+      "name": "Silver Lantern Company",
+      "type": "kingdom",
+      "alignment": "chaotic",
+      "homeContinent": "europe"
     },
     {
       "id": "europe-faction-2",
-      "type": "guild"
+      "name": "Frostbound Accord",
+      "type": "guild",
+      "alignment": "lawful",
+      "homeContinent": "europe"
     },
     {
       "id": "europe-faction-3",
-      "type": "order"
+      "name": "River Trade Consortium",
+      "type": "order",
+      "alignment": "neutral",
+      "homeContinent": "europe"
     }
   ],
   "majorInstances": [
     {
       "id": "europe-raid-01",
+      "name": "The The Highcrown Citadel",
       "type": "raid",
-      "partySize": 10
+      "partySize": 10,
+      "level": 180
     },
     {
       "id": "europe-raid-02",
+      "name": "Vault of the Fallen Europe",
       "type": "raid",
-      "partySize": 20
+      "partySize": 20,
+      "level": 250
     }
   ],
   "islandChains": [
