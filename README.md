@@ -110,3 +110,6 @@ Run `npm test` with Node.js 20+. Run `python tools/generate_pixel_assets.py` to 
 - `tests/mmorpg/bosses-world.test.js` — catalogue and map integrity tests.
 
 The map target is 2,048 x 5,120 logical tiles at 16 source pixels per tile, rendered through the existing 160 x 144 handheld viewport with nearest-neighbor integer zoom. All boss names and encounter concepts are original GB Quest content; D&D creature-type taxonomy is used as the rules classification.
+
+- `src/mmorpg/world/chunk-generation.js` — deterministic seed-based 32x32 terrain chunk generation.
+- `tests/mmorpg/chunk-generation.test.js` — deterministic generation and map-boundary tests.
