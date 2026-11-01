@@ -5,6 +5,16 @@ import { createClassFeatureCatalog } from "../rules/class-feature-catalog.js";
  * This provides a common validated lookup API while keeping feat and subclass
  * rules records separately authored and reviewable.
  */
+function deepFreeze(value) {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value)) deepFreeze(child);
+  return Object.freeze(value);
+}
+
+function ownedFeatIds(character) {
+  return new Set((character?.feats ?? []).map(item => typeof item === "string" ? item : item?.id).filter(Boolean));
+}
+
 function validateFeat(feat) {
   if (!feat || typeof feat.id !== "string" || !feat.id.trim()) throw new TypeError("Feat requires a stable id");
   if (typeof feat.name !== "string" || !feat.name.trim()) throw new TypeError(`Feat ${feat.id} requires a name`);
@@ -22,10 +32,10 @@ function validateFeat(feat) {
       throw new TypeError(`Feat ${feat.id} has an unsupported prerequisite type`);
     }
   }
-  return Object.freeze({
-    ...structuredClone(feat),
-    prerequisites: Object.freeze((feat.prerequisites ?? []).map(item => Object.freeze({ ...item })))
-  });
+  return deepFreeze(structuredClone({
+    ...feat,
+    prerequisites: feat.prerequisites ?? []
+  }));
 }
 
 function isFeatEligible(feat, character, ownedFeatIds) {
@@ -65,8 +75,18 @@ export function createFeatCatalog(records = []) {
     checkEligibility(id, character) {
       const feat = feats.get(id);
       if (!feat) return { eligible: false, reason: "feat_not_found", missing: [] };
-      const ownedFeatIds = new Set(character?.feats ?? []);
-      return isFeatEligible(feat, character, ownedFeatIds);
+      return isFeatEligible(feat, character, ownedFeatIds(character));
+    },
+    grant(character, id) {
+      if (!character || typeof character !== "object") throw new TypeError("Character state is required");
+      if (!Array.isArray(character.feats)) character.feats = [];
+      const feat = feats.get(id);
+      if (!feat) return { ok: false, reason: "feat_not_found" };
+      if (ownedFeatIds(character).has(id)) return { ok: false, reason: "already_owned" };
+      const eligibility = isFeatEligible(feat, character, ownedFeatIds(character));
+      if (!eligibility.eligible) return { ok: false, reason: "prerequisites_not_met", missing: eligibility.missing };
+      character.feats.push(id);
+      return { ok: true, featId: id };
     },
     get size() { return feats.size; }
   });
