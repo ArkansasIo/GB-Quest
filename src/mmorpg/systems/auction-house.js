@@ -1,3 +1,5 @@
+import { addItem } from "./inventory.js";
+
 export function createAuctionHouse({ listingFeeRate = 0.02, saleFeeRate = 0.05, maxListingsPerPlayer = 20 } = {}) {
   return { listingFeeRate, saleFeeRate, maxListingsPerPlayer, listings: [], nextId: 1 };
 }
@@ -26,6 +28,10 @@ export function buyAuction(house, listingId, buyerId, wallet, inventory, now = D
   if (!buyerId || buyerId === listing.sellerId) return { ok: false, reason: "invalid_buyer" };
   const total = listing.unitPriceCopper * listing.quantity;
   if (!Number.isSafeInteger(total) || wallet.copper < total) return { ok: false, reason: "insufficient_funds" };
+  if (!inventory || !Array.isArray(inventory.items)) return { ok: false, reason: "invalid_inventory" };
+  const incoming = { ...listing.item, id: listing.item.templateId };
+  const transfer = addItem(inventory, incoming, listing.quantity);
+  if (!transfer.ok) return { ok: false, reason: transfer.reason };
   const sellerProceeds = total - Math.floor(total * house.saleFeeRate);
   wallet.copper -= total;
   listing.state = "sold"; listing.buyerId = buyerId;
