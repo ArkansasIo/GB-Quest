@@ -1,0 +1,602 @@
+{
+  "id": "north-america",
+  "name": "North America",
+  "realm": "The Westreach",
+  "capital": {
+    "id": "north-america-capital",
+    "name": "Westhold",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "north-america-zone-01",
+      "name": "Frostpine Frontier",
+      "continentId": "north-america",
+      "levelRange": [
+        41,
+        55
+      ],
+      "biomeId": "boreal_forest",
+      "subZones": [
+        {
+          "id": "north-america-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "boreal_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "boreal_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "boreal_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "boreal_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-01-road-gate",
+        "north-america-zone-01-caravan-post",
+        "north-america-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-02",
+      "name": "Thunderbird Prairie",
+      "continentId": "north-america",
+      "levelRange": [
+        46,
+        60
+      ],
+      "biomeId": "temperate_grassland",
+      "subZones": [
+        {
+          "id": "north-america-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_grassland",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_grassland",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_grassland",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_grassland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-02-road-gate",
+        "north-america-zone-02-caravan-post",
+        "north-america-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-03",
+      "name": "Red Canyonlands",
+      "continentId": "north-america",
+      "levelRange": [
+        51,
+        65
+      ],
+      "biomeId": "canyon_badlands",
+      "subZones": [
+        {
+          "id": "north-america-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "canyon_badlands",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "canyon_badlands",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "canyon_badlands",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "canyon_badlands",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-03-road-gate",
+        "north-america-zone-03-caravan-post",
+        "north-america-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-04",
+      "name": "Silverlake Country",
+      "continentId": "north-america",
+      "levelRange": [
+        56,
+        70
+      ],
+      "biomeId": "freshwater_lakes",
+      "subZones": [
+        {
+          "id": "north-america-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "freshwater_lakes",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "freshwater_lakes",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "freshwater_lakes",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "freshwater_lakes",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-04-road-gate",
+        "north-america-zone-04-caravan-post",
+        "north-america-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-05",
+      "name": "Misty Redwood Coast",
+      "continentId": "north-america",
+      "levelRange": [
+        61,
+        75
+      ],
+      "biomeId": "temperate_rainforest",
+      "subZones": [
+        {
+          "id": "north-america-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_rainforest",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_rainforest",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_rainforest",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_rainforest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-05-road-gate",
+        "north-america-zone-05-caravan-post",
+        "north-america-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-06",
+      "name": "Sunstone Mesa",
+      "continentId": "north-america",
+      "levelRange": [
+        66,
+        80
+      ],
+      "biomeId": "semi_arid_desert",
+      "subZones": [
+        {
+          "id": "north-america-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "semi_arid_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "semi_arid_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "semi_arid_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "semi_arid_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-06-road-gate",
+        "north-america-zone-06-caravan-post",
+        "north-america-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-07",
+      "name": "Great Bear Mountains",
+      "continentId": "north-america",
+      "levelRange": [
+        71,
+        85
+      ],
+      "biomeId": "alpine",
+      "subZones": [
+        {
+          "id": "north-america-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "alpine",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "alpine",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "alpine",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "alpine",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-07-road-gate",
+        "north-america-zone-07-caravan-post",
+        "north-america-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "north-america-zone-08",
+      "name": "Azure Gulf",
+      "continentId": "north-america",
+      "levelRange": [
+        76,
+        90
+      ],
+      "biomeId": "subtropical_coast",
+      "subZones": [
+        {
+          "id": "north-america-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "subtropical_coast",
+          "encounterTier": 1
+        },
+        {
+          "id": "north-america-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "subtropical_coast",
+          "encounterTier": 2
+        },
+        {
+          "id": "north-america-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "subtropical_coast",
+          "encounterTier": 3
+        },
+        {
+          "id": "north-america-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "subtropical_coast",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "north-america-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "north-america-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "north-america-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "north-america-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "north-america-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "north-america-zone-08-road-gate",
+        "north-america-zone-08-caravan-post",
+        "north-america-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "north-america-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "north-america-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "north-america-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "north-america-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "north-america-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "north-america-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "north-america-isles-east",
+      "islands": 8
+    }
+  ]
+}
