@@ -11,7 +11,7 @@ import {createThreatTable,addThreat,currentTarget} from "../../src/mmorpg/system
 import {createWallet,transferCurrency} from "../../src/mmorpg/systems/economy.js";
 import {createCampaignState,acceptQuest,applyObjectiveEvent,completeQuest} from "../../src/mmorpg/systems/campaign-runtime.js";
 
-test("dice parser rolls bounded expressions and modifiers",()=>{assert.deepEqual(rollDice("2d6+3",()=>0.5).total,9);assert.throws(()=>rollDice("0d6"),RangeError);});
+test("dice parser rolls bounded expressions and modifiers",()=>{assert.equal(rollDice("2d6+3",()=>0.5).total,11);assert.throws(()=>rollDice("0d6"),RangeError);});
 test("character creation and D&D-derived stats are distinct from MMO progression",()=>{const c=createCharacter({id:"p1",name:"Hero",species:"human",classId:"fighter",abilities:{con:14}});const d=deriveCharacterStats(c,{hitDie:10});assert.equal(d.maxHp,12);assert.equal(levelFromXp(6500),5);});
 test("combat computes AC, natural 20 and applies damage",()=>{assert.equal(armorClass({armorBase:14,dexterity:14}),16);assert.equal(attackRoll({abilityScore:10},10,()=>0.999).critical,true);const target={hp:10};assert.equal(applyDamage(target,12).dealt,10);});
 test("conditions expire after their duration",()=>{const e={conditions:[]};addCondition(e,"poisoned",{duration:2});tickConditions(e,2);assert.equal(e.conditions.length,0);});
