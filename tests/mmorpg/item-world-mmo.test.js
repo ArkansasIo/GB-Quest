@@ -81,5 +81,5 @@ test("world atlas contains exactly 90 unique maps across overworld, dungeon and 
   assert.equal(getWorldMapSummary().raids, 14);
   assert.ok(getWorldMap("map-asia-zone-01"));
   assert.equal(listWorldMaps({ kind: "raid" }).length, 14);
-  assert.equal(listWorldMaps({ continentId: "europe" }).length, 8);
+  assert.equal(listWorldMaps({ continentId: "europe" }).length, 10);
 });
