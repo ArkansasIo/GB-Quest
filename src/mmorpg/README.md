@@ -65,3 +65,6 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Class-specific spell access
 `rules/spell-access.js` provides configurable spell access policies without inventing class spell lists. A class/ruleset data record supplies the allowed spell IDs, access mode (`known` or `prepared`), and optional known/prepared limits. Characters can learn, prepare and unprepare spells; the casting runtime checks the configured policy before spending a spell slot or action. The actual per-class spell lists and limits still need to be populated from the applicable SRD rules.
+
+### Class resource runtime
+`rules/class-resources.js` provides a generic resource-pool engine for class and subclass abilities. Class data supplies resource IDs, level-based or fixed maximum uses, recovery trigger (`short_rest`, `long_rest`, `turn`, `manual`, or `never`), and spendability. The runtime supports configuration/reconfiguration, spending, trigger-based recovery, manual restoration and status projections. It does not assign class-specific resource values or recovery rules; those must come from validated class progression data.
