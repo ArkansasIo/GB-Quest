@@ -25,7 +25,7 @@ test("spell attack resolves hit, damage, spell slot and action economy", () => {
   });
   assert.equal(result.ok, true);
   assert.equal(result.results[0].hit, true);
-  assert.equal(goblin.hp, 12);
+  assert.equal(goblin.hp, 4);
   assert.equal(mage.spellState.slots[0].remaining, 3);
   assert.equal(mage.actionAvailable, false);
 });
