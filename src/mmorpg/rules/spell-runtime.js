@@ -1,7 +1,7 @@
 import { spellAttackBonus, savingThrow, setConcentration, spendSpellSlot } from "./spellcasting.js";
 import { resolveDamage, applyDamage } from "./combat.js";
 import { rollDice } from "./dice.js";
-import { addCondition } from "./conditions.js";
+import { addCondition, CONDITIONS } from "./conditions.js";
 import { spendTurnResource } from "./encounter.js";
 
 function distanceBetween(a, b) {
@@ -47,6 +47,8 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
   if (state && state.known?.length && !state.known.includes(spell.id) &&
       !(state.prepared ?? []).includes(spell.id)) return { ok: false, reason: "spell_not_known_or_prepared" };
 
+  if (spell.condition && !CONDITIONS[spell.condition]) return { ok: false, reason: "invalid_condition" };
+  if (spell.conditionDuration !== undefined && spell.conditionDuration !== null && (!Number.isFinite(spell.conditionDuration) || spell.conditionDuration <= 0)) return { ok: false, reason: "invalid_condition_duration" };
   const actionCost = spell.actionCost ?? "action";
   if (actionCost !== "none" && !["action","bonusAction","reaction"].includes(actionCost)) {
     return { ok: false, reason: "invalid_action_cost" };
@@ -86,11 +88,13 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
 
   const results = [];
   for (const target of targets) {
-    let hit = true, save = null, damage = 0, healing = 0, conditionApplied = null;
+    let hit = true, attackDie = null, save = null, damage = 0, healing = 0, conditionApplied = null;
     if (spell.attack) {
       const bonus = spellAttackBonus({ abilityScore, proficiency, bonus: caster.spellAttackBonus ?? 0 });
-      const die = 1 + Math.floor(random() * 20);
-      hit = die === 20 || (die !== 1 && die + bonus >= (target.ac ?? 10));
+      const roll = random();
+      if (!(roll >= 0 && roll < 1)) return { ok: false, reason: "invalid_random_source" };
+      attackDie = 1 + Math.floor(roll * 20);
+      hit = attackDie === 20 || (attackDie !== 1 && attackDie + bonus >= (target.ac ?? 10));
       if (!hit) { results.push({ targetId: target.id ?? null, hit: false, damage: 0, healing: 0 }); continue; }
     } else if (spell.saveAbility) {
       save = savingThrow({
@@ -106,7 +110,7 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
       const expression = spell.damage;
       const base = resolveDamage({
         expression, modifier: 0,
-        critical: !!spell.attack && hit && (target.lastAttackDie === 20),
+        critical: !!spell.attack && hit && attackDie === 20,
         resistance: target.resistances ?? [],
         vulnerability: target.vulnerabilities ?? [],
         immunity: target.immunities ?? []
@@ -120,8 +124,9 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
       applyDamage(target, damage, spell.damageType ?? "force");
     }
     if (!save?.success && spell.healing) {
-      healing = Math.min(target.maxHp ?? target.hp, rollHealing(spell.healing, random));
-      target.hp = Math.min(target.maxHp ?? target.hp + healing, target.hp + healing);
+      healing = rollHealing(spell.healing, random);
+      target.hp = Math.min(target.maxHp ?? Number.POSITIVE_INFINITY, target.hp + healing);
+      healing = target.hp - (target.hp - healing);
     }
     if (!save?.success && spell.condition) {
       addCondition(target, spell.condition, { duration: spell.conditionDuration ?? null, source: caster.id ?? null });
