@@ -1,6 +1,7 @@
 import { spellAttackBonus, setConcentration, spendSpellSlot } from "./spellcasting.js";
 import { resolveDamage, applyDamage, savingThrow } from "./combat.js";
 import { rollDice } from "./dice.js";
+import { abilityModifier } from "./d20.js";
 import { addCondition, CONDITIONS } from "./conditions.js";
 import { spendTurnResource } from "./encounter.js";
 
@@ -109,7 +110,7 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
     if (spell.damage) {
       const expression = spell.damage;
       const base = resolveDamage({
-        expression, modifier: 0,
+        expression, modifier: spell.damageModifier ?? 0,
         critical: !!spell.attack && hit && attackDie === 20,
         resistance: target.resistances ?? [],
         vulnerability: target.vulnerabilities ?? [],
@@ -125,7 +126,9 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
     }
     if (!save?.success && spell.healing) {
       const hpBefore = target.hp;
-      target.hp = Math.min(target.maxHp ?? Number.POSITIVE_INFINITY, target.hp + rollHealing(spell.healing, random));
+      const healingBonus = Number.isFinite(spell.healingModifier) ? spell.healingModifier :
+        spell.addSpellcastingModifier ? abilityModifier(abilityScore) : 0;
+      target.hp = Math.min(target.maxHp ?? Number.POSITIVE_INFINITY, target.hp + rollHealing(spell.healing, random) + healingBonus);
       healing = target.hp - hpBefore;
     }
     if (!save?.success && spell.condition) {
