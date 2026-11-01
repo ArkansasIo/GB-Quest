@@ -5,7 +5,7 @@ import { createClassAbilityCatalog } from "../../src/mmorpg/systems/class-abilit
 const records = [
   { id: "fighter.power-strike", name: "Power Strike", classId: "fighter", level: 3, actionCost: "action", effects: [{ type: "damage", dice: "1d8" }] },
   { id: "fighter.second-wind", name: "Second Wind", classId: "fighter", level: 1, actionCost: "bonusAction", effects: [{ type: "healing", dice: "1d10" }] },
-  { id: "rogue.quick-step", name: "Quick Step", classId: "rogue", level: 2, actionCost: "bonusAction", effects: [{ type: "condition", condition: "hidden" }] }
+  { id: "rogue.quick-step", name: "Quick Step", classId: "rogue", level: 2, actionCost: "bonusAction", effects: [{ type: "condition", condition: "poisoned" }] }
 ];
 
 test("class ability catalog indexes and filters authored records", () => {
