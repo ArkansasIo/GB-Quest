@@ -7,7 +7,7 @@ import { CONDITIONS, addCondition } from "./conditions.js";
 const ACTION_COSTS = new Set(["action", "bonusAction", "reaction", "none"]);
 const EFFECT_TYPES = new Set(["damage", "healing", "condition"]);
 
-function validateAbility(ability) {
+export function validateClassAbility(ability) {
   if (!ability || typeof ability.id !== "string" || !ability.id.trim()) throw new TypeError("Ability requires a stable id");
   if (!ACTION_COSTS.has(ability.actionCost ?? "action")) throw new RangeError("Unsupported ability action cost");
   if (!Array.isArray(ability.effects) || ability.effects.length === 0) throw new TypeError("Ability requires at least one effect");
@@ -99,7 +99,7 @@ function planEffect({ actor, target, effect, attack, random }) {
 
 /** Execute authored class abilities inside an authoritative server simulation. */
 export function useClassAbility({ actor, targets, ability, random = Math.random }) {
-  validateAbility(ability);
+  validateClassAbility(ability);
   if (!actor || typeof actor !== "object") throw new TypeError("Ability user is required");
   if (!Array.isArray(targets) || targets.length === 0) return { ok: false, reason: "target_required" };
   if (!validateTargets(targets, ability.effects)) return { ok: false, reason: "invalid_target" };
