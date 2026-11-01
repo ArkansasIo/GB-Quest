@@ -7,6 +7,7 @@ const multiplayer=JSON.parse(await readFile(new URL("../../src/mmorpg/data/multi
 const build=JSON.parse(await readFile(new URL("../../src/mmorpg/data/build-info.json",import.meta.url)));
 test("campaign has six acts and eighteen chapters",()=>{assert.equal(campaign.acts.length,6);assert.equal(campaign.acts.reduce((n,a)=>n+a.chapters.length,0),18);});
 test("quest catalogue has 30 main and 36 side quests with unique IDs",()=>{assert.equal(quests.filter(q=>q.kind==="main").length,30);assert.equal(quests.filter(q=>q.kind==="side").length,36);assert.equal(new Set(quests.map(q=>q.id)).size,66);});
-test("every quest references a valid campaign act",()=>{const ids=new Set(campaign.acts.map(a=>a.id));for(const q of quests)assert.ok(ids.has(q.actId));});
+test("every quest references a valid act and chapter",()=>{const acts=new Set(campaign.acts.map(a=>a.id));const chapters=new Set(campaign.acts.flatMap(a=>a.chapters.map(c=>c.id)));for(const q of quests){assert.ok(acts.has(q.actId));assert.ok(chapters.has(q.chapterId));}});
+test("main story quest prerequisites form a sequential campaign",()=>{for(let i=1;i<30;i++)assert.deepEqual(quests.find(q=>q.id==="mq-"+String(i+1).padStart(3,"0")).prerequisites,["mq-"+String(i).padStart(3,"0")]);});
 test("multiplayer contract uses server-authoritative validation",()=>{assert.equal(multiplayer.transport.authoritativeServer,true);assert.ok(multiplayer.messageTypes.includes("party.invite"));});
 test("build metadata has version, developer and build ID",()=>{assert.equal(build.developer,"ArkansasIo");assert.match(build.version,/^0\.3\.0$/);assert.ok(build.buildId);});
