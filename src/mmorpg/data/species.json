@@ -1,0 +1,15 @@
+{
+  "ruleset": "SRD-5.2.1",
+  "species": [
+    {"id":"dragonborn","name":"Dragonborn","size":["medium"],"speed":30,"choices":["draconic_ancestry"]},
+    {"id":"dwarf","name":"Dwarf","size":["medium"],"speed":30,"choices":[]},
+    {"id":"elf","name":"Elf","size":["medium"],"speed":30,"choices":[]},
+    {"id":"gnome","name":"Gnome","size":["small"],"speed":30,"choices":[]},
+    {"id":"goliath","name":"Goliath","size":["medium"],"speed":35,"choices":["giant_ancestry"]},
+    {"id":"halfling","name":"Halfling","size":["small"],"speed":30,"choices":[]},
+    {"id":"human","name":"Human","size":["small","medium"],"speed":30,"choices":[]},
+    {"id":"orc","name":"Orc","size":["medium"],"speed":30,"choices":[]},
+    {"id":"tiefling","name":"Tiefling","size":["medium"],"speed":30,"choices":["fiendish_legacy"]}
+  ],
+  "note":"Trait mechanics and choice tables are to be transcribed from the licensed SRD reference into separate structured feature records."
+}
