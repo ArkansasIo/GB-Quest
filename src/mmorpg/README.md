@@ -72,3 +72,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Generic class ability execution
 `rules/class-ability-runtime.js` executes authored ability records with action/bonus-action/reaction costs, class-resource costs, attack rolls, saving throws, damage mitigation, healing, and condition application. It validates required target state before resolution, aggregates repeated costs against the same resource, resolves random outcomes before committing costs, and restores action/resource balances if a resource commit unexpectedly fails. Ability definitions remain data-driven; this generic resolver does not claim to implement every class feature, feat, subclass rider, area template, movement effect, or legendary action. Run it only inside authoritative server simulation, not as a client-trusted outcome.
+
+
+### Class ability catalog
+`systems/class-abilities.js` builds a validated lookup catalog from explicitly authored ability records. It supports lookup by stable ID and filtering by class, subclass, level, action economy and text. The catalog validates records through the same definition validator used by the runtime; it intentionally contains no fabricated class feature data.
