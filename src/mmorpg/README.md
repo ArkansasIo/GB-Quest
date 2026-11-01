@@ -68,3 +68,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Class resource runtime
 `rules/class-resources.js` provides a generic resource-pool engine for class and subclass abilities. Class data supplies resource IDs, level-based or fixed maximum uses, recovery trigger (`short_rest`, `long_rest`, `turn`, `manual`, or `never`), and spendability. The runtime supports configuration/reconfiguration, spending, trigger-based recovery, manual restoration and status projections. It does not assign class-specific resource values or recovery rules; those must come from validated class progression data.
+
+
+### Generic class ability execution
+`rules/class-ability-runtime.js` executes authored ability records with action/bonus-action/reaction costs, class-resource costs, attack rolls, saving throws, damage mitigation, healing, and condition application. Ability definitions remain data-driven; this generic resolver does not claim to implement every class feature, feat, subclass rider, area template, movement effect, or legendary action. Run it only inside authoritative server simulation, not as a client-trusted outcome.
