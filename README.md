@@ -84,3 +84,19 @@ The expansion data layer now includes the nine SRD 5.2.1 species, twelve SRD cla
 - `docs/SRD_ATTRIBUTION.md`
 
 This is a structured catalog foundation, not yet the complete character builder: species traits, every level-by-level class feature, all spell records, feats, backgrounds, equipment costs/weights and full rules resolution still need to be implemented and validated against SRD 5.2.1. See the attribution document for licensing and scope.
+
+
+### 1-720 progression and 8-bit asset expansion
+
+- `src/mmorpg/progression/level-progression.js` — D20 levels 1-20 plus Paragon progression through level 720.
+- `src/mmorpg/data/progression.json` — progression design contract and milestone rewards.
+- `src/mmorpg/data/asset-manifest.json` — original pixel-art atlas and animation requirements.
+- `tools/generate_pixel_assets.py` — Python standard-library generator for original placeholder sprite atlases.
+- `docs/LEVEL_1_TO_720.md` — level-cap and endgame design.
+- `docs/PIXEL_ART_PIPELINE.md` — 8-bit art standards and asset provenance.
+- `docs/MMORPG_FEATURE_MATRIX.md` — character, world, social, economy, combat, UI and multiplayer feature scope.
+- `tests/mmorpg/progression.test.js` — level curve tests.
+
+The D20 class progression ends at level 20. Levels 21-720 are GB Quest Paragon ranks, focused on mastery, professions, exploration, collections, cosmetics and world renown. This preserves bounded accuracy while supporting long-term MMORPG progression.
+
+Run `npm test` with Node.js 20+. Run `python tools/generate_pixel_assets.py` to generate starter atlases. These are original procedural placeholders, not final production art.
