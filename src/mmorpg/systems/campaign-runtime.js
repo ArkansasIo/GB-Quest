@@ -2,7 +2,7 @@
 export function createCampaignState() {
   return { accepted: {}, completed: {}, failed: {}, objectiveCounts: {}, unlockedActs: ["act-01"] };
 }
-export function acceptQuest(state, quest, prerequisites = []) {
+export function getAvailableQuests(state, quests) {\n  return quests.filter(q => state.unlockedActs.includes(q.actId) && !state.accepted[q.id] && (q.repeatable || !state.completed[q.id]) && (q.prerequisites || []).every(id => state.completed[id]));\n}\nexport function acceptQuest(state, quest, prerequisites = quest.prerequisites || []) {
   if (!state || !quest || !quest.id) throw new TypeError("State and quest with id are required");
   if (state.completed[quest.id] && !quest.repeatable) return { ok: false, reason: "already_completed" };
   if (state.accepted[quest.id]) return { ok: false, reason: "already_active" };
