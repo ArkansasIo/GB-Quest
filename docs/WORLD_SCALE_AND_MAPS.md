@@ -1,58 +1,98 @@
-# World Scale and Map Streaming
+# Seven-Continent World Atlas
+
+GB Quest uses the seven-continent geography convention: Asia, Africa, North America, South America, Antarctica, Europe and Australia. National Geographic recognizes these seven continents; other traditions count continents differently. Sources: https://education.nationalgeographic.org/resource/Continent/ and https://www.nationalgeographic.org/national-geographic-map-policy/
 
 ## Hierarchy
-World > Continent > Region > Zone > Chunk > Tile.
+World > Continent > Zone/Region > Sub-zone > 32x32 tile chunk > tile.
 
-The world is not stored as one giant bitmap or tile matrix. Zone metadata and chunk payloads are loaded independently.
+## World directory totals
+- 7 continents, 5 oceans.
+- 56 zones (8 per continent), 224 sub-zones (4 per zone).
+- 7 continent capitals, 56 regional cities, 112 towns and 168 villages: 343 settlements.
+- 48 biome definitions.
+- 280 points of interest: dungeons, ruins, landmarks, resource sites and world-boss lairs.
+- 21 faction records and 14 continent-linked raid records.
 
-## Initial technical defaults
-- Tile grid: 16x16 tiles per chunk.
-- Render profile: 160x144 logical pixels, retained for retro mode.
-- Chunk dimensions: 32x32 tiles (configurable).
-- Active simulation radius: 2 chunks around a player initially.
-- Prefetch radius: 3 chunks, adjusted by device performance.
-- Zone coordinates use integer tile coordinates; chunk coordinates use floor division.
-- World metadata is separate from visual tile data.
+These are catalogued procedural world records and production targets, not 343 individually handcrafted scenes. The world is streamed by 32x32 chunks and each zone has a level band, climate, biome, settlement list, POIs and travel nodes.
 
-## Content scale targets
-- 4 original continents.
-- 6-10 zones per continent initially.
-- Each zone has 4-8 subregions/points-of-interest clusters.
-- 24-40 total zones as the first large-world milestone.
-- Each zone defines level band, biome, climate, music key, faction state, travel nodes, quest hubs, encounter tables and dungeon entrances.
+## Continents
+### Asia — The Eastern Crown
+- Jadewind Basin — temperate_forest
+- Dragonspine Range — alpine
+- Saffron Coast — tropical_monsoon_forest
+- Whispering Steppe — grassland_steppe
+- Lotus Delta — river_wetland
+- Obsidian Highlands — highland
+- Moonlit Archipelago — tropical_island
+- Celestial Desert — cold_desert
 
-These are production targets, not real-world distances. Meters-per-tile and travel speeds must be calibrated through playtests. A huge numeric map without traversal pacing, streaming and content density is not a useful world-size specification.
+### Africa — The Sunscar Expanse
+- Golden Dune Sea — hot_desert
+- Emerald Rift — tropical_rainforest
+- Thunder Savannah — savanna
+- Redstone Escarpment — rocky_badlands
+- Crescent Oasis — oasis
+- Baobab Wilds — woodland_savanna
+- Ashen Caldera — volcanic
+- Ivory Coast — coastal_mangrove
 
-## Zone manifest example
-```json
-{
-  "id": "greenreach",
-  "name": "Greenreach",
-  "continentId": "westreach",
-  "levelRange": [1, 8],
-  "biome": "temperate_forest",
-  "chunkSize": 32,
-  "spawnTable": "greenreach_common",
-  "travelNodes": ["oldroad_gate", "silverbrook_ferry"],
-  "poi": ["brookhaven", "watchtower_ruins", "mossfall_cave"]
-}
-```
+### North America — The Westreach
+- Frostpine Frontier — boreal_forest
+- Thunderbird Prairie — temperate_grassland
+- Red Canyonlands — canyon_badlands
+- Silverlake Country — freshwater_lakes
+- Misty Redwood Coast — temperate_rainforest
+- Sunstone Mesa — semi_arid_desert
+- Great Bear Mountains — alpine
+- Azure Gulf — subtropical_coast
 
-## Streaming rules
-1. Compute player chunk from world tile coordinates.
-2. Request missing chunks in a bounded radius.
-3. Load collision and navigation before making a chunk traversable.
-4. Keep neighboring chunk borders deterministic.
-5. Persist only mutable state (opened chests, harvested nodes, destroyed objects, event state), not static terrain.
-6. Unload distant chunks after pending state is saved.
-7. Validate all chunk requests and player positions on the server in multiplayer.
+### South America — The Verdant Reach
+- Emerald Canopy — tropical_rainforest
+- Skyfang Andes — alpine
+- Serpent River Basin — tropical_river
+- Glasssalt Desert — cold_desert
+- Jaguar Marshes — tropical_wetland
+- Cloudveil Highlands — cloud_forest
+- Parrot Isles — tropical_island
+- Southern Fjordlands — temperate_fjord
 
-## Map layers
-- Terrain and elevation.
-- Collision and navigation.
-- Water, roads and bridges.
-- Buildings and points of interest.
-- Resource nodes.
-- NPC and enemy spawn regions.
-- Quest and event overlays.
-- Fog of war and discovered-map data.
+### Antarctica — The Frostveil
+- Whiteout Plateau — polar_ice
+- Blue Glacier Reach — glacier
+- Aurora Shelf — ice_shelf
+- Black Ice Mountains — polar_mountains
+- The Buried Sea — subglacial_lake
+- Crystal Crevasse — ice_caves
+- Southern Lights Basin — polar_tundra
+- Hollow Earth Gate — geothermal_icefield
+
+### Europe — The Highcrown
+- Kingsroad Heartlands — temperate_mixed_forest
+- Silverpine Marches — boreal_forest
+- Crown of Peaks — alpine
+- Violet Coast — mediterranean
+- Old Empire Vale — temperate_valley
+- Misty Moorlands — moorland
+- Amber Riverlands — river_floodplain
+- Stormwall Isles — temperate_island
+
+### Australia — The Australis Wilds
+- Redglass Outback — red_desert
+- Coral Crown Reef — coral_reef
+- Eucalyptus Kingdom — eucalyptus_woodland
+- Whispering Monsoon — tropical_savanna
+- Spiral Stone Desert — rocky_desert
+- Great Southern Forest — temperate_forest
+- Sunken Blue Trench — deep_ocean
+- Stormbird Archipelago — tropical_island
+
+## Data locations
+- `world/catalog/world.json`: global directory, oceans, counts and streaming defaults.
+- `world/catalog/biomes.json`: biome ecology, flora/fauna templates, weather and resources.
+- `world/catalog/settlements.json`: all capital, city, town and village records.
+- `world/catalog/points-of-interest.json`: dungeon, ruin, landmark, resource and boss locations.
+- `world/catalog/factions.json`: faction directory.
+- `world/continents/*.json`: individual continent manifests.
+
+## Generation rules
+Generate terrain deterministically from world seed + continent + zone + chunk coordinates. Blend biome boundaries using elevation, latitude, moisture and neighboring chunks. Connect roads, rivers, bridges, ports and settlements coherently. Settlement populations should reflect water, food, trade, climate and defensibility. Antarctica is a fictional expedition realm with magical sheltered settlements and subglacial enclaves, not a statement about real-world permanent settlement. Keep mutable discovery, quest and resource state separate from static terrain.
