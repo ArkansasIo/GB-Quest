@@ -84,3 +84,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### Feat and subclass catalog API
 `systems/feat-catalog.js` validates explicitly authored feat records, indexes them by ID, filters by category/text, and checks ability-score, character-level and prerequisite-feat requirements. It re-exports the class feature catalog factory for consumers that want a shared content entry point. The repository currently has no claim of a complete authored feat dataset; this module is the validated data layer, not a complete feat rules implementation.
+
+
+### Spell-slot progression data
+`rules/spell-slot-progression.js` validates and indexes explicit twenty-level spell-slot tables per class, distinguishes full/half/third/pact/non-caster categories, and exposes defensive level lookups. It intentionally does not infer class tables from casting labels; populate the tables from reviewed SRD 5.2.1 records before connecting them to character advancement.
