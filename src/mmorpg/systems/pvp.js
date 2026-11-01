@@ -1,0 +1,2 @@
+export function canAttack(attacker,target,{sameFaction=false,safeZone=false,duelAccepted=false,battleground=false}={}){if(attacker.id===target.id)return false;if(safeZone)return false;if(battleground||duelAccepted)return true;return !sameFaction&&attacker.pvpEnabled&&target.pvpEnabled;}
+export function calculateHonor({levelDifference=0,base=100,repeatPenalty=0}){return Math.max(0,Math.floor(base*(1+Math.max(-0.5,Math.min(0.5,levelDifference*0.05)))*(1-Math.min(0.9,repeatPenalty))));}
