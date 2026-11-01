@@ -7210,7 +7210,7 @@
     },
     {
       "id": "arc-boss-01",
-      "name": "Moon Colossus Ascendant",
+      "name": "Moon Colossus Ascendant of the First Flame 01",
       "rank": "arc_boss",
       "creatureType": "construct",
       "monsterClass": "support",
@@ -7236,7 +7236,7 @@
     },
     {
       "id": "arc-boss-02",
-      "name": "Crystal Warden Ascendant",
+      "name": "Crystal Warden Ascendant of the Broken Crown 02",
       "rank": "arc_boss",
       "creatureType": "giant",
       "monsterClass": "hexer",
@@ -7262,7 +7262,7 @@
     },
     {
       "id": "arc-boss-03",
-      "name": "Frost Matriarch Ascendant",
+      "name": "Frost Matriarch Ascendant of the Endless Tide 03",
       "rank": "arc_boss",
       "creatureType": "undead",
       "monsterClass": "stalker",
@@ -7288,7 +7288,7 @@
     },
     {
       "id": "arc-boss-04",
-      "name": "Ember Reaver Ascendant",
+      "name": "Ember Reaver Ascendant of the Starless Deep 04",
       "rank": "arc_boss",
       "creatureType": "dragon",
       "monsterClass": "colossus",
@@ -7314,7 +7314,7 @@
     },
     {
       "id": "arc-boss-05",
-      "name": "Dread Maw Ascendant",
+      "name": "Dread Maw Ascendant of the Last Dawn 05",
       "rank": "arc_boss",
       "creatureType": "humanoid",
       "monsterClass": "necromancer",
@@ -7340,7 +7340,7 @@
     },
     {
       "id": "arc-boss-06",
-      "name": "Sunken Behemoth Ascendant",
+      "name": "Sunken Behemoth Ascendant of the Hollow Throne 06",
       "rank": "arc_boss",
       "creatureType": "aberration",
       "monsterClass": "brute",
@@ -7366,7 +7366,7 @@
     },
     {
       "id": "arc-boss-07",
-      "name": "Runic Oracle Ascendant",
+      "name": "Runic Oracle Ascendant of the Seven Storms 07",
       "rank": "arc_boss",
       "creatureType": "elemental",
       "monsterClass": "controller",
@@ -7392,7 +7392,7 @@
     },
     {
       "id": "arc-boss-08",
-      "name": "Grave Tyrant Ascendant",
+      "name": "Grave Tyrant Ascendant of the Silent Moon 08",
       "rank": "arc_boss",
       "creatureType": "monstrosity",
       "monsterClass": "leader",
@@ -7418,7 +7418,7 @@
     },
     {
       "id": "arc-boss-09",
-      "name": "Tempest Harbinger Ascendant",
+      "name": "Tempest Harbinger Ascendant of the Worldroot 09",
       "rank": "arc_boss",
       "creatureType": "beast",
       "monsterClass": "summoner",
@@ -7444,7 +7444,7 @@
     },
     {
       "id": "arc-boss-10",
-      "name": "Thorn Devourer Ascendant",
+      "name": "Thorn Devourer Ascendant of the Shattered Gate 10",
       "rank": "arc_boss",
       "creatureType": "fey",
       "monsterClass": "duelist",
@@ -7470,7 +7470,7 @@
     },
     {
       "id": "arc-boss-11",
-      "name": "Wyrm Colossus Ascendant",
+      "name": "Wyrm Colossus Ascendant of the First Flame 11",
       "rank": "arc_boss",
       "creatureType": "ooze",
       "monsterClass": "trickster",
@@ -7496,7 +7496,7 @@
     },
     {
       "id": "arc-boss-12",
-      "name": "Gloom Warden Ascendant",
+      "name": "Gloom Warden Ascendant of the Broken Crown 12",
       "rank": "arc_boss",
       "creatureType": "celestial",
       "monsterClass": "champion",
@@ -7522,7 +7522,7 @@
     },
     {
       "id": "arc-boss-13",
-      "name": "Obsidian Matriarch Ascendant",
+      "name": "Obsidian Matriarch Ascendant of the Endless Tide 13",
       "rank": "arc_boss",
       "creatureType": "fiend",
       "monsterClass": "skirmisher",
@@ -7548,7 +7548,7 @@
     },
     {
       "id": "arc-boss-14",
-      "name": "Blight Reaver Ascendant",
+      "name": "Blight Reaver Ascendant of the Starless Deep 14",
       "rank": "arc_boss",
       "creatureType": "plant",
       "monsterClass": "lurker",
@@ -7574,7 +7574,7 @@
     },
     {
       "id": "arc-boss-15",
-      "name": "Rift Maw Ascendant",
+      "name": "Rift Maw Ascendant of the Last Dawn 15",
       "rank": "arc_boss",
       "creatureType": "construct",
       "monsterClass": "guardian",
@@ -7600,7 +7600,7 @@
     },
     {
       "id": "arc-boss-16",
-      "name": "Umbral Behemoth Ascendant",
+      "name": "Umbral Behemoth Ascendant of the Hollow Throne 16",
       "rank": "arc_boss",
       "creatureType": "giant",
       "monsterClass": "destroyer",
@@ -7626,7 +7626,7 @@
     },
     {
       "id": "arc-boss-17",
-      "name": "Hollow Oracle Ascendant",
+      "name": "Hollow Oracle Ascendant of the Seven Storms 17",
       "rank": "arc_boss",
       "creatureType": "undead",
       "monsterClass": "swarm",
@@ -7652,7 +7652,7 @@
     },
     {
       "id": "arc-boss-18",
-      "name": "Sable Tyrant Ascendant",
+      "name": "Sable Tyrant Ascendant of the Silent Moon 18",
       "rank": "arc_boss",
       "creatureType": "dragon",
       "monsterClass": "shaper",
@@ -7678,7 +7678,7 @@
     },
     {
       "id": "arc-boss-19",
-      "name": "Iron Harbinger Ascendant",
+      "name": "Iron Harbinger Ascendant of the Worldroot 19",
       "rank": "arc_boss",
       "creatureType": "humanoid",
       "monsterClass": "devourer",
@@ -7704,7 +7704,7 @@
     },
     {
       "id": "arc-boss-20",
-      "name": "Ivory Devourer Ascendant",
+      "name": "Ivory Devourer Ascendant of the Shattered Gate 20",
       "rank": "arc_boss",
       "creatureType": "aberration",
       "monsterClass": "artillery",
@@ -7730,7 +7730,7 @@
     },
     {
       "id": "arc-boss-21",
-      "name": "Star Colossus Ascendant",
+      "name": "Star Colossus Ascendant of the First Flame 21",
       "rank": "arc_boss",
       "creatureType": "elemental",
       "monsterClass": "support",
@@ -7756,7 +7756,7 @@
     },
     {
       "id": "arc-boss-22",
-      "name": "Blood Warden Ascendant",
+      "name": "Blood Warden Ascendant of the Broken Crown 22",
       "rank": "arc_boss",
       "creatureType": "monstrosity",
       "monsterClass": "hexer",
@@ -7782,7 +7782,7 @@
     },
     {
       "id": "arc-boss-23",
-      "name": "Savage Matriarch Ascendant",
+      "name": "Savage Matriarch Ascendant of the Endless Tide 23",
       "rank": "arc_boss",
       "creatureType": "beast",
       "monsterClass": "stalker",
@@ -7808,7 +7808,7 @@
     },
     {
       "id": "arc-boss-24",
-      "name": "Cinder Reaver Ascendant",
+      "name": "Cinder Reaver Ascendant of the Starless Deep 24",
       "rank": "arc_boss",
       "creatureType": "fey",
       "monsterClass": "colossus",
@@ -7834,7 +7834,7 @@
     },
     {
       "id": "arc-boss-25",
-      "name": "Verdant Maw Ascendant",
+      "name": "Verdant Maw Ascendant of the Last Dawn 25",
       "rank": "arc_boss",
       "creatureType": "ooze",
       "monsterClass": "necromancer",
@@ -7860,7 +7860,7 @@
     },
     {
       "id": "arc-boss-26",
-      "name": "Storm Behemoth Ascendant",
+      "name": "Storm Behemoth Ascendant of the Hollow Throne 26",
       "rank": "arc_boss",
       "creatureType": "celestial",
       "monsterClass": "brute",
@@ -7886,7 +7886,7 @@
     },
     {
       "id": "arc-boss-27",
-      "name": "Rot Oracle Ascendant",
+      "name": "Rot Oracle Ascendant of the Seven Storms 27",
       "rank": "arc_boss",
       "creatureType": "fiend",
       "monsterClass": "controller",
@@ -7912,7 +7912,7 @@
     },
     {
       "id": "arc-boss-28",
-      "name": "Ashen Tyrant Ascendant",
+      "name": "Ashen Tyrant Ascendant of the Silent Moon 28",
       "rank": "arc_boss",
       "creatureType": "plant",
       "monsterClass": "leader",
@@ -7938,7 +7938,7 @@
     },
     {
       "id": "arc-boss-29",
-      "name": "Dusk Harbinger Ascendant",
+      "name": "Dusk Harbinger Ascendant of the Worldroot 29",
       "rank": "arc_boss",
       "creatureType": "construct",
       "monsterClass": "summoner",
@@ -7964,7 +7964,7 @@
     },
     {
       "id": "arc-boss-30",
-      "name": "Ebon Devourer Ascendant",
+      "name": "Ebon Devourer Ascendant of the Shattered Gate 30",
       "rank": "arc_boss",
       "creatureType": "giant",
       "monsterClass": "duelist",
@@ -7990,7 +7990,7 @@
     },
     {
       "id": "arc-boss-31",
-      "name": "Moon Colossus Ascendant",
+      "name": "Moon Colossus Ascendant of the First Flame 31",
       "rank": "arc_boss",
       "creatureType": "undead",
       "monsterClass": "trickster",
@@ -8016,7 +8016,7 @@
     },
     {
       "id": "arc-boss-32",
-      "name": "Crystal Warden Ascendant",
+      "name": "Crystal Warden Ascendant of the Broken Crown 32",
       "rank": "arc_boss",
       "creatureType": "dragon",
       "monsterClass": "champion",
@@ -8042,7 +8042,7 @@
     },
     {
       "id": "arc-boss-33",
-      "name": "Frost Matriarch Ascendant",
+      "name": "Frost Matriarch Ascendant of the Endless Tide 33",
       "rank": "arc_boss",
       "creatureType": "humanoid",
       "monsterClass": "skirmisher",
@@ -8068,7 +8068,7 @@
     },
     {
       "id": "arc-boss-34",
-      "name": "Ember Reaver Ascendant",
+      "name": "Ember Reaver Ascendant of the Starless Deep 34",
       "rank": "arc_boss",
       "creatureType": "aberration",
       "monsterClass": "lurker",
@@ -8094,7 +8094,7 @@
     },
     {
       "id": "arc-boss-35",
-      "name": "Dread Maw Ascendant",
+      "name": "Dread Maw Ascendant of the Last Dawn 35",
       "rank": "arc_boss",
       "creatureType": "elemental",
       "monsterClass": "guardian",
@@ -8120,7 +8120,7 @@
     },
     {
       "id": "arc-boss-36",
-      "name": "Sunken Behemoth Ascendant",
+      "name": "Sunken Behemoth Ascendant of the Hollow Throne 36",
       "rank": "arc_boss",
       "creatureType": "monstrosity",
       "monsterClass": "destroyer",
@@ -8146,7 +8146,7 @@
     },
     {
       "id": "arc-boss-37",
-      "name": "Runic Oracle Ascendant",
+      "name": "Runic Oracle Ascendant of the Seven Storms 37",
       "rank": "arc_boss",
       "creatureType": "beast",
       "monsterClass": "swarm",
@@ -8172,7 +8172,7 @@
     },
     {
       "id": "arc-boss-38",
-      "name": "Grave Tyrant Ascendant",
+      "name": "Grave Tyrant Ascendant of the Silent Moon 38",
       "rank": "arc_boss",
       "creatureType": "fey",
       "monsterClass": "shaper",
@@ -8198,7 +8198,7 @@
     },
     {
       "id": "arc-boss-39",
-      "name": "Tempest Harbinger Ascendant",
+      "name": "Tempest Harbinger Ascendant of the Worldroot 39",
       "rank": "arc_boss",
       "creatureType": "ooze",
       "monsterClass": "devourer",
@@ -8224,7 +8224,7 @@
     },
     {
       "id": "arc-boss-40",
-      "name": "Thorn Devourer Ascendant",
+      "name": "Thorn Devourer Ascendant of the Shattered Gate 40",
       "rank": "arc_boss",
       "creatureType": "celestial",
       "monsterClass": "artillery",
@@ -8250,7 +8250,7 @@
     },
     {
       "id": "arc-boss-41",
-      "name": "Wyrm Colossus Ascendant",
+      "name": "Wyrm Colossus Ascendant of the First Flame 41",
       "rank": "arc_boss",
       "creatureType": "fiend",
       "monsterClass": "support",
@@ -8276,7 +8276,7 @@
     },
     {
       "id": "arc-boss-42",
-      "name": "Gloom Warden Ascendant",
+      "name": "Gloom Warden Ascendant of the Broken Crown 42",
       "rank": "arc_boss",
       "creatureType": "plant",
       "monsterClass": "hexer",
@@ -8302,7 +8302,7 @@
     },
     {
       "id": "arc-boss-43",
-      "name": "Obsidian Matriarch Ascendant",
+      "name": "Obsidian Matriarch Ascendant of the Endless Tide 43",
       "rank": "arc_boss",
       "creatureType": "construct",
       "monsterClass": "stalker",
@@ -8328,7 +8328,7 @@
     },
     {
       "id": "arc-boss-44",
-      "name": "Blight Reaver Ascendant",
+      "name": "Blight Reaver Ascendant of the Starless Deep 44",
       "rank": "arc_boss",
       "creatureType": "giant",
       "monsterClass": "colossus",
@@ -8354,7 +8354,7 @@
     },
     {
       "id": "arc-boss-45",
-      "name": "Rift Maw Ascendant",
+      "name": "Rift Maw Ascendant of the Last Dawn 45",
       "rank": "arc_boss",
       "creatureType": "undead",
       "monsterClass": "necromancer",
@@ -8380,7 +8380,7 @@
     },
     {
       "id": "arc-boss-46",
-      "name": "Umbral Behemoth Ascendant",
+      "name": "Umbral Behemoth Ascendant of the Hollow Throne 46",
       "rank": "arc_boss",
       "creatureType": "dragon",
       "monsterClass": "brute",
@@ -8406,7 +8406,7 @@
     },
     {
       "id": "arc-boss-47",
-      "name": "Hollow Oracle Ascendant",
+      "name": "Hollow Oracle Ascendant of the Seven Storms 47",
       "rank": "arc_boss",
       "creatureType": "humanoid",
       "monsterClass": "controller",
@@ -8432,7 +8432,7 @@
     },
     {
       "id": "arc-boss-48",
-      "name": "Sable Tyrant Ascendant",
+      "name": "Sable Tyrant Ascendant of the Silent Moon 48",
       "rank": "arc_boss",
       "creatureType": "aberration",
       "monsterClass": "leader",
@@ -8458,7 +8458,7 @@
     },
     {
       "id": "arc-boss-49",
-      "name": "Iron Harbinger Ascendant",
+      "name": "Iron Harbinger Ascendant of the Worldroot 49",
       "rank": "arc_boss",
       "creatureType": "elemental",
       "monsterClass": "summoner",
@@ -8484,7 +8484,7 @@
     },
     {
       "id": "arc-boss-50",
-      "name": "Ivory Devourer Ascendant",
+      "name": "Ivory Devourer Ascendant of the Shattered Gate 50",
       "rank": "arc_boss",
       "creatureType": "monstrosity",
       "monsterClass": "duelist",
