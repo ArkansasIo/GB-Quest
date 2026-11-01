@@ -1,0 +1,151 @@
+{
+  "factions": [
+    {
+      "id": "asia-faction-1",
+      "name": "Crownward Alliance",
+      "type": "kingdom",
+      "alignment": "lawful",
+      "homeContinent": "asia"
+    },
+    {
+      "id": "asia-faction-2",
+      "name": "Wayfarer Compact",
+      "type": "guild",
+      "alignment": "neutral",
+      "homeContinent": "asia"
+    },
+    {
+      "id": "asia-faction-3",
+      "name": "Circle of the Verdant Moon",
+      "type": "order",
+      "alignment": "chaotic",
+      "homeContinent": "asia"
+    },
+    {
+      "id": "africa-faction-1",
+      "name": "Circle of the Verdant Moon",
+      "type": "kingdom",
+      "alignment": "neutral",
+      "homeContinent": "africa"
+    },
+    {
+      "id": "africa-faction-2",
+      "name": "Order of the Dawn Shield",
+      "type": "guild",
+      "alignment": "chaotic",
+      "homeContinent": "africa"
+    },
+    {
+      "id": "africa-faction-3",
+      "name": "Free Cities League",
+      "type": "order",
+      "alignment": "lawful",
+      "homeContinent": "africa"
+    },
+    {
+      "id": "north-america-faction-1",
+      "name": "Free Cities League",
+      "type": "kingdom",
+      "alignment": "chaotic",
+      "homeContinent": "north-america"
+    },
+    {
+      "id": "north-america-faction-2",
+      "name": "Ashen Covenant",
+      "type": "guild",
+      "alignment": "lawful",
+      "homeContinent": "north-america"
+    },
+    {
+      "id": "north-america-faction-3",
+      "name": "Guild of Cartographers",
+      "type": "order",
+      "alignment": "neutral",
+      "homeContinent": "north-america"
+    },
+    {
+      "id": "south-america-faction-1",
+      "name": "Guild of Cartographers",
+      "type": "kingdom",
+      "alignment": "lawful",
+      "homeContinent": "south-america"
+    },
+    {
+      "id": "south-america-faction-2",
+      "name": "Wardens of the Deep Roads",
+      "type": "guild",
+      "alignment": "neutral",
+      "homeContinent": "south-america"
+    },
+    {
+      "id": "south-america-faction-3",
+      "name": "Stormcallers' Conclave",
+      "type": "order",
+      "alignment": "chaotic",
+      "homeContinent": "south-america"
+    },
+    {
+      "id": "antarctica-faction-1",
+      "name": "Stormcallers' Conclave",
+      "type": "kingdom",
+      "alignment": "neutral",
+      "homeContinent": "antarctica"
+    },
+    {
+      "id": "antarctica-faction-2",
+      "name": "Old Kingdom Remnant",
+      "type": "guild",
+      "alignment": "chaotic",
+      "homeContinent": "antarctica"
+    },
+    {
+      "id": "antarctica-faction-3",
+      "name": "Silver Lantern Company",
+      "type": "order",
+      "alignment": "lawful",
+      "homeContinent": "antarctica"
+    },
+    {
+      "id": "europe-faction-1",
+      "name": "Silver Lantern Company",
+      "type": "kingdom",
+      "alignment": "chaotic",
+      "homeContinent": "europe"
+    },
+    {
+      "id": "europe-faction-2",
+      "name": "Frostbound Accord",
+      "type": "guild",
+      "alignment": "lawful",
+      "homeContinent": "europe"
+    },
+    {
+      "id": "europe-faction-3",
+      "name": "River Trade Consortium",
+      "type": "order",
+      "alignment": "neutral",
+      "homeContinent": "europe"
+    },
+    {
+      "id": "australia-faction-1",
+      "name": "River Trade Consortium",
+      "type": "kingdom",
+      "alignment": "lawful",
+      "homeContinent": "australia"
+    },
+    {
+      "id": "australia-faction-2",
+      "name": "Emberwatch Legion",
+      "type": "guild",
+      "alignment": "neutral",
+      "homeContinent": "australia"
+    },
+    {
+      "id": "australia-faction-3",
+      "name": "Keepers of the Seven Seals",
+      "type": "order",
+      "alignment": "chaotic",
+      "homeContinent": "australia"
+    }
+  ]
+}
