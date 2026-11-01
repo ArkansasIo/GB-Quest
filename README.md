@@ -113,3 +113,17 @@ The map target is 2,048 x 5,120 logical tiles at 16 source pixels per tile, rend
 
 - `src/mmorpg/world/chunk-generation.js` — deterministic seed-based 32x32 terrain chunk generation.
 - `tests/mmorpg/chunk-generation.test.js` — deterministic generation and map-boundary tests.
+
+### Colour modes, build identity, story campaign and multiplayer foundation
+
+- Build metadata: `src/mmorpg/data/build-info.json` — developer ArkansasIo, version 0.3.0 alpha, build ID GBQ-20261101-001.
+- The handheld shell now displays developer, version and build ID above the device.
+- Display settings cycle through DMG green, Pocket colour, Sunset, Amber, Ocean and original full-colour artwork.
+- Title screen now offers Campaign and Multiplayer entry points. The Multiplayer screen clearly reports that a live server is not connected yet.
+- `src/mmorpg/data/campaign.json` — six acts and eighteen chapters, covering levels 1-720.
+- `src/mmorpg/data/quests.json` — 30 main quests and 36 side quests.
+- `src/mmorpg/systems/campaign-runtime.js` — quest acceptance, objective progress, completion, reward claiming and act unlock helpers.
+- `src/mmorpg/data/multiplayer.json` and `src/mmorpg/net/multiplayer-client.js` — party, raid, chat, presence and secure WebSocket protocol foundation.
+- `tests/mmorpg/campaign-quests.test.js` and `tests/mmorpg/campaign-runtime.test.js` — campaign and quest validation tests.
+
+Online multiplayer still requires a deployed authoritative server, account authentication, persistent database and live integration. Campaign and quest records are data-driven foundations; the full 66-quest campaign still needs to be connected to in-game NPCs, maps, objectives and reward UI.
