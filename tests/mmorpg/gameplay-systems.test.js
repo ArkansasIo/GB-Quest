@@ -1,0 +1,23 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {rollDice} from "../../src/mmorpg/rules/dice.js";
+import {createCharacter,deriveCharacterStats,levelFromXp} from "../../src/mmorpg/rules/character.js";
+import {armorClass,attackRoll,applyDamage} from "../../src/mmorpg/rules/combat.js";
+import {addCondition,tickConditions} from "../../src/mmorpg/rules/conditions.js";
+import {createSpellState,spendSpellSlot,recoverSpellSlots} from "../../src/mmorpg/rules/spellcasting.js";
+import {createInventory,addItem,removeItem} from "../../src/mmorpg/systems/inventory.js";
+import {createParty,inviteToParty,createRaid} from "../../src/mmorpg/systems/party.js";
+import {createThreatTable,addThreat,currentTarget} from "../../src/mmorpg/systems/threat.js";
+import {createWallet,transferCurrency} from "../../src/mmorpg/systems/economy.js";
+import {createCampaignState,acceptQuest,applyObjectiveEvent,completeQuest} from "../../src/mmorpg/systems/campaign-runtime.js";
+
+test("dice parser rolls bounded expressions and modifiers",()=>{assert.deepEqual(rollDice("2d6+3",()=>0.5).total,9);assert.throws(()=>rollDice("0d6"),RangeError);});
+test("character creation and D&D-derived stats are distinct from MMO progression",()=>{const c=createCharacter({id:"p1",name:"Hero",species:"human",classId:"fighter",abilities:{con:14}});const d=deriveCharacterStats(c,{hitDie:10});assert.equal(d.maxHp,12);assert.equal(levelFromXp(6500),5);});
+test("combat computes AC, natural 20 and applies damage",()=>{assert.equal(armorClass({armorBase:14,dexterity:14}),16);assert.equal(attackRoll({abilityScore:10},10,()=>0.999).critical,true);const target={hp:10};assert.equal(applyDamage(target,12).dealt,10);});
+test("conditions expire after their duration",()=>{const e={conditions:[]};addCondition(e,"poisoned",{duration:2});tickConditions(e,2);assert.equal(e.conditions.length,0);});
+test("spell slots spend and recover",()=>{const s=createSpellState(1,[2]);assert.equal(spendSpellSlot(s,1),true);assert.equal(s.slots[0].remaining,1);recoverSpellSlots(s);assert.equal(s.slots[0].remaining,2);});
+test("inventory enforces capacity and quantity",()=>{const i=createInventory({capacity:1});assert.equal(addItem(i,{id:"potion",stackable:true},2).ok,true);assert.equal(removeItem(i,"potion",1).ok,true);});
+test("party and raid sizes are explicit",()=>{const p=createParty("a");assert.equal(inviteToParty(p,"b").ok,true);assert.equal(createRaid("a").maxSize,20);});
+test("threat chooses highest threat target",()=>{const t=createThreatTable();addThreat(t,"a",5);addThreat(t,"b",9);assert.equal(currentTarget(t),"b");});
+test("wallet transfer is atomic for insufficient funds",()=>{const a=createWallet(5),b=createWallet();assert.equal(transferCurrency(a,b,8).ok,false);assert.equal(a.copper,5);});
+test("campaign quest objective and completion are gated",()=>{const s=createCampaignState(),q={id:"q1",actId:"act-01",objective:{type:"kill",target:"wolf",required:2},rewards:{xp:10}};assert.equal(acceptQuest(s,q).ok,true);assert.equal(applyObjectiveEvent(s,q,{type:"kill",target:"wolf",amount:2}),2);assert.equal(completeQuest(s,q).ok,true);});
