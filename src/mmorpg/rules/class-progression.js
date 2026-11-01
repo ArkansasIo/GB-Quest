@@ -46,7 +46,7 @@ export function advanceClassLevel(characterState, classDefinition, progression, 
   }
 
   const row = (progression.levels ?? []).find(entry => entry.level === targetLevel);
-  if (!row && !(progression.subclass?.options?.length)) {
+  if (!row) {
     throw new RangeError(`No progression row is defined for ${classDefinition.id} level ${targetLevel}`);
   }
 
