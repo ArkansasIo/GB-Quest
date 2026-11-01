@@ -1,0 +1,602 @@
+{
+  "id": "africa",
+  "name": "Africa",
+  "realm": "The Sunscar Expanse",
+  "capital": {
+    "id": "africa-capital",
+    "name": "Sunspire",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "africa-zone-01",
+      "name": "Golden Dune Sea",
+      "continentId": "africa",
+      "levelRange": [
+        21,
+        35
+      ],
+      "biomeId": "hot_desert",
+      "subZones": [
+        {
+          "id": "africa-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "hot_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "hot_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "hot_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "hot_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-01-road-gate",
+        "africa-zone-01-caravan-post",
+        "africa-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-02",
+      "name": "Emerald Rift",
+      "continentId": "africa",
+      "levelRange": [
+        26,
+        40
+      ],
+      "biomeId": "tropical_rainforest",
+      "subZones": [
+        {
+          "id": "africa-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-02-road-gate",
+        "africa-zone-02-caravan-post",
+        "africa-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-03",
+      "name": "Thunder Savannah",
+      "continentId": "africa",
+      "levelRange": [
+        31,
+        45
+      ],
+      "biomeId": "savanna",
+      "subZones": [
+        {
+          "id": "africa-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "savanna",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "savanna",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "savanna",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "savanna",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-03-road-gate",
+        "africa-zone-03-caravan-post",
+        "africa-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-04",
+      "name": "Redstone Escarpment",
+      "continentId": "africa",
+      "levelRange": [
+        36,
+        50
+      ],
+      "biomeId": "rocky_badlands",
+      "subZones": [
+        {
+          "id": "africa-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-04-road-gate",
+        "africa-zone-04-caravan-post",
+        "africa-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-05",
+      "name": "Crescent Oasis",
+      "continentId": "africa",
+      "levelRange": [
+        41,
+        55
+      ],
+      "biomeId": "oasis",
+      "subZones": [
+        {
+          "id": "africa-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "oasis",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "oasis",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "oasis",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "oasis",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-05-road-gate",
+        "africa-zone-05-caravan-post",
+        "africa-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-06",
+      "name": "Baobab Wilds",
+      "continentId": "africa",
+      "levelRange": [
+        46,
+        60
+      ],
+      "biomeId": "woodland_savanna",
+      "subZones": [
+        {
+          "id": "africa-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-06-road-gate",
+        "africa-zone-06-caravan-post",
+        "africa-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-07",
+      "name": "Ashen Caldera",
+      "continentId": "africa",
+      "levelRange": [
+        51,
+        65
+      ],
+      "biomeId": "volcanic",
+      "subZones": [
+        {
+          "id": "africa-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "volcanic",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "volcanic",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "volcanic",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "volcanic",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-07-road-gate",
+        "africa-zone-07-caravan-post",
+        "africa-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-08",
+      "name": "Ivory Coast",
+      "continentId": "africa",
+      "levelRange": [
+        56,
+        70
+      ],
+      "biomeId": "coastal_mangrove",
+      "subZones": [
+        {
+          "id": "africa-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "africa-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "africa-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "africa-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "africa-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-08-road-gate",
+        "africa-zone-08-caravan-post",
+        "africa-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "africa-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "africa-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "africa-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "africa-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "africa-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "africa-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "africa-isles-east",
+      "islands": 8
+    }
+  ]
+}
