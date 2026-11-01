@@ -71,3 +71,16 @@ Run the new Node.js tests with `npm test` (Node.js 20 or newer).
 The original Game Boy runtime remains the active game. The MMORPG modules are an isolated expansion layer and are not yet wired into the legacy runtime. Network persistence, full class/spell/monster content, procedural continent generation, chunk loading and deployment remain future implementation work.
 
 **Content/licensing:** D&D-compatible mechanics should use permitted SRD material with required notices and attribution. Do not copy non-SRD rulebook text or proprietary World of Warcraft assets, lore, maps or content. All new setting, quest, item, enemy and visual content should be original.
+
+
+### D&D-compatible character and equipment catalog
+
+The expansion data layer now includes the nine SRD 5.2.1 species, twelve SRD classes with their included SRD subclasses, eight schools of magic, the SRD weapon catalog (including mastery properties), and armor categories and AC rules:
+
+- `src/mmorpg/data/species.json`
+- `src/mmorpg/data/classes.json`
+- `src/mmorpg/data/magic-schools.json`
+- `src/mmorpg/data/equipment.json`
+- `docs/SRD_ATTRIBUTION.md`
+
+This is a structured catalog foundation, not yet the complete character builder: species traits, every level-by-level class feature, all spell records, feats, backgrounds, equipment costs/weights and full rules resolution still need to be implemented and validated against SRD 5.2.1. See the attribution document for licensing and scope.
