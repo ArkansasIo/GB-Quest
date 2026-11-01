@@ -61,7 +61,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 
 ### D&D class progression runtime
-`rules/class-progression.js` provides a data-driven level advancement layer for the 1–20 D&D class track, separate from MMO/paragon progression. It applies one class level at a time, grants feature identifiers from supplied progression rows, exposes subclass unlock choices, validates subclass selection, and grants subclass features at the selected level. It intentionally does not fabricate missing SRD feature tables: class/subclass progression data must be authored and attributed separately before those features can be granted in-game.
+`rules/class-progression.js` provides a data-driven level advancement layer for the 1–20 D&D class track, separate from MMO/paragon progression. It applies one class level at a time, grants feature identifiers from supplied progression rows, exposes subclass unlock choices, validates subclass selection before mutating progression state, and grants subclass features at the selected level. It intentionally does not fabricate missing SRD feature tables: class/subclass progression data must be authored and attributed separately before those features can be granted in-game.
 
 ### Class-specific spell access
 `rules/spell-access.js` provides configurable spell access policies without inventing class spell lists. A class/ruleset data record supplies the allowed spell IDs, access mode (`known` or `prepared`), and optional known/prepared limits. Characters can learn, prepare and unprepare spells; the casting runtime checks the configured policy before spending a spell slot or action. The actual per-class spell lists and limits still need to be populated from the applicable SRD rules.
