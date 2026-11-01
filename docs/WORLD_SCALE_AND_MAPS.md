@@ -96,3 +96,11 @@ These are catalogued procedural world records and production targets, not 343 in
 
 ## Generation rules
 Generate terrain deterministically from world seed + continent + zone + chunk coordinates. Blend biome boundaries using elevation, latitude, moisture and neighboring chunks. Connect roads, rivers, bridges, ports and settlements coherently. Settlement populations should reflect water, food, trade, climate and defensibility. Antarctica is a fictional expedition realm with magical sheltered settlements and subglacial enclaves, not a statement about real-world permanent settlement. Keep mutable discovery, quest and resource state separate from static terrain.
+
+## 90-map atlas
+The playable map registry is in `world/maps/index.json` and contains exactly 90 map manifests:
+- 56 overworld zone maps (8 for each of the seven continents).
+- 20 dungeon instance maps linked to existing dungeon points of interest.
+- 14 original raid maps with instance metadata, encounter-wing layers, difficulty modes and weekly lockout metadata.
+
+Each map defines tile dimensions, chunk size, layer names, zone/continent links, level bands and streaming policy. These are deterministic procedural map manifests, not 90 finished hand-painted tilemaps. Terrain and encounter cells are generated from the world seed and map/chunk coordinates by the chunk generator. The registry API is `src/mmorpg/world/map-registry.js`.
