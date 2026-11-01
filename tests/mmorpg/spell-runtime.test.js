@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { castSpell } from "../../src/mmorpg/rules/spell-runtime.js";
+import { getSpell, listSpells, getSpellCatalogSummary } from "../../src/mmorpg/systems/spell-catalog.js";
 import { createSpellState } from "../../src/mmorpg/rules/spellcasting.js";
 
 function caster() {
@@ -89,4 +90,21 @@ test("healing spells respect the target maximum hit points", () => {
   assert.equal(result.ok, true);
   assert.equal(ally.hp, 10);
   assert.equal(result.results[0].healing, 2);
+});
+
+test("SRD spell catalog supports lookup and level/school filters", () => {
+  assert.equal(getSpell("Fire Bolt").id, "fire-bolt");
+  assert.equal(getSpell("hold-person").level, 2);
+  assert.equal(listSpells({ level: 0 }).length, 2);
+  assert.equal(listSpells({ school: "evocation" }).length, 6);
+  assert.equal(getSpellCatalogSummary().total, 8);
+});
+
+test("catalog healing spell applies spellcasting ability modifier", () => {
+  const mage = caster();
+  const ally = { id: "ally", hp: 8, maxHp: 20, position: { x: 2, y: 0, z: 0 } };
+  const result = castSpell({ caster: mage, targets: [ally], spell: getSpell("Cure Wounds"), random: () => 0.99 });
+  assert.equal(result.ok, true);
+  assert.equal(ally.hp, 20);
+  assert.equal(result.results[0].healing, 12);
 });
