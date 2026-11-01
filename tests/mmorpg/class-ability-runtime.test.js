@@ -113,3 +113,43 @@ test("rejects malformed ability definitions and defeated targets", () => {
     actor: hero, targets: [dead], ability: { id: "heal", effects: [{ type: "healing", dice: "1d4" }] }
   }), { ok: false, reason: "invalid_target" });
 });
+
+
+test("aggregates repeated resource costs before spending and preserves the action", () => {
+  const hero = actor();
+  const foe = target();
+  const result = useClassAbility({
+    actor: hero, targets: [foe],
+    ability: {
+      id: "double-focus",
+      resourceCosts: [
+        { resourceId: "focus", amount: 2 },
+        { resourceId: "focus", amount: 2 }
+      ],
+      effects: [{ type: "damage", dice: "1d6" }]
+    }
+  });
+  assert.deepEqual(result, { ok: false, reason: "insufficient_resource", resourceId: "focus" });
+  assert.equal(hero.actionAvailable, true);
+  assert.equal(hero.classResources.focus.remaining, 3);
+  assert.equal(foe.hp, 30);
+});
+
+test("rejects targets missing required hit-point or condition state before spending", () => {
+  const hero = actor();
+  const noHealth = { id: "broken", ac: 10, conditions: [] };
+  const damage = useClassAbility({
+    actor: hero, targets: [noHealth],
+    ability: { id: "strike", effects: [{ type: "damage", dice: "1d6" }] }
+  });
+  assert.deepEqual(damage, { ok: false, reason: "invalid_target" });
+  assert.equal(hero.actionAvailable, true);
+
+  const noConditions = { id: "broken-ally", hp: 10, maxHp: 10 };
+  const condition = useClassAbility({
+    actor: hero, targets: [noConditions],
+    ability: { id: "stun", effects: [{ type: "condition", condition: "poisoned" }] }
+  });
+  assert.deepEqual(condition, { ok: false, reason: "invalid_target" });
+  assert.equal(hero.actionAvailable, true);
+});
