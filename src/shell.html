@@ -96,11 +96,13 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
   font: 400 10px/1.7 var(--pixel); color: var(--ink-dim); text-align: center; max-width: 380px; letter-spacing: .04em;
 }
 .keys kbd { color: var(--ink); font: inherit; border: 1px solid #39403a; border-radius: 3px; padding: 0 4px; }
+.build-info { width: min(100%, 380px); box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 6px 10px; border: 1px solid #39403a; border-radius: 5px; background: #101410; color: #a9b99a; font: 8px/1.5 var(--pixel); letter-spacing: .02em; }
+.build-info strong { color: #d4e7bd; font-weight: 700; }
 @media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
 @media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
 </style>
 
-<main class="device" aria-label="GB Quest handheld">
+<aside class="build-info" aria-label="Build information"><span><strong>GB QUEST</strong> v0.3.0 ALPHA</span><span>DEV: ArkansasIo</span><span>ID: GBQ-20261101-001</span></aside>\n<main class="device" aria-label="GB Quest handheld">
   <div class="bezel">
     <div class="bezel-top"><i class="led"></i> BATTERY <span></span> DOT MATRIX</div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
