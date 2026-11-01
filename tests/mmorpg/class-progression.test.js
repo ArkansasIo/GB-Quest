@@ -76,3 +76,17 @@ test("progression rejects a mismatched class and invalid level", () => {
   assert.throws(() => advanceClassLevel(character, { id: "wizard" }, fighter, 2), /matching class/i);
   assert.throws(() => advanceClassLevel(character, { id: "fighter" }, fighter, 21), RangeError);
 });
+
+
+test("invalid stored subclass is rejected before advancing or granting features", () => {
+  const character = {
+    classId: "fighter", classLevel: 3, level: 3, subclassId: "not-a-fighter-subclass",
+    features: [], featureHistory: [], proficiencyBonus: 2
+  };
+  assert.throws(() => advanceClassLevel(character, { id: "fighter" }, fighter, 4), /selected subclass is not valid/i);
+  assert.equal(character.classLevel, 3);
+  assert.equal(character.level, 3);
+  assert.equal(character.proficiencyBonus, 2);
+  assert.deepEqual(character.features, []);
+  assert.deepEqual(character.featureHistory, []);
+});
