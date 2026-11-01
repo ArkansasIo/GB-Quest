@@ -54,28 +54,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-0"
+        "south-america-zone-01-city",
+        "south-america-zone-01-town-1",
+        "south-america-zone-01-town-2",
+        "south-america-zone-01-village-1",
+        "south-america-zone-01-village-2",
+        "south-america-zone-01-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-01-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Emerald Canopy",
+          "type": "dungeon",
+          "level": 61,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-01-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Emerald Canopy",
+          "type": "ruins",
+          "level": 63,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-01-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Emerald Canopy",
+          "type": "landmark",
+          "level": 65,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-01-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Emerald Canopy",
+          "type": "resource_site",
+          "level": 67,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-01-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Emerald Canopy",
+          "type": "world_boss_lair",
+          "level": 69,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -122,28 +142,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-1"
+        "south-america-zone-02-city",
+        "south-america-zone-02-town-1",
+        "south-america-zone-02-town-2",
+        "south-america-zone-02-village-1",
+        "south-america-zone-02-village-2",
+        "south-america-zone-02-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-02-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Skyfang Andes",
+          "type": "dungeon",
+          "level": 66,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-02-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Skyfang Andes",
+          "type": "ruins",
+          "level": 68,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-02-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Skyfang Andes",
+          "type": "landmark",
+          "level": 70,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-02-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Skyfang Andes",
+          "type": "resource_site",
+          "level": 72,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-02-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Skyfang Andes",
+          "type": "world_boss_lair",
+          "level": 74,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -190,28 +230,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-2"
+        "south-america-zone-03-city",
+        "south-america-zone-03-town-1",
+        "south-america-zone-03-town-2",
+        "south-america-zone-03-village-1",
+        "south-america-zone-03-village-2",
+        "south-america-zone-03-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-03-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Serpent River Basin",
+          "type": "dungeon",
+          "level": 71,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-03-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Serpent River Basin",
+          "type": "ruins",
+          "level": 73,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-03-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Serpent River Basin",
+          "type": "landmark",
+          "level": 75,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-03-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Serpent River Basin",
+          "type": "resource_site",
+          "level": 77,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-03-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Serpent River Basin",
+          "type": "world_boss_lair",
+          "level": 79,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -258,28 +318,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-3"
+        "south-america-zone-04-city",
+        "south-america-zone-04-town-1",
+        "south-america-zone-04-town-2",
+        "south-america-zone-04-village-1",
+        "south-america-zone-04-village-2",
+        "south-america-zone-04-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-04-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Glasssalt Desert",
+          "type": "dungeon",
+          "level": 76,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-04-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Glasssalt Desert",
+          "type": "ruins",
+          "level": 78,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-04-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Glasssalt Desert",
+          "type": "landmark",
+          "level": 80,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-04-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Glasssalt Desert",
+          "type": "resource_site",
+          "level": 82,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-04-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Glasssalt Desert",
+          "type": "world_boss_lair",
+          "level": 84,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -326,28 +406,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-4"
+        "south-america-zone-05-city",
+        "south-america-zone-05-town-1",
+        "south-america-zone-05-town-2",
+        "south-america-zone-05-village-1",
+        "south-america-zone-05-village-2",
+        "south-america-zone-05-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-05-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Jaguar Marshes",
+          "type": "dungeon",
+          "level": 81,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-05-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Jaguar Marshes",
+          "type": "ruins",
+          "level": 83,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-05-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Jaguar Marshes",
+          "type": "landmark",
+          "level": 85,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-05-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Jaguar Marshes",
+          "type": "resource_site",
+          "level": 87,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-05-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Jaguar Marshes",
+          "type": "world_boss_lair",
+          "level": 89,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -394,28 +494,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-5"
+        "south-america-zone-06-city",
+        "south-america-zone-06-town-1",
+        "south-america-zone-06-town-2",
+        "south-america-zone-06-village-1",
+        "south-america-zone-06-village-2",
+        "south-america-zone-06-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-06-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Cloudveil Highlands",
+          "type": "dungeon",
+          "level": 86,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-06-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Cloudveil Highlands",
+          "type": "ruins",
+          "level": 88,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-06-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Cloudveil Highlands",
+          "type": "landmark",
+          "level": 90,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-06-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Cloudveil Highlands",
+          "type": "resource_site",
+          "level": 92,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-06-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Cloudveil Highlands",
+          "type": "world_boss_lair",
+          "level": 94,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -462,28 +582,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-6"
+        "south-america-zone-07-city",
+        "south-america-zone-07-town-1",
+        "south-america-zone-07-town-2",
+        "south-america-zone-07-village-1",
+        "south-america-zone-07-village-2",
+        "south-america-zone-07-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-07-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Parrot Isles",
+          "type": "dungeon",
+          "level": 91,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-07-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Parrot Isles",
+          "type": "ruins",
+          "level": 93,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-07-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Parrot Isles",
+          "type": "landmark",
+          "level": 95,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-07-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Parrot Isles",
+          "type": "resource_site",
+          "level": 97,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-07-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Parrot Isles",
+          "type": "world_boss_lair",
+          "level": 99,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -530,28 +670,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-7"
+        "south-america-zone-08-city",
+        "south-america-zone-08-town-1",
+        "south-america-zone-08-town-2",
+        "south-america-zone-08-village-1",
+        "south-america-zone-08-village-2",
+        "south-america-zone-08-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "south-america-zone-08-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Southern Fjordlands",
+          "type": "dungeon",
+          "level": 96,
+          "repeatable": true
         },
         {
           "id": "south-america-zone-08-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Southern Fjordlands",
+          "type": "ruins",
+          "level": 98,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-08-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Southern Fjordlands",
+          "type": "landmark",
+          "level": 100,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-08-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Southern Fjordlands",
+          "type": "resource_site",
+          "level": 102,
+          "repeatable": false
         },
         {
           "id": "south-america-zone-08-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Southern Fjordlands",
+          "type": "world_boss_lair",
+          "level": 104,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -566,27 +726,40 @@
   "factions": [
     {
       "id": "south-america-faction-1",
-      "type": "kingdom"
+      "name": "Guild of Cartographers",
+      "type": "kingdom",
+      "alignment": "lawful",
+      "homeContinent": "south-america"
     },
     {
       "id": "south-america-faction-2",
-      "type": "guild"
+      "name": "Wardens of the Deep Roads",
+      "type": "guild",
+      "alignment": "neutral",
+      "homeContinent": "south-america"
     },
     {
       "id": "south-america-faction-3",
-      "type": "order"
+      "name": "Stormcallers' Conclave",
+      "type": "order",
+      "alignment": "chaotic",
+      "homeContinent": "south-america"
     }
   ],
   "majorInstances": [
     {
       "id": "south-america-raid-01",
+      "name": "The The Verdant Reach Citadel",
       "type": "raid",
-      "partySize": 10
+      "partySize": 10,
+      "level": 120
     },
     {
       "id": "south-america-raid-02",
+      "name": "Vault of the Fallen South America",
       "type": "raid",
-      "partySize": 20
+      "partySize": 20,
+      "level": 170
     }
   ],
   "islandChains": [
