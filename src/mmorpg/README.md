@@ -58,3 +58,7 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### SRD spell records
 `data/spells.json` and `systems/spell-catalog.js` provide a compact, searchable mechanical catalog of eight SRD 5.2.1 spells across cantrips and levels 1–2. Records include casting action, range, components, damage/save/healing/concentration metadata. `rules/spell-runtime.js` resolves supported fields. This is a starter subset, not the complete SRD spell list; spell-specific targeting geometry, class preparation/access, material components, and every unique spell rider still need implementation.
+
+
+### D&D class progression runtime
+`rules/class-progression.js` provides a data-driven level advancement layer for the 1–20 D&D class track, separate from MMO/paragon progression. It applies one class level at a time, grants feature identifiers from supplied progression rows, exposes subclass unlock choices, validates subclass selection, and grants subclass features at the selected level. It intentionally does not fabricate missing SRD feature tables: class/subclass progression data must be authored and attributed separately before those features can be granted in-game.
