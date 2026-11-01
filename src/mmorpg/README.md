@@ -39,10 +39,14 @@ No proprietary World of Warcraft code, assets, quests or data are copied. D&D da
 - The catalog includes 38 weapons, 13 armor/shield entries, 67 adventuring gear entries, 31 tools, 7 equipment packs, 17 mounts/vehicles and 24 magic-item entries.
 
 ## MMORPG service systems
-- Auction house listings, search, buy/cancel and expiry.
-- Character mail with attachment/currency claims and expiry.
+- Auction house listings reserve seller inventory in escrow, charge listing/sale fees, deliver purchases, credit seller proceeds when a seller wallet is supplied, and return cancelled/expired escrow payloads for delivery.
+- Character mail supports one-time atomic claims that stage attachments against inventory capacity/weight before crediting currency; failed claims remain retryable.
 - Appearance/mount/title collections and transmog unlocks.
 - Role-based dungeon finder queue for tank/healer/damage compositions.
 - Map registry for the 90-map atlas.
 
 The MMO systems are original implementations inspired by common MMORPG design patterns. They do not use World of Warcraft source code, art, names, quest text or proprietary game data.
+
+
+### Economy transaction boundaries
+Auction listing requires `sellerInventory` and `sellerWallet`; the listed quantity is removed immediately and the listing fee is charged. `buyAuction` adds the item to the buyer inventory before debiting the buyer; pass the seller wallet as the final argument to credit proceeds in the same in-memory operation. If omitted, the result returns `sellerProceedsCopper` for an external settlement adapter. `cancelAuction` requires the seller inventory to receive escrow back. `expireAuctions` returns expired escrow payloads to the caller for delivery; a persistent server must process that delivery idempotently before acknowledging expiry. Use `claimMailToCharacter` for inventory-and-wallet delivery; `claimMail` is retained only as a legacy payload API for callers that implement their own transaction.
