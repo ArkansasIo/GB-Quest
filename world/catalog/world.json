@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "1.0.0",
+  "worldId": "gbq-seven-continents",
+  "name": "The Sevenfold World",
+  "continentModel": "seven_continents",
+  "geographyNote": "A fantasy setting inspired by Earth's seven-continent model; all kingdoms, settlements and named locations are original.",
+  "counts": {
+    "continents": 7,
+    "zones": 56,
+    "subZones": 224,
+    "cities": 63,
+    "towns": 112,
+    "villages": 168,
+    "settlements": 343,
+    "biomes": 48,
+    "pointsOfInterest": 280,
+    "factions": 21,
+    "majorRaids": 14
+  },
+  "continents": [
+    {
+      "id": "asia",
+      "name": "Asia",
+      "realm": "The Eastern Crown",
+      "capital": "asia-capital",
+      "zoneIds": [
+        "asia-zone-01",
+        "asia-zone-02",
+        "asia-zone-03",
+        "asia-zone-04",
+        "asia-zone-05",
+        "asia-zone-06",
+        "asia-zone-07",
+        "asia-zone-08"
+      ],
+      "factionIds": [
+        "asia-faction-1",
+        "asia-faction-2",
+        "asia-faction-3"
+      ],
+      "climate": "continental, monsoon, alpine, arid"
+    },
+    {
+      "id": "africa",
+      "name": "Africa",
+      "realm": "The Sunscar Expanse",
+      "capital": "africa-capital",
+      "zoneIds": [
+        "africa-zone-01",
+        "africa-zone-02",
+        "africa-zone-03",
+        "africa-zone-04",
+        "africa-zone-05",
+        "africa-zone-06",
+        "africa-zone-07",
+        "africa-zone-08"
+      ],
+      "factionIds": [
+        "africa-faction-1",
+        "africa-faction-2",
+        "africa-faction-3"
+      ],
+      "climate": "equatorial, tropical, savanna, desert, mediterranean"
+    },
+    {
+      "id": "north-america",
+      "name": "North America",
+      "realm": "The Westreach",
+      "capital": "north-america-capital",
+      "zoneIds": [
+        "north-america-zone-01",
+        "north-america-zone-02",
+        "north-america-zone-03",
+        "north-america-zone-04",
+        "north-america-zone-05",
+        "north-america-zone-06",
+        "north-america-zone-07",
+        "north-america-zone-08"
+      ],
+      "factionIds": [
+        "north-america-faction-1",
+        "north-america-faction-2",
+        "north-america-faction-3"
+      ],
+      "climate": "arctic, temperate, subtropical, alpine, desert"
+    },
+    {
+      "id": "south-america",
+      "name": "South America",
+      "realm": "The Verdant Reach",
+      "capital": "south-america-capital",
+      "zoneIds": [
+        "south-america-zone-01",
+        "south-america-zone-02",
+        "south-america-zone-03",
+        "south-america-zone-04",
+        "south-america-zone-05",
+        "south-america-zone-06",
+        "south-america-zone-07",
+        "south-america-zone-08"
+      ],
+      "factionIds": [
+        "south-america-faction-1",
+        "south-america-faction-2",
+        "south-america-faction-3"
+      ],
+      "climate": "equatorial, tropical, highland, arid, temperate"
+    },
+    {
+      "id": "antarctica",
+      "name": "Antarctica",
+      "realm": "The Frostveil",
+      "capital": "antarctica-capital",
+      "zoneIds": [
+        "antarctica-zone-01",
+        "antarctica-zone-02",
+        "antarctica-zone-03",
+        "antarctica-zone-04",
+        "antarctica-zone-05",
+        "antarctica-zone-06",
+        "antarctica-zone-07",
+        "antarctica-zone-08"
+      ],
+      "factionIds": [
+        "antarctica-faction-1",
+        "antarctica-faction-2",
+        "antarctica-faction-3"
+      ],
+      "climate": "polar ice sheet, glaciers, subglacial caverns"
+    },
+    {
+      "id": "europe",
+      "name": "Europe",
+      "realm": "The Highcrown",
+      "capital": "europe-capital",
+      "zoneIds": [
+        "europe-zone-01",
+        "europe-zone-02",
+        "europe-zone-03",
+        "europe-zone-04",
+        "europe-zone-05",
+        "europe-zone-06",
+        "europe-zone-07",
+        "europe-zone-08"
+      ],
+      "factionIds": [
+        "europe-faction-1",
+        "europe-faction-2",
+        "europe-faction-3"
+      ],
+      "climate": "oceanic, continental, mediterranean, alpine, boreal"
+    },
+    {
+      "id": "australia",
+      "name": "Australia",
+      "realm": "The Australis Wilds",
+      "capital": "australia-capital",
+      "zoneIds": [
+        "australia-zone-01",
+        "australia-zone-02",
+        "australia-zone-03",
+        "australia-zone-04",
+        "australia-zone-05",
+        "australia-zone-06",
+        "australia-zone-07",
+        "australia-zone-08"
+      ],
+      "factionIds": [
+        "australia-faction-1",
+        "australia-faction-2",
+        "australia-faction-3"
+      ],
+      "climate": "arid, tropical, subtropical, temperate, marine"
+    }
+  ],
+  "oceans": [
+    {
+      "id": "pacific",
+      "name": "Pacific Ocean"
+    },
+    {
+      "id": "atlantic",
+      "name": "Atlantic Ocean"
+    },
+    {
+      "id": "indian",
+      "name": "Indian Ocean"
+    },
+    {
+      "id": "southern",
+      "name": "Southern Ocean"
+    },
+    {
+      "id": "arctic",
+      "name": "Arctic Ocean"
+    }
+  ],
+  "generation": {
+    "chunkSize": 32,
+    "activeChunkRadius": 2,
+    "prefetchChunkRadius": 3,
+    "worldSeed": "GBQ-SEVEN-CONTINENTS-001",
+    "deterministic": true,
+    "terrainLayers": [
+      "height",
+      "biome",
+      "water",
+      "roads",
+      "settlements",
+      "dungeons",
+      "resources",
+      "encounters",
+      "quest-markers",
+      "discovery-fog"
+    ]
+  },
+  "settlementDistribution": "Every zone has one regional city, two towns and three villages; each continent also has one capital. Antarctica is a fantasy expedition realm with sheltered ice settlements and subglacial enclaves."
+}
