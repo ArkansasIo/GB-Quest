@@ -1,0 +1,602 @@
+{
+  "id": "europe",
+  "name": "Europe",
+  "realm": "The Highcrown",
+  "capital": {
+    "id": "europe-capital",
+    "name": "Highcrown",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "europe-zone-01",
+      "name": "Kingsroad Heartlands",
+      "continentId": "europe",
+      "levelRange": [
+        101,
+        115
+      ],
+      "biomeId": "temperate_mixed_forest",
+      "subZones": [
+        {
+          "id": "europe-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_mixed_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_mixed_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_mixed_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_mixed_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-01-road-gate",
+        "europe-zone-01-caravan-post",
+        "europe-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-02",
+      "name": "Silverpine Marches",
+      "continentId": "europe",
+      "levelRange": [
+        106,
+        120
+      ],
+      "biomeId": "boreal_forest",
+      "subZones": [
+        {
+          "id": "europe-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "boreal_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "boreal_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "boreal_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "boreal_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-02-road-gate",
+        "europe-zone-02-caravan-post",
+        "europe-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-03",
+      "name": "Crown of Peaks",
+      "continentId": "europe",
+      "levelRange": [
+        111,
+        125
+      ],
+      "biomeId": "alpine",
+      "subZones": [
+        {
+          "id": "europe-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "alpine",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "alpine",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "alpine",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "alpine",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-03-road-gate",
+        "europe-zone-03-caravan-post",
+        "europe-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-04",
+      "name": "Violet Coast",
+      "continentId": "europe",
+      "levelRange": [
+        116,
+        130
+      ],
+      "biomeId": "mediterranean",
+      "subZones": [
+        {
+          "id": "europe-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "mediterranean",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "mediterranean",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "mediterranean",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "mediterranean",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-04-road-gate",
+        "europe-zone-04-caravan-post",
+        "europe-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-05",
+      "name": "Old Empire Vale",
+      "continentId": "europe",
+      "levelRange": [
+        121,
+        135
+      ],
+      "biomeId": "temperate_valley",
+      "subZones": [
+        {
+          "id": "europe-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_valley",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_valley",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_valley",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_valley",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-05-road-gate",
+        "europe-zone-05-caravan-post",
+        "europe-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-06",
+      "name": "Misty Moorlands",
+      "continentId": "europe",
+      "levelRange": [
+        126,
+        140
+      ],
+      "biomeId": "moorland",
+      "subZones": [
+        {
+          "id": "europe-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "moorland",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "moorland",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "moorland",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "moorland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-06-road-gate",
+        "europe-zone-06-caravan-post",
+        "europe-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-07",
+      "name": "Amber Riverlands",
+      "continentId": "europe",
+      "levelRange": [
+        131,
+        145
+      ],
+      "biomeId": "river_floodplain",
+      "subZones": [
+        {
+          "id": "europe-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "river_floodplain",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "river_floodplain",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "river_floodplain",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "river_floodplain",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-07-road-gate",
+        "europe-zone-07-caravan-post",
+        "europe-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "europe-zone-08",
+      "name": "Stormwall Isles",
+      "continentId": "europe",
+      "levelRange": [
+        136,
+        150
+      ],
+      "biomeId": "temperate_island",
+      "subZones": [
+        {
+          "id": "europe-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_island",
+          "encounterTier": 1
+        },
+        {
+          "id": "europe-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_island",
+          "encounterTier": 2
+        },
+        {
+          "id": "europe-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_island",
+          "encounterTier": 3
+        },
+        {
+          "id": "europe-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_island",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "europe-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "europe-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "europe-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "europe-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "europe-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "europe-zone-08-road-gate",
+        "europe-zone-08-caravan-post",
+        "europe-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "europe-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "europe-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "europe-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "europe-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "europe-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "europe-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "europe-isles-east",
+      "islands": 8
+    }
+  ]
+}
