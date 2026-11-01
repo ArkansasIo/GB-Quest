@@ -53,7 +53,7 @@ test("short and long rests recover only resources assigned to that trigger", () 
   assert.deepEqual(recoverClassResources(character, "long_rest").recovered, [
     { resourceId: "rage", amount: 2, remaining: 3 }
   ]);
-  assert.equal(character.classResources.oathCharge, undefined);
+  assert.equal(character.classResources["oath-charge"].remaining, 0, "manual resources are not restored by rests");
   assert.deepEqual(recoverClassResources(character, "manual"), {
     ok: false, reason: "invalid_recovery_trigger"
   });
