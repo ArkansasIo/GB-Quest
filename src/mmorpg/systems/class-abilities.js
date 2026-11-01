@@ -1,5 +1,11 @@
 import { validateClassAbility } from "../rules/class-ability-runtime.js";
 
+function deepFreeze(value) {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value)) deepFreeze(child);
+  return Object.freeze(value);
+}
+
 /**
  * Build an immutable lookup catalog from explicitly authored class ability data.
  * This module deliberately supplies no invented class feature records.
@@ -10,7 +16,7 @@ export function createClassAbilityCatalog(records = []) {
   for (const record of records) {
     validateClassAbility(record);
     if (byId.has(record.id)) throw new TypeError(`Duplicate class ability id: ${record.id}`);
-    byId.set(record.id, Object.freeze(structuredClone(record)));
+    byId.set(record.id, deepFreeze(structuredClone(record)));
   }
 
   return Object.freeze({
