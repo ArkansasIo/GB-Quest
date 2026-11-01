@@ -5,8 +5,8 @@ import {
   damageDurability, repairItem, getEquipmentCatalogSummary
 } from "../../src/mmorpg/systems/itemization.js";
 import { createAuctionHouse, listAuction, searchAuctions, buyAuction, cancelAuction } from "../../src/mmorpg/systems/auction-house.js";
-import { createInventory, countItem } from "../../src/mmorpg/systems/inventory.js";
-import { createMailbox, sendMail, readMail, claimMail } from "../../src/mmorpg/systems/mail.js";
+import { createInventory, addItem, countItem } from "../../src/mmorpg/systems/inventory.js";
+import { createMailbox, sendMail, readMail, claimMail, claimMailToCharacter } from "../../src/mmorpg/systems/mail.js";
 import { createCollections, collectAppearance, applyTransmog, collectMount } from "../../src/mmorpg/systems/collections.js";
 import { createDungeonFinder, queueForDungeon, formDungeonGroups } from "../../src/mmorpg/systems/dungeon-finder.js";
 import { WORLD_MAP_COUNT, getWorldMap, listWorldMaps, getWorldMapSummary, validateWorldMapAtlas } from "../../src/mmorpg/world/map-registry.js";
@@ -32,28 +32,75 @@ test("item instances support binding, durability and repair", () => {
   assert.equal(repairItem(item).durability, 100);
 });
 
-test("auction house lists, searches, sells and cancels listings", () => {
+test("auction escrow reserves seller stock, delivers purchases and refunds cancelled stock", () => {
   const house = createAuctionHouse();
   const item = createItemInstance("Potion of Healing");
-  const listed = listAuction(house, { sellerId: "seller", item, quantity: 2, unitPriceCopper: 5000, expiresAt: Date.now()+10000 });
+  const sellerInventory = createInventory();
+  const sellerWallet = { copper: 1000 };
+  addItem(sellerInventory, { id: item.templateId, ...item }, 3);
+  const listed = listAuction(house, {
+    sellerId: "seller", item, quantity: 2, unitPriceCopper: 5000,
+    expiresAt: Date.now() + 10000, sellerInventory, sellerWallet
+  });
   assert.equal(listed.ok, true);
+  assert.equal(countItem(sellerInventory, item.templateId), 1);
+  assert.equal(sellerWallet.copper, 800);
   assert.equal(searchAuctions(house, { query: "potion" }).length, 1);
-  const inventory = createInventory();
-  const result = buyAuction(house, listed.listing.id, "buyer", { copper: 20000 }, inventory);
+
+  const buyerInventory = createInventory();
+  const buyerWallet = { copper: 20000 };
+  const result = buyAuction(house, listed.listing.id, "buyer", buyerWallet, buyerInventory, Date.now(), sellerWallet);
   assert.equal(result.ok, true);
   assert.equal(result.sellerProceedsCopper, 9500);
-  assert.equal(countItem(inventory, item.templateId), 2);
-  const other = listAuction(house, { sellerId: "seller", item, quantity: 1, unitPriceCopper: 1000, expiresAt: Date.now()+10000 });
-  assert.equal(cancelAuction(house, other.listing.id, "seller").ok, true);
+  assert.equal(countItem(buyerInventory, item.templateId), 2);
+  assert.equal(buyerWallet.copper, 10000);
+  assert.equal(sellerWallet.copper, 10300);
+
+  const other = listAuction(house, {
+    sellerId: "seller", item, quantity: 1, unitPriceCopper: 1000,
+    expiresAt: Date.now() + 10000, sellerInventory, sellerWallet
+  });
+  assert.equal(other.ok, true);
+  assert.equal(cancelAuction(house, other.listing.id, "seller", sellerInventory).ok, true);
+  assert.equal(countItem(sellerInventory, item.templateId), 1);
 });
 
-test("mail supports delivery, reading and one-time attachment claims", () => {
+test("failed auction delivery does not charge the buyer or close the listing", () => {
+  const house = createAuctionHouse();
+  const item = createItemInstance("Potion of Healing");
+  const sellerInventory = createInventory();
+  addItem(sellerInventory, { id: item.templateId, ...item }, 1);
+  const listed = listAuction(house, { sellerId: "seller", item, quantity: 1, unitPriceCopper: 50, expiresAt: Date.now()+10000, sellerInventory, sellerWallet: { copper: 100 } });
+  const wallet = { copper: 100 };
+  const inventory = createInventory({ capacity: 0 });
+  const result = buyAuction(house, listed.listing.id, "buyer", wallet, inventory);
+  assert.equal(result.ok, false);
+  assert.equal(wallet.copper, 100);
+  assert.equal(listed.listing.state, "active");
+});
+
+test("mail supports delivery, reading, transactional one-time claims and retry after capacity failure", () => {
   const mailbox = createMailbox();
   const sent = sendMail(mailbox, { senderId: "a", recipientId: "b", attachments: [{ templateId: "gear:torch", quantity: 2 }], currencyCopper: 10 });
   assert.equal(sent.ok, true);
   assert.equal(readMail(mailbox, sent.message.id, "b").read, true);
-  assert.equal(claimMail(mailbox, sent.message.id, "b").currencyCopper, 10);
-  assert.equal(claimMail(mailbox, sent.message.id, "b").reason, "unavailable");
+
+  const inventory = createInventory({ capacity: 0 });
+  const wallet = { copper: 5 };
+  const failed = claimMailToCharacter(mailbox, sent.message.id, "b", inventory, wallet);
+  assert.equal(failed.ok, false);
+  assert.equal(wallet.copper, 5);
+  assert.equal(sent.message.claimed, false);
+
+  const workingInventory = createInventory();
+  const claimed = claimMailToCharacter(mailbox, sent.message.id, "b", workingInventory, wallet);
+  assert.equal(claimed.ok, true);
+  assert.equal(countItem(workingInventory, "gear:torch"), 2);
+  assert.equal(wallet.copper, 15);
+  assert.equal(claimMailToCharacter(mailbox, sent.message.id, "b", workingInventory, wallet).reason, "unavailable");
+
+  const legacy = sendMail(mailbox, { senderId: "a", recipientId: "c", currencyCopper: 10 });
+  assert.equal(claimMail(mailbox, legacy.message.id, "c").currencyCopper, 10);
 });
 
 test("collections track transmog appearances and mounts", () => {
