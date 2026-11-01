@@ -31,3 +31,18 @@ No proprietary World of Warcraft code, assets, quests or data are copied. D&D da
 
 ## Monster bestiary
 `src/mmorpg/data/monsters.json` contains the structured SRD 5.2.1 monster dataset. `systems/monsters.js` exposes lookup, search/filter, combatant creation, hit-point rolling, initiative, XP lookup and encounter composition. Monster trait/action text is retained as source data; complex abilities still require dedicated rule handlers before they can be resolved automatically by the combat engine. The dataset is attributed under CC BY 4.0 in `docs/SRD_ATTRIBUTION.md`.
+
+## D&D equipment and itemization
+- SRD weapon and armor catalogs, including weapon mastery metadata, damage dice, range, properties, armor class, stealth and Strength requirements.
+- Adventuring gear, tools, equipment packs, mounts, vehicles and magic-item catalog entries.
+- Item instances with rarity, item level, binding, durability and repair.
+- The catalog includes 38 weapons, 13 armor/shield entries, 67 adventuring gear entries, 31 tools, 7 equipment packs, 17 mounts/vehicles and 24 magic-item entries.
+
+## MMORPG service systems
+- Auction house listings, search, buy/cancel and expiry.
+- Character mail with attachment/currency claims and expiry.
+- Appearance/mount/title collections and transmog unlocks.
+- Role-based dungeon finder queue for tank/healer/damage compositions.
+- Map registry for the 90-map atlas.
+
+The MMO systems are original implementations inspired by common MMORPG design patterns. They do not use World of Warcraft source code, art, names, quest text or proprietary game data.
