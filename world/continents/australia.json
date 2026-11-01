@@ -1,0 +1,775 @@
+{
+  "id": "australia",
+  "name": "Australia",
+  "realm": "The Australis Wilds",
+  "capital": {
+    "id": "australia-capital",
+    "name": "Coralheart",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "australia-zone-01",
+      "name": "Redglass Outback",
+      "continentId": "australia",
+      "levelRange": [
+        121,
+        135
+      ],
+      "biomeId": "red_desert",
+      "subZones": [
+        {
+          "id": "australia-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "red_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "red_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "red_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "red_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-01-city",
+        "australia-zone-01-town-1",
+        "australia-zone-01-town-2",
+        "australia-zone-01-village-1",
+        "australia-zone-01-village-2",
+        "australia-zone-01-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-01-poi-1",
+          "name": "Forgotten Catacombs of Redglass Outback",
+          "type": "dungeon",
+          "level": 121,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-01-poi-2",
+          "name": "Ancient Watch of Redglass Outback",
+          "type": "ruins",
+          "level": 123,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-01-poi-3",
+          "name": "Skyfall Monument of Redglass Outback",
+          "type": "landmark",
+          "level": 125,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-01-poi-4",
+          "name": "Gatherer's Hollow of Redglass Outback",
+          "type": "resource_site",
+          "level": 127,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-01-poi-5",
+          "name": "Apex Den of Redglass Outback",
+          "type": "world_boss_lair",
+          "level": 129,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-01-road-gate",
+        "australia-zone-01-caravan-post",
+        "australia-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-02",
+      "name": "Coral Crown Reef",
+      "continentId": "australia",
+      "levelRange": [
+        126,
+        140
+      ],
+      "biomeId": "coral_reef",
+      "subZones": [
+        {
+          "id": "australia-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "coral_reef",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "coral_reef",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "coral_reef",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "coral_reef",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-02-city",
+        "australia-zone-02-town-1",
+        "australia-zone-02-town-2",
+        "australia-zone-02-village-1",
+        "australia-zone-02-village-2",
+        "australia-zone-02-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-02-poi-1",
+          "name": "Forgotten Catacombs of Coral Crown Reef",
+          "type": "dungeon",
+          "level": 126,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-02-poi-2",
+          "name": "Ancient Watch of Coral Crown Reef",
+          "type": "ruins",
+          "level": 128,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-02-poi-3",
+          "name": "Skyfall Monument of Coral Crown Reef",
+          "type": "landmark",
+          "level": 130,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-02-poi-4",
+          "name": "Gatherer's Hollow of Coral Crown Reef",
+          "type": "resource_site",
+          "level": 132,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-02-poi-5",
+          "name": "Apex Den of Coral Crown Reef",
+          "type": "world_boss_lair",
+          "level": 134,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-02-road-gate",
+        "australia-zone-02-caravan-post",
+        "australia-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-03",
+      "name": "Eucalyptus Kingdom",
+      "continentId": "australia",
+      "levelRange": [
+        131,
+        145
+      ],
+      "biomeId": "eucalyptus_woodland",
+      "subZones": [
+        {
+          "id": "australia-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-03-city",
+        "australia-zone-03-town-1",
+        "australia-zone-03-town-2",
+        "australia-zone-03-village-1",
+        "australia-zone-03-village-2",
+        "australia-zone-03-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-03-poi-1",
+          "name": "Forgotten Catacombs of Eucalyptus Kingdom",
+          "type": "dungeon",
+          "level": 131,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-03-poi-2",
+          "name": "Ancient Watch of Eucalyptus Kingdom",
+          "type": "ruins",
+          "level": 133,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-03-poi-3",
+          "name": "Skyfall Monument of Eucalyptus Kingdom",
+          "type": "landmark",
+          "level": 135,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-03-poi-4",
+          "name": "Gatherer's Hollow of Eucalyptus Kingdom",
+          "type": "resource_site",
+          "level": 137,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-03-poi-5",
+          "name": "Apex Den of Eucalyptus Kingdom",
+          "type": "world_boss_lair",
+          "level": 139,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-03-road-gate",
+        "australia-zone-03-caravan-post",
+        "australia-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-04",
+      "name": "Whispering Monsoon",
+      "continentId": "australia",
+      "levelRange": [
+        136,
+        150
+      ],
+      "biomeId": "tropical_savanna",
+      "subZones": [
+        {
+          "id": "australia-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-04-city",
+        "australia-zone-04-town-1",
+        "australia-zone-04-town-2",
+        "australia-zone-04-village-1",
+        "australia-zone-04-village-2",
+        "australia-zone-04-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-04-poi-1",
+          "name": "Forgotten Catacombs of Whispering Monsoon",
+          "type": "dungeon",
+          "level": 136,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-04-poi-2",
+          "name": "Ancient Watch of Whispering Monsoon",
+          "type": "ruins",
+          "level": 138,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-04-poi-3",
+          "name": "Skyfall Monument of Whispering Monsoon",
+          "type": "landmark",
+          "level": 140,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-04-poi-4",
+          "name": "Gatherer's Hollow of Whispering Monsoon",
+          "type": "resource_site",
+          "level": 142,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-04-poi-5",
+          "name": "Apex Den of Whispering Monsoon",
+          "type": "world_boss_lair",
+          "level": 144,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-04-road-gate",
+        "australia-zone-04-caravan-post",
+        "australia-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-05",
+      "name": "Spiral Stone Desert",
+      "continentId": "australia",
+      "levelRange": [
+        141,
+        155
+      ],
+      "biomeId": "rocky_desert",
+      "subZones": [
+        {
+          "id": "australia-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "rocky_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "rocky_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "rocky_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "rocky_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-05-city",
+        "australia-zone-05-town-1",
+        "australia-zone-05-town-2",
+        "australia-zone-05-village-1",
+        "australia-zone-05-village-2",
+        "australia-zone-05-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-05-poi-1",
+          "name": "Forgotten Catacombs of Spiral Stone Desert",
+          "type": "dungeon",
+          "level": 141,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-05-poi-2",
+          "name": "Ancient Watch of Spiral Stone Desert",
+          "type": "ruins",
+          "level": 143,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-05-poi-3",
+          "name": "Skyfall Monument of Spiral Stone Desert",
+          "type": "landmark",
+          "level": 145,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-05-poi-4",
+          "name": "Gatherer's Hollow of Spiral Stone Desert",
+          "type": "resource_site",
+          "level": 147,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-05-poi-5",
+          "name": "Apex Den of Spiral Stone Desert",
+          "type": "world_boss_lair",
+          "level": 149,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-05-road-gate",
+        "australia-zone-05-caravan-post",
+        "australia-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-06",
+      "name": "Great Southern Forest",
+      "continentId": "australia",
+      "levelRange": [
+        146,
+        160
+      ],
+      "biomeId": "temperate_forest",
+      "subZones": [
+        {
+          "id": "australia-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-06-city",
+        "australia-zone-06-town-1",
+        "australia-zone-06-town-2",
+        "australia-zone-06-village-1",
+        "australia-zone-06-village-2",
+        "australia-zone-06-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-06-poi-1",
+          "name": "Forgotten Catacombs of Great Southern Forest",
+          "type": "dungeon",
+          "level": 146,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-06-poi-2",
+          "name": "Ancient Watch of Great Southern Forest",
+          "type": "ruins",
+          "level": 148,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-06-poi-3",
+          "name": "Skyfall Monument of Great Southern Forest",
+          "type": "landmark",
+          "level": 150,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-06-poi-4",
+          "name": "Gatherer's Hollow of Great Southern Forest",
+          "type": "resource_site",
+          "level": 152,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-06-poi-5",
+          "name": "Apex Den of Great Southern Forest",
+          "type": "world_boss_lair",
+          "level": 154,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-06-road-gate",
+        "australia-zone-06-caravan-post",
+        "australia-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-07",
+      "name": "Sunken Blue Trench",
+      "continentId": "australia",
+      "levelRange": [
+        151,
+        165
+      ],
+      "biomeId": "deep_ocean",
+      "subZones": [
+        {
+          "id": "australia-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "deep_ocean",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "deep_ocean",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "deep_ocean",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "deep_ocean",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-07-city",
+        "australia-zone-07-town-1",
+        "australia-zone-07-town-2",
+        "australia-zone-07-village-1",
+        "australia-zone-07-village-2",
+        "australia-zone-07-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-07-poi-1",
+          "name": "Forgotten Catacombs of Sunken Blue Trench",
+          "type": "dungeon",
+          "level": 151,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-07-poi-2",
+          "name": "Ancient Watch of Sunken Blue Trench",
+          "type": "ruins",
+          "level": 153,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-07-poi-3",
+          "name": "Skyfall Monument of Sunken Blue Trench",
+          "type": "landmark",
+          "level": 155,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-07-poi-4",
+          "name": "Gatherer's Hollow of Sunken Blue Trench",
+          "type": "resource_site",
+          "level": 157,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-07-poi-5",
+          "name": "Apex Den of Sunken Blue Trench",
+          "type": "world_boss_lair",
+          "level": 159,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-07-road-gate",
+        "australia-zone-07-caravan-post",
+        "australia-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-08",
+      "name": "Stormbird Archipelago",
+      "continentId": "australia",
+      "levelRange": [
+        156,
+        170
+      ],
+      "biomeId": "tropical_island",
+      "subZones": [
+        {
+          "id": "australia-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_island",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_island",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_island",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_island",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "australia-zone-08-city",
+        "australia-zone-08-town-1",
+        "australia-zone-08-town-2",
+        "australia-zone-08-village-1",
+        "australia-zone-08-village-2",
+        "australia-zone-08-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-08-poi-1",
+          "name": "Forgotten Catacombs of Stormbird Archipelago",
+          "type": "dungeon",
+          "level": 156,
+          "repeatable": true
+        },
+        {
+          "id": "australia-zone-08-poi-2",
+          "name": "Ancient Watch of Stormbird Archipelago",
+          "type": "ruins",
+          "level": 158,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-08-poi-3",
+          "name": "Skyfall Monument of Stormbird Archipelago",
+          "type": "landmark",
+          "level": 160,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-08-poi-4",
+          "name": "Gatherer's Hollow of Stormbird Archipelago",
+          "type": "resource_site",
+          "level": 162,
+          "repeatable": false
+        },
+        {
+          "id": "australia-zone-08-poi-5",
+          "name": "Apex Den of Stormbird Archipelago",
+          "type": "world_boss_lair",
+          "level": 164,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-08-road-gate",
+        "australia-zone-08-caravan-post",
+        "australia-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "australia-faction-1",
+      "name": "River Trade Consortium",
+      "type": "kingdom",
+      "alignment": "lawful",
+      "homeContinent": "australia"
+    },
+    {
+      "id": "australia-faction-2",
+      "name": "Emberwatch Legion",
+      "type": "guild",
+      "alignment": "neutral",
+      "homeContinent": "australia"
+    },
+    {
+      "id": "australia-faction-3",
+      "name": "Keepers of the Seven Seals",
+      "type": "order",
+      "alignment": "chaotic",
+      "homeContinent": "australia"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "australia-raid-01",
+      "name": "The The Australis Wilds Citadel",
+      "type": "raid",
+      "partySize": 10,
+      "level": 210
+    },
+    {
+      "id": "australia-raid-02",
+      "name": "Vault of the Fallen Australia",
+      "type": "raid",
+      "partySize": 20,
+      "level": 290
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "australia-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "australia-isles-east",
+      "islands": 8
+    }
+  ]
+}

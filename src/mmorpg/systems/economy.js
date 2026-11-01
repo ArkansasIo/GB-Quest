@@ -1,0 +1,3 @@
+export function createWallet(copper=0){if(!Number.isSafeInteger(copper)||copper<0)throw new RangeError("Wallet uses non-negative copper integers");return {copper};}
+export function transferCurrency(from,to,amount){if(!Number.isSafeInteger(amount)||amount<=0)return {ok:false,reason:"invalid_amount"};if(from.copper<amount)return {ok:false,reason:"insufficient_funds"};from.copper-=amount;to.copper+=amount;return {ok:true,balance:from.copper};}
+export function quoteVendorPrice(item,quantity=1,repDiscount=0){if(!Number.isInteger(quantity)||quantity<1)throw new RangeError("Quantity must be positive");const factor=Math.max(0,1-repDiscount);return Math.ceil(item.priceCopper*quantity*factor);}

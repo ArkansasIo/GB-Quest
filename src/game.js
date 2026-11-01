@@ -9,7 +9,14 @@ ctx.imageSmoothingEnabled = false;
 
 // Palette sampled from the LCD screens on the sheet (0 = lightest, 3 = darkest)
 const LCD = [[160, 168, 104], [112, 124, 72], [60, 76, 42], [22, 32, 18]];
-const CSS = LCD.map(c => `rgb(${c[0]},${c[1]},${c[2]})`);
+let CSS = LCD.map(c => `rgb(${c[0]},${c[1]},${c[2]})`);
+const COLOR_PALETTES = {
+  lcd: LCD,
+  pocket: [[220,232,220],[150,190,160],[70,125,105],[20,55,55]],
+  sunset: [[255,224,174],[238,160,105],[150,75,90],[48,38,70]],
+  amber: [[255,239,190],[224,177,90],[145,95,45],[55,42,28]],
+  ocean: [[205,235,245],[112,183,207],[48,111,151],[22,45,82]],
+};
 
 // ============================================================ storage & settings
 const store = {
@@ -83,7 +90,7 @@ function spr(name, w, h, opt) {
   c = scaled(img, w, h);
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   let th = null;
-  if (S.palette === 'lcd') {
+  if (S.palette !== 'original') {
     const g = name.split('_')[0];
     th = GROUP_Q[g] ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
   }
@@ -92,7 +99,8 @@ function spr(name, w, h, opt) {
     d[i + 3] = 255;
     if (th) {
       const l = lum(d, i), k = l < th[0] ? 3 : l < th[1] ? 2 : l < th[2] ? 1 : 0;
-      d[i] = LCD[k][0]; d[i + 1] = LCD[k][1]; d[i + 2] = LCD[k][2];
+      const palette = COLOR_PALETTES[S.palette] || LCD;
+      d[i] = palette[k][0]; d[i + 1] = palette[k][1]; d[i + 2] = palette[k][2];
     }
   }
   x.putImageData(id, 0, 0);
@@ -110,6 +118,12 @@ function blit(c, x, y) { if (c) ctx.drawImage(c, Math.round(x), Math.round(y)); 
 
 // ============================================================ text & UI
 const fontC = {};
+function applyPalette() {
+  const p = COLOR_PALETTES[S.palette] || LCD;
+  CSS = p.map(c => `rgb(${c[0]},${c[1]},${c[2]})`);
+  cache.clear();
+  for (const k of Object.keys(fontC)) delete fontC[k];
+}
 function font(col) {
   if (!fontC[col]) {
     const im = IMG.font_6x9, c = canvas(im.width, im.height), x = c.getContext('2d');
@@ -381,7 +395,7 @@ class Title {
   constructor() { this.opaque = true; this.t = 0; this.menu = false; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { return hasSave() ? ['CONTINUE', 'NEW GAME'] : ['NEW GAME']; }
+  opts() { return hasSave() ? ['CONTINUE', 'CAMPAIGN', 'MULTIPLAYER', 'NEW GAME'] : ['CAMPAIGN', 'MULTIPLAYER', 'NEW GAME']; }
   update() {
     this.t++;
     if (!this.menu) { if (P('start') || P('a')) { SFX.sel(); this.menu = true; this.i = 0; } return; }
@@ -391,10 +405,11 @@ class Title {
     if (P('a') || P('start')) {
       SFX.sel();
       const choice = o[this.i];
+      if (choice === 'MULTIPLAYER') { push(new MultiplayerInfo()); return; }
       if (choice === 'CONTINUE') loadGame(); else newGame();
       push(new Fade(() => {
         reset(new Field());
-        if (choice === 'NEW GAME') say(['You wake outside the castle. The village OLD MAN wanted to see you...', 'START: menu   A: talk/check']);
+        if (choice !== 'CONTINUE') say(['THE SHATTERED CROWN: ACT I', 'You wake outside the castle. The village OLD MAN wanted to see you...', 'START: menu   A: talk/check']);
       }));
     }
   }
@@ -416,7 +431,24 @@ class Title {
   }
 }
 
-// ============================================================ FIELD
+
+// ------------------------------------------------------------ multiplayer status screen
+class MultiplayerInfo {
+  constructor() { this.opaque = true; }
+  update() { if (P('a') || P('b') || P('start')) { SFX.back(); pop(); } }
+  draw() {
+    fill(0,0,W,H,0); header(); frame(3,14,154,127);
+    textC('MULTIPLAYER',80,22,3);
+    textC('ONLINE SERVICE',80,42,2);
+    textC('NOT CONNECTED',80,54,3);
+    text('PARTY CO-OP: 1-5',10,76,3);
+    text('RAIDS: UP TO 20',10,89,3);
+    text('GUILDS / CHAT / QUESTS',10,102,3);
+    text('SERVER SETUP REQUIRED',10,118,2);
+    textC('A/B: BACK',80,132,3);
+  }
+}
+\n// ============================================================ FIELD
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const HERO_F = { down: [0, 3], up: [3, 0], left: [5, 1], right: [4, 2] };
 const NPCS = [
@@ -788,7 +820,7 @@ class Settings {
     if (r === 'MUSIC') S.music = !S.music;
     if (r === 'BRIGHTNESS') S.bright = clamp(S.bright + (d === 2 ? 1 : d));
     if (r === 'CONTRAST') S.contrast = clamp(S.contrast + (d === 2 ? 1 : d));
-    if (r === 'PALETTE') { S.palette = S.palette === 'lcd' ? 'color' : 'lcd'; cache.clear(); }
+    if (r === 'PALETTE') { const modes = ['lcd', 'pocket', 'sunset', 'amber', 'ocean', 'original']; S.palette = modes[(modes.indexOf(S.palette) + 1) % modes.length]; applyPalette(); }
     if (r === 'BUTTON MODE') S.swap = !S.swap;
     if (r === 'RESET SAVE DATA') {
       if (d !== 2) return;
@@ -800,7 +832,7 @@ class Settings {
   draw() {
     fill(0, 0, W, H, 0); header();
     frame(3, 14, 154, 127);
-    const val = [S.vol, S.music ? 'ON' : 'OFF', S.bright, S.contrast, S.palette === 'lcd' ? 'LCD' : 'COLOR', S.swap ? 'B' : 'A'];
+    const val = [S.vol, S.music ? 'ON' : 'OFF', S.bright, S.contrast, ({lcd:'DMG',pocket:'POCKET',sunset:'SUNSET',amber:'AMBER',ocean:'OCEAN',original:'ORIGINAL'})[S.palette] || 'DMG', S.swap ? 'B' : 'A'];
     this.rows.forEach((r, i) => {
       const y = 20 + i * 15;
       if (i === 6) { fill(7, y - 3, 146, 15, 3); fill(8, y - 2, 144, 13, i === this.i ? 1 : 0); text(r, 12, y + 1); return; }
@@ -1065,10 +1097,11 @@ function loop(t) {
   render();
 }
 // debug/test hooks
-window.GBQ = { get G() { return G; }, scenes, push, pop, reset, startBattle, Title, Field, MainMenu, Inventory, Status, Equip, Quests, MapScreen, Settings, Battle, LevelUp, Ending, bDown, bUp, tick, render, S, cache };
+window.GBQ = { get G() { return G; }, scenes, push, pop, reset, startBattle, Title, Field, MainMenu, Inventory, Status, Equip, Quests, MapScreen, Settings, MultiplayerInfo, Battle, LevelUp, Ending, bDown, bUp, tick, render, S, cache };
 
 function start(data) {
   loadAssets().then(() => {
+    applyPalette();
     document.body.classList.add('ready');
     if (data && data.G) { newGame(); Object.assign(G, data.G); reset(new Field()); } // resume after a live page update
     else reset(new Title());

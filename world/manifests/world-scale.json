@@ -1,0 +1,1519 @@
+{
+  "worldId": "gbquest-azeroth-scale-original-world",
+  "style": "8-bit top-down fantasy",
+  "tileSizePixels": 16,
+  "worldDimensionsTiles": [
+    2048,
+    5120
+  ],
+  "worldDimensionsPixels": [
+    32768,
+    81920
+  ],
+  "continentGrid": [
+    2,
+    2
+  ],
+  "continentCount": 4,
+  "zonesPerContinent": 10,
+  "zoneCount": 40,
+  "zoneDimensionsTiles": [
+    512,
+    512
+  ],
+  "chunkSizeTiles": 32,
+  "chunksPerZone": [
+    16,
+    16
+  ],
+  "totalChunks": 10240,
+  "logicalViewportPixels": [
+    160,
+    144
+  ],
+  "zoomLevels": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8
+  ],
+  "rendering": {
+    "filter": "nearest",
+    "integerScaling": true,
+    "streaming": "chunk-based",
+    "loadRadiusChunks": 3,
+    "unloadRadiusChunks": 5,
+    "collisionAuthority": "server"
+  },
+  "worldFeatures": [
+    "capital_cities",
+    "villages",
+    "roads",
+    "rivers",
+    "mountains",
+    "forests",
+    "deserts",
+    "swamps",
+    "coasts",
+    "islands",
+    "dungeons",
+    "raid_instances",
+    "battlefields",
+    "world_boss_arenas",
+    "flight_and_boat_routes"
+  ],
+  "continentNames": [
+    "westreach",
+    "highcrown",
+    "sunscar",
+    "umbraldeep"
+  ],
+  "zones": [
+    {
+      "id": "westreach-01",
+      "name": "Greenreach",
+      "continentId": "westreach",
+      "levelRange": [
+        1,
+        36
+      ],
+      "biome": "temperate_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-001",
+        "world-boss-041",
+        "world-boss-081",
+        "world-boss-121",
+        "world-boss-161",
+        "world-boss-201",
+        "world-boss-241",
+        "world-boss-281",
+        "arc-boss-27"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-02",
+      "name": "Mosswood",
+      "continentId": "westreach",
+      "levelRange": [
+        19,
+        54
+      ],
+      "biome": "ancient_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-024",
+        "world-boss-064",
+        "world-boss-104",
+        "world-boss-144",
+        "world-boss-184",
+        "world-boss-224",
+        "world-boss-264",
+        "arc-boss-14"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-03",
+      "name": "Kingsfall",
+      "continentId": "westreach",
+      "levelRange": [
+        37,
+        72
+      ],
+      "biome": "highland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-007",
+        "world-boss-047",
+        "world-boss-087",
+        "world-boss-127",
+        "world-boss-167",
+        "world-boss-207",
+        "world-boss-247",
+        "world-boss-287",
+        "arc-boss-01",
+        "arc-boss-41"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-04",
+      "name": "Silverfen",
+      "continentId": "westreach",
+      "levelRange": [
+        55,
+        90
+      ],
+      "biome": "alpine",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-030",
+        "world-boss-070",
+        "world-boss-110",
+        "world-boss-150",
+        "world-boss-190",
+        "world-boss-230",
+        "world-boss-270",
+        "arc-boss-28"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-05",
+      "name": "Oldbarrow",
+      "continentId": "westreach",
+      "levelRange": [
+        73,
+        108
+      ],
+      "biome": "tundra",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-013",
+        "world-boss-053",
+        "world-boss-093",
+        "world-boss-133",
+        "world-boss-173",
+        "world-boss-213",
+        "world-boss-253",
+        "world-boss-293",
+        "arc-boss-15"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-06",
+      "name": "Dawnfield",
+      "continentId": "westreach",
+      "levelRange": [
+        91,
+        126
+      ],
+      "biome": "glacier",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-036",
+        "world-boss-076",
+        "world-boss-116",
+        "world-boss-156",
+        "world-boss-196",
+        "world-boss-236",
+        "world-boss-276",
+        "arc-boss-02",
+        "arc-boss-42"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-07",
+      "name": "Thornhollow",
+      "continentId": "westreach",
+      "levelRange": [
+        109,
+        144
+      ],
+      "biome": "desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-019",
+        "world-boss-059",
+        "world-boss-099",
+        "world-boss-139",
+        "world-boss-179",
+        "world-boss-219",
+        "world-boss-259",
+        "world-boss-299",
+        "arc-boss-29"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-08",
+      "name": "Westwatch",
+      "continentId": "westreach",
+      "levelRange": [
+        127,
+        162
+      ],
+      "biome": "badlands",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-002",
+        "world-boss-042",
+        "world-boss-082",
+        "world-boss-122",
+        "world-boss-162",
+        "world-boss-202",
+        "world-boss-242",
+        "world-boss-282",
+        "arc-boss-16"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-09",
+      "name": "Mirelight",
+      "continentId": "westreach",
+      "levelRange": [
+        145,
+        180
+      ],
+      "biome": "volcanic",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-025",
+        "world-boss-065",
+        "world-boss-105",
+        "world-boss-145",
+        "world-boss-185",
+        "world-boss-225",
+        "world-boss-265",
+        "arc-boss-03",
+        "arc-boss-43"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "westreach-10",
+      "name": "Greyhaven",
+      "continentId": "westreach",
+      "levelRange": [
+        163,
+        198
+      ],
+      "biome": "swamp",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-008",
+        "world-boss-048",
+        "world-boss-088",
+        "world-boss-128",
+        "world-boss-168",
+        "world-boss-208",
+        "world-boss-248",
+        "world-boss-288",
+        "arc-boss-30"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-01",
+      "name": "Frostmere",
+      "continentId": "highcrown",
+      "levelRange": [
+        181,
+        216
+      ],
+      "biome": "glacier",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-031",
+        "world-boss-071",
+        "world-boss-111",
+        "world-boss-151",
+        "world-boss-191",
+        "world-boss-231",
+        "world-boss-271",
+        "arc-boss-17"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-02",
+      "name": "Stonepeak",
+      "continentId": "highcrown",
+      "levelRange": [
+        199,
+        234
+      ],
+      "biome": "desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-014",
+        "world-boss-054",
+        "world-boss-094",
+        "world-boss-134",
+        "world-boss-174",
+        "world-boss-214",
+        "world-boss-254",
+        "world-boss-294",
+        "arc-boss-04",
+        "arc-boss-44"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-03",
+      "name": "Rimewatch",
+      "continentId": "highcrown",
+      "levelRange": [
+        217,
+        252
+      ],
+      "biome": "badlands",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-037",
+        "world-boss-077",
+        "world-boss-117",
+        "world-boss-157",
+        "world-boss-197",
+        "world-boss-237",
+        "world-boss-277",
+        "arc-boss-31"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-04",
+      "name": "Whitevale",
+      "continentId": "highcrown",
+      "levelRange": [
+        235,
+        270
+      ],
+      "biome": "volcanic",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-020",
+        "world-boss-060",
+        "world-boss-100",
+        "world-boss-140",
+        "world-boss-180",
+        "world-boss-220",
+        "world-boss-260",
+        "world-boss-300",
+        "arc-boss-18"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-05",
+      "name": "Giantstep",
+      "continentId": "highcrown",
+      "levelRange": [
+        253,
+        288
+      ],
+      "biome": "swamp",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-003",
+        "world-boss-043",
+        "world-boss-083",
+        "world-boss-123",
+        "world-boss-163",
+        "world-boss-203",
+        "world-boss-243",
+        "world-boss-283",
+        "arc-boss-05",
+        "arc-boss-45"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-06",
+      "name": "Skyrend",
+      "continentId": "highcrown",
+      "levelRange": [
+        271,
+        306
+      ],
+      "biome": "haunted_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-026",
+        "world-boss-066",
+        "world-boss-106",
+        "world-boss-146",
+        "world-boss-186",
+        "world-boss-226",
+        "world-boss-266",
+        "arc-boss-32"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-07",
+      "name": "Glacierfall",
+      "continentId": "highcrown",
+      "levelRange": [
+        289,
+        324
+      ],
+      "biome": "coastal",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-009",
+        "world-boss-049",
+        "world-boss-089",
+        "world-boss-129",
+        "world-boss-169",
+        "world-boss-209",
+        "world-boss-249",
+        "world-boss-289",
+        "arc-boss-19"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-08",
+      "name": "Ironpass",
+      "continentId": "highcrown",
+      "levelRange": [
+        307,
+        342
+      ],
+      "biome": "archipelago",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-032",
+        "world-boss-072",
+        "world-boss-112",
+        "world-boss-152",
+        "world-boss-192",
+        "world-boss-232",
+        "world-boss-272",
+        "arc-boss-06",
+        "arc-boss-46"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-09",
+      "name": "Northgale",
+      "continentId": "highcrown",
+      "levelRange": [
+        325,
+        360
+      ],
+      "biome": "savanna",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-015",
+        "world-boss-055",
+        "world-boss-095",
+        "world-boss-135",
+        "world-boss-175",
+        "world-boss-215",
+        "world-boss-255",
+        "world-boss-295",
+        "arc-boss-33"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "highcrown-10",
+      "name": "Coldspire",
+      "continentId": "highcrown",
+      "levelRange": [
+        343,
+        378
+      ],
+      "biome": "jungle",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-038",
+        "world-boss-078",
+        "world-boss-118",
+        "world-boss-158",
+        "world-boss-198",
+        "world-boss-238",
+        "world-boss-278",
+        "arc-boss-20"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-01",
+      "name": "Redwaste",
+      "continentId": "sunscar",
+      "levelRange": [
+        361,
+        396
+      ],
+      "biome": "haunted_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-021",
+        "world-boss-061",
+        "world-boss-101",
+        "world-boss-141",
+        "world-boss-181",
+        "world-boss-221",
+        "world-boss-261",
+        "arc-boss-07",
+        "arc-boss-47"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-02",
+      "name": "Saffron Reach",
+      "continentId": "sunscar",
+      "levelRange": [
+        379,
+        414
+      ],
+      "biome": "coastal",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-004",
+        "world-boss-044",
+        "world-boss-084",
+        "world-boss-124",
+        "world-boss-164",
+        "world-boss-204",
+        "world-boss-244",
+        "world-boss-284",
+        "arc-boss-34"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-03",
+      "name": "Glass Dunes",
+      "continentId": "sunscar",
+      "levelRange": [
+        397,
+        432
+      ],
+      "biome": "archipelago",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-027",
+        "world-boss-067",
+        "world-boss-107",
+        "world-boss-147",
+        "world-boss-187",
+        "world-boss-227",
+        "world-boss-267",
+        "arc-boss-21"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-04",
+      "name": "Ember Basin",
+      "continentId": "sunscar",
+      "levelRange": [
+        415,
+        450
+      ],
+      "biome": "savanna",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-010",
+        "world-boss-050",
+        "world-boss-090",
+        "world-boss-130",
+        "world-boss-170",
+        "world-boss-210",
+        "world-boss-250",
+        "world-boss-290",
+        "arc-boss-08",
+        "arc-boss-48"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-05",
+      "name": "Dustgrave",
+      "continentId": "sunscar",
+      "levelRange": [
+        433,
+        468
+      ],
+      "biome": "jungle",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-033",
+        "world-boss-073",
+        "world-boss-113",
+        "world-boss-153",
+        "world-boss-193",
+        "world-boss-233",
+        "world-boss-273",
+        "arc-boss-35"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-06",
+      "name": "Mirage Coast",
+      "continentId": "sunscar",
+      "levelRange": [
+        451,
+        486
+      ],
+      "biome": "underdark",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-016",
+        "world-boss-056",
+        "world-boss-096",
+        "world-boss-136",
+        "world-boss-176",
+        "world-boss-216",
+        "world-boss-256",
+        "world-boss-296",
+        "arc-boss-22"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-07",
+      "name": "Scorpion March",
+      "continentId": "sunscar",
+      "levelRange": [
+        469,
+        504
+      ],
+      "biome": "crystal_caverns",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-039",
+        "world-boss-079",
+        "world-boss-119",
+        "world-boss-159",
+        "world-boss-199",
+        "world-boss-239",
+        "world-boss-279",
+        "arc-boss-09",
+        "arc-boss-49"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-08",
+      "name": "Salt Crown",
+      "continentId": "sunscar",
+      "levelRange": [
+        487,
+        522
+      ],
+      "biome": "ashen_wastes",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-022",
+        "world-boss-062",
+        "world-boss-102",
+        "world-boss-142",
+        "world-boss-182",
+        "world-boss-222",
+        "world-boss-262",
+        "arc-boss-36"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-09",
+      "name": "Sunken Wells",
+      "continentId": "sunscar",
+      "levelRange": [
+        505,
+        540
+      ],
+      "biome": "enchanted_grove",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-005",
+        "world-boss-045",
+        "world-boss-085",
+        "world-boss-125",
+        "world-boss-165",
+        "world-boss-205",
+        "world-boss-245",
+        "world-boss-285",
+        "arc-boss-23"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "sunscar-10",
+      "name": "Ash Caravan",
+      "continentId": "sunscar",
+      "levelRange": [
+        523,
+        558
+      ],
+      "biome": "shadow_marsh",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-028",
+        "world-boss-068",
+        "world-boss-108",
+        "world-boss-148",
+        "world-boss-188",
+        "world-boss-228",
+        "world-boss-268",
+        "arc-boss-10",
+        "arc-boss-50"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-01",
+      "name": "Nightfen",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        541,
+        576
+      ],
+      "biome": "underdark",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-011",
+        "world-boss-051",
+        "world-boss-091",
+        "world-boss-131",
+        "world-boss-171",
+        "world-boss-211",
+        "world-boss-251",
+        "world-boss-291",
+        "arc-boss-37"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-02",
+      "name": "Blackroot",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        559,
+        594
+      ],
+      "biome": "crystal_caverns",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-034",
+        "world-boss-074",
+        "world-boss-114",
+        "world-boss-154",
+        "world-boss-194",
+        "world-boss-234",
+        "world-boss-274",
+        "arc-boss-24"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-03",
+      "name": "Witchlight",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        577,
+        612
+      ],
+      "biome": "ashen_wastes",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-017",
+        "world-boss-057",
+        "world-boss-097",
+        "world-boss-137",
+        "world-boss-177",
+        "world-boss-217",
+        "world-boss-257",
+        "world-boss-297",
+        "arc-boss-11"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-04",
+      "name": "Gravesong",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        595,
+        630
+      ],
+      "biome": "enchanted_grove",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-040",
+        "world-boss-080",
+        "world-boss-120",
+        "world-boss-160",
+        "world-boss-200",
+        "world-boss-240",
+        "world-boss-280",
+        "arc-boss-38"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-05",
+      "name": "Duskmire",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        613,
+        648
+      ],
+      "biome": "shadow_marsh",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-023",
+        "world-boss-063",
+        "world-boss-103",
+        "world-boss-143",
+        "world-boss-183",
+        "world-boss-223",
+        "world-boss-263",
+        "arc-boss-25"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-06",
+      "name": "Hollowmere",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        631,
+        666
+      ],
+      "biome": "temperate_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-006",
+        "world-boss-046",
+        "world-boss-086",
+        "world-boss-126",
+        "world-boss-166",
+        "world-boss-206",
+        "world-boss-246",
+        "world-boss-286",
+        "arc-boss-12"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-07",
+      "name": "Ravenmoor",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        649,
+        684
+      ],
+      "biome": "ancient_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.26,
+      "bossIds": [
+        "world-boss-029",
+        "world-boss-069",
+        "world-boss-109",
+        "world-boss-149",
+        "world-boss-189",
+        "world-boss-229",
+        "world-boss-269",
+        "arc-boss-39"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-08",
+      "name": "Veilwood",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        667,
+        702
+      ],
+      "biome": "highland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.3,
+      "bossIds": [
+        "world-boss-012",
+        "world-boss-052",
+        "world-boss-092",
+        "world-boss-132",
+        "world-boss-172",
+        "world-boss-212",
+        "world-boss-252",
+        "world-boss-292",
+        "arc-boss-26"
+      ],
+      "poiBudget": {
+        "settlements": 3,
+        "dungeons": 2,
+        "raids": 1
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-09",
+      "name": "Cryptfall",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        685,
+        720
+      ],
+      "biome": "alpine",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.18,
+      "bossIds": [
+        "world-boss-035",
+        "world-boss-075",
+        "world-boss-115",
+        "world-boss-155",
+        "world-boss-195",
+        "world-boss-235",
+        "world-boss-275",
+        "arc-boss-13"
+      ],
+      "poiBudget": {
+        "settlements": 4,
+        "dungeons": 1,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    },
+    {
+      "id": "umbraldeep-10",
+      "name": "Dreadwater",
+      "continentId": "umbraldeep",
+      "levelRange": [
+        703,
+        720
+      ],
+      "biome": "tundra",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "spawnDensity": 0.22,
+      "bossIds": [
+        "world-boss-018",
+        "world-boss-058",
+        "world-boss-098",
+        "world-boss-138",
+        "world-boss-178",
+        "world-boss-218",
+        "world-boss-258",
+        "world-boss-298",
+        "arc-boss-40"
+      ],
+      "poiBudget": {
+        "settlements": 2,
+        "dungeons": 2,
+        "raids": 0
+      },
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      }
+    }
+  ],
+  "zoneGrid": [
+    4,
+    10
+  ],
+  "continentLayout": {
+    "zonesPerContinent": [
+      2,
+      5
+    ],
+    "arrangement": [
+      2,
+      2
+    ]
+  }
+}

@@ -1,0 +1,1757 @@
+{
+  "rulesetReference": "D&D 5e creature type taxonomy; SRD-compatible implementation target",
+  "creatureTypes": [
+    "aberration",
+    "beast",
+    "celestial",
+    "construct",
+    "dragon",
+    "elemental",
+    "fey",
+    "fiend",
+    "giant",
+    "humanoid",
+    "monstrosity",
+    "ooze",
+    "plant",
+    "undead"
+  ],
+  "monsterClasses": [
+    {
+      "id": "brute",
+      "role": "heavy melee attacker",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "skirmisher",
+      "role": "mobile flanker",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "artillery",
+      "role": "long-range damage dealer",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "controller",
+      "role": "area denial and crowd control",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "lurker",
+      "role": "ambush and stealth specialist",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "role": "healer or buffer",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "leader",
+      "role": "commands allied units",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "guardian",
+      "role": "protects an objective or ally",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "hexer",
+      "role": "curse and debuff specialist",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "summoner",
+      "role": "calls reinforcements",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "destroyer",
+      "role": "siege and structure breaker",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "stalker",
+      "role": "tracks and pursues targets",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "duelist",
+      "role": "single-target champion",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "swarm",
+      "role": "many-unit pressure",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "colossus",
+      "role": "large slow encounter boss",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "trickster",
+      "role": "illusions and misdirection",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "shaper",
+      "role": "terrain and elemental manipulation",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "necromancer",
+      "role": "undead commander",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "champion",
+      "role": "elite faction combatant",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    },
+    {
+      "id": "devourer",
+      "role": "consumes resources or players",
+      "subclasses": [
+        {
+          "id": "ancient",
+          "description": "elder and high durability"
+        },
+        {
+          "id": "frostbound",
+          "description": "cold and slow effects"
+        },
+        {
+          "id": "emberforged",
+          "description": "fire and burn effects"
+        },
+        {
+          "id": "stormtouched",
+          "description": "lightning and displacement"
+        },
+        {
+          "id": "voidmarked",
+          "description": "psychic and spatial effects"
+        },
+        {
+          "id": "venomous",
+          "description": "poison and damage over time"
+        },
+        {
+          "id": "bloodsworn",
+          "description": "wounds and lifesteal"
+        },
+        {
+          "id": "ironhide",
+          "description": "armor and mitigation"
+        },
+        {
+          "id": "graveborn",
+          "description": "necrotic and resurrection"
+        },
+        {
+          "id": "wildheart",
+          "description": "beast and nature synergy"
+        },
+        {
+          "id": "riftwalker",
+          "description": "teleport and portals"
+        },
+        {
+          "id": "sunblessed",
+          "description": "radiant and healing"
+        },
+        {
+          "id": "moonshadow",
+          "description": "stealth and darkness"
+        },
+        {
+          "id": "crystalbound",
+          "description": "reflective shields"
+        },
+        {
+          "id": "plague-carrier",
+          "description": "disease and area hazards"
+        },
+        {
+          "id": "dreamweaver",
+          "description": "sleep and illusion"
+        },
+        {
+          "id": "stoneheart",
+          "description": "earth and knockback"
+        },
+        {
+          "id": "soulflayer",
+          "description": "fear and soul drain"
+        },
+        {
+          "id": "tidecaller",
+          "description": "water and pull effects"
+        },
+        {
+          "id": "thorncrowned",
+          "description": "roots and entanglement"
+        }
+      ]
+    }
+  ],
+  "combatRoles": [
+    "solo",
+    "pack",
+    "elite",
+    "champion",
+    "world_boss",
+    "arc_boss",
+    "raid_add",
+    "raid_guardian"
+  ],
+  "scaling": {
+    "minimumLevel": 1,
+    "maximumLevel": 720,
+    "scaleByZoneBracket": true,
+    "retainD20BoundedAccuracy": true
+  }
+}
