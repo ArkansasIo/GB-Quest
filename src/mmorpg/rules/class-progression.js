@@ -50,6 +50,10 @@ export function advanceClassLevel(characterState, classDefinition, progression, 
     throw new RangeError(`No progression row is defined for ${classDefinition.id} level ${targetLevel}`);
   }
 
+  if (progression.subclass && targetLevel > progression.subclass.unlockLevel && !character.subclassId) {
+    throw new Error("A subclass choice is required before advancing beyond its unlock level");
+  }
+
   character.classId = classDefinition.id;
   character.classLevel = targetLevel;
   character.level = targetLevel;
@@ -70,7 +74,6 @@ export function advanceClassLevel(characterState, classDefinition, progression, 
           choices: (subclass.options ?? []).map(({ id, name }) => ({ id, name }))
         };
       }
-      throw new Error("A subclass choice is required before advancing beyond its unlock level");
     }
     const option = (subclass.options ?? []).find(item => item.id === character.subclassId);
     if (!option) throw new RangeError("Selected subclass is not valid for this class");
@@ -88,6 +91,7 @@ export function chooseSubclass(characterState, progression, subclassId) {
     throw new TypeError("Subclass options are not defined");
   }
   const level = character.classLevel ?? character.level ?? 1;
+  if (character.classId && progression.classId && character.classId !== progression.classId) throw new TypeError("Subclass progression does not match character class");
   if (level < progression.subclass.unlockLevel) throw new RangeError("Subclass choice is not unlocked yet");
   if (character.subclassId) throw new Error("A subclass has already been selected");
   const option = progression.subclass.options.find(item => item.id === subclassId);
