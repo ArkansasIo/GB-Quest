@@ -10,6 +10,7 @@ import { createMailbox, sendMail, readMail, claimMail, claimMailToCharacter } fr
 import { createCollections, collectAppearance, applyTransmog, collectMount } from "../../src/mmorpg/systems/collections.js";
 import { createDungeonFinder, queueForDungeon, formDungeonGroups } from "../../src/mmorpg/systems/dungeon-finder.js";
 import { WORLD_MAP_COUNT, getWorldMap, listWorldMaps, getWorldMapSummary, validateWorldMapAtlas } from "../../src/mmorpg/world/map-registry.js";
+import { generateMapChunk, getMapChunkBounds } from "../../src/mmorpg/world/map-generator.js";
 
 test("equipment catalog includes weapons, armor, gear, tools, packs, mounts and magic items", () => {
   const summary = getEquipmentCatalogSummary();
@@ -132,4 +133,17 @@ test("world atlas contains exactly 90 unique maps across overworld, dungeon and 
   assert.ok(getWorldMap("map-asia-zone-01"));
   assert.equal(listWorldMaps({ kind: "raid" }).length, 14);
   assert.equal(listWorldMaps({ continentId: "europe" }).length, 10);
+});
+
+test("procedural map chunks are deterministic, bounded and expose terrain layers", () => {
+  const first = generateMapChunk("map-asia-zone-01", 0, 0);
+  const again = generateMapChunk("map-asia-zone-01", 0, 0);
+  assert.equal(first.ok, true);
+  assert.deepEqual(first.layers, again.layers);
+  assert.equal(first.chunk.width, 32);
+  assert.equal(first.chunk.height, 32);
+  assert.equal(first.layers.terrain.length, 1024);
+  assert.ok(first.layers.terrain.every(tile => Number.isInteger(tile) && tile >= 0 && tile <= 7));
+  assert.equal(generateMapChunk("map-asia-zone-01", 99, 0).reason, "chunk_out_of_bounds");
+  assert.deepEqual(getMapChunkBounds("map-asia-zone-01"), { columns: 16, rows: 16, chunkSize: 32 });
 });
