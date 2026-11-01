@@ -1,0 +1,602 @@
+{
+  "id": "asia",
+  "name": "Asia",
+  "realm": "The Eastern Crown",
+  "capital": {
+    "id": "asia-capital",
+    "name": "Aurelion",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "asia-zone-01",
+      "name": "Jadewind Basin",
+      "continentId": "asia",
+      "levelRange": [
+        1,
+        15
+      ],
+      "biomeId": "temperate_forest",
+      "subZones": [
+        {
+          "id": "asia-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-01-road-gate",
+        "asia-zone-01-caravan-post",
+        "asia-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-02",
+      "name": "Dragonspine Range",
+      "continentId": "asia",
+      "levelRange": [
+        6,
+        20
+      ],
+      "biomeId": "alpine",
+      "subZones": [
+        {
+          "id": "asia-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "alpine",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "alpine",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "alpine",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "alpine",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-02-road-gate",
+        "asia-zone-02-caravan-post",
+        "asia-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-03",
+      "name": "Saffron Coast",
+      "continentId": "asia",
+      "levelRange": [
+        11,
+        25
+      ],
+      "biomeId": "tropical_monsoon_forest",
+      "subZones": [
+        {
+          "id": "asia-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-03-road-gate",
+        "asia-zone-03-caravan-post",
+        "asia-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-04",
+      "name": "Whispering Steppe",
+      "continentId": "asia",
+      "levelRange": [
+        16,
+        30
+      ],
+      "biomeId": "grassland_steppe",
+      "subZones": [
+        {
+          "id": "asia-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-04-road-gate",
+        "asia-zone-04-caravan-post",
+        "asia-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-05",
+      "name": "Lotus Delta",
+      "continentId": "asia",
+      "levelRange": [
+        21,
+        35
+      ],
+      "biomeId": "river_wetland",
+      "subZones": [
+        {
+          "id": "asia-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "river_wetland",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "river_wetland",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "river_wetland",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "river_wetland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-05-road-gate",
+        "asia-zone-05-caravan-post",
+        "asia-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-06",
+      "name": "Obsidian Highlands",
+      "continentId": "asia",
+      "levelRange": [
+        26,
+        40
+      ],
+      "biomeId": "highland",
+      "subZones": [
+        {
+          "id": "asia-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "highland",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "highland",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "highland",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "highland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-06-road-gate",
+        "asia-zone-06-caravan-post",
+        "asia-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-07",
+      "name": "Moonlit Archipelago",
+      "continentId": "asia",
+      "levelRange": [
+        31,
+        45
+      ],
+      "biomeId": "tropical_island",
+      "subZones": [
+        {
+          "id": "asia-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_island",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_island",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_island",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_island",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-07-road-gate",
+        "asia-zone-07-caravan-post",
+        "asia-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-08",
+      "name": "Celestial Desert",
+      "continentId": "asia",
+      "levelRange": [
+        36,
+        50
+      ],
+      "biomeId": "cold_desert",
+      "subZones": [
+        {
+          "id": "asia-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "cold_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "cold_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "cold_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "cold_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "asia-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "asia-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "asia-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "asia-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-08-road-gate",
+        "asia-zone-08-caravan-post",
+        "asia-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "asia-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "asia-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "asia-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "asia-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "asia-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "asia-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "asia-isles-east",
+      "islands": 8
+    }
+  ]
+}
