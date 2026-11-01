@@ -1,0 +1,602 @@
+{
+  "id": "australia",
+  "name": "Australia",
+  "realm": "The Australis Wilds",
+  "capital": {
+    "id": "australia-capital",
+    "name": "Coralheart",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "australia-zone-01",
+      "name": "Redglass Outback",
+      "continentId": "australia",
+      "levelRange": [
+        121,
+        135
+      ],
+      "biomeId": "red_desert",
+      "subZones": [
+        {
+          "id": "australia-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "red_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "red_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "red_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "red_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-01-road-gate",
+        "australia-zone-01-caravan-post",
+        "australia-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-02",
+      "name": "Coral Crown Reef",
+      "continentId": "australia",
+      "levelRange": [
+        126,
+        140
+      ],
+      "biomeId": "coral_reef",
+      "subZones": [
+        {
+          "id": "australia-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "coral_reef",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "coral_reef",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "coral_reef",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "coral_reef",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-02-road-gate",
+        "australia-zone-02-caravan-post",
+        "australia-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-03",
+      "name": "Eucalyptus Kingdom",
+      "continentId": "australia",
+      "levelRange": [
+        131,
+        145
+      ],
+      "biomeId": "eucalyptus_woodland",
+      "subZones": [
+        {
+          "id": "australia-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "eucalyptus_woodland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-03-road-gate",
+        "australia-zone-03-caravan-post",
+        "australia-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-04",
+      "name": "Whispering Monsoon",
+      "continentId": "australia",
+      "levelRange": [
+        136,
+        150
+      ],
+      "biomeId": "tropical_savanna",
+      "subZones": [
+        {
+          "id": "australia-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_savanna",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-04-road-gate",
+        "australia-zone-04-caravan-post",
+        "australia-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-05",
+      "name": "Spiral Stone Desert",
+      "continentId": "australia",
+      "levelRange": [
+        141,
+        155
+      ],
+      "biomeId": "rocky_desert",
+      "subZones": [
+        {
+          "id": "australia-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "rocky_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "rocky_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "rocky_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "rocky_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-05-road-gate",
+        "australia-zone-05-caravan-post",
+        "australia-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-06",
+      "name": "Great Southern Forest",
+      "continentId": "australia",
+      "levelRange": [
+        146,
+        160
+      ],
+      "biomeId": "temperate_forest",
+      "subZones": [
+        {
+          "id": "australia-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-06-road-gate",
+        "australia-zone-06-caravan-post",
+        "australia-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-07",
+      "name": "Sunken Blue Trench",
+      "continentId": "australia",
+      "levelRange": [
+        151,
+        165
+      ],
+      "biomeId": "deep_ocean",
+      "subZones": [
+        {
+          "id": "australia-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "deep_ocean",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "deep_ocean",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "deep_ocean",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "deep_ocean",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-07-road-gate",
+        "australia-zone-07-caravan-post",
+        "australia-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "australia-zone-08",
+      "name": "Stormbird Archipelago",
+      "continentId": "australia",
+      "levelRange": [
+        156,
+        170
+      ],
+      "biomeId": "tropical_island",
+      "subZones": [
+        {
+          "id": "australia-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_island",
+          "encounterTier": 1
+        },
+        {
+          "id": "australia-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_island",
+          "encounterTier": 2
+        },
+        {
+          "id": "australia-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_island",
+          "encounterTier": 3
+        },
+        {
+          "id": "australia-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_island",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "australia-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "australia-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "australia-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "australia-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "australia-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "australia-zone-08-road-gate",
+        "australia-zone-08-caravan-post",
+        "australia-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "australia-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "australia-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "australia-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "australia-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "australia-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "australia-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "australia-isles-east",
+      "islands": 8
+    }
+  ]
+}
