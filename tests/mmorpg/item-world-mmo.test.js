@@ -5,6 +5,7 @@ import {
   damageDurability, repairItem, getEquipmentCatalogSummary
 } from "../../src/mmorpg/systems/itemization.js";
 import { createAuctionHouse, listAuction, searchAuctions, buyAuction, cancelAuction } from "../../src/mmorpg/systems/auction-house.js";
+import { createInventory, countItem } from "../../src/mmorpg/systems/inventory.js";
 import { createMailbox, sendMail, readMail, claimMail } from "../../src/mmorpg/systems/mail.js";
 import { createCollections, collectAppearance, applyTransmog, collectMount } from "../../src/mmorpg/systems/collections.js";
 import { createDungeonFinder, queueForDungeon, formDungeonGroups } from "../../src/mmorpg/systems/dungeon-finder.js";
@@ -37,9 +38,11 @@ test("auction house lists, searches, sells and cancels listings", () => {
   const listed = listAuction(house, { sellerId: "seller", item, quantity: 2, unitPriceCopper: 5000, expiresAt: Date.now()+10000 });
   assert.equal(listed.ok, true);
   assert.equal(searchAuctions(house, { query: "potion" }).length, 1);
-  const result = buyAuction(house, listed.listing.id, "buyer", { copper: 20000 }, {});
+  const inventory = createInventory();
+  const result = buyAuction(house, listed.listing.id, "buyer", { copper: 20000 }, inventory);
   assert.equal(result.ok, true);
   assert.equal(result.sellerProceedsCopper, 9500);
+  assert.equal(countItem(inventory, item.templateId), 2);
   const other = listAuction(house, { sellerId: "seller", item, quantity: 1, unitPriceCopper: 1000, expiresAt: Date.now()+10000 });
   assert.equal(cancelAuction(house, other.listing.id, "seller").ok, true);
 });
