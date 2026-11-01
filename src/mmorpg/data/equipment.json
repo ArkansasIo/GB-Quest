@@ -1,59 +1,2224 @@
 {
-  "ruleset":"SRD-5.2.1",
-  "weaponMasteries":["Cleave","Graze","Nick","Push","Sap","Slow","Topple","Vex"],
-  "weapons":[
-    {"name":"Club","category":"simple","type":"melee","damage":"1d4","damageType":"bludgeoning","properties":["light"],"mastery":"slow"},
-    {"name":"Dagger","category":"simple","type":"melee","damage":"1d4","damageType":"piercing","properties":["finesse","light","thrown"],"range":[20,60],"mastery":"nick"},
-    {"name":"Greatclub","category":"simple","type":"melee","damage":"1d8","damageType":"bludgeoning","properties":["two-handed"],"mastery":"push"},
-    {"name":"Handaxe","category":"simple","type":"melee","damage":"1d6","damageType":"slashing","properties":["light","thrown"],"range":[20,60],"mastery":"vex"},
-    {"name":"Javelin","category":"simple","type":"melee","damage":"1d6","damageType":"piercing","properties":["thrown"],"range":[30,120],"mastery":"slow"},
-    {"name":"Light Hammer","category":"simple","type":"melee","damage":"1d4","damageType":"bludgeoning","properties":["light","thrown"],"range":[20,60],"mastery":"nick"},
-    {"name":"Mace","category":"simple","type":"melee","damage":"1d6","damageType":"bludgeoning","properties":[],"mastery":"sap"},
-    {"name":"Quarterstaff","category":"simple","type":"melee","damage":"1d6","damageType":"bludgeoning","properties":["versatile"],"versatileDamage":"1d8","mastery":"topple"},
-    {"name":"Sickle","category":"simple","type":"melee","damage":"1d4","damageType":"slashing","properties":["light"],"mastery":"nick"},
-    {"name":"Spear","category":"simple","type":"melee","damage":"1d6","damageType":"piercing","properties":["thrown","versatile"],"range":[20,60],"versatileDamage":"1d8","mastery":"sap"},
-    {"name":"Dart","category":"simple","type":"ranged","damage":"1d4","damageType":"piercing","properties":["finesse","thrown"],"range":[20,60],"mastery":"vex"},
-    {"name":"Light Crossbow","category":"simple","type":"ranged","damage":"1d8","damageType":"piercing","properties":["ammunition","loading","two-handed"],"range":[80,320],"mastery":"slow"},
-    {"name":"Shortbow","category":"simple","type":"ranged","damage":"1d6","damageType":"piercing","properties":["ammunition","two-handed"],"range":[80,320],"mastery":"vex"},
-    {"name":"Sling","category":"simple","type":"ranged","damage":"1d4","damageType":"bludgeoning","properties":["ammunition"],"range":[30,120],"mastery":"slow"},
-    {"name":"Battleaxe","category":"martial","type":"melee","damage":"1d8","damageType":"slashing","properties":["versatile"],"versatileDamage":"1d10","mastery":"topple"},
-    {"name":"Flail","category":"martial","type":"melee","damage":"1d8","damageType":"bludgeoning","properties":[],"mastery":"sap"},
-    {"name":"Glaive","category":"martial","type":"melee","damage":"1d10","damageType":"slashing","properties":["heavy","reach","two-handed"],"mastery":"graze"},
-    {"name":"Greataxe","category":"martial","type":"melee","damage":"1d12","damageType":"slashing","properties":["heavy","two-handed"],"mastery":"cleave"},
-    {"name":"Greatsword","category":"martial","type":"melee","damage":"2d6","damageType":"slashing","properties":["heavy","two-handed"],"mastery":"graze"},
-    {"name":"Halberd","category":"martial","type":"melee","damage":"1d10","damageType":"slashing","properties":["heavy","reach","two-handed"],"mastery":"cleave"},
-    {"name":"Lance","category":"martial","type":"melee","damage":"1d10","damageType":"piercing","properties":["heavy","reach"],"mastery":"topple"},
-    {"name":"Longsword","category":"martial","type":"melee","damage":"1d8","damageType":"slashing","properties":["versatile"],"versatileDamage":"1d10","mastery":"sap"},
-    {"name":"Maul","category":"martial","type":"melee","damage":"2d6","damageType":"bludgeoning","properties":["heavy","two-handed"],"mastery":"topple"},
-    {"name":"Morningstar","category":"martial","type":"melee","damage":"1d8","damageType":"piercing","properties":[],"mastery":"sap"},
-    {"name":"Pike","category":"martial","type":"melee","damage":"1d10","damageType":"piercing","properties":["heavy","reach","two-handed"],"mastery":"push"},
-    {"name":"Rapier","category":"martial","type":"melee","damage":"1d8","damageType":"piercing","properties":["finesse"],"mastery":"vex"},
-    {"name":"Scimitar","category":"martial","type":"melee","damage":"1d6","damageType":"slashing","properties":["finesse","light"],"mastery":"nick"},
-    {"name":"Shortsword","category":"martial","type":"melee","damage":"1d6","damageType":"piercing","properties":["finesse","light"],"mastery":"vex"},
-    {"name":"Trident","category":"martial","type":"melee","damage":"1d8","damageType":"piercing","properties":["thrown","versatile"],"range":[20,60],"versatileDamage":"1d10","mastery":"topple"},
-    {"name":"Warhammer","category":"martial","type":"melee","damage":"1d8","damageType":"bludgeoning","properties":["versatile"],"versatileDamage":"1d10","mastery":"push"},
-    {"name":"War Pick","category":"martial","type":"melee","damage":"1d8","damageType":"piercing","properties":["versatile"],"versatileDamage":"1d10","mastery":"sap"},
-    {"name":"Whip","category":"martial","type":"melee","damage":"1d4","damageType":"slashing","properties":["finesse","reach"],"mastery":"slow"},
-    {"name":"Blowgun","category":"martial","type":"ranged","damage":"1","damageType":"piercing","properties":["ammunition","loading"],"range":[25,100],"mastery":"vex"},
-    {"name":"Hand Crossbow","category":"martial","type":"ranged","damage":"1d6","damageType":"piercing","properties":["ammunition","light","loading"],"range":[30,120],"mastery":"vex"},
-    {"name":"Heavy Crossbow","category":"martial","type":"ranged","damage":"1d10","damageType":"piercing","properties":["ammunition","heavy","loading","two-handed"],"range":[100,400],"mastery":"push"},
-    {"name":"Longbow","category":"martial","type":"ranged","damage":"1d8","damageType":"piercing","properties":["ammunition","heavy","two-handed"],"range":[150,600],"mastery":"slow"},
-    {"name":"Musket","category":"martial","type":"ranged","damage":"1d12","damageType":"piercing","properties":["ammunition","loading","two-handed"],"range":[40,120],"mastery":"slow"},
-    {"name":"Pistol","category":"martial","type":"ranged","damage":"1d10","damageType":"piercing","properties":["ammunition","loading"],"range":[30,90],"mastery":"vex"}
+  "ruleset": "SRD-5.2.1",
+  "weaponMasteries": [
+    "Cleave",
+    "Graze",
+    "Nick",
+    "Push",
+    "Sap",
+    "Slow",
+    "Topple",
+    "Vex"
   ],
-  "armor":[
-    {"name":"Padded Armor","category":"light","ac":"11+dex","stealthDisadvantage":true,"strength":null},
-    {"name":"Leather Armor","category":"light","ac":"11+dex","stealthDisadvantage":false,"strength":null},
-    {"name":"Studded Leather Armor","category":"light","ac":"12+dex","stealthDisadvantage":false,"strength":null},
-    {"name":"Hide Armor","category":"medium","ac":"12+min(dex,2)","stealthDisadvantage":false,"strength":null},
-    {"name":"Chain Shirt","category":"medium","ac":"13+min(dex,2)","stealthDisadvantage":false,"strength":null},
-    {"name":"Scale Mail","category":"medium","ac":"14+min(dex,2)","stealthDisadvantage":true,"strength":null},
-    {"name":"Breastplate","category":"medium","ac":"14+min(dex,2)","stealthDisadvantage":false,"strength":null},
-    {"name":"Half Plate Armor","category":"medium","ac":"15+min(dex,2)","stealthDisadvantage":true,"strength":null},
-    {"name":"Ring Mail","category":"heavy","ac":"14","stealthDisadvantage":true,"strength":null},
-    {"name":"Chain Mail","category":"heavy","ac":"16","stealthDisadvantage":true,"strength":13},
-    {"name":"Splint Armor","category":"heavy","ac":"17","stealthDisadvantage":true,"strength":15},
-    {"name":"Plate Armor","category":"heavy","ac":"18","stealthDisadvantage":true,"strength":15},
-    {"name":"Shield","category":"shield","acBonus":2}
-  ]
+  "weapons": [
+    {
+      "name": "Club",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d4",
+      "damageType": "bludgeoning",
+      "properties": [
+        "light"
+      ],
+      "mastery": "slow",
+      "priceCopper": 1,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:club"
+    },
+    {
+      "name": "Dagger",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": [
+        "finesse",
+        "light",
+        "thrown"
+      ],
+      "range": [
+        20,
+        60
+      ],
+      "mastery": "nick",
+      "priceCopper": 200,
+      "weightLb": 1,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:dagger"
+    },
+    {
+      "name": "Greatclub",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "two-handed"
+      ],
+      "mastery": "push",
+      "priceCopper": 2,
+      "weightLb": 10,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:greatclub"
+    },
+    {
+      "name": "Handaxe",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "slashing",
+      "properties": [
+        "light",
+        "thrown"
+      ],
+      "range": [
+        20,
+        60
+      ],
+      "mastery": "vex",
+      "priceCopper": 500,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:handaxe"
+    },
+    {
+      "name": "Javelin",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": [
+        "thrown"
+      ],
+      "range": [
+        30,
+        120
+      ],
+      "mastery": "slow",
+      "priceCopper": 50,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:javelin"
+    },
+    {
+      "name": "Light Hammer",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d4",
+      "damageType": "bludgeoning",
+      "properties": [
+        "light",
+        "thrown"
+      ],
+      "range": [
+        20,
+        60
+      ],
+      "mastery": "nick",
+      "priceCopper": 200,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:light-hammer"
+    },
+    {
+      "name": "Mace",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": [],
+      "mastery": "sap",
+      "priceCopper": 500,
+      "weightLb": 4,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:mace"
+    },
+    {
+      "name": "Quarterstaff",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "versatile"
+      ],
+      "versatileDamage": "1d8",
+      "mastery": "topple",
+      "priceCopper": 20,
+      "weightLb": 4,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:quarterstaff"
+    },
+    {
+      "name": "Sickle",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d4",
+      "damageType": "slashing",
+      "properties": [
+        "light"
+      ],
+      "mastery": "nick",
+      "priceCopper": 100,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:sickle"
+    },
+    {
+      "name": "Spear",
+      "category": "simple",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": [
+        "thrown",
+        "versatile"
+      ],
+      "range": [
+        20,
+        60
+      ],
+      "versatileDamage": "1d8",
+      "mastery": "sap",
+      "priceCopper": 100,
+      "weightLb": 3,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:spear"
+    },
+    {
+      "name": "Dart",
+      "category": "simple",
+      "type": "ranged",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": [
+        "finesse",
+        "thrown"
+      ],
+      "range": [
+        20,
+        60
+      ],
+      "mastery": "vex",
+      "priceCopper": 5,
+      "weightLb": 0.25,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:dart"
+    },
+    {
+      "name": "Light Crossbow",
+      "category": "simple",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "loading",
+        "two-handed"
+      ],
+      "range": [
+        80,
+        320
+      ],
+      "mastery": "slow",
+      "priceCopper": 2500,
+      "weightLb": 5,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:light-crossbow"
+    },
+    {
+      "name": "Shortbow",
+      "category": "simple",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "two-handed"
+      ],
+      "range": [
+        80,
+        320
+      ],
+      "mastery": "vex",
+      "priceCopper": 2500,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:shortbow"
+    },
+    {
+      "name": "Sling",
+      "category": "simple",
+      "type": "ranged",
+      "damage": "1d4",
+      "damageType": "bludgeoning",
+      "properties": [
+        "ammunition"
+      ],
+      "range": [
+        30,
+        120
+      ],
+      "mastery": "slow",
+      "priceCopper": 1,
+      "weightLb": 0,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:sling"
+    },
+    {
+      "name": "Battleaxe",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "versatileDamage": "1d10",
+      "mastery": "topple",
+      "priceCopper": 1000,
+      "weightLb": 4,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:battleaxe"
+    },
+    {
+      "name": "Flail",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [],
+      "mastery": "sap",
+      "priceCopper": 1000,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:flail"
+    },
+    {
+      "name": "Glaive",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "reach",
+        "two-handed"
+      ],
+      "mastery": "graze",
+      "priceCopper": 2000,
+      "weightLb": 6,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:glaive"
+    },
+    {
+      "name": "Greataxe",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d12",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "mastery": "cleave",
+      "priceCopper": 3000,
+      "weightLb": 7,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:greataxe"
+    },
+    {
+      "name": "Greatsword",
+      "category": "martial",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "mastery": "graze",
+      "priceCopper": 5000,
+      "weightLb": 6,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:greatsword"
+    },
+    {
+      "name": "Halberd",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "reach",
+        "two-handed"
+      ],
+      "mastery": "cleave",
+      "priceCopper": 2000,
+      "weightLb": 6,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:halberd"
+    },
+    {
+      "name": "Lance",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "reach"
+      ],
+      "mastery": "topple",
+      "priceCopper": 1000,
+      "weightLb": 6,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:lance"
+    },
+    {
+      "name": "Longsword",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "versatileDamage": "1d10",
+      "mastery": "sap",
+      "priceCopper": 1500,
+      "weightLb": 3,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:longsword"
+    },
+    {
+      "name": "Maul",
+      "category": "martial",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "mastery": "topple",
+      "priceCopper": 1000,
+      "weightLb": 10,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:maul"
+    },
+    {
+      "name": "Morningstar",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [],
+      "mastery": "sap",
+      "priceCopper": 1500,
+      "weightLb": 4,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:morningstar"
+    },
+    {
+      "name": "Pike",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "reach",
+        "two-handed"
+      ],
+      "mastery": "push",
+      "priceCopper": 500,
+      "weightLb": 18,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:pike"
+    },
+    {
+      "name": "Rapier",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "finesse"
+      ],
+      "mastery": "vex",
+      "priceCopper": 2500,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:rapier"
+    },
+    {
+      "name": "Scimitar",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "slashing",
+      "properties": [
+        "finesse",
+        "light"
+      ],
+      "mastery": "nick",
+      "priceCopper": 2500,
+      "weightLb": 3,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:scimitar"
+    },
+    {
+      "name": "Shortsword",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": [
+        "finesse",
+        "light"
+      ],
+      "mastery": "vex",
+      "priceCopper": 1000,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:shortsword"
+    },
+    {
+      "name": "Trident",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "thrown",
+        "versatile"
+      ],
+      "range": [
+        20,
+        60
+      ],
+      "versatileDamage": "1d10",
+      "mastery": "topple",
+      "priceCopper": 500,
+      "weightLb": 4,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:trident"
+    },
+    {
+      "name": "Warhammer",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "versatile"
+      ],
+      "versatileDamage": "1d10",
+      "mastery": "push",
+      "priceCopper": 1500,
+      "weightLb": 5,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:warhammer"
+    },
+    {
+      "name": "War Pick",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "versatile"
+      ],
+      "versatileDamage": "1d10",
+      "mastery": "sap",
+      "priceCopper": 500,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:war-pick"
+    },
+    {
+      "name": "Whip",
+      "category": "martial",
+      "type": "melee",
+      "damage": "1d4",
+      "damageType": "slashing",
+      "properties": [
+        "finesse",
+        "reach"
+      ],
+      "mastery": "slow",
+      "priceCopper": 200,
+      "weightLb": 3,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:whip"
+    },
+    {
+      "name": "Blowgun",
+      "category": "martial",
+      "type": "ranged",
+      "damage": "1",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "loading"
+      ],
+      "range": [
+        25,
+        100
+      ],
+      "mastery": "vex",
+      "priceCopper": 1000,
+      "weightLb": 1,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:blowgun"
+    },
+    {
+      "name": "Hand Crossbow",
+      "category": "martial",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "light",
+        "loading"
+      ],
+      "range": [
+        30,
+        120
+      ],
+      "mastery": "vex",
+      "priceCopper": 7500,
+      "weightLb": 3,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:hand-crossbow"
+    },
+    {
+      "name": "Heavy Crossbow",
+      "category": "martial",
+      "type": "ranged",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "heavy",
+        "loading",
+        "two-handed"
+      ],
+      "range": [
+        100,
+        400
+      ],
+      "mastery": "push",
+      "priceCopper": 5000,
+      "weightLb": 18,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:heavy-crossbow"
+    },
+    {
+      "name": "Longbow",
+      "category": "martial",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "heavy",
+        "two-handed"
+      ],
+      "range": [
+        150,
+        600
+      ],
+      "mastery": "slow",
+      "priceCopper": 5000,
+      "weightLb": 2,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:longbow"
+    },
+    {
+      "name": "Musket",
+      "category": "martial",
+      "type": "ranged",
+      "damage": "1d12",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "loading",
+        "two-handed"
+      ],
+      "range": [
+        40,
+        120
+      ],
+      "mastery": "slow",
+      "priceCopper": 50000,
+      "weightLb": 10,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:musket"
+    },
+    {
+      "name": "Pistol",
+      "category": "martial",
+      "type": "ranged",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "ammunition",
+        "loading"
+      ],
+      "range": [
+        30,
+        90
+      ],
+      "mastery": "vex",
+      "priceCopper": 25000,
+      "weightLb": 3,
+      "stackable": false,
+      "itemType": "weapon",
+      "id": "weapon:pistol"
+    }
+  ],
+  "armor": [
+    {
+      "name": "Padded Armor",
+      "category": "light",
+      "ac": "11+dex",
+      "stealthDisadvantage": true,
+      "strength": null,
+      "priceCopper": 500,
+      "weightLb": 8,
+      "itemType": "armor",
+      "id": "armor:padded-armor",
+      "stackable": false
+    },
+    {
+      "name": "Leather Armor",
+      "category": "light",
+      "ac": "11+dex",
+      "stealthDisadvantage": false,
+      "strength": null,
+      "priceCopper": 1000,
+      "weightLb": 10,
+      "itemType": "armor",
+      "id": "armor:leather-armor",
+      "stackable": false
+    },
+    {
+      "name": "Studded Leather Armor",
+      "category": "light",
+      "ac": "12+dex",
+      "stealthDisadvantage": false,
+      "strength": null,
+      "priceCopper": 4500,
+      "weightLb": 13,
+      "itemType": "armor",
+      "id": "armor:studded-leather-armor",
+      "stackable": false
+    },
+    {
+      "name": "Hide Armor",
+      "category": "medium",
+      "ac": "12+min(dex,2)",
+      "stealthDisadvantage": false,
+      "strength": null,
+      "priceCopper": 1000,
+      "weightLb": 12,
+      "itemType": "armor",
+      "id": "armor:hide-armor",
+      "stackable": false
+    },
+    {
+      "name": "Chain Shirt",
+      "category": "medium",
+      "ac": "13+min(dex,2)",
+      "stealthDisadvantage": false,
+      "strength": null,
+      "priceCopper": 5000,
+      "weightLb": 20,
+      "itemType": "armor",
+      "id": "armor:chain-shirt",
+      "stackable": false
+    },
+    {
+      "name": "Scale Mail",
+      "category": "medium",
+      "ac": "14+min(dex,2)",
+      "stealthDisadvantage": true,
+      "strength": null,
+      "priceCopper": 5000,
+      "weightLb": 45,
+      "itemType": "armor",
+      "id": "armor:scale-mail",
+      "stackable": false
+    },
+    {
+      "name": "Breastplate",
+      "category": "medium",
+      "ac": "14+min(dex,2)",
+      "stealthDisadvantage": false,
+      "strength": null,
+      "priceCopper": 40000,
+      "weightLb": 20,
+      "itemType": "armor",
+      "id": "armor:breastplate",
+      "stackable": false
+    },
+    {
+      "name": "Half Plate Armor",
+      "category": "medium",
+      "ac": "15+min(dex,2)",
+      "stealthDisadvantage": true,
+      "strength": null,
+      "priceCopper": 75000,
+      "weightLb": 40,
+      "itemType": "armor",
+      "id": "armor:half-plate-armor",
+      "stackable": false
+    },
+    {
+      "name": "Ring Mail",
+      "category": "heavy",
+      "ac": "14",
+      "stealthDisadvantage": true,
+      "strength": null,
+      "priceCopper": 3000,
+      "weightLb": 40,
+      "itemType": "armor",
+      "id": "armor:ring-mail",
+      "stackable": false
+    },
+    {
+      "name": "Chain Mail",
+      "category": "heavy",
+      "ac": "16",
+      "stealthDisadvantage": true,
+      "strength": 13,
+      "priceCopper": 7500,
+      "weightLb": 55,
+      "itemType": "armor",
+      "id": "armor:chain-mail",
+      "stackable": false
+    },
+    {
+      "name": "Splint Armor",
+      "category": "heavy",
+      "ac": "17",
+      "stealthDisadvantage": true,
+      "strength": 15,
+      "priceCopper": 20000,
+      "weightLb": 60,
+      "itemType": "armor",
+      "id": "armor:splint-armor",
+      "stackable": false
+    },
+    {
+      "name": "Plate Armor",
+      "category": "heavy",
+      "ac": "18",
+      "stealthDisadvantage": true,
+      "strength": 15,
+      "priceCopper": 150000,
+      "weightLb": 65,
+      "itemType": "armor",
+      "id": "armor:plate-armor",
+      "stackable": false
+    },
+    {
+      "name": "Shield",
+      "category": "shield",
+      "acBonus": 2,
+      "priceCopper": 1000,
+      "weightLb": 6,
+      "itemType": "armor",
+      "id": "armor:shield",
+      "stackable": false
+    }
+  ],
+  "adventuringGear": [
+    {
+      "id": "gear:acid-vial-",
+      "name": "Acid (vial)",
+      "category": "consumable",
+      "priceCopper": 2500,
+      "weightLb": 1,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:alchemist-s-fire-flask-",
+      "name": "Alchemist's Fire (flask)",
+      "category": "consumable",
+      "priceCopper": 5000,
+      "weightLb": 1,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:antitoxin-vial-",
+      "name": "Antitoxin (vial)",
+      "category": "consumable",
+      "priceCopper": 5000,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:backpack",
+      "name": "Backpack",
+      "category": "container",
+      "priceCopper": 200,
+      "weightLb": 5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:ball-bearings-bag-of-1-000-",
+      "name": "Ball Bearings (bag of 1,000)",
+      "category": "tool",
+      "priceCopper": 100,
+      "weightLb": 2,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:barrel",
+      "name": "Barrel",
+      "category": "container",
+      "priceCopper": 200,
+      "weightLb": 70,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:basket",
+      "name": "Basket",
+      "category": "container",
+      "priceCopper": 40,
+      "weightLb": 2,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:bedroll",
+      "name": "Bedroll",
+      "category": "camping",
+      "priceCopper": 100,
+      "weightLb": 7,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:bell",
+      "name": "Bell",
+      "category": "tool",
+      "priceCopper": 100,
+      "weightLb": 0,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:blanket",
+      "name": "Blanket",
+      "category": "camping",
+      "priceCopper": 50,
+      "weightLb": 3,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:block-and-tackle",
+      "name": "Block and Tackle",
+      "category": "tool",
+      "priceCopper": 100,
+      "weightLb": 5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:book",
+      "name": "Book",
+      "category": "utility",
+      "priceCopper": 2500,
+      "weightLb": 5,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:bottle-glass",
+      "name": "Bottle, Glass",
+      "category": "container",
+      "priceCopper": 200,
+      "weightLb": 2,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:bucket",
+      "name": "Bucket",
+      "category": "container",
+      "priceCopper": 5,
+      "weightLb": 2,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:caltrops-bag-of-20-",
+      "name": "Caltrops (bag of 20)",
+      "category": "trap",
+      "priceCopper": 100,
+      "weightLb": 2,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:candle",
+      "name": "Candle",
+      "category": "light",
+      "priceCopper": 1,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:case-crossbow-bolt",
+      "name": "Case, Crossbow Bolt",
+      "category": "container",
+      "priceCopper": 100,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:case-map-or-scroll",
+      "name": "Case, Map or Scroll",
+      "category": "container",
+      "priceCopper": 100,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:chain-10-feet-",
+      "name": "Chain (10 feet)",
+      "category": "tool",
+      "priceCopper": 500,
+      "weightLb": 10,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:chest",
+      "name": "Chest",
+      "category": "container",
+      "priceCopper": 500,
+      "weightLb": 25,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:climber-s-kit",
+      "name": "Climber's Kit",
+      "category": "kit",
+      "priceCopper": 2500,
+      "weightLb": 12,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:clothes-fine",
+      "name": "Clothes, Fine",
+      "category": "clothing",
+      "priceCopper": 1500,
+      "weightLb": 6,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:clothes-traveler-s",
+      "name": "Clothes, Traveler's",
+      "category": "clothing",
+      "priceCopper": 200,
+      "weightLb": 4,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:component-pouch",
+      "name": "Component Pouch",
+      "category": "spellcasting_focus",
+      "priceCopper": 2500,
+      "weightLb": 2,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:crowbar",
+      "name": "Crowbar",
+      "category": "tool",
+      "priceCopper": 200,
+      "weightLb": 5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:fishing-tackle",
+      "name": "Fishing Tackle",
+      "category": "tool",
+      "priceCopper": 100,
+      "weightLb": 4,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:flask",
+      "name": "Flask",
+      "category": "container",
+      "priceCopper": 2,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:grappling-hook",
+      "name": "Grappling Hook",
+      "category": "tool",
+      "priceCopper": 200,
+      "weightLb": 4,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:hammer",
+      "name": "Hammer",
+      "category": "tool",
+      "priceCopper": 100,
+      "weightLb": 3,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:hammer-sledge",
+      "name": "Hammer, Sledge",
+      "category": "tool",
+      "priceCopper": 200,
+      "weightLb": 10,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:healer-s-kit",
+      "name": "Healer's Kit",
+      "category": "healing",
+      "priceCopper": 500,
+      "weightLb": 3,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:holy-water-flask-",
+      "name": "Holy Water (flask)",
+      "category": "consumable",
+      "priceCopper": 2500,
+      "weightLb": 1,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:hunting-trap",
+      "name": "Hunting Trap",
+      "category": "trap",
+      "priceCopper": 500,
+      "weightLb": 25,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:ink-1-ounce-bottle-",
+      "name": "Ink (1 ounce bottle)",
+      "category": "utility",
+      "priceCopper": 1000,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:ink-pen",
+      "name": "Ink Pen",
+      "category": "utility",
+      "priceCopper": 2,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:ladder-10-foot-",
+      "name": "Ladder (10-foot)",
+      "category": "tool",
+      "priceCopper": 10,
+      "weightLb": 25,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:lamp",
+      "name": "Lamp",
+      "category": "light",
+      "priceCopper": 5,
+      "weightLb": 1,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:lantern-bullseye",
+      "name": "Lantern, Bullseye",
+      "category": "light",
+      "priceCopper": 1000,
+      "weightLb": 2,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:lantern-hooded",
+      "name": "Lantern, Hooded",
+      "category": "light",
+      "priceCopper": 500,
+      "weightLb": 2,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:lock",
+      "name": "Lock",
+      "category": "tool",
+      "priceCopper": 1000,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:magnifying-glass",
+      "name": "Magnifying Glass",
+      "category": "tool",
+      "priceCopper": 10000,
+      "weightLb": 0,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:manacles",
+      "name": "Manacles",
+      "category": "tool",
+      "priceCopper": 200,
+      "weightLb": 6,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:mess-kit",
+      "name": "Mess Kit",
+      "category": "camping",
+      "priceCopper": 20,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:mirror-steel",
+      "name": "Mirror, Steel",
+      "category": "utility",
+      "priceCopper": 500,
+      "weightLb": 0.5,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:oil-flask-",
+      "name": "Oil (flask)",
+      "category": "consumable",
+      "priceCopper": 10,
+      "weightLb": 1,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:paper-one-sheet-",
+      "name": "Paper (one sheet)",
+      "category": "utility",
+      "priceCopper": 20,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:parchment-one-sheet-",
+      "name": "Parchment (one sheet)",
+      "category": "utility",
+      "priceCopper": 10,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:perfume-vial-",
+      "name": "Perfume (vial)",
+      "category": "utility",
+      "priceCopper": 500,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:poison-basic-vial-",
+      "name": "Poison, Basic (vial)",
+      "category": "consumable",
+      "priceCopper": 10000,
+      "weightLb": 0,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:pole-10-foot-",
+      "name": "Pole (10-foot)",
+      "category": "tool",
+      "priceCopper": 5,
+      "weightLb": 7,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:pot-iron",
+      "name": "Pot, Iron",
+      "category": "camping",
+      "priceCopper": 200,
+      "weightLb": 10,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:potion-of-healing",
+      "name": "Potion of Healing",
+      "category": "potion",
+      "priceCopper": 5000,
+      "weightLb": 0.5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:pouch",
+      "name": "Pouch",
+      "category": "container",
+      "priceCopper": 50,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:quiver",
+      "name": "Quiver",
+      "category": "container",
+      "priceCopper": 100,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:ram-portable",
+      "name": "Ram, Portable",
+      "category": "tool",
+      "priceCopper": 400,
+      "weightLb": 35,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:rations-1-day-",
+      "name": "Rations (1 day)",
+      "category": "food",
+      "priceCopper": 50,
+      "weightLb": 2,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:rope-hempen-50-feet-",
+      "name": "Rope, Hempen (50 feet)",
+      "category": "tool",
+      "priceCopper": 100,
+      "weightLb": 10,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:rope-silk-50-feet-",
+      "name": "Rope, Silk (50 feet)",
+      "category": "tool",
+      "priceCopper": 1000,
+      "weightLb": 5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:sack",
+      "name": "Sack",
+      "category": "container",
+      "priceCopper": 1,
+      "weightLb": 0.5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:scale-merchant-s",
+      "name": "Scale, Merchant's",
+      "category": "tool",
+      "priceCopper": 500,
+      "weightLb": 3,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:shovel",
+      "name": "Shovel",
+      "category": "tool",
+      "priceCopper": 200,
+      "weightLb": 5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:spyglass",
+      "name": "Spyglass",
+      "category": "tool",
+      "priceCopper": 100000,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:tent-two-person",
+      "name": "Tent, Two-Person",
+      "category": "camping",
+      "priceCopper": 200,
+      "weightLb": 20,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:tinderbox",
+      "name": "Tinderbox",
+      "category": "camping",
+      "priceCopper": 50,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:torch",
+      "name": "Torch",
+      "category": "light",
+      "priceCopper": 1,
+      "weightLb": 1,
+      "stackable": true,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:waterskin",
+      "name": "Waterskin",
+      "category": "container",
+      "priceCopper": 20,
+      "weightLb": 5,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "gear:whetstone",
+      "name": "Whetstone",
+      "category": "tool",
+      "priceCopper": 1,
+      "weightLb": 1,
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    }
+  ],
+  "tools": [
+    {
+      "id": "tool:alchemist-s-supplies",
+      "name": "Alchemist's Supplies",
+      "priceCopper": 5000,
+      "weightLb": 8,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:brewer-s-supplies",
+      "name": "Brewer's Supplies",
+      "priceCopper": 2000,
+      "weightLb": 9,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:calligrapher-s-supplies",
+      "name": "Calligrapher's Supplies",
+      "priceCopper": 1000,
+      "weightLb": 5,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:carpenter-s-tools",
+      "name": "Carpenter's Tools",
+      "priceCopper": 800,
+      "weightLb": 6,
+      "ability": "Strength",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:cartographer-s-tools",
+      "name": "Cartographer's Tools",
+      "priceCopper": 1500,
+      "weightLb": 6,
+      "ability": "Wisdom",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:cobbler-s-tools",
+      "name": "Cobbler's Tools",
+      "priceCopper": 500,
+      "weightLb": 5,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:cook-s-utensils",
+      "name": "Cook's Utensils",
+      "priceCopper": 100,
+      "weightLb": 8,
+      "ability": "Wisdom",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:glassblower-s-tools",
+      "name": "Glassblower's Tools",
+      "priceCopper": 3000,
+      "weightLb": 5,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:jeweler-s-tools",
+      "name": "Jeweler's Tools",
+      "priceCopper": 2500,
+      "weightLb": 2,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:leatherworker-s-tools",
+      "name": "Leatherworker's Tools",
+      "priceCopper": 500,
+      "weightLb": 5,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:mason-s-tools",
+      "name": "Mason's Tools",
+      "priceCopper": 1000,
+      "weightLb": 8,
+      "ability": "Strength",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:painter-s-supplies",
+      "name": "Painter's Supplies",
+      "priceCopper": 1000,
+      "weightLb": 5,
+      "ability": "Wisdom",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:potter-s-tools",
+      "name": "Potter's Tools",
+      "priceCopper": 1000,
+      "weightLb": 3,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:smith-s-tools",
+      "name": "Smith's Tools",
+      "priceCopper": 2000,
+      "weightLb": 8,
+      "ability": "Strength",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:tinker-s-tools",
+      "name": "Tinker's Tools",
+      "priceCopper": 5000,
+      "weightLb": 10,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:weaver-s-tools",
+      "name": "Weaver's Tools",
+      "priceCopper": 100,
+      "weightLb": 5,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:woodcarver-s-tools",
+      "name": "Woodcarver's Tools",
+      "priceCopper": 100,
+      "weightLb": 5,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:disguise-kit",
+      "name": "Disguise Kit",
+      "priceCopper": 2500,
+      "weightLb": 3,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:forgery-kit",
+      "name": "Forgery Kit",
+      "priceCopper": 1500,
+      "weightLb": 5,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:herbalism-kit",
+      "name": "Herbalism Kit",
+      "priceCopper": 5000,
+      "weightLb": 3,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:navigator-s-tools",
+      "name": "Navigator's Tools",
+      "priceCopper": 2500,
+      "weightLb": 2,
+      "ability": "Wisdom",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:poisoner-s-kit",
+      "name": "Poisoner's Kit",
+      "priceCopper": 5000,
+      "weightLb": 2,
+      "ability": "Intelligence",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:thieves-tools",
+      "name": "Thieves' Tools",
+      "priceCopper": 2500,
+      "weightLb": 1,
+      "ability": "Dexterity",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:dice-set",
+      "name": "Dice Set",
+      "priceCopper": 10,
+      "weightLb": 0,
+      "ability": "Wisdom",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:playing-card-set",
+      "name": "Playing Card Set",
+      "priceCopper": 50,
+      "weightLb": 0,
+      "ability": "Wisdom",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:bagpipes",
+      "name": "Bagpipes",
+      "priceCopper": 3000,
+      "weightLb": 6,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:drum",
+      "name": "Drum",
+      "priceCopper": 600,
+      "weightLb": 3,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:flute",
+      "name": "Flute",
+      "priceCopper": 200,
+      "weightLb": 1,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:lute",
+      "name": "Lute",
+      "priceCopper": 3500,
+      "weightLb": 2,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:lyre",
+      "name": "Lyre",
+      "priceCopper": 3000,
+      "weightLb": 2,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "tool:viol",
+      "name": "Viol",
+      "priceCopper": 3000,
+      "weightLb": 1,
+      "ability": "Charisma",
+      "category": "tool",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    }
+  ],
+  "equipmentPacks": [
+    {
+      "id": "pack:burglar-s-pack",
+      "name": "Burglar's Pack",
+      "priceCopper": 1600,
+      "weightLb": 42,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "pack:diplomat-s-pack",
+      "name": "Diplomat's Pack",
+      "priceCopper": 3900,
+      "weightLb": 46,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "pack:dungeoneer-s-pack",
+      "name": "Dungeoneer's Pack",
+      "priceCopper": 1200,
+      "weightLb": 61,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "pack:entertainer-s-pack",
+      "name": "Entertainer's Pack",
+      "priceCopper": 4000,
+      "weightLb": 38,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "pack:explorer-s-pack",
+      "name": "Explorer's Pack",
+      "priceCopper": 1000,
+      "weightLb": 59,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "pack:priest-s-pack",
+      "name": "Priest's Pack",
+      "priceCopper": 1900,
+      "weightLb": 24,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "pack:scholar-s-pack",
+      "name": "Scholar's Pack",
+      "priceCopper": 4000,
+      "weightLb": 22,
+      "category": "equipment_pack",
+      "stackable": false,
+      "source": "SRD-5.2.1"
+    }
+  ],
+  "mountsAndVehicles": [
+    {
+      "id": "mount:camel",
+      "name": "Camel",
+      "priceCopper": 5000,
+      "weightLb": 480,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:donkey",
+      "name": "Donkey",
+      "priceCopper": 800,
+      "weightLb": 420,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:mule",
+      "name": "Mule",
+      "priceCopper": 800,
+      "weightLb": 420,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:horse-draft",
+      "name": "Horse, Draft",
+      "priceCopper": 5000,
+      "weightLb": 540,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:horse-riding",
+      "name": "Horse, Riding",
+      "priceCopper": 7500,
+      "weightLb": 480,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:mastiff",
+      "name": "Mastiff",
+      "priceCopper": 2500,
+      "weightLb": 390,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:pony",
+      "name": "Pony",
+      "priceCopper": 3000,
+      "weightLb": 225,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "mount:warhorse",
+      "name": "Warhorse",
+      "priceCopper": 40000,
+      "weightLb": 540,
+      "category": "mount",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:carriage",
+      "name": "Carriage",
+      "priceCopper": 10000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:cart",
+      "name": "Cart",
+      "priceCopper": 1500,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:chariot",
+      "name": "Chariot",
+      "priceCopper": 25000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:wagon",
+      "name": "Wagon",
+      "priceCopper": 3500,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:rowboat",
+      "name": "Rowboat",
+      "priceCopper": 5000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:sailing-ship",
+      "name": "Sailing Ship",
+      "priceCopper": 1000000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:keelboat",
+      "name": "Keelboat",
+      "priceCopper": 300000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:galley",
+      "name": "Galley",
+      "priceCopper": 3000000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    },
+    {
+      "id": "vehicle:longship",
+      "name": "Longship",
+      "priceCopper": 1000000,
+      "category": "vehicle",
+      "source": "SRD-5.2.1"
+    }
+  ],
+  "magicItems": [
+    {
+      "id": "magic:bag-of-holding",
+      "name": "Bag of Holding",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:cloak-of-protection",
+      "name": "Cloak of Protection",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:cloak-of-the-manta-ray",
+      "name": "Cloak of the Manta Ray",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:driftglobe",
+      "name": "Driftglobe",
+      "rarity": "uncommon",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:gauntlets-of-ogre-power",
+      "name": "Gauntlets of Ogre Power",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:goggles-of-night",
+      "name": "Goggles of Night",
+      "rarity": "uncommon",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:hat-of-disguise",
+      "name": "Hat of Disguise",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:immovable-rod",
+      "name": "Immovable Rod",
+      "rarity": "uncommon",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:javelin-of-lightning",
+      "name": "Javelin of Lightning",
+      "rarity": "uncommon",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:pearl-of-power",
+      "name": "Pearl of Power",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:ring-of-jumping",
+      "name": "Ring of Jumping",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:ring-of-swimming",
+      "name": "Ring of Swimming",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:slippers-of-spider-climbing",
+      "name": "Slippers of Spider Climbing",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:wand-of-magic-detection",
+      "name": "Wand of Magic Detection",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:wand-of-secrets",
+      "name": "Wand of Secrets",
+      "rarity": "uncommon",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:weapon-1",
+      "name": "Weapon, +1",
+      "rarity": "uncommon",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:armor-1",
+      "name": "Armor, +1",
+      "rarity": "rare",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:amulet-of-health",
+      "name": "Amulet of Health",
+      "rarity": "rare",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:boots-of-speed",
+      "name": "Boots of Speed",
+      "rarity": "rare",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:flame-tongue",
+      "name": "Flame Tongue",
+      "rarity": "rare",
+      "requiresAttunement": true,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:potion-of-healing",
+      "name": "Potion of Healing",
+      "rarity": "common",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:potion-of-greater-healing",
+      "name": "Potion of Greater Healing",
+      "rarity": "uncommon",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:potion-of-superior-healing",
+      "name": "Potion of Superior Healing",
+      "rarity": "rare",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    },
+    {
+      "id": "magic:potion-of-supreme-healing",
+      "name": "Potion of Supreme Healing",
+      "rarity": "very rare",
+      "requiresAttunement": false,
+      "category": "magic_item",
+      "source": "SRD-5.2.1",
+      "description": "Magic item entry; implement its rules effect in the item effect registry."
+    }
+  ],
+  "currency": {
+    "conversion": {
+      "cp": 1,
+      "sp": 10,
+      "ep": 50,
+      "gp": 100,
+      "pp": 1000
+    },
+    "units": [
+      "cp",
+      "sp",
+      "ep",
+      "gp",
+      "pp"
+    ],
+    "storageUnit": "copper"
+  }
 }
