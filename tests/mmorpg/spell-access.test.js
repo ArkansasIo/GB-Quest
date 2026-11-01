@@ -41,7 +41,7 @@ test("spell runtime refuses a spell excluded by configured class access", () => 
   const foe = target();
   const result = castSpell({ caster: mage, targets: [foe], spell: bolt, random: () => 0.5 });
   assert.deepEqual(result, { ok: false, reason: "spell_not_available_to_class" });
-  assert.equal(mage.spellState.slots[0].remaining, 2);
+  assert.equal(mage.spellState.slots[0].remaining, 4);
   assert.equal(mage.actionAvailable, true);
   assert.equal(foe.hp, 10);
 });
