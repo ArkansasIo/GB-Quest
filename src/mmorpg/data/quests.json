@@ -1,0 +1,1192 @@
+{
+  "quests": [
+    {
+      "id": "mq-001",
+      "kind": "main",
+      "title": "Find the village elder",
+      "description": "Speak to the elder and learn why the old road is closed.",
+      "objective": {
+        "type": "talk",
+        "target": "elder",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 500,
+        "gold": 100
+      }
+    },
+    {
+      "id": "mq-002",
+      "kind": "main",
+      "title": "Gather the road supplies",
+      "description": "Collect provisions for the missing caravan.",
+      "objective": {
+        "type": "collect",
+        "target": "provisions",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 500,
+        "gold": 100
+      }
+    },
+    {
+      "id": "mq-003",
+      "kind": "main",
+      "title": "Track the broken wagons",
+      "description": "Follow the tracks to the forest edge.",
+      "objective": {
+        "type": "discover",
+        "target": "wagon-tracks",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 500,
+        "gold": 100
+      }
+    },
+    {
+      "id": "mq-004",
+      "kind": "main",
+      "title": "Clear Mossfall Cave",
+      "description": "Defeat the cave creatures and rescue the scouts.",
+      "objective": {
+        "type": "kill",
+        "target": "mossfall-guard",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 500,
+        "gold": 100
+      }
+    },
+    {
+      "id": "mq-005",
+      "kind": "main",
+      "title": "Recover the lost relic",
+      "description": "Retrieve the relic from the Goblin Keep.",
+      "objective": {
+        "type": "collect",
+        "target": "lost-relic",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 500,
+        "gold": 100
+      }
+    },
+    {
+      "id": "mq-006",
+      "kind": "main",
+      "title": "Reach Frostmere Pass",
+      "description": "Travel to the frozen pass and scout the avalanche.",
+      "objective": {
+        "type": "discover",
+        "target": "frostmere-pass",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 750,
+        "gold": 150
+      }
+    },
+    {
+      "id": "mq-007",
+      "kind": "main",
+      "title": "Find the missing climbers",
+      "description": "Rescue the stranded expedition.",
+      "objective": {
+        "type": "rescue",
+        "target": "climbers",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 750,
+        "gold": 150
+      }
+    },
+    {
+      "id": "mq-008",
+      "kind": "main",
+      "title": "Earn the Giant's Accord",
+      "description": "Complete the trials of the stone clans.",
+      "objective": {
+        "type": "reputation",
+        "target": "stone-clans",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 750,
+        "gold": 150
+      }
+    },
+    {
+      "id": "mq-009",
+      "kind": "main",
+      "title": "Defend the highland holds",
+      "description": "Repel the invading frostbound warband.",
+      "objective": {
+        "type": "defend",
+        "target": "highland-holds",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 750,
+        "gold": 150
+      }
+    },
+    {
+      "id": "mq-010",
+      "kind": "main",
+      "title": "Break the Rime Crown",
+      "description": "Defeat the arc boss beneath the glacier.",
+      "objective": {
+        "type": "boss",
+        "target": "rime-crown",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 750,
+        "gold": 150
+      }
+    },
+    {
+      "id": "mq-011",
+      "kind": "main",
+      "title": "Find the mirage map",
+      "description": "Recover the map from the buried observatory.",
+      "objective": {
+        "type": "collect",
+        "target": "mirage-map",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1000,
+        "gold": 200
+      }
+    },
+    {
+      "id": "mq-012",
+      "kind": "main",
+      "title": "Escort the dune scholar",
+      "description": "Protect the scholar on the route to the lost city.",
+      "objective": {
+        "type": "escort",
+        "target": "dune-scholar",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1000,
+        "gold": 200
+      }
+    },
+    {
+      "id": "mq-013",
+      "kind": "main",
+      "title": "Uncover the caravan conspiracy",
+      "description": "Find evidence against the rival house.",
+      "objective": {
+        "type": "investigate",
+        "target": "caravan-ledger",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1000,
+        "gold": 200
+      }
+    },
+    {
+      "id": "mq-014",
+      "kind": "main",
+      "title": "Secure the Ember Treaty",
+      "description": "Complete the volcanic clan negotiation.",
+      "objective": {
+        "type": "reputation",
+        "target": "ember-clans",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1000,
+        "gold": 200
+      }
+    },
+    {
+      "id": "mq-015",
+      "kind": "main",
+      "title": "Enter the living caldera",
+      "description": "Stop the furnace heart from awakening.",
+      "objective": {
+        "type": "boss",
+        "target": "furnace-heart",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1000,
+        "gold": 200
+      }
+    },
+    {
+      "id": "mq-016",
+      "kind": "main",
+      "title": "Investigate the Blackroot blight",
+      "description": "Trace the corruption to its source.",
+      "objective": {
+        "type": "investigate",
+        "target": "blackroot",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1250,
+        "gold": 250
+      }
+    },
+    {
+      "id": "mq-017",
+      "kind": "main",
+      "title": "Recover the warding roots",
+      "description": "Gather ancient roots for the grove wardens.",
+      "objective": {
+        "type": "collect",
+        "target": "warding-roots",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1250,
+        "gold": 250
+      }
+    },
+    {
+      "id": "mq-018",
+      "kind": "main",
+      "title": "Open the buried road",
+      "description": "Activate the three underdeep gates.",
+      "objective": {
+        "type": "interact",
+        "target": "underdeep-gates",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1250,
+        "gold": 250
+      }
+    },
+    {
+      "id": "mq-019",
+      "kind": "main",
+      "title": "Rescue the lost expedition",
+      "description": "Find the expedition below the veil.",
+      "objective": {
+        "type": "rescue",
+        "target": "lost-expedition",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1250,
+        "gold": 250
+      }
+    },
+    {
+      "id": "mq-020",
+      "kind": "main",
+      "title": "End the Hollow Throne",
+      "description": "Defeat the shadow ruler.",
+      "objective": {
+        "type": "boss",
+        "target": "hollow-throne",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1250,
+        "gold": 250
+      }
+    },
+    {
+      "id": "mq-021",
+      "kind": "main",
+      "title": "Unite the four banners",
+      "description": "Raise alliance standing on every continent.",
+      "objective": {
+        "type": "reputation",
+        "target": "four-banners",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1500,
+        "gold": 300
+      }
+    },
+    {
+      "id": "mq-022",
+      "kind": "main",
+      "title": "Defend the western border",
+      "description": "Repel the first coordinated invasion.",
+      "objective": {
+        "type": "defend",
+        "target": "western-border",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1500,
+        "gold": 300
+      }
+    },
+    {
+      "id": "mq-023",
+      "kind": "main",
+      "title": "Recover a celestial key",
+      "description": "Complete an ancient dungeon trial.",
+      "objective": {
+        "type": "dungeon",
+        "target": "celestial-key",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1500,
+        "gold": 300
+      }
+    },
+    {
+      "id": "mq-024",
+      "kind": "main",
+      "title": "Close the broken constellation",
+      "description": "Seal the rift nodes in the raid instance.",
+      "objective": {
+        "type": "interact",
+        "target": "rift-nodes",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1500,
+        "gold": 300
+      }
+    },
+    {
+      "id": "mq-025",
+      "kind": "main",
+      "title": "Win the four-banner siege",
+      "description": "Defeat the invasion commander.",
+      "objective": {
+        "type": "boss",
+        "target": "siege-commander",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1500,
+        "gold": 300
+      }
+    },
+    {
+      "id": "mq-026",
+      "kind": "main",
+      "title": "Cross the Starless Gate",
+      "description": "Open the route to the outer rift.",
+      "objective": {
+        "type": "discover",
+        "target": "starless-gate",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1750,
+        "gold": 350
+      }
+    },
+    {
+      "id": "mq-027",
+      "kind": "main",
+      "title": "Find the first seal",
+      "description": "Recover the first seal from an arc boss.",
+      "objective": {
+        "type": "boss",
+        "target": "first-seal",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1750,
+        "gold": 350
+      }
+    },
+    {
+      "id": "mq-028",
+      "kind": "main",
+      "title": "Complete the Seven Seals",
+      "description": "Finish all seven realm trials.",
+      "objective": {
+        "type": "interact",
+        "target": "seven-seals",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1750,
+        "gold": 350
+      }
+    },
+    {
+      "id": "mq-029",
+      "kind": "main",
+      "title": "Defeat the Last Herald",
+      "description": "Defeat the guardian of the final approach.",
+      "objective": {
+        "type": "boss",
+        "target": "last-herald",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1750,
+        "gold": 350
+      }
+    },
+    {
+      "id": "mq-030",
+      "kind": "main",
+      "title": "Crown of Worlds",
+      "description": "Confront the final arc boss and decide the world's future.",
+      "objective": {
+        "type": "boss",
+        "target": "world-crown",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 1750,
+        "gold": 350
+      }
+    },
+    {
+      "id": "sq-001",
+      "kind": "side",
+      "title": "Lost Courier",
+      "description": "An optional local story in The Greenward Oath. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "collect",
+        "target": "side-target-1",
+        "required": 3
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 150,
+        "gold": 30
+      }
+    },
+    {
+      "id": "sq-002",
+      "kind": "side",
+      "title": "Herbalist's Request",
+      "description": "An optional local story in The Greenward Oath. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "kill",
+        "target": "side-target-2",
+        "required": 5
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 150,
+        "gold": 30
+      }
+    },
+    {
+      "id": "sq-003",
+      "kind": "side",
+      "title": "A Hunter's Mark",
+      "description": "An optional local story in The Greenward Oath. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "discover",
+        "target": "side-target-3",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 150,
+        "gold": 30
+      }
+    },
+    {
+      "id": "sq-004",
+      "kind": "side",
+      "title": "The Broken Shrine",
+      "description": "An optional local story in The Greenward Oath. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "escort",
+        "target": "side-target-4",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 150,
+        "gold": 30
+      }
+    },
+    {
+      "id": "sq-005",
+      "kind": "side",
+      "title": "Goblin Debt",
+      "description": "An optional local story in The Greenward Oath. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "interact",
+        "target": "side-target-5",
+        "required": 2
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": true,
+      "rewards": {
+        "xp": 150,
+        "gold": 30
+      }
+    },
+    {
+      "id": "sq-006",
+      "kind": "side",
+      "title": "A Quiet Village",
+      "description": "An optional local story in The Greenward Oath. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "deliver",
+        "target": "side-target-6",
+        "required": 1
+      },
+      "actId": "act-01",
+      "recommendedLevel": 1,
+      "repeatable": false,
+      "rewards": {
+        "xp": 150,
+        "gold": 30
+      }
+    },
+    {
+      "id": "sq-007",
+      "kind": "side",
+      "title": "The Frozen Bell",
+      "description": "An optional local story in Ashes of the Highcrown. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "collect",
+        "target": "side-target-7",
+        "required": 3
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 250,
+        "gold": 50
+      }
+    },
+    {
+      "id": "sq-008",
+      "kind": "side",
+      "title": "Mountain Remedies",
+      "description": "An optional local story in Ashes of the Highcrown. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "kill",
+        "target": "side-target-8",
+        "required": 5
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 250,
+        "gold": 50
+      }
+    },
+    {
+      "id": "sq-009",
+      "kind": "side",
+      "title": "The Lost Pickaxe",
+      "description": "An optional local story in Ashes of the Highcrown. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "discover",
+        "target": "side-target-9",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 250,
+        "gold": 50
+      }
+    },
+    {
+      "id": "sq-010",
+      "kind": "side",
+      "title": "A Giant's Keepsake",
+      "description": "An optional local story in Ashes of the Highcrown. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "escort",
+        "target": "side-target-10",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 250,
+        "gold": 50
+      }
+    },
+    {
+      "id": "sq-011",
+      "kind": "side",
+      "title": "Sand in the Gears",
+      "description": "An optional local story in Ashes of the Highcrown. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "interact",
+        "target": "side-target-11",
+        "required": 2
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": true,
+      "rewards": {
+        "xp": 250,
+        "gold": 50
+      }
+    },
+    {
+      "id": "sq-012",
+      "kind": "side",
+      "title": "The Missing Cartographer",
+      "description": "An optional local story in Ashes of the Highcrown. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "deliver",
+        "target": "side-target-12",
+        "required": 1
+      },
+      "actId": "act-02",
+      "recommendedLevel": 31,
+      "repeatable": false,
+      "rewards": {
+        "xp": 250,
+        "gold": 50
+      }
+    },
+    {
+      "id": "sq-013",
+      "kind": "side",
+      "title": "A Merchant's Secret",
+      "description": "An optional local story in The Sunscar Expanse. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "collect",
+        "target": "side-target-13",
+        "required": 3
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 350,
+        "gold": 70
+      }
+    },
+    {
+      "id": "sq-014",
+      "kind": "side",
+      "title": "Scorpion Hunt",
+      "description": "An optional local story in The Sunscar Expanse. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "kill",
+        "target": "side-target-14",
+        "required": 5
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 350,
+        "gold": 70
+      }
+    },
+    {
+      "id": "sq-015",
+      "kind": "side",
+      "title": "Ashfall Rescue",
+      "description": "An optional local story in The Sunscar Expanse. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "discover",
+        "target": "side-target-15",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 350,
+        "gold": 70
+      }
+    },
+    {
+      "id": "sq-016",
+      "kind": "side",
+      "title": "The Ember Relic",
+      "description": "An optional local story in The Sunscar Expanse. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "escort",
+        "target": "side-target-16",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 350,
+        "gold": 70
+      }
+    },
+    {
+      "id": "sq-017",
+      "kind": "side",
+      "title": "A Cook's Challenge",
+      "description": "An optional local story in The Sunscar Expanse. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "interact",
+        "target": "side-target-17",
+        "required": 2
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": true,
+      "rewards": {
+        "xp": 350,
+        "gold": 70
+      }
+    },
+    {
+      "id": "sq-018",
+      "kind": "side",
+      "title": "The Glass Garden",
+      "description": "An optional local story in The Sunscar Expanse. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "deliver",
+        "target": "side-target-18",
+        "required": 1
+      },
+      "actId": "act-03",
+      "recommendedLevel": 121,
+      "repeatable": false,
+      "rewards": {
+        "xp": 350,
+        "gold": 70
+      }
+    },
+    {
+      "id": "sq-019",
+      "kind": "side",
+      "title": "The Blackroot Cure",
+      "description": "An optional local story in Whispers of Umbraldeep. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "collect",
+        "target": "side-target-19",
+        "required": 3
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 450,
+        "gold": 90
+      }
+    },
+    {
+      "id": "sq-020",
+      "kind": "side",
+      "title": "Ravenmoor's Missing",
+      "description": "An optional local story in Whispers of Umbraldeep. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "kill",
+        "target": "side-target-20",
+        "required": 5
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 450,
+        "gold": 90
+      }
+    },
+    {
+      "id": "sq-021",
+      "kind": "side",
+      "title": "A Lantern in the Mire",
+      "description": "An optional local story in Whispers of Umbraldeep. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "discover",
+        "target": "side-target-21",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 450,
+        "gold": 90
+      }
+    },
+    {
+      "id": "sq-022",
+      "kind": "side",
+      "title": "The Silent Crypt",
+      "description": "An optional local story in Whispers of Umbraldeep. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "escort",
+        "target": "side-target-22",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 450,
+        "gold": 90
+      }
+    },
+    {
+      "id": "sq-023",
+      "kind": "side",
+      "title": "A Stolen Sigil",
+      "description": "An optional local story in Whispers of Umbraldeep. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "interact",
+        "target": "side-target-23",
+        "required": 2
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": true,
+      "rewards": {
+        "xp": 450,
+        "gold": 90
+      }
+    },
+    {
+      "id": "sq-024",
+      "kind": "side",
+      "title": "The Night Watch",
+      "description": "An optional local story in Whispers of Umbraldeep. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "deliver",
+        "target": "side-target-24",
+        "required": 1
+      },
+      "actId": "act-04",
+      "recommendedLevel": 241,
+      "repeatable": false,
+      "rewards": {
+        "xp": 450,
+        "gold": 90
+      }
+    },
+    {
+      "id": "sq-025",
+      "kind": "side",
+      "title": "Borderland Supplies",
+      "description": "An optional local story in War of the Four Banners. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "collect",
+        "target": "side-target-25",
+        "required": 3
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 550,
+        "gold": 110
+      }
+    },
+    {
+      "id": "sq-026",
+      "kind": "side",
+      "title": "The Fallen Standard",
+      "description": "An optional local story in War of the Four Banners. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "kill",
+        "target": "side-target-26",
+        "required": 5
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 550,
+        "gold": 110
+      }
+    },
+    {
+      "id": "sq-027",
+      "kind": "side",
+      "title": "The Star Map",
+      "description": "An optional local story in War of the Four Banners. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "discover",
+        "target": "side-target-27",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 550,
+        "gold": 110
+      }
+    },
+    {
+      "id": "sq-028",
+      "kind": "side",
+      "title": "A Forgotten Champion",
+      "description": "An optional local story in War of the Four Banners. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "escort",
+        "target": "side-target-28",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 550,
+        "gold": 110
+      }
+    },
+    {
+      "id": "sq-029",
+      "kind": "side",
+      "title": "The Siege Engineer",
+      "description": "An optional local story in War of the Four Banners. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "interact",
+        "target": "side-target-29",
+        "required": 2
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": true,
+      "rewards": {
+        "xp": 550,
+        "gold": 110
+      }
+    },
+    {
+      "id": "sq-030",
+      "kind": "side",
+      "title": "The Last Messenger",
+      "description": "An optional local story in War of the Four Banners. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "deliver",
+        "target": "side-target-30",
+        "required": 1
+      },
+      "actId": "act-05",
+      "recommendedLevel": 361,
+      "repeatable": false,
+      "rewards": {
+        "xp": 550,
+        "gold": 110
+      }
+    },
+    {
+      "id": "sq-031",
+      "kind": "side",
+      "title": "Rift Echoes",
+      "description": "An optional local story in The Last Arc. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "collect",
+        "target": "side-target-31",
+        "required": 3
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 650,
+        "gold": 130
+      }
+    },
+    {
+      "id": "sq-032",
+      "kind": "side",
+      "title": "The Wandering Astrologer",
+      "description": "An optional local story in The Last Arc. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "kill",
+        "target": "side-target-32",
+        "required": 5
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 650,
+        "gold": 130
+      }
+    },
+    {
+      "id": "sq-033",
+      "kind": "side",
+      "title": "Seal Fragments",
+      "description": "An optional local story in The Last Arc. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "discover",
+        "target": "side-target-33",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 650,
+        "gold": 130
+      }
+    },
+    {
+      "id": "sq-034",
+      "kind": "side",
+      "title": "The Dreaming Gate",
+      "description": "An optional local story in The Last Arc. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "escort",
+        "target": "side-target-34",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 650,
+        "gold": 130
+      }
+    },
+    {
+      "id": "sq-035",
+      "kind": "side",
+      "title": "The Final Pilgrim",
+      "description": "An optional local story in The Last Arc. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "interact",
+        "target": "side-target-35",
+        "required": 2
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": true,
+      "rewards": {
+        "xp": 650,
+        "gold": 130
+      }
+    },
+    {
+      "id": "sq-036",
+      "kind": "side",
+      "title": "Legacy of the Four Banners",
+      "description": "An optional local story in The Last Arc. Help the people of the region and uncover a small piece of the world's history.",
+      "objective": {
+        "type": "deliver",
+        "target": "side-target-36",
+        "required": 1
+      },
+      "actId": "act-06",
+      "recommendedLevel": 541,
+      "repeatable": false,
+      "rewards": {
+        "xp": 650,
+        "gold": 130
+      }
+    }
+  ]
+}
