@@ -16,7 +16,9 @@
       "rewards": {
         "xp": 500,
         "gold": 100
-      }
+      },
+      "chapterId": "ch-01-01",
+      "prerequisites": []
     },
     {
       "id": "mq-002",
@@ -34,7 +36,11 @@
       "rewards": {
         "xp": 500,
         "gold": 100
-      }
+      },
+      "chapterId": "ch-01-01",
+      "prerequisites": [
+        "mq-001"
+      ]
     },
     {
       "id": "mq-003",
@@ -52,7 +58,11 @@
       "rewards": {
         "xp": 500,
         "gold": 100
-      }
+      },
+      "chapterId": "ch-01-02",
+      "prerequisites": [
+        "mq-002"
+      ]
     },
     {
       "id": "mq-004",
@@ -70,7 +80,11 @@
       "rewards": {
         "xp": 500,
         "gold": 100
-      }
+      },
+      "chapterId": "ch-01-02",
+      "prerequisites": [
+        "mq-003"
+      ]
     },
     {
       "id": "mq-005",
@@ -88,7 +102,11 @@
       "rewards": {
         "xp": 500,
         "gold": 100
-      }
+      },
+      "chapterId": "ch-01-03",
+      "prerequisites": [
+        "mq-004"
+      ]
     },
     {
       "id": "mq-006",
@@ -106,7 +124,11 @@
       "rewards": {
         "xp": 750,
         "gold": 150
-      }
+      },
+      "chapterId": "ch-02-01",
+      "prerequisites": [
+        "mq-005"
+      ]
     },
     {
       "id": "mq-007",
@@ -124,7 +146,11 @@
       "rewards": {
         "xp": 750,
         "gold": 150
-      }
+      },
+      "chapterId": "ch-02-01",
+      "prerequisites": [
+        "mq-006"
+      ]
     },
     {
       "id": "mq-008",
@@ -142,7 +168,11 @@
       "rewards": {
         "xp": 750,
         "gold": 150
-      }
+      },
+      "chapterId": "ch-02-02",
+      "prerequisites": [
+        "mq-007"
+      ]
     },
     {
       "id": "mq-009",
@@ -160,7 +190,11 @@
       "rewards": {
         "xp": 750,
         "gold": 150
-      }
+      },
+      "chapterId": "ch-02-02",
+      "prerequisites": [
+        "mq-008"
+      ]
     },
     {
       "id": "mq-010",
@@ -178,7 +212,11 @@
       "rewards": {
         "xp": 750,
         "gold": 150
-      }
+      },
+      "chapterId": "ch-02-03",
+      "prerequisites": [
+        "mq-009"
+      ]
     },
     {
       "id": "mq-011",
@@ -196,7 +234,11 @@
       "rewards": {
         "xp": 1000,
         "gold": 200
-      }
+      },
+      "chapterId": "ch-03-01",
+      "prerequisites": [
+        "mq-010"
+      ]
     },
     {
       "id": "mq-012",
@@ -214,7 +256,11 @@
       "rewards": {
         "xp": 1000,
         "gold": 200
-      }
+      },
+      "chapterId": "ch-03-01",
+      "prerequisites": [
+        "mq-011"
+      ]
     },
     {
       "id": "mq-013",
@@ -232,7 +278,11 @@
       "rewards": {
         "xp": 1000,
         "gold": 200
-      }
+      },
+      "chapterId": "ch-03-02",
+      "prerequisites": [
+        "mq-012"
+      ]
     },
     {
       "id": "mq-014",
@@ -250,7 +300,11 @@
       "rewards": {
         "xp": 1000,
         "gold": 200
-      }
+      },
+      "chapterId": "ch-03-02",
+      "prerequisites": [
+        "mq-013"
+      ]
     },
     {
       "id": "mq-015",
@@ -268,7 +322,11 @@
       "rewards": {
         "xp": 1000,
         "gold": 200
-      }
+      },
+      "chapterId": "ch-03-03",
+      "prerequisites": [
+        "mq-014"
+      ]
     },
     {
       "id": "mq-016",
@@ -286,7 +344,11 @@
       "rewards": {
         "xp": 1250,
         "gold": 250
-      }
+      },
+      "chapterId": "ch-04-01",
+      "prerequisites": [
+        "mq-015"
+      ]
     },
     {
       "id": "mq-017",
@@ -304,7 +366,11 @@
       "rewards": {
         "xp": 1250,
         "gold": 250
-      }
+      },
+      "chapterId": "ch-04-01",
+      "prerequisites": [
+        "mq-016"
+      ]
     },
     {
       "id": "mq-018",
@@ -322,7 +388,11 @@
       "rewards": {
         "xp": 1250,
         "gold": 250
-      }
+      },
+      "chapterId": "ch-04-02",
+      "prerequisites": [
+        "mq-017"
+      ]
     },
     {
       "id": "mq-019",
@@ -340,7 +410,11 @@
       "rewards": {
         "xp": 1250,
         "gold": 250
-      }
+      },
+      "chapterId": "ch-04-02",
+      "prerequisites": [
+        "mq-018"
+      ]
     },
     {
       "id": "mq-020",
@@ -358,7 +432,11 @@
       "rewards": {
         "xp": 1250,
         "gold": 250
-      }
+      },
+      "chapterId": "ch-04-03",
+      "prerequisites": [
+        "mq-019"
+      ]
     },
     {
       "id": "mq-021",
@@ -376,7 +454,11 @@
       "rewards": {
         "xp": 1500,
         "gold": 300
-      }
+      },
+      "chapterId": "ch-05-01",
+      "prerequisites": [
+        "mq-020"
+      ]
     },
     {
       "id": "mq-022",
@@ -394,7 +476,11 @@
       "rewards": {
         "xp": 1500,
         "gold": 300
-      }
+      },
+      "chapterId": "ch-05-01",
+      "prerequisites": [
+        "mq-021"
+      ]
     },
     {
       "id": "mq-023",
@@ -412,7 +498,11 @@
       "rewards": {
         "xp": 1500,
         "gold": 300
-      }
+      },
+      "chapterId": "ch-05-02",
+      "prerequisites": [
+        "mq-022"
+      ]
     },
     {
       "id": "mq-024",
@@ -430,7 +520,11 @@
       "rewards": {
         "xp": 1500,
         "gold": 300
-      }
+      },
+      "chapterId": "ch-05-02",
+      "prerequisites": [
+        "mq-023"
+      ]
     },
     {
       "id": "mq-025",
@@ -448,7 +542,11 @@
       "rewards": {
         "xp": 1500,
         "gold": 300
-      }
+      },
+      "chapterId": "ch-05-03",
+      "prerequisites": [
+        "mq-024"
+      ]
     },
     {
       "id": "mq-026",
@@ -466,7 +564,11 @@
       "rewards": {
         "xp": 1750,
         "gold": 350
-      }
+      },
+      "chapterId": "ch-06-01",
+      "prerequisites": [
+        "mq-025"
+      ]
     },
     {
       "id": "mq-027",
@@ -484,7 +586,11 @@
       "rewards": {
         "xp": 1750,
         "gold": 350
-      }
+      },
+      "chapterId": "ch-06-01",
+      "prerequisites": [
+        "mq-026"
+      ]
     },
     {
       "id": "mq-028",
@@ -502,7 +608,11 @@
       "rewards": {
         "xp": 1750,
         "gold": 350
-      }
+      },
+      "chapterId": "ch-06-02",
+      "prerequisites": [
+        "mq-027"
+      ]
     },
     {
       "id": "mq-029",
@@ -520,7 +630,11 @@
       "rewards": {
         "xp": 1750,
         "gold": 350
-      }
+      },
+      "chapterId": "ch-06-02",
+      "prerequisites": [
+        "mq-028"
+      ]
     },
     {
       "id": "mq-030",
@@ -538,7 +652,11 @@
       "rewards": {
         "xp": 1750,
         "gold": 350
-      }
+      },
+      "chapterId": "ch-06-03",
+      "prerequisites": [
+        "mq-029"
+      ]
     },
     {
       "id": "sq-001",
@@ -556,7 +674,9 @@
       "rewards": {
         "xp": 150,
         "gold": 30
-      }
+      },
+      "chapterId": "ch-01-01",
+      "prerequisites": []
     },
     {
       "id": "sq-002",
@@ -574,7 +694,9 @@
       "rewards": {
         "xp": 150,
         "gold": 30
-      }
+      },
+      "chapterId": "ch-01-01",
+      "prerequisites": []
     },
     {
       "id": "sq-003",
@@ -592,7 +714,9 @@
       "rewards": {
         "xp": 150,
         "gold": 30
-      }
+      },
+      "chapterId": "ch-01-02",
+      "prerequisites": []
     },
     {
       "id": "sq-004",
@@ -610,7 +734,9 @@
       "rewards": {
         "xp": 150,
         "gold": 30
-      }
+      },
+      "chapterId": "ch-01-02",
+      "prerequisites": []
     },
     {
       "id": "sq-005",
@@ -628,7 +754,9 @@
       "rewards": {
         "xp": 150,
         "gold": 30
-      }
+      },
+      "chapterId": "ch-01-03",
+      "prerequisites": []
     },
     {
       "id": "sq-006",
@@ -646,7 +774,9 @@
       "rewards": {
         "xp": 150,
         "gold": 30
-      }
+      },
+      "chapterId": "ch-01-03",
+      "prerequisites": []
     },
     {
       "id": "sq-007",
@@ -664,7 +794,9 @@
       "rewards": {
         "xp": 250,
         "gold": 50
-      }
+      },
+      "chapterId": "ch-02-01",
+      "prerequisites": []
     },
     {
       "id": "sq-008",
@@ -682,7 +814,9 @@
       "rewards": {
         "xp": 250,
         "gold": 50
-      }
+      },
+      "chapterId": "ch-02-01",
+      "prerequisites": []
     },
     {
       "id": "sq-009",
@@ -700,7 +834,9 @@
       "rewards": {
         "xp": 250,
         "gold": 50
-      }
+      },
+      "chapterId": "ch-02-02",
+      "prerequisites": []
     },
     {
       "id": "sq-010",
@@ -718,7 +854,9 @@
       "rewards": {
         "xp": 250,
         "gold": 50
-      }
+      },
+      "chapterId": "ch-02-02",
+      "prerequisites": []
     },
     {
       "id": "sq-011",
@@ -736,7 +874,9 @@
       "rewards": {
         "xp": 250,
         "gold": 50
-      }
+      },
+      "chapterId": "ch-02-03",
+      "prerequisites": []
     },
     {
       "id": "sq-012",
@@ -754,7 +894,9 @@
       "rewards": {
         "xp": 250,
         "gold": 50
-      }
+      },
+      "chapterId": "ch-02-03",
+      "prerequisites": []
     },
     {
       "id": "sq-013",
@@ -772,7 +914,9 @@
       "rewards": {
         "xp": 350,
         "gold": 70
-      }
+      },
+      "chapterId": "ch-03-01",
+      "prerequisites": []
     },
     {
       "id": "sq-014",
@@ -790,7 +934,9 @@
       "rewards": {
         "xp": 350,
         "gold": 70
-      }
+      },
+      "chapterId": "ch-03-01",
+      "prerequisites": []
     },
     {
       "id": "sq-015",
@@ -808,7 +954,9 @@
       "rewards": {
         "xp": 350,
         "gold": 70
-      }
+      },
+      "chapterId": "ch-03-02",
+      "prerequisites": []
     },
     {
       "id": "sq-016",
@@ -826,7 +974,9 @@
       "rewards": {
         "xp": 350,
         "gold": 70
-      }
+      },
+      "chapterId": "ch-03-02",
+      "prerequisites": []
     },
     {
       "id": "sq-017",
@@ -844,7 +994,9 @@
       "rewards": {
         "xp": 350,
         "gold": 70
-      }
+      },
+      "chapterId": "ch-03-03",
+      "prerequisites": []
     },
     {
       "id": "sq-018",
@@ -862,7 +1014,9 @@
       "rewards": {
         "xp": 350,
         "gold": 70
-      }
+      },
+      "chapterId": "ch-03-03",
+      "prerequisites": []
     },
     {
       "id": "sq-019",
@@ -880,7 +1034,9 @@
       "rewards": {
         "xp": 450,
         "gold": 90
-      }
+      },
+      "chapterId": "ch-04-01",
+      "prerequisites": []
     },
     {
       "id": "sq-020",
@@ -898,7 +1054,9 @@
       "rewards": {
         "xp": 450,
         "gold": 90
-      }
+      },
+      "chapterId": "ch-04-01",
+      "prerequisites": []
     },
     {
       "id": "sq-021",
@@ -916,7 +1074,9 @@
       "rewards": {
         "xp": 450,
         "gold": 90
-      }
+      },
+      "chapterId": "ch-04-02",
+      "prerequisites": []
     },
     {
       "id": "sq-022",
@@ -934,7 +1094,9 @@
       "rewards": {
         "xp": 450,
         "gold": 90
-      }
+      },
+      "chapterId": "ch-04-02",
+      "prerequisites": []
     },
     {
       "id": "sq-023",
@@ -952,7 +1114,9 @@
       "rewards": {
         "xp": 450,
         "gold": 90
-      }
+      },
+      "chapterId": "ch-04-03",
+      "prerequisites": []
     },
     {
       "id": "sq-024",
@@ -970,7 +1134,9 @@
       "rewards": {
         "xp": 450,
         "gold": 90
-      }
+      },
+      "chapterId": "ch-04-03",
+      "prerequisites": []
     },
     {
       "id": "sq-025",
@@ -988,7 +1154,9 @@
       "rewards": {
         "xp": 550,
         "gold": 110
-      }
+      },
+      "chapterId": "ch-05-01",
+      "prerequisites": []
     },
     {
       "id": "sq-026",
@@ -1006,7 +1174,9 @@
       "rewards": {
         "xp": 550,
         "gold": 110
-      }
+      },
+      "chapterId": "ch-05-01",
+      "prerequisites": []
     },
     {
       "id": "sq-027",
@@ -1024,7 +1194,9 @@
       "rewards": {
         "xp": 550,
         "gold": 110
-      }
+      },
+      "chapterId": "ch-05-02",
+      "prerequisites": []
     },
     {
       "id": "sq-028",
@@ -1042,7 +1214,9 @@
       "rewards": {
         "xp": 550,
         "gold": 110
-      }
+      },
+      "chapterId": "ch-05-02",
+      "prerequisites": []
     },
     {
       "id": "sq-029",
@@ -1060,7 +1234,9 @@
       "rewards": {
         "xp": 550,
         "gold": 110
-      }
+      },
+      "chapterId": "ch-05-03",
+      "prerequisites": []
     },
     {
       "id": "sq-030",
@@ -1078,7 +1254,9 @@
       "rewards": {
         "xp": 550,
         "gold": 110
-      }
+      },
+      "chapterId": "ch-05-03",
+      "prerequisites": []
     },
     {
       "id": "sq-031",
@@ -1096,7 +1274,9 @@
       "rewards": {
         "xp": 650,
         "gold": 130
-      }
+      },
+      "chapterId": "ch-06-01",
+      "prerequisites": []
     },
     {
       "id": "sq-032",
@@ -1114,7 +1294,9 @@
       "rewards": {
         "xp": 650,
         "gold": 130
-      }
+      },
+      "chapterId": "ch-06-01",
+      "prerequisites": []
     },
     {
       "id": "sq-033",
@@ -1132,7 +1314,9 @@
       "rewards": {
         "xp": 650,
         "gold": 130
-      }
+      },
+      "chapterId": "ch-06-02",
+      "prerequisites": []
     },
     {
       "id": "sq-034",
@@ -1150,7 +1334,9 @@
       "rewards": {
         "xp": 650,
         "gold": 130
-      }
+      },
+      "chapterId": "ch-06-02",
+      "prerequisites": []
     },
     {
       "id": "sq-035",
@@ -1168,7 +1354,9 @@
       "rewards": {
         "xp": 650,
         "gold": 130
-      }
+      },
+      "chapterId": "ch-06-03",
+      "prerequisites": []
     },
     {
       "id": "sq-036",
@@ -1186,7 +1374,9 @@
       "rewards": {
         "xp": 650,
         "gold": 130
-      }
+      },
+      "chapterId": "ch-06-03",
+      "prerequisites": []
     }
   ]
 }
