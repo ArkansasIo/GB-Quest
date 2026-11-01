@@ -1,0 +1,15 @@
+{
+  "id": "greenreach",
+  "name": "Greenreach",
+  "continentId": "westreach",
+  "levelRange": [1, 8],
+  "biome": "temperate_forest",
+  "chunkSize": 32,
+  "spawnTable": "greenreach_common",
+  "travelNodes": ["oldroad_gate", "silverbrook_ferry"],
+  "pointsOfInterest": [
+    { "id": "brookhaven", "type": "village", "safeZone": true },
+    { "id": "watchtower_ruins", "type": "ruins", "safeZone": false },
+    { "id": "mossfall_cave", "type": "dungeon_entrance", "safeZone": false }
+  ]
+}
