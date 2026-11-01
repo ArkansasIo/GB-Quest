@@ -31,5 +31,6 @@ test("catalog records are isolated from caller mutation", () => {
   const catalog = createClassAbilityCatalog(source);
   source[0].name = "Changed";
   assert.equal(catalog.get("fighter.power-strike").name, "Power Strike");
+  assert.equal(Object.isFrozen(catalog.get("fighter.power-strike").effects), true);
   assert.throws(() => catalog.list({ limit: 0 }), /positive integer/i);
 });
