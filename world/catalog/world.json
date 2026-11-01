@@ -15,7 +15,11 @@
     "biomes": 48,
     "pointsOfInterest": 280,
     "factions": 21,
-    "majorRaids": 14
+    "majorRaids": 14,
+    "maps": 90,
+    "overworldMaps": 56,
+    "dungeonMaps": 20,
+    "raidMaps": 14
   },
   "continents": [
     {
@@ -214,5 +218,6 @@
       "discovery-fog"
     ]
   },
-  "settlementDistribution": "Every zone has one regional city, two towns and three villages; each continent also has one capital. Antarctica is a fantasy expedition realm with sheltered ice settlements and subglacial enclaves."
+  "settlementDistribution": "Every zone has one regional city, two towns and three villages; each continent also has one capital. Antarctica is a fantasy expedition realm with sheltered ice settlements and subglacial enclaves.",
+  "mapAtlas": "world/maps/index.json"
 }
