@@ -5,6 +5,7 @@ import {
 } from "../../src/mmorpg/rules/class-progression.js";
 
 const fighter = {
+  classId: "fighter",
   id: "fighter",
   levels: [
     { level: 2, features: [{ id: "action-surge", name: "Action Surge" }] },
