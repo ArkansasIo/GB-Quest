@@ -54,28 +54,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-0"
+        "north-america-zone-01-city",
+        "north-america-zone-01-town-1",
+        "north-america-zone-01-town-2",
+        "north-america-zone-01-village-1",
+        "north-america-zone-01-village-2",
+        "north-america-zone-01-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-01-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Frostpine Frontier",
+          "type": "dungeon",
+          "level": 41,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-01-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Frostpine Frontier",
+          "type": "ruins",
+          "level": 43,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-01-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Frostpine Frontier",
+          "type": "landmark",
+          "level": 45,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-01-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Frostpine Frontier",
+          "type": "resource_site",
+          "level": 47,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-01-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Frostpine Frontier",
+          "type": "world_boss_lair",
+          "level": 49,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -122,28 +142,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-1"
+        "north-america-zone-02-city",
+        "north-america-zone-02-town-1",
+        "north-america-zone-02-town-2",
+        "north-america-zone-02-village-1",
+        "north-america-zone-02-village-2",
+        "north-america-zone-02-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-02-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Thunderbird Prairie",
+          "type": "dungeon",
+          "level": 46,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-02-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Thunderbird Prairie",
+          "type": "ruins",
+          "level": 48,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-02-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Thunderbird Prairie",
+          "type": "landmark",
+          "level": 50,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-02-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Thunderbird Prairie",
+          "type": "resource_site",
+          "level": 52,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-02-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Thunderbird Prairie",
+          "type": "world_boss_lair",
+          "level": 54,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -190,28 +230,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-2"
+        "north-america-zone-03-city",
+        "north-america-zone-03-town-1",
+        "north-america-zone-03-town-2",
+        "north-america-zone-03-village-1",
+        "north-america-zone-03-village-2",
+        "north-america-zone-03-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-03-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Red Canyonlands",
+          "type": "dungeon",
+          "level": 51,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-03-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Red Canyonlands",
+          "type": "ruins",
+          "level": 53,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-03-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Red Canyonlands",
+          "type": "landmark",
+          "level": 55,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-03-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Red Canyonlands",
+          "type": "resource_site",
+          "level": 57,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-03-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Red Canyonlands",
+          "type": "world_boss_lair",
+          "level": 59,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -258,28 +318,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-3"
+        "north-america-zone-04-city",
+        "north-america-zone-04-town-1",
+        "north-america-zone-04-town-2",
+        "north-america-zone-04-village-1",
+        "north-america-zone-04-village-2",
+        "north-america-zone-04-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-04-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Silverlake Country",
+          "type": "dungeon",
+          "level": 56,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-04-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Silverlake Country",
+          "type": "ruins",
+          "level": 58,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-04-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Silverlake Country",
+          "type": "landmark",
+          "level": 60,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-04-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Silverlake Country",
+          "type": "resource_site",
+          "level": 62,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-04-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Silverlake Country",
+          "type": "world_boss_lair",
+          "level": 64,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -326,28 +406,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-4"
+        "north-america-zone-05-city",
+        "north-america-zone-05-town-1",
+        "north-america-zone-05-town-2",
+        "north-america-zone-05-village-1",
+        "north-america-zone-05-village-2",
+        "north-america-zone-05-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-05-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Misty Redwood Coast",
+          "type": "dungeon",
+          "level": 61,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-05-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Misty Redwood Coast",
+          "type": "ruins",
+          "level": 63,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-05-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Misty Redwood Coast",
+          "type": "landmark",
+          "level": 65,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-05-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Misty Redwood Coast",
+          "type": "resource_site",
+          "level": 67,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-05-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Misty Redwood Coast",
+          "type": "world_boss_lair",
+          "level": 69,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -394,28 +494,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-5"
+        "north-america-zone-06-city",
+        "north-america-zone-06-town-1",
+        "north-america-zone-06-town-2",
+        "north-america-zone-06-village-1",
+        "north-america-zone-06-village-2",
+        "north-america-zone-06-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-06-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Sunstone Mesa",
+          "type": "dungeon",
+          "level": 66,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-06-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Sunstone Mesa",
+          "type": "ruins",
+          "level": 68,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-06-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Sunstone Mesa",
+          "type": "landmark",
+          "level": 70,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-06-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Sunstone Mesa",
+          "type": "resource_site",
+          "level": 72,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-06-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Sunstone Mesa",
+          "type": "world_boss_lair",
+          "level": 74,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -462,28 +582,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-6"
+        "north-america-zone-07-city",
+        "north-america-zone-07-town-1",
+        "north-america-zone-07-town-2",
+        "north-america-zone-07-village-1",
+        "north-america-zone-07-village-2",
+        "north-america-zone-07-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-07-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Great Bear Mountains",
+          "type": "dungeon",
+          "level": 71,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-07-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Great Bear Mountains",
+          "type": "ruins",
+          "level": 73,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-07-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Great Bear Mountains",
+          "type": "landmark",
+          "level": 75,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-07-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Great Bear Mountains",
+          "type": "resource_site",
+          "level": 77,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-07-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Great Bear Mountains",
+          "type": "world_boss_lair",
+          "level": 79,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -530,28 +670,48 @@
         }
       ],
       "settlementIds": [
-        "zone-city-placeholder-7"
+        "north-america-zone-08-city",
+        "north-america-zone-08-town-1",
+        "north-america-zone-08-town-2",
+        "north-america-zone-08-village-1",
+        "north-america-zone-08-village-2",
+        "north-america-zone-08-village-3"
       ],
       "pointsOfInterest": [
         {
           "id": "north-america-zone-08-poi-1",
-          "type": "dungeon"
+          "name": "Forgotten Catacombs of Azure Gulf",
+          "type": "dungeon",
+          "level": 76,
+          "repeatable": true
         },
         {
           "id": "north-america-zone-08-poi-2",
-          "type": "ruins"
+          "name": "Ancient Watch of Azure Gulf",
+          "type": "ruins",
+          "level": 78,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-08-poi-3",
-          "type": "landmark"
+          "name": "Skyfall Monument of Azure Gulf",
+          "type": "landmark",
+          "level": 80,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-08-poi-4",
-          "type": "resource_site"
+          "name": "Gatherer's Hollow of Azure Gulf",
+          "type": "resource_site",
+          "level": 82,
+          "repeatable": false
         },
         {
           "id": "north-america-zone-08-poi-5",
-          "type": "world_boss_lair"
+          "name": "Apex Den of Azure Gulf",
+          "type": "world_boss_lair",
+          "level": 84,
+          "repeatable": true
         }
       ],
       "travelNodes": [
@@ -566,27 +726,40 @@
   "factions": [
     {
       "id": "north-america-faction-1",
-      "type": "kingdom"
+      "name": "Free Cities League",
+      "type": "kingdom",
+      "alignment": "chaotic",
+      "homeContinent": "north-america"
     },
     {
       "id": "north-america-faction-2",
-      "type": "guild"
+      "name": "Ashen Covenant",
+      "type": "guild",
+      "alignment": "lawful",
+      "homeContinent": "north-america"
     },
     {
       "id": "north-america-faction-3",
-      "type": "order"
+      "name": "Guild of Cartographers",
+      "type": "order",
+      "alignment": "neutral",
+      "homeContinent": "north-america"
     }
   ],
   "majorInstances": [
     {
       "id": "north-america-raid-01",
+      "name": "The The Westreach Citadel",
       "type": "raid",
-      "partySize": 10
+      "partySize": 10,
+      "level": 90
     },
     {
       "id": "north-america-raid-02",
+      "name": "Vault of the Fallen North America",
       "type": "raid",
-      "partySize": 20
+      "partySize": 20,
+      "level": 130
     }
   ],
   "islandChains": [
