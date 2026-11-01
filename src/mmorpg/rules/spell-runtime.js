@@ -4,6 +4,7 @@ import { rollDice } from "./dice.js";
 import { abilityModifier } from "./d20.js";
 import { addCondition, CONDITIONS } from "./conditions.js";
 import { spendTurnResource } from "./encounter.js";
+import { canCastSpell } from "./spell-access.js";
 
 function distanceBetween(a, b) {
   if (!a?.position || !b?.position) return null;
@@ -45,8 +46,10 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
   }
   const state = caster.spellState;
   if (spell.level > 0 && (!state || !Array.isArray(state.slots))) return { ok: false, reason: "no_spell_slots" };
-  if (state && state.known?.length && !state.known.includes(spell.id) &&
-      !(state.prepared ?? []).includes(spell.id)) return { ok: false, reason: "spell_not_known_or_prepared" };
+  if (state) {
+    const access = canCastSpell(caster, spell.id);
+    if (!access.ok) return access;
+  }
 
   if (spell.condition && !CONDITIONS[spell.condition]) return { ok: false, reason: "invalid_condition" };
   if (spell.conditionDuration !== undefined && spell.conditionDuration !== null && (!Number.isFinite(spell.conditionDuration) || spell.conditionDuration <= 0)) return { ok: false, reason: "invalid_condition_duration" };
