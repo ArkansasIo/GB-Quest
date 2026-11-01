@@ -1,5 +1,5 @@
-import { spellAttackBonus, savingThrow, setConcentration, spendSpellSlot } from "./spellcasting.js";
-import { resolveDamage, applyDamage } from "./combat.js";
+import { spellAttackBonus, setConcentration, spendSpellSlot } from "./spellcasting.js";
+import { resolveDamage, applyDamage, savingThrow } from "./combat.js";
 import { rollDice } from "./dice.js";
 import { addCondition, CONDITIONS } from "./conditions.js";
 import { spendTurnResource } from "./encounter.js";
