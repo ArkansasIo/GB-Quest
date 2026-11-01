@@ -91,14 +91,14 @@ test("healing is capped at maximum HP and conditions are applied", () => {
       id: "battle-cry", actionCost: "bonusAction",
       effects: [
         { type: "healing", dice: "1d8", modifier: 5 },
-        { type: "condition", condition: "blessed", duration: 2 }
+        { type: "condition", condition: "poisoned", duration: 2 }
       ]
     }
   });
   assert.equal(result.ok, true);
   assert.equal(ally.hp, 10);
   assert.equal(result.results[0].effects[0].healed, 2);
-  assert.equal(ally.conditions.some(condition => condition.id === "blessed"), true);
+  assert.equal(ally.conditions.some(condition => condition.id === "poisoned"), true);
   assert.equal(hero.bonusActionAvailable, false);
 });
 
