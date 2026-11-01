@@ -124,9 +124,9 @@ export function castSpell({ caster, targets, spell, slotLevel = spell?.level ?? 
       applyDamage(target, damage, spell.damageType ?? "force");
     }
     if (!save?.success && spell.healing) {
-      healing = rollHealing(spell.healing, random);
-      target.hp = Math.min(target.maxHp ?? Number.POSITIVE_INFINITY, target.hp + healing);
-      healing = target.hp - (target.hp - healing);
+      const hpBefore = target.hp;
+      target.hp = Math.min(target.maxHp ?? Number.POSITIVE_INFINITY, target.hp + rollHealing(spell.healing, random));
+      healing = target.hp - hpBefore;
     }
     if (!save?.success && spell.condition) {
       addCondition(target, spell.condition, { duration: spell.conditionDuration ?? null, source: caster.id ?? null });
