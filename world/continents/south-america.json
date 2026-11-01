@@ -1,0 +1,602 @@
+{
+  "id": "south-america",
+  "name": "South America",
+  "realm": "The Verdant Reach",
+  "capital": {
+    "id": "south-america-capital",
+    "name": "Viridian Crown",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "south-america-zone-01",
+      "name": "Emerald Canopy",
+      "continentId": "south-america",
+      "levelRange": [
+        61,
+        75
+      ],
+      "biomeId": "tropical_rainforest",
+      "subZones": [
+        {
+          "id": "south-america-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-0"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-01-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-01-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-01-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-01-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-01-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-01-road-gate",
+        "south-america-zone-01-caravan-post",
+        "south-america-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-02",
+      "name": "Skyfang Andes",
+      "continentId": "south-america",
+      "levelRange": [
+        66,
+        80
+      ],
+      "biomeId": "alpine",
+      "subZones": [
+        {
+          "id": "south-america-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "alpine",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "alpine",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "alpine",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "alpine",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-1"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-02-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-02-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-02-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-02-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-02-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-02-road-gate",
+        "south-america-zone-02-caravan-post",
+        "south-america-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-03",
+      "name": "Serpent River Basin",
+      "continentId": "south-america",
+      "levelRange": [
+        71,
+        85
+      ],
+      "biomeId": "tropical_river",
+      "subZones": [
+        {
+          "id": "south-america-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_river",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_river",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_river",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_river",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-2"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-03-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-03-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-03-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-03-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-03-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-03-road-gate",
+        "south-america-zone-03-caravan-post",
+        "south-america-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-04",
+      "name": "Glasssalt Desert",
+      "continentId": "south-america",
+      "levelRange": [
+        76,
+        90
+      ],
+      "biomeId": "cold_desert",
+      "subZones": [
+        {
+          "id": "south-america-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "cold_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "cold_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "cold_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "cold_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-04-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-04-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-04-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-04-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-04-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-04-road-gate",
+        "south-america-zone-04-caravan-post",
+        "south-america-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-05",
+      "name": "Jaguar Marshes",
+      "continentId": "south-america",
+      "levelRange": [
+        81,
+        95
+      ],
+      "biomeId": "tropical_wetland",
+      "subZones": [
+        {
+          "id": "south-america-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_wetland",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_wetland",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_wetland",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_wetland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-4"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-05-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-05-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-05-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-05-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-05-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-05-road-gate",
+        "south-america-zone-05-caravan-post",
+        "south-america-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-06",
+      "name": "Cloudveil Highlands",
+      "continentId": "south-america",
+      "levelRange": [
+        86,
+        100
+      ],
+      "biomeId": "cloud_forest",
+      "subZones": [
+        {
+          "id": "south-america-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "cloud_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "cloud_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "cloud_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "cloud_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-5"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-06-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-06-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-06-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-06-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-06-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-06-road-gate",
+        "south-america-zone-06-caravan-post",
+        "south-america-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-07",
+      "name": "Parrot Isles",
+      "continentId": "south-america",
+      "levelRange": [
+        91,
+        105
+      ],
+      "biomeId": "tropical_island",
+      "subZones": [
+        {
+          "id": "south-america-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_island",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_island",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_island",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_island",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-6"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-07-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-07-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-07-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-07-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-07-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-07-road-gate",
+        "south-america-zone-07-caravan-post",
+        "south-america-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "south-america-zone-08",
+      "name": "Southern Fjordlands",
+      "continentId": "south-america",
+      "levelRange": [
+        96,
+        110
+      ],
+      "biomeId": "temperate_fjord",
+      "subZones": [
+        {
+          "id": "south-america-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_fjord",
+          "encounterTier": 1
+        },
+        {
+          "id": "south-america-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_fjord",
+          "encounterTier": 2
+        },
+        {
+          "id": "south-america-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_fjord",
+          "encounterTier": 3
+        },
+        {
+          "id": "south-america-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_fjord",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "zone-city-placeholder-7"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "south-america-zone-08-poi-1",
+          "type": "dungeon"
+        },
+        {
+          "id": "south-america-zone-08-poi-2",
+          "type": "ruins"
+        },
+        {
+          "id": "south-america-zone-08-poi-3",
+          "type": "landmark"
+        },
+        {
+          "id": "south-america-zone-08-poi-4",
+          "type": "resource_site"
+        },
+        {
+          "id": "south-america-zone-08-poi-5",
+          "type": "world_boss_lair"
+        }
+      ],
+      "travelNodes": [
+        "south-america-zone-08-road-gate",
+        "south-america-zone-08-caravan-post",
+        "south-america-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "south-america-faction-1",
+      "type": "kingdom"
+    },
+    {
+      "id": "south-america-faction-2",
+      "type": "guild"
+    },
+    {
+      "id": "south-america-faction-3",
+      "type": "order"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "south-america-raid-01",
+      "type": "raid",
+      "partySize": 10
+    },
+    {
+      "id": "south-america-raid-02",
+      "type": "raid",
+      "partySize": 20
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "south-america-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "south-america-isles-east",
+      "islands": 8
+    }
+  ]
+}
