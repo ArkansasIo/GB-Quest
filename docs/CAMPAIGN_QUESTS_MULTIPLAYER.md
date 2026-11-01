@@ -20,3 +20,19 @@ See `src/mmorpg/data/multiplayer.json` for the initial co-op/party/raid protocol
 ## Build identity
 
 Build metadata is stored in `src/mmorpg/data/build-info.json`. Developer: ArkansasIo. Version: 0.3.0 alpha. Build ID: GBQ-20261101-001.
+
+## Colour modes and build identity
+
+The handheld settings include DMG green, Pocket colour, Sunset, Amber, Ocean and original-art colour modes. Build identity is stored in `src/mmorpg/data/build-info.json` and displayed above the handheld frame.
+
+- Developer: ArkansasIo
+- Version: 0.3.0 alpha
+- Build ID: GBQ-20261101-001
+
+## Campaign and quests
+
+The Shattered Crown has six acts, eighteen chapters, thirty main quests and thirty-six optional side quests, spanning the level 1-720 progression. Quest records use objective targets, prerequisites, repeatability and rewards. The campaign runtime prevents incomplete objectives and duplicate reward claims.
+
+## Multiplayer
+
+The current implementation includes a client transport wrapper and a protocol contract for parties, raids, presence, chat, quest sharing and zone instances. It requires a deployed secure WebSocket server and authoritative backend before real online play is available. The handheld's Multiplayer screen intentionally displays the connection status rather than pretending a server is live.
