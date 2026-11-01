@@ -52,3 +52,22 @@ python3 tools/build.py
 
 Swap any PNG in `assets/` for your own art — sprites are scaled and
 palette-quantised at runtime, so sizes don't need to match exactly.
+
+
+## MMORPG expansion (in progress)
+
+The `feature/mmorpg-dnd5e-world` branch introduces the first modular foundation for a larger online RPG:
+
+- `docs/MMORPG_DESIGN.md` — game pillars, character progression, combat, social systems and production targets.
+- `docs/WORLD_SCALE_AND_MAPS.md` — continent/zone/chunk hierarchy and streaming strategy.
+- `docs/RULES_IMPLEMENTATION.md` — D&D 5e-compatible d20 rules implementation plan.
+- `src/mmorpg/rules/d20.js` — initial ability modifier, proficiency and d20 check primitives.
+- `src/mmorpg/world/coordinates.js` — chunk coordinate and neighborhood helpers.
+- `world/manifests/greenreach.json` — example original zone manifest.
+- `tests/mmorpg/` — initial automated tests.
+
+Run the new Node.js tests with `npm test` (Node.js 20 or newer).
+
+The original Game Boy runtime remains the active game. The MMORPG modules are an isolated expansion layer and are not yet wired into the legacy runtime. Network persistence, full class/spell/monster content, procedural continent generation, chunk loading and deployment remain future implementation work.
+
+**Content/licensing:** D&D-compatible mechanics should use permitted SRD material with required notices and attribution. Do not copy non-SRD rulebook text or proprietary World of Warcraft assets, lore, maps or content. All new setting, quest, item, enemy and visual content should be original.
