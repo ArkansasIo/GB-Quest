@@ -106,3 +106,99 @@ Test guaranteed drops, zero-weight entries, normalized weights, quantity bounds,
 
 All sample names and weights in this document are design examples. Final drop rates, item IDs, and reward quantities must be tuned against the game's economy and progression data.
 ```
+
+
+## Affix, Enchantment and Equipment Modification System
+
+GB-Quest uses an original affix system inspired by the depth of Diablo IV's item modification systems. This is a functional design reference, not a copy of Blizzard's proprietary game data, text, icons, formulas, or assets.
+
+### Affix data model
+
+An affix is a typed modifier that can appear only on compatible item slots and item categories. Each affix definition includes:
+- stable affix ID and display name
+- category: offensive, defensive, utility, resource, mobility, resistance, skill, summon, profession, or special
+- allowed equipment slots and weapon/armor categories
+- allowed character classes, if class-restricted
+- minimum and maximum item level
+- rank and rarity eligibility
+- value range, scaling curve, and unit
+- mutually exclusive groups and duplicate rules
+- source tags: natural, enchanted, tempered, set, legendary, mythical
+- whether it is inherent, standard, special, or locked
+
+### Affix families
+
+1. Offensive: physical damage, elemental damage, attack speed, critical chance, critical damage, penetration, damage over time, skill damage.
+2. Defensive: armor, maximum health, block, damage reduction, healing received, barrier strength.
+3. Resistance: fire, frost, lightning, poison, shadow, arcane, holy, chaos, physical and status resistance.
+4. Resource: maximum mana/energy/stamina, generation, regeneration, cost reduction.
+5. Mobility: movement speed, dodge, evade cooldown, control duration reduction.
+6. Skill: ranks to eligible skills, cooldown reduction, resource cost, area, duration, summon bonuses.
+7. Profession: gathering yield, crafting quality, refining efficiency, cooking potency, fishing yield.
+8. Creature-specific: companion damage, mount stamina, summon health, beast mastery and species bonuses.
+
+### Enchanting
+
+At an Enchanter NPC or crafting station, a player selects one eligible standard affix on an item and rerolls that affix from the compatible replacement pool. The player sees the candidate result and can accept it or retain the current value. Only the selected affix changes; all other affixes remain unchanged.
+
+- Each item has an enchantment history and reroll count.
+- Reroll costs use gold plus slot- and item-level-appropriate materials.
+- Costs rise by a configurable curve and have a hard cap.
+- The replacement pool is filtered by item slot, item type, class, level, rank, and affix exclusion rules.
+- Inherent stats and explicitly locked special powers cannot be rerolled unless a separate recipe explicitly permits it.
+- The UI previews the possible affix categories and cost before confirmation.
+- A transaction is atomic and server-authoritative; retries cannot charge twice or duplicate results.
+
+### Tempering
+
+Tempering uses profession recipes/manuals to add a limited number of specialized affixes. Each recipe defines eligible slots, affix pool, value range, required materials, and attempt limits. Tempered affixes are tracked separately from standard affixes and cannot be rerolled through ordinary Enchanting.
+
+### Masterworking
+
+Masterworking consumes rare materials and currency to improve eligible affix values according to bounded upgrade curves. Milestone upgrades may select an affix for an additional bonus. All value changes are clamped to the affix's defined maximum and the item's progression limits.
+
+### Imprinting and powers
+
+Imprinting applies an eligible legendary power or aspect from a discovered collection to compatible equipment. Each power defines its own slot restrictions, roll range, rank eligibility, and replacement behavior. A power is not treated as an ordinary affix unless its definition explicitly says so.
+
+### Rarity and equip restrictions
+
+Rarity is independent of equipment rank (F–SSS), star level (1–12), and item level (1–720). Rank describes progression power; rarity describes scarcity, special properties, and equip restrictions.
+
+Rarity order, low to high:
+- Common (white)
+- Uncommon (green)
+- Set (green set identity; tracked separately from ordinary Uncommon if the game uses both)
+- Rare (blue)
+- Epic (purple)
+- Exotic
+- Legendary (orange)
+- Mythical
+
+Equip rules:
+- Exotic: at most one Exotic item equipped per character across all slots.
+- Legendary: no global one-piece restriction; equip any number of compatible Legendary items, subject to slot and duplicate-unique rules.
+- Mythical: at least one Mythical item may be equipped in each major classification: armor, weapon, and jewelry. This is a minimum allowance, not a forced requirement; slot compatibility still applies. Additional Mythical pieces can be allowed by a later balance rule.
+- Set items: set bonuses activate at configured piece thresholds and do not override slot compatibility.
+- Common through Epic: normal slot and class restrictions apply.
+
+If Set is intended to be a separate rarity rather than a green Uncommon variant, configure it as its own rarity ID and UI colour while retaining its set-bonus behavior.
+
+### Rarity, rank and affix interaction
+
+Rarity controls the eligible affix pool, special-power access, and affix budget. Rank F–SSS controls the item's progression band and stat ceiling. Stars 1–12 control enhancement progression. Item level 1–720 controls level-scaled ranges and equip requirements. These dimensions remain separate in storage and validation.
+
+### Suggested persistent records
+
+- AffixDefinition(affix_id, category, allowed_slots, class_rules, level_min, level_max, value_min, value_max, source_tags, exclusive_group)
+- ItemAffix(item_id, affix_id, value, source, locked, roll_index)
+- EnchantmentHistory(event_id, character_id, item_id, old_affix_id, new_affix_id, cost, created_at)
+- TemperRecipe(recipe_id, allowed_slots, affix_pool_id, attempt_limit, material_cost)
+- ItemPower(item_id, power_id, roll_value)
+- ItemRarityRule(rarity_id, equip_limit, slot_class_rules, set_id)
+
+### Balance and validation
+
+Test slot compatibility, class restrictions, duplicate and exclusive groups, reroll pool determinism under a stored server seed, cost escalation and caps, transaction idempotency, locked affixes, temper attempt limits, power compatibility, rarity equip limits, set thresholds, and rank/star/item-level boundaries. Simulate large samples to verify affix frequencies and detect unintended best-in-slot combinations.
+
+All affix names, values, pools, weights, costs and formulas are GB-Quest original content and must be balanced against its own item economy.
