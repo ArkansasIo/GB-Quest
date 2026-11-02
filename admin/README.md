@@ -13,11 +13,11 @@ The account named by `GBQ_ROOT_ID` always receives root permissions. Root can cr
 
 ## Staff permissions
 
-- **Admin:** view the overview, players and audit log; moderate players; change realm settings; create player/moderator accounts; assign moderator roles.
+- **Admin:** view the overview, players, audit log and debug log; moderate players; change realm settings; create player/moderator accounts; assign moderator roles.
 - **Moderator:** view the overview, players and audit log; suspend or restore player accounts.
 - **Player:** no control-plane access.
 
-Root can create or promote admins, grant or remove moderator access, and manage every system. Admins can grant or remove moderator access. Environment-configured root/admin identities cannot be demoted in the control plane. Role changes, account creation, and moderation actions are audited.
+Root can create or promote admins, grant or remove moderator access, and manage every system. Admins can grant or remove moderator access. Environment-configured root/admin identities cannot be demoted in the control plane. Role changes, account creation, moderation actions, denied staff access, sign-ins, password changes, cloud saves and marketplace trades are recorded in the tamper-evident audit log. The **Audit log** tab filters, verifies and exports it; the **Debug log** tab shows server errors and slow requests. See [backend/README.md](../backend/README.md#audit-and-debug-logs).
 
 ## Live settings
 
@@ -26,7 +26,10 @@ Realm settings are persisted in the realm data file and take effect immediately.
 ## Admin API
 
 - `GET /api/admin/me` returns the staff role and permissions.
-- `GET /api/admin/overview`, `/players`, and `/audit` provide operational data.
+- `GET /api/admin/overview` and `/players` provide operational data.
+- `GET /api/admin/audit?action=&outcome=&actor=&target=&ip=&since=&limit=` searches the audit log, newest first. `action` matches by prefix: `auth` matches `auth.login`, `auth.register` and so on.
+- `GET /api/admin/audit/verify` checks the audit hash chain. It returns `{ ok, checked }`, or the first entry that was edited or removed.
+- `GET /api/admin/logs?level=&q=&limit=` reads the debug log (root and admin only). `PUT /api/admin/logs/level { level }` changes the log level without a restart.
 - `GET` and `PUT /api/admin/settings` read or update persisted realm settings.
 - `GET /api/admin/permissions` lists role permissions and current staff.
 - `POST /api/admin/accounts` creates an account with the requested allowed role.

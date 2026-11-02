@@ -13,10 +13,20 @@
 // Data lives in server/data/realm.json (written atomically). Delete it to reset the realm.
 'use strict';
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto'), { URL } = require('url');
+const { createDebugLog, createAuditLog } = require('./logs.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const PORT = +process.env.PORT || 8787, HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = process.env.GBQ_DATA || path.join(ROOT, 'server', 'data'), DB_FILE = path.join(DATA_DIR, 'realm.json');
+const LOG_DIR = process.env.GBQ_LOG_DIR || path.join(DATA_DIR, 'logs');
+
+// ---------------------------------------------------------------- logs (see backend/logs.cjs)
+//   GBQ_LOG_LEVEL=error|warn|info|debug  (default info; debug also logs every request)
+//   GBQ_LOG_DIR                           (default <data>/logs)   GBQ_LOG_QUIET=1 stops console echo
+const log = createDebugLog({ dir: LOG_DIR, level: process.env.GBQ_LOG_LEVEL || 'info', echo: process.env.GBQ_LOG_QUIET !== '1' });
+const audit = createAuditLog({ dir: LOG_DIR, onError: (e, entry) => log.error('audit write failed', { err: e, action: entry.action }) });
+process.on('uncaughtException', e => { log.error('uncaught exception', e); log.flush(); try { flush(); } catch (err) { /* best effort */ } process.exit(1); });
+process.on('unhandledRejection', e => log.error('unhandled promise rejection', e instanceof Error ? e : { reason: String(e) }));
 const ROOT_ACCOUNT_ID = String(process.env.GBQ_ROOT_ID || '').toLowerCase();
 const ADMIN_ACCOUNT_ID = String(process.env.GBQ_ADMIN_ID || '').toLowerCase();
 const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3;
@@ -25,7 +35,8 @@ const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_a
 // ---------------------------------------------------------------- storage
 fs.mkdirSync(DATA_DIR, { recursive: true });
 let db = { accounts: {}, sessions: {}, saves: {}, heroes: {}, market: {}, proceeds: {}, friendships: {}, friendRequests: {}, inviteCodes: {}, bans: {}, adminAudit: [] };
-try { db = Object.assign(db, JSON.parse(fs.readFileSync(DB_FILE, 'utf8'))); } catch (e) { /* first run */ }
+try { db = Object.assign(db, JSON.parse(fs.readFileSync(DB_FILE, 'utf8'))); }
+catch (e) { if (e.code === 'ENOENT') log.info('no realm data yet; starting a new realm', { file: DB_FILE }); else log.error('realm data unreadable; starting empty (the old file is left in place)', { file: DB_FILE, err: e }); }
 db.friendships ||= {}; db.friendRequests ||= {}; db.inviteCodes ||= {};
 db.bans ||= {}; db.adminAudit ||= [];
 db.staffRoles ||= {};
@@ -36,14 +47,23 @@ db.realmSettings = Object.assign({
   maxListingsPerPlayer: 20, maxInviteCodesPerPlayer: 5, inviteTtlMinutes: 15,
   chatMessagesPer10Seconds: 5, maxSaveBytes: MAX_SAVE,
 }, db.realmSettings || {});
+// older realms kept admin actions only inside realm.json; carry them into the audit file once
+if (!audit.seq && db.adminAudit.length) {
+  for (const a of db.adminAudit) audit.record({ at: a.at, action: 'admin.' + a.action, actor: a.actor, target: a.target, details: a.details, outcome: 'success' });
+  log.info('imported earlier admin audit entries', { count: db.adminAudit.length });
+}
 let dirty = false;
 const save = () => { dirty = true; };
 setInterval(() => {
   if (!dirty) return; dirty = false;
-  const tmp = DB_FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(db)); fs.renameSync(tmp, DB_FILE);
+  const t0 = Date.now();
+  try { const tmp = DB_FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(db)); fs.renameSync(tmp, DB_FILE); }
+  catch (e) { dirty = true; log.error('realm data write failed; will retry', { file: DB_FILE, err: e }); return; }
+  log.debug('realm data saved', { ms: Date.now() - t0 });
 }, 1000).unref();
 const flush = () => { if (dirty) { fs.writeFileSync(DB_FILE, JSON.stringify(db)); dirty = false; } };
-process.on('SIGINT', () => { flush(); process.exit(0); }); process.on('SIGTERM', () => { flush(); process.exit(0); });
+const shutdown = sig => { log.info('shutting down', { signal: sig }); try { flush(); } catch (e) { log.error('final save failed', e); } log.flush(); process.exit(0); };
+process.on('SIGINT', () => shutdown('SIGINT')); process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 // ---------------------------------------------------------------- accounts
 const scrypt = (pw, salt) => new Promise((res, rej) => crypto.scrypt(pw, salt, 64, { N: 16384, r: 8, p: 1 }, (e, k) => e ? rej(e) : res(k)));
@@ -66,17 +86,19 @@ const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_AC
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
 const adminRoleFor = acct => isRoot(acct) ? 'root' : isAdmin(acct) ? 'admin' : (['admin', 'moderator'].includes(db.staffRoles[acct.id]) ? db.staffRoles[acct.id] : 'player');
 const rolePermissions = {
-  root: ['overview.view', 'players.view', 'players.moderate', 'settings.manage', 'staff.manage', 'accounts.create', 'audit.view'],
-  admin: ['overview.view', 'players.view', 'players.moderate', 'settings.manage', 'staff.manage', 'accounts.create', 'audit.view'],
+  root: ['overview.view', 'players.view', 'players.moderate', 'settings.manage', 'staff.manage', 'accounts.create', 'audit.view', 'logs.view'],
+  admin: ['overview.view', 'players.view', 'players.moderate', 'settings.manage', 'staff.manage', 'accounts.create', 'audit.view', 'logs.view'],
   moderator: ['overview.view', 'players.view', 'players.moderate', 'audit.view'],
   player: [],
 };
 const hasPermission = (acct, permission) => (rolePermissions[adminRoleFor(acct)] || []).includes(permission);
-function addAdminAudit(actor, action, target, details) {
-  const entry = { at: Date.now(), actor, action, target };
+// ctx: { actor, actorId, ip, reqId }. Kept in realm.json for the in-game GM console and written to audit.log.
+function addAdminAudit(ctx, action, target, details) {
+  const entry = { at: Date.now(), actor: ctx.actor, action, target };
   if (details) entry.details = details;
   db.adminAudit.push(entry);
   if (db.adminAudit.length > 1000) db.adminAudit.splice(0, db.adminAudit.length - 1000);
+  audit.record({ ...ctx, action: 'admin.' + action, target, details });
 }
 const REALMS = [
   { id: 'ardenhold', name: 'Ardenhold', type: 'Roleplay', status: 'online' },
@@ -115,7 +137,12 @@ function body(req, limit = MAX_BODY) {
   return new Promise((resolve, reject) => {
     let n = 0; const chunks = [];
     req.on('data', c => { n += c.length; if (n > limit) { reject(Object.assign(new Error('too large'), { code: 413 })); req.destroy(); } else chunks.push(c); });
-    req.on('end', () => { try { resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); } catch (e) { reject(Object.assign(new Error('bad json'), { code: 400 })); } });
+    req.on('end', () => {
+      let v; try { v = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}; } catch (e) { return reject(Object.assign(new Error('bad json'), { code: 400 })); }
+      // every route destructures an object; null, arrays and bare values used to crash with a 500
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return reject(Object.assign(new Error('body must be a JSON object'), { code: 400 }));
+      resolve(v);
+    });
     req.on('error', reject);
   });
 }
@@ -128,8 +155,26 @@ function serveFile(res, file, type) {
 const STATIC = { '/': 'dist/gbquest.html', '/fullscreen': 'dist/gbquest-fullscreen.html', '/atlas': 'dist/atlas.html', '/dist/atlas.html': 'dist/atlas.html', '/admin': 'admin/controlplane.html', '/admin/': 'admin/controlplane.html', '/admin/controlplane.js': 'admin/controlplane.js' };
 
 // ---------------------------------------------------------------- routes
+// client IP: the socket address, or X-Forwarded-For when GBQ_TRUST_PROXY=1 (only behind your own reverse proxy)
+const TRUST_PROXY = process.env.GBQ_TRUST_PROXY === '1';
+const clientIp = req => (TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress || '?';
+const SLOW_MS = +process.env.GBQ_SLOW_MS || 1000;
+
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`), p = url.pathname, ip = req.socket.remoteAddress || '?';
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`), p = url.pathname, ip = clientIp(req);
+  // every response carries X-Request-Id so a player's error report can be matched to the debug log
+  const reqId = crypto.randomBytes(6).toString('hex'), t0 = process.hrtime.bigint();
+  res.setHeader('X-Request-Id', reqId);
+  let who = null; // account name once the session is known
+  res.on('finish', () => {
+    if (p === '/api/stream') return; // long-lived; logged on open/close instead
+    const ms = Number(process.hrtime.bigint() - t0) / 1e6, line = { reqId, method: req.method, path: p, status: res.statusCode, ms: +ms.toFixed(1), ip };
+    if (who) line.account = who;
+    if (res.statusCode >= 500) log.error('request failed', line);
+    else if (ms > SLOW_MS) log.warn('slow request', line);
+    else log.debug('request', line);
+  });
+  const A = event => audit.record({ ip, reqId, ...event }); // audit with request context
   try {
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
@@ -144,31 +189,45 @@ const server = http.createServer(async (req, res) => {
       if (!validName(username)) return json(res, 400, { error: 'Username: 3-16 letters, digits or _.' });
       if (!validPw(password)) return json(res, 400, { error: 'Password: 8-72 characters.' });
       const key = username.toLowerCase(); if (db.accounts[key]) return json(res, 409, { error: 'That name is taken.' });
-      if (throttled('reg:' + ip)) return json(res, 429, { error: 'Too many attempts. Try later.' });
+      if (throttled('reg:' + ip)) { A({ action: 'auth.register', actor: username, outcome: 'throttled' }); log.warn('registration throttled', { ip, reqId }); return json(res, 429, { error: 'Too many attempts. Try later.' }); }
       fail('reg:' + ip); // count registrations per ip too
       const salt = crypto.randomBytes(16).toString('hex'), hash = (await scrypt(password, salt)).toString('hex');
       const acct = { id: crypto.randomUUID(), name: username, salt, hash, created: Date.now(), lastLogin: Date.now() };
       db.accounts[key] = acct; const token = newToken(); db.sessions[token] = { uid: acct.id, exp: Date.now() + TOKEN_DAYS * 864e5 }; save();
+      A({ action: 'auth.register', actor: acct.name, actorId: acct.id }); who = acct.name;
       return json(res, 201, { token, account: publicAcct(acct) });
     }
     if (p === '/api/login' && req.method === 'POST') {
       const { username, password } = await body(req);
       const key = String(username || '').toLowerCase();
-      if (throttled('ip:' + ip) || throttled('u:' + key)) return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' });
+      const tried = key.slice(0, 32).replace(/[^\w.-]/g, '?'); // attempted name, sanitised; never the password
+      if (throttled('ip:' + ip) || throttled('u:' + key)) { A({ action: 'auth.login', actor: tried, outcome: 'throttled' }); log.warn('login throttled', { ip, name: tried, reqId }); return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' }); }
       const acct = db.accounts[key];
       const salt = acct ? acct.salt : '00', want = acct ? Buffer.from(acct.hash, 'hex') : Buffer.alloc(64);
       const got = await scrypt(String(password || ''), salt); // always hash, so timing does not reveal which names exist
-      if (!acct || !crypto.timingSafeEqual(got, want)) { fail('ip:' + ip); fail('u:' + key); return json(res, 401, { error: 'Wrong name or password.' }); }
-      if (db.bans[acct.id]) return json(res, 403, { error: 'This account is suspended.' });
-      if (db.realmSettings.maintenance && !['root', 'admin'].includes(adminRoleFor(acct))) return json(res, 503, { error: 'The realm is under maintenance. Please try again later.' });
+      if (!acct || !crypto.timingSafeEqual(got, want)) {
+        fail('ip:' + ip); fail('u:' + key);
+        A({ action: 'auth.login', actor: acct ? acct.name : tried, actorId: acct ? acct.id : null, outcome: 'failure', details: { reason: acct ? 'wrong_password' : 'unknown_account' } });
+        return json(res, 401, { error: 'Wrong name or password.' });
+      }
+      if (db.bans[acct.id]) { A({ action: 'auth.login', actor: acct.name, actorId: acct.id, outcome: 'denied', details: { reason: 'suspended' } }); return json(res, 403, { error: 'This account is suspended.' }); }
+      if (db.realmSettings.maintenance && !['root', 'admin'].includes(adminRoleFor(acct))) { A({ action: 'auth.login', actor: acct.name, actorId: acct.id, outcome: 'denied', details: { reason: 'maintenance' } }); return json(res, 503, { error: 'The realm is under maintenance. Please try again later.' }); }
       fails.delete('u:' + key);
       acct.lastLogin = Date.now(); const token = newToken(); db.sessions[token] = { uid: acct.id, exp: Date.now() + TOKEN_DAYS * 864e5 }; save();
+      const role = adminRoleFor(acct);
+      A({ action: 'auth.login', actor: acct.name, actorId: acct.id, details: role !== 'player' ? { role } : undefined }); who = acct.name;
       return json(res, 200, { token, account: publicAcct(acct) });
     }
 
     const sess = sessionFor(req, url);
-    if (!sess) return json(res, 401, { error: 'Log in first.' });
-    const uid = sess.acct.id;
+    if (!sess) {
+      // unauthenticated calls to staff routes are worth recording; ordinary expired sessions are not
+      if (p.startsWith('/api/admin/')) A({ action: 'admin.access', actor: null, target: p, outcome: 'denied', details: { reason: 'no_session' } });
+      return json(res, 401, { error: 'Log in first.' });
+    }
+    const uid = sess.acct.id; who = sess.acct.name;
+    const actx = { actor: sess.acct.name, actorId: uid, ip, reqId }; // audit context for this caller
+    const deny = (why = 'permission', message = 'Permission denied.') => { A({ ...actx, action: 'admin.access', target: `${req.method} ${p}`, outcome: 'denied', details: { reason: why, role: adminRoleFor(sess.acct) } }); return json(res, 403, { error: message }); };
 
     if (db.realmSettings.maintenance && !['root', 'admin'].includes(adminRoleFor(sess.acct)) && !p.startsWith('/api/admin/') && !['/api/logout', '/api/me'].includes(p)) return json(res, 503, { error: 'The realm is under maintenance. Please try again later.' });
 
@@ -177,22 +236,24 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/api/admin/')) {
       if (p === '/api/admin/me' && req.method === 'GET') {
         const role = adminRoleFor(sess.acct);
-        return role === 'player' ? json(res, 403, { error: 'This account has no staff permissions.' }) : json(res, 200, { account: publicAcct(sess.acct), role, permissions: rolePermissions[role] });
+        // the game client probes this for every player to decide whether to show staff tools: not an audit event
+        if (role === 'player') { log.debug('staff role probe: not staff', { reqId, account: sess.acct.name }); return json(res, 403, { error: 'This account has no staff permissions.' }); }
+        return json(res, 200, { account: publicAcct(sess.acct), role, permissions: rolePermissions[role] });
       }
       if (p === '/api/admin/overview' && req.method === 'GET') {
-        if (!hasPermission(sess.acct, 'overview.view')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'overview.view')) return deny();
         return json(res, 200, { realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, online: clients.size, accounts: Object.keys(db.accounts).length, bans: Object.keys(db.bans).length, activeListings: Object.keys(db.market || {}).length, activeInvites: Object.values(db.inviteCodes).filter(i => i.expiresAt > Date.now()).length });
       }
       if (p === '/api/admin/players' && req.method === 'GET') {
-        if (!hasPermission(sess.acct, 'players.view')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'players.view')) return deny();
         return json(res, 200, { players: Object.values(db.accounts).map(a => ({ id: a.id, name: a.name, created: a.created, lastLogin: a.lastLogin || null, online: [...clients.values()].some(c => c.uid === a.id), banned: !!db.bans[a.id], role: adminRoleFor(a) })).sort((a, b) => b.created - a.created).slice(0, 200) });
       }
       if (p === '/api/admin/settings' && req.method === 'GET') {
-        if (!hasPermission(sess.acct, 'settings.manage')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'settings.manage')) return deny();
         return json(res, 200, { settings: db.realmSettings });
       }
       if (p === '/api/admin/settings' && req.method === 'PUT') {
-        if (!hasPermission(sess.acct, 'settings.manage')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'settings.manage')) return deny();
         const input = await body(req);
         const current = db.realmSettings;
         const booleanKeys = ['maintenance', 'registrationOpen', 'chatEnabled', 'marketplaceEnabled', 'invitesEnabled', 'socialEnabled', 'cloudSavesEnabled', 'leaderboardEnabled', 'livePlayEnabled'];
@@ -222,11 +283,11 @@ const server = http.createServer(async (req, res) => {
           }
           broadcastPeers();
         }
-        if (changed.length) { addAdminAudit(sess.acct.name, 'settings.update', 'realm', { changed }); save(); }
+        if (changed.length) { addAdminAudit(actx, 'settings.update', 'realm', { changed }); save(); }
         return json(res, 200, { settings: db.realmSettings });
       }
       if (p === '/api/admin/accounts' && req.method === 'POST') {
-        if (!hasPermission(sess.acct, 'accounts.create')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'accounts.create')) return deny();
         const input = await body(req), username = input.username, password = input.password, role = input.role || 'player';
         if (!validName(username)) return json(res, 400, { error: 'Username: 3-16 letters, digits or _.' });
         if (!validPw(password)) return json(res, 400, { error: 'Password: 8-72 characters.' });
@@ -238,17 +299,17 @@ const server = http.createServer(async (req, res) => {
         const acct = { id: crypto.randomUUID(), name: username, salt, hash: (await scrypt(password, salt)).toString('hex'), created: Date.now(), lastLogin: null };
         db.accounts[key] = acct;
         if (role !== 'player') db.staffRoles[acct.id] = role;
-        addAdminAudit(sess.acct.name, 'account.create', acct.name, { role }); save();
+        addAdminAudit(actx, 'account.create', acct.name, { role }); save();
         return json(res, 201, { account: publicAcct(acct), role });
       }
       if (p === '/api/admin/permissions' && req.method === 'GET') {
-        if (!hasPermission(sess.acct, 'staff.manage')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'staff.manage')) return deny();
         const staff = Object.values(db.accounts).filter(a => adminRoleFor(a) !== 'player').map(a => ({ id: a.id, name: a.name, role: adminRoleFor(a) }));
         return json(res, 200, { roles: rolePermissions, staff });
       }
       const roleMatch = p.match(/^\/api\/admin\/players\/([0-9a-f-]{36})\/role$/i);
       if (roleMatch && req.method === 'PUT') {
-        if (!hasPermission(sess.acct, 'staff.manage')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'staff.manage')) return deny();
         const target = accountById(roleMatch[1]);
         if (!target) return json(res, 404, { error: 'Account not found.' });
         if (isRoot(target) || isAdmin(target)) return json(res, 400, { error: 'Environment-configured root/admin accounts cannot be changed here.' });
@@ -258,16 +319,43 @@ const server = http.createServer(async (req, res) => {
         if (role === 'admin' && adminRoleFor(sess.acct) !== 'root') return json(res, 403, { error: 'Only root can assign admin access.' });
         if (role !== 'player') db.staffRoles[target.id] = role;
         else delete db.staffRoles[target.id];
-        addAdminAudit(sess.acct.name, 'staff.role', target.name, { role }); save();
+        addAdminAudit(actx, 'staff.role', target.name, { role }); save();
         return json(res, 200, { ok: true, role });
       }
+      // GET /api/admin/audit?action=auth.&actor=&target=&outcome=failure&ip=&since=<ms>&limit=100
+      //   action matches exactly or by prefix: "auth" / "auth." / "auth.*" all match auth.login, auth.register...
       if (p === '/api/admin/audit' && req.method === 'GET') {
-        if (!hasPermission(sess.acct, 'audit.view')) return json(res, 403, { error: 'Permission denied.' });
-        return json(res, 200, { entries: db.adminAudit.slice(-100).reverse() });
+        if (!hasPermission(sess.acct, 'audit.view')) return deny();
+        const q = Object.fromEntries(url.searchParams), limit = Math.max(1, Math.min(1000, parseInt(q.limit, 10) || 100));
+        const entries = audit.query({ limit, action: q.action || '', actor: q.actor || '', target: q.target || '', outcome: q.outcome || '', ip: q.ip || '', since: +q.since || 0 });
+        return json(res, 200, { entries, seq: audit.seq });
+      }
+      // GET /api/admin/audit/verify -> { ok, checked, head } or { ok:false, seq, error }: detects edited or removed entries
+      if (p === '/api/admin/audit/verify' && req.method === 'GET') {
+        if (!hasPermission(sess.acct, 'audit.view')) return deny();
+        const result = audit.verify();
+        A({ ...actx, action: 'admin.audit.verify', target: 'audit.log', outcome: result.ok ? 'success' : 'failure', details: result.ok ? { checked: result.checked } : { seq: result.seq, error: result.error } });
+        if (!result.ok) log.error('audit chain verification failed', result);
+        return json(res, 200, result);
+      }
+      // GET /api/admin/logs?level=warn&q=text&limit=200 -> debug log, newest first (root/admin only)
+      if (p === '/api/admin/logs' && req.method === 'GET') {
+        if (!hasPermission(sess.acct, 'logs.view')) return deny();
+        const q = Object.fromEntries(url.searchParams), limit = Math.max(1, Math.min(1000, parseInt(q.limit, 10) || 200));
+        return json(res, 200, { level: log.level, entries: log.tail({ limit, level: q.level || 'debug', q: String(q.q || '').slice(0, 80) }) });
+      }
+      // PUT /api/admin/logs/level { level } -> change verbosity without a restart (root/admin only)
+      if (p === '/api/admin/logs/level' && req.method === 'PUT') {
+        if (!hasPermission(sess.acct, 'logs.view')) return deny();
+        const { level } = await body(req);
+        if (!['error', 'warn', 'info', 'debug'].includes(level)) return json(res, 400, { error: 'Level must be error, warn, info or debug.' });
+        const from = log.level; log.setLevel(level);
+        A({ ...actx, action: 'admin.logs.level', target: 'debug.log', details: { from, to: level } }); log.info('log level changed', { from, to: level, by: sess.acct.name });
+        return json(res, 200, { level });
       }
       const banMatch = p.match(/^\/api\/admin\/players\/([0-9a-f-]{36})\/(ban|unban)$/i);
       if (banMatch && req.method === 'POST') {
-        if (!hasPermission(sess.acct, 'players.moderate')) return json(res, 403, { error: 'Permission denied.' });
+        if (!hasPermission(sess.acct, 'players.moderate')) return deny();
         const targetId = banMatch[1], action = banMatch[2].toLowerCase(), target = accountById(targetId);
         if (!target) return json(res, 404, { error: 'Account not found.' });
         if (targetId === uid) return json(res, 400, { error: 'You cannot suspend your own admin account.' });
@@ -276,17 +364,18 @@ const server = http.createServer(async (req, res) => {
         if (action === 'ban') {
           const input = await body(req), reason = String(input.reason || 'Admin action').replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 160);
           db.bans[targetId] = { reason, at: Date.now(), by: sess.acct.name };
-          for (const token of Object.keys(db.sessions)) if (db.sessions[token].uid === targetId) delete db.sessions[token];
+          let revoked = 0; for (const token of Object.keys(db.sessions)) if (db.sessions[token].uid === targetId) { delete db.sessions[token]; revoked++; }
+          log.info('account suspended; sessions revoked', { target: target.name, revoked, by: sess.acct.name });
           for (const [peer, live] of clients) if (live.uid === targetId) { live.res.end(); clients.delete(peer); }
           broadcastPeers();
         } else delete db.bans[targetId];
-        addAdminAudit(sess.acct.name, action, target.name, action === 'ban' ? { reason: db.bans[targetId].reason } : undefined);
+        addAdminAudit(actx, action, target.name, action === 'ban' ? { reason: db.bans[targetId].reason } : undefined);
         save(); return json(res, 200, { ok: true });
       }
       return json(res, 404, { error: 'No such admin operation.' });
     }
 
-    if (p === '/api/logout' && req.method === 'POST') { delete db.sessions[sess.token]; save(); return json(res, 200, { ok: true }); }
+    if (p === '/api/logout' && req.method === 'POST') { delete db.sessions[sess.token]; save(); A({ ...actx, action: 'auth.logout' }); return json(res, 200, { ok: true }); }
     if (p === '/api/me') return json(res, 200, { account: publicAcct(sess.acct), slots: Object.keys(db.saves[uid] || {}) });
     if (p.startsWith('/api/friends') && !db.realmSettings.socialEnabled) return json(res, 503, { error: 'Realm social features are disabled.' });
     if (p === '/api/friends' && req.method === 'GET') {
@@ -343,10 +432,11 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/password' && req.method === 'POST') {
       const { oldPassword, newPassword } = await body(req);
       const got = await scrypt(String(oldPassword || ''), sess.acct.salt);
-      if (!crypto.timingSafeEqual(got, Buffer.from(sess.acct.hash, 'hex'))) return json(res, 401, { error: 'Current password is wrong.' });
+      if (!crypto.timingSafeEqual(got, Buffer.from(sess.acct.hash, 'hex'))) { A({ ...actx, action: 'auth.password.change', outcome: 'failure', details: { reason: 'wrong_current_password' } }); return json(res, 401, { error: 'Current password is wrong.' }); }
       if (!validPw(newPassword)) return json(res, 400, { error: 'Password: 8-72 characters.' });
       sess.acct.salt = crypto.randomBytes(16).toString('hex'); sess.acct.hash = (await scrypt(newPassword, sess.acct.salt)).toString('hex');
-      for (const t in db.sessions) if (db.sessions[t].uid === uid && t !== sess.token) delete db.sessions[t]; // log out other devices
+      let revoked = 0; for (const t in db.sessions) if (db.sessions[t].uid === uid && t !== sess.token) { delete db.sessions[t]; revoked++; } // log out other devices
+      A({ ...actx, action: 'auth.password.change', details: { sessionsRevoked: revoked } });
       save(); return json(res, 200, { ok: true });
     }
 
@@ -363,10 +453,14 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'PUT') {
         const { state } = await body(req, db.realmSettings.maxSaveBytes);
         if (!state || typeof state !== 'object' || typeof state.name !== 'string' || !state.cls) return json(res, 400, { error: 'Not a Lost Kingdom of Shadowbane Chronicles save.' });
+        const prevLvl = mine[slot] ? mine[slot].meta.lvl : null;
         mine[slot] = { state, saved: Date.now(), meta: { name: String(state.name).slice(0, 12), lvl: +state.lvl || 1, cls: String(state.cls).slice(0, 16) } }; save();
+        // saves are frequent: audit only new slots and level changes; every write goes to the debug log
+        if (prevLvl !== mine[slot].meta.lvl) A({ ...actx, action: 'save.write', target: `slot ${slot}`, details: { hero: mine[slot].meta.name, cls: mine[slot].meta.cls, lvl: mine[slot].meta.lvl, prevLvl } });
+        log.debug('cloud save written', { reqId, account: sess.acct.name, slot, bytes: +req.headers['content-length'] || undefined });
         return json(res, 200, { ok: true, saved: mine[slot].saved });
       }
-      if (req.method === 'DELETE') { delete mine[slot]; save(); return json(res, 200, { ok: true }); }
+      if (req.method === 'DELETE') { const had = mine[slot]; delete mine[slot]; save(); if (had) A({ ...actx, action: 'save.delete', target: `slot ${slot}`, details: { hero: had.meta.name, lvl: had.meta.lvl } }); return json(res, 200, { ok: true }); }
     }
 
     // trading hub (auction house): the server holds listings, takes the 5% cut and pays sellers
@@ -388,6 +482,7 @@ const server = http.createServer(async (req, res) => {
         if (Object.values(db.market).filter(l => l.seller === uid).length >= db.realmSettings.maxListingsPerPlayer) return json(res, 400, { error: 'You have reached the active listing limit.' });
         const id = crypto.randomBytes(8).toString('hex'), hours = Math.max(1, Math.min(48, +b.hours || 12));
         db.market[id] = { id, seller: uid, sellerName: String(b.sellerName || sess.acct.name).slice(0, 12), item, stack, price, ts: now, expires: now + hours * 3600e3 };
+        A({ ...actx, action: 'market.list', target: id, details: { what: item ? String(item.name || item.id || 'item').slice(0, 40) : `${stack.id} x${stack.n}`, price, hours } });
         save(); return json(res, 200, { ok: true, id });
       }
       if (p === '/api/market/buy' && req.method === 'POST') {
@@ -395,15 +490,17 @@ const server = http.createServer(async (req, res) => {
         if (!l) return json(res, 404, { error: 'That listing is gone.' });
         if (l.seller === uid) return json(res, 400, { error: 'That is your own listing.' });
         delete db.market[id]; (db.proceeds[l.seller] ||= { gold: 0, returned: [] }).gold += Math.floor(l.price * 0.95);
+        A({ ...actx, action: 'market.buy', target: id, details: { seller: l.sellerName, sellerId: l.seller, price: l.price, sellerCredit: Math.floor(l.price * 0.95) } });
         save(); return json(res, 200, { ok: true, listing: l });
       }
       if (p === '/api/market/cancel' && req.method === 'POST') {
         const { id } = await body(req), l = db.market[id];
         if (!l || l.seller !== uid) return json(res, 404, { error: 'Not your listing.' });
-        delete db.market[id]; save(); return json(res, 200, { ok: true, listing: l });
+        delete db.market[id]; A({ ...actx, action: 'market.cancel', target: id, details: { price: l.price } }); save(); return json(res, 200, { ok: true, listing: l });
       }
       if (p === '/api/market/claim' && req.method === 'GET') {
         const pr = db.proceeds[uid] || { gold: 0, returned: [] }; delete db.proceeds[uid]; save();
+        if (pr.gold || pr.returned.length) A({ ...actx, action: 'market.claim', details: { gold: pr.gold, returned: pr.returned.length } });
         return json(res, 200, pr);
       }
     }
@@ -426,7 +523,8 @@ const server = http.createServer(async (req, res) => {
       clients.set(peer, { res, uid, name: sess.acct.name, presence: {} });
       send(res, 'hello', { peer, account: publicAcct(sess.acct) });
       broadcastPeers();
-      req.on('close', () => { clients.delete(peer); broadcastPeers([peer]); });
+      log.debug('live stream opened', { reqId, peer, account: sess.acct.name, ip, online: clients.size });
+      req.on('close', () => { clients.delete(peer); broadcastPeers([peer]); log.debug('live stream closed', { peer, account: sess.acct.name, online: clients.size }); });
       return;
     }
     if (p === '/api/presence' && req.method === 'POST') {
@@ -448,7 +546,7 @@ const server = http.createServer(async (req, res) => {
         if (!channels.has(channel) || !message || message.length > 180 || /[\u0000-\u001F\u007F]/.test(message)) return json(res, 400, { error: 'Invalid chat message.' });
         if (!db.realmSettings.chatEnabled) return json(res, 503, { error: 'Realm chat is disabled.' });
         const now = Date.now(), times = (chatWindows.get(uid) || []).filter(t => t > now - 10000);
-        if (times.length >= db.realmSettings.chatMessagesPer10Seconds) return json(res, 429, { error: 'Chat rate limit reached.' });
+        if (times.length >= db.realmSettings.chatMessagesPer10Seconds) { log.info('chat rate limit hit', { reqId, account: sess.acct.name, channel }); return json(res, 429, { error: 'Chat rate limit reached.' }); }
         times.push(now); chatWindows.set(uid, times);
         const group = (pid, player) => player.presence && player.presence.j || player.presence && player.presence.h && pid || null;
         const myGroup = group(peer, c);
@@ -477,8 +575,16 @@ const server = http.createServer(async (req, res) => {
     }
     return json(res, 404, { error: 'No such endpoint.' });
   } catch (e) {
-    return json(res, e.code === 413 ? 413 : e.code === 400 ? 400 : 500, { error: e.code === 413 ? 'Too large.' : e.code === 400 ? 'Bad request.' : 'Server error.' });
+    if (e.code === 413 || e.code === 400) log.info(e.code === 413 ? 'request body too large' : 'malformed request body', { reqId, method: req.method, path: p, ip, account: who || undefined });
+    else log.error('unhandled error in request', { reqId, method: req.method, path: p, ip, account: who || undefined, err: e });
+    if (res.headersSent) { res.end(); return; }
+    return json(res, e.code === 413 ? 413 : e.code === 400 ? 400 : 500, { error: e.code === 413 ? 'Too large.' : e.code === 400 ? 'Bad request.' : 'Server error.', reqId });
   }
 });
-server.listen(PORT, HOST, () => console.log(`LOST KINGDOM OF SHADOWBANE CHRONICLES realm server on http://${HOST}:${PORT}  (accounts: ${Object.keys(db.accounts).length})`));
+server.on('clientError', (e, socket) => { log.debug('client connection error', { err: e.message, code: e.code }); if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\n\r\n'); });
+server.on('error', e => { log.error('server error', e); if (e.code === 'EADDRINUSE') { log.flush(); process.exit(1); } });
+server.listen(PORT, HOST, () => {
+  log.info(`LOST KINGDOM OF SHADOWBANE CHRONICLES realm server on http://${HOST}:${PORT}`, { accounts: Object.keys(db.accounts).length, logLevel: log.level, logDir: LOG_DIR, auditSeq: audit.seq });
+  audit.record({ action: 'server.start', actor: 'system', details: { host: HOST, port: PORT, pid: process.pid } });
+});
 module.exports = server;

@@ -2,6 +2,19 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## Unreleased
+
+### Added
+- **Realm audit log** (`audit.log`): a hash-chained, append-only record of sign-ins (including failures and throttling), registrations, password changes, staff actions, denied staff access, cloud saves and marketplace trades. Each entry records the account, IP, outcome and request ID. The control plane's **Audit log** tab can filter, verify and export it.
+- **Realm debug log** (`debug.log`): a leveled server log that records every 500 with its stack trace, slow requests and storage failures. Every request is logged at `debug`. Every response carries `X-Request-Id`. Root and admin can view it, search it and change its level in the new **Debug log** tab.
+- See [backend/README.md](backend/README.md#audit-and-debug-logs).
+
+### Fixed
+- Server errors were returned as "Server error." without being logged anywhere.
+- A request body of `null`, an array or a bare value crashed routes with a 500; it now returns 400.
+- A failed write of `realm.json` threw inside a timer and could stop the server; it is now logged and retried.
+- The in-game GM console's **AUDIT LOG** showed the oldest of the last 100 entries instead of the newest.
+
 ## 2.1.1 — B2026.11.01
 
 ### Added

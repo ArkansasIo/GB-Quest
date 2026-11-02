@@ -101,7 +101,7 @@ function realmTree() {
       { label: 'MAKE PLAYER', run: () => api(`/api/admin/players/${p.id}/role`, { method: 'PUT', body: { role: 'player' } }).then(() => A_ok('Role set')).catch(e => say(e.message)) },
     ] })).concat([{ label: 'RELOAD LIST', run: () => api('/api/admin/players').then(r => { ADMIN._players = r.players || []; A_ok(`${ADMIN._players.length} players`); }).catch(e => say(e.message)) }]) },
     { label: 'REALM SETTINGS', kids: () => Object.entries(ADMIN._settings || {}).filter(([, v]) => typeof v === 'boolean').map(([k, v]) => ({ label: k.toUpperCase().slice(0, 16), value: () => (ADMIN._settings[k] ? 'ON' : 'OFF'), run: () => api('/api/admin/settings', { method: 'PUT', body: { [k]: !ADMIN._settings[k] } }).then(r => { ADMIN._settings = r.settings || Object.assign(ADMIN._settings, { [k]: !ADMIN._settings[k] }); A_ok(`${k} ${ADMIN._settings[k] ? 'on' : 'off'}`); }).catch(e => say(e.message)) })).concat([{ label: 'RELOAD SETTINGS', run: () => api('/api/admin/settings').then(r => { ADMIN._settings = r.settings || r; A_ok('Settings loaded'); }).catch(e => say(e.message)) }]) },
-    { label: 'AUDIT LOG', run: () => api('/api/admin/audit').then(r => say(['AUDIT LOG'].concat((r.audit || r.entries || []).slice(-6).map(a => `${String(a.action || a.type).slice(0, 12)} ${String(a.target || a.by || '').slice(0, 10)}`)))).catch(e => say(e.message)) },
+    { label: 'AUDIT LOG', run: () => api('/api/admin/audit?limit=6').then(r => say(['AUDIT LOG (NEWEST)'].concat((r.audit || r.entries || []).slice(0, 6).map(a => `${a.outcome && a.outcome !== 'success' ? '!' : ''}${String(a.action || a.type).replace(/^admin\./, '').slice(0, 12)} ${String(a.actor || a.target || a.by || '').slice(0, 10)}`)))).catch(e => say(e.message)) },
   ];
 }
 
