@@ -28,8 +28,8 @@ The following items are roadmap work. They must not be represented as complete u
 
 ### Equipment enhancement
 
-- **Gem socket rules implemented:** nine gem families with nine tiers each (81 variants), weapon/armour socket capacity from one to four based on item level, validated insertion/extraction, character gem inventory consumption/refund, and derived-stat modifier integration. See [GEMS_AND_SOCKETS.md](GEMS_AND_SOCKETS.md).
-- Player-facing gem socket management UI and inventory panels.
+- **Gem socket system implemented:** nine gem families with nine tiers each (81 variants), weapon/armour socket capacity from one to four based on item level, validated insertion/extraction, character gem inventory consumption/refund, derived-stat integration, inventory entry point and player-facing socket forge UI. Three matching gems fuse into the next tier. See [GEMS_AND_SOCKETS.md](GEMS_AND_SOCKETS.md).
+- Gem loot tables, automatic monster/boss rewards, gathering/crafting sources and vendor stock.
 - Gem drop tables, gathering/crafting sources, upgrade recipes and vendor stock.
 - Online server-side validation and synchronization for socket operations.
 - Slot-specific gem compatibility rules and any socket unlock/upgrade costs.
@@ -170,4 +170,4 @@ A feature is complete only when all relevant layers are present:
 
 ## 6. Current delivery statement
 
-As of 2026-11-02, the repository contains the JavaScript browser game, a local minimap implementation, the 42-item Artifact and 42-item Relic catalogs, and the first gem socket rules layer (nine gem families, nine tiers each, socket validation, inventory consumption/refund and derived-stat integration). The gem socket UI, loot/crafting sources and multiplayer authority remain outstanding. The repository also has a partial C++23 native rules core and optional x86-64 assembly fast path; neither is a full game port. The Game Boy SM83/RGBDS ROM target remains a roadmap item.
+As of 2026-11-02, the repository contains the JavaScript browser game, a local minimap implementation, the 42-item Artifact and 42-item Relic catalogs, and the gem socket rules and player-facing forge (nine gem families, nine tiers each, socket validation, inventory consumption/refund, derived-stat integration, socket insertion/extraction UI and three-to-one gem fusion). Automatic loot integration, gathering/vendor sources and multiplayer authority remain outstanding. The repository also has a partial C++23 native rules core and optional x86-64 assembly fast path; neither is a full game port. The Game Boy SM83/RGBDS ROM target remains a roadmap item.
