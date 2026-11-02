@@ -13,6 +13,13 @@ It combines:
 
 All art comes from the original asset sheet in `src_sheet/sheet.png`, or is generated from it.
 
+
+## Art, ranks, and world tiles
+
+- Adventurer progression: **F → E → D → C → B → A → S → SS → SSS**; independent of item rarity and character levels.
+- World tile contract: layered 16×16 tiles, 16-way cardinal autotiling, animated shorelines, nine biome palettes, and six dungeon themes.
+- Asset generation and build instructions: [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md).
+
 ## Play
 
 - **Single file:** open `dist/gbquest.html` in any browser. It opens in the desktop game window layout.
