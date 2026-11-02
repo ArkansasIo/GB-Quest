@@ -109,7 +109,7 @@ InventoryResult add_item(
   }
 
   const std::int32_t new_stacks =
-      remaining == 0 ? 0 : (remaining + definition.max_stack - 1) / definition.max_stack;
+      remaining == 0 ? 0 : static_cast<std::int32_t>((static_cast<std::int64_t>(remaining) + definition.max_stack - 1) / definition.max_stack);
   const std::size_t resulting_slots = staged.size() + static_cast<std::size_t>(new_stacks);
   if (resulting_slots > static_cast<std::size_t>(inventory.slot_capacity)) {
     return inventory_failure(inventory, "slot_capacity_exceeded");
@@ -192,7 +192,12 @@ std::int64_t inventory_weight(
       throw std::invalid_argument("Missing item definition for inventory stack");
     }
     validate_item_definition(*found);
-    total += static_cast<std::int64_t>(found->weight_grams) * stack.quantity;
+    const std::int64_t stack_weight =
+        static_cast<std::int64_t>(found->weight_grams) * stack.quantity;
+    if (stack_weight > std::numeric_limits<std::int64_t>::max() - total) {
+      throw std::overflow_error("Inventory weight calculation overflow");
+    }
+    total += stack_weight;
   }
   return total;
 }
