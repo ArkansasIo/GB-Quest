@@ -908,7 +908,7 @@ class Battle {
     }
     const steps = [this.say(this.foes.length > 1 ? 'Victory!' : `${this.foes[0].name} is defeated!`, () => { Music.play('victory'); SFX.quest_done(); }, 20)];
     if (!this.noRewards) steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
-    for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; } }));
+    for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; if (globalThis.GBQBossProgression) globalThis.GBQBossProgression.discoverNamed(G, it.named); } }));
     const runeNames = Object.entries(runeDrops).map(([id, n]) => `${id.toUpperCase()} x${n}`);
     if (runeNames.length) steps.push(this.say(('Rune rewards: ' + runeNames.join(', ')).slice(0, 70), () => {
       if (globalThis.GBQRunes) for (const [id, n] of Object.entries(runeDrops)) globalThis.GBQRunes.addRuneToInventory(G, id, n);
