@@ -1,6 +1,6 @@
 'use strict';
 
-const { ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 const MIRROR_MARKER = '__gbq_desktop_storage_mirror_v1__';
 
 try {
@@ -15,3 +15,10 @@ try {
   }
   ipcRenderer.send('gbq:storage-mirror-imported');
 } catch {}
+
+contextBridge.exposeInMainWorld('gbqLauncher', Object.freeze({
+  launch: selection => ipcRenderer.send('gbq:launch-game', selection),
+  checkUpdates: () => ipcRenderer.send('gbq:check-updates'),
+  openProject: () => ipcRenderer.send('gbq:open-project'),
+  openDocs: () => ipcRenderer.send('gbq:open-docs'),
+}));
