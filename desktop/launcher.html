@@ -39,7 +39,7 @@ const saved=(()=>{try{return JSON.parse(localStorage.getItem('gbq-launcher-selec
 function fillCenters(preferred){dc.replaceChildren();for(const [name,count] of centers[region.value]){const o=document.createElement('option');o.value=name;o.textContent=name+' Data Center';o.dataset.count=count;dc.append(o)}if(preferred&&[...dc.options].some(o=>o.value===preferred))dc.value=preferred;fillWorlds(saved.world)}
 function fillWorlds(preferred){world.replaceChildren();const count=Number(dc.selectedOptions[0]?.dataset.count||8);for(let i=1;i<=count;i++){const o=document.createElement('option');o.value=String(i).padStart(2,'0');o.textContent='World '+String(i).padStart(2,'0');world.append(o)}if(preferred&&[...world.options].some(o=>o.value===preferred))world.value=preferred}
 region.addEventListener('change',()=>{fillCenters();save()});dc.addEventListener('change',()=>{fillWorlds();save()});world.addEventListener('change',save);
-function save(){localStorage.setItem('gbq-launcher-selection',JSON.stringify({region:region.value,dc:dc.value,world:world.value,characterSlot:characterSlot.value}))}
+function save(){localStorage.setItem('gbq-launcher-selection',JSON.stringify({region:region.value,dc:dc.value,world:world.value}))}
 region.value=centers[saved.region]?saved.region:'na';fillCenters(saved.dc);if(saved.world)world.value=saved.world;
 const realmUrl=document.querySelector('#realmUrl'),username=document.querySelector('#username'),password=document.querySelector('#password');
 const characterSlot=document.querySelector('#characterSlot'),characterDetails=document.querySelector('#characterDetails');\nconst accountState=document.querySelector('#accountState'),realmTitle=document.querySelector('#realmTitle'),realmDetails=document.querySelector('#realmDetails'),realmDot=document.querySelector('#realmDot');
@@ -53,7 +53,7 @@ document.querySelector('#login').addEventListener('click',()=>authenticate('logi
 document.querySelector('#register').addEventListener('click',()=>authenticate('register'));
 document.querySelector('#logout').addEventListener('click',async()=>{try{await window.gbqLauncher.logout();accountMessage('You are signed out.');document.querySelector('#logout').hidden=true;characterSlot.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='No cloud character — launch offline/local';characterSlot.append(empty);characterDetails.textContent='Sign in and refresh to view your three cloud save slots.'}catch(error){accountMessage(error.message,'bad')}});
 (async()=>{try{const state=await window.gbqLauncher.getSession();if(state.authenticated&&state.account){accountMessage('Signed in as '+state.account.name,'good');document.querySelector('#logout').hidden=false;await refreshCharacters()}}catch{}try{await connectRealm()}catch{}})();
-document.querySelector('#play').addEventListener('click',()=>{save();window.gbqLauncher?.launch({region:region.value,dataCenter:dc.value,world:world.value})});
+document.querySelector('#play').addEventListener('click',()=>{save();window.gbqLauncher?.launch({region:region.value,dataCenter:dc.value,world:world.value,characterSlot:characterSlot.value})});
 document.querySelector('#updates').addEventListener('click',()=>window.gbqLauncher?.checkUpdates());
 document.querySelector('#project').addEventListener('click',()=>window.gbqLauncher?.openProject());
 document.querySelector('#docs').addEventListener('click',()=>window.gbqLauncher?.openDocs());
