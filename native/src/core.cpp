@@ -140,6 +140,61 @@ DiceResult resolve_dice(
   };
 }
 
+namespace {
+
+void validate_health_state(const HealthState& target) {
+  if (target.maximum_hit_points < 0
+      || target.hit_points < 0
+      || target.hit_points > target.maximum_hit_points
+      || target.temporary_hit_points < 0) {
+    throw std::invalid_argument("Invalid character health state");
+  }
+}
+
+} // namespace
+
+HealthChangeResult apply_damage(HealthState& target, std::int32_t amount) {
+  validate_health_state(target);
+  if (amount < 0) {
+    throw std::invalid_argument("Damage amount cannot be negative");
+  }
+
+  const std::int32_t absorbed = std::min(amount, target.temporary_hit_points);
+  target.temporary_hit_points -= absorbed;
+  const std::int32_t remaining = amount - absorbed;
+  const std::int32_t dealt = std::min(remaining, target.hit_points);
+  target.hit_points -= dealt;
+  target.defeated = target.hit_points == 0;
+
+  return HealthChangeResult{
+      .requested = amount,
+      .applied = absorbed + dealt,
+      .hit_points_remaining = target.hit_points,
+      .temporary_hit_points_remaining = target.temporary_hit_points,
+      .defeated = target.defeated,
+  };
+}
+
+HealthChangeResult apply_healing(HealthState& target, std::int32_t amount) {
+  validate_health_state(target);
+  if (amount < 0) {
+    throw std::invalid_argument("Healing amount cannot be negative");
+  }
+
+  const std::int32_t restored = std::min(
+      amount, target.maximum_hit_points - target.hit_points);
+  target.hit_points += restored;
+  target.defeated = target.hit_points == 0;
+
+  return HealthChangeResult{
+      .requested = amount,
+      .applied = restored,
+      .hit_points_remaining = target.hit_points,
+      .temporary_hit_points_remaining = target.temporary_hit_points,
+      .defeated = target.defeated,
+  };
+}
+
 DamageResult resolve_damage(const DiceResult& dice, const DamageInput& input) {
   if (input.damage_type.empty()) {
     throw std::invalid_argument("Damage type cannot be empty");
