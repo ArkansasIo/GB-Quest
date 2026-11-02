@@ -89,7 +89,7 @@ async () => {
 
   // 4. every main-menu screen with input
   fresh('arcanist', 'emberborn', 'scholar', 30);
-  for (let k = 0; k < 19; k++) step('menu item ' + k, () => {
+  for (let k = 0; k < 20; k++) step('menu item ' + k, () => {
     reset(new Field()); run(2); push(new MainMenu()); const mm = topScene(); mm.i = k; const name = mm.items()[k];
     if (name.startsWith('SAVE & QUIT')) return;
     press('a'); run(4);
@@ -284,6 +284,18 @@ async () => {
     const s = starterState('herb'); s.accepted = true; progressProfessionQuest('herb', 'gather', 8); if (s.progress !== 8) return 'starter progress ' + s.progress;
     const g0 = G.gold; starterQuestTalk('herb'); if (!s.done || G.gold <= g0) return 'starter claim';
     return null;
+  });
+  step('mounts', () => {
+    fresh('warden', 'hearthkin', 'soldier', 14); G.gold = 999999; G.mounts = []; G.hasMount = false;
+    if (MOUNTS.length !== 120 || new Set(MOUNTS.map(m => m.family)).size !== 12) return 'catalogue';
+    for (const m of MOUNTS) if (!IMG['mt_' + m.id]) return 'no art ' + m.id;
+    stableMenu(); press('a'); press('a'); if (G.mounts.length) return 'mount before 15';
+    scenes.length = 0; reset(new Field()); G.lvl = 15; stableMenu(); press('a'); for (let i = 0; i < 6; i++) { press('a'); render(); }
+    if (G.mounts.length !== 1 || !G.hasMount) return 'first mount ' + G.mounts.length;
+    if (mountSpeed() !== 4) return 'speed';
+    G.lvl = 200; grantMount('drake_crimson'); G.mount = 'drake_crimson'; if (mountSpeed() !== 8 || mountArt() !== 'mt_drake_crimson') return 'drake';
+    push(new MountScene()); for (const k of ['down', 'right', 'a', 'left', 'up', 'a']) { press(k); render(); }
+    G.mounted = true; reset(new Field()); run(4); render();
   });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 

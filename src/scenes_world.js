@@ -610,7 +610,7 @@ class Field {
     if (frameN % 40 === 0) for (const p of realmPlayersIn(G.map)) { const d = pick(Object.keys(DIRS)), [dx, dy] = DIRS[d]; if (!this.blocked(p.x + dx, p.y + dy) && R() < 0.5) { p.x += dx; p.y += dy; p.dir = d; } }
     weatherTick(this.zone ? this.zone.biome : null, this.cam ? this.cam[0] : 0, this.cam ? this.cam[1] : 0);
     if (this.ox || this.oy) {
-      const sp = G.mounted ? 4 : 2;
+      const sp = G.mounted ? (typeof mountSpeed === 'function' ? mountSpeed() : 4) : 2;
       this.ox -= Math.sign(this.ox) * sp; this.oy -= Math.sign(this.oy) * sp; this.walk += sp;
       if (!this.ox && !this.oy) this.onStep();
       return;
@@ -703,7 +703,7 @@ class Field {
     this.discover();
     const zt = t && t[2];
     const rate = zt === 'wood' ? 0.1 : zt === 'open' ? 0.06 : 0;
-    if (rate && !G.ghost && !(window.DBG && DBG.noEnc) && this.since > 5 && R() < rate * (G.mounted ? 0.6 : 1)) {
+    if (rate && !G.ghost && !(window.DBG && DBG.noEnc) && this.since > 5 && R() < rate * (G.mounted ? (typeof mountEnc === 'function' ? mountEnc() : 0.6) : 1)) {
       this.since = 0;
       const foes = rollEncounter(this.zone, { group: zt === 'wood' });
       const st = skillCheck(G, 'stealth', 10 + Math.floor(foes[0].lvl / 2));
@@ -1056,10 +1056,10 @@ function innMenu() {
   }, 'INNKEEPER: A warm bed and good company.');
 }
 function trainerMenu() {
-  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSION TREES', 'PROFESSION PERKS', 'PROFESSION QUESTS', 'LEAVE'], k => {
+  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (STABLE, LV15)', 'PROFESSION TREES', 'PROFESSION PERKS', 'PROFESSION QUESTS', 'LEAVE'], k => {
     if (k === 0) push(new GrowthScene());
     if (k === 1) { if (classLevel(G) < 3) return say('Subclasses unlock at level 3.'); if (G.gold < 100) return say('Not enough gold.'); G.gold -= 100; G.sub = null; G.pending.sub = true; push(new GrowthScene()); }
-    if (k === 2) { if (G.hasMount) return say('You already ride.'); if (G.lvl < 10 || G.gold < 300) return say('Need level 10 and 300 G.'); G.gold -= 300; G.hasMount = true; SFX.howl(); checkAchievements(); say('You learn to ride! Press B in the field to mount.'); }
+    if (k === 2) { if (G.hasMount) return say('You already ride. Visit a stablemaster for more mounts.'); return say(['Riding is taught by the STABLEMASTER in Ardenhold.', 'Come at level 15 for your first mount.']); }
     if (k === 3) push(new ProfessionTreeScene());
     if (k === 4) push(new PerkTreeScene());
     if (k === 5) push(new ProfessionQuestScene());

@@ -61,4 +61,4 @@ function battleBackdrop(kind) {
   else if (z) i = { meadow: 0, coast: 0, marsh: 1, jungle: 1, snow: 2, badlands: 2, volcanic: 2, dusk: 1, crystal: 2 }[z.biome] || 0;
   return NES.battlebg[Math.min(NES.battlebg.length - 1, i)];
 }
-const mountArt = () => artOn() && NES.mount && NES.mount.length ? NES.mount[0] : null;
+const mountArt = () => { const m = typeof curMount === 'function' ? curMount() : null; if (m && IMG['mt_' + m.id]) return 'mt_' + m.id; return artOn() && NES.mount && NES.mount.length ? NES.mount[0] : null; };
