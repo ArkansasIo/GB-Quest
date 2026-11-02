@@ -1031,7 +1031,7 @@ function smithBuyMenu(kind) {
   }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
 }
 function smithSellMenu(kind) {
-  const gear = G.bag.filter(item => item.kind === kind);
+  const gear = G.bag.filter(item => item.kind === kind && !item.heirloom); // heirlooms are soulbound
   if (!gear.length) return say(`You have no ${kind === 'armor' ? 'armour' : 'weapons'} to sell.`);
   choose(gear.map(item => `${item.name.slice(0, 18)} ${fmt(item.value)}G`), index => {
     if (index < 0) return;

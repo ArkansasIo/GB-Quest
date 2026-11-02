@@ -241,7 +241,7 @@ class TradeScene {
     if (!P('a')) return;
     const o = O[this.i];
     if (Trade.myLock && !/CONFIRM|CANCEL|WAITING/.test(o)) { SFX.error(); return say('Your offer is locked. Cancel to change it.'); }
-    if (o === 'ADD ITEM') { const pool = G.bag.filter(it => !Trade.me.items.includes(it) && !it.fav).slice(0, 8); if (!pool.length || Trade.me.items.length >= 6) return say('Nothing more to add.'); choose(pool.map(it => it.name.slice(0, 18)), k => { if (k >= 0) { Trade.me.items.push(pool[k]); Trade.sync(); } }); }
+    if (o === 'ADD ITEM') { const pool = G.bag.filter(it => !Trade.me.items.includes(it) && !it.fav && !it.heirloom).slice(0, 8); if (!pool.length || Trade.me.items.length >= 6) return say('Nothing more to add.'); choose(pool.map(it => it.name.slice(0, 18)), k => { if (k >= 0) { Trade.me.items.push(pool[k]); Trade.sync(); } }); }
     if (o === 'ADD STACK') { const pool = Object.keys(G.inv).filter(k => G.inv[k] > 0 && cleanStack({ id: k, n: 1 }) && !Trade.me.stacks.some(s => s.id === k)).slice(0, 8); if (!pool.length || Trade.me.stacks.length >= 6) return say('Nothing more to add.'); choose(pool.map(k => `${ITEMS[k].name.slice(0, 14)} x${G.inv[k]}`), k => { if (k >= 0) { Trade.me.stacks.push({ id: pool[k], n: G.inv[pool[k]] }); Trade.sync(); } }); }
     if (o === 'ADD GOLD') { const steps = [10, 100, 1000, 10000, 100000].filter(g => g <= G.gold); if (!steps.length) return say('No gold to offer.'); choose(steps.map(g => `+${fmt(g)} G`).concat(['ALL GOLD']), k => { if (k < 0) return; Trade.me.gold = Math.min(G.gold, k === steps.length ? G.gold : Trade.me.gold + steps[k]); Trade.sync(); }); }
     if (o === 'CLEAR MY OFFER') { Trade.me = { gold: 0, items: [], stacks: [] }; Trade.sync(); }

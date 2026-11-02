@@ -2,6 +2,17 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## Unreleased
+
+### Added
+- **Heirlooms** (MENU > HEIRLOOMS): **LANTERNBORN HEIRLOOMS**, a nine-piece set that belongs to the account rather than one hero.
+  - **Who can use it:** every hero in every save slot can summon and equip it from level 1. **SUMMON FULL SET** equips all pieces and moves replaced gear to the bag.
+  - **Scaling:** item level follows the wearer's level from 1 to 720. Heirlooms are +1 at level 1, rising to +3 by level 481. Their stats stay below epic drops of the same level.
+  - **Class fit:** the chest matches the hero's heaviest armour (plate, mail, jerkin or robe). The weapon comes in six styles (blade, mace, staff, bow, dagger, knuckles); each class gets a suggested style, and the style can be changed at any time.
+  - **Set bonus:** 2 pieces give +10% XP; 4 add +10% XP, resistance and level-scaled HP; 6 add damage and healing; 9 add XP, gold find, magic find and crit. The amulet and cloak each add a fixed +5% XP.
+  - **Soulbound:** heirlooms can't be listed on the auction house, traded or salvaged, and they sell for 0 G. Each hero holds one copy of each piece, and a lost or returned piece can be summoned again.
+  - **Storage:** the collection is kept in this browser's storage, so it is shared by every save slot on the device.
+
 ## 2.1.1 — B2026.11.01
 
 ### Added

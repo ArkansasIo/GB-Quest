@@ -63,6 +63,7 @@ Choose **START → SETTINGS → COMBAT MODE → REAL-TIME** to enable action com
 | Magic | 59 spells, cantrips to level 9, across 8 renamed schools: Aegis, Calling, Omen, Thrall, Storm, Veil, Grave, Flux. Full, half and pact casters, plus mystic arcana |
 | Combat | Initiative, multiattack, 20 conditions, 30 buffs and debuffs, 13 damage types, resistances, threat and tanking, legendary actions and resistances, recharge abilities, boss phases (enrage, summon, shield, curse and more), AI companions |
 | Gear | 17 weapons, 11 armours, wondrous items. Six rarities (poor to legendary) with +1/+2/+3 bonuses and Diablo-style substat affixes |
+| Heirlooms | **LANTERNBORN HEIRLOOMS**: a nine-piece account-wide set (weapon in six styles, chest, helm, amulet, cloak, gloves, belt, leggings, boots). Every hero on the account can summon it from **MENU > HEIRLOOMS** at level 1. Item level follows the hero's level up to 720. The pieces are soulbound and give an XP-led set bonus at 2, 4, 6 and 9 pieces |
 | World | The continent of Valendria: 28 regions split into 90 zones across 9 biomes and 36 sub-biomes, with weather, waypoints and a capital city hub. The world map shows roads and sea lanes. The interactive Atlas adds search, layers, zone details and a route planner. |
 | Story | Written prologue, 12 acts, 50 chapters, and 6 generated side quests per zone |
 | Bestiary | 400 creatures (14 types, 55 subtypes, 7 elemental variants, elites) |
