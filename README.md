@@ -49,7 +49,7 @@ On phones, use the on-screen buttons. The full list of controls is in [docs/CONT
 | Bestiary | 400 creatures (14 types, 55 subtypes, 7 elemental variants, elites) |
 | Bosses | 350: 12 arc bosses, 177 world bosses, 66 dungeon, 45 raid, 30 trial and 20 tower bosses |
 | Endgame | 22 dungeons, 9 raids (12 players), 6 trials, the 100-floor Spire, 9 difficulty tiers (Story to Apocalypse), 5 expansions covering levels 40–720 |
-| MMO features | Auction house, mail, bank, guilds, reputation with 5 factions, arena with honor and rating, need/greed loot rolls, mounts, pets, a hearthstone, 36 achievements, a simulated realm with NPC players and chat |
+| MMO features | Auction house, mail, bank, guilds, reputation with 5 factions, ranked arena, flagged open-world PvP, two objective battlegrounds, honor gear, need/greed loot rolls, mounts, pets, a hearthstone, 36 achievements, a simulated realm with NPC players and chat |
 | Professions | Herbalism, Alchemy, Fishing (timing minigame), Cooking |
 | Multiplayer | 1, 4 or 12 player modes. When the page is shared, live players appear on the map with chat. A built-in host server lets friends fight in your party: the host runs each battle and guests take their own turns. A realm leaderboard is shared between players. |
 | Audio | Two engines. **Chip 4CH**: 2 pulse, wave and noise channels. **64-bit**: stereo, 8 voices, reverb, echo and a compressor, with strings, brass, flute, harp, FM bells, choir, organ, piano, bass and a full drum kit. 103 + 8 sound effects and 24 tracks, each with an orchestral arrangement, plus a sound test. |
@@ -101,6 +101,104 @@ python3 tools/build.py        # also builds the atlas and the full-screen build
 node tools/gen_docs.cjs        # regenerate reference docs
 python3 tools/gen_hd64.py     # regenerate 64-bit atlases
 ```
+
+## Node rules module, data catalogs and tests (`src/mmorpg/`, `world/`, `docs/`)
+
+A separate, test-covered Node.js implementation of the rules and world data lives alongside the playable build. Run its tests with `npm test` (Node.js 20+); CI runs them on every push.
+
+The original v1 game (`legacy/game.js` + `legacy/data.js`) is kept for reference.
+
+### MMORPG expansion notes
+
+The `feature/mmorpg-dnd5e-world` branch introduces the first modular foundation for a larger online RPG:
+
+- `docs/MMORPG_DESIGN.md` — game pillars, character progression, combat, social systems and production targets.
+- `docs/WORLD_SCALE_AND_MAPS.md` — continent/zone/chunk hierarchy and streaming strategy.
+- `docs/RULES_IMPLEMENTATION.md` — D&D 5e-compatible d20 rules implementation plan.
+- `src/mmorpg/rules/d20.js` — initial ability modifier, proficiency and d20 check primitives.
+- `src/mmorpg/world/coordinates.js` — chunk coordinate and neighborhood helpers.
+- `world/manifests/greenreach.json` — example original zone manifest.
+- `tests/mmorpg/` — initial automated tests.
+
+Run the new Node.js tests with `npm test` (Node.js 20 or newer).
+
+The MMORPG modules are a separately tested rules and data layer. The original v1 browser game is preserved under `legacy/`; the newer v2 game is the active browser build.
+
+### Native C++ rules demo
+
+The legacy v1 game includes a **NATIVE CORE** screen that calls the C++23 rules library through a loopback-only Node.js API. Its self-contained browser build is preserved at `legacy/gbquest-native-demo.html`.
+
+```sh
+npm run native:build
+npm start
+```
+
+Open `http://127.0.0.1:8000/legacy/gbquest-native-demo.html` and choose **NATIVE CORE**. Press A to roll again. The native core receives a caller-rolled d20 result; random-number generation remains outside the rules library. The single-file build does not provide this native API.
+
+**Content/licensing:** D&D-compatible mechanics should use permitted SRD material with required notices and attribution. Do not copy non-SRD rulebook text or proprietary World of Warcraft assets, lore, maps or content. All new setting, quest, item, enemy and visual content should be original.
+
+
+### D&D-compatible character and equipment catalog
+
+The expansion data layer now includes the nine SRD 5.2.1 species, twelve SRD classes with their included SRD subclasses, eight schools of magic, the SRD weapon catalog (including mastery properties), and armor categories and AC rules:
+
+- `src/mmorpg/data/species.json`
+- `src/mmorpg/data/classes.json`
+- `src/mmorpg/data/magic-schools.json`
+- `src/mmorpg/data/equipment.json`
+- `docs/SRD_ATTRIBUTION.md`
+
+This is a structured catalog foundation, not yet the complete character builder: species traits, every level-by-level class feature, all spell records, feats, backgrounds, equipment costs/weights and full rules resolution still need to be implemented and validated against SRD 5.2.1. See the attribution document for licensing and scope.
+
+
+### 1-720 progression and 8-bit asset expansion
+
+- `src/mmorpg/progression/level-progression.js` — D20 levels 1-20 plus Paragon progression through level 720.
+- `src/mmorpg/data/progression.json` — progression design contract and milestone rewards.
+- `src/mmorpg/data/asset-manifest.json` — original pixel-art atlas and animation requirements.
+- `tools/generate_pixel_assets.py` — Python standard-library generator for original placeholder sprite atlases.
+- `docs/LEVEL_1_TO_720.md` — level-cap and endgame design.
+- `docs/PIXEL_ART_PIPELINE.md` — 8-bit art standards and asset provenance.
+- `docs/MMORPG_FEATURE_MATRIX.md` — character, world, social, economy, combat, UI and multiplayer feature scope.
+- `tests/mmorpg/progression.test.js` — level curve tests.
+
+The D20 class progression ends at level 20. Levels 21-720 are GB Quest Paragon ranks, focused on mastery, professions, exploration, collections, cosmetics and world renown. This preserves bounded accuracy while supporting long-term MMORPG progression.
+
+Run `npm test` with Node.js 20+. Run `python tools/generate_pixel_assets.py` to generate starter atlases. These are original procedural placeholders, not final production art.
+
+### 350 bosses, monster taxonomy and world-scale map
+
+- `src/mmorpg/data/bosses-350.json` — 300 world bosses and 50 arc bosses.
+- `src/mmorpg/data/monster-taxonomy.json` — 14 D&D-style creature types and 20 original monster combat classes with subclass archetypes.
+- `world/manifests/world-scale.json` — four continents, 40 zones, 512x512 tiles per zone, 32x32 tile chunks and 10,240 streamable chunks.
+- `docs/BOSSES_MONSTERS_AND_WORLD_MAP.md` — encounter and world-map design.
+- `tests/mmorpg/bosses-world.test.js` — catalogue and map integrity tests.
+
+The map target is 2,048 x 5,120 logical tiles at 16 source pixels per tile, rendered through the existing 160 x 144 handheld viewport with nearest-neighbor integer zoom. All boss names and encounter concepts are original GB Quest content; D&D creature-type taxonomy is used as the rules classification.
+
+- `src/mmorpg/world/chunk-generation.js` — deterministic seed-based 32x32 terrain chunk generation.
+- `tests/mmorpg/chunk-generation.test.js` — deterministic generation and map-boundary tests.
+
+### Colour modes, build identity, story campaign and multiplayer foundation
+
+- Build metadata: `src/mmorpg/data/build-info.json` — developer ArkansasIo, version 0.3.0 alpha, build ID GBQ-20261101-001.
+- The handheld shell now displays developer, version and build ID above the device.
+- Display settings cycle through DMG green, Pocket colour, Sunset, Amber, Ocean and original full-colour artwork.
+- Title screen now offers Campaign and Multiplayer entry points. The Multiplayer screen clearly reports that a live server is not connected yet.
+- `src/mmorpg/data/campaign.json` — six acts and eighteen chapters, covering levels 1-720.
+- `src/mmorpg/data/quests.json` — 30 main quests and 36 side quests.
+- `src/mmorpg/systems/campaign-runtime.js` — quest acceptance, objective progress, completion, reward claiming and act unlock helpers.
+- `src/mmorpg/data/multiplayer.json` and `src/mmorpg/net/multiplayer-client.js` — party, raid, chat, presence and secure WebSocket protocol foundation.
+- `tests/mmorpg/campaign-quests.test.js` and `tests/mmorpg/campaign-runtime.test.js` — campaign and quest validation tests.
+
+Online multiplayer still requires a deployed authoritative server, account authentication, persistent database and live integration. Campaign and quest records are data-driven foundations; the full 66-quest campaign still needs to be connected to in-game NPCs, maps, objectives and reward UI.
+
+### PvP, war mode and battlegrounds
+
+The honor quartermaster in Ardenhold offers a persistent PvE/PvP war-mode flag, ranked arena matches, and two playable 3v3 battleground queues: Banner Run and Waystone Control. In war mode, flagged heroes can attack hostile simulated realm players in non-town zones; towns remain safe. PvP fights do not grant monster XP or loot, and repeat victories against the same rival award less honor. Battlegrounds use five distinct capture objectives and end when a team reaches three captures.
+
+These are local PvE-driven simulations using the game's combat system and simulated realm heroes. The existing presence-sharing prototype does not provide authoritative live player combat; online PvP requires a deployed server that validates challenges, movement, combat and rewards.
+
 
 ## Roadmap
 

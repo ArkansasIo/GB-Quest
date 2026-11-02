@@ -550,7 +550,9 @@ class Field {
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
         if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3); else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
-        const nm = (p.name || '').slice(0, 8); fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
+        const nm = (p.name || '').slice(0, 8);
+        const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
+        fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
       }
       else if (e.kind === 'herb') { if (PIX) blit(spr('go_herb', 16, 16), ex, ey - ((frameN >> 5) % 4 === 0 ? 1 : 0)); else blit(sprH(e.herb === 'sandroot' ? 'px_sandroot' : 'item_herb', 11), ex + 3, ey + 3); }
       else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }
@@ -563,6 +565,7 @@ class Field {
     }
     FX.draw(cx, cy);
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
+    if (this.zone && !G.inst) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
     // HUD: hp/xp micro bars
     const D = derive(G);
     bar(1, H - 5, 50, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
@@ -612,11 +615,23 @@ function fightBoss(b) {
   }, `${B.cat === 'arc' ? 'ARC BOSS' : 'WORLD BOSS'}: ${B.name}. LV${lvl}. ${mechs}`);
 }
 function simPlayerMenu(p) {
-  choose(['INSPECT', 'INVITE', 'DUEL', 'WAVE', 'LEAVE'], k => {
-    if (k === 0) say(`${p.name} - LV${p.lvl} ${CLASSES[p.cls].name}${p.guild ? ` <${p.guild}>` : ''}`);
-    if (k === 1) { if (G.companions.length >= Math.max(3, modeOf().size - 1)) return say('Your party is full.'); const c = makeAdventurer(p.cls, Math.min(G.lvl, p.lvl), p.name); G.companions.push(c); SFX.lfg_ready(); say(`${p.name} joins your party!`); }
-    if (k === 2) { const c = makeAdventurer(p.cls, Math.min(LEVEL_CAP, p.lvl), p.name); const foe = adventurerFoe(c); startBattle([foe], { size: 1, noFlee: true, kind: 'arena', onEnd: r => say(r === 'win' ? `${p.name}: GG! Well fought.` : `${p.name}: Better luck next time.`) }); }
-    if (k === 3) { SFX.charm(); chatLog('Emote', G.name, `waves at ${p.name}.`); say(`${p.name} waves back.`); }
+  const zone = ZONE_BY_ID[G.map];
+  const canWorldPvp = !G.inst && !G.ghost && zone && !zone.town && GBQ_PVP.canAttack(
+    { id: 'hero', pvpEnabled: G.pvpEnabled },
+    { id: p.id, pvpEnabled: p.pvpEnabled },
+    { sameFaction: G.pvpFaction === p.faction, safeZone: !!zone.town },
+  );
+  const actions = ['INSPECT', 'INVITE'].concat(canWorldPvp ? ['ATTACK'] : []).concat(['DUEL', 'WAVE', 'LEAVE']);
+  choose(actions, k => {
+    const action = actions[k];
+    if (action === 'INSPECT') say(`${p.name} - LV${p.lvl} ${CLASSES[p.cls].name}${p.guild ? ` <${p.guild}>` : ''} / ${p.faction.toUpperCase()}`);
+    if (action === 'INVITE') { if (G.companions.length >= Math.max(3, modeOf().size - 1)) return say('Your party is full.'); const c = makeAdventurer(p.cls, Math.min(G.lvl, p.lvl), p.name); G.companions.push(c); SFX.lfg_ready(); say(`${p.name} joins your party!`); }
+    if (action === 'ATTACK') fightWorldPvp(p);
+    if (action === 'DUEL') {
+      const c = makeAdventurer(p.cls, Math.min(LEVEL_CAP, p.lvl), p.name);
+      startBattle([adventurerFoe(c)], { size: 1, noFlee: true, kind: 'arena', noRewards: true, onEnd: (r, battle) => { restorePvpParty(battle); say(r === 'win' ? `${p.name}: GG! Well fought.` : `${p.name}: Better luck next time.`); } });
+    }
+    if (action === 'WAVE') { SFX.charm(); chatLog('Emote', G.name, `waves at ${p.name}.`); say(`${p.name} waves back.`); }
   }, `${p.name} LV${p.lvl}`);
 }
 // an NPC adventurer as a foe (arena / duels / mirror trial)
@@ -626,6 +641,39 @@ function adventurerFoe(c) {
   Object.assign(m, { name: c.name, spr: `c_${c.cls}_4`, hp: D.hpMax, maxhp: D.hpMax, ac: D.ac, hit: D.weapon.hit, dc: D.spell ? D.spell.dc : 10, fam: 'humanoid', bestId: null, res: [], imm: [], vuln: [],
     attacks: [{ name: D.weapon.name, type: D.weapon.type, hit: D.weapon.hit, dice: `${D.weapon.dice}+${D.weapon.dmg}` }], multi: D.attacks, spells: D.spell ? D.spell.known.filter(s => s.eff === 'dmg' && s.lvl > 0).slice(-2).map(s => s.id) : [], xp: xpForMonster(c.lvl) * 2, gold: 10 + c.lvl * 3, pvp: true });
   return m;
+}
+function restorePvpParty(battle) {
+  for (const unit of battle.party) {
+    if (!unit.ch) continue;
+    unit.ch.hp = Math.max(1, Math.ceil(derive(unit.ch).hpMax / 2));
+    delete unit.ch.dying; delete unit.ch.stable; delete unit.ch.dead;
+  }
+}
+function fightWorldPvp(opponent) {
+  if (!GBQ_PVP.canAttack(
+    { id: 'hero', pvpEnabled: G.pvpEnabled },
+    { id: opponent.id, pvpEnabled: opponent.pvpEnabled },
+    { sameFaction: G.pvpFaction === opponent.faction, safeZone: !!(ZONE_BY_ID[G.map] || {}).town },
+  )) return say('Open-world PvP is unavailable: flag for PvP, leave the safe zone, and choose a rival.');
+  const rival = makeAdventurer(CLASSES[opponent.cls] ? opponent.cls : 'warden', Math.max(1, Math.min(LEVEL_CAP, opponent.lvl)), opponent.name);
+  startBattle([adventurerFoe(rival)], {
+    size: 1, noFlee: true, kind: 'world-pvp', noRewards: true, title: `WAR MODE: ${opponent.name}`,
+    onEnd: (result, battle) => {
+      restorePvpParty(battle);
+      if (result === 'win') {
+        const defeats = G.pvpDefeats[opponent.id] || 0;
+        const honor = GBQ_PVP.calculateHonor({ levelDifference: opponent.lvl - G.lvl, base: 20 + Math.floor(G.lvl / 2), repeatPenalty: defeats * 0.2 });
+        G.pvpDefeats[opponent.id] = defeats + 1;
+        G.honor += honor; G.stats.pvpKills++;
+        checkAchievements();
+        say(`Victory over ${opponent.name}! +${honor} honor.`);
+      } else {
+        G.stats.pvpDeaths++;
+        say(`${opponent.name} wins the skirmish. Your honor is safe.`);
+      }
+      saveGame();
+    },
+  });
 }
 
 // ================================================================ NPC services
@@ -740,11 +788,20 @@ function guildMenu() {
 }
 function honorMenu() {
   const items = [[150, 3, 'weapon'], [150, 3, 'armor'], [250, 4, 'weapon'], [250, 4, 'armor'], [200, 3, 'wondrous']];
-  choose(items.map(([c, r, kd]) => `${RARITY[r].name} ${kd.toUpperCase()} ${c}H`), i => {
-    if (i < 0) return; const [c, r, kd] = items[i];
-    if (G.honor < c) return say(`Need ${c} honor (you have ${G.honor}).`);
-    G.honor -= c; const it = makeItem({ lvl: G.lvl, rarity: r, kind: kd }); it.name = 'GLADIATOR ' + it.name.replace(/^\+\d /, ''); addGear(it); SFX.buy();
-  }, `QUARTERMASTER: Honor: ${G.honor}`);
+  choose([`WAR MODE: ${G.pvpEnabled ? 'PVP' : 'PVE'}`, 'BATTLEGROUNDS', 'RANKED ARENA', 'HONOR GEAR', 'LEAVE'], k => {
+    if (k === 0) {
+      G.pvpEnabled = !G.pvpEnabled;
+      saveGame(); SFX.confirm();
+      say(G.pvpEnabled ? 'PvP flag raised. You can attack flagged rivals outside safe zones. Return here to opt out.' : 'PvP flag lowered. Open-world attacks are disabled.');
+    }
+    if (k === 1) battlegroundMenu();
+    if (k === 2) arenaMenu();
+    if (k === 3) choose(items.map(([c, r, kd]) => `${RARITY[r].name} ${kd.toUpperCase()} ${c}H`), i => {
+      if (i < 0) return; const [c, r, kd] = items[i];
+      if (G.honor < c) return say(`Need ${c} honor (you have ${G.honor}).`);
+      G.honor -= c; const it = makeItem({ lvl: G.lvl, rarity: r, kind: kd }); it.name = 'GLADIATOR ' + it.name.replace(/^\+\d /, ''); addGear(it); SFX.buy(); saveGame();
+    }, `QUARTERMASTER: Honor: ${G.honor}`);
+  }, `QUARTERMASTER: Honor ${G.honor} / Rating ${G.rating}`);
 }
 function difficultyMenu() {
   choose(DIFFICULTY.map(d => `${d.n} ${d.name}${diffUnlocked(d.n) ? '' : ` (LV${d.req})`}`), i => {
@@ -796,11 +853,55 @@ function arenaMenu() {
     if (k < 0 || k === 2) return;
     const n = k === 0 ? 1 : 3;
     const foes = Array.from({ length: n }, () => adventurerFoe(makeAdventurer(pick(CLASS_ORDER), Math.max(1, G.lvl + R() * 2 - 1 | 0), pick(SIM_NAMES))));
-    startBattle(foes, { size: n, noFlee: true, kind: 'arena', music: 'boss', onEnd: r => {
-      if (r === 'win') { const h = 20 + G.lvl; G.honor += h; G.rating += 18; G.stats.pvpWins++; say(`Victory! +${h} honor. Rating ${G.rating}.`); checkAchievements(); }
-      else if (r === 'lose') { G.rating = Math.max(0, G.rating - 12); G.hp = 1; say(`Defeat. Rating ${G.rating}.`); }
+    startBattle(foes, { size: n, noFlee: true, kind: 'arena', noRewards: true, music: 'boss', onEnd: (r, battle) => {
+      restorePvpParty(battle);
+      if (r === 'win') { const h = GBQ_PVP.calculateHonor({ base: 20 + G.lvl }); G.honor += h; G.rating += 18; G.stats.pvpWins++; say(`Victory! +${h} honor. Rating ${G.rating}.`); checkAchievements(); saveGame(); }
+      else if (r === 'lose') { G.rating = Math.max(0, G.rating - 12); G.stats.pvpDeaths++; G.hp = 1; say(`Defeat. Rating ${G.rating}.`); saveGame(); }
     } });
   }, `ARENA  Rating ${G.rating}  Honor ${G.honor}`);
+}
+function battlegroundMenu() {
+  const modes = Object.values(GBQ_PVP.battlegroundModes);
+  choose(modes.map(m => `${m.name.toUpperCase()}  ${m.teamSize}V${m.teamSize}`), i => {
+    if (i < 0) return;
+    const mode = modes[i], match = GBQ_PVP.createBattleground(mode.id);
+    say([`${mode.name}: ${mode.objective}.`, `First team to ${match.targetScore} captures wins. Battles use your companions and simulated rivals.`], () => runBattlegroundRound(match));
+  }, 'BATTLEGROUND QUEUE');
+}
+function runBattlegroundRound(match) {
+  const mode = GBQ_PVP.battlegroundModes[match.modeId];
+  const objectiveId = match.objectives[match.captured.length];
+  const foes = Array.from({ length: match.teamSize }, () => {
+    const level = Math.max(1, Math.min(LEVEL_CAP, G.lvl + (R() < 0.5 ? 0 : 1)));
+    const rival = makeAdventurer(pick(CLASS_ORDER), level, pick(SIM_NAMES));
+    return adventurerFoe(rival);
+  });
+  startBattle(foes, {
+    size: match.teamSize, noFlee: true, kind: 'battleground', noRewards: true, music: 'boss',
+    title: `${mode.name}: ${objectiveId}`,
+    onEnd: (result, battle) => {
+      restorePvpParty(battle);
+      const team = result === 'win' ? 'blue' : 'red';
+      if (result !== 'win') G.stats.pvpDeaths++;
+      const score = GBQ_PVP.captureBattlegroundObjective(match, { team, objectiveId });
+      saveGame();
+      if (score.status === 'complete') {
+        if (score.winner === 'blue') {
+          const honor = GBQ_PVP.calculateHonor({ base: 100 + G.lvl });
+          G.honor += honor; G.stats.pvpWins++; G.stats.battlegroundWins++;
+          checkAchievements();
+          say(`${mode.name} victory! ${score.score.blue}-${score.score.red}. +${honor} honor.`);
+        } else if (score.winner === 'red') {
+          say(`${mode.name} lost ${score.score.blue}-${score.score.red}. Regroup and queue again.`);
+        } else {
+          say(`${mode.name} ends in a draw, ${score.score.blue}-${score.score.red}.`);
+        }
+        saveGame();
+        return;
+      }
+      say([`${objectiveId}: ${result === 'win' ? 'captured' : 'lost'}.`, `Score ${score.score.blue}-${score.score.red}. Continue to the next objective?`], () => runBattlegroundRound(match));
+    },
+  });
 }
 function lfgMenu() {
   const dgs = DUNGEONS.filter(d => d.lvl <= G.lvl + 6), rds = RAIDS.filter(r => r.lvl <= G.lvl + 6);

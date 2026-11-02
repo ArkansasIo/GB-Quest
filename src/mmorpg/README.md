@@ -22,7 +22,7 @@ A standalone native rules library now lives in `native/`. It provides determinis
 - Threat/aggro, timed buffs/debuffs, ability cooldowns and loot modes
 - 5-player parties, 20-player raid groups, dungeon/raid instance state and role matchmaking
 - Professions, recipes, guilds, reputation, achievements, mounts and world events
-- Economy, PvP rules, WebSocket client foundation and server command validation
+- Economy, a PvE/PvP war-mode flag, simulated open-world PvP and objective battlegrounds, plus a WebSocket client foundation and server command validation
 
 ## Integration and authoritative simulation
 Modules remain separate from the legacy game loop until adapters are complete. D&D character level (1-20) and MMO progression (1-720) are separate tracks. Client requests must be validated; combat outcomes, drops, currency, progression and quest rewards must be computed by an authoritative server.
@@ -57,11 +57,14 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 
 ### Spell execution runtime
-`rules/spell-runtime.js` resolves supplied spell records against one or more targets. It validates range, known/prepared state when populated, slot availability, action economy, dice expressions and condition IDs before spending costs. Supported effects include spell attacks, saving throws, damage and resistance, critical hits, upcast damage, healing capped at maximum HP, timed conditions and concentration. This is an execution engine, not a complete spell catalog; full SRD spell records, class access/preparation rules and spell-specific exceptions remain separate work.
+`rules/spell-runtime.js` resolves supplied spell records against one or more targets. It validates range, known/prepared state when populated, slot availability, action economy, dice expressions and condition IDs before spending costs. Supported effects include spell attacks, saving throws, damage and resistance, critical hits, upcast damage and healing, timed conditions, armor and temporary-hit-point wards, summons, movement effects, senses, transformations and concentration. Scrolls can resolve a spell without spending a slot; callers must deliver and consume the scroll transactionally in an authoritative game server.
 
 
 ### SRD spell records
-`data/spells.json` and `systems/spell-catalog.js` provide a compact, searchable mechanical catalog of eight SRD 5.2.1 spells across cantrips and levels 1–2. Records include casting action, range, components, damage/save/healing/concentration metadata. `rules/spell-runtime.js` resolves supported fields. This is a starter subset, not the complete SRD spell list; spell-specific targeting geometry, class preparation/access, material components, and every unique spell rider still need implementation.
+`data/spells.json` contains eight compact SRD 5.2.1 examples. `data/spell-content.js` adds 90 original spells across nine GB Quest schools and all ten spell levels. Every original spell has stable IDs, class and subclass access, spell/effect type and subtype, a concise original description, casting and range metadata, component and duration sub-stats, and level-scaled effect stats. `systems/spell-catalog.js` indexes both catalogs with lookup, text search, and class, subclass, school, level, type and subtype filters. The expansion is original game content; its descriptions do not reproduce source rulebook text.
+
+### Spellbooks, scrolls and archive materials
+`systems/spell-archive.js` provides an inventory-ready catalog of exactly 300 uniquely named records: 90 single-use spell scrolls, 90 class-restricted spellbooks, 90 study-to-prepare codices and 30 original spellcraft materials. Books teach or prepare their linked spell without being consumed. Successful scroll casts spend an action but no spell slot and consume one scroll; invalid casts leave the item untouched. Archive operations validate item IDs, stack rules, capacity and safe quantities.
 
 
 ### D&D class progression runtime

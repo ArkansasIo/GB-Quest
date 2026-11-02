@@ -1,10 +1,12 @@
 # GB Quest native core
 
-This directory adds a standalone C++23 rules library alongside the existing JavaScript game and MMORPG modules. It does not replace the legacy Game Boy renderer or change the JavaScript runtime entry points.
+This directory adds a C++23 rules library alongside the JavaScript game and MMORPG modules. A small native CLI is built with the library and is called by the loopback Node.js development server and the legacy demo.
 
 ## Implemented
 
 - C++23 static library with a small public API in `include/gbquest/core.hpp`.
+- `gbquest_native_cli`, a deterministic command-line bridge for the native attack resolver.
+- The legacy game's **NATIVE CORE** demo calls the CLI through `server.js`.
 - D&D ability modifiers, character-level proficiency progression, armor class calculation and deterministic d20 attack resolution.
 - Optional x86-64 System V assembly implementation of the ability-modifier hot path.
 - Portable C++23 fallback for platforms without the supported assembly ABI.
@@ -18,6 +20,12 @@ Requires CMake 3.20+ and a C++23 compiler.
 cmake -S native -B build/native -DCMAKE_BUILD_TYPE=Release
 cmake --build build/native --parallel
 ctest --test-dir build/native --output-on-failure
+```
+
+On Windows, pass `-C Release` to CTest:
+
+```powershell
+ctest --test-dir build/native -C Release --output-on-failure
 ```
 
 Force the portable C++ implementation:
@@ -35,6 +43,8 @@ The NASM-independent GNU assembler source uses the System V AMD64 calling conven
 ## Determinism and security
 
 The native library does not generate random numbers or trust client-supplied random outcomes. Callers provide an already-rolled d20 value to `resolve_attack`; production combat rolls must be generated and validated by the authoritative server. This first native increment is a rules-core foundation, not a complete native game engine, renderer, networking stack or WebAssembly binding.
+
+For the in-game demo, build with `npm run native:build` and start the local server with `npm start`. Open `/legacy/gbquest-native-demo.html`; the API binds to `127.0.0.1` and validates all attack inputs before invoking the CLI. The demo is not authoritative multiplayer combat and does not change the main v2 battle system.
 
 ## Dice and damage
 

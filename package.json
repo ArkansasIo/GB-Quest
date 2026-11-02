@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "sweep": "python3 tests/sweep.py"
+    "sweep": "python3 tests/sweep.py",
+    "native:build": "cmake -S native -B build/native -DGBQ_ENABLE_X86_64_ASM=OFF && cmake --build build/native --config Release",
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=20"

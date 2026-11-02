@@ -12,9 +12,10 @@ function newGameState(o) {
     slot: o.slot || 0, created: Date.now(), playtime: 0, gold: BACKGROUNDS[o.bg].gold * 5, bag: [], inv: { potion: 3, ration: 2, campkit: 1, hearthstone: 1 },
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
-    stats: { kills: 0, deaths: 0, quests: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0 },
+    stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
     ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1 }, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
+    pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {},
   });
   return c;
 }
@@ -30,6 +31,9 @@ function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.n
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
   G.stats = Object.assign(newGameState({ name: 'X', species: 'hearthkin', cls: 'warden', bg: 'wanderer' }).stats, G.stats);
+  if (typeof G.pvpEnabled !== 'boolean') G.pvpEnabled = false;
+  if (!['lantern', 'ashen'].includes(G.pvpFaction)) G.pvpFaction = 'lantern';
+  G.pvpDefeats = G.pvpDefeats && typeof G.pvpDefeats === 'object' ? G.pvpDefeats : {};
   G.companions = (G.companions || []).filter(c => c && c.cls);
   migrateGear(G); G.companions.forEach(migrateGear); if (typeof stashOf === 'function') stashOf();
   if (G.inst) { G.inst = null; const z = ZONE_BY_ID[G.map]; if (!z) { G.map = 'elderwood'; G.x = 3; G.y = 7; } }
@@ -239,7 +243,7 @@ function realmPlayersIn(zid) {
     for (let i = 0; i < n; i++) {
       let x = m.hub[0] + r.int(-6, 6), y = m.hub[1] + r.int(-4, 4);
       for (let k = 0; k < 30 && !(m.tiles[(m.rows[y] || '')[x]] || [0, 0])[1]; k++) { x = r.int(2, 29); y = r.int(2, 21); }
-      out.push({ name: r.pick(SIM_NAMES), cls: r.pick(CLASS_ORDER), lvl: Math.max(z.lvl[0], Math.min(720, z.lvl[1] + r.int(-2, 2))), x, y, dir: 'down', guild: r.chance(0.5) ? r.pick(GUILD_NAMES) : null, t: r.int(0, 200) });
+      out.push({ id: `${zid}:${i}`, name: r.pick(SIM_NAMES), cls: r.pick(CLASS_ORDER), lvl: Math.max(z.lvl[0], Math.min(720, z.lvl[1] + r.int(-2, 2))), x, y, dir: 'down', guild: r.chance(0.5) ? r.pick(GUILD_NAMES) : null, faction: i % 2 === 0 ? 'ashen' : 'lantern', pvpEnabled: true, t: r.int(0, 200) });
     }
     REALM.players[zid] = out;
   }
@@ -276,7 +280,7 @@ const NET = {
   tick() {
     realmTick();
     if (!this.room || !G || frameN % 15) return;
-    const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0,
+    const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0, w: G.pvpEnabled ? 1 : 0,
       s: this.say || null, st: this.sayT || 0, h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
     const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
     this.room.presence(pres).catch(() => {});
