@@ -21,4 +21,8 @@ contextBridge.exposeInMainWorld('gbqLauncher', Object.freeze({
   checkUpdates: () => ipcRenderer.send('gbq:check-updates'),
   openProject: () => ipcRenderer.send('gbq:open-project'),
   openDocs: () => ipcRenderer.send('gbq:open-docs'),
+  checkRealm: url => ipcRenderer.invoke('gbq:realm-check', { url }),
+  authenticate: credentials => ipcRenderer.invoke('gbq:realm-auth', credentials),
+  getSession: () => ipcRenderer.invoke('gbq:realm-session'),
+  logout: () => ipcRenderer.invoke('gbq:realm-logout'),
 }));
