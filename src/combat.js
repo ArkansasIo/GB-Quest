@@ -38,14 +38,61 @@ class Battle {
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
     this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
-    this.title = opt.title || null;
+    this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
+    combatHotkeyHandler = index => this.useHotbar(index);
     for (const u of this.party) { if (u.ch.ai === false && this.rule === 'frail') u.ch.hp = Math.ceil(u.ch.hp / 2); }
     this.setupEffects();
     const intro = this.foes.length === 1 ? `${this.foes[0].boss ? '' : 'A '}${this.foes[0].name} ${this.foes[0].boss ? 'blocks the way!' : 'appears!'}` : `${this.foes.length} foes appear!`;
     const steps = [{ text: intro, act: () => { if (this.foes.some(f => f.boss)) SFX.boss_appear(); } }];
     if (this.surprise === 'party') steps.push({ text: 'You catch them off guard!\nThey lose their first turn.', act: () => SFX.ambush() });
     if (this.surprise === 'foe') steps.push({ text: 'Ambush! You are surprised!', act: () => SFX.ambush() });
-    this.run(steps, () => this.rollInit());
+    this.run(steps, () => this.combatMode === 'realtime' ? this.startRealtime() : this.rollInit());
+  }
+  startRealtime() {
+    const player = this.party.find(u => u.ch === G);
+    if (!player) { this.rollInit(); return; }
+    this.round = 1; this.turnIdx = 0; this.actor = player; this.bonusUsed = false;
+    this.rt = { player, ticks: 0, gcd: 0, cooldowns: {}, paused: false, nextEnemy: 100, nextAlly: 150, nextDecay: 180 };
+    this.state = 'realtime';
+  }
+  updateRealtime() {
+    if (P('start')) { this.rt.paused = !this.rt.paused; SFX.toggle(); }
+    if (this.rt.paused) return;
+    this.rt.ticks++; if (this.rt.gcd > 0) this.rt.gcd--;
+    for (const id in this.rt.cooldowns) if (this.rt.cooldowns[id] > 0) this.rt.cooldowns[id]--;
+    if (P('b')) {
+      const dodge = this.abilities(this.rt.player).find(a => a.id === 'dodge');
+      if (dodge && this.rt.gcd <= 0) { this.rt.gcd = 90; this.actor = this.rt.player; this.bonusUsed = false; this.doPlayerSteps(dodge.fn(), false); return; }
+    }
+    if (this.checkEnd()) return;
+    if (this.rt.ticks >= this.rt.nextDecay) {
+      this.rt.nextDecay += 180; this.round++; this.onRound();
+      for (const u of this.all) if (alive(u)) {
+        for (const e of u.effects.slice()) {
+          const tick = BUFFS[e.id]?.tick;
+          if (tick?.healPct) this.heal(u, Math.ceil(maxHpOf(u) * tick.healPct / 100));
+          if (tick?.dice) this.applyDamage(null, u, roll(tick.dice).total * (e.stacks || 1) + Math.floor((e.lvl || 0) / 3), tick.type, { tick: true });
+        }
+        this.decay(u);
+      }
+      if (this.checkEnd() || this.state !== 'realtime') return;
+    }
+    let unit = null, steps = null;
+    if (this.rt.ticks >= this.rt.nextEnemy) {
+      this.rt.nextEnemy += 100;
+      unit = this.foes.filter(alive).sort((a, b) => (a.rtNext || 0) - (b.rtNext || 0))[0];
+      if (unit) { unit.rtNext = this.rt.ticks + 100 * Math.max(1, unit.multi || 1); unit.turn = unit.turn || 0; this.actor = unit; steps = this.monsterTurn(unit); }
+    } else if (this.rt.ticks >= this.rt.nextAlly) {
+      this.rt.nextAlly += 150;
+      unit = this.party.filter(u => u !== this.rt.player && isChar(u) && u.ch.hp > 0 && !u.ch.dead && (u.rtNext || 0) <= this.rt.ticks).sort((a, b) => (a.rtNext || 0) - (b.rtNext || 0))[0];
+      if (unit) { unit.rtNext = this.rt.ticks + 150; this.actor = unit; steps = this.aiTurn(unit); }
+    }
+    if (unit && steps) {
+      this.actor = unit; this.run(steps, () => {
+        if (this.checkEnd()) return;
+        this.actor = this.rt.player; this.bonusUsed = false; this.state = 'realtime';
+      });
+    }
   }
   enter() { Music.play(this.music); }
   resume() { if (this.state !== 'over') Music.play(this.music); }
@@ -689,6 +736,7 @@ class Battle {
     this.run(steps, () => {
       if (this.checkEnd()) return;
       if (this.fled) return this.finish('flee');
+      if (this.combatMode === 'realtime') { this.actor = this.rt.player; this.bonusUsed = false; this.state = 'realtime'; return; }
       if (isBonus && alive(this.actor)) { this.state = 'menu'; return; }
       if (this.quickenedCast) { this.quickenedCast = false; this.state = 'menu'; return; }
       this.after();
@@ -710,11 +758,12 @@ class Battle {
       if (this.c < L.length) { this.c += [1, 2, 4, 99][S.textSpeed]; if (P('a')) this.c = L.length; return; }
       if (this.hold > 0) { this.hold--; return; }
       this.auto++;
-      const fast = S.autoBattle || (this.actor && this.actor.side === 'party' && this.actor.ch !== G) || this.party.length > 4;
+      const fast = this.combatMode === 'realtime' || S.autoBattle || (this.actor && this.actor.side === 'party' && this.actor.ch !== G) || this.party.length > 4;
       if (P('a') || P('b') || this.auto > (fast ? 22 : 70)) this.nextStep();
       return;
     }
     if (this.state === 'remote') { if (--this.remoteWait <= 0) { this.actor.ctrl = 'ai'; this.beginAction(this.actor); } return; }
+    if (this.state === 'realtime') return this.updateRealtime();
     if (this.state === 'menu') return this.updateMenu();
     if (this.state === 'list') return this.updateList();
     if (this.state === 'target') return this.updateTarget();
@@ -745,6 +794,41 @@ class Battle {
     if (!this.list.length) { SFX.error(); return; }
     this.listKind = kind; this.sub = 0; this.subTop = 0; this.state = 'list';
   }
+  hotbarEntries(u) {
+    if (!u || !isChar(u) || u.ch !== G) return [];
+    const D = derive(u.ch);
+    const spells = (D.spell ? D.spell.known : []).map(sp => ({ id: sp.id, name: sp.name, sub: sp.lvl ? `L${sp.lvl}` : 'C', ok: this.canCast(u, sp) && (!sp.bonus || !this.bonusUsed), sp }));
+    const abilities = this.abilities(u).map(ab => ({ id: ab.id, name: ab.name, sub: ab.cost, ok: ab.ok, ab }));
+    return [{ id: 'basic_attack', name: 'ATTACK', sub: 'GCD', ok: true, basic: true }].concat(abilities, spells).slice(0, 10);
+  }
+  useHotbar(index) {
+    if (!['menu', 'list', 'realtime'].includes(this.state) || this.actor?.ch !== G) return;
+    if (this.combatMode === 'realtime' && (this.rt?.paused || this.rt?.gcd > 0 || this.rt?.cooldowns[this.hotbarEntries(this.actor)[index]?.id] > 0)) { SFX.error(); return; }
+    const entry = this.hotbarEntries(this.actor)[index];
+    if (!entry) { SFX.error(); return; }
+    if (!entry.ok) { SFX.error(); return; }
+    SFX.select();
+    if (this.combatMode === 'realtime') {
+      this.rt.gcd = 90;
+      if (entry.ab && entry.id !== 'dodge') this.rt.cooldowns[entry.id] = entry.id.startsWith('skill_') ? 240 : entry.ab.bonus ? 120 : 180;
+    }
+    if (entry.basic) { this.askTarget('enemy', t => this.doPlayerSteps(this.weaponAttack(this.actor, t), false)); return; }
+    this.useListEntry(entry);
+  }
+  useListEntry(e) {
+    const u = this.actor;
+    if (e.sp) {
+      const sp = e.sp, go = targets => { if (this.quicken && !sp.bonus) { this.quicken = false; this.quickenedCast = true; } this.doPlayerSteps(this.castSpell(u, sp, targets), !!sp.bonus); };
+      if (sp.t === 'enemies') go(this.enemiesOf(u));
+      else if (sp.t === 'allies') go(this.party.filter(x => isChar(x) && !x.ch.dead));
+      else if (sp.t === 'self') go([u]);
+      else if (sp.eff === 'revive') this.askTarget('dead', t => go([t]));
+      else this.askTarget(sp.t === 'ally' ? 'ally' : 'enemy', t => go([t]));
+    } else if (e.ab) {
+      const a = e.ab;
+      if (a.target) this.askTarget(a.target, t => this.doPlayerSteps(a.fn(t), a.bonus)); else this.doPlayerSteps(a.fn(), a.bonus);
+    }
+  }
   updateList() {
     const n = this.list.length;
     if (nav('up')) { this.sub = (this.sub + n - 1) % n; SFX.cursor(); }
@@ -755,18 +839,8 @@ class Battle {
     const e = this.list[this.sub], u = this.actor;
     if (!e.ok) { SFX.error(); return; }
     SFX.select();
-    if (e.sp) {
-      const sp = e.sp, bonus = !!sp.bonus || this.quicken;
-      const go = targets => { if (this.quicken && !sp.bonus) { this.quicken = false; this.quickenedCast = true; } this.doPlayerSteps(this.castSpell(u, sp, targets), !!sp.bonus); };
-      if (sp.t === 'enemies') go(this.enemiesOf(u));
-      else if (sp.t === 'allies') go(this.party.filter(x => isChar(x) && !x.ch.dead));
-      else if (sp.t === 'self') go([u]);
-      else if (sp.eff === 'revive') this.askTarget('dead', t => go([t]));
-      else this.askTarget(sp.t === 'ally' ? 'ally' : 'enemy', t => go([t]));
-    } else if (e.ab) {
-      const a = e.ab;
-      if (a.target) this.askTarget(a.target, t => this.doPlayerSteps(a.fn(t), a.bonus)); else this.doPlayerSteps(a.fn(), a.bonus);
-    } else if (e.item) {
+    if (e.sp || e.ab) this.useListEntry(e);
+    else if (e.item) {
       const it = ITEMS[e.item], b = !!subKey(u.ch, 'fasthands');
       if (it.heal || it.cure) this.askTarget('ally', t => this.doPlayerSteps(this.useItem(u, e.item, t), b));
       else this.doPlayerSteps(this.useItem(u, e.item, null), b);
@@ -783,7 +857,7 @@ class Battle {
     const n = this.targets.length;
     if (nav('up') || nav('left')) { this.ti = (this.ti + n - 1) % n; SFX.cursor(); }
     if (nav('down') || nav('right')) { this.ti = (this.ti + 1) % n; SFX.cursor(); }
-    if (P('b')) { this.state = this.prevState === 'list' ? 'list' : 'menu'; SFX.back(); return; }
+    if (P('b')) { this.state = this.prevState === 'list' ? 'list' : this.prevState === 'realtime' ? 'realtime' : 'menu'; SFX.back(); return; }
     if (P('a')) { SFX.select(); const cb = this.targetCb; this.state = 'idle'; cb(this.targets[this.ti]); }
   }
   // remote player action (multiplayer): {kind, id, target}
@@ -833,6 +907,7 @@ class Battle {
   }
   finish(result, ups = []) {
     this.state = 'over';
+    if (combatHotkeyHandler) combatHotkeyHandler = null;
     const chain = () => { const g = ups.shift(); if (g) push(new LevelUpScene(g, chain)); else done(); };
     const done = () => fadeTo(() => { removeScene(this); Physics.clear(); this.onEnd && this.onEnd(result, this); const t = topScene(); t && t.resume && t.resume(); });
     chain();
@@ -895,10 +970,20 @@ class Battle {
     if (this.state === 'target' && this.targets[this.ti] && this.targets[this.ti].side === 'party' && (frameN >> 3) % 2) { const [px, py] = this.posOf(this.targets[this.ti]); text('v', px - 3, py - 26, 2); }
     if (this.anim.fx) { const f = sprFit(this.anim.fx.name, 28); for (const id of this.anim.fx.on) { const u = this.all.find(x => x.id === id); if (u && (this.anim.fx.t >> 1) % 3) { const [px, py] = this.posOf(u); blit(f, px - 14, py - 20); } } }
     FX.draw();
+    if (['menu', 'list', 'target', 'realtime'].includes(this.state) && this.actor?.ch === G) {
+      const slots = this.hotbarEntries(this.actor);
+      for (let i = 0; i < 10; i++) {
+        const x = 2 + i * 15.6, e = slots[i];
+        frame(x, 81, 14, 12);
+        const ready = e?.ok && !(this.combatMode === 'realtime' && (this.rt?.gcd > 0 || this.rt?.cooldowns[e.id] > 0));
+        text(i === 9 ? '0' : String(i + 1), x + 1, 82, ready ? 2 : 1);
+        if (e) text(e.name.replace(/[^A-Z0-9 ]/gi, '').slice(0, 2).toUpperCase(), x + 1, 88, ready ? 3 : 1);
+      }
+    }
     // message box
     frame(2, 95, 156, 47);
     if (this.state === 'msg' && this.cur) text((this.cur.text || '').slice(0, Math.floor(this.c)), 7, 99);
-    else if (this.state === 'menu' || this.state === 'list' || this.state === 'target') {
+    else if (this.state === 'menu' || this.state === 'list' || this.state === 'target' || this.state === 'realtime') {
       const u = this.actor, c = u.ch, D = derive(c);
       text(`${u.name.slice(0, 8)} ${Math.max(0, c.hp)}/${D.hpMax}`, 7, 98, 2);
       text(resLine(c, D), 80, 98, 2);
@@ -909,7 +994,8 @@ class Battle {
         this.list.slice(this.subTop, this.subTop + 3).forEach((e, j) => { const i = this.subTop + j, y = 108 + j * 10; if (i === this.sub) text('>', 6, y); text(e.name.slice(0, 16), 13, y, e.ok ? 3 : 1); textR(e.sub, 154, y, e.ok ? 2 : 1); });
         const e = this.list[this.sub]; const desc = e.sp ? `${SCHOOLS[e.sp.school].name}: ${e.sp.desc}` : e.item ? ITEMS[e.item].desc : '';
         text(desc.slice(0, 24), 7, 132, 2);
-      } else text('Choose a target.', 7, 112);
+      } else if (this.state === 'target') text('Choose a target.', 7, 112);
+      else text(this.rt?.paused ? 'PAUSED  ENTER TO RESUME' : `REAL-TIME ACTIONS  GCD ${this.rt?.gcd ? (this.rt.gcd / 60).toFixed(1) : 'READY'}`, 7, 116, this.rt?.paused ? 'gold' : 2);
     } else if (this.state === 'remote') text(`Waiting for ${this.actor.name}...`, 7, 104);
   }
 }

@@ -142,15 +142,51 @@ body.fullscreen-mode .chat { position: fixed; z-index: 15; left: max(8px, env(sa
 @media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
 @media (max-height: 640px) { body.fullscreen-mode #dpad { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
+/* Desktop client shell: keep the game canvas, remove the handheld hardware frame. */
+body { box-sizing: border-box; display: block; height: 100dvh; min-height: 100dvh; padding: 42px 0 24px; overflow: hidden; background: #0b0e12; }
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 42% 42%, #1d2630 0%, #11171d 42%, #090b0f 100%); }
+.build-info { position: fixed; z-index: 20; inset: 0 0 auto; width: 100%; height: 36px; box-sizing: border-box; padding: 0 18px; border: 0; border-bottom: 1px solid #39434e; border-radius: 0; background: linear-gradient(#202832, #131920); align-items: center; color: #b9c4ce; font: 11px/1.3 Arial, sans-serif; letter-spacing: .04em; }
+.build-info strong { color: #e3c98a; }
+.atlas-btn { font: 700 10px Arial, sans-serif; }
+.game-client { position: relative; width: 100%; height: 100%; box-sizing: border-box; padding: 8px 314px 30px 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.game-viewport { width: 100%; height: 100%; display: grid; place-items: center; }
+.bezel-top, .brand, .speaker { display: none; }
+#lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
+.controls, .foot { display: none; }
+.chat { position: fixed; z-index: 16; top: 48px; right: 10px; bottom: 36px; width: 284px; max-width: calc(34vw - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #39434e; border-radius: 4px; background: linear-gradient(160deg, #171e26ee, #0c1117ee); box-shadow: 0 8px 24px #0007; }
+.chatlog { flex: 1; min-height: 0; height: auto; font: 12px/1.5 Arial, sans-serif; }
+.chatform input, .chatform button { font: 12px Arial, sans-serif; }
+.keys { position: fixed; z-index: 10; bottom: 0; left: 0; right: 304px; max-width: none; height: 24px; box-sizing: border-box; margin: 0; padding: 5px 10px; overflow: hidden; background: #10151b; border-top: 1px solid #303b45; font: 10px Arial, sans-serif; }
+.keys kbd { border-radius: 2px; }
+body.full-window-mode, body.fullscreen-mode { padding: 42px 0 24px; background: #0b0e12; }
+body.full-window-mode .game-client, body.fullscreen-mode .game-client { position: relative; inset: auto; width: 100%; height: 100%; padding: 8px 314px 30px 12px; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+body.full-window-mode #lcd, body.fullscreen-mode #lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; border-radius: 2px; }
+body.fullscreen-mode .build-info { display: flex; }
+body.fullscreen-mode .chat, body.full-window-mode .chat { top: 48px; right: 10px; bottom: 36px; left: auto; width: 284px; max-width: calc(34vw - 16px); }
+body.fullscreen-mode .keys, body.full-window-mode .keys { display: block; }
+@media (hover: none), (pointer: coarse) {
+  body { padding: 8px 0; overflow: auto; }
+  .build-info { display: none; }
+  .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  .game-viewport { min-height: 0; aspect-ratio: 160 / 144; }
+  #lcd { width: 100%; height: auto; max-height: none; }
+  .controls { display: grid; position: fixed; z-index: 12; inset: auto 12px 54px; pointer-events: none; }
+  .controls > * { pointer-events: auto; opacity: .8; }
+  .foot { display: flex; position: fixed; z-index: 12; left: 0; right: 0; bottom: 16px; justify-content: center; }
+  .chat { display: none; }
+  .keys { display: none; }
+  body.fullscreen-mode, body.full-window-mode { padding: 8px 0; }
+  body.fullscreen-mode .game-client, body.full-window-mode .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  body.fullscreen-mode .controls, body.full-window-mode .controls { position: fixed; }
+  body.fullscreen-mode .foot, body.full-window-mode .foot { position: fixed; }
+}
 </style>
 
 <aside class="build-info" aria-label="Build information"><span><strong>SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button></aside>
-<main class="device" aria-label="Shadowbane Chronicles handheld">
-  <div class="bezel">
-    <div class="bezel-top"><i class="led"></i> BATTERY <span></span> DOT MATRIX</div>
+<main class="game-client" aria-label="Shadowbane Chronicles game window">
+  <div class="game-viewport">
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
   </div>
-  <div class="brand">SHADOWBANE <em>CHRONICLES</em></div>
   <div class="controls">
     <div id="dpad" role="group" aria-label="Direction pad"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i></div>
     <div class="ab">
@@ -1973,7 +2009,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'windowed');
 function syncDisplayMode() {
@@ -2181,6 +2217,7 @@ const held = {}, pressed = {}, rep = {};
 const DEFAULT_KEYBINDS = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', a: 'KeyZ', b: 'KeyX', start: 'Enter', select: 'ShiftLeft' };
 S.keybinds = Object.assign({}, DEFAULT_KEYBINDS, S.keybinds || {});
 let keyCaptureHandler = null;
+let combatHotkeyHandler = null;
 const KEY_LABELS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', Backspace: 'BACKSPACE', Tab: 'TAB' };
 function keyLabel(code) { return KEY_LABELS[code] || (code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5) : code); }
 function bDown(b) { audioCtx(); if (!held[b]) { held[b] = true; pressed[b] = true; rep[b] = 0; } }
@@ -2195,11 +2232,11 @@ function keyAction(e) {
   if (Object.values(DEFAULT_KEYBINDS).includes(code)) return null;
   return KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
 }
-addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
+addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const code = e.code || ''; const slot = code.startsWith('Digit') ? Number(code.slice(5)) : code.startsWith('Numpad') ? Number(code.slice(6)) : NaN; if (combatHotkeyHandler && (slot >= 1 && slot <= 9 || slot === 0)) { e.preventDefault(); if (!e.repeat) combatHotkeyHandler(slot === 0 ? 9 : slot - 1); return; } const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
 addEventListener('keyup', e => { const b = keyAction(e); if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
 addEventListener('blur', () => BTNS.forEach(bUp));
 LCD.addEventListener('contextmenu', e => e.preventDefault());
-LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
+LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); const rect = LCD.getBoundingClientRect(), x = (e.clientX - rect.left) * LCD.width / rect.width, y = (e.clientY - rect.top) * LCD.height / rect.height; if (e.button === 0 && combatHotkeyHandler && y >= 81 && y < 94) { combatHotkeyHandler(Math.max(0, Math.min(9, Math.floor((x - 2) / 15.6)))); return; } LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
 const releaseMouse = e => { if (e.pointerType === 'mouse') { bUp('a'); bUp('b'); } };
 LCD.addEventListener('pointerup', releaseMouse); LCD.addEventListener('pointercancel', releaseMouse); LCD.addEventListener('lostpointercapture', releaseMouse);
 LCD.addEventListener('wheel', e => { e.preventDefault(); bDown(e.deltaY < 0 ? 'up' : 'down'); setTimeout(() => bUp(e.deltaY < 0 ? 'up' : 'down'), 80); }, { passive: false });
@@ -3317,14 +3354,61 @@ class Battle {
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
     this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
-    this.title = opt.title || null;
+    this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
+    combatHotkeyHandler = index => this.useHotbar(index);
     for (const u of this.party) { if (u.ch.ai === false && this.rule === 'frail') u.ch.hp = Math.ceil(u.ch.hp / 2); }
     this.setupEffects();
     const intro = this.foes.length === 1 ? `${this.foes[0].boss ? '' : 'A '}${this.foes[0].name} ${this.foes[0].boss ? 'blocks the way!' : 'appears!'}` : `${this.foes.length} foes appear!`;
     const steps = [{ text: intro, act: () => { if (this.foes.some(f => f.boss)) SFX.boss_appear(); } }];
     if (this.surprise === 'party') steps.push({ text: 'You catch them off guard!\nThey lose their first turn.', act: () => SFX.ambush() });
     if (this.surprise === 'foe') steps.push({ text: 'Ambush! You are surprised!', act: () => SFX.ambush() });
-    this.run(steps, () => this.rollInit());
+    this.run(steps, () => this.combatMode === 'realtime' ? this.startRealtime() : this.rollInit());
+  }
+  startRealtime() {
+    const player = this.party.find(u => u.ch === G);
+    if (!player) { this.rollInit(); return; }
+    this.round = 1; this.turnIdx = 0; this.actor = player; this.bonusUsed = false;
+    this.rt = { player, ticks: 0, gcd: 0, cooldowns: {}, paused: false, nextEnemy: 100, nextAlly: 150, nextDecay: 180 };
+    this.state = 'realtime';
+  }
+  updateRealtime() {
+    if (P('start')) { this.rt.paused = !this.rt.paused; SFX.toggle(); }
+    if (this.rt.paused) return;
+    this.rt.ticks++; if (this.rt.gcd > 0) this.rt.gcd--;
+    for (const id in this.rt.cooldowns) if (this.rt.cooldowns[id] > 0) this.rt.cooldowns[id]--;
+    if (P('b')) {
+      const dodge = this.abilities(this.rt.player).find(a => a.id === 'dodge');
+      if (dodge && this.rt.gcd <= 0) { this.rt.gcd = 90; this.actor = this.rt.player; this.bonusUsed = false; this.doPlayerSteps(dodge.fn(), false); return; }
+    }
+    if (this.checkEnd()) return;
+    if (this.rt.ticks >= this.rt.nextDecay) {
+      this.rt.nextDecay += 180; this.round++; this.onRound();
+      for (const u of this.all) if (alive(u)) {
+        for (const e of u.effects.slice()) {
+          const tick = BUFFS[e.id]?.tick;
+          if (tick?.healPct) this.heal(u, Math.ceil(maxHpOf(u) * tick.healPct / 100));
+          if (tick?.dice) this.applyDamage(null, u, roll(tick.dice).total * (e.stacks || 1) + Math.floor((e.lvl || 0) / 3), tick.type, { tick: true });
+        }
+        this.decay(u);
+      }
+      if (this.checkEnd() || this.state !== 'realtime') return;
+    }
+    let unit = null, steps = null;
+    if (this.rt.ticks >= this.rt.nextEnemy) {
+      this.rt.nextEnemy += 100;
+      unit = this.foes.filter(alive).sort((a, b) => (a.rtNext || 0) - (b.rtNext || 0))[0];
+      if (unit) { unit.rtNext = this.rt.ticks + 100 * Math.max(1, unit.multi || 1); unit.turn = unit.turn || 0; this.actor = unit; steps = this.monsterTurn(unit); }
+    } else if (this.rt.ticks >= this.rt.nextAlly) {
+      this.rt.nextAlly += 150;
+      unit = this.party.filter(u => u !== this.rt.player && isChar(u) && u.ch.hp > 0 && !u.ch.dead && (u.rtNext || 0) <= this.rt.ticks).sort((a, b) => (a.rtNext || 0) - (b.rtNext || 0))[0];
+      if (unit) { unit.rtNext = this.rt.ticks + 150; this.actor = unit; steps = this.aiTurn(unit); }
+    }
+    if (unit && steps) {
+      this.actor = unit; this.run(steps, () => {
+        if (this.checkEnd()) return;
+        this.actor = this.rt.player; this.bonusUsed = false; this.state = 'realtime';
+      });
+    }
   }
   enter() { Music.play(this.music); }
   resume() { if (this.state !== 'over') Music.play(this.music); }
@@ -3968,6 +4052,7 @@ class Battle {
     this.run(steps, () => {
       if (this.checkEnd()) return;
       if (this.fled) return this.finish('flee');
+      if (this.combatMode === 'realtime') { this.actor = this.rt.player; this.bonusUsed = false; this.state = 'realtime'; return; }
       if (isBonus && alive(this.actor)) { this.state = 'menu'; return; }
       if (this.quickenedCast) { this.quickenedCast = false; this.state = 'menu'; return; }
       this.after();
@@ -3989,11 +4074,12 @@ class Battle {
       if (this.c < L.length) { this.c += [1, 2, 4, 99][S.textSpeed]; if (P('a')) this.c = L.length; return; }
       if (this.hold > 0) { this.hold--; return; }
       this.auto++;
-      const fast = S.autoBattle || (this.actor && this.actor.side === 'party' && this.actor.ch !== G) || this.party.length > 4;
+      const fast = this.combatMode === 'realtime' || S.autoBattle || (this.actor && this.actor.side === 'party' && this.actor.ch !== G) || this.party.length > 4;
       if (P('a') || P('b') || this.auto > (fast ? 22 : 70)) this.nextStep();
       return;
     }
     if (this.state === 'remote') { if (--this.remoteWait <= 0) { this.actor.ctrl = 'ai'; this.beginAction(this.actor); } return; }
+    if (this.state === 'realtime') return this.updateRealtime();
     if (this.state === 'menu') return this.updateMenu();
     if (this.state === 'list') return this.updateList();
     if (this.state === 'target') return this.updateTarget();
@@ -4024,6 +4110,41 @@ class Battle {
     if (!this.list.length) { SFX.error(); return; }
     this.listKind = kind; this.sub = 0; this.subTop = 0; this.state = 'list';
   }
+  hotbarEntries(u) {
+    if (!u || !isChar(u) || u.ch !== G) return [];
+    const D = derive(u.ch);
+    const spells = (D.spell ? D.spell.known : []).map(sp => ({ id: sp.id, name: sp.name, sub: sp.lvl ? `L${sp.lvl}` : 'C', ok: this.canCast(u, sp) && (!sp.bonus || !this.bonusUsed), sp }));
+    const abilities = this.abilities(u).map(ab => ({ id: ab.id, name: ab.name, sub: ab.cost, ok: ab.ok, ab }));
+    return [{ id: 'basic_attack', name: 'ATTACK', sub: 'GCD', ok: true, basic: true }].concat(abilities, spells).slice(0, 10);
+  }
+  useHotbar(index) {
+    if (!['menu', 'list', 'realtime'].includes(this.state) || this.actor?.ch !== G) return;
+    if (this.combatMode === 'realtime' && (this.rt?.paused || this.rt?.gcd > 0 || this.rt?.cooldowns[this.hotbarEntries(this.actor)[index]?.id] > 0)) { SFX.error(); return; }
+    const entry = this.hotbarEntries(this.actor)[index];
+    if (!entry) { SFX.error(); return; }
+    if (!entry.ok) { SFX.error(); return; }
+    SFX.select();
+    if (this.combatMode === 'realtime') {
+      this.rt.gcd = 90;
+      if (entry.ab && entry.id !== 'dodge') this.rt.cooldowns[entry.id] = entry.id.startsWith('skill_') ? 240 : entry.ab.bonus ? 120 : 180;
+    }
+    if (entry.basic) { this.askTarget('enemy', t => this.doPlayerSteps(this.weaponAttack(this.actor, t), false)); return; }
+    this.useListEntry(entry);
+  }
+  useListEntry(e) {
+    const u = this.actor;
+    if (e.sp) {
+      const sp = e.sp, go = targets => { if (this.quicken && !sp.bonus) { this.quicken = false; this.quickenedCast = true; } this.doPlayerSteps(this.castSpell(u, sp, targets), !!sp.bonus); };
+      if (sp.t === 'enemies') go(this.enemiesOf(u));
+      else if (sp.t === 'allies') go(this.party.filter(x => isChar(x) && !x.ch.dead));
+      else if (sp.t === 'self') go([u]);
+      else if (sp.eff === 'revive') this.askTarget('dead', t => go([t]));
+      else this.askTarget(sp.t === 'ally' ? 'ally' : 'enemy', t => go([t]));
+    } else if (e.ab) {
+      const a = e.ab;
+      if (a.target) this.askTarget(a.target, t => this.doPlayerSteps(a.fn(t), a.bonus)); else this.doPlayerSteps(a.fn(), a.bonus);
+    }
+  }
   updateList() {
     const n = this.list.length;
     if (nav('up')) { this.sub = (this.sub + n - 1) % n; SFX.cursor(); }
@@ -4034,18 +4155,8 @@ class Battle {
     const e = this.list[this.sub], u = this.actor;
     if (!e.ok) { SFX.error(); return; }
     SFX.select();
-    if (e.sp) {
-      const sp = e.sp, bonus = !!sp.bonus || this.quicken;
-      const go = targets => { if (this.quicken && !sp.bonus) { this.quicken = false; this.quickenedCast = true; } this.doPlayerSteps(this.castSpell(u, sp, targets), !!sp.bonus); };
-      if (sp.t === 'enemies') go(this.enemiesOf(u));
-      else if (sp.t === 'allies') go(this.party.filter(x => isChar(x) && !x.ch.dead));
-      else if (sp.t === 'self') go([u]);
-      else if (sp.eff === 'revive') this.askTarget('dead', t => go([t]));
-      else this.askTarget(sp.t === 'ally' ? 'ally' : 'enemy', t => go([t]));
-    } else if (e.ab) {
-      const a = e.ab;
-      if (a.target) this.askTarget(a.target, t => this.doPlayerSteps(a.fn(t), a.bonus)); else this.doPlayerSteps(a.fn(), a.bonus);
-    } else if (e.item) {
+    if (e.sp || e.ab) this.useListEntry(e);
+    else if (e.item) {
       const it = ITEMS[e.item], b = !!subKey(u.ch, 'fasthands');
       if (it.heal || it.cure) this.askTarget('ally', t => this.doPlayerSteps(this.useItem(u, e.item, t), b));
       else this.doPlayerSteps(this.useItem(u, e.item, null), b);
@@ -4062,7 +4173,7 @@ class Battle {
     const n = this.targets.length;
     if (nav('up') || nav('left')) { this.ti = (this.ti + n - 1) % n; SFX.cursor(); }
     if (nav('down') || nav('right')) { this.ti = (this.ti + 1) % n; SFX.cursor(); }
-    if (P('b')) { this.state = this.prevState === 'list' ? 'list' : 'menu'; SFX.back(); return; }
+    if (P('b')) { this.state = this.prevState === 'list' ? 'list' : this.prevState === 'realtime' ? 'realtime' : 'menu'; SFX.back(); return; }
     if (P('a')) { SFX.select(); const cb = this.targetCb; this.state = 'idle'; cb(this.targets[this.ti]); }
   }
   // remote player action (multiplayer): {kind, id, target}
@@ -4112,6 +4223,7 @@ class Battle {
   }
   finish(result, ups = []) {
     this.state = 'over';
+    if (combatHotkeyHandler) combatHotkeyHandler = null;
     const chain = () => { const g = ups.shift(); if (g) push(new LevelUpScene(g, chain)); else done(); };
     const done = () => fadeTo(() => { removeScene(this); Physics.clear(); this.onEnd && this.onEnd(result, this); const t = topScene(); t && t.resume && t.resume(); });
     chain();
@@ -4174,10 +4286,20 @@ class Battle {
     if (this.state === 'target' && this.targets[this.ti] && this.targets[this.ti].side === 'party' && (frameN >> 3) % 2) { const [px, py] = this.posOf(this.targets[this.ti]); text('v', px - 3, py - 26, 2); }
     if (this.anim.fx) { const f = sprFit(this.anim.fx.name, 28); for (const id of this.anim.fx.on) { const u = this.all.find(x => x.id === id); if (u && (this.anim.fx.t >> 1) % 3) { const [px, py] = this.posOf(u); blit(f, px - 14, py - 20); } } }
     FX.draw();
+    if (['menu', 'list', 'target', 'realtime'].includes(this.state) && this.actor?.ch === G) {
+      const slots = this.hotbarEntries(this.actor);
+      for (let i = 0; i < 10; i++) {
+        const x = 2 + i * 15.6, e = slots[i];
+        frame(x, 81, 14, 12);
+        const ready = e?.ok && !(this.combatMode === 'realtime' && (this.rt?.gcd > 0 || this.rt?.cooldowns[e.id] > 0));
+        text(i === 9 ? '0' : String(i + 1), x + 1, 82, ready ? 2 : 1);
+        if (e) text(e.name.replace(/[^A-Z0-9 ]/gi, '').slice(0, 2).toUpperCase(), x + 1, 88, ready ? 3 : 1);
+      }
+    }
     // message box
     frame(2, 95, 156, 47);
     if (this.state === 'msg' && this.cur) text((this.cur.text || '').slice(0, Math.floor(this.c)), 7, 99);
-    else if (this.state === 'menu' || this.state === 'list' || this.state === 'target') {
+    else if (this.state === 'menu' || this.state === 'list' || this.state === 'target' || this.state === 'realtime') {
       const u = this.actor, c = u.ch, D = derive(c);
       text(`${u.name.slice(0, 8)} ${Math.max(0, c.hp)}/${D.hpMax}`, 7, 98, 2);
       text(resLine(c, D), 80, 98, 2);
@@ -4188,7 +4310,8 @@ class Battle {
         this.list.slice(this.subTop, this.subTop + 3).forEach((e, j) => { const i = this.subTop + j, y = 108 + j * 10; if (i === this.sub) text('>', 6, y); text(e.name.slice(0, 16), 13, y, e.ok ? 3 : 1); textR(e.sub, 154, y, e.ok ? 2 : 1); });
         const e = this.list[this.sub]; const desc = e.sp ? `${SCHOOLS[e.sp.school].name}: ${e.sp.desc}` : e.item ? ITEMS[e.item].desc : '';
         text(desc.slice(0, 24), 7, 132, 2);
-      } else text('Choose a target.', 7, 112);
+      } else if (this.state === 'target') text('Choose a target.', 7, 112);
+      else text(this.rt?.paused ? 'PAUSED  ENTER TO RESUME' : `REAL-TIME ACTIONS  GCD ${this.rt?.gcd ? (this.rt.gcd / 60).toFixed(1) : 'READY'}`, 7, 116, this.rt?.paused ? 'gold' : 2);
     } else if (this.state === 'remote') text(`Waiting for ${this.actor.name}...`, 7, 104);
   }
 }
@@ -5660,7 +5783,7 @@ class HomeInteriorScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS']; }
+  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
@@ -5686,6 +5809,7 @@ class SettingsScene extends ListScene {
     if (o === 'TEXT SPEED') S.textSpeed = Math.max(0, Math.min(3, S.textSpeed + d));
     if (o === 'WEATHER') S.weather = !S.weather;
     if (o === 'AUTO BATTLE') S.autoBattle = !S.autoBattle;
+    if (o === 'COMBAT MODE') S.combatMode = S.combatMode === 'realtime' ? 'turn-based' : 'realtime';
     if (o === 'SWAP A/B') S.swap = !S.swap;
     if (o === 'DIFFICULTY' && G) { difficultyMenu(); return; }
     if (o === 'SOUND TEST' && P('a')) { push(new SoundTest()); return; }
@@ -5696,7 +5820,7 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>'];
+    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }

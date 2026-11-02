@@ -32,6 +32,9 @@ jobs:
       - name: Package Windows installer and portable app
         if: matrix.platform == 'windows'
         run: npm run desktop:dist -- --win
+      - name: Include the self-contained game patch
+        if: matrix.platform == 'windows'
+        run: Copy-Item dist/gbquest-fullscreen.html release/gbquest-fullscreen.html
       - name: Package macOS Intel and Apple Silicon apps
         if: matrix.platform == 'macos'
         run: npm run desktop:dist -- --mac
@@ -41,3 +44,26 @@ jobs:
           path: release/*
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: shadowbane-chronicles-*
+          path: release
+          merge-multiple: true
+      - name: Create update manifest
+        run: node tools/write-game-update-manifest.cjs release/gbquest-fullscreen.html release/game-update.json
+      - name: Publish desktop installers and game patch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --title "Shadowbane Chronicles $RELEASE_TAG" --generate-notes
+          gh release upload "$RELEASE_TAG" release/gbquest-fullscreen.html release/game-update.json release/*.exe release/*.dmg release/*.zip --clobber

@@ -15,7 +15,7 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 
 ## Play
 
-- **Single file:** open `dist/gbquest.html` in any browser. It shows the handheld frame.
+- **Single file:** open `dist/gbquest.html` in any browser. It opens in the desktop game window layout.
 - **Full-screen window:** open `dist/gbquest-fullscreen.html`. The screen fills the window, with a full-screen toggle, 1:1 pixel scaling, an overlay pad and overlay chat.
 - **Full-screen mode:** open **START → SETTINGS → FULL SCREEN** in either browser build to expand the game to the browser window; the setting is saved between sessions.
 - **World atlas:** open `dist/atlas.html` for the interactive map of Dunia, or press **M** in game.
@@ -37,9 +37,12 @@ Desktop packages are currently unsigned. Windows may show a SmartScreen prompt, 
 | B | X / Esc | Back; mount or dismount in the field |
 | START | Enter | Main menu |
 | SELECT | Shift / Tab | World map; toggles auto-battle in combat |
+| Number row | 1–9 / 0 | Use the matching combat hotbar action |
 | — | M | Atlas of Dunia (F full screen, C chat, F3 profiler) |
 
 On phones, use the on-screen buttons. The full list of controls is in [docs/CONTROLS.md](docs/CONTROLS.md).
+
+Choose **START → SETTINGS → COMBAT MODE → REAL-TIME** to enable action combat. Your hotbar actions share a global cooldown, active skills have their own cooldowns, and enemies and AI companions act automatically. In combat, **B** dodges and **Enter** pauses or resumes.
 
 ## What's in the game
 

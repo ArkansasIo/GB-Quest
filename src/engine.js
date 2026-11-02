@@ -14,7 +14,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'windowed');
 function syncDisplayMode() {
@@ -222,6 +222,7 @@ const held = {}, pressed = {}, rep = {};
 const DEFAULT_KEYBINDS = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', a: 'KeyZ', b: 'KeyX', start: 'Enter', select: 'ShiftLeft' };
 S.keybinds = Object.assign({}, DEFAULT_KEYBINDS, S.keybinds || {});
 let keyCaptureHandler = null;
+let combatHotkeyHandler = null;
 const KEY_LABELS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', Backspace: 'BACKSPACE', Tab: 'TAB' };
 function keyLabel(code) { return KEY_LABELS[code] || (code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5) : code); }
 function bDown(b) { audioCtx(); if (!held[b]) { held[b] = true; pressed[b] = true; rep[b] = 0; } }
@@ -236,11 +237,11 @@ function keyAction(e) {
   if (Object.values(DEFAULT_KEYBINDS).includes(code)) return null;
   return KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
 }
-addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
+addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const code = e.code || ''; const slot = code.startsWith('Digit') ? Number(code.slice(5)) : code.startsWith('Numpad') ? Number(code.slice(6)) : NaN; if (combatHotkeyHandler && (slot >= 1 && slot <= 9 || slot === 0)) { e.preventDefault(); if (!e.repeat) combatHotkeyHandler(slot === 0 ? 9 : slot - 1); return; } const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
 addEventListener('keyup', e => { const b = keyAction(e); if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
 addEventListener('blur', () => BTNS.forEach(bUp));
 LCD.addEventListener('contextmenu', e => e.preventDefault());
-LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
+LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); const rect = LCD.getBoundingClientRect(), x = (e.clientX - rect.left) * LCD.width / rect.width, y = (e.clientY - rect.top) * LCD.height / rect.height; if (e.button === 0 && combatHotkeyHandler && y >= 81 && y < 94) { combatHotkeyHandler(Math.max(0, Math.min(9, Math.floor((x - 2) / 15.6)))); return; } LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
 const releaseMouse = e => { if (e.pointerType === 'mouse') { bUp('a'); bUp('b'); } };
 LCD.addEventListener('pointerup', releaseMouse); LCD.addEventListener('pointercancel', releaseMouse); LCD.addEventListener('lostpointercapture', releaseMouse);
 LCD.addEventListener('wheel', e => { e.preventDefault(); bDown(e.deltaY < 0 ? 'up' : 'down'); setTimeout(() => bUp(e.deltaY < 0 ? 'up' : 'down'), 80); }, { passive: false });

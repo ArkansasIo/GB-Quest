@@ -36,6 +36,12 @@ Artifacts are written to `release/`. The **Desktop packages** workflow builds bo
 
 Packages are unsigned unless signing credentials are configured. Windows may display a SmartScreen prompt. macOS users may need to approve the app in Privacy & Security or open it from Finder's context menu. Signing and notarization require developer certificates that are not included in this repository.
 
+## Game updates
+
+In the desktop app, choose **Help > Check for Game Updates**. The updater checks the latest published release in `ArkansasIo/GB-Quest`, downloads the self-contained game bundle and its SHA-256 manifest over HTTPS, verifies the bundle, then stages it in the app's user-data folder. Restart to apply it. Game saves and settings remain in the desktop profile and are mirrored when switching the bundled game file.
+
+To publish an update, push a `desktop-vX.Y.Z` tag matching `package.json`'s version. The Desktop packages workflow builds both operating-system installers and publishes them alongside the game bundle and update manifest. Manual workflow runs continue to produce downloadable workflow artifacts without publishing a release.
+
 ## Window controls
 
 - Use **View > Toggle Full Screen** in the native app menu or choose a display mode in the game's Settings.

@@ -142,15 +142,51 @@ body.fullscreen-mode .chat { position: fixed; z-index: 15; left: max(8px, env(sa
 @media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
 @media (max-height: 640px) { body.fullscreen-mode #dpad { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
+/* Desktop client shell: keep the game canvas, remove the handheld hardware frame. */
+body { box-sizing: border-box; display: block; height: 100dvh; min-height: 100dvh; padding: 42px 0 24px; overflow: hidden; background: #0b0e12; }
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 42% 42%, #1d2630 0%, #11171d 42%, #090b0f 100%); }
+.build-info { position: fixed; z-index: 20; inset: 0 0 auto; width: 100%; height: 36px; box-sizing: border-box; padding: 0 18px; border: 0; border-bottom: 1px solid #39434e; border-radius: 0; background: linear-gradient(#202832, #131920); align-items: center; color: #b9c4ce; font: 11px/1.3 Arial, sans-serif; letter-spacing: .04em; }
+.build-info strong { color: #e3c98a; }
+.atlas-btn { font: 700 10px Arial, sans-serif; }
+.game-client { position: relative; width: 100%; height: 100%; box-sizing: border-box; padding: 8px 314px 30px 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.game-viewport { width: 100%; height: 100%; display: grid; place-items: center; }
+.bezel-top, .brand, .speaker { display: none; }
+#lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
+.controls, .foot { display: none; }
+.chat { position: fixed; z-index: 16; top: 48px; right: 10px; bottom: 36px; width: 284px; max-width: calc(34vw - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #39434e; border-radius: 4px; background: linear-gradient(160deg, #171e26ee, #0c1117ee); box-shadow: 0 8px 24px #0007; }
+.chatlog { flex: 1; min-height: 0; height: auto; font: 12px/1.5 Arial, sans-serif; }
+.chatform input, .chatform button { font: 12px Arial, sans-serif; }
+.keys { position: fixed; z-index: 10; bottom: 0; left: 0; right: 304px; max-width: none; height: 24px; box-sizing: border-box; margin: 0; padding: 5px 10px; overflow: hidden; background: #10151b; border-top: 1px solid #303b45; font: 10px Arial, sans-serif; }
+.keys kbd { border-radius: 2px; }
+body.full-window-mode, body.fullscreen-mode { padding: 42px 0 24px; background: #0b0e12; }
+body.full-window-mode .game-client, body.fullscreen-mode .game-client { position: relative; inset: auto; width: 100%; height: 100%; padding: 8px 314px 30px 12px; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+body.full-window-mode #lcd, body.fullscreen-mode #lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; border-radius: 2px; }
+body.fullscreen-mode .build-info { display: flex; }
+body.fullscreen-mode .chat, body.full-window-mode .chat { top: 48px; right: 10px; bottom: 36px; left: auto; width: 284px; max-width: calc(34vw - 16px); }
+body.fullscreen-mode .keys, body.full-window-mode .keys { display: block; }
+@media (hover: none), (pointer: coarse) {
+  body { padding: 8px 0; overflow: auto; }
+  .build-info { display: none; }
+  .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  .game-viewport { min-height: 0; aspect-ratio: 160 / 144; }
+  #lcd { width: 100%; height: auto; max-height: none; }
+  .controls { display: grid; position: fixed; z-index: 12; inset: auto 12px 54px; pointer-events: none; }
+  .controls > * { pointer-events: auto; opacity: .8; }
+  .foot { display: flex; position: fixed; z-index: 12; left: 0; right: 0; bottom: 16px; justify-content: center; }
+  .chat { display: none; }
+  .keys { display: none; }
+  body.fullscreen-mode, body.full-window-mode { padding: 8px 0; }
+  body.fullscreen-mode .game-client, body.full-window-mode .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  body.fullscreen-mode .controls, body.full-window-mode .controls { position: fixed; }
+  body.fullscreen-mode .foot, body.full-window-mode .foot { position: fixed; }
+}
 </style>
 
 <aside class="build-info" aria-label="Build information"><span><strong>SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button></aside>
-<main class="device" aria-label="Shadowbane Chronicles handheld">
-  <div class="bezel">
-    <div class="bezel-top"><i class="led"></i> BATTERY <span></span> DOT MATRIX</div>
+<main class="game-client" aria-label="Shadowbane Chronicles game window">
+  <div class="game-viewport">
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
   </div>
-  <div class="brand">SHADOWBANE <em>CHRONICLES</em></div>
   <div class="controls">
     <div id="dpad" role="group" aria-label="Direction pad"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i></div>
     <div class="ab">

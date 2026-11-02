@@ -7,6 +7,7 @@
 | B | X / K / Esc / Backspace | B | mount or dismount | back | back |
 | START | Enter | START | main menu | — (world map: legend) | — |
 | SELECT | Shift / Tab | SELECT | world map | switch tab (sound test) | toggle auto-battle |
+| Hotbar | 1–9 / 0 | — | — | — | use matching spell or ability |
 
 ## Extra keys (keyboard)
 
@@ -41,3 +42,7 @@ Use **START → SETTINGS → FULL SCREEN** to switch the regular browser build t
 | Esc | close details, then return to the game |
 
 Settings include **SWAP A/B** for players who prefer the other layout.
+
+## Real-time combat
+
+Choose **START → SETTINGS → COMBAT MODE → REAL-TIME** to use action combat. The number keys or mouse can activate the ten hotbar slots during your turn. Actions share a global cooldown; active skills also have individual cooldowns. Enemies and AI companions act automatically. Press **B** to dodge and **Enter** to pause or resume. **TURN-BASED** remains available in Combat Mode settings.
