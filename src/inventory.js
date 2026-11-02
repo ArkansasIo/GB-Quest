@@ -116,10 +116,11 @@ class InventoryScene {
   gearMenu(e) {
     if (this.mode === 'sell') { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); return this.flash(`SOLD FOR ${e.value} G`); }
     const cost = upgradeCost(e), cap = MAX_PLUS[e.rarity], canUp = e.plus < cap;
-    const opts = [...(window.GBQGems && ['weapon', 'armor'].includes(e.kind) ? ['SOCKET GEMS'] : []), 'EQUIP', 'COMPARE', e.junk ? 'UNMARK JUNK' : 'MARK AS JUNK', e.fav ? 'UNFAVOURITE' : 'FAVOURITE', canUp ? `UPGRADE TO +${e.plus + 1}` : 'UPGRADE (MAX)', `SALVAGE`, `SELL ${e.value}G`, 'LIST ON AUCTION', 'BACK'];
+    const opts = [...(window.GBQGems && ['weapon', 'armor'].includes(e.kind) ? ['SOCKET GEMS'] : []), ...(window.GBQRunes && ['weapon', 'armor'].includes(e.kind) ? ['RUNE FORGE'] : []), 'EQUIP', 'COMPARE', e.junk ? 'UNMARK JUNK' : 'MARK AS JUNK', e.fav ? 'UNFAVOURITE' : 'FAVOURITE', canUp ? `UPGRADE TO +${e.plus + 1}` : 'UPGRADE (MAX)', `SALVAGE`, `SELL ${e.value}G`, 'LIST ON AUCTION', 'BACK'];
     choose(opts, k => {
       const o = opts[k] || 'BACK';
       if (o === 'SOCKET GEMS') { push(new GemSocketScene(e)); }
+      else if (o === 'RUNE FORGE') { push(new RuneForgeScene(e)); }
       else if (o === 'EQUIP') { const why = equipItem(G, e, G.bag); SFX[why ? 'error' : 'equip'](); this.flash(why || `EQUIPPED ${e.name}`); }
       else if (o === 'COMPARE') push(new CompareScene(e));
       else if (o.endsWith('JUNK')) { e.junk = !e.junk; if (e.junk) e.fav = false; SFX.toggle(); }
