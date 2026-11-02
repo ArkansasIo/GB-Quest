@@ -68,3 +68,21 @@ Each family has `<family>_<page>.png` pages and `<family>.json` (`{ name: [page,
 
 - **In game (`WorldMap`):** the overview uses `gm_dunia_s`, and the detail view uses `gm_dunia` with a smoothed camera. Roads are dotted lines between connected zone pins: gold when you have visited both ends, dark otherwise. Sea lanes are blue dashes. Pins are red for towns, blue for waypoints, light for visited zones and dark for unknown ones. A blinking marker shows where you are.
 - **Atlas (`dist/atlas.html`):** an SVG over the painted map. Roads are drawn as cased dashed curves and sea lanes as dotted curves, with zone pins coloured by biome, icons for dungeons, raids, bosses and waypoints, region and continent labels, search, layer toggles, a level-band filter, a details panel and a BFS route planner. Labels and strokes stay a constant screen size at any zoom.
+
+## SANCTUM UI theme
+
+`src/ui_dark.js`. This is the default dark interface, in the style of a modern dark action RPG. Switch it in `SETTINGS > UI THEME` (SANCTUM or CLASSIC).
+
+- **Shades:** the four UI shades are remapped to near-black, dark bronze, tan and bone white. Every existing menu, dialog and list follows automatically.
+- **Panels** (`frame()`): black fill, a bronze border with an inner dark line, and gold studs at the corners and centre.
+- **Bars** (`bar()`): a dark trough with a coloured fill and a highlight line.
+- **Menu header** (`hdr()`): a dark top bar showing the clock, level in gold, network status and gold.
+- **Field HUD:**
+  - a red **life orb** on the left that flashes below 30% health
+  - a blue **resource orb** on the right showing spell slots, ki, rage and other class resources as a fraction of their maximum
+  - the 4 equipped **combat arts** in the middle, red for physical and blue for casting
+  - a gold **XP bar**
+  - a top bar with level, name and gold
+- **Page shell** (`client/shell.html`, `client/fullscreen.html`): black and blood-red background, bronze-trimmed panels and buttons, Cinzel serif headings, a gold glow around the screen, and the chat lifted above the HUD.
+
+The single-tone palettes (DMG, POCKET, SUNSET, AMBER and OCEAN) keep the classic Game Boy look.

@@ -769,7 +769,7 @@ class Field {
     if (this.zone && !G.inst) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
     // HUD: hp/xp micro bars
     const D = derive(G);
-    { const por = heroPortrait(G); if (por) { fill(1, H - 23, 18, 18, 3); fill(2, H - 22, 16, 16, 0); const s = sprFit(por, 16); blit(s, 2 + Math.round((16 - s.width) / 2), H - 22 + Math.round((16 - s.height) / 2)); } }
+    if (!(typeof uiDark === 'function' && uiDark())) { const por = heroPortrait(G); if (por) { fill(1, H - 23, 18, 18, 3); fill(2, H - 22, 16, 16, 0); const s = sprFit(por, 16); blit(s, 2 + Math.round((16 - s.width) / 2), H - 22 + Math.round((16 - s.height) / 2)); } }
     bar(1, H - 5, 50, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
     const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1));
     bar(53, H - 4, 106, 3, G.xp - x0, Math.max(1, x1 - x0), 'xp');

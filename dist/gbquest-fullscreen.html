@@ -3,7 +3,7 @@
 <title>Lost Kingdom of Shadowbane Chronicles Full Screen</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Cinzel:wght@500;700&display=swap">
 <style>
 /* Layout: one handheld, centred, portrait like the original DMG; controls sized for thumbs. */
 :root {
@@ -202,6 +202,31 @@ body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewpor
 #chatShow { display: none; position: absolute; z-index: 16; right: 12px; bottom: 12px; padding: 8px 12px; border: 1px solid #52606b; border-radius: 4px; background: #0b1016e8; color: #f0d58e; font: 700 11px Arial, sans-serif; cursor: pointer; }
 body:not(.chat-on) #chatShow { display: block; }
 @media (pointer: coarse) { .game-viewport > .chat { right: 8px; bottom: 8px; width: min(340px, 72%); max-height: 38%; } }
+/* ---- SANCTUM theme: black, bronze and blood-red, like a dark action RPG ---- */
+:root { --san-bg: #070606; --san-panel: #120e0c; --san-panel2: #1a1411; --san-trim: #765a36; --san-trim-dim: #3a2c1e; --san-gold: #d4ac60; --san-bone: #e8dcc4; --san-dim: #9c8a70; --san-red: #b3241c; --san-blue: #2f5fd0; --san-title: "Cinzel", Georgia, "Times New Roman", serif; }
+body { background: var(--san-bg) !important; color: var(--san-bone); }
+body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a09 38%, #050404 100%) !important; }
+.build-info { background: linear-gradient(#17110e, #0c0908) !important; border-bottom: 1px solid var(--san-trim) !important; box-shadow: 0 1px 0 #000, 0 2px 0 var(--san-trim-dim), 0 6px 18px rgba(0,0,0,.6); color: var(--san-dim) !important; font-family: var(--san-title) !important; letter-spacing: .08em; }
+.build-info strong { color: var(--san-gold) !important; font-family: var(--san-title); font-weight: 700; letter-spacing: .12em; text-shadow: 0 0 8px rgba(212,172,96,.35); }
+.atlas-btn, .chatform button, .chat-tabs button { background: linear-gradient(#241a14, #120d0a) !important; color: var(--san-gold) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; font-family: var(--san-title) !important; letter-spacing: .1em; }
+.atlas-btn:hover, .chatform button:hover, .chat-tabs button:hover { border-color: var(--san-gold) !important; color: #fff3d2 !important; }
+.chat-tabs button[aria-pressed="true"] { background: linear-gradient(#4a1c14, #24100c) !important; color: #ffe6b0 !important; border-color: var(--san-gold) !important; }
+.chat, .game-viewport > .chat { background: linear-gradient(rgba(20,14,12,.94), rgba(10,8,7,.94)) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px var(--san-trim-dim), 0 8px 24px rgba(0,0,0,.7) !important; }
+.chat-titlebar { color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.chatlog { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-dim) !important; }
+.chatlog b { color: var(--san-bone) !important; }
+.chatform input { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-bone) !important; }
+.chatform input:focus { outline: 1px solid var(--san-gold) !important; }
+.keys { background: linear-gradient(#0c0908, #16100d) !important; border-top: 1px solid var(--san-trim) !important; color: var(--san-dim) !important; }
+.keys kbd { color: var(--san-gold) !important; border-color: var(--san-trim) !important; background: #120d0a; }
+#lcd { box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--san-trim), 0 0 0 4px #000, 0 0 40px rgba(140,30,20,.25) !important; }
+.game-start-fallback { background: var(--san-bg) !important; color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.device { background: linear-gradient(160deg, #241a14, #120d0a 45%, #070505) !important; }
+.bezel { background: #050404 !important; box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--san-trim) !important; }
+.round { background: radial-gradient(circle at 35% 30%, #5a2018, #2c0e0b 60%, #120605) !important; color: var(--san-gold) !important; box-shadow: 0 4px 0 #000, 0 0 0 2px var(--san-trim) !important; }
+.pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
+.game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
+#dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
 </style>
 <style>
 /* Full-screen window build: the LCD fills the window (aspect-locked, pixel-crisp);
@@ -227,6 +252,31 @@ body:not(.chat-on) .chat { display: none; }
 @media (hover: hover) and (pointer: fine) { body:not(.pad-on) .controls, body:not(.pad-on) .foot { display: none !important; } }
 @media (pointer: coarse) and (orientation: portrait) { .controls > *, .foot .sys { opacity: .9; } .controls { bottom: calc(env(safe-area-inset-bottom, 0px) + 110px); } #dpad { transform: scale(1.35); transform-origin: left bottom; } .ab { transform: rotate(-22deg) scale(1.3); transform-origin: right bottom; } .pill { transform: rotate(-22deg) scale(1.3); } .foot { bottom: calc(env(safe-area-inset-bottom, 0px) + 36px); } .game-viewport > .chat { left: 10px; right: auto; bottom: 10px; width: min(360px, calc(100vw - 20px)) !important; max-height: 36dvh; } }
 @media (pointer: coarse) { body.pad-off .controls, body.pad-off .foot { display: none !important; } }
+/* ---- SANCTUM theme: black, bronze and blood-red, like a dark action RPG ---- */
+:root { --san-bg: #070606; --san-panel: #120e0c; --san-panel2: #1a1411; --san-trim: #765a36; --san-trim-dim: #3a2c1e; --san-gold: #d4ac60; --san-bone: #e8dcc4; --san-dim: #9c8a70; --san-red: #b3241c; --san-blue: #2f5fd0; --san-title: "Cinzel", Georgia, "Times New Roman", serif; }
+body { background: var(--san-bg) !important; color: var(--san-bone); }
+body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a09 38%, #050404 100%) !important; }
+.build-info { background: linear-gradient(#17110e, #0c0908) !important; border-bottom: 1px solid var(--san-trim) !important; box-shadow: 0 1px 0 #000, 0 2px 0 var(--san-trim-dim), 0 6px 18px rgba(0,0,0,.6); color: var(--san-dim) !important; font-family: var(--san-title) !important; letter-spacing: .08em; }
+.build-info strong { color: var(--san-gold) !important; font-family: var(--san-title); font-weight: 700; letter-spacing: .12em; text-shadow: 0 0 8px rgba(212,172,96,.35); }
+.atlas-btn, .chatform button, .chat-tabs button { background: linear-gradient(#241a14, #120d0a) !important; color: var(--san-gold) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; font-family: var(--san-title) !important; letter-spacing: .1em; }
+.atlas-btn:hover, .chatform button:hover, .chat-tabs button:hover { border-color: var(--san-gold) !important; color: #fff3d2 !important; }
+.chat-tabs button[aria-pressed="true"] { background: linear-gradient(#4a1c14, #24100c) !important; color: #ffe6b0 !important; border-color: var(--san-gold) !important; }
+.chat, .game-viewport > .chat { background: linear-gradient(rgba(20,14,12,.94), rgba(10,8,7,.94)) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px var(--san-trim-dim), 0 8px 24px rgba(0,0,0,.7) !important; }
+.chat-titlebar { color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.chatlog { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-dim) !important; }
+.chatlog b { color: var(--san-bone) !important; }
+.chatform input { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-bone) !important; }
+.chatform input:focus { outline: 1px solid var(--san-gold) !important; }
+.keys { background: linear-gradient(#0c0908, #16100d) !important; border-top: 1px solid var(--san-trim) !important; color: var(--san-dim) !important; }
+.keys kbd { color: var(--san-gold) !important; border-color: var(--san-trim) !important; background: #120d0a; }
+#lcd { box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--san-trim), 0 0 0 4px #000, 0 0 40px rgba(140,30,20,.25) !important; }
+.game-start-fallback { background: var(--san-bg) !important; color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.device { background: linear-gradient(160deg, #241a14, #120d0a 45%, #070505) !important; }
+.bezel { background: #050404 !important; box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--san-trim) !important; }
+.round { background: radial-gradient(circle at 35% 30%, #5a2018, #2c0e0b 60%, #120605) !important; color: var(--san-gold) !important; box-shadow: 0 4px 0 #000, 0 0 0 2px var(--san-trim) !important; }
+.pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
+.game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
+#dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
 </style>
 
 
@@ -6137,7 +6187,7 @@ class HomeInteriorScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS']; }
+  items() { return ['UI THEME', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
@@ -6148,6 +6198,7 @@ class SettingsScene extends ListScene {
       const modes = ['windowed', 'full-window', 'borderless', 'fullscreen'], k = modes.indexOf(S.displayMode);
       applyDisplayMode(modes[(k + (d > 0 ? 1 : modes.length - 1)) % modes.length]); SFX.toggle(); return;
     }
+    if (o === 'UI THEME') { S.uiTheme = S.uiTheme === 'classic' ? 'sanctum' : 'classic'; clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
     if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
     if (o === 'HD RESOLUTION') { const options = ['native', '4k', '8k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
@@ -6174,7 +6225,7 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>'];
+    const v = [S.uiTheme === 'classic' ? 'CLASSIC' : 'SANCTUM', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
@@ -6994,7 +7045,7 @@ class Field {
     if (this.zone && !G.inst) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
     // HUD: hp/xp micro bars
     const D = derive(G);
-    { const por = heroPortrait(G); if (por) { fill(1, H - 23, 18, 18, 3); fill(2, H - 22, 16, 16, 0); const s = sprFit(por, 16); blit(s, 2 + Math.round((16 - s.width) / 2), H - 22 + Math.round((16 - s.height) / 2)); } }
+    if (!(typeof uiDark === 'function' && uiDark())) { const por = heroPortrait(G); if (por) { fill(1, H - 23, 18, 18, 3); fill(2, H - 22, 16, 16, 0); const s = sprFit(por, 16); blit(s, 2 + Math.round((16 - s.width) / 2), H - 22 + Math.round((16 - s.height) / 2)); } }
     bar(1, H - 5, 50, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
     const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1));
     bar(53, H - 4, 106, 3, G.xp - x0, Math.max(1, x1 - x0), 'xp');
@@ -10326,6 +10377,113 @@ function curatorMenu(e) {
     if (e && e.svc === 'craftmaster') { SFX.open(); return craftMasterMenu(e); }
     if (e && e.svc === 'curator') { SFX.open(); return curatorMenu(e); }
     return ns0(e);
+  };
+}
+
+</script>
+<script>
+// ================================================================ SANCTUM UI THEME (dark ARPG look)
+// A black-and-bronze interface in the style of modern dark action RPGs:
+//   * every menu, dialog and panel: near-black fill, bronze border, gold corner studs, bone-white text
+//   * a top bar: level, name and gold
+//   * a bottom HUD: red LIFE orb (left), blue resource orb (right: spell slots, ki, rage...),
+//     the four equipped combat arts in the middle and a gold XP bar
+// The theme is chosen in the settings screen (UI THEME: SANCTUM / CLASSIC). The four Game Boy shades are
+// remapped, so every existing screen follows without changes. Single-tone palettes (DMG, POCKET, ...)
+// keep their classic look.
+
+const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
+const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
+if (S.uiTheme == null) S.uiTheme = 'sanctum';
+const uiDark = () => S.uiTheme === 'sanctum' && !MONO(S.palette);
+{
+  const col0 = col;
+  col = function (c) { if (typeof c === 'number' && uiDark()) return css(SANCTUM[c] || SANCTUM[3]); return col0(c); };
+  const font0 = font;
+  font = function (c) { const k = String(c) + S.palette; if (fontC[k] && fontC[k].__theme !== S.uiTheme) delete fontC[k]; const f = font0(c); f.__theme = S.uiTheme; return f; };
+  const frame0 = frame;
+  frame = function (x, y, w, h, bg = 0) {
+    if (!uiDark()) return frame0(x, y, w, h, bg);
+    fill(x, y, w, h, css(SAN.trim));
+    fill(x + 1, y + 1, w - 2, h - 2, bg === 0 ? css(SAN.panel) : col(bg));
+    fill(x + 1, y + 1, w - 2, 1, css(SAN.trimDark)); fill(x + 1, y + h - 2, w - 2, 1, css(SAN.trimDark));
+    fill(x + 1, y + 1, 1, h - 2, css(SAN.trimDark)); fill(x + w - 2, y + 1, 1, h - 2, css(SAN.trimDark));
+    for (const [sx, sy] of [[x, y], [x + w - 2, y], [x, y + h - 2], [x + w - 2, y + h - 2]]) fill(sx, sy, 2, 2, css(SAN.stud));
+    if (w > 24) { fill(x + (w >> 1) - 2, y, 4, 1, css(SAN.stud)); fill(x + (w >> 1) - 2, y + h - 1, 4, 1, css(SAN.stud)); }
+  };
+  const bar0 = bar;
+  bar = function (x, y, w, h, v, max, c = 2) {
+    if (!uiDark()) return bar0(x, y, w, h, v, max, c);
+    fill(x, y, w, h, css(SAN.trimDark)); fill(x + 1, y + 1, w - 2, h - 2, css([8, 6, 6]));
+    const f = Math.round((w - 2) * Math.max(0, Math.min(1, max ? v / max : 0)));
+    if (f > 0) { fill(x + 1, y + 1, f, h - 2, col(c)); if (h > 3) fill(x + 1, y + 1, f, 1, 'rgba(255,255,255,0.25)'); }
+  };
+}
+// menu header (clock / level / gold) as a dark top bar
+{
+  const hdr0 = hdr;
+  hdr = function () {
+    if (!uiDark()) return hdr0();
+    fill(0, 0, W, 11, css(SAN.panel)); fill(0, 11, W, 1, css(SAN.trim)); fill(0, 10, W, 1, css(SAN.trimDark));
+    const d = new Date(); text(`${pad2(d.getHours())}:${pad2(d.getMinutes())}`, 3, 1, 2);
+    text(`LV${G.lvl}`, 40, 1, 'gold');
+    if (NET.room) text(NET.server ? 'HOST' : NET.hostOf ? 'JOIN' : 'LIVE', 72, 1, 'blue');
+    const g = fmt(G.gold); textR(g, W - 3, 1, 'gold'); blit(sprFit('icon_3_3', 8), W - 13 - g.length * 6, 1);
+  };
+}
+
+// ---------------------------------------------------------------- orbs and HUD
+function resourceFrac(c) {
+  const D = derive(c), mx = typeof resMax === 'function' ? resMax(c, D) : {}, r = c.res || {};
+  let cur = 0, tot = 0;
+  for (const k in mx) { const m = mx[k], v = r[k]; if (Array.isArray(m)) { tot += m.reduce((a, b) => a + b, 0); cur += (Array.isArray(v) ? v : []).reduce((a, b) => a + b, 0); } else if (typeof m === 'number' && m > 0 && k !== 'hd') { tot += m; cur += Math.max(0, +v || 0); } }
+  return tot ? Math.max(0, Math.min(1, cur / tot)) : 1;
+}
+function drawOrb(cx, cy, r, frac, rgb) {
+  const level = cy + r - 2 * r * frac;
+  for (let y = -r - 1; y <= r + 1; y++) for (let x = -r - 1; x <= r + 1; x++) {
+    const d = Math.sqrt(x * x + y * y);
+    if (d > r + 1.2) continue;
+    let c;
+    if (d > r - 0.2) c = d > r + 0.6 ? SAN.trimDark : SAN.trim;
+    else {
+      if (cy + y >= level) { const k = 0.55 + 0.45 * (1 - (y + r) / (2 * r)) + (x < 0 ? 0.08 : -0.05); c = rgb.map(v => Math.max(0, Math.min(255, Math.round(v * k)))); }
+      else c = [10, 8, 8];
+      if (x > -r * 0.55 && x < -r * 0.15 && y > -r * 0.7 && y < -r * 0.35) c = c.map(v => Math.min(255, v + 70)); // gloss
+    }
+    ctx.fillStyle = css(c); ctx.fillRect(cx + x, cy + y, 1, 1);
+  }
+  fill(cx - 1, cy - r - 2, 2, 1, css(SAN.stud));
+}
+function drawSanctumHud(field) {
+  const D = derive(G), hpF = Math.max(0, Math.min(1, G.hp / D.hpMax)), mpF = resourceFrac(G);
+  // bottom panel
+  fill(0, H - 15, W, 15, css(SAN.panel)); fill(0, H - 15, W, 1, css(SAN.trim)); fill(0, H - 14, W, 1, css(SAN.trimDark));
+  drawOrb(12, H - 12, 10, hpF, G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 70, 50] : [200, 28, 24]);
+  drawOrb(W - 13, H - 12, 10, mpF, [44, 92, 220]);
+  // combat arts slots
+  const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
+  for (let i = 0; i < 4; i++) {
+    const x = 42 + i * 19, y = H - 13;
+    fill(x, y, 17, 11, css(SAN.trim)); fill(x + 1, y + 1, 15, 9, css([8, 6, 6]));
+    const a = arts[i];
+    if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 4, y + 1); fill(x + 1, y + 9, 15, 1, a.kind === 'physical' ? css([170, 50, 40]) : css([60, 110, 220])); }
+  }
+  // XP bar
+  const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)), xf = Math.max(0, Math.min(1, (G.xp - x0) / Math.max(1, x1 - x0)));
+  fill(26, H - 2, 108, 2, css([30, 24, 18])); fill(26, H - 2, Math.round(108 * xf), 2, css([214, 170, 64]));
+  // top bar (hidden while a zone banner is showing)
+  if (!(field.toast > 0)) {
+    fill(0, 0, W, 9, 'rgba(12,10,10,0.82)'); fill(0, 9, W, 1, css(SAN.trim));
+    text(`L${G.lvl} ${G.name}`.slice(0, 14), 2, 0, 3);
+    const g = fmt(G.gold); textR(g + 'G', W - 2, 0, 'gold');
+  }
+}
+{
+  const draw0 = Field.prototype.draw;
+  Field.prototype.draw = function () {
+    draw0.call(this);
+    if (uiDark() && G) drawSanctumHud(this);
   };
 }
 
