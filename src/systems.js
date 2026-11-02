@@ -11,7 +11,7 @@ function newGameState(o) {
   Object.assign(c, {
     slot: o.slot || 0, created: Date.now(), playtime: 0, gold: BACKGROUNDS[o.bg].gold * 5, bag: [], inv: { potion: 3, ration: 2, campkit: 1, hearthstone: 1 },
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
-    chapter: 0, chProg: 0, sideq: {}, bossProgress: { clears: {}, named: {} }, bossTokens: 0, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
+    chapter: 0, chProg: 0, sideq: {}, bossProgress: { clears: {}, named: {} }, bossTokens: 0, easterEggs: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
     ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0, tailoring: 1, leatherwork: 1, jewelcraft: 0, enchanting: 0 }, profTalents: {}, profPerks: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], homes: {}, hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
@@ -30,6 +30,7 @@ function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; 
 function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
+  G.easterEggs = G.easterEggs && typeof G.easterEggs === 'object' && !Array.isArray(G.easterEggs) ? G.easterEggs : {};
   G.homes = G.homes && typeof G.homes === 'object' && !Array.isArray(G.homes) ? G.homes : {};
   G.skillPts = Math.max(0, Math.floor(Number(G.skillPts) || 0));
   G.activeSkills = Array.isArray(G.activeSkills) ? [...new Set(G.activeSkills.filter(id => ACTIVE_SKILLS.some(skill => skill.id === id && skill.classes.includes(G.cls))))] : [];
