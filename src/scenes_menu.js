@@ -36,7 +36,7 @@ class MainMenu extends ListScene {
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
-      'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
+      'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
@@ -691,9 +691,9 @@ class AchievementScene extends ListScene {
 }
 class BossJournalScene extends ListScene {
   constructor() { super(8); this.category = 'ALL'; }
-  items() { return BOSSES.filter(b => this.category === 'ALL' || b.cat === this.category); }
+  items() { return this.category === 'NAMED' ? NAMED_ITEMS : BOSSES.filter(b => this.category === 'ALL' || b.cat === this.category); }
   update() {
-    if (nav('left')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid']; this.category = cats[(cats.indexOf(this.category) + cats.length - 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
+    if (nav('left')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid', 'NAMED']; this.category = cats[(cats.indexOf(this.category) + cats.length - 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
     if (nav('right')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid']; this.category = cats[(cats.indexOf(this.category) + 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); }
@@ -701,19 +701,27 @@ class BossJournalScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const all = globalThis.GBQBossProgression ? GBQBossProgression.summary(G, BOSSES) : { total: BOSSES.length, cleared: 0, percent: 0 };
-    const rows = this.items(), b = rows[this.i] || BOSSES[0], state = G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[b.id] || {};
-    text(`BOSSES ${all.cleared}/${all.total} ${all.percent}%`, 4, 14, 'gold');
+    const rows = this.items(), namedMode = this.category === 'NAMED', b = rows[this.i] || BOSSES[0], state = !namedMode && G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[b.id] || {}; 
+    const namedFound = NAMED_ITEMS.filter(n => (G.named && G.named[n.id]) || (G.bossProgress && G.bossProgress.named && G.bossProgress.named[n.id])).length;
+    text(namedMode ? `NAMED ${namedFound}/${NAMED_ITEMS.length}` : `BOSSES ${all.cleared}/${all.total} ${all.percent}%`, 4, 14, 'gold');
     text(`SIGILS ${G.bossTokens || 0}  ${this.category.toUpperCase()}`, 4, 23, 2);
     rows.slice(this.top, this.top + this.rows).forEach((entry, j) => {
-      const i = this.top + j, y = 35 + j * 10, record = G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[entry.id];
+      const i = this.top + j, y = 35 + j * 10, record = namedMode ? null : (G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[entry.id]), owned = namedMode && !!((G.named && G.named[entry.id]) || (G.bossProgress && G.bossProgress.named && G.bossProgress.named[entry.id]));
       if (i === this.i) fill(2, y - 1, 154, 10, 1);
-      text(`${String(BOSSES.indexOf(entry) + 1).padStart(3, '0')} ${entry.name.slice(0, 15)}`, 5, y, record && record.firstClear ? 'gold' : (i === this.i ? 3 : 1));
-      textR(record ? `K${record.kills}` : 'NEW', 153, y, record ? 2 : 1);
+      const number = namedMode ? String(i + 1).padStart(3, '0') : String(BOSSES.indexOf(entry) + 1).padStart(3, '0');
+      text(`${number} ${entry.name.slice(0, 15)}`, 5, y, (record && record.firstClear) || owned ? 'gold' : (i === this.i ? 3 : 1));
+      textR(namedMode ? (owned ? `x${(G.named && G.named[entry.id]) || (G.bossProgress.named[entry.id])}` : '???') : (record ? `K${record.kills}` : 'NEW'), 153, y, (record && record.firstClear) || owned ? 2 : 1);
     });
     this.scrollbar(156, 34, 82);
     frame(2, 120, 156, 23);
-    text(`${b.cat.toUpperCase()} LV${b.lvl} RANK ${GBQBossProgression ? GBQBossProgression.rank(b) : 'F'}`, 6, 124, 'gold');
-    text(`${state.firstClear ? 'CLEARED' : 'NOT DEFEATED'}  KILLS ${state.kills || 0}`, 6, 134, state.firstClear ? 'green' : 2);
+    if (namedMode) {
+      const owned = (G.named && G.named[b.id]) || (G.bossProgress && G.bossProgress.named && G.bossProgress.named[b.id]) || 0;
+      text(`${b.kind.toUpperCase()}  ${b.src.raid ? 'RAID DROP' : b.src.act ? 'ARC DROP' : 'BOSS DROP'}`, 6, 124, 'gold');
+      text(owned ? `DISCOVERED x${owned}` : 'NOT YET DISCOVERED', 6, 134, owned ? 'green' : 2);
+    } else {
+      text(`${b.cat.toUpperCase()} LV${b.lvl} RANK ${globalThis.GBQBossProgression ? globalThis.GBQBossProgression.rank(b) : 'F'}`, 6, 124, 'gold');
+      text(`${state.firstClear ? 'CLEARED' : 'NOT DEFEATED'}  KILLS ${state.kills || 0}`, 6, 134, state.firstClear ? 'green' : 2);
+    }
     text('LEFT/RIGHT: CATEGORY', 6, 146, 1);
   }
 }
