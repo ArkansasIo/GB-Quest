@@ -100,7 +100,9 @@ const bestWearable = c => ACLASS_ORDER.filter(k => canWearClass(c, k)).pop() || 
     const out = ti0(it).slice(), t = (it && it.rank) || 1;
     if (it && it.kind === 'weapon' && WEAPONS[it.base]) { const wc = WEAPON_CLASSES[WEAPONS[it.base].fam]; if (wc) out.push(...wc.stats(t).filter(([, v]) => v > 0)); }
     const pc = pieceClass(it); if (pc && it.kind === 'wondrous') out.push(...ARMOR_CLASS_STATS[pc](t));
-    return out;
+    // Star enhancement improves item implicit stats by 1% per star beyond the first.
+    const starScale = 1 + (Math.max(1, Math.min(12, Number(it && it.starLevel) || 1)) - 1) * 0.01;
+    return out.map(([stat, value]) => [stat, Math.round(value * starScale)]);
   };
 }
 // new wondrous pieces roll a weight class (60% your best wearable class: smart loot)
