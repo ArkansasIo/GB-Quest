@@ -38,7 +38,14 @@ function buildSecretWorldCatalog() {
       type, minLvl: level, hint: GBQ_SECRET_HINTS[type], reward,
       relic: type === 'boss' ? adjective.toUpperCase() + ' ' + noun.toUpperCase() + ' RELIC' : undefined });
   }
-  return Object.freeze(result.map(d => Object.freeze(d)));
+  return Object.freeze(result.map(d => {
+    if (d.reward) return Object.freeze(d);
+    const reward = d.type === 'boss' ? { gold: 12000, sigils: 8, potions: 0 }
+      : d.type === 'cache' ? { gold: 3200, sigils: 2, potions: 3 }
+      : d.type === 'npc' ? { gold: 1200, sigils: 0, potions: 2 }
+      : { gold: 900, sigils: 1, potions: 1 };
+    return Object.freeze({ ...d, reward: Object.freeze(reward) });
+  }));
 }
 const GBQ_SECRET_WORLD_DEFS = buildSecretWorldCatalog();
 function ensureSecretWorld(state) {
