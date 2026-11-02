@@ -118,6 +118,23 @@ LocalRealm.load();
     if (this.transport !== 'server') return lb0();
     try { return (await LocalRealm.api('/api/heroes')).heroes; } catch (e) { return null; }
   };
+  // Desktop cloud-save sync: upload successful local saves without blocking the game loop.
+  let lastDesktopSaveSync = 0;
+  let desktopSaveSyncPromise = null;
+  const saveGame0 = saveGame;
+  saveGame = function () {
+    const ok = saveGame0();
+    if (ok && LocalRealm.desktop && LocalRealm.token && G && !NET.offline) {
+      const now = Date.now();
+      if (!desktopSaveSyncPromise && now - lastDesktopSaveSync >= 20000) {
+        lastDesktopSaveSync = now;
+        desktopSaveSyncPromise = LocalRealm.upload(G.slot)
+          .catch(error => { chatLog('System', 'Cloud save', 'Automatic upload failed: ' + String(error.message || error).slice(0, 110)); })
+          .finally(() => { desktopSaveSyncPromise = null; });
+      }
+    }
+    return ok;
+  };
   const mode0 = NET.setMode.bind(NET);
   NET.setMode = function (mode) { mode0(mode); if (this.transport === 'server') { if (mode === 'offline') LocalRealm.disconnect(); else this.init(); } };
 }
