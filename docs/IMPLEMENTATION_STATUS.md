@@ -41,6 +41,9 @@ The following items are roadmap work. They must not be represented as complete u
 - **Legendary raid sets implemented:** Crypt Warden, Forgefire, Rime Throne and Long Night each have three named pieces, two-piece and full-set bonuses, and a collection view in the Armoury.
 - Rune gathering/vendor acquisition, per-boss pity counters, weekly raid chests, authoritative online reward rolls and unique item art remain outstanding.
 
+- **Boss progression and collection journal implemented:** all 350 generated boss IDs feed a persistent journal with category filters, difficulty ranks F–SSS, per-boss kill/first-clear timestamps, named-equipment discovery counts, and idempotent first-clear gold/sigil rewards. Existing repeatable loot rolls remain separate. The current weekly raid instance save remains the existing raid lockout. See [BOSS_PROGRESSION_AND_JOURNAL.md](BOSS_PROGRESSION_AND_JOURNAL.md).
+- Boss progression is currently local-save authoritative only. Server-side account validation, cross-device synchronization and anti-tamper reward issuance remain outstanding.
+
 ### NPC and creature AI
 
 - A reusable behavior-tree or equivalent hierarchical AI runtime.
