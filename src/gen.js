@@ -119,6 +119,26 @@ function dungeonTiles(theme) {
   return t;
 }
 
+// ================================================================ Game Boy pixel tile graphics (auto-tiled)
+const GT_KEY = { '.': 'grass', ',': 'meadow', '"': 'ground', 'T': 'tree', 'F': 'pine', 'D': 'dense', 'P': 'single', 'M': 'rock', 'N': 'peak', 'W': 'deep%f', '=': 'bridge%f',
+  's': 'sand', 'S': 'sand2', 'A': 'wall', 'a': 'gate', 'K': 'keep', 'k': 'keepdoor', 'H': 'shop', 'J': 'inn', 'r': 'shrine', 'q': 'statue', 'R': 'temple', 'Q': 'arena' };
+const WATERS = new Set(['~', 'w', 'v', 'W', '=']), ROADS = new Set(['|', 'h', 'X', '=', 'a', 'k', 'J', 'H']);
+function zoneGfx(rows, biome, town) {
+  const b = biome === 'meadow' || !biome ? 'meadow' : biome, H = rows.length, W = rows[0].length;
+  const at = (x, y) => (y < 0 || y >= H || x < 0 || x >= W) ? null : rows[y][x];
+  return rows.map((row, y) => [...row].map((ch, x) => {
+    if (ch === '~' || ch === 'w' || ch === 'v') { let m = 0; [[0, -1, 1], [1, 0, 2], [0, 1, 4], [-1, 0, 8]].forEach(([dx, dy, bit]) => { const n = at(x + dx, y + dy); if (n !== null && !WATERS.has(n)) m |= bit; }); return `gt_${b}_water${m}_%f`; }
+    if (ch === '|' || ch === 'h' || ch === 'X') { let m = 0; [[0, -1, 1], [1, 0, 2], [0, 1, 4], [-1, 0, 8]].forEach(([dx, dy, bit]) => { const n = at(x + dx, y + dy); if (n === null || ROADS.has(n)) m |= bit; }); return `gt_${b}_road${m}`; }
+    if (town && (ch === '"' || ch === 'S')) return `gt_${b}_cobble`;
+    return `gt_${b}_${GT_KEY[ch] || 'grass'}`;
+  }));
+}
+const GD_KEY = { '.': 'floor', ',': 'floor2', 'L': 'down', 'U': 'up', 't': 'torch%f', 'A': 'altar', 'G': 'gold', 'b': 'barrel', 's': 'statue', 'n': 'sign', 'd': 'door' };
+function dungeonGfx(rows, theme) {
+  const t = theme || 'dungeon', walk = c => DUN_WALK.has(c);
+  return rows.map((row, y) => [...row].map((ch, x) => ch === '#' ? `gd_${t}_${rows[y + 1] && walk(rows[y + 1][x]) ? 'wall' : 'walltop'}` : `gd_${t}_${GD_KEY[ch] || 'floor'}`));
+}
+
 // ================================================================ zone map generator
 const ZW = 32, ZH = 24;
 function noiseGrid(r, w, h, cell) {
@@ -223,7 +243,7 @@ function buildZone(z) {
   // areas = quadrants
   const ar = RNG('areas-' + z.id), names = ar.shuffle(ZONE_AREAS);
   const areas = [[1, 1, 15, 11], [16, 1, 15, 11], [1, 12, 15, 11], [16, 12, 15, 11]].map((rc, i) => ({ id: `${z.id}_a${i}`, r: rc, name: `${z.name.split(' ')[0]} ${names[i]}` }));
-  return { id: z.id, zone: z, rows, tiles, exits, poi, nodes, bosses, hub, areas, name: z.name, music: z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field'), lvl: z.lvl, biome: z.biome };
+  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field'), lvl: z.lvl, biome: z.biome };
 }
 const MUSIC_BY_BIOME = { meadow: 'field', coast: 'coast', marsh: 'marsh', jungle: 'jungle', snow: 'snow', badlands: 'desert', volcanic: 'volcano', dusk: 'dusk', crystal: 'crystal' };
 function buildHarbor(r) {
@@ -291,7 +311,8 @@ function buildInstance(kind, def, floor = 0) {
   const traps = [];
   for (let i = 0; i < 3; i++) { const o = r.pick(rooms.slice(1)); traps.push({ x: o.x + r.int(0, o.w - 1), y: o.y + r.int(0, o.h - 1), dc: 10 + Math.min(10, Math.floor(lvl / 5)), dmg: `${1 + Math.floor(lvl / 4)}d10` }); }
   if (kind === 'tower') g[last.cy][last.x + last.w - 1] = 'U';
-  return { id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: g.map(rw => rw.join('')), tiles: dungeonTiles(def.theme || 'dungeon'), entry, pulls, chest, traps, lvl,
+  const rowsOut = g.map(rw => rw.join(''));
+  return { id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, def.theme || 'dungeon'), tiles: dungeonTiles(def.theme || 'dungeon'), entry, pulls, chest, traps, lvl,
     name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind };
 }
 

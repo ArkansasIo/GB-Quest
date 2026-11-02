@@ -13,7 +13,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
+const S = Object.assign({ tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
   store.get('gbq2_settings') || {});
 function applyFilter() { cv.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
@@ -107,22 +107,23 @@ function spr(name, w, h, opt) {
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   const mode = S.palette;
   if (MONO(mode)) {
-    const g = tileGroup(name), th = g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
+    const pixelArt = /^g[tdoh]_/.test(name);
+    const g = tileGroup(name), th = pixelArt ? [78, 128, 182] : g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
     const P = PALS[mode].ui;
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 110) { d[i + 3] = 0; continue; } d[i + 3] = 255;
-      const px = (i >> 2) % w, py = ((i >> 2) / w) | 0, dith = (BAYER[(py & 3) * 4 + (px & 3)] / 16 - 0.5) * 10;
+      const px = (i >> 2) % w, py = ((i >> 2) / w) | 0, dith = pixelArt ? 0 : (BAYER[(py & 3) * 4 + (px & 3)] / 16 - 0.5) * 10;
       const l = lum(d, i) + dith, k = l < th[0] ? 3 : l < th[1] ? 2 : l < th[2] ? 1 : 0;
       d[i] = P[k][0]; d[i + 1] = P[k][1]; d[i + 2] = P[k][2];
     }
-  } else if (mode === 'gbc') {
+  } else if (mode === 'gbc' && !/^g[tdoh]_/.test(name)) {
     const pal = medianCut4(d);
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 110) { d[i + 3] = 0; continue; } d[i + 3] = 255;
       let bi = 0, bd = 1e9; for (let k = 0; k < 4; k++) { const p = pal[k], dd = (p[0] - d[i]) ** 2 + (p[1] - d[i + 1]) ** 2 + (p[2] - d[i + 2]) ** 2; if (dd < bd) { bd = dd; bi = k; } }
       d[i] = pal[bi][0]; d[i + 1] = pal[bi][1]; d[i + 2] = pal[bi][2];
     }
-  } else for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 110) d[i + 3] = 0; else d[i + 3] = 255; }
+  } else for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 110) d[i + 3] = 0; else { d[i + 3] = 255; if (mode === 'gbc') { d[i] &= 0xf8; d[i + 1] &= 0xf8; d[i + 2] &= 0xf8; } } }
   if (opt.ghost) for (let i = 0; i < d.length; i += 4) { const l = lum(d, i); d[i] = l * 0.6 + 60; d[i + 1] = l * 0.7 + 70; d[i + 2] = l * 0.9 + 90; d[i + 3] = d[i + 3] ? 170 : 0; }
   x.putImageData(id, 0, 0);
   if (opt.flip || opt.rot) {
