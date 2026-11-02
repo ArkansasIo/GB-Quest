@@ -505,14 +505,14 @@ class QuestLog extends ListScene {
 
 // ================================================================ CRAFTING
 class CraftScene extends ListScene {
-  constructor() { super(8); }
-  items() { return RECIPES; }
-  update() { if (P('select')) { SFX.page(); push(new BlueprintScene()); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
+  constructor() { super(8); this.pf = 0; }
+  items() { return typeof craftList === 'function' ? craftList(this.pf) : RECIPES; }
+  update() { if (P('select')) { SFX.page(); push(new BlueprintScene(this.pf)); return; } if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(this.items()[this.i]); SFX[/^(Made|Forged)/.test(r) ? 'craft' : 'error'](); this.msg = r; } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    text(`A${G.prof.alch} C${G.prof.cook}  SEL:BLUEPRINTS`, 2, 14, 2);
-    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 18), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
-    const r = RECIPES[this.i]; frame(2, 108, 156, 34);
+    { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; text(`<${k === 'ALL' ? 'ALL' : PROFS[k].slice(0, 9)} ${k === 'ALL' ? '' : G.prof[k]}> SEL:BLUEPRINT`, 2, 14, 2); }
+    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 18), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    const r = this.items()[this.i]; if (!r) return; frame(2, 108, 156, 34);
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
     text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
@@ -520,17 +520,18 @@ class CraftScene extends ListScene {
 }
 
 class BlueprintScene extends ListScene {
-  constructor() { super(9); this.msg = ''; }
-  items() { return RECIPES; }
+  constructor(pf = 0) { super(9); this.msg = ''; this.pf = pf; }
+  items() { return typeof craftList === 'function' ? craftList(this.pf) : RECIPES; }
   update() {
+    if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
-    const result = learnRecipeBlueprint(RECIPES[this.i].id);
+    const result = learnRecipeBlueprint(this.items()[this.i].id);
     SFX[result.startsWith('Learned') ? 'craft' : 'error'](); this.msg = result;
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); textC('PROFESSION BLUEPRINTS', 80, 14, 'gold');
+    fill(0, 0, W, H, 0); hdr(); { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; textC(`< ${k === 'ALL' ? 'ALL BLUEPRINTS' : PROFS[k]} >`, 80, 14, 'gold'); }
     this.items().slice(this.top, this.top + this.rows).forEach((recipe, row) => {
       const index = this.top + row, y = 25 + row * 10, learned = G.blueprints.includes(recipe.id);
       if (index === this.i) fill(2, y - 1, 152, 10, 1);
@@ -538,7 +539,7 @@ class BlueprintScene extends ListScene {
       text((learned ? `KNOWN ${recipe.name}` : recipe.name).slice(0, 17), 16, y, learned ? 3 : 2);
       textR(`${recipe.skill}/${PROFS[recipe.prof].slice(0, 3)}`, 154, y, 2);
     });
-    const recipe = RECIPES[this.i], cost = recipeBlueprintCost(recipe);
+    const recipe = this.items()[this.i]; if (!recipe) return; const cost = recipeBlueprintCost(recipe);
     frame(2, 108, 156, 34);
     text(`${PROFS[recipe.prof]} ${G.prof[recipe.prof]}/${recipe.skill}`, 6, 111, 2);
     text(G.blueprints.includes(recipe.id) ? 'ALREADY LEARNED' : `LEARN BLUEPRINT ${cost}G`, 6, 122, 'gold');

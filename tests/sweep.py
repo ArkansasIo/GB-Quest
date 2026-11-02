@@ -214,6 +214,19 @@ async () => {
     if (scenes.some(s => s instanceof Battle)) return 'battle stuck';
     push(new ArtsScene()); for (const k of ['down', 'a', 'a', 'up']) { press(k); render(); }
   });
+  step('materials and blueprints', () => {
+    fresh('warden', 'hearthkin', 'soldier', 30);
+    if (MATERIALS.length !== 90) return 'materials ' + MATERIALS.length;
+    for (const m of MATERIALS) { if (!ITEMS[m.id] || m.grade < 1 || m.grade > 9 || m.tier < 1 || m.tier > 23 || m.lvl < 1 || m.lvl > 720) return 'bad mat ' + m.id; }
+    for (const p of Object.keys(CRAFT_PLAN)) { const rs = RECIPES.filter(r => r.prof === p && r.tier); if (rs.length !== 23) return 'tiers ' + p; if (rs[22].skill < 600) return 'top skill ' + p; }
+    const top = gatherMaterial('mining', 720, 720); if (!top || top.tier !== 23) return 'top gather';
+    if (gatherMaterial('mining', 720, 1).slot !== 0) return 'skill gate';
+    const r = RECIPES.find(r => r.id === 't_weaponsmith_10'); G.prof.weaponsmith = 720; G.lvl = 40; G.blueprints.push(r.id); for (const k in r.needs) addItem(k, 30);
+    const n0 = G.bag.length; const msg = craft(r); if (!/^Forged/.test(msg)) return 'forge: ' + msg; if (G.bag.length !== n0 + 1) return 'no gear';
+    const g = G.bag[G.bag.length - 1]; if (g.rank !== 10) return 'forged tier ' + g.rank;
+    const a = RECIPES.find(r => r.id === 't_alch_5'); G.prof.alch = 720; G.blueprints.push(a.id); for (const k in a.needs) addItem(k, 30); if (!/^Made/.test(craft(a))) return 'alch';
+    push(new CraftScene()); for (const k of ['right', 'down', 'a', 'left', 'select', 'right', 'down', 'a']) { press(k); render(); }
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas

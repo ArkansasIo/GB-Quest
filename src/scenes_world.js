@@ -781,7 +781,9 @@ function npcMarker(e) {
 // ================================================================ interactions
 const GATHER_CHECK = { herb: 'nature', mining: 'athletics', forestry: 'nature', hidecraft: 'survival', salvaging: 'investigation', relic: 'investigation', cultivation: 'nature', beast_lore: 'nature' };
 function gatherProfessionNode(e) {
-  const profession = e.profession || 'herb', item = e.item || e.herb;
+  const profession = e.profession || 'herb';
+  const zl = (ZONE_BY_ID[G.map] && ZONE_BY_ID[G.map].lvl[1]) || G.lvl, mat = typeof gatherMaterial === 'function' ? gatherMaterial(profession, zl, G.prof[profession] || 1) : null;
+  const item = mat && mat.slot > 0 ? mat.id : (e.item || e.herb);
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
   const skill = GATHER_CHECK[profession] || 'nature';
   const chk = skillCheck(G, skill, 8 + Math.floor(G.prof[profession] / 80) - perkVal(profession, 'check'));
@@ -1354,7 +1356,8 @@ class Fishing {
   catch_() {
     removeScene(this);
     const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4 + perkVal('fish', 'respawn') * 40;
-    const k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
+    let k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
+    if (typeof gatherMaterial === 'function' && k !== 'old_boot' && R() < 0.6) { const fm = gatherMaterial('fish', (z && z.lvl[1]) || G.lvl, G.prof.fish || 1); if (fm && fm.slot > 0) k = fm.id; }
     let quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
     if (R() < perkVal('fish', 'double')) quantity *= 2;
     perkAfterWork('fish');

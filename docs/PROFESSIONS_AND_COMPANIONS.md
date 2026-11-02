@@ -55,3 +55,44 @@ Every profession has a skill of 0-720, the rank branches (Yield, Efficiency, Mas
 
 - **Stances** steer the battle AI: BALANCED (by role), AGGRESSIVE (big spells on the main threat, heals only the fallen), DEFENSIVE (holds the boss, heals at 55%), SUPPORT (heals at 70%, buffs first).
 - The active party is capped by play mode; extra companions wait on the bench and can be swapped in at any time.
+
+## 90 raw materials
+
+`src/materials.js`. There are 9 families, one per gathering profession, with 10 materials each. Every material is classified FAMILY > CLASS > SUBCLASS > TYPE > SUBTYPE, for example `ORE > METAL > NOBLE METAL > LUNAR > MOONPOOL` for Moonsilver.
+
+| Family | Gathered by | Tier 1 → tier 23 |
+|---|---|---|
+| HERB | Herbalism | Peacebloom → Dawnrose |
+| ORE | Ore Mining | Iron Ore → Dawnsteel Ore |
+| WOOD | Forestry | Living Sap → Worldroot |
+| HIDE | Hidecraft | Thick Hide → Seraph Leather |
+| FISH | Fishing | Small Fish → Lantern Whale Oil |
+| SALVAGE | Salvaging | Scrap Iron → Titan Plate |
+| RELIC | Relic Survey | Relic Fragment → First Lantern Glass |
+| FIBER | Cultivation | Field Fiber → Halo Silk |
+| BEAST PARTS | Beast Lore | Bone Dust → Dragon Heart |
+
+- **Tier bands:** each material slot covers a band of gear tiers, starting at tiers 1, 3, 6, 8, 11, 13, 16, 18, 21 and 23.
+- **Level:** the first level of its tier band (1-670).
+- **Rarity grade:** 1-9, from Poor to Divine.
+- **Gathering:** a node or catch gives the best material that both the zone level and your profession skill allow.
+
+## Recipes and blueprints 1-720
+
+All 9 crafting professions have a blueprint for each of the 23 tiers (207 tiered recipes, plus the hand-made ones). The required skill is the tier's level, from 1 to 670, and the materials come from the matching tier.
+
+| Profession | Materials | Makes |
+|---|---|---|
+| Alchemy | herb + beast | Minor → Dawn ELIXIR (healing) |
+| Cooking | fish + herb | FEASTS (healing + WELL FED) |
+| Tailoring | fiber + herb | BANDAGES (healing) |
+| Leatherwork | hide + wood | ARMOR KITS (defensive buffs) |
+| Enchanting | relic + beast | RUNE OILS (offensive buffs) |
+| Jewelcrafting | ore + relic | forged **trinkets** of the tier |
+| Blacksmithing | ore + wood + salvage | forged **weapons or armour** of the tier |
+| Armorsmithing | ore + hide | forged **armour** of the tier |
+| Weaponsmithing | ore + wood | forged **weapons** of the tier |
+
+Forged gear rolls rarity at the tier's level. The Masterwork perk and Mastery ranks can raise it one grade.
+
+In CRAFTING and BLUEPRINTS, LEFT and RIGHT filter by profession and SELECT opens the blueprint shop.
