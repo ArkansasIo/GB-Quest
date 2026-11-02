@@ -121,10 +121,12 @@ function accountForm(kind) {
 
 // ---------------------------------------------------------------- ACCOUNT screen
 class AccountScene {
-  constructor() { this.opaque = true; this.i = 0; this.busy = false; this.msg = ''; this.cloud = null; if (LocalRealm.token) this.refresh(); }
-  async refresh() { try { this.cloud = await LocalRealm.listSaves(); } catch (e) { this.cloud = null; } }
+  constructor() { this.opaque = true; this.i = 0; this.busy = false; this.msg = ''; this.cloud = null; if (LocalRealm.token || this.page()) this.refresh(); }
+  page() { return !LocalRealm.available && !NET.offline && !!(NET.db && NET.myId); }
+  async refresh() { try { this.cloud = this.page() ? await PageCloud.list() : await LocalRealm.listSaves(); } catch (e) { this.cloud = null; } }
   opts() {
-    if (!LocalRealm.available) return ['BACK'];
+    if (this.page()) return ['UPLOAD SLOT 1', 'UPLOAD SLOT 2', 'UPLOAD SLOT 3', 'DOWNLOAD SLOT 1', 'DOWNLOAD SLOT 2', 'DOWNLOAD SLOT 3', 'BACK'];
+    if (!LocalRealm.available) return [NET.offline ? 'GO ONLINE' : 'REFRESH', 'BACK'];
     if (!LocalRealm.account) return ['LOG IN', 'CREATE ACCOUNT', 'BACK'];
     return ['UPLOAD SLOT 1', 'UPLOAD SLOT 2', 'UPLOAD SLOT 3', 'DOWNLOAD SLOT 1', 'DOWNLOAD SLOT 2', 'DOWNLOAD SLOT 3', 'LOG OUT', 'BACK'];
   }
@@ -133,6 +135,10 @@ class AccountScene {
     try {
       if (o === 'LOG IN' || o === 'CREATE ACCOUNT') { const a = await accountForm(o === 'LOG IN' ? 'login' : 'register'); if (a) { SFX.confirm(); this.msg = `WELCOME, ${a.name}!`; await NET.init(); await this.refresh(); } }
       else if (o === 'LOG OUT') { await LocalRealm.logout(); NET.room = null; NET.peers = []; NET.status = 'SERVER: LOG IN'; this.cloud = null; SFX.close(); this.msg = 'LOGGED OUT'; }
+      else if (o === 'GO ONLINE') { NET.setMode('online'); await NET.init(); this.msg = NET.db ? 'ONLINE: CLOUD SAVES READY' : 'NO ONLINE ACCOUNT HERE'; await this.refresh(); }
+      else if (o === 'REFRESH') { await NET.init(); await this.refresh(); this.msg = this.page() ? 'SIGNED IN' : 'OFFLINE ON THIS PAGE'; }
+      else if (this.page() && o.startsWith('UPLOAD')) { const s = +o.slice(-1) - 1; await PageCloud.upload(s); await this.refresh(); SFX.confirm(); this.msg = `SLOT ${s + 1} SAVED TO CLOUD`; }
+      else if (this.page() && o.startsWith('DOWNLOAD')) { const s = +o.slice(-1) - 1; await PageCloud.download(s); SFX.confirm(); this.msg = `SLOT ${s + 1} DOWNLOADED`; }
       else if (o.startsWith('UPLOAD')) { const s = +o.slice(-1) - 1; await LocalRealm.upload(s); await this.refresh(); SFX.confirm(); this.msg = `SLOT ${s + 1} SAVED TO SERVER`; }
       else if (o.startsWith('DOWNLOAD')) { const s = +o.slice(-1) - 1; await LocalRealm.download(s); SFX.confirm(); this.msg = `SLOT ${s + 1} DOWNLOADED`; }
     } catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 50); }
@@ -150,7 +156,8 @@ class AccountScene {
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3); textC('ACCOUNT', 80, 1, 0);
     frame(4, 14, 152, 30);
-    if (!LocalRealm.available) { text('NO REALM SERVER', 10, 18, 'red'); text('RUN: node server/server.cjs', 10, 28, 2); text('THEN OPEN localhost:8787', 10, 37, 2); }
+    if (this.page()) { text('SIGNED IN WITH CLAUDE', 10, 18, 'green'); text(`PLAYER ${String(NET.myId).slice(0, 10)}`, 10, 28, 2); text('PRIVATE CLOUD SAVES', 10, 37, 2); }
+    else if (!LocalRealm.available) { text(NET.offline ? 'OFFLINE MODE' : 'NOT SIGNED IN HERE', 10, 18, 'red'); text('SAVES STAY ON THIS DEVICE', 10, 28, 2); text('REALM: node backend/server.cjs', 10, 37, 2); }
     else if (!LocalRealm.account) { text(`${(LocalRealm.info.realm || 'REALM').slice(0, 20)}`, 10, 18, 'gold'); text(`${LocalRealm.info.players} ONLINE  ${LocalRealm.info.accounts} ACCOUNTS`, 10, 29, 2); }
     else { text(`SIGNED IN: ${LocalRealm.account.name}`.slice(0, 24), 10, 18, 'green'); text(NET.isOnline() ? `ONLINE  ${NET.peers.length} PLAYERS` : NET.status || '', 10, 29, 2); }
     this.opts().forEach((c, j) => {
@@ -163,3 +170,28 @@ class AccountScene {
     else if (this.busy) text('WORKING...', 4, 134, 2);
   }
 }
+
+// ---------------------------------------------------------------- cloud saves on a shared page
+// Each viewer's saves live in their own private database subtree (data/users/<id>/...), which only they
+// can read or write. Saves are split into chunks below the 256 KiB document limit.
+const PageCloud = {
+  base() { return `data/users/${NET.myId}`; },
+  async list() {
+    const out = [];
+    for (let s = 0; s < SLOT_KEYS.length; s++) { const d = (await NET.db.doc(`${this.base()}/save${s}`).get()).data(); out.push(d ? { slot: s, name: d.name, lvl: d.lvl, cls: d.cls, saved: d.saved } : null); }
+    return out;
+  },
+  async upload(s) {
+    const st = store.get(SLOT_KEYS[s]); if (!st) throw new Error('That slot is empty on this device.');
+    const json = JSON.stringify(st), size = 180000, parts = Math.ceil(json.length / size);
+    if (parts > 40) throw new Error('Save is too large for the cloud.');
+    for (let i = 0; i < parts; i++) await NET.db.doc(`${this.base()}/save${s}c${i}`).set({ data: json.slice(i * size, (i + 1) * size) });
+    await NET.db.doc(`${this.base()}/save${s}`).set({ parts, name: String(st.name || '').slice(0, 12), lvl: st.lvl || 1, cls: st.cls || '', saved: Date.now() });
+  },
+  async download(s) {
+    const meta = (await NET.db.doc(`${this.base()}/save${s}`).get()).data(); if (!meta) throw new Error('No cloud save in that slot.');
+    let json = ''; for (let i = 0; i < meta.parts; i++) { const c = (await NET.db.doc(`${this.base()}/save${s}c${i}`).get()).data(); if (!c) throw new Error('Cloud save is incomplete.'); json += c.data; }
+    const st = JSON.parse(json); if (!st || !st.cls) throw new Error('Cloud save is damaged.');
+    store.set(SLOT_KEYS[s], st); return st;
+  },
+};

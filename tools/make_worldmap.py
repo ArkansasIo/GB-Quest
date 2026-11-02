@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pixelate src_sheet/world_map.png (the DUNIA world map) into Game Boy-style map art.
+"""Pixelate src_sheet/world_map.png (the VALENDRIA world map) into Game Boy-style map art.
 
   assets/gm_dunia.png    320 px wide, 32-colour palette (detail view)
   assets/gm_dunia_s.png  160 px wide, 32-colour palette (overview)

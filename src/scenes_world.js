@@ -76,11 +76,19 @@ class MultiplayerScene {
   }
 }
 
+function titleExtras() {
+  choose(['LEADERBOARD', 'WORLD ATLAS', 'CONTROLS', 'ABOUT', 'BACK'], k => {
+    if (k === 0) NET.leaderboard().then(r => say(r && r.length ? ['LEADERBOARD'].concat(r.slice(0, 8).map((h, i) => `${i + 1}. ${String(h.name).slice(0, 10)} L${h.lvl}`)) : ['No leaderboard yet.', 'Play online to post your hero.'])).catch(() => say('Leaderboard unavailable offline.'));
+    if (k === 1) { if (typeof openAtlas === 'function') openAtlas(); else say('Open dist/atlas.html for the world atlas.'); }
+    if (k === 2) say(['ARROWS move  Z/A confirm  X/B back', 'ENTER menu  SHIFT map/auto-battle', 'M atlas  F full screen  C chat', 'F9 debug  F3 profiler']);
+    if (k === 3) say([`${BUILD.game}`, `Version ${BUILD.version} ${BUILD.build}`, `Engine ${BUILD.engine} ${BUILD.engineVersion}`, `By ${BUILD.studio}`]);
+  }, 'EXTRAS');
+}
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'ONLINE'); if (typeof LocalRealm !== 'undefined' && LocalRealm.available) o.push('ACCOUNT'); o.push('SETTINGS', 'CREDITS'); return o; }
+  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'ONLINE', 'ACCOUNT', 'EXTRAS', 'SETTINGS', 'CREDITS'); return o; }
   update() {
     this.t++;
     const o = this.opts();
@@ -95,6 +103,7 @@ class Title {
       if (c === 'STORY TRAILERS') push(new StoryLibrary());
       if (c === 'ONLINE') { push(new MultiplayerScene()); return; }
       if (c === 'ACCOUNT') { push(new AccountScene()); return; }
+      if (c === 'EXTRAS') { titleExtras(); return; }
       if (c === 'SETTINGS') push(new SettingsScene());
       if (c === 'CREDITS') push(new Credits());
     }
@@ -160,11 +169,13 @@ class Title {
     frame(4, 5, 152, 43);
     textC('LOST KINGDOM OF', 80, 8, 1); textC('SHADOWBANE', 80, 17, 2); textC('CHRONICLES', 80, 26, 3);
     textC(BUILD.subtitle, 80, 37, 2);
-    const o = this.opts(), h = o.length * 9 + 6;
+    const o = this.opts(), rows = Math.min(o.length, 7), h = rows * 9 + 6;
+    this.top = this.top || 0; if (this.i < this.top) this.top = this.i; if (this.i >= this.top + rows) this.top = this.i - rows + 1; this.top = Math.max(0, Math.min(this.top, o.length - rows));
     frame(5, 60, 83, h);
-    o.forEach((s, i) => {
-      const y = 63 + i * 9;
-      if (i === this.i) { fill(8, y - 1, 77, 9, 3); text('>', 10, y, 'gold'); }
+    if (this.top > 0) textC('^', 46, 56, 'gold'); if (this.top + rows < o.length) textC('v', 46, 60 + h - 4, 'gold');
+    o.slice(this.top, this.top + rows).forEach((s, j) => {
+      const i = this.top + j, y = 63 + j * 9;
+      if (i === this.i) { fill(8, y - 1, 77, 9, typeof uiDark === 'function' && uiDark() ? 1 : 3); text('>', 10, y, 'gold'); }
       text(s.slice(0, 11), 19, y, i === this.i ? 'gold' : 2);
     });
     textC(`AELMOOR  ${BUILD.version}`, 80, 134, 1);
@@ -1463,7 +1474,7 @@ function buildAtlas() {
   return ATLAS;
 }
 class WorldMap {
-  // zoom 0: all of DUNIA (160 px), zoom 1: detail map (320 px, scrolls), zoom 2: the zone's own tiles
+  // zoom 0: all of VALENDRIA (160 px), zoom 1: detail map (320 px, scrolls), zoom 2: the zone's own tiles
   constructor() {
     this.opaque = true; this.zoom = 0; this.legend = false;
     const z = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map] || ZONE_BY_ID.elderwood;
@@ -1591,7 +1602,7 @@ class WorldMap {
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
-    fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'DUNIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
+    fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'VALENDRIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
       const L = [[0, 'red', 'TOWN'], [1, 'blue', 'WAYPOINT'], [2, 0, 'VISITED'], [3, 1, 'UNKNOWN'], [4, 'gold', 'STORY'], [5, 'red', 'YOU']];

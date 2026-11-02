@@ -204,7 +204,7 @@ const NAMED_ITEMS = [
   { id: 'n_spirekey', name: 'KEY OF THE SPIRE', kind: 'wondrous', base: 'pendant', rarity: 6, affixes: [['gf', 30], ['mf', 30]], lore: 'Opens doors that are not there.', src: { tower: 50 } },
   { id: 'n_hundred', name: 'CROWN OF A HUNDRED', kind: 'wondrous', base: 'kabuto', rarity: 8, affixes: [['hp', 250], ['resist', 3], ['acb', 3]], lore: 'For those who stood on the hundredth floor.', src: { tower: 100 } },
   // world bosses (shared pool)
-  { id: 'n_wanderer', name: "WANDERER'S BOOTS", kind: 'wondrous', base: 'riding_boots', rarity: 5, affixes: [['haste', 12], ['dodge', 5]], lore: 'They know every road in Dunia.', src: { cat: 'world' } },
+  { id: 'n_wanderer', name: "WANDERER'S BOOTS", kind: 'wondrous', base: 'riding_boots', rarity: 5, affixes: [['haste', 12], ['dodge', 5]], lore: 'They know every road in Valendria.', src: { cat: 'world' } },
   { id: 'n_bloodfang', name: 'BLOODFANG', kind: 'weapon', base: 'kukri', rarity: 5, affixes: [['leech', 5], ['crit', 6]], lore: 'Bitten into a hundred hides.', src: { cat: 'world' } },
   { id: 'n_oathkeeper', name: 'OATHKEEPER', kind: 'weapon', base: 'longsword', rarity: 6, affixes: [['hit', 2], ['resist', 2], ['heal', 2]], lore: 'It will not be drawn for a lie.', src: { cat: 'world' } },
   { id: 'n_gilded', name: 'GILDED GAUNTLETS', kind: 'wondrous', base: 'mitten_gauntlets', rarity: 5, affixes: [['gf', 40], ['acb', 1]], lore: 'Every punch pays.', src: { cat: 'world' } },

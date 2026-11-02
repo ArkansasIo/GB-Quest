@@ -23,7 +23,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 ## 2.1.0 — B2026.11.01
 
 ### Added
-- **Atlas of Dunia** (`dist/atlas.html`): an interactive SVG map over the painted world map, with:
+- **Atlas of Valendria** (`dist/atlas.html`): an interactive SVG map over the painted world map, with:
   - 90 zones, 101 roads and 42 sea lanes
   - dungeon, raid, boss and waypoint icons
   - search, layer toggles and a level-band filter
@@ -56,7 +56,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - 90 zones, 400 creatures, 350 bosses, 22 dungeons, 9 raids, 6 trials, a 100-floor tower, 5 expansions, 9 difficulty tiers
 - 12 acts and 50 chapters, side quests, professions, auction house, guilds, reputation, arena, achievements
 - 1-, 4- and 12-player modes, live presence and chat, built-in host server, realm leaderboard
-- GBC colour, 103 SFX and 24 tracks, Game Boy pixel tiles, the DUNIA world map, the NES-style art pack
+- GBC colour, 103 SFX and 24 tracks, Game Boy pixel tiles, the VALENDRIA world map, the NES-style art pack
 
 ## 1.0.0
 - The original single-file Game Boy RPG (kept in `legacy/`).

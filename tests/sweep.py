@@ -229,7 +229,7 @@ async () => {
   });
   step('armoury', () => {
     fresh('arcanist', 'hearthkin', 'soldier', 20);
-    if (Object.keys(WEAPON_CLASSES).length !== 12 || ARMOR_CATEGORIES.length !== 7 || ACLASS_ORDER.length !== 4) return 'counts';
+    if (Object.keys(WEAPON_CLASSES).length !== 14 || ['scythe', 'grimoire', 'wand'].some(f => Object.values(WEAPONS).filter(w => w.fam === f).length < 4) || ARMOR_CATEGORIES.length !== 7 || ACLASS_ORDER.length !== 4) return 'counts';
     for (const k in WEAPONS) if (!WEAPON_CLASSES[WEAPONS[k].fam]) return 'weapon without subclass ' + k;
     const plate = makeItem({ kind: 'wondrous', base: 'gauntlets', lvl: 50, aclass: 'plate' }); if (!canEquip(G, plate)) return 'arcanist wore plate';
     const robe = makeItem({ kind: 'armor', base: 'silkrobe', lvl: 50 }); if (canEquip(G, robe)) return 'robe: ' + canEquip(G, robe);

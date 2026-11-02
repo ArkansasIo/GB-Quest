@@ -42,7 +42,7 @@
   window.GBQ = { openAtlas, closeAtlas, get G() { return G; }, newGame(o) { G = newGameState(o); return G; }, scenes, push, reset, startBattle, rollEncounter, enterWorld, Battle, makeMonster, makeAdventurer, buildParty, bDown, bUp, tick, render, S, ZONES, BESTIARY, BOSSES, buildZoneCached, newGameState, saveGame, loadSlot, travelTo, enterInstance, DUNGEONS, RAIDS, gainXP, derive };
 })();
 
-// ---- Atlas of Dunia: the full interactive map, embedded in the game (button, or M key) ----
+// ---- Atlas of Valendria: the full interactive map, embedded in the game (button, or M key) ----
 let atlasLoadPromise = null, atlasOpenPending = false, atlasCleanup = null;
 function toggleAtlas() {
   if (document.getElementById('atlasOverlay')) { closeAtlas(); return; }
@@ -67,7 +67,7 @@ function openAtlas() {
   const html = ATLAS_HTML.replace('<script>\nconst DATA', '<script>window.ATLAS_STATE=' + JSON.stringify(st) + ';<\/script><script>\nconst DATA');
   const ov = document.createElement('div'); ov.id = 'atlasOverlay'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'World Atlas');
   ov.style.cssText = 'position:fixed;z-index:100;background:#16120d;box-shadow:0 0 0 2px #0b0c0b;overflow:hidden';
-  const fr = document.createElement('iframe'); fr.title = 'Atlas of Dunia'; fr.srcdoc = html;
+  const fr = document.createElement('iframe'); fr.title = 'Atlas of Valendria'; fr.srcdoc = html;
   fr.style.cssText = 'border:0;width:100%;height:100%;display:block';
   const big = document.createElement('button'); big.type = 'button'; big.textContent = '⤢'; big.title = 'Fit to game screen / whole window'; big.setAttribute('aria-label', big.title);
   big.style.cssText = 'position:absolute;right:6px;bottom:6px;z-index:2;width:30px;height:30px;background:#0e0b07e6;color:#efe2c2;border:1px solid #5a4a33;border-radius:3px;font-size:16px;cursor:pointer';

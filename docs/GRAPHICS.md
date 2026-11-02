@@ -59,7 +59,7 @@ Each family has `<family>_<page>.png` pages and `<family>.json` (`{ name: [page,
 | `tools/gen_assets.py` | biome tilesets, monster variants, class looks, pixel icons |
 | `tools/gen_gbtiles.py` | 16×16 Game Boy terrain for 9 biomes (auto-tiled roads and shores, animated water), buildings, 6 dungeon themes, objects, walkers for 12 classes and 8 NPC looks |
 | `tools/make_font.py` | 6×9 bitmap font |
-| `tools/make_worldmap.py` | DUNIA map at 320 px and 160 px, 32 colours |
+| `tools/make_worldmap.py` | VALENDRIA map at 320 px and 160 px, 32 colours |
 | `tools/slice_sheets.py` | NES-style monster, equipment and portrait sheets, plus `assets/nes_index.json` |
 | `tools/gen_hd64.py` | the 64-bit atlases above |
 | `tools/build_atlas.py` | `dist/atlas.html` |

@@ -4,7 +4,7 @@
 // 7 ARMOUR CATEGORIES (piece slots): HELM, CLOAK, CHEST, GLOVES, BELT, LEGGINGS, BOOTS. Every piece
 //   in those slots has a weight class. Each piece adds class implicit stats (scaling with gear tier),
 //   and wearing 4 / 7 pieces of one class grants a set bonus. AC from sets is capped at +2.
-// 12 WEAPON SUBCLASSES: SWORD AXE MACE HAMMER DAGGER POLEARM STAFF WAND BOW CROSSBOW THROWN FIST,
+// 14 WEAPON SUBCLASSES: SWORD AXE MACE HAMMER DAGGER POLEARM STAFF WAND BOW CROSSBOW THROWN FIST SCYTHE GRIMOIRE,
 //   each with a signature implicit (stacks with the tier implicit).
 
 const ARMOR_CLASSES = {
@@ -37,6 +37,23 @@ Object.assign(WEAPONS, {
   tigerclaw: { name: 'TIGER CLAWS', dmg: '1d6', type: 'slashing', cat: 'martial', props: 'fl', fam: 'fist', icon: 'ne_glove_4', cost: 25 },
   dragonfist: { name: 'DRAGON GAUNTLET', dmg: '1d8', type: 'bludgeoning', cat: 'martial', props: 'f', fam: 'fist', icon: 'ne_glove_5', cost: 120 },
 });
+// scythes, grimoires and more wands
+Object.assign(WEAPONS, {
+  gravescythe: { name: 'GRAVE SCYTHE', dmg: '1d8', type: 'slashing', cat: 'simple', props: '2', fam: 'scythe', icon: 'wi_scythe_0', cost: 20 },
+  reaperscythe: { name: "REAPER'S SCYTHE", dmg: '1d10', type: 'slashing', cat: 'martial', props: 'h2', fam: 'scythe', icon: 'wi_scythe_1', cost: 60 },
+  harvestmoon: { name: 'HARVEST MOON', dmg: '2d6', type: 'slashing', cat: 'martial', props: 'h2', fam: 'scythe', icon: 'wi_scythe_2', cost: 240 },
+  soulreaper: { name: 'SOUL REAPER', dmg: '2d6', type: 'necrotic', cat: 'martial', props: 'h2', fam: 'scythe', icon: 'wi_scythe_3', cost: 900 },
+  primergrimoire: { name: 'PRIMER GRIMOIRE', dmg: '1d4', type: 'force', cat: 'simple', props: 'l', fam: 'grimoire', icon: 'wi_grimoire_0', cost: 15 },
+  ashengrimoire: { name: 'GRIMOIRE OF ASHES', dmg: '1d6', type: 'fire', cat: 'simple', props: 'l', fam: 'grimoire', icon: 'wi_grimoire_1', cost: 80 },
+  bloodgrimoire: { name: 'BLOOD GRIMOIRE', dmg: '1d6', type: 'necrotic', cat: 'simple', props: 'l', fam: 'grimoire', icon: 'wi_grimoire_2', cost: 220 },
+  stargrimoire: { name: 'STAR GRIMOIRE', dmg: '1d8', type: 'radiant', cat: 'simple', props: 'l', fam: 'grimoire', icon: 'wi_grimoire_3', cost: 800 },
+  voidcodex: { name: 'VOID CODEX', dmg: '1d8', type: 'psychic', cat: 'simple', props: 'l', fam: 'grimoire', icon: 'wi_grimoire_4', cost: 1600 },
+  emberwand: { name: 'EMBER WAND', dmg: '1d6', type: 'fire', cat: 'simple', props: 'lr', fam: 'wand', icon: 'wi_wand_0', cost: 40 },
+  frostwand: { name: 'FROST WAND', dmg: '1d6', type: 'cold', cat: 'simple', props: 'lr', fam: 'wand', icon: 'wi_wand_1', cost: 40 },
+  bonewand: { name: 'BONE WAND', dmg: '1d6', type: 'necrotic', cat: 'simple', props: 'lr', fam: 'wand', icon: 'wi_wand_2', cost: 60 },
+  stormwand: { name: 'STORM WAND', dmg: '1d8', type: 'lightning', cat: 'simple', props: 'lr', fam: 'wand', icon: 'wi_wand_3', cost: 200 },
+  dawnwand: { name: 'DAWN WAND', dmg: '1d8', type: 'radiant', cat: 'simple', props: 'lr', fam: 'wand', icon: 'wi_wand_4', cost: 600 },
+});
 for (const k in WEAPONS) { const w = WEAPONS[k]; if (/HAMMER|MAUL/.test(w.name) && (w.fam === 'mace' || !w.fam)) w.fam = 'hammer'; if (!w.fam) w.fam = w.props.includes('r') ? 'bow' : w.type === 'piercing' ? 'polearm' : w.type === 'slashing' ? 'sword' : 'mace'; }
 const WEAPON_CLASSES = {
   sword: { name: 'SWORD', stats: t => [['crit', 2 + Math.floor(t / 6)], ['hit', t >= 12 ? 1 : 0]], desc: 'Balanced: crit chance and accuracy.' },
@@ -50,6 +67,8 @@ const WEAPON_CLASSES = {
   bow: { name: 'BOW', stats: t => [['hit', 1 + (t >= 10 ? 1 : 0)], ['crit', 2 + Math.floor(t / 8)]], desc: 'Ranged: accuracy and crit chance.' },
   crossbow: { name: 'CROSSBOW', stats: t => [['critdmg', 18 + t * 3]], desc: 'Ranged: heavy critical damage.' },
   thrown: { name: 'THROWN', stats: t => [['haste', 4 + Math.floor(t / 4)], ['crit', 2]], desc: 'Quick: haste and crit chance.' },
+  scythe: { name: 'SCYTHE', stats: t => [['critdmg', 12 + t * 2], ['necrotic', 6 + t * 2], ['leech', Math.min(8, 1 + Math.floor(t / 4))]], desc: 'Reaping: crit damage, shadow damage and lifesteal.' },
+  grimoire: { name: 'GRIMOIRE', stats: t => [['dmg', 3 + t], ['fire', 5 + t * 2], ['cold', 5 + t * 2], ['lightning', 5 + t * 2], ['necrotic', 5 + t * 2], ['radiant', 5 + t * 2]], desc: 'Spellbook: damage and every elemental school.' },
   fist: { name: 'FIST', stats: t => [['haste', 6 + Math.floor(t / 3)], ['dodge', 2 + Math.floor(t / 6)]], desc: 'Martial: haste and dodge.' },
 };
 const ARMOR_CLASS_STATS = {

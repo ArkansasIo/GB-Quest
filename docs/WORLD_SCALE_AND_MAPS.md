@@ -122,4 +122,4 @@ Expansions 6-13 are worlds of their own. Each has a painted map (`tools/gen_worl
 
 - **Reaching them:** use the harbormaster (portal), MENU > EXPANSION MAPS, or the overland road from expansion 5.
 - **World map:** shows the world of the selected zone (`worldOf(z)`), with only that world's pins and roads.
-- **Atlas:** `dist/atlas.html` still draws DUNIA only. The new worlds are listed in `atlas.json` under `expansions[].zones`.
+- **Atlas:** `dist/atlas.html` still draws VALENDRIA only. The new worlds are listed in `atlas.json` under `expansions[].zones`.

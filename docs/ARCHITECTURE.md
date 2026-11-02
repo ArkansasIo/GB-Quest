@@ -27,7 +27,7 @@ Repository boundaries: `client/` owns the browser shell and boot entry, `src/` o
 | â€” | `admin/controlplane.html` | restricted account and realm operations UI |
 | — | `client/shell.html` | handheld device chrome, touch controls, chat panel, build strip |
 | — | `client/fullscreen.html` | full-screen window overrides and toolbar |
-| — | `atlas/atlas_template.html` | the interactive Atlas of Dunia (SVG) |
+| — | `atlas/atlas_template.html` | the interactive Atlas of Valendria (SVG) |
 
 Load order matters because modules share one global scope. Data comes first, then generators, then the engine, then the 64-bit layers (which only hook into the engine at call time), then rules and scenes, and `main` last.
 

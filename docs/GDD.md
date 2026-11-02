@@ -22,7 +22,7 @@ A whole MMORPG on a 160×144 screen: the d20 combat of a tabletop campaign, the 
 ### Pillars
 
 1. **Real rules, tiny screen.** Every swing is a d20 roll against armour class. Saves, conditions, concentration, death saves and spell slots all behave the way a tabletop player expects.
-2. **A world worth walking.** The map is a hand-painted continent, Dunia, connected by roads and sea lanes. Each zone has its own biome, weather, music, bosses and quests.
+2. **A world worth walking.** The map is a hand-painted continent, Valendria, connected by roads and sea lanes. Each zone has its own biome, weather, music, bosses and quests.
 3. **Play alone or together.** AI companions fill a solo party. The same page doubles as a server, so friends who open it join your realm and take their own turns.
 4. **Endless climb.** Class levels run 1–20. Ascension levels run 21–720, alongside 9 difficulty tiers, a 100-floor tower and 5 expansions.
 5. **Authentic handheld feel.** The game uses a 4-colour pipeline, a 4-channel chip synth and d-pad navigation, with modern options layered on top: GBC colour, a 64-bit video mode and 64-bit audio.
@@ -78,7 +78,7 @@ The battle engine is host-authoritative. In multiplayer, the host runs every rol
 
 ## 5. World
 
-- **Dunia**, the continent of Aelmoor, has 3 landmasses: North Karra, South Karra and the West Isles. There are 28 regions (13 base, 15 expansion) split into **90 zones** across **9 biomes** and 36 sub-biomes. See [WORLD_ATLAS](WORLD_ATLAS.md).
+- **Valendria**, the continent of Aelmoor, has 3 landmasses: North Karra, South Karra and the West Isles. There are 28 regions (13 base, 15 expansion) split into **90 zones** across **9 biomes** and 36 sub-biomes. See [WORLD_ATLAS](WORLD_ATLAS.md).
 - **Ardenhold** is the capital hub. It holds the vendor, inn, trainer, auction house, mail, bank, guild hall, honor quartermaster, LFG board, portal, stable and arena.
 - **Travel:** walk zone edges along carved roads, take ships between continents, use waypoint shrines for fast travel, or use the hearthstone.
 - **The world map** (SELECT) has three zoom levels: a continent overview, a scrolling detail map, and a zone tile view. Roads appear as dotted lines and sea lanes as blue dashes. The **Atlas** (M) opens the full interactive map with search, layers, details and a route planner.

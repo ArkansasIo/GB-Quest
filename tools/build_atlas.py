@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dist/atlas.html: the interactive Atlas of Dunia (roads, sea lanes, zones, bosses, quests).
+"""Builds dist/atlas.html: the interactive Atlas of Valendria (roads, sea lanes, zones, bosses, quests).
 Exports live game data with tools/export_atlas.cjs, embeds src_sheet/world_map.png as JPEG."""
 import base64, io, json, os, subprocess, tempfile
 from PIL import Image

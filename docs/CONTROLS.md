@@ -13,7 +13,7 @@
 
 | Key | Action |
 |---|---|
-| M | open or close the **Atlas of Dunia** |
+| M | open or close the **Atlas of Valendria** |
 | F | toggle browser full screen |
 | C | show or hide the in-game chat overlay |
 | F3 or ` | profiler overlay (64-bit video mode) |

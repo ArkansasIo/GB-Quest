@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Paint a world map for each new expansion (6-13), in the style of the DUNIA map:
+"""Paint a world map for each new expansion (6-13), in the style of the VALENDRIA map:
 dark teal ocean with wave flecks, shallows, inked coastlines, biome-coloured lands with texture,
 mountains, forests, rivers, a parchment border, a title cartouche and a compass rose.
 

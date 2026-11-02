@@ -19,7 +19,7 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 - The game defaults to a full-window layout. Click **FULL SCREEN** or press **F** to enter the browser's native full-screen mode.
 - **Full-screen window:** open `dist/gbquest-fullscreen.html`. The screen fills the window, with a full-screen toggle, 1:1 pixel scaling, an overlay pad and overlay chat.
 - **Full-screen mode:** open **START → SETTINGS → FULL SCREEN** in either browser build to expand the game to the browser window; the setting is saved between sessions.
-- **World atlas:** open `dist/atlas.html` for the interactive map of Dunia, or press **M** in game.
+- **World atlas:** open `dist/atlas.html` for the interactive map of Valendria, or press **M** in game.
 - **Dev build:** run `python3 -m http.server` in this folder, then open `http://localhost:8000`.
   The dev build loads `src/*.js` and `assets/*.png` directly.
 
@@ -39,7 +39,7 @@ Desktop packages are currently unsigned. Windows may show a SmartScreen prompt, 
 | START | Enter | Main menu |
 | SELECT | Shift / Tab | World map; toggles auto-battle in combat |
 | Number row | 1–9 / 0 | Use the matching combat hotbar action |
-| — | M | Atlas of Dunia (F full screen, C chat, F3 profiler) |
+| — | M | Atlas of Valendria (F full screen, C chat, F3 profiler) |
 
 On phones, use the on-screen buttons. The full list of controls is in [docs/CONTROLS.md](docs/CONTROLS.md).
 
@@ -55,7 +55,7 @@ Choose **START → SETTINGS → COMBAT MODE → REAL-TIME** to enable action com
 | Magic | 59 spells, cantrips to level 9, across 8 renamed schools: Aegis, Calling, Omen, Thrall, Storm, Veil, Grave, Flux. Full, half and pact casters, plus mystic arcana |
 | Combat | Initiative, multiattack, 20 conditions, 30 buffs and debuffs, 13 damage types, resistances, threat and tanking, legendary actions and resistances, recharge abilities, boss phases (enrage, summon, shield, curse and more), AI companions |
 | Gear | 17 weapons, 11 armours, wondrous items. Six rarities (poor to legendary) with +1/+2/+3 bonuses and Diablo-style substat affixes |
-| World | The continent of Dunia: 28 regions split into 90 zones across 9 biomes and 36 sub-biomes, with weather, waypoints and a capital city hub. The world map shows roads and sea lanes. The interactive Atlas adds search, layers, zone details and a route planner. |
+| World | The continent of Valendria: 28 regions split into 90 zones across 9 biomes and 36 sub-biomes, with weather, waypoints and a capital city hub. The world map shows roads and sea lanes. The interactive Atlas adds search, layers, zone details and a route planner. |
 | Story | Written prologue, 12 acts, 50 chapters, and 6 generated side quests per zone |
 | Bestiary | 400 creatures (14 types, 55 subtypes, 7 elemental variants, elites) |
 | Bosses | 350: 12 arc bosses, 177 world bosses, 66 dungeon, 45 raid, 30 trial and 20 tower bosses |
@@ -78,7 +78,7 @@ tools/gen_gbtiles.py       crisp 16x16 Game Boy pixel art: terrain for 9 biomes 
                            and shores, animated water), buildings, 6 dungeon themes, map objects,
                            and walking sprites for 12 classes + 8 NPC looks
 tools/make_font.py         6x9 bitmap font
-tools/make_worldmap.py     pixelates src_sheet/world_map.png (DUNIA) into the world map art
+tools/make_worldmap.py     pixelates src_sheet/world_map.png (VALENDRIA) into the world map art
 tools/slice_sheets.py      slices the NES-style sheets (monsters, equipment, class/species
                            portraits) into ~1,100 sprites + assets/nes_index.json
 tools/build.py             builds index.html, dist/gbquest.html and assets/index.json
@@ -98,7 +98,7 @@ client/shell.html          desktop/mobile client shell; client/fullscreen.html f
 backend/server.cjs         MMORPG realm/account/multiplayer backend
 store/catalog.cjs          server-owned store catalog and checkout contract
 admin/                     restricted admin control plane (`/admin`)
-atlas/atlas_template.html  interactive Atlas of Dunia (built into dist/atlas.html)
+atlas/atlas_template.html  interactive Atlas of Valendria (built into dist/atlas.html)
 tools/export_atlas.cjs      exports zones, roads, bosses and quests for the atlas
 tools/build_atlas.py       builds dist/atlas.html
 tools/gen_hd64.py          64-bit sprite atlases -> assets_hd64/
@@ -111,7 +111,7 @@ Rebuild after any change:
 ```
 python3 tools/extract_assets.py && python3 tools/gen_assets.py   # only if the sheet changes
 python3 tools/gen_gbtiles.py                                     # Game Boy pixel tiles and sprites
-python3 tools/make_worldmap.py && python3 tools/slice_sheets.py # DUNIA map + NES art sheets
+python3 tools/make_worldmap.py && python3 tools/slice_sheets.py # VALENDRIA map + NES art sheets
 python3 tools/build.py        # also builds the atlas and the full-screen build
 node tools/gen_docs.cjs        # regenerate reference docs
 python3 tools/gen_hd64.py     # regenerate 64-bit atlases

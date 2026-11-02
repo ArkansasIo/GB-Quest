@@ -59,7 +59,7 @@ There are 36 arts: 18 physical and 18 casting, unlocking from level 1 to 100. Ea
 
 **7 armour categories** (piece slots): HELM, CLOAK, CHEST, GLOVES, BELT, LEGGINGS and BOOTS. Chest armour takes its class from its 5e type: light is leather, medium is mail, heavy is plate. There are also four new cloth robes. The other six categories roll a class when they drop, with a 60% chance of the heaviest class you can wear (smart loot). Items from older saves count as cloth.
 
-**12 weapon subclasses**, each with a signature implicit that stacks with the tier implicit:
+**14 weapon subclasses**, each with a signature implicit that stacks with the tier implicit:
 
 | Subclass | Implicit |
 |---|---|
@@ -74,4 +74,8 @@ There are 36 arts: 18 physical and 18 casting, unlocking from level 1 to 100. Ea
 | BOW | accuracy, crit chance |
 | CROSSBOW | heavy crit damage |
 | THROWN | haste, crit chance |
-| FIST | haste, dodge (4 new fist weapons) |
+| FIST | haste, dodge (4 fist weapons) |
+| SCYTHE | crit damage, shadow damage, lifesteal (4 scythes, two-handed; the Grave Scythe is a simple weapon, so casters can use it) |
+| GRIMOIRE | damage and every elemental school (5 spellbooks: Primer, Ashes, Blood, Star, Void Codex) |
+
+There are also 5 elemental wands: Ember, Frost, Bone, Storm and Dawn. The scythe, grimoire and wand icons are `assets/wi_*.png`, drawn by `tools/gen_weapon_icons.py`.

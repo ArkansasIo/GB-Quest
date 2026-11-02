@@ -580,7 +580,7 @@ const ZONES = [];
 const ZONE_BY_ID = Object.fromEntries(ZONES.map(z => [z.id, z]));
 const regionLastZone = rid => ZONES.filter(z => z.region === rid).pop();
 
-// ================================================================ the world map of DUNIA: where each region sits on src_sheet/world_map.png
+// ================================================================ the world map of VALENDRIA: where each region sits on src_sheet/world_map.png
 // [x, y] as fractions of the map image, plus the place name painted there
 const REGION_PINS = {
   ardenhold: [0.71, 0.44, 'IKLISTZEFON'], elderwood: [0.70, 0.20, 'PLAINS OF STRIFE'], hollowmere: [0.57, 0.43, 'WETLANDS'],
@@ -608,8 +608,8 @@ function zonePin(z) {
   const off = sibs.length > 3 && !REGIONS.find(r => r.id === z.region).exp ? [[0, 0], [0.028, 0], [0, 0.04], [0.028, 0.04]][i] : [i * 0.026, 0];
   return [p[0] + off[0] - 0.012, p[1] + off[1] - 0.016];
 }
-// which painted map a zone lives on: 0 = DUNIA (base game + expansions 1-5), else the expansion number
+// which painted map a zone lives on: 0 = VALENDRIA (base game + expansions 1-5), else the expansion number
 const worldOf = z => { const x = z && z.exp ? EXPANSIONS.find(e => e.n === z.exp) : null; return x && x.world ? x.n : 0; };
-const worldName = n => n ? EXPANSIONS.find(e => e.n === n).name : 'DUNIA';
+const worldName = n => n ? EXPANSIONS.find(e => e.n === n).name : 'VALENDRIA';
 const worldImg = (n, small) => n ? `gm_x${n}${small ? '_s' : ''}` : (small ? 'gm_dunia_s' : 'gm_dunia');
 function continentOf(z) { if (worldOf(z)) return worldName(worldOf(z)); const p = REGION_PINS[z.region] || [0.5, 0.5]; return p[0] < 0.38 ? 'THE WEST ISLES' : p[1] < 0.5 ? 'NORTH KARRA' : 'SOUTH KARRA'; }
