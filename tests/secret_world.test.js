@@ -25,6 +25,8 @@ test('catalog contains exactly 100 unique secrets spread across the world zones'
   for (const e of entries) {
     assert.ok(zoneIds.includes(e.zone), 'unknown zone: '+e.zone);
     assert.ok(e.name && e.hint && e.minLvl >= 1);
+    assert.ok(e.reward && e.reward.gold > 0, 'every discovery needs a reward: '+e.id);
+    if (e.type === 'boss') assert.ok(e.relic, 'secret bosses need a unique relic name');
   }
 });
 test('multiple secrets in one zone receive distinct deterministic coordinates', () => {
