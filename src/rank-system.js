@@ -35,3 +35,4 @@ const RankSystem = (() => {
   }
   return Object.freeze({ ladder: Object.freeze(ladder.map(([id, min]) => Object.freeze({ id, min }))), score, forScore, forCharacter });
 })();
+globalThis.GBQRankSystem = RankSystem;
