@@ -4,6 +4,7 @@
 #include <charconv>
 #include <string>
 #include <system_error>
+#include <utility>
 #include <limits>
 #include <stdexcept>
 
@@ -97,7 +98,9 @@ DiceExpression parse_dice_expression(std::string_view expression) {
     if (modifier_text.size() < 2) {
       throw std::invalid_argument("Dice modifier requires digits");
     }
-    modifier = parse_integer(modifier_text, "modifier");
+    modifier = modifier_text.front() == '+'
+        ? parse_integer(modifier_text.substr(1), "modifier")
+        : parse_integer(modifier_text, "modifier");
   }
 
   if (count < 1 || count > 100 || sides < 2 || sides > 1000) {
@@ -147,7 +150,7 @@ DamageResult resolve_damage(const DiceResult& dice, const DamageInput& input) {
     case DamageDisposition::normal:
       break;
     case DamageDisposition::resistance:
-      amount = amount >= 0 ? amount / 2 : amount / 2;
+      amount /= 2;
       break;
     case DamageDisposition::vulnerability:
       amount *= 2;
