@@ -1,21 +1,72 @@
+import speciesCatalog from "../data/species.json" with { type: "json" };
+import classCatalog from "../data/classes.json" with { type: "json" };
+import skillCatalog from "../data/skills.json" with { type: "json" };
 import { abilityModifier, proficiencyBonus } from "./d20.js";
+import { applyBackground, BACKGROUND_CATALOG } from "../systems/backgrounds.js";
 export const ABILITY_KEYS = Object.freeze(["str","dex","con","int","wis","cha"]);
-export const SKILLS = Object.freeze({
-  acrobatics:"dex", animalHandling:"wis", arcana:"int", athletics:"str", deception:"cha",
-  history:"int", insight:"wis", intimidation:"cha", investigation:"int", medicine:"wis",
-  nature:"int", perception:"wis", performance:"cha", persuasion:"cha", religion:"int",
-  sleightOfHand:"dex", stealth:"dex", survival:"wis"
-});
-export function createCharacter({ id, name, species, classId, background="wanderer", abilities, level=1 }) {
+export const STANDARD_ARRAY = Object.freeze([15,14,13,12,10,8]);
+export const POINT_BUY_COSTS = Object.freeze({8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9});
+export const SKILLS = Object.freeze(Object.fromEntries(skillCatalog.skills.map(skill => [skill.id, skill.ability])));
+const speciesById = new Map(speciesCatalog.species.map(entry => [entry.id, entry]));
+const classesById = new Map(classCatalog.classes.map(entry => [entry.id, entry]));
+
+function normalizeAbilityScores(abilities) {
+  const scores = Object.fromEntries(ABILITY_KEYS.map(key => [key, Number(abilities?.[key] ?? 10)]));
+  if (ABILITY_KEYS.some(key => !Number.isInteger(scores[key]) || scores[key] < 1 || scores[key] > 30)) {
+    throw new RangeError("Ability scores must be integers from 1 to 30");
+  }
+  return scores;
+}
+
+export function assignStandardArray(assignment) {
+  if (!assignment || typeof assignment !== "object" || ABILITY_KEYS.some(key => !Object.hasOwn(assignment, key))) {
+    throw new TypeError("Standard-array assignment must specify all six abilities");
+  }
+  const scores = normalizeAbilityScores(assignment);
+  if (STANDARD_ARRAY.some(score => !Object.values(scores).includes(score)) ||
+      new Set(Object.values(scores)).size !== STANDARD_ARRAY.length) {
+    throw new RangeError("Standard-array scores must use 15, 14, 13, 12, 10 and 8 exactly once");
+  }
+  return scores;
+}
+
+export function pointBuyCost(abilities) {
+  const scores = normalizeAbilityScores(abilities);
+  if (ABILITY_KEYS.some(key => scores[key] < 8 || scores[key] > 15)) {
+    throw new RangeError("Point-buy ability scores must be from 8 to 15");
+  }
+  return ABILITY_KEYS.reduce((total, key) => total + POINT_BUY_COSTS[scores[key]], 0);
+}
+
+export function createCharacter({
+  id, name, species, classId, background="wanderer", abilities, abilityMethod="manual", level=1
+}) {
   if (!id || !name || !species || !classId) throw new TypeError("Character identity, species and class are required");
   if (!Number.isInteger(level) || level < 1 || level > 20) throw new RangeError("D&D level must be 1-20");
-  const scores=Object.fromEntries(ABILITY_KEYS.map(k=>[k,Number(abilities?.[k]??10)]));
-  if(ABILITY_KEYS.some(k=>!Number.isInteger(scores[k])||scores[k]<1||scores[k]>30))throw new RangeError("Ability scores must be integers from 1 to 30");
-  return {id,name,species,classId,background,level,xp:0,abilities:scores,proficiencyBonus:proficiencyBonus(level),
+  const speciesDefinition = speciesById.get(species);
+  const classDefinition = classesById.get(classId);
+  const backgroundDefinition = BACKGROUND_CATALOG.get(background);
+  if (!speciesDefinition) throw new RangeError(`Unknown species: ${species}`);
+  if (!classDefinition) throw new RangeError(`Unknown class: ${classId}`);
+  if (!backgroundDefinition) throw new RangeError(`Unknown background: ${background}`);
+  let scores;
+  if (abilityMethod === "manual") scores = normalizeAbilityScores(abilities);
+  else if (abilityMethod === "standard-array") scores = assignStandardArray(abilities);
+  else if (abilityMethod === "point-buy") {
+    scores = normalizeAbilityScores(abilities);
+    if (pointBuyCost(scores) > 27) throw new RangeError("Point-buy assignment cannot exceed 27 points");
+  } else throw new RangeError(`Unknown ability assignment method: ${abilityMethod}`);
+  const character = {id,name,species,classId,background,level,xp:0,abilities:scores,
+    speciesName:speciesDefinition.name,speciesSizeOptions:[...speciesDefinition.size],speed:speciesDefinition.speed,
+    className:classDefinition.name,hitDie:classDefinition.hitDie,primaryAbilities:[...classDefinition.primaryAbilities],
+    abilityMethod,proficiencyBonus:proficiencyBonus(level),
     hp:null,maxHp:null,hitDice:[],deathSaves:{successes:0,failures:0},inspiration:false,
     proficiencies:{skills:[],saves:[],weapons:[],armor:[],tools:[]},expertise:[],features:[],resources:{},conditions:[],spellState:null};
+  const backgroundResult = applyBackground(character, background);
+  if (!backgroundResult.ok) throw new Error(`Could not apply background ${background}: ${backgroundResult.reason}`);
+  return character;
 }
-export function deriveCharacterStats(character,classDefinition,conScore=character.abilities.con){
+export function deriveCharacterStats(character,classDefinition=classesById.get(character?.classId),conScore=character.abilities.con){
   if(!classDefinition||![6,8,10,12].includes(classDefinition.hitDie))throw new TypeError("A valid class hit die is required");
   const con=abilityModifier(conScore),level=character.level,die=classDefinition.hitDie;
   const maxHp=Math.max(1,die+con+Math.max(0,level-1)*Math.max(1,Math.floor(die/2)+1+con));

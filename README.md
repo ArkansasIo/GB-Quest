@@ -1,9 +1,9 @@
-# GB Quest
+# Shadowbane Chronicles
 
 **A Game Boy–style MMORPG with d20 rules — by ArkansasIo**
 Version 2.1.1 (build B2026.11.01) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
 
-A 160×144 handheld RPG running in the browser. You can play in DMG green, Game Boy Color, Pocket or full colour palettes.
+A 160×144 handheld RPG running in the browser. **Shadowbane Chronicles** is the base game; its expansion lineup is **Eternal Odyssey**, **Dragonfire Realm**, **Emberfell Saga**, **Wizard’s Dominion**, **Plagueborn Legacy**, **Crystalized Realms**, **Frostsong Dynasty**, **Arcane Ascension**, **Bloodmoon Conspiracy**, **Dragonspire Odyssey**, **Whispers of Valhalla**, **Nightshade Chronicles**, and **Mythical Meadowlands**. You can play in DMG green, Game Boy Color, Pocket or full colour palettes.
 
 It combines:
 
@@ -17,6 +17,7 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 
 - **Single file:** open `dist/gbquest.html` in any browser. It shows the handheld frame.
 - **Full-screen window:** open `dist/gbquest-fullscreen.html`. The screen fills the window, with a full-screen toggle, 1:1 pixel scaling, an overlay pad and overlay chat.
+- **Full-screen mode:** open **START → SETTINGS → FULL SCREEN** in either browser build to expand the game to the browser window; the setting is saved between sessions.
 - **World atlas:** open `dist/atlas.html` for the interactive map of Dunia, or press **M** in game.
 - **Dev build:** run `python3 -m http.server` in this folder, then open `http://localhost:8000`.
   The dev build loads `src/*.js` and `assets/*.png` directly.
@@ -48,8 +49,8 @@ On phones, use the on-screen buttons. The full list of controls is in [docs/CONT
 | Story | Written prologue, 12 acts, 50 chapters, and 6 generated side quests per zone |
 | Bestiary | 400 creatures (14 types, 55 subtypes, 7 elemental variants, elites) |
 | Bosses | 350: 12 arc bosses, 177 world bosses, 66 dungeon, 45 raid, 30 trial and 20 tower bosses |
-| Endgame | 22 dungeons, 9 raids (12 players), 6 trials, the 100-floor Spire, 9 difficulty tiers (Story to Apocalypse), 5 expansions covering levels 40–720 |
-| MMO features | Auction house, mail, bank, guilds, reputation with 5 factions, ranked arena, flagged open-world PvP, two objective battlegrounds, honor gear, need/greed loot rolls, mounts, pets, a hearthstone, 36 achievements, a simulated realm with NPC players and chat |
+| Endgame | 22 dungeons, 9 raids (12 players), 6 trials, the 100-floor Spire, 9 difficulty tiers (Story to Apocalypse), 5 built-out expansion worlds covering levels 40–720; 13 expansion titles are listed in the game metadata |
+| MMO features | Dungeon/raid/activity finder, a 100-floor tower finder, scheduled public event finder, auction house, mail, bank, guilds, reputation with 5 factions, ranked arena, flagged open-world PvP, two objective battlegrounds, honor gear, need/greed loot rolls, mounts, pets, a hearthstone, 36 achievements, a simulated realm with NPC players and chat |
 | Professions | Herbalism, Alchemy, Fishing (timing minigame), Cooking |
 | Multiplayer | 1, 4 or 12 player modes. When the page is shared, live players appear on the map with chat. A built-in host server lets friends fight in your party: the host runs each battle and guests take their own turns. A realm leaderboard is shared between players. |
 | Audio | Two engines. **Chip 4CH**: 2 pulse, wave and noise channels. **64-bit**: stereo, 8 voices, reverb, echo and a compressor, with strings, brass, flute, harp, FM bells, choir, organ, piano, bass and a full drum kit. 103 + 8 sound effects and 24 tracks, each with an orchestral arrangement, plus a sound test. |

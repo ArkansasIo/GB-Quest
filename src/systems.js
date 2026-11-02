@@ -15,7 +15,7 @@ function newGameState(o) {
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
     ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1 }, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
-    pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {},
+    pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
   return c;
 }
@@ -34,6 +34,8 @@ function fixupState() {
   if (typeof G.pvpEnabled !== 'boolean') G.pvpEnabled = false;
   if (!['lantern', 'ashen'].includes(G.pvpFaction)) G.pvpFaction = 'lantern';
   G.pvpDefeats = G.pvpDefeats && typeof G.pvpDefeats === 'object' ? G.pvpDefeats : {};
+  G.eventDaily = G.eventDaily && typeof G.eventDaily === 'object' ? G.eventDaily : {};
+  if (typeof G.trackedEvent !== 'string') G.trackedEvent = null;
   G.companions = (G.companions || []).filter(c => c && c.cls);
   migrateGear(G); G.companions.forEach(migrateGear); if (typeof stashOf === 'function') stashOf();
   if (G.inst) { G.inst = null; const z = ZONE_BY_ID[G.map]; if (!z) { G.map = 'elderwood'; G.x = 3; G.y = 7; } }

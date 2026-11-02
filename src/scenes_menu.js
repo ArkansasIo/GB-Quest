@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -36,7 +36,7 @@ class MainMenu extends ListScene {
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
-      'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
+      'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
@@ -64,7 +64,58 @@ function restMenu() {
     if (k === 1) { if (!G.inv.campkit) return say('You need a CAMP KIT (merchants sell them), or rest at an inn.'); takeItem('campkit'); longRest(G); G.companions.forEach(longRest); Music.play('inn'); SFX.heal(); say('You make camp and sleep through the night. Fully restored.'); }
   }, `HP ${G.hp}/${derive(G).hpMax}  HIT DICE ${G.hd}/${derive(G).hdMax}`);
 }
-
+class ActivityFinderScene extends ListScene {
+  constructor() { super(7); this.category = 0; }
+  categories() { return ['DUNGEONS', 'RAIDS', 'SPIRE', 'EVENTS']; }
+  items() {
+    if (this.category === 0) return DUNGEONS.filter(entry => entry.lvl <= G.lvl + 6).map(entry => ({ ...entry, activityKind: 'dungeon' }));
+    if (this.category === 1) return RAIDS.filter(entry => entry.lvl <= G.lvl + 6).map(entry => ({ ...entry, activityKind: 'raid' }));
+    if (this.category === 2) return [{ id: 'tower', name: TOWER.name, lvl: TOWER.baseLvl, activityKind: 'tower' }];
+    return WORLD_EVENTS.map(event => ({ ...event, ...worldEventWindow(event) }))
+      .sort((a, b) => a.startsAt - b.startsAt);
+  }
+  update() {
+    if (P('select')) { this.category = (this.category + 1) % this.categories().length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const entry = this.items()[this.i];
+    if (!entry) return;
+    SFX.select();
+    if (entry.activityKind === 'dungeon' || entry.activityKind === 'raid') return instanceMenu(entry.activityKind, entry);
+    if (entry.activityKind === 'tower') return towerMenu();
+    return worldEventMenu(entry);
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    text('ACTIVITY FINDER', 4, 14, 'gold');
+    this.categories().forEach((label, index) => {
+      const x = 3 + index * 39;
+      fill(x, 25, 37, 10, index === this.category ? 3 : 1);
+      textC(label.slice(0, 6), x + 18, 26, index === this.category ? 0 : 3);
+    });
+    const list = this.items();
+    if (!list.length) textC(this.category === 3 ? 'NO EVENTS' : 'NO MATCHES', 80, 57, 2);
+    list.slice(this.top, this.top + this.rows).forEach((entry, offset) => {
+      const index = this.top + offset, y = 39 + offset * 10;
+      if (index === this.i) fill(3, y - 1, 150, 10, 3);
+      const level = entry.lvl || entry.level || 1;
+      const status = entry.activityKind ? '' : entry.status === 'active' ? ' LIVE' : ` ${Math.max(1, Math.ceil((entry.startsAt - Date.now()) / 60000))}M`;
+      text(`${entry.name.slice(0, 15)}${status}`.slice(0, 23), 6, y, index === this.i ? 0 : 3);
+      textR(`L${level}`, 151, y, index === this.i ? 0 : 2);
+    });
+    this.scrollbar(156, 39, 72);
+    const entry = list[this.i];
+    if (entry) {
+      frame(3, 113, 153, 28);
+      const detail = entry.activityKind === 'tower' ? '100 FLOORS - CHECKPOINTS' :
+        entry.activityKind === 'dungeon' || entry.activityKind === 'raid' ? `${entry.activityKind.toUpperCase()} ENTRANCE` :
+          `${ZONE_BY_ID[entry.zone]?.name || entry.zone} - ${entry.status === 'active' ? 'ACTIVE NOW' : 'UPCOMING'}`;
+      text(wrap(detail, 24).slice(0, 2).join('\n'), 7, 117, 2);
+    }
+    text('SELECT: PAGE', 4, 143, 1);
+  }
+}
 // ================================================================ BAG
 class BagScene extends ListScene {
   constructor(mode) { super(7); this.mode = mode; this.tab = 0; this.msg = null; this.mt = 0; }
@@ -405,7 +456,7 @@ class BankScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT']; }
+  items() { return ['PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'FULL SCREEN']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
@@ -424,16 +475,17 @@ class SettingsScene extends ListScene {
     if (o === 'WEATHER') S.weather = !S.weather;
     if (o === 'AUTO BATTLE') S.autoBattle = !S.autoBattle;
     if (o === 'SWAP A/B') S.swap = !S.swap;
+    if (o === 'FULL SCREEN') { S.fullscreen = !S.fullscreen; document.body.classList.toggle('fullscreen-mode', S.fullscreen); }
     if (o === 'DIFFICULTY' && G) { difficultyMenu(); return; }
     if (o === 'SOUND TEST' && P('a')) { push(new SoundTest()); return; }
     if (o === 'DEBUG PANEL' && P('a')) { window.DBG && DBG.toggle(); return; }
-    if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
+    if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, 'EXPANSIONS:', ...BUILD.expansions, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
     saveSettings(); SFX.toggle();
   }
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>'];
+    const v = [PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', S.fullscreen ? 'ON' : 'OFF'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }

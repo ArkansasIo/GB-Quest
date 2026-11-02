@@ -9,7 +9,9 @@ A standalone native rules library now lives in `native/`. It provides determinis
 ## D&D rules runtime
 - d20 checks, advantage/disadvantage, proficiency, all 18 skills and expertise
 - Dice expressions, attack rolls, armor class, saving throws, critical hits and damage mitigation
-- Character creation, derived HP, hit dice, passive perception and level 1-20 XP thresholds
+- Character creation validates species and class IDs against the catalogs, supports manual scores, the standard array and a 27-point buy, and carries species movement and class hit-die metadata into the character state
+- Six original backgrounds grant two skill proficiencies, a tool proficiency, a descriptive feature and catalogued starter equipment
+- Derived HP, hit dice, passive perception and level 1-20 XP thresholds
 - Short rests, long rests, hit-dice recovery, death saves, stabilization and death state
 - Initiative encounters, action/bonus-action/reaction economy
 - Conditions, spell slots, spell attack/DC and concentration state
@@ -45,6 +47,10 @@ No proprietary World of Warcraft code, assets, quests or data are copied. D&D da
 ## MMORPG service systems
 - Auction house listings reserve seller inventory in escrow, charge listing/sale fees, deliver purchases, credit seller proceeds when a seller wallet is supplied, and return cancelled/expired escrow payloads for delivery.
 - Character mail supports one-time atomic claims that stage attachments against inventory capacity/weight before crediting currency; failed claims remain retryable.
+- Direct player trades require both players to accept the current offers, then stage inventory and currency changes before committing; invalid capacity, stock or wallet state leaves both characters unchanged.
+- Social state supports reciprocal friend requests, ignore lists, friend-only whispers, bounded chat text and per-sender rate limiting. Party/guild channel membership authorization remains the responsibility of the server adapter.
+- Parties support leader-issued expiring invites, role assignments, leader handoff and bounded ready checks; matchmaking and authoritative online membership still need a server adapter.
+- `systems/instance-finder.js` indexes 20 dungeon and 14 raid entrances, with level/zone/continent/difficulty/party-size filters, and tower checkpoint validation. `systems/event-finder.js` schedules six original recurring public events plus the 300 world-boss roster and supports active-event joining. The browser's Activity Finder exposes dungeon/raid entry, the Spire, and local event travel/join actions; this is a local simulation, not shared live-world scheduling.
 - Appearance/mount/title collections and transmog unlocks.
 - Role-based dungeon finder queue for tank/healer/damage compositions.
 - Map registry for the 90-map atlas.
@@ -69,6 +75,11 @@ Auction listing requires `sellerInventory` and `sellerWallet`; the listed quanti
 
 ### D&D class progression runtime
 `rules/class-progression.js` provides a data-driven level advancement layer for the 1–20 D&D class track, separate from MMO/paragon progression. It applies one class level at a time, grants feature identifiers from supplied progression rows, exposes subclass unlock choices, validates subclass selection before mutating progression state, and grants subclass features at the selected level. It intentionally does not fabricate missing SRD feature tables: class/subclass progression data must be authored and attributed separately before those features can be granted in-game.
+
+`rules/character.js` validates selected species and classes against the structured catalogs and supports manual ability scores, assigning the standard array, or point buy (8–15 per score, up to 27 points). `systems/backgrounds.js` validates and applies one of six original background records, including proficiencies and starter equipment. Species trait choices, class skill choices, and the interactive character-creation screen are not wired into this rules-layer builder yet.
+
+### Class ability catalog
+`data/class-abilities.js` contains 24 original, executable ability records: one class action and one subclass action for each of the 12 class/subclass pairs in `data/classes.json`. `systems/class-abilities.js` validates the records against that catalog and lists abilities available to a character by class, subclass, and level. The shared `rules/class-ability-runtime.js` resolves their attacks, saves, damage, healing, action costs, and class-resource costs. These records are an initial sample, not the complete level-by-level feature progression, and callers must authorize abilities from the character-filtered catalog before invoking the runtime.
 
 ### Class-specific spell access
 `rules/spell-access.js` provides configurable spell access policies without inventing class spell lists. A class/ruleset data record supplies the allowed spell IDs, access mode (`known` or `prepared`), and optional known/prepared limits. Characters can learn, prepare and unprepare spells; the casting runtime checks the configured policy before spending a spell slot or action. The actual per-class spell lists and limits still need to be populated from the applicable SRD rules.

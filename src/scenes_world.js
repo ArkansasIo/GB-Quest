@@ -22,7 +22,7 @@ class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'MULTIPLAYER', 'SETTINGS', 'CREDITS'); return o; }
+  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'MULTIPLAYER', 'SETTINGS', 'CREDITS'); return o; }
   update() {
     this.t++;
     const o = this.opts();
@@ -34,30 +34,75 @@ class Title {
       if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
       if (c === 'NEW GAME') push(new SlotPicker('new'));
       if (c === 'LOAD GAME') push(new SlotPicker('load'));
+      if (c === 'STORY TRAILERS') push(new StoryLibrary());
       if (c === 'MULTIPLAYER') say(['MULTIPLAYER: share this page with friends.', 'Load a hero, then visit the REALM STONE in ARDENHOLD (or open SOCIAL > SERVER) to host or join a server.', `Status: ${NET.status || 'OFFLINE'}. Live players: ${NET.peers.length}.`]);
       if (c === 'SETTINGS') push(new SettingsScene());
       if (c === 'CREDITS') push(new Credits());
     }
   }
   draw() {
-    // scrolling landscape made of the biome tiles
-    const biomes = ['world', 'b_marsh', 'b_snow', 'b_badlands', 'b_volcanic', 'b_crystal', 'b_dusk'];
-    const off = (this.t / 2) % 16;
-    for (let y = 0; y < 9; y++) for (let x = -1; x < 11; x++) {
-      const b = biomes[Math.floor((x + Math.floor(this.t / 32)) / 3) % biomes.length] || 'world';
-      const ch = y < 2 ? '0_3' : y > 6 ? '0_2' : (x * 7 + y * 3) % 5 === 0 ? '0_1' : '0_0';
-      blit(spr(`${b}_${ch}`, 16, 16), x * 16 - off, y * 16);
+    ctx.save();
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#10172d'); sky.addColorStop(0.56, '#49304b'); sky.addColorStop(1, '#d07852');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 32; i++) {
+      const x = (i * 47 + 13) % W, y = (i * 29 + 7) % 72;
+      ctx.globalAlpha = 0.45 + ((i + (this.t >> 4)) % 4) * 0.15;
+      ctx.fillStyle = i % 5 === 0 ? '#ffdca0' : '#d8e5ff';
+      ctx.fillRect(x, y, i % 7 === 0 ? 2 : 1, 1);
     }
-    ctx.globalAlpha = 0.5; fill(0, 0, W, H, 0); ctx.globalAlpha = 1;
-    frame(8, 8, 144, 44);
-    textC('GB QUEST', 81, 14, 2, 2); textC('GB QUEST', 80, 13, 3, 2);
-    textC(BUILD.subtitle, 80, 36, 2);
+    ctx.globalAlpha = 1;
+    const moon = ctx.createRadialGradient(128, 37, 2, 128, 37, 28);
+    moon.addColorStop(0, 'rgba(255,224,166,.38)'); moon.addColorStop(1, 'rgba(255,190,130,0)');
+    ctx.fillStyle = moon; ctx.fillRect(98, 7, 60, 60);
+    ctx.fillStyle = '#f6dda7'; ctx.beginPath(); ctx.arc(128, 36, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d6a77d'; ctx.fillRect(123, 32, 3, 2); ctx.fillRect(130, 39, 2, 2);
+
+    const ridge = (points, color) => {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+      points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    };
+    ridge([[0, 74], [17, 51], [29, 68], [48, 42], [67, 69], [88, 48], [105, 68], [126, 43], [147, 67], [160, 54]], '#34334a');
+    ridge([[0, 91], [18, 75], [38, 89], [58, 68], [78, 91], [99, 72], [118, 88], [139, 66], [160, 86]], '#24283a');
+
+    const drift = Math.floor(this.t / 48) % 4;
+    ctx.fillStyle = '#1b2032';
+    ctx.fillRect(112 - drift, 62, 33, 39); ctx.fillRect(119 - drift, 53, 8, 48);
+    ctx.fillRect(136 - drift, 57, 7, 44); ctx.fillRect(108 - drift, 72, 7, 29);
+    ctx.fillRect(116 - drift, 56, 14, 3); ctx.fillRect(134 - drift, 60, 11, 3);
+    ctx.beginPath(); ctx.moveTo(118 - drift, 56); ctx.lineTo(123 - drift, 48); ctx.lineTo(128 - drift, 56); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(134 - drift, 60); ctx.lineTo(139 - drift, 51); ctx.lineTo(144 - drift, 60); ctx.fill();
+    ctx.fillStyle = '#f1a663';
+    [[116, 77], [126, 70], [137, 78], [121, 88], [141, 91]].forEach(([x, y], i) => {
+      if ((this.t + i * 7) % 80 < 68) ctx.fillRect(x - drift, y, 2, 3);
+    });
+
+    const glow = ctx.createRadialGradient(117, 76, 1, 117, 76, 19);
+    glow.addColorStop(0, 'rgba(247,112,65,.27)'); glow.addColorStop(1, 'rgba(247,112,65,0)');
+    ctx.fillStyle = glow; ctx.fillRect(96, 55, 42, 42);
+    blit(sprH('nm_dragon_0', 43, { flip: true }), 109 - drift, 47 + Math.round(Math.sin(this.t / 16) * 2));
+    ridge([[0, 112], [20, 101], [42, 108], [63, 97], [83, 106], [105, 96], [128, 108], [147, 98], [160, 104]], '#171c2a');
+    ctx.fillStyle = '#d98055';
+    for (let i = 0; i < 18; i++) {
+      const x = (i * 37 + 8) % W, y = 112 + ((i * 17) % 28);
+      ctx.fillRect(x, y, 1 + (i % 3), 1);
+    }
+    ctx.restore();
+
     const bob = Math.round(Math.sin(this.t / 12));
-    blit(sprH('c_warden_4', 28), 16, 60 + bob); blit(sprH('c_arcanist_4', 28), 36, 62 - bob); blit(sprH('enemy_goblinking', 30, { flip: true }), 120, 58 + bob);
-    const o = this.opts(); const h = o.length * 10 + 6;
-    frame(48, 58, 64, h);
-    o.forEach((s, i) => { text(s.slice(0, 9), 60, 61 + i * 10, i === this.i ? 3 : 2); if (i === this.i) text('>', 52, 61 + i * 10); });
-    textC(`(C)${BUILD.year} ${BUILD.studio}  v${BUILD.version}`, 80, 134, 1);
+    blit(sprH('c_warden_4', 36), 99, 93 + bob);
+    blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
+    frame(4, 5, 152, 43);
+    textC('SHADOWBANE', 80, 12, 2); textC('CHRONICLES', 80, 23, 3);
+    textC(BUILD.subtitle, 80, 36, 2);
+    const o = this.opts(), h = o.length * 9 + 6;
+    frame(5, 60, 83, h);
+    o.forEach((s, i) => {
+      const y = 63 + i * 9;
+      if (i === this.i) { fill(8, y - 1, 77, 9, 3); text('>', 10, y, 'gold'); }
+      text(s.slice(0, 11), 19, y, i === this.i ? 'gold' : 2);
+    });
+    textC(`AELMOOR  ${BUILD.version}`, 80, 134, 1);
   }
 }
 
@@ -99,25 +144,91 @@ class SlotPicker {
 
 // ================================================================ PROLOGUE
 class Prologue {
-  constructor(cb) { this.opaque = true; this.cb = cb; this.i = 0; this.c = 0; this.t = 0; }
+  constructor(cb, story = null) {
+    this.opaque = true; this.cb = cb; this.i = 0; this.c = 0; this.t = 0;
+    this.expansion = story !== null;
+    this.story = story || { name: BUILD.game, subtitle: 'THE LANTERN PACT', scenes: PROLOGUE.map((line, index) => ({
+      title: ['THE EMBER CODEX', 'A THOUSAND LIGHTS', 'THE LANTERN PACT', 'THE SUNLESS EVENING', 'THE SHADOW KING', 'TWELVE LOST PAGES', 'A LIGHT IN ELDERWOOD', 'THE ROAD BEGINS'][index],
+      text: line,
+      art: ['item_spellbook', 'px_waypoint', 'px_symbol', 'px_skull', 'enemy_goblinking', 'px_rune', 'c_warden_0', 'elder_0'][index],
+    })) };
+    this.scenes = this.story.scenes;
+    this.sceneStart = 0;
+  }
   enter() { Music.play('prologue'); }
   update() {
     this.t++;
-    const L = PROLOGUE[this.i];
+    const scene = this.scenes[this.i];
+    if (!scene) { this.done(); return; }
+    const L = scene.text;
     if (P('start')) { this.done(); return; }
+    if (P('b')) { this.done(); return; }
     if (this.c < L.length) { this.c += 0.7; if (P('a')) this.c = L.length; return; }
-    if (P('a') || P('b')) { SFX.page(); this.i++; this.c = 0; if (this.i >= PROLOGUE.length) this.done(); }
+    if (P('a')) { SFX.page(); this.i++; this.c = 0; this.sceneStart = this.t; if (this.i >= this.scenes.length) this.done(); }
   }
   done() { if (this.over) return; this.over = true; fadeTo(() => { removeScene(this); this.cb(); }); }
   draw() {
-    fill(0, 0, W, H, 3);
-    const art = ['item_spellbook', 'px_waypoint', 'px_symbol', 'px_skull', 'enemy_goblinking', 'px_rune', 'c_warden_0', 'elder_0'][this.i] || 'px_waypoint';
-    const glow = 2 + Math.round(Math.sin(this.t / 10) * 2);
-    fill(80 - 20 - glow, 30 - glow, 40 + glow * 2, 40 + glow * 2, 2);
-    blit(sprFit(art, 36), 62, 32);
-    text(wrap(PROLOGUE[this.i] || '', 24).join('\n').slice(0, Math.floor(this.c)), 8, 84, 0);
-    textR('START: SKIP', 156, 134, 1);
-    textC(`${this.i + 1}/${PROLOGUE.length}`, 80, 4, 1);
+    const scene = this.scenes[this.i] || this.scenes[this.scenes.length - 1];
+    const hue = this.expansion ? (this.story.n * 29 + 180) % 360 : 224;
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, `hsl(${hue} 40% 10%)`); sky.addColorStop(0.68, `hsl(${(hue + 36) % 360} 45% 28%)`); sky.addColorStop(1, '#171421');
+    fill(0, 0, W, H, 0); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    const phase = this.t - this.sceneStart;
+    for (let star = 0; star < 28; star++) {
+      ctx.globalAlpha = 0.45 + ((star + (this.t >> 3)) % 4) * 0.12;
+      fill((star * 47 + 13) % W, (star * 23 + 5) % 74, star % 6 === 0 ? 2 : 1, 1, 'white');
+    }
+    ctx.globalAlpha = 1;
+    const ridge = (points, color) => {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, 105);
+      points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, 105); ctx.fill();
+    };
+    ridge([[0, 75], [20, 54], [38, 72], [61, 43], [83, 73], [104, 51], [126, 71], [147, 48], [160, 62]], `hsl(${hue} 25% 24%)`);
+    ridge([[0, 91], [18, 74], [42, 87], [62, 65], [84, 88], [111, 69], [132, 87], [151, 68], [160, 77]], `hsl(${hue} 28% 16%)`);
+    const flare = ctx.createRadialGradient(80, 61, 2, 80, 61, 38);
+    flare.addColorStop(0, this.expansion ? `hsla(${hue}, 90%, 65%, .4)` : 'rgba(255,172,90,.34)');
+    flare.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = flare; ctx.fillRect(34, 17, 92, 88);
+    blit(sprFit(scene.art || 'px_waypoint', 48), 56 + Math.round(Math.sin(this.t / 21) * 3), 34 + Math.round(Math.sin(this.t / 15) * 2));
+    fill(0, 0, W, 17, 0); fill(0, 17, W, 1, 2);
+    textC(this.expansion ? `EXPANSION ${this.story.n}` : 'AELMOOR - THE BEGINNING', 80, 4, 'gold');
+    textC(scene.title || this.story.name, 80, 79, 'gold');
+    frame(3, 91, 154, 43);
+    const lines = wrap(scene.text, 24).slice(0, 3), shown = this.c;
+    text(lines.join('\n').slice(0, Math.floor(shown)), 9, 97, 0);
+    textR('A: NEXT   B/START: SKIP', 156, 137, 1);
+    textC(`${this.i + 1}/${this.scenes.length}`, 80, 139, 1);
+  }
+}
+
+class StoryLibrary extends ListScene {
+  constructor() { super(9); }
+  items() { return ['AELMOOR PROLOGUE', ...BUILD.expansions]; }
+  update() {
+    this.navList();
+    if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const index = this.i;
+    const story = index === 0 ? null : (() => {
+      const expansion = EXPANSION_STORIES[index - 1];
+      return { ...expansion, scenes: [
+        { title: expansion.name.toUpperCase(), text: `${expansion.name}: ${expansion.subtitle}.`, art: expansion.art },
+        { title: 'THE THREAT', text: expansion.threat, art: expansion.art },
+        { title: 'YOUR JOURNEY', text: expansion.hook, art: expansion.art },
+      ] };
+    })();
+    push(new Prologue(() => Music.play('title'), story));
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); textC('STORY TRAILERS', 80, 14, 'gold');
+    const rows = this.items();
+    rows.slice(this.top, this.top + this.rows).forEach((name, offset) => {
+      const index = this.top + offset, y = 31 + offset * 11;
+      if (index === this.i) fill(4, y - 1, 150, 10, 3);
+      text(name.slice(0, 23).toUpperCase(), 8, y, index === this.i ? 'gold' : 2);
+    });
+    this.scrollbar(156, 30, 101);
+    text('A: WATCH   B: BACK', 7, 136, 1);
   }
 }
 
@@ -910,6 +1021,59 @@ function lfgMenu() {
   choose(opts.map(o => o.t.slice(0, 22)), i => { if (i >= 0) instanceMenu(opts[i].k, opts[i].d); }, 'LOOKING FOR GROUP');
 }
 
+function worldEventWindow(event, now = Date.now()) {
+  const epoch = Date.UTC(2026, 0, 1);
+  const period = event.periodMinutes * 60000;
+  const offset = event.offsetMinutes * 60000;
+  const duration = event.durationMinutes * 60000;
+  const cycle = Math.floor((now - epoch - offset) / period);
+  let startsAt = epoch + cycle * period + offset;
+  if (startsAt + duration <= now) startsAt += period;
+  const endsAt = startsAt + duration;
+  return { startsAt, endsAt, status: now >= startsAt && now < endsAt ? 'active' : 'upcoming' };
+}
+function worldEventMenu(event) {
+  const window = worldEventWindow(event);
+  const here = G.map === event.zone && !G.inst;
+  const label = window.status === 'active' ? (here ? 'JOIN EVENT' : 'TRAVEL TO ZONE') : 'TRAVEL TO ZONE';
+  const starts = window.status === 'active' ? 'ACTIVE NOW' : `STARTS IN ${Math.max(1, Math.ceil((window.startsAt - Date.now()) / 60000))} MIN`;
+  choose([label, 'TRACK EVENT', 'BACK'], choice => {
+    if (choice === 0) {
+      if (!here) { G.trackedEvent = event.id; return travelTo(event.zone); }
+      if (window.status !== 'active') return say(`${event.name} is not active yet. ${starts}.`);
+      return startWorldEvent(event);
+    }
+    if (choice === 1) { G.trackedEvent = event.id; return say([`TRACKING: ${event.name}`, `${ZONE_BY_ID[event.zone].name} - ${starts}`]); }
+  }, `${event.name}: ${starts}`);
+}
+function startWorldEvent(event) {
+  const window = worldEventWindow(event);
+  if (G.map !== event.zone || G.inst) return say('Travel to the event zone before joining.');
+  if (window.status !== 'active') return say(`${event.name} is not active yet.`);
+  G.eventDaily = G.eventDaily || {};
+  const day = Math.floor(Date.now() / 86400000);
+  if (G.eventDaily[event.id] === day) return say('You have already claimed this event reward today.');
+  const boss = BOSSES.find(entry => entry.unique === event.boss);
+  if (!boss) return say('This event encounter is unavailable.');
+  const level = Math.max(event.lvl, G.lvl);
+  const foe = makeMonster(boss, level, G.difficulty, { bossId: boss.id, cat: boss.cat });
+  startBattle([foe], {
+    size: Math.max(1, Math.min(4, fieldPartySize())),
+    kind: 'world-event',
+    music: 'boss',
+    onEnd: result => {
+      if (result === 'lose') return onPartyWipe();
+      if (result !== 'win') return;
+      G.eventDaily[event.id] = day;
+      gainXP(G, xpForMonster(level) * 3);
+      G.gold += event.rewardGold;
+      saveGame();
+      checkAchievements();
+      say([`${event.name} COMPLETE!`, `+${event.rewardGold} G and bonus experience.`]);
+    },
+  });
+}
+
 // ================================================================ instances: dungeons, raids, tower
 function instanceMenu(kind, def) {
   const size = kind === 'raid' ? 12 : 4;
@@ -1312,7 +1476,7 @@ class Credits {
   update() { this.t++; if (this.t > 60 && (P('a') || P('b') || P('start'))) { removeScene(this); if (this.ending) { const f = currentField(); if (f) f.resume(); } } }
   draw() {
     fill(0, 0, W, H, 3);
-    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.game, BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the GB QUEST asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
+    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.game, BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
     lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 6 ? 'gold' : 0); });
   }
 }

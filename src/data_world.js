@@ -205,6 +205,14 @@ const TRIALS = [
   { id: 'tr_mirror', name: 'TRIAL OF MIRRORS', rule: 'mirror', desc: 'Fight copies of heroes.', lvl: 25 },
 ];
 const TOWER = { name: 'SPIRE OF A HUNDRED', floors: 100, bossEvery: 10, miniEvery: 5, baseLvl: 3, perFloor: 7 };
+const WORLD_EVENTS = [
+  { id: 'lantern-watch', name: 'LANTERN WATCH', desc: 'Defend the road lanterns from a raiding force.', zone: 'elderwood', lvl: 2, boss: 'goblinking', periodMinutes: 180, offsetMinutes: 20, durationMinutes: 35, rewardGold: 50 },
+  { id: 'mire-bloom', name: 'MIRE BLOOM', desc: 'Stop the mire from swallowing the old causeway.', zone: 'hollowmere', lvl: 6, boss: 'troll', periodMinutes: 240, offsetMinutes: 65, durationMinutes: 40, rewardGold: 90 },
+  { id: 'thornwake', name: 'THORNWAKE', desc: 'Drive the thorn-crowned guardian from the forest path.', zone: 'thornwood', lvl: 8, boss: 'jungler', periodMinutes: 300, offsetMinutes: 110, durationMinutes: 40, rewardGold: 120 },
+  { id: 'frostfall', name: 'FROSTFALL', desc: 'Rouse the pass wardens and turn back the peak tyrant.', zone: 'greypeak', lvl: 10, boss: 'frostwyrm', periodMinutes: 360, offsetMinutes: 170, durationMinutes: 45, rewardGold: 160 },
+  { id: 'glass-tide', name: 'GLASS TIDE', desc: 'Break the dune devourer’s hold over the caravan road.', zone: 'sandspire', lvl: 12, boss: 'sandscourge', periodMinutes: 240, offsetMinutes: 145, durationMinutes: 35, rewardGold: 200 },
+  { id: 'last-lantern', name: 'THE LAST LANTERN', desc: 'Answer the call from the edge of the long night.', zone: 'duskmoor', lvl: 30, boss: 'duskking', periodMinutes: 480, offsetMinutes: 300, durationMinutes: 50, rewardGold: 500 },
+];
 
 // ================================================================ story: prologue, 12 acts, 50 chapters
 const PROLOGUE = [
@@ -217,6 +225,50 @@ const PROLOGUE = [
   'You wake in ELDERWOOD with ash on your hands and a single lantern still burning beside you.',
   'The village ELDER says it chose you. You are not sure what that means. But the light is warm, and the road is open.',
 ];
+
+// ================================================================ build info & studio
+const BUILD = {
+  game: 'SHADOWBANE CHRONICLES',
+  subtitle: 'LANTERNS OF AELMOOR',
+  expansions: [
+    'Eternal Odyssey',
+    'Dragonfire Realm',
+    'Emberfell Saga',
+    "Wizard's Dominion",
+    'Plagueborn Legacy',
+    'Crystalized Realms',
+    'Frostsong Dynasty',
+    'Arcane Ascension',
+    'Bloodmoon Conspiracy',
+    'Dragonspire Odyssey',
+    'Whispers of Valhalla',
+    'Nightshade Chronicles',
+    'Mythical Meadowlands',
+  ],
+  version: '2.1.1',
+  build: 'B2026.11.01',
+  studio: 'ArkansasIo',
+  year: 2026,
+};
+
+const EXPANSION_STORIES = BUILD.expansions.map((name, index) => {
+  const stories = [
+    { subtitle: 'THE SEA TAKES WHAT WAS BURIED', art: 'nm_dragon_0', threat: 'A drowned throne stirs beneath the Shattered Isles.', hook: 'Follow the lanterns below the waves, before the tide forgets the shore.' },
+    { subtitle: 'THE DEEP REMEMBERS', art: 'px_skull', threat: 'The Sunken Depths answer every prayer with a voice from the dark.', hook: 'Descend through drowned cities and discover what the abyss kept alive.' },
+    { subtitle: 'A KINGDOM ABOVE THE CLOUDS', art: 'px_waypoint', threat: 'The sky roads fracture as a storm gathers over the floating isles.', hook: 'Climb beyond the clouds and decide who rules the winds.' },
+    { subtitle: 'THE FIRE BENEATH THE WORLD', art: 'nm_dragon_1', threat: 'A wound of flame opens, and ancient things crawl into the light.', hook: 'Cross the Emberfell frontier and silence the heart of the rift.' },
+    { subtitle: 'WHEN THE LAST LIGHT FAILS', art: 'px_rune', threat: 'The first lantern goes dark. The long night begins again.', hook: 'Seek the dawn beyond the edge of the known world.' },
+    { subtitle: 'THE CRYSTAL REMEMBERS', art: 'px_gem', threat: 'A living crystal begins to repeat the voices of the dead.', hook: 'Enter the mirrored realm and find which reflection is yours.' },
+    { subtitle: 'WINTER HAS A CROWN', art: 'px_skull', threat: 'An old dynasty wakes beneath the unbroken ice.', hook: 'Cross the frostbound court before the cold claims every name.' },
+    { subtitle: 'ASCEND, OR BE UNMADE', art: 'px_rune', threat: 'A tower of spell-light rises where no tower stood before.', hook: 'Master the arcane trials and learn what waits at the summit.' },
+    { subtitle: 'THE MOON KNOWS YOUR SECRET', art: 'px_symbol', threat: 'Under a blood-red moon, allies begin to vanish without a trace.', hook: 'Unmask the conspiracy before the next eclipse.' },
+    { subtitle: 'THE SPIRE CALLS THE WORTHY', art: 'nm_dragon_2', threat: 'A dragon guards the road to a city carved into the clouds.', hook: 'Scale the Dragonspire and carry its oldest secret back to earth.' },
+    { subtitle: 'THE OLD GODS ARE LISTENING', art: 'px_waypoint', threat: 'A forgotten song travels north, waking heroes from another age.', hook: 'Answer the call and choose what the legends leave behind.' },
+    { subtitle: 'DARKNESS LEARNS YOUR NAME', art: 'enemy_wraith', threat: 'The shadows begin to move before their owners do.', hook: 'Hunt the first shade before night takes root in every heart.' },
+    { subtitle: 'A WORLD LEFT TO GROW WILD', art: 'px_tower', threat: 'Beyond the old roads, a green horizon hides a new beginning.', hook: 'Discover the meadowlands and decide what kind of world can grow.' },
+  ];
+  return Object.freeze({ name, n: index + 1, ...stories[index] });
+});
 const ACTS = [
   { n: 1, name: 'THE LANTERN DIMS', zone: 'elderwood' }, { n: 2, name: 'MIRE AND MEMORY', zone: 'hollowmere' },
   { n: 3, name: 'THE THORN CROWN', zone: 'thornwood' }, { n: 4, name: 'STONE AND STORM', zone: 'greypeak' },
@@ -358,9 +410,6 @@ const NAME_POOLS = {
   drakkin: ['RHAEZ', 'KORVATH', 'SYTHA', 'DRAVEN', 'ZORA', 'VERITH', 'KHAAL', 'ISSRA', 'ARDEX', 'NYRA'],
 };
 const POINT_BUY = { budget: 27, min: 8, max: 15, cost: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 } };
-
-// ================================================================ build info & studio
-const BUILD = { game: 'GB QUEST', subtitle: 'LANTERNS OF AELMOOR', version: '2.1.1', build: 'B2026.11.01', studio: 'ArkansasIo', year: 2026 };
 
 // ================================================================ expansions (endgame, levels 40-720)
 const EXPANSIONS = [
