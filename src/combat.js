@@ -898,16 +898,22 @@ class Battle {
     const D = derive(G);
     const xp = this.noRewards ? 0 : this.foes.reduce((a, f) => a + (f.xp || 0), 0);
     const lootMul = (DIFFICULTY[this.diff - 1] || DIFFICULTY[1]).loot;
-    const drops = [], mats = {}, cons = []; let gold = 0;
+    const drops = [], mats = {}, cons = [], runeDrops = {}; let gold = 0;
     if (!this.noRewards) {
       for (const f of this.foes) {
         const d = rollDrops(f, { loot: lootMul }); drops.push(...d.items); gold += d.gold; cons.push(...d.cons);
         for (const k in d.mats) mats[k] = (mats[k] || 0) + d.mats[k];
+        for (const id of d.runes || []) runeDrops[id] = (runeDrops[id] || 0) + 1;
       }
     }
     const steps = [this.say(this.foes.length > 1 ? 'Victory!' : `${this.foes[0].name} is defeated!`, () => { Music.play('victory'); SFX.quest_done(); }, 20)];
     if (!this.noRewards) steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
     for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; } }));
+    const runeNames = Object.entries(runeDrops).map(([id, n]) => `${id.toUpperCase()} x${n}`);
+    if (runeNames.length) steps.push(this.say(('Rune rewards: ' + runeNames.join(', ')).slice(0, 70), () => {
+      if (globalThis.GBQRunes) for (const [id, n] of Object.entries(runeDrops)) globalThis.GBQRunes.addRuneToInventory(G, id, n);
+      SFX.craft();
+    }));
     const got = Object.entries(mats).map(([k, n]) => `${n} ${ITEMS[k].name}`).concat(cons.map(k => ITEMS[k].name));
     if (got.length) steps.push(this.say(('Found: ' + got.join(', ')).slice(0, 70), () => { for (const k in mats) addItem(k, mats[k]); cons.forEach(k => addItem(k)); SFX.coin(); }));
     this.run(steps, () => {
