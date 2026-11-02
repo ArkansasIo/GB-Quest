@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -36,7 +36,7 @@ class MainMenu extends ListScene {
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
-      'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
+      'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), 'SECRET ARCHIVE': () => new EasterEggArchiveScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
@@ -723,6 +723,27 @@ class BossJournalScene extends ListScene {
       text(`${state.firstClear ? 'CLEARED' : 'NOT DEFEATED'}  KILLS ${state.kills || 0}`, 6, 134, state.firstClear ? 'green' : 2);
     }
     text('LEFT/RIGHT: CATEGORY', 6, 146, 1);
+  }
+}
+class EasterEggArchiveScene extends ListScene {
+  constructor() { super(7); }
+  items() { return globalThis.GBQEasterEggs ? globalThis.GBQEasterEggs.summary(G).entries : []; }
+  update() { this.navList(); if (P('b') || P('start')) { SFX.back(); removeScene(this); } }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const data = globalThis.GBQEasterEggs.summary(G), entries = data.entries;
+    text(`SECRETS ${data.discovered}/${data.total}`, 4, 14, 'gold');
+    entries.slice(this.top, this.top + this.rows).forEach((e, j) => {
+      const i = this.top + j, y = 30 + j * 12;
+      if (i === this.i) fill(3, y - 1, 154, 11, 1);
+      text(`${String(i + 1).padStart(2, '0')} ${e.found ? e.name : '???'}`, 6, y, e.found ? 'gold' : (i === this.i ? 3 : 1));
+      textR(e.found ? 'FOUND' : 'HIDDEN', 153, y, e.found ? 'green' : 1);
+    });
+    this.scrollbar(156, 29, 83);
+    const e = entries[this.i];
+    frame(3, 119, 154, 23);
+    text(e.found ? e.hint : 'A secret remains undiscovered.', 7, 124, 2);
+    text(e.found ? `REWARD: ${e.reward.gold} GOLD` : 'Keep exploring and experimenting.', 7, 134, 1);
   }
 }
 class BestiaryScene extends ListScene {
