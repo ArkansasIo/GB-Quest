@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {rollDice} from "../../src/mmorpg/rules/dice.js";
-import {createCharacter,deriveCharacterStats,levelFromXp} from "../../src/mmorpg/rules/character.js";
+import {
+  assignStandardArray,createCharacter,deriveCharacterStats,levelFromXp,pointBuyCost
+} from "../../src/mmorpg/rules/character.js";
 import {armorClass,attackRoll,applyDamage} from "../../src/mmorpg/rules/combat.js";
 import {addCondition,tickConditions} from "../../src/mmorpg/rules/conditions.js";
 import {createSpellState,spendSpellSlot,recoverSpellSlots} from "../../src/mmorpg/rules/spellcasting.js";
@@ -13,6 +15,20 @@ import {createCampaignState,acceptQuest,applyObjectiveEvent,completeQuest} from 
 
 test("dice parser rolls bounded expressions and modifiers",()=>{assert.equal(rollDice("2d6+3",()=>0.5).total,11);assert.throws(()=>rollDice("0d6"),RangeError);});
 test("character creation and D&D-derived stats are distinct from MMO progression",()=>{const c=createCharacter({id:"p1",name:"Hero",species:"human",classId:"fighter",abilities:{con:14}});const d=deriveCharacterStats(c,{hitDie:10});assert.equal(d.maxHp,12);assert.equal(levelFromXp(6500),5);});
+test("character builder validates catalogs and supports standard array and point buy",()=>{
+  const standard=assignStandardArray({str:15,dex:14,con:13,int:12,wis:10,cha:8});
+  assert.deepEqual(Object.values(standard),[15,14,13,12,10,8]);
+  const pointBuy={str:15,dex:14,con:13,int:10,wis:10,cha:10};
+  assert.equal(pointBuyCost(pointBuy),27);
+  const character=createCharacter({id:"p2",name:"Sage",species:"elf",classId:"wizard",abilityMethod:"point-buy",abilities:pointBuy});
+  assert.equal(character.speed,30);
+  assert.equal(character.hitDie,6);
+  assert.equal(deriveCharacterStats(character).maxHp,7);
+  assert.throws(()=>createCharacter({id:"p3",name:"Unknown",species:"unknown",classId:"fighter"}),/Unknown species/);
+  assert.throws(()=>createCharacter({id:"p4",name:"Unknown",species:"human",classId:"unknown"}),/Unknown class/);
+  assert.throws(()=>createCharacter({id:"p5",name:"Over budget",species:"human",classId:"fighter",abilityMethod:"point-buy",abilities:{str:15,dex:15,con:15,int:15,wis:8,cha:8}}),/27 points/);
+  assert.throws(()=>assignStandardArray({str:15,dex:15,con:13,int:12,wis:10,cha:8}),/exactly once/);
+});
 test("combat computes AC, natural 20 and applies damage",()=>{assert.equal(armorClass({armorBase:14,dexterity:14}),16);assert.equal(attackRoll({abilityScore:10},10,()=>0.999).critical,true);const target={hp:10};assert.equal(applyDamage(target,12).dealt,10);});
 test("conditions expire after their duration",()=>{const e={conditions:[]};addCondition(e,"poisoned",{duration:2});tickConditions(e,2);assert.equal(e.conditions.length,0);});
 test("spell slots spend and recover",()=>{const s=createSpellState(1,[2]);assert.equal(spendSpellSlot(s,1),true);assert.equal(s.slots[0].remaining,1);recoverSpellSlots(s);assert.equal(s.slots[0].remaining,2);});

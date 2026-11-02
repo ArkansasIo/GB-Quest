@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -36,7 +36,7 @@ class MainMenu extends ListScene {
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
-      'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
+      'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
@@ -64,7 +64,58 @@ function restMenu() {
     if (k === 1) { if (!G.inv.campkit) return say('You need a CAMP KIT (merchants sell them), or rest at an inn.'); takeItem('campkit'); longRest(G); G.companions.forEach(longRest); Music.play('inn'); SFX.heal(); say('You make camp and sleep through the night. Fully restored.'); }
   }, `HP ${G.hp}/${derive(G).hpMax}  HIT DICE ${G.hd}/${derive(G).hdMax}`);
 }
-
+class ActivityFinderScene extends ListScene {
+  constructor() { super(7); this.category = 0; }
+  categories() { return ['DUNGEONS', 'RAIDS', 'SPIRE', 'EVENTS']; }
+  items() {
+    if (this.category === 0) return DUNGEONS.filter(entry => entry.lvl <= G.lvl + 6).map(entry => ({ ...entry, activityKind: 'dungeon' }));
+    if (this.category === 1) return RAIDS.filter(entry => entry.lvl <= G.lvl + 6).map(entry => ({ ...entry, activityKind: 'raid' }));
+    if (this.category === 2) return [{ id: 'tower', name: TOWER.name, lvl: TOWER.baseLvl, activityKind: 'tower' }];
+    return WORLD_EVENTS.map(event => ({ ...event, ...worldEventWindow(event) }))
+      .sort((a, b) => a.startsAt - b.startsAt);
+  }
+  update() {
+    if (P('select')) { this.category = (this.category + 1) % this.categories().length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const entry = this.items()[this.i];
+    if (!entry) return;
+    SFX.select();
+    if (entry.activityKind === 'dungeon' || entry.activityKind === 'raid') return instanceMenu(entry.activityKind, entry);
+    if (entry.activityKind === 'tower') return towerMenu();
+    return worldEventMenu(entry);
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    text('ACTIVITY FINDER', 4, 14, 'gold');
+    this.categories().forEach((label, index) => {
+      const x = 3 + index * 39;
+      fill(x, 25, 37, 10, index === this.category ? 3 : 1);
+      textC(label.slice(0, 6), x + 18, 26, index === this.category ? 0 : 3);
+    });
+    const list = this.items();
+    if (!list.length) textC(this.category === 3 ? 'NO EVENTS' : 'NO MATCHES', 80, 57, 2);
+    list.slice(this.top, this.top + this.rows).forEach((entry, offset) => {
+      const index = this.top + offset, y = 39 + offset * 10;
+      if (index === this.i) fill(3, y - 1, 150, 10, 3);
+      const level = entry.lvl || entry.level || 1;
+      const status = entry.activityKind ? '' : entry.status === 'active' ? ' LIVE' : ` ${Math.max(1, Math.ceil((entry.startsAt - Date.now()) / 60000))}M`;
+      text(`${entry.name.slice(0, 15)}${status}`.slice(0, 23), 6, y, index === this.i ? 0 : 3);
+      textR(`L${level}`, 151, y, index === this.i ? 0 : 2);
+    });
+    this.scrollbar(156, 39, 72);
+    const entry = list[this.i];
+    if (entry) {
+      frame(3, 113, 153, 28);
+      const detail = entry.activityKind === 'tower' ? '100 FLOORS - CHECKPOINTS' :
+        entry.activityKind === 'dungeon' || entry.activityKind === 'raid' ? `${entry.activityKind.toUpperCase()} ENTRANCE` :
+          `${ZONE_BY_ID[entry.zone]?.name || entry.zone} - ${entry.status === 'active' ? 'ACTIVE NOW' : 'UPCOMING'}`;
+      text(wrap(detail, 24).slice(0, 2).join('\n'), 7, 117, 2);
+    }
+    text('SELECT: PAGE', 4, 143, 1);
+  }
+}
 // ================================================================ BAG
 class BagScene extends ListScene {
   constructor(mode) { super(7); this.mode = mode; this.tab = 0; this.msg = null; this.mt = 0; }
@@ -211,27 +262,97 @@ class CharSheet {
 
 // ================================================================ SPELLBOOK
 class Spellbook extends ListScene {
-  constructor() { super(8); }
-  items() { const D = derive(G); return D.spell ? D.spell.known : []; }
-  update() { this.navList(); if (P('b') || P('a')) { SFX.back(); removeScene(this); } }
+  constructor() {
+    super(6);
+    this.schools = ['all', 'aegis', 'calling', 'omen', 'thrall', 'storm', 'veil', 'grave', 'flux'];
+    this.tab = 0;
+    this.all = false;
+  }
+  schoolDef() {
+    const k = this.schools[this.tab];
+    return k === 'all' ? { id: 'all', name: 'ALL SCHOOLS', desc: 'The eight arcane traditions of Aelmoor.' } : { id: k, ...SCHOOLS[k] };
+  }
+  items() {
+    const D = derive(G);
+    const k = this.schools[this.tab];
+    const hasSpells = D.spell && D.spell.known && D.spell.known.length;
+    const pool = (!hasSpells || this.all) ? SPELLS : D.spell.known;
+    return k === 'all' ? pool : pool.filter(s => s.school === k);
+  }
+  update() {
+    const n = this.schools.length;
+    if (P('select')) { this.tab = (this.tab + 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (nav('left')) { this.tab = (this.tab + n - 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (nav('right')) { this.tab = (this.tab + 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (P('start')) { this.all = !this.all; this.i = this.top = 0; SFX.toggle(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('a')) { SFX.select(); }
+  }
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G), L = this.items();
-    if (!L.length) { textC('No spellcasting.', 80, 50, 1); textC('Use ABILITY in battle.', 80, 62, 2); return; }
-    text(resLine(G, D), 4, 14, 2); textR(`DC${D.spell.dc} +${D.spell.atk}`, 156, 14, 2);
-    L.slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 25 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(s.lvl ? `L${s.lvl}` : 'C', 4, y, 2); text(s.name.slice(0, 17), 20, y); textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2); });
-    this.scrollbar(156, 24, 80);
-    const s = L[this.i]; frame(2, 106, 156, 36);
-    text(`${SCHOOLS[s.school].name}${s.conc ? ' CONC' : ''}${s.bonus ? ' BONUS' : ''}`, 6, 109, 'gold');
-    text(wrap(s.desc + (s.save ? ` ${s.save} save.` : s.atk ? ' Spell attack.' : ''), 24).slice(0, 2).join('\n'), 6, 119);
+    const sch = this.schoolDef();
+    const hasSpells = D.spell && D.spell.known && D.spell.known.length;
+    const mode = (!hasSpells || this.all) ? 'ALL' : 'KNOWN';
+
+    // Subheader
+    if (D.spell) {
+      text(resLine(G, D), 4, 13, 2);
+      textR(`DC${D.spell.dc} +${D.spell.atk}`, 156, 13, 2);
+    } else {
+      text('SPELL COMPENDIUM', 4, 13, 'gold');
+      textR('8 SCHOOLS', 156, 13, 2);
+    }
+
+    // School tab banner
+    fill(2, 23, 156, 10, 1);
+    textC(`< ${sch.name} (${L.length}) >`, 80, 24, 'gold');
+
+    // Spell list
+    if (!L.length) {
+      frame(2, 35, 156, 58);
+      textC(`No ${mode === 'KNOWN' ? 'known ' : ''}${sch.name} spells.`, 80, 48, 1);
+      if (mode === 'KNOWN') textC('Press START: view all in school', 80, 60, 'gold');
+      else textC(wrap(sch.desc, 24)[0] || '', 80, 60, 2);
+      textC('SEL / < >: cycle schools', 80, 74, 2);
+    } else {
+      L.slice(this.top, this.top + this.rows).forEach((s, j) => {
+        const i = this.top + j, y = 35 + j * 10;
+        const isKnown = D.spell && D.spell.known && D.spell.known.some(k => k.id === s.id);
+        if (i === this.i) fill(2, y - 1, 152, 10, 1);
+        text(s.lvl ? `L${s.lvl}` : 'C', 4, y, isKnown ? 'gold' : 2);
+        text((isKnown ? '*' : ' ') + s.name.slice(0, 15), 14, y, isKnown ? 3 : 1);
+        textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2);
+      });
+      this.scrollbar(156, 35, 58);
+    }
+
+    // Detail box
+    frame(2, 95, 156, 47);
+    const s = L[this.i];
+    if (s) {
+      text(`${SCHOOLS[s.school].name} · ${s.lvl ? 'L' + s.lvl : 'CANTRIP'}${s.conc ? ' · CONC' : ''}${s.bonus ? ' · BONUS' : ' · ACT'}`, 5, 97, 'gold');
+      const hit = s.save ? `${s.save} SAVE${s.half ? ' (1/2)' : ''}` : s.atk ? 'SPELL ATK' : (s.eff || '').toUpperCase();
+      const tags = [s.t ? s.t.toUpperCase() : '', hit, s.dt ? s.dt.toUpperCase() : '', s.dice || ''].filter(Boolean).join(' · ');
+      text(tags.slice(0, 25), 5, 106, 2);
+      text(wrap(s.desc + (s.scale ? ` (+${s.scale})` : ''), 25).slice(0, 2).join('\n'), 5, 115);
+      const clsList = (s.cls || []).map(c => c.slice(0, 3).toUpperCase()).join('/');
+      text(`CLS:${clsList || 'ALL'}`, 5, 133, 2);
+      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+    } else {
+      text(`${sch.name} TRADITION`, 5, 97, 'gold');
+      text(wrap(sch.desc, 25).slice(0, 2).join('\n'), 5, 108);
+      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+    }
   }
 }
 
-// ================================================================ GROWTH: ASI, feats, subclass, ascension, boons
+// ================================================================ GROWTH: talents, ASI, feats, subclass, ascension, boons
 class GrowthScene extends ListScene {
   constructor() { super(9); }
   items() {
-    const o = [];
+    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => { push(new TalentScene()); } }];
     if (G.pending.sub && classLevel(G) >= 3) CLASSES[G.cls].subs.forEach(s => o.push({ t: `SUBCLASS: ${s.name}`, d: s.desc, fn: () => { G.sub = s.id; G.pending.sub = false; G.res = resMax(G); } }));
     if (G.pending.asi) {
       ATTRS.slice(0, 6).forEach(a => o.push({ t: `+2 ${a} (${G.base[a]})`, d: 'Ability Score Increase. Max 20.', fn: () => { if (G.base[a] >= 20) return 'Already 20.'; G.base[a] = Math.min(20, G.base[a] + 2); G.pending.asi--; } }));
@@ -255,6 +376,70 @@ class GrowthScene extends ListScene {
     L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(e.t.slice(0, 24), 6, y); });
     this.scrollbar(156, 23, 90);
     frame(2, 114, 156, 28); text(wrap(L[this.i].d, 24).slice(0, 2).join('\n'), 6, 118);
+  }
+}
+
+class TalentScene extends ListScene {
+  constructor() { super(4); this.tree = 0; }
+  path() { return TALENT_TREES[this.tree]; }
+  items() { return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]); }
+  update() {
+    if (P('select')) { this.tree = (this.tree + 1) % TALENT_TREES.length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const node = this.items()[this.i];
+    if (!node) return;
+    if (node.respec) {
+      if (!G.talents.length) return say('No talents to reset.');
+      choose(['RESET ALL TALENTS', 'CANCEL'], index => {
+        if (index !== 0) return;
+        G.talentPts = (G.talentPts || 0) + G.talents.length;
+        G.talents = [];
+        G.hp = Math.min(G.hp, derive(G).hpMax);
+        SFX.levelup();
+      }, 'Refund all spent talent points?');
+      return;
+    }
+    if (G.talents.includes(node.id)) return say(`${node.name} is already learned.`);
+    if (G.lvl < node.level) return say(`Unlocks at level ${node.level}.`);
+    if (node.requires && !G.talents.includes(node.requires)) {
+      const prerequisite = this.path().nodes.find(candidate => candidate.id === node.requires);
+      return say(`Learn ${prerequisite ? prerequisite.name : 'the previous talent'} first.`);
+    }
+    if ((G.talentPts || 0) < 1) return say('No talent points available. Earn one at levels 5, 10, 15 and 20.');
+    G.talents.push(node.id);
+    G.talentPts--;
+    G.hp = Math.min(G.hp, derive(G).hpMax);
+    SFX.levelup();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC('TALENT SYSTEM', 80, 13, 'gold');
+    TALENT_TREES.forEach((tree, index) => {
+      const x = 3 + index * 52;
+      fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
+      textC(tree.name.slice(0, 8), x + 24, 25, index === this.tree ? 0 : 3);
+    });
+    text(`POINTS ${G.talentPts || 0}   LEVEL ${G.lvl}`, 5, 38, 2);
+    const L = this.items();
+    L.slice(this.top, this.top + this.rows).forEach((node, offset) => {
+      const index = this.top + offset, y = 50 + offset * 11;
+      const learned = !node.respec && G.talents.includes(node.id);
+      const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
+      if (index === this.i) fill(3, y - 1, 153, 10, 1);
+      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+      text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
+      if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
+    });
+    const node = L[this.i];
+    frame(2, 101, 156, 41);
+    if (node) {
+      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 104, 'gold');
+      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 114, 3);
+      if (node.requires && !G.talents.includes(node.id)) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 134, 2);
+    }
+    text('SELECT: PATH', 4, 143, 1);
   }
 }
 
@@ -284,11 +469,99 @@ class CraftScene extends ListScene {
   update() { this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    text(`ALCH ${G.prof.alch}  COOK ${G.prof.cook}  HERB ${G.prof.herb}  FISH ${G.prof.fish}`, 2, 14, 2);
-    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10; const ok = G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= r.needs[k]); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text(r.name.slice(0, 18), 16, y, ok ? 3 : 1); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    text(`A${G.prof.alch} C${G.prof.cook} H${G.prof.herb} F${G.prof.fish}`, 2, 14, 2);
+    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24); const ok = G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text(r.name.slice(0, 18), 16, y, ok ? 3 : 1); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
     const r = RECIPES[this.i]; frame(2, 108, 156, 34);
-    text(Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${n}`).join('\n'), 6, 111);
+    const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
+    text(Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n'), 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
+  }
+}
+
+class ProfessionTreeScene extends ListScene {
+  constructor() { super(4); this.professionIndex = 0; this.professionIds = Object.keys(PROFS); }
+  professionId() { return this.professionIds[this.professionIndex]; }
+  items() { return Object.entries(PROFESSION_TREES[this.professionId()]).map(([id, name]) => ({ id, name })); }
+  pointsAvailable() { return Math.max(0, G.prof[this.professionId()] - professionTalentSpend(this.professionId())); }
+  update() {
+    if (P('select')) { this.professionIndex = (this.professionIndex + 1) % this.professionIds.length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const key = this.professionId(), branch = this.items()[this.i];
+    if ((key === 'armorsmith' || key === 'weaponsmith') && G.lvl < 20) return say(`${PROFS[key]} unlocks at player level 20.`);
+    const error = spendProfessionTalent(key, branch.id);
+    if (error) { SFX.error(); say(error); }
+    else { SFX.levelup(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const key = this.professionId(), skill = G.prof[key] || 0, spent = professionTalentSpend(key);
+    textC(`< ${PROFS[key]} >`, 80, 13, 'gold');
+    text(`SKILL ${skill}/${PROF_CAP}`, 5, 27, 2);
+    text(`TREE POINTS ${this.pointsAvailable()}`, 5, 37, 'gold');
+    const branches = this.items();
+    branches.forEach((branch, index) => {
+      const y = 52 + index * 12, rank = profTalentRank(key, branch.id);
+      if (index === this.i) fill(3, y - 1, 153, 11, 1);
+      text(branch.name.slice(0, 19), 6, y);
+      textR(`${rank}/240`, 151, y, rank >= 240 ? 'gold' : 2);
+    });
+    frame(2, 106, 156, 36);
+    const selected = branches[this.i];
+    const help = selected.id === 'yield' ? 'Every 24 ranks add one resource or crafted item.' : selected.id === 'efficiency' ? 'Every 24 ranks save one ingredient; blacksmiths also reduce tempering costs.' : 'Raises the chance to gain another profession skill level.';
+    text(wrap(help, 24).slice(0, 2).join('\n'), 6, 111, 3);
+    text('SELECT: JOB', 4, 143, 1);
+  }
+}
+
+class ProfessionQuestScene extends ListScene {
+  constructor() { super(2); this.professionIndex = 0; this.professionIds = Object.keys(PROFS); this.message = ''; }
+  professionId() { return this.professionIds[this.professionIndex]; }
+  items() { return [{ id: 'side', name: 'PROFESSION SIDE QUEST' }, { id: 'order', name: 'REPEATABLE WORK ORDER' }]; }
+  update() {
+    if (P('select')) { this.professionIndex = (this.professionIndex + 1) % this.professionIds.length; this.i = this.top = 0; this.message = ''; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const professionId = this.professionId(), questId = this.items()[this.i].id;
+    if ((professionId === 'armorsmith' || professionId === 'weaponsmith') && G.lvl < 20) {
+      this.message = `${PROFS[professionId]} UNLOCK AT PLAYER LEVEL 20.`; SFX.error(); return;
+    }
+    const status = professionQuestStatus(professionId, questId);
+    if (status.done) { this.message = 'SIDE QUEST COMPLETE.'; SFX.cursor(); return; }
+    if (status.ready) {
+      const reward = claimProfessionQuest(professionId, questId);
+      this.message = reward.ok ? `REWARD +${fmt(reward.xp)} XP +${fmt(reward.gold)}G +${reward.skill} SKILL` : 'QUEST IS NOT READY.';
+      SFX[reward.ok ? 'quest_done' : 'error'](); return;
+    }
+    if (!status.accepted) {
+      acceptProfessionQuest(professionId, questId);
+      this.message = 'QUEST ACCEPTED. COMPLETE THE LISTED WORK.'; SFX.quest_accept(); return;
+    }
+    this.message = `PROGRESS ${status.progress}/${status.count}`; SFX.cursor();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const professionId = this.professionId();
+    textC(`< ${PROFS[professionId]} >`, 80, 13, 'gold');
+    const locked = (professionId === 'armorsmith' || professionId === 'weaponsmith') && G.lvl < 20;
+    text(`SKILL ${G.prof[professionId]}/${PROF_CAP}`, 5, 27, 2);
+    this.items().forEach((quest, index) => {
+      const status = professionQuestStatus(professionId, quest.id), y = 43 + index * 29;
+      if (index === this.i) fill(3, y - 1, 153, 25, 1);
+      const state = locked ? 'LOCKED' : status.done ? 'DONE' : status.ready ? 'READY' : status.accepted ? `${status.progress}/${status.count}` : 'NEW';
+      text(quest.name.slice(0, 22), 6, y);
+      textR(state, 151, y, status.ready ? 'gold' : status.done ? 2 : locked ? 1 : 3);
+      text(wrap(status.text, 24).slice(0, 2).join('\n'), 6, y + 11, 2);
+    });
+    frame(2, 106, 156, 36);
+    const selected = this.items()[this.i], status = professionQuestStatus(professionId, selected.id);
+    text(this.message || (status.ready ? 'A: TURN IN' : status.accepted ? `${status.progress}/${status.count} COMPLETE` : 'A: ACCEPT'), 6, 110, status.ready ? 'gold' : 3);
+    const rewardScale = selected.id === 'side' ? 3 : 1, reward = PROFESSION_QUESTS[professionId];
+    text(`REWARD ${fmt(reward.xp * rewardScale)}XP ${fmt(reward.gold * rewardScale)}G`, 6, 121, 2);
+    text(`+${reward.skill * rewardScale} PROF ${reward.item ? ITEMS[reward.item].name : ''}`.slice(0, 24), 6, 132, 2);
+    text('SELECT: JOB', 4, 143, 1);
   }
 }
 
@@ -405,7 +678,7 @@ class BankScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT']; }
+  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'FULL SCREEN']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
@@ -425,16 +698,17 @@ class SettingsScene extends ListScene {
     if (o === 'WEATHER') S.weather = !S.weather;
     if (o === 'AUTO BATTLE') S.autoBattle = !S.autoBattle;
     if (o === 'SWAP A/B') S.swap = !S.swap;
+    if (o === 'FULL SCREEN') { S.fullscreen = !S.fullscreen; document.body.classList.toggle('fullscreen-mode', S.fullscreen); }
     if (o === 'DIFFICULTY' && G) { difficultyMenu(); return; }
     if (o === 'SOUND TEST' && P('a')) { push(new SoundTest()); return; }
     if (o === 'DEBUG PANEL' && P('a')) { window.DBG && DBG.toggle(); return; }
-    if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
+    if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, 'EXPANSIONS:', ...BUILD.expansions, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
     saveSettings(); SFX.toggle();
   }
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>'];
+    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', S.fullscreen ? 'ON' : 'OFF'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }

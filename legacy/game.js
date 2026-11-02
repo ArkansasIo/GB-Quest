@@ -395,7 +395,7 @@ class Title {
   constructor() { this.opaque = true; this.t = 0; this.menu = false; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { return hasSave() ? ['CONTINUE', 'CAMPAIGN', 'MULTIPLAYER', 'NEW GAME'] : ['CAMPAIGN', 'MULTIPLAYER', 'NEW GAME']; }
+  opts() { return hasSave() ? ['CONTINUE', 'CAMPAIGN', 'MULTIPLAYER', 'NATIVE CORE', 'NEW GAME'] : ['CAMPAIGN', 'MULTIPLAYER', 'NATIVE CORE', 'NEW GAME']; }
   update() {
     this.t++;
     if (!this.menu) { if (P('start') || P('a')) { SFX.sel(); this.menu = true; this.i = 0; } return; }
@@ -406,6 +406,7 @@ class Title {
       SFX.sel();
       const choice = o[this.i];
       if (choice === 'MULTIPLAYER') { push(new MultiplayerInfo()); return; }
+      if (choice === 'NATIVE CORE') { push(new NativeCoreInfo()); return; }
       if (choice === 'CONTINUE') loadGame(); else newGame();
       push(new Fade(() => {
         reset(new Field());
@@ -448,7 +449,56 @@ class MultiplayerInfo {
     textC('A/B: BACK',80,132,3);
   }
 }
-\n// ============================================================ FIELD
+
+class NativeCoreInfo {
+  constructor() { this.opaque = true; this.loading = false; this.result = null; this.error = null; }
+  enter() { this.roll(12); }
+  async roll(naturalRoll) {
+    this.loading = true;
+    this.error = null;
+    try {
+      const response = await fetch('/api/native/attack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          naturalRoll, abilityScore: 18, proficiency: 3, bonus: 1, targetArmorClass: 18,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.command || result.error || `HTTP ${response.status}`);
+      this.result = result;
+    } catch (error) {
+      this.error = error.message;
+    } finally {
+      this.loading = false;
+    }
+  }
+  update() {
+    if (P('b') || P('start')) { SFX.back(); pop(); return; }
+    if (P('a') && !this.loading) { SFX.sel(); this.roll(rnd(1, 20)); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); header(); frame(3, 14, 154, 127);
+    textC('NATIVE CORE', 80, 22, 3);
+    textC('C++23 D20 RULES', 80, 40, 2);
+    if (this.loading) {
+      textC('CONNECTING...', 80, 65, 3);
+    } else if (this.error) {
+      textC('CORE OFFLINE', 80, 58, 3);
+      text('Run npm run native:build', 7, 77, 2);
+      text('Then npm start', 31, 92, 2);
+    } else if (this.result) {
+      const r = this.result;
+      text(`D20: ${r.naturalRoll}`, 12, 57, 3);
+      text(`ABILITY: +${r.abilityModifier}`, 12, 70, 3);
+      text(`TOTAL: ${r.total} vs AC 18`, 12, 83, 3);
+      textC(r.critical ? 'CRITICAL HIT!' : r.hit ? 'HIT!' : r.fumble ? 'FUMBLE!' : 'MISS', 80, 101, 3);
+      textC('A: ROLL AGAIN', 80, 117, 2);
+    }
+    textC('B: BACK', 80, 132, 3);
+  }
+}
+// ============================================================ FIELD
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const HERO_F = { down: [0, 3], up: [3, 0], left: [5, 1], right: [4, 2] };
 const NPCS = [

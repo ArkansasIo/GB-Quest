@@ -1,6 +1,6 @@
-# GB Quest C++23 Desktop Port
+# Shadowbane Chronicles C++23 Desktop Port
 
-This directory contains a starter architecture for a native desktop port of GB Quest.
+This directory contains a starter architecture for a native desktop port of Shadowbane Chronicles.
 It is deliberately independent of the browser runtime: gameplay rules can be migrated
 incrementally without coupling the native executable to browser globals.
 

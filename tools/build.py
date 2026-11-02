@@ -7,7 +7,7 @@
 """
 import base64, glob, json, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORDER = ['data_rules', 'data_world', 'gen', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'systems', 'art', 'scenes_world', 'scenes_menu', 'inventory', 'items', 'netlocal', 'main', 'debug']
+ORDER = ['data_rules', 'data_world', 'gen', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'netlocal', 'main', 'debug']
 import subprocess
 subprocess.run(['python3', os.path.join(ROOT, 'tools', 'build_atlas.py')], check=True)
 rd = lambda p: open(os.path.join(ROOT, p), encoding='utf8').read()
@@ -24,7 +24,7 @@ atlas = '<script>window.ATLAS_HTML=' + json.dumps(rd('dist/atlas.html')).replace
 single = shell + '\n<script>window.GB_ASSETS=' + json.dumps(assets) + ';</script>\n' + nes + atlas + ''.join(f'<script>\n{rd(f"src/{n}.js")}\n</script>\n' for n in ORDER)
 open(os.path.join(ROOT, 'dist', 'gbquest.html'), 'w').write(single)
 fs = rd('src/fullscreen.html')
-full = single.replace('<title>GB Quest</title>', '<title>GB Quest Full Screen</title>', 1).replace('</style>', '</style>\n' + fs.split('<div class="fsbar"')[0], 1)
+full = single.replace('<title>Shadowbane Chronicles</title>', '<title>Shadowbane Chronicles Full Screen</title>', 1).replace('</style>', '</style>\n' + fs.split('<div class="fsbar"')[0], 1)
 full = full.replace('<section class="chat"', '<div class="fsbar"' + fs.split('<div class="fsbar"')[1] + '\n<section class="chat"', 1)
 open(os.path.join(ROOT, 'dist', 'gbquest-fullscreen.html'), 'w').write(full)
 print('index.html + dist/gbquest.html (%d KB, %d assets)' % (len(single) // 1024, len(assets)))

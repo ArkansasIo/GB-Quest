@@ -12,9 +12,10 @@ function newGameState(o) {
     slot: o.slot || 0, created: Date.now(), playtime: 0, gold: BACKGROUNDS[o.bg].gold * 5, bag: [], inv: { potion: 3, ration: 2, campkit: 1, hearthstone: 1 },
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
-    stats: { kills: 0, deaths: 0, quests: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0 },
-    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1 }, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
+    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
+    pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
   return c;
 }
@@ -29,7 +30,34 @@ function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; 
 function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
+  G.prof = Object.assign({ herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
+  for (const key of Object.keys(PROFS)) G.prof[key] = Math.max(0, Math.min(PROF_CAP, Math.floor(Number(G.prof[key]) || 0)));
+  G.profTalents = G.profTalents && typeof G.profTalents === 'object' ? G.profTalents : {};
+  for (const key of Object.keys(PROFS)) {
+    const saved = G.profTalents[key] && typeof G.profTalents[key] === 'object' ? G.profTalents[key] : {};
+    G.profTalents[key] = Object.fromEntries(['yield', 'efficiency', 'mastery'].map(branch => [branch, Math.max(0, Math.min(240, Math.floor(Number(saved[branch]) || 0)))]));
+    let remaining = G.prof[key];
+    for (const branch of ['yield', 'efficiency', 'mastery']) { const rank = Math.min(remaining, G.profTalents[key][branch]); G.profTalents[key][branch] = rank; remaining -= rank; }
+  }
+  G.profQuests = G.profQuests && typeof G.profQuests === 'object' && !Array.isArray(G.profQuests) ? G.profQuests : {};
+  for (const key of Object.keys(PROFS)) {
+    const saved = G.profQuests[key] && typeof G.profQuests[key] === 'object' && !Array.isArray(G.profQuests[key]) ? G.profQuests[key] : {};
+    G.profQuests[key] = {};
+    for (const id of ['side', 'order']) {
+      const raw = saved[id] && typeof saved[id] === 'object' && !Array.isArray(saved[id]) ? saved[id] : {};
+      const target = id === 'side' ? PROFESSION_QUESTS[key].sideCount : PROFESSION_QUESTS[key].orderCount;
+      G.profQuests[key][id] = { accepted: !!raw.accepted, progress: Math.max(0, Math.min(target, Math.floor(Number(raw.progress) || 0))), done: id === 'side' && !!raw.done };
+    }
+  }
+  G.talents = Array.isArray(G.talents) ? G.talents.filter(id => TALENT_TREES.some(tree => tree.nodes.some(node => node.id === id))) : [];
+  const talentMilestones = [5, 10, 15, 20].filter(level => G.lvl >= level).length;
+  G.talentPts = Math.max(Number.isInteger(G.talentPts) ? G.talentPts : 0, talentMilestones - G.talents.length);
   G.stats = Object.assign(newGameState({ name: 'X', species: 'hearthkin', cls: 'warden', bg: 'wanderer' }).stats, G.stats);
+  if (typeof G.pvpEnabled !== 'boolean') G.pvpEnabled = false;
+  if (!['lantern', 'ashen'].includes(G.pvpFaction)) G.pvpFaction = 'lantern';
+  G.pvpDefeats = G.pvpDefeats && typeof G.pvpDefeats === 'object' ? G.pvpDefeats : {};
+  G.eventDaily = G.eventDaily && typeof G.eventDaily === 'object' ? G.eventDaily : {};
+  if (typeof G.trackedEvent !== 'string') G.trackedEvent = null;
   G.companions = (G.companions || []).filter(c => c && c.cls);
   migrateGear(G); G.companions.forEach(migrateGear); if (typeof stashOf === 'function') stashOf();
   if (G.inst) { G.inst = null; const z = ZONE_BY_ID[G.map]; if (!z) { G.map = 'elderwood'; G.x = 3; G.y = 7; } }
@@ -210,14 +238,87 @@ const achPoints = () => Object.keys(G.ach).length * 10;
 const repTier = v => { let t = REP_TIERS[0]; for (const r of REP_TIERS) if (v >= r[0]) t = r; return t[1]; };
 
 // ================================================================ professions
-function gainProf(k, diff = 1) { if (G.prof[k] < 100 && R() < Math.max(0.15, 1 - (G.prof[k] - diff) / 40)) { G.prof[k]++; return true; } return false; }
+function profTalentRank(k, branch) { return G.profTalents && G.profTalents[k] ? G.profTalents[k][branch] || 0 : 0; }
+function professionTalentSpend(k) { const tree = G.profTalents[k] || {}; return (tree.yield || 0) + (tree.efficiency || 0) + (tree.mastery || 0); }
+function spendProfessionTalent(k, branch) {
+  if (!PROFS[k] || !PROFESSION_TREES[k] || !Object.hasOwn(PROFESSION_TREES[k], branch)) return 'Unknown profession talent.';
+  G.profTalents[k] ||= { yield: 0, efficiency: 0, mastery: 0 };
+  const rank = profTalentRank(k, branch);
+  if (rank >= 240) return 'That talent is at maximum rank (240).';
+  if (G.prof[k] <= professionTalentSpend(k)) return 'No profession talent points available. Gain a profession skill level first.';
+  G.profTalents[k][branch]++;
+  return null;
+}
+function gainProf(k, diff = 1) {
+  if (!PROFS[k]) return false;
+  if (!Number.isInteger(G.prof[k]) || G.prof[k] < 0) G.prof[k] = 0;
+  if (G.prof[k] === 0) G.prof[k] = 1;
+  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960);
+  if (G.prof[k] < PROF_CAP && R() < Math.min(1, Math.max(0.15, 1 - (G.prof[k] - diff) / 40) + bonus)) { G.prof[k]++; return true; }
+  return false;
+}
 function craft(rec) {
-  for (const k in rec.needs) if ((G.inv[k] || 0) < rec.needs[k]) return 'Missing materials.';
+  const reduction = Math.floor(profTalentRank(rec.prof, 'efficiency') / 24);
+  const needs = Object.fromEntries(Object.entries(rec.needs).map(([item, quantity]) => [item, Math.max(1, quantity - reduction)]));
+  for (const k in needs) if ((G.inv[k] || 0) < needs[k]) return 'Missing materials.';
   if (G.prof[rec.prof] < rec.skill) return `Need ${PROFS[rec.prof]} ${rec.skill}.`;
-  for (const k in rec.needs) for (let i = 0; i < rec.needs[k]; i++) takeItem(k);
-  addItem(rec.makes); G.stats.crafted++;
+  for (const k in needs) for (let i = 0; i < needs[k]; i++) takeItem(k);
+  const output = 1 + Math.floor(profTalentRank(rec.prof, 'yield') / 24);
+  addItem(rec.makes, output); G.stats.crafted++;
   const up = gainProf(rec.prof, rec.skill);
-  return `Made ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+  progressProfessionQuest(rec.prof, 'craft', 1);
+  return `Made ${output} ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+}
+
+function professionQuestRecord(professionId, questId) {
+  const definition = PROFESSION_QUESTS[professionId];
+  if (!definition || !['side', 'order'].includes(questId)) throw new RangeError('Unknown profession quest.');
+  G.profQuests ||= {};
+  G.profQuests[professionId] ||= {};
+  G.profQuests[professionId][questId] ||= { accepted: false, progress: 0, done: false };
+  return { definition, state: G.profQuests[professionId][questId] };
+}
+function professionQuestStatus(professionId, questId) {
+  const { definition, state } = professionQuestRecord(professionId, questId);
+  const count = questId === 'side' ? definition.sideCount : definition.orderCount;
+  return { ...state, count, ready: state.accepted && !state.done && state.progress >= count,
+    name: questId === 'side' ? definition.sideName : 'REPEATABLE WORK ORDER',
+    text: questId === 'side' ? definition.sideText : definition.orderText };
+}
+function acceptProfessionQuest(professionId, questId) {
+  const status = professionQuestStatus(professionId, questId);
+  if (status.done || status.accepted) return false;
+  const { state } = professionQuestRecord(professionId, questId);
+  state.accepted = true;
+  return true;
+}
+function progressProfessionQuest(professionId, action, amount = 1) {
+  const definition = PROFESSION_QUESTS[professionId];
+  if (!definition || definition.action !== action || !Number.isFinite(amount) || amount <= 0) return;
+  for (const questId of ['side', 'order']) {
+    const status = professionQuestStatus(professionId, questId);
+    if (status.accepted && !status.done) {
+      const { state } = professionQuestRecord(professionId, questId);
+      state.progress = Math.min(status.count, state.progress + Math.floor(amount));
+    }
+  }
+}
+function claimProfessionQuest(professionId, questId) {
+  const status = professionQuestStatus(professionId, questId);
+  if (!status.ready) return { ok: false, reason: 'quest_not_ready' };
+  const definition = status && PROFESSION_QUESTS[professionId];
+  const state = professionQuestRecord(professionId, questId).state;
+  const scale = questId === 'side' ? 3 : 1;
+  const xp = definition.xp * scale, gold = definition.gold * scale, skill = definition.skill * scale;
+  G.gold += gold;
+  const levelUps = gainXP(G, xp).ups;
+  G.prof[professionId] = Math.min(PROF_CAP, G.prof[professionId] + skill);
+  if (definition.item && ITEMS[definition.item]) addItem(definition.item, scale);
+  if (questId === 'side') state.done = true;
+  else { state.accepted = false; state.progress = 0; }
+  checkAchievements();
+  saveGame();
+  return { ok: true, xp, gold, skill, item: definition.item, levelUps };
 }
 
 // ================================================================ zone cache
@@ -239,7 +340,7 @@ function realmPlayersIn(zid) {
     for (let i = 0; i < n; i++) {
       let x = m.hub[0] + r.int(-6, 6), y = m.hub[1] + r.int(-4, 4);
       for (let k = 0; k < 30 && !(m.tiles[(m.rows[y] || '')[x]] || [0, 0])[1]; k++) { x = r.int(2, 29); y = r.int(2, 21); }
-      out.push({ name: r.pick(SIM_NAMES), cls: r.pick(CLASS_ORDER), lvl: Math.max(z.lvl[0], Math.min(720, z.lvl[1] + r.int(-2, 2))), x, y, dir: 'down', guild: r.chance(0.5) ? r.pick(GUILD_NAMES) : null, t: r.int(0, 200) });
+      out.push({ id: `${zid}:${i}`, name: r.pick(SIM_NAMES), cls: r.pick(CLASS_ORDER), lvl: Math.max(z.lvl[0], Math.min(720, z.lvl[1] + r.int(-2, 2))), x, y, dir: 'down', guild: r.chance(0.5) ? r.pick(GUILD_NAMES) : null, faction: i % 2 === 0 ? 'ashen' : 'lantern', pvpEnabled: true, t: r.int(0, 200) });
     }
     REALM.players[zid] = out;
   }
@@ -286,7 +387,7 @@ const NET = {
   tick() {
     realmTick();
     if (this.offline || !this.room || !G || frameN % 15) return;
-    const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0,
+    const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0, w: G.pvpEnabled ? 1 : 0,
       s: this.say || null, st: this.sayT || 0, h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
     const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
     this.room.presence(pres).catch(() => {});

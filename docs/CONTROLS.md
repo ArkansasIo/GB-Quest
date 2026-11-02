@@ -18,6 +18,8 @@
 | F3 or ` | profiler overlay (64-bit video mode) |
 | F9 | debug panel |
 
+Use **START → SETTINGS → FULL SCREEN** to switch the regular browser build to its window-filling layout. The choice is saved between sessions.
+
 ## World map
 
 | Input | Action |

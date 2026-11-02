@@ -13,7 +13,7 @@ function newCharacter(o) {
   for (const a in sp.asi) base[a] += sp.asi[a];
   base.LCK = 10 + (sp.traits.includes('lucky') ? 2 : 0); base.WIL = 10 + (o.cls === 'ascetic' || o.cls === 'chaplain' ? 2 : 0); base.SPD = 10 + (o.cls === 'shade' || o.cls === 'strider' ? 2 : 0);
   const c = { name: o.name, species: o.species, cls: o.cls, bg: o.bg || 'wanderer', sub: null, lvl: 1, xp: 0, base,
-    feats: [], ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
+    feats: [], talents: [], talentPts: 0, ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
     eq: {}, hp: 1, hd: 1, res: {}, buffs: [], ai: o.ai || false, look: o.look || null, portrait: o.portrait || null, extraSkill: sp.traits.includes('versatile') ? 'perception' : null };
   (cls.gear || []).forEach(b => { const it = WEAPONS[b] ? makeItem({ kind: 'weapon', base: b, rarity: 1, lvl: 1 }) : makeItem({ kind: 'armor', base: b, rarity: 1, lvl: 1 }); c.eq[itemSlot(it)] = it; });
   const D = derive(c); c.hp = D.hpMax; c.hd = D.hdMax; c.res = resMax(c, D);
@@ -44,6 +44,11 @@ function gearAffixes(c) {
   const s = {};
   for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; }
   for (const k in c.ascSub || {}) s[k] = (s[k] || 0) + c.ascSub[k] * (AFFIX_K[k] || 1);
+  for (const tree of TALENT_TREES) for (const talent of tree.nodes) {
+    if (c.talents && c.talents.includes(talent.id)) {
+      for (const k in talent.mods) s[k] = (s[k] || 0) + talent.mods[k];
+    }
+  }
   for (const b of c.boons || []) { const bo = MYTHIC_BOONS.find(x => x.id === b); if (bo) for (const k in bo.sub) s[k] = (s[k] || 0) + bo.sub[k]; }
   for (const bf of c.buffs || []) { const def = BUFFS[bf.id]; if (def && def.mods) for (const k in def.mods) s[k] = (s[k] || 0) + def.mods[k] * (bf.stacks || 1); }
   return s;
@@ -233,6 +238,10 @@ function gainXP(c, amount) {
     } else {
       c.ascPts += ASCENSION.attrPerLevel; c.subPts += ASCENSION.subPerLevel; g.notes.push('+1 ATTRIBUTE, +2 SUBSTAT POINTS');
       if (c.lvl % ASCENSION.boonEvery === 0) { c.pending.boon++; g.notes.push('MYTHIC BOON AVAILABLE!'); }
+    }
+    if ([5, 10, 15, 20].includes(c.lvl)) {
+      c.talentPts = (c.talentPts || 0) + 1;
+      g.notes.push('TALENT POINT AVAILABLE!');
     }
     const D2 = derive(c); g.hp = D2.hpMax - before.hpMax; c.hp = D2.hpMax; c.res = resMax(c, D2); c.hd = D2.hdMax;
     ups.push(g);

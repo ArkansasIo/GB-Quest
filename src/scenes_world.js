@@ -63,7 +63,7 @@ class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'ONLINE'); if (typeof LocalRealm !== 'undefined' && LocalRealm.available) o.push('ACCOUNT'); o.push('SETTINGS', 'CREDITS'); return o; }
+  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'ONLINE'); if (typeof LocalRealm !== 'undefined' && LocalRealm.available) o.push('ACCOUNT'); o.push('SETTINGS', 'CREDITS'); return o; }
   update() {
     this.t++;
     const o = this.opts();
@@ -75,33 +75,77 @@ class Title {
       if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
       if (c === 'NEW GAME') push(new SlotPicker('new'));
       if (c === 'LOAD GAME') push(new SlotPicker('load'));
+      if (c === 'STORY TRAILERS') push(new StoryLibrary());
       if (c === 'ONLINE') { push(new MultiplayerScene()); return; }
       if (c === 'ACCOUNT') { push(new AccountScene()); return; }
-      if (c === 'MULTIPLAYER_OLD') say(['MULTIPLAYER: share this page with friends.', 'Load a hero, then visit the REALM STONE in ARDENHOLD (or open SOCIAL > SERVER) to host or join a server.', `Status: ${NET.status || 'OFFLINE'}. Live players: ${NET.peers.length}.`]);
       if (c === 'SETTINGS') push(new SettingsScene());
       if (c === 'CREDITS') push(new Credits());
     }
   }
   draw() {
-    // scrolling landscape made of the biome tiles
-    const biomes = ['world', 'b_marsh', 'b_snow', 'b_badlands', 'b_volcanic', 'b_crystal', 'b_dusk'];
-    const off = (this.t / 2) % 16;
-    for (let y = 0; y < 9; y++) for (let x = -1; x < 11; x++) {
-      const b = biomes[Math.floor((x + Math.floor(this.t / 32)) / 3) % biomes.length] || 'world';
-      const ch = y < 2 ? '0_3' : y > 6 ? '0_2' : (x * 7 + y * 3) % 5 === 0 ? '0_1' : '0_0';
-      blit(spr(`${b}_${ch}`, 16, 16), x * 16 - off, y * 16);
+    ctx.save();
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#10172d'); sky.addColorStop(0.56, '#49304b'); sky.addColorStop(1, '#d07852');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 32; i++) {
+      const x = (i * 47 + 13) % W, y = (i * 29 + 7) % 72;
+      ctx.globalAlpha = 0.45 + ((i + (this.t >> 4)) % 4) * 0.15;
+      ctx.fillStyle = i % 5 === 0 ? '#ffdca0' : '#d8e5ff';
+      ctx.fillRect(x, y, i % 7 === 0 ? 2 : 1, 1);
     }
-    ctx.globalAlpha = 0.5; fill(0, 0, W, H, 0); ctx.globalAlpha = 1;
+    ctx.globalAlpha = 1;
+    const moon = ctx.createRadialGradient(128, 37, 2, 128, 37, 28);
+    moon.addColorStop(0, 'rgba(255,224,166,.38)'); moon.addColorStop(1, 'rgba(255,190,130,0)');
+    ctx.fillStyle = moon; ctx.fillRect(98, 7, 60, 60);
+    ctx.fillStyle = '#f6dda7'; ctx.beginPath(); ctx.arc(128, 36, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d6a77d'; ctx.fillRect(123, 32, 3, 2); ctx.fillRect(130, 39, 2, 2);
+
+    const ridge = (points, color) => {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+      points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    };
+    ridge([[0, 74], [17, 51], [29, 68], [48, 42], [67, 69], [88, 48], [105, 68], [126, 43], [147, 67], [160, 54]], '#34334a');
+    ridge([[0, 91], [18, 75], [38, 89], [58, 68], [78, 91], [99, 72], [118, 88], [139, 66], [160, 86]], '#24283a');
+
+    const drift = Math.floor(this.t / 48) % 4;
+    ctx.fillStyle = '#1b2032';
+    ctx.fillRect(112 - drift, 62, 33, 39); ctx.fillRect(119 - drift, 53, 8, 48);
+    ctx.fillRect(136 - drift, 57, 7, 44); ctx.fillRect(108 - drift, 72, 7, 29);
+    ctx.fillRect(116 - drift, 56, 14, 3); ctx.fillRect(134 - drift, 60, 11, 3);
+    ctx.beginPath(); ctx.moveTo(118 - drift, 56); ctx.lineTo(123 - drift, 48); ctx.lineTo(128 - drift, 56); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(134 - drift, 60); ctx.lineTo(139 - drift, 51); ctx.lineTo(144 - drift, 60); ctx.fill();
+    ctx.fillStyle = '#f1a663';
+    [[116, 77], [126, 70], [137, 78], [121, 88], [141, 91]].forEach(([x, y], i) => {
+      if ((this.t + i * 7) % 80 < 68) ctx.fillRect(x - drift, y, 2, 3);
+    });
+
+    const glow = ctx.createRadialGradient(117, 76, 1, 117, 76, 19);
+    glow.addColorStop(0, 'rgba(247,112,65,.27)'); glow.addColorStop(1, 'rgba(247,112,65,0)');
+    ctx.fillStyle = glow; ctx.fillRect(96, 55, 42, 42);
+    blit(sprH('nm_dragon_0', 43, { flip: true }), 109 - drift, 47 + Math.round(Math.sin(this.t / 16) * 2));
+    ridge([[0, 112], [20, 101], [42, 108], [63, 97], [83, 106], [105, 96], [128, 108], [147, 98], [160, 104]], '#171c2a');
+    ctx.fillStyle = '#d98055';
+    for (let i = 0; i < 18; i++) {
+      const x = (i * 37 + 8) % W, y = 112 + ((i * 17) % 28);
+      ctx.fillRect(x, y, 1 + (i % 3), 1);
+    }
+    ctx.restore();
+
     { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
-    frame(8, 8, 144, 44);
-    textC('GB QUEST', 81, 14, 2, 2); textC('GB QUEST', 80, 13, 3, 2);
-    textC(BUILD.subtitle, 80, 36, 2);
     const bob = Math.round(Math.sin(this.t / 12));
-    blit(sprH('c_warden_4', 28), 16, 60 + bob); blit(sprH('c_arcanist_4', 28), 36, 62 - bob); blit(sprH('enemy_goblinking', 30, { flip: true }), 120, 58 + bob);
-    const o = this.opts(); const h = o.length * 10 + 6;
-    frame(48, 58, 64, h);
-    o.forEach((s, i) => { text(s.slice(0, 9), 60, 61 + i * 10, i === this.i ? 3 : 2); if (i === this.i) text('>', 52, 61 + i * 10); });
-    textC(`(C)${BUILD.year} ${BUILD.studio}  v${BUILD.version}`, 80, 134, 1);
+    blit(sprH('c_warden_4', 36), 99, 93 + bob);
+    blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
+    frame(4, 5, 152, 43);
+    textC('SHADOWBANE', 80, 12, 2); textC('CHRONICLES', 80, 23, 3);
+    textC(BUILD.subtitle, 80, 36, 2);
+    const o = this.opts(), h = o.length * 9 + 6;
+    frame(5, 60, 83, h);
+    o.forEach((s, i) => {
+      const y = 63 + i * 9;
+      if (i === this.i) { fill(8, y - 1, 77, 9, 3); text('>', 10, y, 'gold'); }
+      text(s.slice(0, 11), 19, y, i === this.i ? 'gold' : 2);
+    });
+    textC(`AELMOOR  ${BUILD.version}`, 80, 134, 1);
   }
 }
 
@@ -143,25 +187,91 @@ class SlotPicker {
 
 // ================================================================ PROLOGUE
 class Prologue {
-  constructor(cb) { this.opaque = true; this.cb = cb; this.i = 0; this.c = 0; this.t = 0; }
+  constructor(cb, story = null) {
+    this.opaque = true; this.cb = cb; this.i = 0; this.c = 0; this.t = 0;
+    this.expansion = story !== null;
+    this.story = story || { name: BUILD.game, subtitle: 'THE LANTERN PACT', scenes: PROLOGUE.map((line, index) => ({
+      title: ['THE EMBER CODEX', 'A THOUSAND LIGHTS', 'THE LANTERN PACT', 'THE SUNLESS EVENING', 'THE SHADOW KING', 'TWELVE LOST PAGES', 'A LIGHT IN ELDERWOOD', 'THE ROAD BEGINS'][index],
+      text: line,
+      art: ['item_spellbook', 'px_waypoint', 'px_symbol', 'px_skull', 'enemy_goblinking', 'px_rune', 'c_warden_0', 'elder_0'][index],
+    })) };
+    this.scenes = this.story.scenes;
+    this.sceneStart = 0;
+  }
   enter() { Music.play('prologue'); }
   update() {
     this.t++;
-    const L = PROLOGUE[this.i];
+    const scene = this.scenes[this.i];
+    if (!scene) { this.done(); return; }
+    const L = scene.text;
     if (P('start')) { this.done(); return; }
+    if (P('b')) { this.done(); return; }
     if (this.c < L.length) { this.c += 0.7; if (P('a')) this.c = L.length; return; }
-    if (P('a') || P('b')) { SFX.page(); this.i++; this.c = 0; if (this.i >= PROLOGUE.length) this.done(); }
+    if (P('a')) { SFX.page(); this.i++; this.c = 0; this.sceneStart = this.t; if (this.i >= this.scenes.length) this.done(); }
   }
   done() { if (this.over) return; this.over = true; fadeTo(() => { removeScene(this); this.cb(); }); }
   draw() {
-    fill(0, 0, W, H, 3);
-    const art = ['item_spellbook', 'px_waypoint', 'px_symbol', 'px_skull', 'enemy_goblinking', 'px_rune', 'c_warden_0', 'elder_0'][this.i] || 'px_waypoint';
-    const glow = 2 + Math.round(Math.sin(this.t / 10) * 2);
-    fill(80 - 20 - glow, 30 - glow, 40 + glow * 2, 40 + glow * 2, 2);
-    blit(sprFit(art, 36), 62, 32);
-    text(wrap(PROLOGUE[this.i] || '', 24).join('\n').slice(0, Math.floor(this.c)), 8, 84, 0);
-    textR('START: SKIP', 156, 134, 1);
-    textC(`${this.i + 1}/${PROLOGUE.length}`, 80, 4, 1);
+    const scene = this.scenes[this.i] || this.scenes[this.scenes.length - 1];
+    const hue = this.expansion ? (this.story.n * 29 + 180) % 360 : 224;
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, `hsl(${hue} 40% 10%)`); sky.addColorStop(0.68, `hsl(${(hue + 36) % 360} 45% 28%)`); sky.addColorStop(1, '#171421');
+    fill(0, 0, W, H, 0); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    const phase = this.t - this.sceneStart;
+    for (let star = 0; star < 28; star++) {
+      ctx.globalAlpha = 0.45 + ((star + (this.t >> 3)) % 4) * 0.12;
+      fill((star * 47 + 13) % W, (star * 23 + 5) % 74, star % 6 === 0 ? 2 : 1, 1, 'white');
+    }
+    ctx.globalAlpha = 1;
+    const ridge = (points, color) => {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, 105);
+      points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, 105); ctx.fill();
+    };
+    ridge([[0, 75], [20, 54], [38, 72], [61, 43], [83, 73], [104, 51], [126, 71], [147, 48], [160, 62]], `hsl(${hue} 25% 24%)`);
+    ridge([[0, 91], [18, 74], [42, 87], [62, 65], [84, 88], [111, 69], [132, 87], [151, 68], [160, 77]], `hsl(${hue} 28% 16%)`);
+    const flare = ctx.createRadialGradient(80, 61, 2, 80, 61, 38);
+    flare.addColorStop(0, this.expansion ? `hsla(${hue}, 90%, 65%, .4)` : 'rgba(255,172,90,.34)');
+    flare.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = flare; ctx.fillRect(34, 17, 92, 88);
+    blit(sprFit(scene.art || 'px_waypoint', 48), 56 + Math.round(Math.sin(this.t / 21) * 3), 34 + Math.round(Math.sin(this.t / 15) * 2));
+    fill(0, 0, W, 17, 0); fill(0, 17, W, 1, 2);
+    textC(this.expansion ? `EXPANSION ${this.story.n}` : 'AELMOOR - THE BEGINNING', 80, 4, 'gold');
+    textC(scene.title || this.story.name, 80, 79, 'gold');
+    frame(3, 91, 154, 43);
+    const lines = wrap(scene.text, 24).slice(0, 3), shown = this.c;
+    text(lines.join('\n').slice(0, Math.floor(shown)), 9, 97, 0);
+    textR('A: NEXT   B/START: SKIP', 156, 137, 1);
+    textC(`${this.i + 1}/${this.scenes.length}`, 80, 139, 1);
+  }
+}
+
+class StoryLibrary extends ListScene {
+  constructor() { super(9); }
+  items() { return ['AELMOOR PROLOGUE', ...BUILD.expansions]; }
+  update() {
+    this.navList();
+    if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const index = this.i;
+    const story = index === 0 ? null : (() => {
+      const expansion = EXPANSION_STORIES[index - 1];
+      return { ...expansion, scenes: [
+        { title: expansion.name.toUpperCase(), text: `${expansion.name}: ${expansion.subtitle}.`, art: expansion.art },
+        { title: 'THE THREAT', text: expansion.threat, art: expansion.art },
+        { title: 'YOUR JOURNEY', text: expansion.hook, art: expansion.art },
+      ] };
+    })();
+    push(new Prologue(() => Music.play('title'), story));
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); textC('STORY TRAILERS', 80, 14, 'gold');
+    const rows = this.items();
+    rows.slice(this.top, this.top + this.rows).forEach((name, offset) => {
+      const index = this.top + offset, y = 31 + offset * 11;
+      if (index === this.i) fill(4, y - 1, 150, 10, 3);
+      text(name.slice(0, 23).toUpperCase(), 8, y, index === this.i ? 'gold' : 2);
+    });
+    this.scrollbar(156, 30, 101);
+    text('A: WATCH   B: BACK', 7, 136, 1);
   }
 }
 
@@ -399,7 +509,15 @@ const CITY_NPCS = [
   [26, 7, 'elder_2', 'GUILDMASTER', 'guild'], [13, 10, 'villager_1', 'MERCHANT', 'vendor'], [19, 10, 'hero_2', 'QUARTERMASTER', 'honor'], [15, 14, 'villager_3', 'LFG BOARD', 'lfg'],
   [12, 14, 'elder_3', 'ORACLE', 'difficulty'], [17, 5, 'hero_3', 'SPIRE KEEPER', 'tower'], [21, 18, 'villager_5', 'TRIALS MASTER', 'trials'], [27, 13, 'villager_4', 'HARBORMASTER', 'portal'],
   [19, 14, 'elder_5', 'REALM STONE', 'server'], [10, 18, 'villager_0', 'STABLEMASTER', 'stable'], [23, 18, 'hero_0', 'ARENAMASTER', 'arena'],
+  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'],
 ];
+const BLACKSMITH_TIERS = [
+  { tier: 1, name: 'APPRENTICE', level: 1, maxRarity: 2 },
+  { tier: 2, name: 'JOURNEYMAN', level: 20, maxRarity: 5 },
+  { tier: 3, name: 'MASTER', level: 40, maxRarity: 6 },
+  { tier: 4, name: 'GRANDMASTER', level: 60, maxRarity: 8 },
+];
+const blacksmithTier = level => BLACKSMITH_TIERS.filter(t => level >= t.level).at(-1) || BLACKSMITH_TIERS[0];
 const TILE_SVC = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', a: 'bank' };
 let FIELD = null;
 const currentField = () => FIELD;
@@ -428,8 +546,14 @@ class Field {
       return e;
     }
     const z = this.zone, m = this.m;
-    if (z.town && z.id === z.region) CITY_NPCS.forEach(([x, y, s, name, svc]) => e.push({ kind: 'npc', x, y, spr: s, name, svc }));
-    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer']].forEach(([x, y, s, name, svc]) => e.push({ kind: 'npc', x, y, spr: s, name, svc }));
+    if (z.town && z.id === z.region) CITY_NPCS.forEach(([x, y, s, name, svc]) => {
+      if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
+      e.push({ kind: 'npc', x, y, spr: s, name, svc });
+    });
+    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith']].forEach(([x, y, s, name, svc]) => {
+      if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
+      e.push({ kind: 'npc', x, y, spr: s, name, svc });
+    });
     else {
       if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); }
       else { const r = RNG('warden-' + z.id); e.push({ kind: 'npc', x: m.hub[0], y: m.hub[1] - 1, spr: r.pick(['villager_1', 'villager_3', 'elder_1', 'hero_2']), name: `WARDEN ${r.pick(NPC_FIRST)}`, svc: 'warden' }); }
@@ -594,7 +718,9 @@ class Field {
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
         if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3); else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
-        const nm = (p.name || '').slice(0, 8); fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
+        const nm = (p.name || '').slice(0, 8);
+        const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
+        fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
       }
       else if (e.kind === 'herb') { if (PIX) blit(spr('go_herb', 16, 16), ex, ey - ((frameN >> 5) % 4 === 0 ? 1 : 0)); else blit(sprH(e.herb === 'sandroot' ? 'px_sandroot' : 'item_herb', 11), ex + 3, ey + 3); }
       else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }
@@ -607,6 +733,7 @@ class Field {
     }
     FX.draw(cx, cy);
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
+    if (this.zone && !G.inst) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
     // HUD: hp/xp micro bars
     const D = derive(G);
     bar(1, H - 5, 50, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
@@ -639,7 +766,7 @@ function gatherHerb(e) {
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
   const chk = skillCheck(G, 'nature', 8 + Math.floor(G.prof.herb / 10));
   nodes[e.i] = G.stats.steps;
-  const n = chk.ok ? 2 : 1; addItem(e.herb, n); SFX.gather();
+  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); progressProfessionQuest('herb', 'gather', n); SFX.gather();
   const up = gainProf('herb', G.prof.herb);
   questEvent('gather', e.herb);
   toast(`+${n} ${ITEMS[e.herb].name}`, up ? `HERBALISM ${G.prof.herb}` : chk.text.slice(0, 22), ITEMS[e.herb].icon, 'pickup');
@@ -656,11 +783,23 @@ function fightBoss(b) {
   }, `${B.cat === 'arc' ? 'ARC BOSS' : 'WORLD BOSS'}: ${B.name}. LV${lvl}. ${mechs}`);
 }
 function simPlayerMenu(p) {
-  choose(['INSPECT', 'INVITE', 'DUEL', 'WAVE', 'LEAVE'], k => {
-    if (k === 0) say(`${p.name} - LV${p.lvl} ${CLASSES[p.cls].name}${p.guild ? ` <${p.guild}>` : ''}`);
-    if (k === 1) { if (G.companions.length >= Math.max(3, modeOf().size - 1)) return say('Your party is full.'); const c = makeAdventurer(p.cls, Math.min(G.lvl, p.lvl), p.name); G.companions.push(c); SFX.lfg_ready(); say(`${p.name} joins your party!`); }
-    if (k === 2) { const c = makeAdventurer(p.cls, Math.min(LEVEL_CAP, p.lvl), p.name); const foe = adventurerFoe(c); startBattle([foe], { size: 1, noFlee: true, kind: 'arena', onEnd: r => say(r === 'win' ? `${p.name}: GG! Well fought.` : `${p.name}: Better luck next time.`) }); }
-    if (k === 3) { SFX.charm(); chatLog('Emote', G.name, `waves at ${p.name}.`); say(`${p.name} waves back.`); }
+  const zone = ZONE_BY_ID[G.map];
+  const canWorldPvp = !G.inst && !G.ghost && zone && !zone.town && GBQ_PVP.canAttack(
+    { id: 'hero', pvpEnabled: G.pvpEnabled },
+    { id: p.id, pvpEnabled: p.pvpEnabled },
+    { sameFaction: G.pvpFaction === p.faction, safeZone: !!zone.town },
+  );
+  const actions = ['INSPECT', 'INVITE'].concat(canWorldPvp ? ['ATTACK'] : []).concat(['DUEL', 'WAVE', 'LEAVE']);
+  choose(actions, k => {
+    const action = actions[k];
+    if (action === 'INSPECT') say(`${p.name} - LV${p.lvl} ${CLASSES[p.cls].name}${p.guild ? ` <${p.guild}>` : ''} / ${p.faction.toUpperCase()}`);
+    if (action === 'INVITE') { if (G.companions.length >= Math.max(3, modeOf().size - 1)) return say('Your party is full.'); const c = makeAdventurer(p.cls, Math.min(G.lvl, p.lvl), p.name); G.companions.push(c); SFX.lfg_ready(); say(`${p.name} joins your party!`); }
+    if (action === 'ATTACK') fightWorldPvp(p);
+    if (action === 'DUEL') {
+      const c = makeAdventurer(p.cls, Math.min(LEVEL_CAP, p.lvl), p.name);
+      startBattle([adventurerFoe(c)], { size: 1, noFlee: true, kind: 'arena', noRewards: true, onEnd: (r, battle) => { restorePvpParty(battle); say(r === 'win' ? `${p.name}: GG! Well fought.` : `${p.name}: Better luck next time.`); } });
+    }
+    if (action === 'WAVE') { SFX.charm(); chatLog('Emote', G.name, `waves at ${p.name}.`); say(`${p.name} waves back.`); }
   }, `${p.name} LV${p.lvl}`);
 }
 // an NPC adventurer as a foe (arena / duels / mirror trial)
@@ -671,6 +810,39 @@ function adventurerFoe(c) {
     attacks: [{ name: D.weapon.name, type: D.weapon.type, hit: D.weapon.hit, dice: `${D.weapon.dice}+${D.weapon.dmg}` }], multi: D.attacks, spells: D.spell ? D.spell.known.filter(s => s.eff === 'dmg' && s.lvl > 0).slice(-2).map(s => s.id) : [], xp: xpForMonster(c.lvl) * 2, gold: 10 + c.lvl * 3, pvp: true });
   return m;
 }
+function restorePvpParty(battle) {
+  for (const unit of battle.party) {
+    if (!unit.ch) continue;
+    unit.ch.hp = Math.max(1, Math.ceil(derive(unit.ch).hpMax / 2));
+    delete unit.ch.dying; delete unit.ch.stable; delete unit.ch.dead;
+  }
+}
+function fightWorldPvp(opponent) {
+  if (!GBQ_PVP.canAttack(
+    { id: 'hero', pvpEnabled: G.pvpEnabled },
+    { id: opponent.id, pvpEnabled: opponent.pvpEnabled },
+    { sameFaction: G.pvpFaction === opponent.faction, safeZone: !!(ZONE_BY_ID[G.map] || {}).town },
+  )) return say('Open-world PvP is unavailable: flag for PvP, leave the safe zone, and choose a rival.');
+  const rival = makeAdventurer(CLASSES[opponent.cls] ? opponent.cls : 'warden', Math.max(1, Math.min(LEVEL_CAP, opponent.lvl)), opponent.name);
+  startBattle([adventurerFoe(rival)], {
+    size: 1, noFlee: true, kind: 'world-pvp', noRewards: true, title: `WAR MODE: ${opponent.name}`,
+    onEnd: (result, battle) => {
+      restorePvpParty(battle);
+      if (result === 'win') {
+        const defeats = G.pvpDefeats[opponent.id] || 0;
+        const honor = GBQ_PVP.calculateHonor({ levelDifference: opponent.lvl - G.lvl, base: 20 + Math.floor(G.lvl / 2), repeatPenalty: defeats * 0.2 });
+        G.pvpDefeats[opponent.id] = defeats + 1;
+        G.honor += honor; G.stats.pvpKills++;
+        checkAchievements();
+        say(`Victory over ${opponent.name}! +${honor} honor.`);
+      } else {
+        G.stats.pvpDeaths++;
+        say(`${opponent.name} wins the skirmish. Your honor is safe.`);
+      }
+      saveGame();
+    },
+  });
+}
 
 // ================================================================ NPC services
 function npcService(e) {
@@ -679,6 +851,9 @@ function npcService(e) {
   if (svc === 'elder') return elderTalk();
   if (svc === 'warden') return wardenMenu(e);
   if (svc === 'vendor') return vendorMenu();
+  if (svc === 'blacksmith') return smithMenu('blacksmith');
+  if (svc === 'armorsmith') return smithMenu('armor');
+  if (svc === 'weaponsmith') return smithMenu('weapon');
   if (svc === 'inn') return innMenu();
   if (svc === 'trainer') return trainerMenu();
   if (svc === 'auction') return push(new AuctionHouse());
@@ -752,6 +927,64 @@ function vendorMenu() {
     if (k === 4) { if (G.daily.haggle === new Date().toDateString()) return say('The merchant will not haggle again today.'); G.daily.haggle = new Date().toDateString(); const r = skillCheck(G, 'persuasion', 13); if (r.ok) G.daily.discount = new Date().toDateString(); say([r.text, r.ok ? '10% discount for today!' : 'The merchant shrugs. Prices stay.']); }
   }, 'MERCHANT: What will it be?');
 }
+function smithMenu(kind) {
+  if (kind === 'blacksmith') {
+    const tier = blacksmithTier(G.lvl);
+    return choose(['REINFORCE GEAR', 'SELL GEAR', 'LEAVE'], k => {
+      if (k === 0) smithUpgradeMenu(tier);
+      if (k === 1) push(new InventoryScene('sell'));
+    }, `${tier.name} BLACKSMITH TIER ${tier.tier}. ${tier.tier < 3 ? `NEXT TIER AT LV${BLACKSMITH_TIERS[tier.tier].level}.` : 'MY BEST WORK.'}`);
+  }
+  const label = kind === 'armor' ? 'ARMORSMITH' : 'WEAPONSMITH';
+  if (G.lvl < 20) return say(`${label} services unlock at player level 20.`);
+  return choose([`BUY ${kind === 'armor' ? 'ARMOUR' : 'WEAPONS'}`, `SELL ${kind === 'armor' ? 'ARMOUR' : 'WEAPONS'}`, 'LEAVE'], k => {
+    if (k === 0) smithBuyMenu(kind);
+    if (k === 1) smithSellMenu(kind);
+  }, `${label}: Properly fitted, properly forged.`);
+}
+function smithBuyMenu(kind) {
+  const catalog = kind === 'armor' ? ARMORS : WEAPONS;
+  const bases = Object.keys(catalog);
+  const rarity = Math.min(5, 1 + Math.floor(Math.max(0, G.lvl - 1) / 40));
+  const stock = Array.from({ length: 6 }, () => makeItem({ kind, base: pick(bases), lvl: G.lvl, rarity }));
+  choose(stock.map(it => `${it.name.slice(0, 15)} ${fmt(it.value * 2)}G`), index => {
+    if (index < 0) return;
+    const item = stock[index], price = item.value * 2;
+    if (G.gold < price) return say('Not enough gold.');
+    G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`);
+  }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
+}
+function smithSellMenu(kind) {
+  const gear = G.bag.filter(item => item.kind === kind);
+  if (!gear.length) return say(`You have no ${kind === 'armor' ? 'armour' : 'weapons'} to sell.`);
+  choose(gear.map(item => `${item.name.slice(0, 18)} ${fmt(item.value)}G`), index => {
+    if (index < 0) return;
+    const item = gear[index], bagIndex = G.bag.indexOf(item);
+    if (bagIndex < 0) return;
+    G.bag.splice(bagIndex, 1); G.gold += item.value; const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
+  }, `GOLD ${fmt(G.gold)}. Selling ${kind === 'armor' ? 'armour' : 'weapons'}.`);
+}
+function smithUpgradeMenu(tier) {
+  const gear = G.bag.filter(item => ['weapon', 'armor', 'wondrous'].includes(item.kind) && item.rarity <= tier.maxRarity);
+  if (!gear.length) return say('Bring me a weapon, armour or accessory to reinforce.');
+  choose(gear.map(item => `${item.name.slice(0, 17)} +${item.plus}`), index => {
+    if (index < 0) return;
+    const item = gear[index], cap = MAX_PLUS[item.rarity] ?? item.rarity;
+    if (item.plus >= cap) return say(`${item.name} has reached its reinforcement limit (+${cap}).`);
+    const rank = Math.max(0, item.plus) + 1, efficiency = profTalentRank('blacksmith', 'efficiency');
+    const cost = { scrap: Math.max(1, rank * 3 - Math.floor(efficiency / 24)), shard: item.rarity >= 3 ? Math.max(1, rank - Math.floor(efficiency / 48)) : 0, ember: item.rarity >= 5 ? Math.max(0, rank - 3) : 0, gold: Math.max(1, Math.floor(50 * rank * Math.max(1, Math.floor(item.ilvl / 5)) * (1 - Math.min(0.5, efficiency / 480)))) };
+    const needs = Object.entries(cost).filter(([key, amount]) => key !== 'gold' && amount > 0).map(([key, amount]) => `${amount} ${ITEMS[key].name}`).concat(`${fmt(cost.gold)} G`);
+    if ((G.inv.scrap || 0) < cost.scrap || (G.inv.shard || 0) < cost.shard || (G.inv.ember || 0) < cost.ember || G.gold < cost.gold) {
+      return say(['Not enough materials.', `Need ${needs.join(', ')}.`, `Have ${G.inv.scrap || 0} scrap, ${G.inv.shard || 0} shards, ${G.inv.ember || 0} embers, ${fmt(G.gold)} G.`]);
+    }
+    choose(['TEMPER ITEM', 'CANCEL'], confirm => {
+      if (confirm !== 0) return;
+      for (const material of ['scrap', 'shard', 'ember']) for (let n = 0; n < cost[material]; n++) takeItem(material);
+      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3); gainProf('blacksmith'); progressProfessionQuest('blacksmith', 'reinforce');
+      SFX.levelup(); say(`${item.name} is now +${item.plus}.`);
+    }, `REINFORCE ${item.name.slice(0, 16)}?\n${needs.join(', ')}`);
+  }, `${tier.name} TIER: REINFORCES ${RARITY[tier.maxRarity].name.toLowerCase()} GEAR OR LOWER. Materials come from salvaging gear.`);
+}
 function innMenu() {
   const price = 5 + Math.floor(G.lvl / 2);
   choose([`LONG REST (${price}G)`, 'SET HEARTH HERE', 'HIRE COMPANION', 'DISMISS COMPANION', 'LEAVE'], k => {
@@ -762,11 +995,12 @@ function innMenu() {
   }, 'INNKEEPER: A warm bed and good company.');
 }
 function trainerMenu() {
-  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSIONS', 'LEAVE'], k => {
+  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSION TREES', 'PROFESSION QUESTS', 'LEAVE'], k => {
     if (k === 0) push(new GrowthScene());
     if (k === 1) { if (classLevel(G) < 3) return say('Subclasses unlock at level 3.'); if (G.gold < 100) return say('Not enough gold.'); G.gold -= 100; G.sub = null; G.pending.sub = true; push(new GrowthScene()); }
     if (k === 2) { if (G.hasMount) return say('You already ride.'); if (G.lvl < 10 || G.gold < 300) return say('Need level 10 and 300 G.'); G.gold -= 300; G.hasMount = true; SFX.howl(); checkAchievements(); say('You learn to ride! Press B in the field to mount.'); }
-    if (k === 3) say(Object.entries(PROFS).map(([k2, n]) => `${n}: ${G.prof[k2]}/100`).concat(['Gather herbs (A on bushes), fish (A at water), craft from MENU > CRAFT.']));
+    if (k === 3) push(new ProfessionTreeScene());
+    if (k === 4) push(new ProfessionQuestScene());
   }, 'TRAINER: Knowledge is power.');
 }
 function mailMenu() {
@@ -784,11 +1018,20 @@ function guildMenu() {
 }
 function honorMenu() {
   const items = [[150, 3, 'weapon'], [150, 3, 'armor'], [250, 4, 'weapon'], [250, 4, 'armor'], [200, 3, 'wondrous']];
-  choose(items.map(([c, r, kd]) => `${RARITY[r].name} ${kd.toUpperCase()} ${c}H`), i => {
-    if (i < 0) return; const [c, r, kd] = items[i];
-    if (G.honor < c) return say(`Need ${c} honor (you have ${G.honor}).`);
-    G.honor -= c; const it = makeItem({ lvl: G.lvl, rarity: r, kind: kd }); it.name = 'GLADIATOR ' + it.name.replace(/^\+\d /, ''); addGear(it); SFX.buy();
-  }, `QUARTERMASTER: Honor: ${G.honor}`);
+  choose([`WAR MODE: ${G.pvpEnabled ? 'PVP' : 'PVE'}`, 'BATTLEGROUNDS', 'RANKED ARENA', 'HONOR GEAR', 'LEAVE'], k => {
+    if (k === 0) {
+      G.pvpEnabled = !G.pvpEnabled;
+      saveGame(); SFX.confirm();
+      say(G.pvpEnabled ? 'PvP flag raised. You can attack flagged rivals outside safe zones. Return here to opt out.' : 'PvP flag lowered. Open-world attacks are disabled.');
+    }
+    if (k === 1) battlegroundMenu();
+    if (k === 2) arenaMenu();
+    if (k === 3) choose(items.map(([c, r, kd]) => `${RARITY[r].name} ${kd.toUpperCase()} ${c}H`), i => {
+      if (i < 0) return; const [c, r, kd] = items[i];
+      if (G.honor < c) return say(`Need ${c} honor (you have ${G.honor}).`);
+      G.honor -= c; const it = makeItem({ lvl: G.lvl, rarity: r, kind: kd }); it.name = 'GLADIATOR ' + it.name.replace(/^\+\d /, ''); addGear(it); SFX.buy(); saveGame();
+    }, `QUARTERMASTER: Honor: ${G.honor}`);
+  }, `QUARTERMASTER: Honor ${G.honor} / Rating ${G.rating}`);
 }
 function difficultyMenu() {
   choose(DIFFICULTY.map(d => `${d.n} ${d.name}${diffUnlocked(d.n) ? '' : ` (LV${d.req})`}`), i => {
@@ -840,17 +1083,114 @@ function arenaMenu() {
     if (k < 0 || k === 2) return;
     const n = k === 0 ? 1 : 3;
     const foes = Array.from({ length: n }, () => adventurerFoe(makeAdventurer(pick(CLASS_ORDER), Math.max(1, G.lvl + R() * 2 - 1 | 0), pick(SIM_NAMES))));
-    startBattle(foes, { size: n, noFlee: true, kind: 'arena', music: 'boss', onEnd: r => {
-      if (r === 'win') { const h = 20 + G.lvl; G.honor += h; G.rating += 18; G.stats.pvpWins++; say(`Victory! +${h} honor. Rating ${G.rating}.`); checkAchievements(); }
-      else if (r === 'lose') { G.rating = Math.max(0, G.rating - 12); G.hp = 1; say(`Defeat. Rating ${G.rating}.`); }
+    startBattle(foes, { size: n, noFlee: true, kind: 'arena', noRewards: true, music: 'boss', onEnd: (r, battle) => {
+      restorePvpParty(battle);
+      if (r === 'win') { const h = GBQ_PVP.calculateHonor({ base: 20 + G.lvl }); G.honor += h; G.rating += 18; G.stats.pvpWins++; say(`Victory! +${h} honor. Rating ${G.rating}.`); checkAchievements(); saveGame(); }
+      else if (r === 'lose') { G.rating = Math.max(0, G.rating - 12); G.stats.pvpDeaths++; G.hp = 1; say(`Defeat. Rating ${G.rating}.`); saveGame(); }
     } });
   }, `ARENA  Rating ${G.rating}  Honor ${G.honor}`);
+}
+function battlegroundMenu() {
+  const modes = Object.values(GBQ_PVP.battlegroundModes);
+  choose(modes.map(m => `${m.name.toUpperCase()}  ${m.teamSize}V${m.teamSize}`), i => {
+    if (i < 0) return;
+    const mode = modes[i], match = GBQ_PVP.createBattleground(mode.id);
+    say([`${mode.name}: ${mode.objective}.`, `First team to ${match.targetScore} captures wins. Battles use your companions and simulated rivals.`], () => runBattlegroundRound(match));
+  }, 'BATTLEGROUND QUEUE');
+}
+function runBattlegroundRound(match) {
+  const mode = GBQ_PVP.battlegroundModes[match.modeId];
+  const objectiveId = match.objectives[match.captured.length];
+  const foes = Array.from({ length: match.teamSize }, () => {
+    const level = Math.max(1, Math.min(LEVEL_CAP, G.lvl + (R() < 0.5 ? 0 : 1)));
+    const rival = makeAdventurer(pick(CLASS_ORDER), level, pick(SIM_NAMES));
+    return adventurerFoe(rival);
+  });
+  startBattle(foes, {
+    size: match.teamSize, noFlee: true, kind: 'battleground', noRewards: true, music: 'boss',
+    title: `${mode.name}: ${objectiveId}`,
+    onEnd: (result, battle) => {
+      restorePvpParty(battle);
+      const team = result === 'win' ? 'blue' : 'red';
+      if (result !== 'win') G.stats.pvpDeaths++;
+      const score = GBQ_PVP.captureBattlegroundObjective(match, { team, objectiveId });
+      saveGame();
+      if (score.status === 'complete') {
+        if (score.winner === 'blue') {
+          const honor = GBQ_PVP.calculateHonor({ base: 100 + G.lvl });
+          G.honor += honor; G.stats.pvpWins++; G.stats.battlegroundWins++;
+          checkAchievements();
+          say(`${mode.name} victory! ${score.score.blue}-${score.score.red}. +${honor} honor.`);
+        } else if (score.winner === 'red') {
+          say(`${mode.name} lost ${score.score.blue}-${score.score.red}. Regroup and queue again.`);
+        } else {
+          say(`${mode.name} ends in a draw, ${score.score.blue}-${score.score.red}.`);
+        }
+        saveGame();
+        return;
+      }
+      say([`${objectiveId}: ${result === 'win' ? 'captured' : 'lost'}.`, `Score ${score.score.blue}-${score.score.red}. Continue to the next objective?`], () => runBattlegroundRound(match));
+    },
+  });
 }
 function lfgMenu() {
   const dgs = DUNGEONS.filter(d => d.lvl <= G.lvl + 6), rds = RAIDS.filter(r => r.lvl <= G.lvl + 6);
   const opts = dgs.map(d => ({ t: `DG ${d.name} ${d.lvl}`, k: 'dungeon', d })).concat(rds.map(r => ({ t: `RAID ${r.name} ${r.lvl}`, k: 'raid', d: r })));
   if (!opts.length) return say('Nothing available yet. Reach level 2.');
   choose(opts.map(o => o.t.slice(0, 22)), i => { if (i >= 0) instanceMenu(opts[i].k, opts[i].d); }, 'LOOKING FOR GROUP');
+}
+
+function worldEventWindow(event, now = Date.now()) {
+  const epoch = Date.UTC(2026, 0, 1);
+  const period = event.periodMinutes * 60000;
+  const offset = event.offsetMinutes * 60000;
+  const duration = event.durationMinutes * 60000;
+  const cycle = Math.floor((now - epoch - offset) / period);
+  let startsAt = epoch + cycle * period + offset;
+  if (startsAt + duration <= now) startsAt += period;
+  const endsAt = startsAt + duration;
+  return { startsAt, endsAt, status: now >= startsAt && now < endsAt ? 'active' : 'upcoming' };
+}
+function worldEventMenu(event) {
+  const window = worldEventWindow(event);
+  const here = G.map === event.zone && !G.inst;
+  const label = window.status === 'active' ? (here ? 'JOIN EVENT' : 'TRAVEL TO ZONE') : 'TRAVEL TO ZONE';
+  const starts = window.status === 'active' ? 'ACTIVE NOW' : `STARTS IN ${Math.max(1, Math.ceil((window.startsAt - Date.now()) / 60000))} MIN`;
+  choose([label, 'TRACK EVENT', 'BACK'], choice => {
+    if (choice === 0) {
+      if (!here) { G.trackedEvent = event.id; return travelTo(event.zone); }
+      if (window.status !== 'active') return say(`${event.name} is not active yet. ${starts}.`);
+      return startWorldEvent(event);
+    }
+    if (choice === 1) { G.trackedEvent = event.id; return say([`TRACKING: ${event.name}`, `${ZONE_BY_ID[event.zone].name} - ${starts}`]); }
+  }, `${event.name}: ${starts}`);
+}
+function startWorldEvent(event) {
+  const window = worldEventWindow(event);
+  if (G.map !== event.zone || G.inst) return say('Travel to the event zone before joining.');
+  if (window.status !== 'active') return say(`${event.name} is not active yet.`);
+  G.eventDaily = G.eventDaily || {};
+  const day = Math.floor(Date.now() / 86400000);
+  if (G.eventDaily[event.id] === day) return say('You have already claimed this event reward today.');
+  const boss = BOSSES.find(entry => entry.unique === event.boss);
+  if (!boss) return say('This event encounter is unavailable.');
+  const level = Math.max(event.lvl, G.lvl);
+  const foe = makeMonster(boss, level, G.difficulty, { bossId: boss.id, cat: boss.cat });
+  startBattle([foe], {
+    size: Math.max(1, Math.min(4, fieldPartySize())),
+    kind: 'world-event',
+    music: 'boss',
+    onEnd: result => {
+      if (result === 'lose') return onPartyWipe();
+      if (result !== 'win') return;
+      G.eventDaily[event.id] = day;
+      gainXP(G, xpForMonster(level) * 3);
+      G.gold += event.rewardGold;
+      saveGame();
+      checkAchievements();
+      say([`${event.name} COMPLETE!`, `+${event.rewardGold} G and bonus experience.`]);
+    },
+  });
 }
 
 // ================================================================ instances: dungeons, raids, tower
@@ -985,10 +1325,11 @@ class Fishing {
     removeScene(this);
     const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4;
     const k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
-    addItem(k); G.stats.fish++; SFX.reel();
+    const quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
+    addItem(k, quantity); G.stats.fish += quantity; progressProfessionQuest('fish', 'fish', quantity); SFX.reel();
     const up = gainProf('fish', G.prof.fish);
     questEvent('fish', k); checkAchievements();
-    toast(`CAUGHT ${ITEMS[k].name}`, up ? `FISHING ${G.prof.fish}` : (z ? z.sub : ''), ITEMS[k].icon, 'pickup');
+    toast(`${quantity > 1 ? `CAUGHT ${quantity} ` : 'CAUGHT '}${ITEMS[k].name}`, up ? `FISHING ${G.prof.fish}` : (z ? z.sub : ''), ITEMS[k].icon, 'pickup');
   }
   draw() {
     frame(30, 50, 100, 44);
@@ -1255,7 +1596,7 @@ class Credits {
   update() { this.t++; if (this.t > 60 && (P('a') || P('b') || P('start'))) { removeScene(this); if (this.ending) { const f = currentField(); if (f) f.resume(); } } }
   draw() {
     fill(0, 0, W, H, 3);
-    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.game, BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the GB QUEST asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
+    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.game, BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
     lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 6 ? 'gold' : 0); });
   }
 }

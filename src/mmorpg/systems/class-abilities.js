@@ -1,4 +1,8 @@
 import { validateClassAbility } from "../rules/class-ability-runtime.js";
+import { CLASS_ABILITY_RECORDS } from "../data/class-abilities.js";
+import classCatalog from "../data/classes.json" with { type: "json" };
+
+const classById = new Map(classCatalog.classes.map(entry => [entry.id, entry]));
 
 function deepFreeze(value) {
   if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
@@ -15,6 +19,14 @@ export function createClassAbilityCatalog(records = []) {
   const byId = new Map();
   for (const record of records) {
     validateClassAbility(record);
+    const classDefinition = classById.get(record.classId);
+    if (!classDefinition) throw new RangeError(`Unknown class for ability ${record.id}: ${record.classId}`);
+    if (record.subclassId && classDefinition.subclass?.id !== record.subclassId) {
+      throw new RangeError(`Unknown subclass for ability ${record.id}: ${record.subclassId}`);
+    }
+    if (!Number.isInteger(record.level) || record.level < 1 || record.level > 20) {
+      throw new RangeError(`Ability ${record.id} level must be an integer from 1 to 20`);
+    }
     if (byId.has(record.id)) throw new TypeError(`Duplicate class ability id: ${record.id}`);
     byId.set(record.id, deepFreeze(structuredClone(record)));
   }
@@ -34,8 +46,19 @@ export function createClassAbilityCatalog(records = []) {
         .filter(record => !needle || `${record.id} ${record.name ?? ""} ${record.description ?? ""}`.toLowerCase().includes(needle))
         .slice(0, limit);
     },
+    forCharacter(character, { limit = 100 } = {}) {
+      if (!character || typeof character.classId !== "string") throw new TypeError("Character class is required");
+      const classLevel = character.classLevel ?? character.level ?? 1;
+      if (!Number.isInteger(classLevel) || classLevel < 1 || classLevel > 20) {
+        throw new RangeError("Character class level must be an integer from 1 to 20");
+      }
+      return this.list({ classId: character.classId, level: classLevel, limit })
+        .filter(record => !record.subclassId || record.subclassId === character.subclassId);
+    },
     get size() {
       return byId.size;
     }
   });
 }
+
+export const CLASS_ABILITY_CATALOG = createClassAbilityCatalog(CLASS_ABILITY_RECORDS);

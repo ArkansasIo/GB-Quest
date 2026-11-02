@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
   }
 
   SDL_Window* window = SDL_CreateWindow(
-      "GB Quest - Desktop Port",
+      "Shadowbane Chronicles - Desktop Port",
       SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
       gbquest::kLogicalWidth * 4, gbquest::kLogicalHeight * 4,
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);

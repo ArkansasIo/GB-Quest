@@ -4,6 +4,10 @@ on:
     branches: ["main", "feature/**"]
   pull_request:
     branches: ["main"]
+
+permissions:
+  contents: read
+
 jobs:
   javascript-tests:
     name: JavaScript rules and systems
@@ -12,9 +16,25 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm test
+          node-version: 22
+      - name: Run Node.js test suite
+        run: npm test
+
+  native-core:
+    name: C++23 native core (portable and x86-64)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        asm: [OFF, ON]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S native -B build/native -DCMAKE_BUILD_TYPE=Release -DGBQ_ENABLE_X86_64_ASM=${{ matrix.asm }}
+      - name: Build
+        run: cmake --build build/native --parallel 2
+      - name: Run native tests
+        run: ctest --test-dir build/native --output-on-failure
 
   desktop-build:
     name: C++23 SDL2 desktop build

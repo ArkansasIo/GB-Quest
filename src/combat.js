@@ -32,7 +32,7 @@ function removeEffect(u, id) { u.effects = u.effects.filter(e => e.id !== id); }
 class Battle {
   constructor(opt) {
     this.opaque = true;
-    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null;
+    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.noRewards = opt.noRewards === true;
     this.party = opt.party; this.foes = opt.foes.map(foeMember); this.all = [...this.party, ...this.foes];
     this.noFlee = opt.noFlee || this.foes.some(f => f.boss) || ['dungeon', 'raid', 'trial', 'tower', 'arena'].includes(this.kind);
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
@@ -790,15 +790,17 @@ class Battle {
     this.state = 'over';
     const player = this.party.find(u => u.ch === G);
     const D = derive(G);
-    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0);
+    const xp = this.noRewards ? 0 : this.foes.reduce((a, f) => a + (f.xp || 0), 0);
     const lootMul = (DIFFICULTY[this.diff - 1] || DIFFICULTY[1]).loot;
     const drops = [], mats = {}, cons = []; let gold = 0;
-    for (const f of this.foes) {
-      const d = rollDrops(f, { loot: lootMul }); drops.push(...d.items); gold += d.gold; cons.push(...d.cons);
-      for (const k in d.mats) mats[k] = (mats[k] || 0) + d.mats[k];
+    if (!this.noRewards) {
+      for (const f of this.foes) {
+        const d = rollDrops(f, { loot: lootMul }); drops.push(...d.items); gold += d.gold; cons.push(...d.cons);
+        for (const k in d.mats) mats[k] = (mats[k] || 0) + d.mats[k];
+      }
     }
     const steps = [this.say(this.foes.length > 1 ? 'Victory!' : `${this.foes[0].name} is defeated!`, () => { Music.play('victory'); SFX.quest_done(); }, 20)];
-    steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
+    if (!this.noRewards) steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
     for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; } }));
     const got = Object.entries(mats).map(([k, n]) => `${n} ${ITEMS[k].name}`).concat(cons.map(k => ITEMS[k].name));
     if (got.length) steps.push(this.say(('Found: ' + got.join(', ')).slice(0, 70), () => { for (const k in mats) addItem(k, mats[k]); cons.forEach(k => addItem(k)); SFX.coin(); }));
@@ -806,9 +808,9 @@ class Battle {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }
       for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); }
-      const res = gainXP(G, xp);
-      for (const u of this.party) if (isChar(u) && u.ch !== G && u.ch.ai) { if (u.ch.lvl < G.lvl) { u.ch.lvl = G.lvl; u.ch.xp = xpForLevel(G.lvl); const DD = derive(u.ch); u.ch.hp = DD.hpMax; u.ch.res = resMax(u.ch, DD); } }
-      recordVictory(this);
+      const res = this.noRewards ? { ups: [] } : gainXP(G, xp);
+      if (!this.noRewards) for (const u of this.party) if (isChar(u) && u.ch !== G && u.ch.ai) { if (u.ch.lvl < G.lvl) { u.ch.lvl = G.lvl; u.ch.xp = xpForLevel(G.lvl); const DD = derive(u.ch); u.ch.hp = DD.hpMax; u.ch.res = resMax(u.ch, DD); } }
+      if (!this.noRewards) recordVictory(this);
       this.finish('win', res.ups);
     });
   }
