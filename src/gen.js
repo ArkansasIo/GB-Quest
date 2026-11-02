@@ -65,9 +65,10 @@ const BESTIARY = [];
 })();
 const BEAST_BY_ID = Object.fromEntries(BESTIARY.map(b => [b.id, b]));
 const BIOME_VARIANT = { meadow: ['', ''], coast: ['', 'gilded'], marsh: ['venom', ''], jungle: ['venom', ''], snow: ['frost', ''], badlands: ['ash', ''], volcanic: ['ember', 'ash'], dusk: ['shadow', ''], crystal: ['gilded', 'frost'] };
-function spawnTable(biome) {
+function spawnTable(biome, lvl) {
   const fams = BIOMES[biome].fam, vars = BIOME_VARIANT[biome];
-  return BESTIARY.filter(b => fams.includes(b.fam) && vars.includes(b.variant) && b.rank === 'normal');
+  // collector creatures (stages 1-3) only appear inside their level band when a level is given
+  return BESTIARY.filter(b => fams.includes(b.fam) && vars.includes(b.variant) && b.rank === 'normal' && (!b.collector || lvl == null || (lvl >= b.minLvl && lvl <= b.maxLvl)));
 }
 
 // ================================================================ 350 bosses

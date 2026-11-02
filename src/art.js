@@ -14,9 +14,9 @@ const FAMILY_ART = {
   giant: ['m_giant'], ooze: ['slime', 'm_ooze'], aberration: ['m_aberration'], monstrosity: ['monster'], plant: ['plant'], celestial: ['strong', 'm_fey'],
 };
 // every bestiary entry and boss gets a stable NES sprite (same subtype + variant -> same art)
-for (const b of BESTIARY) b.nspr = nesPick(FAMILY_ART[b.fam] || ['monster'], b.sub + '|' + b.variant + '|' + b.rank);
+for (const b of BESTIARY) if (!b.ccArt) b.nspr = nesPick(FAMILY_ART[b.fam] || ['monster'], b.sub + '|' + b.variant + '|' + b.rank);
 for (const b of BOSSES) b.nspr = b.cat === 'arc' ? null : nesPick(b.cat === 'raid' || b.cat === 'world' ? ['strong', 'dragon', 'demon'] : ['strong', ...(FAMILY_ART[b.fam] || ['monster'])], b.id);
-const monsterArt = b => (artOn() && b && b.nspr && IMG[b.nspr]) ? b.nspr : (b ? b.spr : 'enemy_goblin');
+const monsterArt = b => (b && b.ccArt && IMG[b.ccArt]) ? b.ccArt : (artOn() && b && b.nspr && IMG[b.nspr]) ? b.nspr : (b ? b.spr : 'enemy_goblin');
 
 // items
 const WEAPON_ART = { knife: 'dagger', crescent: 'dagger', longbrand: 'sword', needleblade: 'sword', widesword: 'sword', hatchet: 'axe', cleaver: 'axe',

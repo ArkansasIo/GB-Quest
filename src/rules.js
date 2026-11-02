@@ -300,7 +300,8 @@ function makeMonster(src, L, diff = 2, extra = {}) {
   const totalShare = attacks.reduce((a, x) => a + x.share, 0) / attacks.length;
   const atks = attacks.map(a => ({ name: a.name, type: a.type, eff: a.eff, hit: num.hit, dice: a.eff && a.eff.save && a.eff.aoe ? dmgDice(per * 1.8) : dmgDice(per * a.share / totalShare) }));
   const saveFor = a => mod(ab[ATTRS.indexOf(a)]) + (boss && ['DEX', 'CON', 'WIS'].includes(a) ? num.pb : 0);
-  if (typeof monsterArt === 'function' && artOn()) { const art = src.cat ? (BOSS_BY_ID[src.id] || src) : (bestId ? BEAST_BY_ID[bestId] : null); if (art && art.nspr && IMG[art.nspr]) spr = art.nspr; }
+  if (bestId && BEAST_BY_ID[bestId] && BEAST_BY_ID[bestId].ccArt && IMG[BEAST_BY_ID[bestId].ccArt]) spr = BEAST_BY_ID[bestId].ccArt;
+  else if (typeof monsterArt === 'function' && artOn()) { const art = src.cat ? (BOSS_BY_ID[src.id] || src) : (bestId ? BEAST_BY_ID[bestId] : null); if (art && art.nspr && IMG[art.nspr]) spr = art.nspr; }
   return Object.assign({
     side: 'foe', name, lvl: L, hp, maxhp: hp, ac: num.ac, hit: num.hit, dc: num.dc, ab, attacks: atks, multi, res, imm, vuln,
     condImm: ft.condImm || [], traits, spells, legendary, legLeft: legendary, legRes: traits.includes('legres') ? 3 : 0, summon, mechs, spr, boss, elite, fam, bestId, uniqueKey, scale,

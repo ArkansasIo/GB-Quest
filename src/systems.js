@@ -115,7 +115,7 @@ function fieldPartySize() { return Math.max(1 + G.companions.length, NET.partyCh
 // ================================================================ encounters
 function zoneLevel(z) { const [a, b] = z.lvl; return Math.max(a, Math.min(b, Math.round(a + (b - a) * R()))); }
 function rollEncounter(zoneDef, opts = {}) {
-  const table = spawnTable(zoneDef.biome);
+  const lvl0 = zoneLevel(zoneDef), table = spawnTable(zoneDef.biome, lvl0);
   const n = zoneDef.lvl[0] <= 2 && G.lvl <= 2 ? 1 : opts.group ? R() < 0.4 ? 3 : 2 : (R() < 0.3 ? 2 : 1);
   const lvl = zoneLevel(zoneDef);
   const foes = [];

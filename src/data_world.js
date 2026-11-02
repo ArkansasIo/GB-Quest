@@ -456,6 +456,8 @@ const ACHIEVEMENTS = [
   ['a_tower100', 'SPIRE CONQUEROR', 'Clear floor 100.', (s, g) => g.towerBest >= 100], ['a_diff5', 'NIGHTMARE', 'Win on difficulty 5.', s => s.diff5 >= 1],
   ['a_diff9', 'APOCALYPSE', 'Win on difficulty 9.', s => s.diff9 >= 1], ['a_bestiary50', 'NATURALIST', 'Record 50 creatures.', (s, g) => Object.keys(g.bestiary).length >= 50],
   ['a_bestiary400', 'BESTIARY COMPLETE', 'Record all 400 creatures.', (s, g) => Object.keys(g.bestiary).length >= 400],
+  ['a_collector', 'CREATURE COLLECTOR', 'Record 100 evolution-line creatures.', (s, g) => Object.keys(g.bestiary).filter(k => k.startsWith('cc_')).length >= 100],
+  ['a_collector300', 'LIVING ATLAS', 'Record all 300 evolution-line creatures.', (s, g) => Object.keys(g.bestiary).filter(k => k.startsWith('cc_')).length >= 300],
   ['a_fish', 'ANGLER', 'Catch 10 fish.', s => s.fish >= 10], ['a_craft', 'ARTISAN', 'Craft 10 items.', s => s.crafted >= 10],
   ['a_gold', 'TYCOON', 'Earn 10000 gold.', s => s.goldEarned >= 10000], ['a_legend', 'LEGENDARY!', 'Loot a legendary.', s => s.legendaries >= 1],
   ['a_spell9', 'ARCHMAGE', 'Cast a 9th-level spell.', s => s.spell9 >= 1], ['a_party', 'FELLOWSHIP', 'Fight in a party of 4.', s => s.party4 >= 1],
