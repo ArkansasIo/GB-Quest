@@ -48,9 +48,15 @@ function realmBaseUrl(input) {
   if (parsed.pathname !== '/' && parsed.pathname !== '') throw new Error('Enter the realm server base URL without an API path.');
   return parsed.origin;
 }
+function secureStorageAvailable() {
+  try {
+    return safeStorage.isEncryptionAvailable()
+      && safeStorage.getSelectedStorageBackend?.() !== 'basic_text';
+  } catch { return false; }
+}
 function loadRealmSession() {
   try {
-    if (!safeStorage.isEncryptionAvailable()) return;
+    if (!secureStorageAvailable()) return;
     const token = safeStorage.decryptString(fs.readFileSync(REALM_SESSION_FILE));
     if (/^[0-9a-f]{64}$/.test(token)) realmSession = { token };
   } catch {}
@@ -70,7 +76,7 @@ async function realmRequest(base, endpoint, { method = 'GET', body: payload, tok
 }
 function persistRealmSession(token) {
   realmSession = { token };
-  if (!safeStorage.isEncryptionAvailable()) return false;
+  if (!secureStorageAvailable()) return false;
   fs.mkdirSync(USER_DATA, { recursive: true });
   const encrypted = safeStorage.encryptString(token);
   fs.writeFileSync(REALM_SESSION_FILE, encrypted, { mode: 0o600 });
