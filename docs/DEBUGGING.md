@@ -15,6 +15,10 @@ Open it with **F9**, with **SETTINGS > DEBUG PANEL**, or by adding `#debug` to t
 | Data | save now, copy the full state JSON (also printed to the console), **self-check** (zone exits, boss levels, bestiary entries, hero stats), clear log |
 | Log | every uncaught error, unhandled promise rejection, `console.error` and `console.warn`, recorded even while the panel is closed |
 
+## Server logs
+
+The realm server (`node backend/server.cjs`) writes `debug.log` and `audit.log` to `server/data/logs/`. Run it with `GBQ_LOG_LEVEL=debug` to log every request. Every 500 is logged with its stack trace and request ID, and the same ID goes back to the client in the `X-Request-Id` header. To find a player's error, search for that ID in the control plane's **Debug log** tab or with `grep <id> server/data/logs/debug.log`. See [backend/README.md](../backend/README.md#audit-and-debug-logs).
+
 ## Automated sweep
 
 ```sh

@@ -5,7 +5,9 @@
   const adminPanel = $('adminPanel'), sessionLabel = $('sessionLabel');
   const refreshButton = $('refresh'), logoutButton = $('logout');
   const nav = $('adminNav'), overview = $('overview'), players = $('players');
-  const staff = $('staff'), audit = $('audit'), settingsForm = $('settingsForm');
+  const staff = $('staff'), audit = $('audit'), logs = $('logs'), settingsForm = $('settingsForm');
+  const auditFilter = $('auditFilter'), logsFilter = $('logsFilter');
+  let auditRows = [], logRows = [];
   const createAccountForm = $('createAccountForm');
   let token = readToken(), accountName = '', myRole = '', permissions = [], accountRows = [], activeTab = '';
 
@@ -60,9 +62,10 @@
     const tabs = [
       ['overview', 'Overview', 'overview.view'], ['players', 'Accounts', 'players.view'],
       ['settings', 'Game settings', 'settings.manage'], ['permissions', 'Permissions', 'staff.manage'], ['audit', 'Audit log', 'audit.view'],
+      ['logs', 'Debug log', 'logs.view', 'debug'],
     ].filter(([, , permission]) => can(permission));
-    for (const [id, label] of tabs) {
-      const button = document.createElement('button'); button.type = 'button'; button.dataset.tab = id; button.textContent = label; button.className = 'ic ic-' + id;
+    for (const [id, label, , icon] of tabs) {
+      const button = document.createElement('button'); button.type = 'button'; button.dataset.tab = id; button.textContent = label; button.className = 'ic ic-' + (icon || id);
       button.addEventListener('click', () => showTab(id)); nav.append(button);
     }
     if (!tabs.some(([id]) => id === activeTab)) activeTab = tabs[0]?.[0] || 'overview';
@@ -132,15 +135,53 @@
       action.append(select); row.append(name, current, action); staff.append(row);
     }
   }
+  function cell(text, className) { const td = document.createElement('td'); td.textContent = text == null ? '' : String(text); if (className) td.className = className; return td; }
   function renderAudit(entries) {
-    audit.replaceChildren();
+    auditRows = entries; audit.replaceChildren();
+    if (!entries.length) { const row = document.createElement('tr'); row.append(cell('No matching entries.', 'muted')); audit.append(row); return; }
     for (const entry of entries) {
-      const item = document.createElement('li');
-      const details = entry.details ? ` · ${JSON.stringify(entry.details)}` : '';
-      item.textContent = `${new Date(entry.at).toLocaleString()} · ${entry.actor} · ${entry.action} · ${entry.target}${details}`;
-      audit.append(item);
+      const row = document.createElement('tr'), outcome = entry.outcome || 'success';
+      row.append(cell(new Date(entry.at).toLocaleString(), 'nowrap'), cell(entry.action), cell(outcome, 'out-' + outcome), cell(entry.actor || '—'),
+        cell(entry.target || ''), cell(entry.ip || '', 'nowrap'), cell(entry.details ? JSON.stringify(entry.details) : '', 'details'));
+      row.title = `#${entry.seq || ''}${entry.reqId ? ' · request ' + entry.reqId : ''}`;
+      audit.append(row);
     }
   }
+  function renderLogs(data) {
+    logRows = data.entries; logs.replaceChildren(); $('logLevel').value = data.level;
+    if (!data.entries.length) { const row = document.createElement('tr'); row.append(cell('Nothing logged at this level.', 'muted')); logs.append(row); return; }
+    for (const entry of data.entries) {
+      const { at, level, msg, ...rest } = entry, row = document.createElement('tr');
+      const stack = rest.err && rest.err.stack; if (stack) delete rest.err.stack;
+      const text = Object.entries(rest).map(([k, v]) => `${k}=${typeof v === 'object' ? JSON.stringify(v) : v}`).join('  ') + (stack ? '\n' + stack : '');
+      row.append(cell(new Date(at).toLocaleString(), 'nowrap'), cell(level, 'lvl-' + level), cell(msg), cell(text, 'details'));
+      logs.append(row);
+    }
+  }
+  const query = form => { const params = new URLSearchParams(); for (const [k, v] of new FormData(form)) if (String(v).trim()) params.set(k, String(v).trim()); return params; };
+  async function loadAudit() { const params = query(auditFilter); params.set('limit', '300'); renderAudit((await api('/api/admin/audit?' + params)).entries); }
+  async function loadLogs() { const params = query(logsFilter); params.set('limit', '300'); renderLogs(await api('/api/admin/logs?' + params)); }
+  function download(name, rows) {
+    const blob = new Blob([rows.map(r => JSON.stringify(r)).join('\n') + '\n'], { type: 'application/x-ndjson' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  auditFilter.addEventListener('submit', event => { event.preventDefault(); loadAudit().catch(error => say(error.message, true)); });
+  logsFilter.addEventListener('submit', event => { event.preventDefault(); loadLogs().catch(error => say(error.message, true)); });
+  $('auditExport').addEventListener('click', () => download(`audit-${new Date().toISOString().slice(0, 10)}.jsonl`, auditRows));
+  $('logsExport').addEventListener('click', () => download(`debug-${new Date().toISOString().slice(0, 10)}.jsonl`, logRows));
+  $('auditVerify').addEventListener('click', async () => {
+    const status = $('auditStatus'); status.textContent = 'Verifying…'; status.className = 'muted';
+    try {
+      const r = await api('/api/admin/audit/verify');
+      status.textContent = r.ok ? `Chain intact: ${r.checked} entries verified.` : `Chain BROKEN at entry #${r.seq ?? '?'} (${r.file}): ${r.error}`;
+      status.className = r.ok ? 'status' : 'banned';
+      await loadAudit();
+    } catch (error) { status.textContent = error.message; status.className = 'banned'; }
+  });
+  $('logLevel').addEventListener('change', async event => {
+    try { const r = await api('/api/admin/logs/level', { method: 'PUT', body: { level: event.target.value } }); say(`Server log level set to ${r.level}.`); await loadLogs(); }
+    catch (error) { say(error.message, true); }
+  });
 
   async function load() {
     if (!token) { signedOut(); say('Sign in with an account granted realm staff permissions.', true); return; }
@@ -151,12 +192,14 @@
       const jobs = [api('/api/admin/overview')];
       if (can('players.view')) jobs.push(api('/api/admin/players'));
       if (can('settings.manage')) jobs.push(api('/api/admin/settings'));
-      if (can('audit.view')) jobs.push(api('/api/admin/audit'));
+      if (can('audit.view')) jobs.push(api('/api/admin/audit?limit=300&' + query(auditFilter)));
+      if (can('logs.view')) jobs.push(api('/api/admin/logs?limit=300&' + query(logsFilter)));
       const results = await Promise.all(jobs);
       let i = 0; renderCards(results[i++]);
       if (can('players.view')) { accountRows = results[i++].players; renderPlayers(accountRows); }
       if (can('settings.manage')) renderSettings(results[i++].settings);
       if (can('audit.view')) renderAudit(results[i++].entries);
+      if (can('logs.view')) renderLogs(results[i++]);
       if (can('staff.manage')) renderStaff();
       say(`Access verified · ${me.role}.`);
     } catch (error) { say(error.message, true); }
