@@ -1,6 +1,6 @@
 # Hidden World Secrets
 
-The world contains six concealed encounters. They are not marked on the map. Each location is derived deterministically from its zone map and a stable secret ID, avoiding generated points of interest, boss positions, gathering nodes and exits. A faint glimmer appears only when the player is within three tiles.
+The world contains **100 concealed discoveries distributed across the world zones**. The original six named encounters remain fixed; the other discoveries are generated from a curated title, clue and encounter catalog and assigned deterministically across the zone list. They are not marked on the map. Each location is derived deterministically from its zone map and stable secret ID, avoiding generated points of interest, boss positions, gathering nodes, exits and other secret locations. A faint glimmer appears only when the player is within three tiles.
 
 | Secret | Region | Encounter | Requirement |
 |---|---|---|---:|
