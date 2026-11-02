@@ -21,7 +21,7 @@ const monsterArt = b => (artOn() && b && b.nspr && IMG[b.nspr]) ? b.nspr : (b ? 
 // items
 const WEAPON_ART = { knife: 'dagger', crescent: 'dagger', longbrand: 'sword', needleblade: 'sword', widesword: 'sword', hatchet: 'axe', cleaver: 'axe',
   cudgel: 'mace', knobmace: 'mace', ironhammer: 'mace', stonemaul: 'mace', shortspear: 'polearm', poleblade: 'polearm', huntbow: 'bow', greatbow: 'bow', boltcaster: 'crossbow', walkstaff: 'staff' };
-const WONDROUS_ART = { ring: 'ring', amulet: 'amulet', charm: 'amulet', boots: 'boots', circlet: 'ring', helm: 'shield', mask: 'shield' };
+const WONDROUS_ART = { ring: 'ring', band: 'ring', charm: 'ring', amulet: 'amulet', pendant: 'amulet', boots: 'boots', sabatons: 'boots', circlet: 'magicitem', helm: 'heavyarmor', mask: 'relic', cloak: 'lightarmor', mantle: 'mediumarmor', gloves: 'glove', gauntlets: 'glove', belt: 'belt', girdle: 'belt', leggings: 'lightarmor', greaves: 'heavyarmor' };
 function tierPick(cat, rarity, salt) { const L = NES[cat] || []; if (!L.length) return null; const i = Math.min(L.length - 1, Math.max(0, rarity * 2 - 1 + (hashStr(String(salt)) % 2))); return L[i]; }
 function nesItemIcon(it) {
   if (!artOn()) return null;

@@ -346,6 +346,18 @@ const CHAT_LINES = [
   ['General', 'what difficulty for leveling?'], ['Trade', 'LF alchemist, mats provided'], ['General', 'anyone wanna duel?'],
 ];
 const NAME_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const NAME_POOLS = {
+  hearthkin: ['ARIN', 'BRYN', 'CALE', 'DESS', 'EDRIC', 'GWEN', 'HALE', 'MIRA', 'TOMAS', 'ELSA', 'ROWAN', 'NELL'],
+  thornelf: ['AELIR', 'SYLWEN', 'THALEN', 'ILYRA', 'FAELAN', 'NIMRA', 'LORIEL', 'VAEL', 'SERETH', 'ELOWEN'],
+  stonekin: ['BRAKKA', 'DURREK', 'HELGA', 'KORMAK', 'RUNA', 'TORVI', 'BALDUR', 'GRETA', 'ODRIK', 'SIGNA'],
+  wispling: ['PIP', 'TANSY', 'WREN', 'MILO', 'POPPY', 'BIXBY', 'FENNA', 'LARK', 'TUCK', 'MOSS'],
+  emberborn: ['ASHA', 'CINDRA', 'EMBRIC', 'KAELIS', 'PYRA', 'SOLEN', 'VEXA', 'ZAREK', 'IGNA', 'TOREN'],
+  burrowkin: ['NIBBS', 'TOCK', 'FIZZWICK', 'DORLA', 'QUILL', 'SPROCKET', 'MABBLE', 'TINK', 'GIMBLE', 'ROOTA'],
+  twinblood: ['ELIAN', 'SERA', 'KAIDEN', 'MAREN', 'ORREN', 'LYSA', 'DARIEN', 'IVY', 'CORIN', 'TALIA'],
+  tuskborn: ['GRASH', 'UGRA', 'KRUL', 'MOGHA', 'THARG', 'ZUGA', 'BROKK', 'RASHKA', 'DURGA', 'VORN'],
+  drakkin: ['RHAEZ', 'KORVATH', 'SYTHA', 'DRAVEN', 'ZORA', 'VERITH', 'KHAAL', 'ISSRA', 'ARDEX', 'NYRA'],
+};
+const POINT_BUY = { budget: 27, min: 8, max: 15, cost: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 } };
 
 // ================================================================ build info & studio
 const BUILD = { game: 'GB QUEST', subtitle: 'LANTERNS OF AELMOOR', version: '2.1.1', build: 'B2026.11.01', studio: 'ArkansasIo', year: 2026 };

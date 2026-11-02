@@ -72,6 +72,12 @@ const Light64 = {
     for (const [k, c] of [['waypoint', '140,210,255'], ['dungeon', '255,150,80'], ['raid', '255,90,110']]) { const p = poi[k]; if (p) this.add(p.x * T - cx + 8, p.y * T - cy + 8, 30 * flick, c, 0.9); }
     if (G.inst && G.inst.map.chest && !G.inst.chest) { const c = G.inst.map.chest; this.add(c.x * T - cx + 8, c.y * T - cy + 8, 22, '255,230,120', 0.8); }
     if (G.inst) for (const p of G.inst.map.pulls || []) if (!G.inst.cleared.includes(p.id)) this.add(p.x * T - cx + 8, p.y * T - cy + 8, 18, '255,70,70', 0.6);
+    if (G.inst && f.m.rows) { // torches and braziers light the halls
+      const rows = f.m.rows;
+      for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++) for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
+        const c = rows[ty] && rows[ty][tx]; if (c === 'B') this.add(tx * T - cx + 8, ty * T - cy + 6, 34 * flick, '255,170,80', 0.9); else if (c === 't') this.add(tx * T - cx + 8, ty * T - cy + 10, 26 * flick, '255,190,110', 0.75); else if (c === 'A') this.add(tx * T - cx + 8, ty * T - cy + 8, 20, '180,220,255', 0.7);
+      }
+    }
     this.dark = G.inst ? 0.62 : this.ambient();
     this.tint = G.inst ? '30,24,48' : this.tintFor();
   },

@@ -35,7 +35,7 @@ class MainMenu extends ListScene {
     if (!P('a')) return;
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
-    const map = { BAG: () => new BagScene('field'), EQUIPMENT: () => new EquipScene(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
+    const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
@@ -48,7 +48,7 @@ class MainMenu extends ListScene {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
     fill(58, 12, 1, H - 12, 3);
-    blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 40) : sprH(`c_${G.cls}_0`, 34), 9, 14);
+    blit(heroPortrait(G) ? sprFit(heroPortrait(G), 40) : sprH(`c_${G.cls}_0`, 34), 9, 14);
     textC(G.name.slice(0, 9), 29, 54, 3); textC(CLASSES[G.cls].name, 29, 64, 2);
     text('HP', 3, 76, 2); bar(16, 77, 40, 4, G.hp, D.hpMax, 'hp');
     text('XP', 3, 86, 2); bar(16, 87, 40, 4, G.xp - xpForLevel(G.lvl), xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)) - xpForLevel(G.lvl), 'xp');
@@ -154,7 +154,7 @@ class EquipScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
-    blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
+    blit(heroPortrait(G) ? sprFit(heroPortrait(G), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
     text(`AC ${D.ac}`, 6, 70); text(`ATK ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 6, 80); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`, 6, 90); text(`x${D.attacks}`, 6, 100, 2);
     const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 112, 2);
     SLOTS.forEach((s, i) => {
@@ -183,7 +183,7 @@ class CharSheet {
     textC(`< ${pages[this.page]} >`, 80, 13, 2); fill(2, 22, 156, 1, 3);
     const p = this.page;
     if (p === 0) {
-      blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 44) : sprH(`c_${G.cls}_0`, 40), 2, 26);
+      blit(heroPortrait(G) ? sprFit(heroPortrait(G), 44) : sprH(`c_${G.cls}_0`, 40), 2, 26);
       const sub = G.sub ? CLASSES[G.cls].subs.find(s => s.id === G.sub).name : '-';
       [[G.name], [`${SPECIES[G.species].name} ${CLASSES[G.cls].name}`], [`SUB: ${sub}`], [`BG: ${BACKGROUNDS[G.bg].name}`], [`LEVEL ${G.lvl}${G.lvl > 20 ? ' (ASCENDED)' : ''}`], [`XP ${fmt(G.xp)}/${fmt(xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)))}`]].forEach(([s], i) => text(s.slice(0, 18), 48, 26 + i * 10, i ? 3 : 'gold'));
       const rows = [`HP ${G.hp}/${D.hpMax}   AC ${D.ac}`, `PROF +${D.pb}   INIT ${D.init >= 0 ? '+' : ''}${D.init}`, `HIT DICE ${G.hd}/${D.hdMax} (d${D.cls.hd})`, `PASSIVE PERCEPTION ${D.passive}`, D.spell ? `SPELL DC ${D.spell.dc}  ATK +${D.spell.atk}` : 'NO SPELLCASTING', `CRIT ${D.critRange}-20 +${D.crit}%`];
@@ -369,7 +369,7 @@ class AuctionHouse extends ListScene {
   update() {
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (P('select')) { removeScene(this); push(new BagScene('field')); return; }
+    if (P('select')) { removeScene(this); push(new InventoryScene('field')); return; }
     if (!P('a')) return;
     const e = this.list[this.i]; if (!e) return;
     if (G.gold < e.price) { SFX.error(); return say('Not enough gold.'); }

@@ -858,7 +858,7 @@ class Battle {
     // sprites
     const shownP = this.party.filter(u => isChar(u)).slice(0, 3);
     shownP.forEach((u, k) => {
-      const c = u.ch, look = `c_${c.cls}_4`, por = classPortrait(c.cls);
+      const c = u.ch, look = `c_${c.cls}_4`, por = heroPortrait(c);
       let s = por ? sprH(por, 34) : IMG[look] ? sprH(look, 30) : sprH('hero_4', 30);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
       const [px, py] = this.posOf(u);

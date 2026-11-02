@@ -280,6 +280,62 @@ def d_sign(t):
     for y in (6, 8): fillr(img, 5, y, 6, 1, w[3])
     return img
 
+# ---------------------------------------------------------------- room props (designed instance rooms)
+POOL = {'lava': [(255, 220, 120), (248, 136, 40), (200, 64, 24), (96, 24, 16)], 'void': [(232, 200, 255), (168, 104, 232), (96, 40, 168), (36, 12, 72)],
+        'ice': [(230, 250, 255), (150, 210, 245), (80, 150, 220), (30, 70, 140)], 'crypt': [(180, 220, 200), (96, 160, 140), (48, 100, 90), (16, 44, 40)]}
+def d_pillar(t):
+    s = THEMES[t]; img = d_floor(t, 9)
+    fillr(img, 3, 13, 10, 2, s[3]); fillr(img, 4, 1, 8, 12, s[1]); fillr(img, 4, 1, 2, 12, s[0]); fillr(img, 10, 1, 2, 12, s[2]); fillr(img, 3, 0, 10, 2, s[0]); fillr(img, 3, 12, 10, 1, s[2])
+    return img
+def d_spikes(t):
+    s = THEMES[t]; img = d_floor(t, 10); m = [(232, 232, 240), (168, 168, 184), (96, 96, 112)]
+    for (x, y) in [(3, 4), (9, 4), (6, 9), (12, 9), (3, 13), (9, 13)]:
+        px(img, x, y - 2, m[0]); fillr(img, x - 1, y - 1, 3, 1, m[1]); fillr(img, x - 1, y, 3, 1, m[2])
+    return img
+def d_pool(t, f):
+    c = POOL.get(t, [(200, 236, 255), (96, 176, 232), (48, 112, 192), (20, 50, 110)]); img = blank(); fillr(img, 0, 0, N, N, c[2])
+    for y in range(0, N, 4):
+        for x in range((y // 4 + f) % 2 * 4, N, 8): fillr(img, x, y + 1, 3, 1, c[1]); px(img, x + 1, y, c[0])
+    fillr(img, 0, 0, N, 1, c[3])
+    return img
+def d_bones(t):
+    img = d_floor(t, 11); b = [(248, 244, 228), (200, 192, 168), (120, 112, 96)]
+    fillr(img, 3, 9, 9, 2, b[1]); fillr(img, 3, 9, 9, 1, b[0]); fillr(img, 2, 8, 2, 4, b[0]); fillr(img, 11, 8, 2, 4, b[0])
+    fillr(img, 6, 3, 5, 4, b[0]); px(img, 7, 5, b[2]); px(img, 9, 5, b[2]); fillr(img, 7, 7, 3, 1, b[1])
+    return img
+def d_shelf(t):
+    img = d_wall_face(t); w = R['wood']; books = [(200, 60, 60), (60, 120, 200), (80, 168, 80), (216, 176, 64), (150, 90, 190)]
+    fillr(img, 1, 2, 14, 13, w[2]); fillr(img, 1, 2, 14, 1, w[0])
+    for row, y in enumerate((3, 9)):
+        fillr(img, 2, y + 5, 12, 1, w[3])
+        for i, x in enumerate(range(2, 14, 2)): fillr(img, x, y + (i + row) % 2, 2, 5 - (i + row) % 2, books[(i + row * 2) % 5])
+    return img
+def d_bars(t):
+    img = d_floor(t, 12); m = [(200, 200, 216), (120, 120, 140), (60, 60, 76)]
+    fillr(img, 0, 2, N, 2, m[1]); fillr(img, 0, 13, N, 2, m[1])
+    for x in range(1, N, 4): fillr(img, x, 2, 2, 13, m[1]); px(img, x, 2, m[0])
+    return img
+def d_brazier(t, f):
+    img = d_floor(t, 13); s = THEMES[t]; fl = POOL.get(t, [(255, 240, 160), (255, 176, 48), (232, 88, 24), (120, 40, 10)]) if t in ('void', 'ice') else [(255, 240, 160), (255, 176, 48), (232, 88, 24)]
+    fillr(img, 5, 12, 6, 2, s[3]); fillr(img, 7, 9, 2, 3, s[2]); fillr(img, 3, 7, 10, 3, s[1]); fillr(img, 3, 7, 10, 1, s[0])
+    fillr(img, 5, 3 + f, 6, 4 - f, fl[1]); fillr(img, 6, 4 + f, 4, 2, fl[0]); px(img, 7 + f, 2 + f, fl[2]); px(img, 9 - f, 1 + f, fl[1])
+    return img
+def d_rug(t):
+    img = d_floor(t, 14); c = {'lava': (150, 40, 40), 'ice': (40, 80, 150), 'void': (90, 40, 140), 'temple': (40, 110, 60), 'crypt': (70, 60, 110)}.get(t, (130, 40, 40)); g = (232, 192, 64)
+    fillr(img, 1, 0, 14, N, c); fillr(img, 2, 0, 1, N, g); fillr(img, 13, 0, 1, N, g)
+    for y in range(2, N, 6): px(img, 7, y, g); px(img, 8, y + 1, g)
+    return img
+def d_throne(t):
+    img = d_rug(t); s = THEMES[t]; g = [(255, 236, 140), (232, 192, 64), (160, 120, 32)]
+    fillr(img, 3, 1, 10, 14, g[1]); fillr(img, 3, 1, 10, 1, g[0]); fillr(img, 5, 3, 6, 7, (150, 30, 40)); fillr(img, 3, 10, 10, 2, g[2]); fillr(img, 3, 13, 10, 2, g[2])
+    px(img, 3, 0, g[0]); px(img, 12, 0, g[0]); px(img, 7, 0, g[0]); px(img, 8, 0, g[0])
+    return img
+def d_seal(t):
+    img = d_door(t); m = [(220, 220, 236), (140, 140, 160)]; c = POOL.get(t, [(200, 236, 255), (120, 200, 255)])
+    for y in (5, 9, 13): fillr(img, 2, y, 12, 2, m[1]); fillr(img, 2, y, 12, 1, m[0])
+    fillr(img, 6, 7, 4, 4, c[1]); px(img, 7, 8, c[0])
+    return img
+
 # ---------------------------------------------------------------- map objects
 def obj_herb():
     img = blank(); L = R['leaf']
@@ -386,7 +442,9 @@ for b in BIOME:
         for f in (0, 1): save(f"gt_{b}_water{m}_{f}", water(b, m, f))
 for t in THEMES:
     for k, img in {'walltop': d_wall_top(t), 'wall': d_wall_face(t), 'floor': d_floor(t, 1), 'floor2': d_floor(t, 2, True), 'down': d_stairs(t, False), 'up': d_stairs(t, True),
-                   'torch0': d_torch(t, 0), 'torch1': d_torch(t, 1), 'altar': d_altar(t), 'gold': d_door(t, True), 'door': d_door(t), 'barrel': d_barrel(t), 'statue': d_statue(t), 'sign': d_sign(t)}.items():
+                   'torch0': d_torch(t, 0), 'torch1': d_torch(t, 1), 'altar': d_altar(t), 'gold': d_door(t, True), 'door': d_door(t), 'barrel': d_barrel(t), 'statue': d_statue(t), 'sign': d_sign(t),
+                   'pillar': d_pillar(t), 'spikes': d_spikes(t), 'pool0': d_pool(t, 0), 'pool1': d_pool(t, 1), 'bones': d_bones(t), 'shelf': d_shelf(t), 'bars': d_bars(t),
+                   'brazier0': d_brazier(t, 0), 'brazier1': d_brazier(t, 1), 'rug': d_rug(t), 'throne': d_throne(t), 'seal': d_seal(t)}.items():
         save(f"gd_{t}_{k}", img)
 for k, img in {'herb': obj_herb(), 'wp0': obj_waypoint(0), 'wp1': obj_waypoint(1), 'chest': obj_chest(), 'chestopen': obj_chest(True), 'grave': obj_grave(), 'trap': obj_trap(), 'sign': obj_sign()}.items():
     save(f"go_{k}", img)

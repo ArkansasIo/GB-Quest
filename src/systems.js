@@ -26,11 +26,12 @@ function saveGame() {
   return ok;
 }
 function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; G = s; G.slot = i; ITEM_UID = Math.max(ITEM_UID, ...[...(G.bag || []), ...Object.values(G.eq || {})].filter(Boolean).map(it => it.uid + 1), 1); fixupState(); return true; }
-function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
+function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
   G.stats = Object.assign(newGameState({ name: 'X', species: 'hearthkin', cls: 'warden', bg: 'wanderer' }).stats, G.stats);
   G.companions = (G.companions || []).filter(c => c && c.cls);
+  migrateGear(G); G.companions.forEach(migrateGear); if (typeof stashOf === 'function') stashOf();
   if (G.inst) { G.inst = null; const z = ZONE_BY_ID[G.map]; if (!z) { G.map = 'elderwood'; G.x = 3; G.y = 7; } }
 }
 

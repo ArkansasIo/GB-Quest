@@ -271,50 +271,7 @@ function buildCity(r) {
 }
 
 // ================================================================ dungeon / raid / tower generator
-function buildInstance(kind, def, floor = 0) {
-  const W = kind === 'tower' ? 20 : kind === 'raid' ? 32 : 28, H = kind === 'tower' ? 16 : kind === 'raid' ? 24 : 20;
-  const r = RNG(`${kind}-${def.id}-${floor}`);
-  const g = Array.from({ length: H }, () => Array(W).fill('#'));
-  const rooms = [];
-  const want = kind === 'tower' ? r.int(3, 5) : kind === 'raid' ? 9 : 7;
-  for (let k = 0; k < 300 && rooms.length < want; k++) {
-    const w = r.int(4, 7), h = r.int(3, 5), x = r.int(1, W - w - 2), y = r.int(1, H - h - 2);
-    if (rooms.some(o => x < o.x + o.w + 1 && x + w + 1 > o.x && y < o.y + o.h + 1 && y + h + 1 > o.y)) continue;
-    rooms.push({ x, y, w, h, cx: x + (w >> 1), cy: y + (h >> 1) });
-  }
-  rooms.sort((a, b) => a.cx - b.cx);
-  for (const o of rooms) for (let j = 0; j < o.h; j++) for (let i = 0; i < o.w; i++) g[o.y + j][o.x + i] = r.chance(0.12) ? ',' : '.';
-  for (let i = 1; i < rooms.length; i++) {
-    const a = rooms[i - 1], b = rooms[i]; let x = a.cx, y = a.cy;
-    while (x !== b.cx) { g[y][x] = g[y][x] === '#' ? '.' : g[y][x]; x += Math.sign(b.cx - x); }
-    while (y !== b.cy) { g[y][x] = g[y][x] === '#' ? '.' : g[y][x]; y += Math.sign(b.cy - y); }
-  }
-  // decor on walls next to floor
-  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) if (g[y][x] === '#' && g[y + 1][x] === '.' && r.chance(0.08)) g[y][x] = r.pick(['t', 't', 's', 'b']);
-  const start = rooms[0], last = rooms[rooms.length - 1];
-  g[start.cy][start.x] = 'L';
-  const entry = { x: start.x + 1, y: start.cy };
-  // pulls
-  const pulls = [];
-  const lvl = (def.lvl ?? def.baseLvl ?? 1) + (kind === 'tower' ? floor * TOWER.perFloor : 0);
-  const table = kind === 'tower' ? BESTIARY : spawnTable((REGIONS.find(z => z.id === def.zone) || { biome: 'dusk' }).biome);
-  const bosses = kind === 'tower' ? BOSSES.filter(b => b.cat === 'tower' && b.floor === floor) : BOSSES.filter(b => b.where === def.id).sort((a, b) => a.order - b.order);
-  const bossRooms = kind === 'tower' ? (bosses.length ? [rooms.length - 1] : []) : bosses.map((_, i) => Math.round((rooms.length - 1) * (i + 1) / bosses.length));
-  rooms.forEach((o, i) => {
-    if (i === 0) return;
-    const bi = bossRooms.indexOf(i);
-    if (bi >= 0 && bosses[bi]) pulls.push({ id: `p${i}`, x: o.cx, y: o.cy, boss: bosses[bi].id, lvl: bosses[bi].lvl, final: bi === bosses.length - 1 });
-    else pulls.push({ id: `p${i}`, x: o.cx, y: o.cy, mobs: Array.from({ length: r.int(2, kind === 'raid' ? 4 : 3) }, () => r.pick(table.length ? table : BESTIARY).id), lvl: lvl + r.int(0, 1) });
-  });
-  // chest + trap
-  const chest = { x: last.x + last.w - 1, y: last.y, id: `chest_${def.id}_${floor}` };
-  const traps = [];
-  for (let i = 0; i < 3; i++) { const o = r.pick(rooms.slice(1)); traps.push({ x: o.x + r.int(0, o.w - 1), y: o.y + r.int(0, o.h - 1), dc: 10 + Math.min(10, Math.floor(lvl / 5)), dmg: `${1 + Math.floor(lvl / 4)}d10` }); }
-  if (kind === 'tower') g[last.cy][last.x + last.w - 1] = 'U';
-  const rowsOut = g.map(rw => rw.join(''));
-  return { id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, def.theme || 'dungeon'), tiles: dungeonTiles(def.theme || 'dungeon'), entry, pulls, chest, traps, lvl,
-    name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind };
-}
+// buildInstance lives in rooms.js (designed rooms for dungeons, raids, trials and the tower)
 
 // ================================================================ side quests per zone
 function sideQuests(z) {
@@ -354,7 +311,7 @@ const AFFIX_K = { crit: 1.2, critdmg: 5, dodge: 0.8, block: 1.2, leech: 0.4, has
 function makeItem(opts) {
   const lvl = Math.max(1, opts.lvl || 1), rar = opts.rarity != null ? opts.rarity : rollRarity(lvl, opts.mf, opts.boss, opts.loot);
   const r = R;
-  let kind = opts.kind || r.pick(['weapon', 'weapon', 'armor', 'armor', 'wondrous']);
+  let kind = opts.kind || r.pick(['weapon', 'weapon', 'armor', 'armor', 'wondrous', 'wondrous', 'wondrous', 'wondrous']);
   const it = { uid: ITEM_UID++, kind, rarity: rar, ilvl: lvl, plus: RARITY[rar].plus, affixes: [] };
   if (rar === 0) it.plus = -1;
   if (kind === 'weapon') {
@@ -386,5 +343,5 @@ function itemBaseName(it) {
   return (it.plus > 0 ? `+${it.plus} ` : '') + b;
 }
 function itemBaseCost(it) { return it.kind === 'weapon' ? WEAPONS[it.base].cost : it.kind === 'armor' ? ARMORS[it.base].cost / 4 : 20; }
-function itemSlot(it) { if (it.kind === 'weapon') return 'weapon'; if (it.kind === 'armor') return ARMORS[it.base].type === 'shield' ? 'offhand' : 'armor'; return it.slot; }
+function itemSlot(it) { if (it.kind === 'weapon') return 'weapon'; if (it.kind === 'armor') return ARMORS[it.base].type === 'shield' ? 'offhand' : 'armor'; const s = it.slot || (WONDROUS.find(w => w.id === it.base) || {}).slot; return s === 'ring' || s === 'trinket' ? 'ring1' : s; }
 function itemIcon(it) { if (typeof nesItemIcon === 'function') { const n = nesItemIcon(it); if (n && IMG[n]) return n; } return it.kind === 'weapon' ? WEAPONS[it.base].icon : it.kind === 'armor' ? ARMORS[it.base].icon : WONDROUS.find(w => w.id === it.base).icon; }
