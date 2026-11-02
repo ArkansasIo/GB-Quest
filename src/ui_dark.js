@@ -11,7 +11,7 @@
 const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
 const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
 if (S.uiTheme == null) S.uiTheme = 'sanctum';
-const uiDark = () => S.uiTheme === 'sanctum' && !MONO(S.palette);
+const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo') && !MONO(S.palette);
 {
   const col0 = col;
   col = function (c) { if (typeof c === 'number' && uiDark()) return css(SANCTUM[c] || SANCTUM[3]); return col0(c); };
@@ -71,6 +71,28 @@ function drawOrb(cx, cy, r, frac, rgb) {
   }
   fill(cx - 1, cy - r - 2, 2, 1, css(SAN.stud));
 }
+function drawSanctumMinimap(field) {
+  const cx = W - 15, cy = 25, r = 12, px = G.x, py = G.y;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r - 1, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = css([9, 8, 8]); ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+    const tile = field.tileAt(px + dx, py + dy);
+    if (!tile) continue;
+    ctx.fillStyle = css(tile[1] ? [105, 94, 70] : [48, 43, 36]);
+    ctx.fillRect(cx + dx * 3 - 1, cy + dy * 3 - 1, 3, 3);
+  }
+  for (const e of field.entities()) {
+    const dx = e.x - px, dy = e.y - py;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) continue;
+    const rgb = e.kind === 'boss' || e.kind === 'pull' ? [230, 65, 48] : e.kind === 'waypoint' ? [70, 190, 220] : e.kind === 'npc' ? [220, 180, 90] : [120, 160, 190];
+    ctx.fillStyle = css(rgb); ctx.fillRect(cx + dx * 3 - 1, cy + dy * 3 - 1, 2, 2);
+  }
+  ctx.fillStyle = css([255, 225, 130]); ctx.fillRect(cx - 1, cy - 1, 3, 3);
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.strokeStyle = css(SAN.trim); ctx.lineWidth = 2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r - 1, 0, Math.PI * 2); ctx.strokeStyle = css(SAN.stud); ctx.lineWidth = 1; ctx.stroke();
+}
 function drawSanctumHud(field) {
   const D = derive(G), hpF = Math.max(0, Math.min(1, G.hp / D.hpMax)), mpF = resourceFrac(G);
   // bottom panel
@@ -85,6 +107,8 @@ function drawSanctumHud(field) {
     const a = arts[i];
     if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 4, y + 1); fill(x + 1, y + 9, 15, 1, a.kind === 'physical' ? css([170, 50, 40]) : css([60, 110, 220])); }
   }
+  // Circular local minimap in the upper-right HUD corner.
+  drawSanctumMinimap(field);
   // XP bar
   const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)), xf = Math.max(0, Math.min(1, (G.xp - x0) / Math.max(1, x1 - x0)));
   fill(26, H - 2, 108, 2, css([30, 24, 18])); fill(26, H - 2, Math.round(108 * xf), 2, css([214, 170, 64]));
