@@ -35,6 +35,7 @@ struct InventoryState {
   std::vector<ItemStack> items;
   std::int32_t slot_capacity{20};
   std::int64_t weight_capacity_grams{30000};
+  std::int64_t current_weight_grams{0};
 };
 
 struct InventoryResult {
