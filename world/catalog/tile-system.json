@@ -83,15 +83,15 @@
     "diagonalRule": "diagonal corners are filled only when both adjacent cardinal edges connect"
   },
   "biomes": [
-    "badlands",
+    "meadow",
     "coast",
-    "crystal",
-    "dusk",
-    "jungle",
     "marsh",
+    "jungle",
     "snow",
+    "badlands",
     "volcanic",
-    "grassland"
+    "dusk",
+    "crystal"
   ],
   "dungeonThemes": [
     "dungeon",
