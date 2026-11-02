@@ -276,7 +276,9 @@ ipcMain.handle('gbq:realm-api', async (event, input = {}) => {
   const method = String(input.method || 'GET').toUpperCase();
   if (!endpoint.startsWith('/api/') || endpoint.startsWith('/api/stream') || !['GET', 'POST', 'PUT', 'DELETE'].includes(method)) throw new Error('Unsupported realm API request.');
   if (input.body !== undefined && Buffer.byteLength(JSON.stringify(input.body)) > 1024 * 1024) throw new Error('Realm API request body is too large.');
-  return realmRequest(realmBaseUrl(), endpoint, { method, body: input.body, token: realmSession.token });
+  const result = await realmRequest(realmBaseUrl(), endpoint, { method, body: input.body, token: realmSession.token });
+  if (endpoint === '/api/logout' && method === 'POST') clearRealmSession();
+  return result;
 });
 ipcMain.on('gbq:realm-stream-stop', event => {
   if (gameWindow && event.sender === gameWindow.webContents && realmStreamController) {
