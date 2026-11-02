@@ -1512,6 +1512,51 @@ class WorldMap {
   }
 }
 
+// ================================================================ expansion maps: one terrain atlas for each endgame set
+class ExpansionMapsScene {
+  constructor() { this.opaque = true; this.expIndex = Math.max(0, (ZONE_BY_ID[G.map]?.exp || 1) - 1); this.zoneIndex = 0; }
+  expansion() { return EXPANSIONS[this.expIndex]; }
+  zones() {
+    const x = this.expansion();
+    return REGIONS.filter(r => r.exp === x.n).sort((a, b) => a.ex - b.ex)
+      .flatMap(r => ZONES.filter(z => z.region === r.id).sort((a, b) => a.fx - b.fx || a.fy - b.fy));
+  }
+  update() {
+    if (nav('left')) { this.zoneIndex = (this.zoneIndex + this.zones().length - 1) % this.zones().length; SFX.cursor(); }
+    if (nav('right')) { this.zoneIndex = (this.zoneIndex + 1) % this.zones().length; SFX.cursor(); }
+    if (nav('up') || nav('down')) { this.expIndex = (this.expIndex + (nav('down') ? 1 : EXPANSIONS.length - 1)) % EXPANSIONS.length; this.zoneIndex = 0; SFX.page(); }
+    if (P('b')) { removeScene(this); SFX.back(); return; }
+    if (P('a')) {
+      const map = new WorldMap(); map.sel = this.zones()[this.zoneIndex]; map.zoom = 2;
+      push(map); SFX.select();
+    }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 12, 3);
+    const x = this.expansion(), zones = this.zones();
+    textC(`${x.n}. ${x.name}`.slice(0, 25), 80, 2, 0);
+    textC(`LEVEL ${x.lvl[0]}-${x.lvl[1]}  ${x.desc}`.slice(0, 25), 80, 15, 'gold');
+    zones.forEach((z, index) => {
+      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 29 + row * 49;
+      const m = buildZoneCached(z.id), seen = !!(G.visited[z.id] || G.waypoints[z.id]);
+      for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
+        const ch = m.rows[ty][tx], rgb = MONO(S.palette) ? UI.ui[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
+        ctx.fillStyle = css(seen ? rgb : rgb.map((v, k) => Math.round(v * 0.38 + MAP_TERRAIN.parchment[k] * 0.42)));
+        ctx.fillRect(ox + tx, oy + 7 + ty, 1, 1);
+      }
+      if (m.poi.waypoint) fill(ox + m.poi.waypoint.x, oy + 7 + m.poi.waypoint.y, 2, 2, 'blue');
+      if (m.poi.dungeon) { fill(ox + m.poi.dungeon.x, oy + 7 + m.poi.dungeon.y, 2, 2, 'red'); text('D', ox + m.poi.dungeon.x - 1, oy + 6 + m.poi.dungeon.y, 0); }
+      if (m.poi.raid) { fill(ox + m.poi.raid.x, oy + 7 + m.poi.raid.y, 2, 2, 'gold'); text('R', ox + m.poi.raid.x - 1, oy + 6 + m.poi.raid.y, 3); }
+      if (index === this.zoneIndex) { ctx.strokeStyle = col('gold'); ctx.lineWidth = 1; ctx.strokeRect(ox - 2.5, oy + 4.5, ZW + 5, ZH + 5); }
+      text(`${index + 1} ${z.name}`.slice(0, 10), ox - 2, oy + 34, index === this.zoneIndex ? 'gold' : 2);
+      textR(`LV${z.lvl[0]}`, ox + ZW + 1, oy + 34, 2);
+    });
+    const selected = zones[this.zoneIndex];
+    fill(0, 125, W, 19, 0); textC(`${selected?.name || ''}  LV${selected?.lvl[0] || 0}-${selected?.lvl[1] || 0}`, 80, 126, 'gold');
+    textC('UP/DN: EXPANSION  LEFT/RIGHT: ZONE  A: DETAIL', 80, 136, 2);
+  }
+}
+
 // ================================================================ level up
 class LevelUpScene {
   constructor(g, cb) { this.opaque = true; this.g = g; this.cb = cb; this.t = 0; }
