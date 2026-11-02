@@ -40,3 +40,4 @@ full = full.replace('<section class="chat"', '<div class="fsbar"' + fsHtml.split
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest-fullscreen.html'), full);
 
 console.log(`Built index.html + dist/gbquest.html (${Math.round(single.length / 1024)} KB, ${Object.keys(assets).length} assets)`);
+

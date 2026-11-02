@@ -20,7 +20,7 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 | Tuskborn | STR+2 CON+1 | relentless | Fierce and hardy. Once per rest, drop to 1 HP instead of 0. |
 | Drakkin | STR+2 CHA+1 | breath | Dragon-blooded. Fire breath once per rest; resist fire. |
 
-## Classes (12)
+## Classes (16)
 
 | Class | Role | Hit die | Primary | Saves | Caster | Subclasses | Description |
 |---|---|---|---|---|---|---|---|
@@ -36,6 +36,10 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 | Cantor | healer | d8 | CHA | DEX/CHA | full | Lore, Valor | Songweavers. Inspire allies, heal, and charm. |
 | Chaplain | healer | d8 | WIS | WIS/CHA | full | Life, Tempest | Priests of the Lantern. Healing, wards, and turning the dead. |
 | Verdant | healer | d8 | WIS | INT/WIS | full | Moon, Land | Keepers of the green. Beast shapes and nature spells. |
+| Necromancer | dps | d6 | INT | INT/WIS | full | Gravecaller, Boneweaver | Wield grave magic, drain life, and command the power of death. |
+| Summoner | dps | d8 | CHA | CON/CHA | full | Spiritcaller, Wardbinder | Bind spirits and call allies from beyond the veil. |
+| Sunwarden | healer | d10 | WIS | WIS/CHA | half | Dawnkeeper, Sunstriker | Guardians of the dawn who heal allies and burn foes with radiant light. |
+| Runeblade | tank | d10 | STR | STR/CON | half | Blood Rune, Frost Brand | A rune-armored death knight who mixes martial strength with dark magic. |
 
 ### Class features by level
 
@@ -62,6 +66,14 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 **Chaplain**: 2 Channel Divinity · 5 Destroy Undead
 
 **Verdant**: 2 Beastshape
+
+**Necromancer**: 1 Arcane Recovery
+
+**Summoner**: 1 Arcane Recovery
+
+**Sunwarden**: 1 Lay On Hands · 5 Extra Attack
+
+**Runeblade**: 1 Rage · 5 Extra Attack
 
 ## Backgrounds (6)
 
@@ -92,12 +104,12 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 | Spell | Level | School | Effect | Dice | Classes | Description |
 |---|---|---|---|---|---|---|
 | Emberdart | cantrip | Storm | dmg | 1d10 | arcanist, wildblood | Spell attack, 1d10 fire. |
-| Gravechill | cantrip | Grave | dmg | 1d8 | arcanist, wildblood, pactbound, chaplain | 1d8 necrotic; no healing. |
+| Gravechill | cantrip | Grave | dmg | 1d8 | arcanist, wildblood, pactbound, chaplain, necromancer, runeblade | 1d8 necrotic; no healing. |
 | Guiding Eye | cantrip | Omen | buff |  | chaplain, cantor, verdant, arcanist | Grant +1d4 to next attack or save. |
 | Hexbolt | cantrip | Storm | dmg | 1d10 | pactbound | 1-4 beams of 1d10 force. |
 | Mocksong | cantrip | Thrall | dmg | 1d4 | cantor | WIS save, 1d4 psychic + disadv. |
 | Rimetouch | cantrip | Storm | dmg | 1d8 | arcanist, wildblood, verdant | Spell attack, 1d8 cold. |
-| Sacred Brand | cantrip | Storm | dmg | 1d8 | chaplain | DEX save, 1d8 radiant. |
+| Sacred Brand | cantrip | Storm | dmg | 1d8 | chaplain, sunwarden | DEX save, 1d8 radiant. |
 | Shadow Dart | cantrip | Veil | dmg | 1d8 | cantor, arcanist, pactbound | Spell attack, 1d8 psychic. |
 | Spark Of Life | cantrip | Calling | heal | 1d4 | chaplain, verdant | Restore 1d4 HP to an ally. |
 | Thornlash | cantrip | Flux | dmg | 1d6 | verdant | Spell attack, 1d6 piercing. |
@@ -108,7 +120,7 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 | Faerie Glow | 1 | Omen | cond |  | verdant, cantor | DEX save or attacks vs have adv. |
 | Flame Fan | 1 | Storm | dmg | 3d6 | arcanist, wildblood | All foes, DEX save, 3d6 fire. |
 | Grasping Roots | 1 | Calling | cond |  | verdant, strider | STR save or restrained. |
-| Magic Darts | 1 | Storm | dmg | 3d4+3 | arcanist, wildblood | Never misses. 3d4+3 force. |
+| Magic Darts | 1 | Storm | dmg | 3d4+3 | arcanist, wildblood, summoner | Never misses. 3d4+3 force. |
 | Mending Touch | 1 | Calling | heal | 1d8 | chaplain, cantor, verdant, vanguard, strider | Heal 1d8+mod. |
 | Quick Mend | 1 | Calling | heal | 1d4 | chaplain, cantor, verdant | Bonus action. Heal 1d4+mod. |
 | Thunder Wave | 1 | Storm | dmg | 2d8 | arcanist, wildblood, cantor, verdant | All foes, CON save, 2d8. |
@@ -116,12 +128,12 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 | Whispered Dread | 1 | Veil | cond |  | cantor, pactbound, arcanist | WIS save or frightened. |
 | Iron Bark | 2 | Flux | buff |  | verdant, strider | +4 AC for 10 rounds. |
 | Lesser Restore | 2 | Aegis | cleanse |  | chaplain, cantor, verdant, vanguard, strider | End one condition. |
-| Life Siphon | 2 | Grave | dmg | 3d6 | arcanist, pactbound, wildblood, chaplain | CON save, 3d6 necrotic. |
+| Life Siphon | 2 | Grave | dmg | 3d6 | arcanist, pactbound, wildblood, chaplain, necromancer, runeblade | CON save, 3d6 necrotic. |
 | Lunar Shaft | 2 | Storm | dmg | 2d10 | verdant | CON save, 2d10 radiant. |
 | Mirror Selves | 2 | Veil | buff |  | arcanist, wildblood, pactbound | Three images soak attacks. |
 | Omen Of Ruin | 2 | Omen | cond |  | cantor, strider, arcanist | WIS save or marked for extra damage. |
 | Scorching Triplet | 2 | Storm | dmg | 2d6 | arcanist, wildblood | Three rays, 2d6 fire each. |
-| Spectral Mace | 2 | Storm | summon |  | chaplain | A floating mace strikes each turn. |
+| Spectral Mace | 2 | Storm | summon |  | chaplain, summoner | A floating mace strikes each turn. |
 | Stillness | 2 | Thrall | cond |  | arcanist, wildblood, cantor, chaplain, verdant, pactbound | WIS save or paralyzed. |
 | Vanishing Cloak | 2 | Veil | cond |  | arcanist, wildblood, cantor, pactbound | Invisible until you attack. |
 | Call Lightning | 3 | Calling | dmg | 3d10 | verdant | DEX save, 3d10 lightning. |
@@ -130,35 +142,35 @@ STR · DEX · CON · INT · WIS · CHA · LCK · WIL · SPD — the six 5e abili
 | Dreadwave | 3 | Veil | cond |  | arcanist, wildblood, cantor, pactbound | All foes WIS save or frightened. |
 | Lightning Lance | 3 | Storm | dmg | 8d6 | arcanist, wildblood | All foes, DEX save, 8d6. |
 | Quicken | 3 | Flux | buff |  | arcanist, wildblood | +2 AC and an extra attack. |
-| Second Dawn | 3 | Grave | revive |  | chaplain, vanguard | Revive a fallen ally at 1 HP. |
-| Spirit Host | 3 | Calling | buff | 3d8 | chaplain | Spirits sear all foes each turn. |
+| Second Dawn | 3 | Grave | revive |  | chaplain, vanguard, sunwarden | Revive a fallen ally at 1 HP. |
+| Spirit Host | 3 | Calling | buff | 3d8 | chaplain, summoner | Spirits sear all foes each turn. |
 | Sunburst Orb | 3 | Storm | dmg | 8d6 | arcanist, wildblood | All foes, DEX save, 8d6 fire. |
 | Unweave | 3 | Aegis | cond |  | arcanist, wildblood, pactbound | Target cannot cast for 2 turns. |
 | Beastshape | 4 | Flux | cond |  | arcanist, wildblood, cantor, verdant | WIS save or turned into a newt. |
 | Exile | 4 | Aegis | cond |  | arcanist, wildblood, chaplain, vanguard, pactbound | CHA save or banished. |
 | Hailfall | 4 | Storm | dmg | 6d8 | arcanist, wildblood, verdant | All foes, DEX save, 6d8 cold. |
 | True Veil | 4 | Veil | buff |  | arcanist, wildblood, cantor | Invisible even when attacking. |
-| Withering | 4 | Grave | dmg | 8d8 | arcanist, wildblood, verdant, pactbound | CON save, 8d8 necrotic. |
+| Withering | 4 | Grave | dmg | 8d8 | arcanist, wildblood, verdant, pactbound, necromancer, runeblade | CON save, 8d8 necrotic. |
 | Dawn Bastion | 5 | Aegis | buff |  | chaplain, vanguard, arcanist | 30 HP barrier shields all allies. |
 | Fate Weave | 5 | Omen | cond |  | cantor, arcanist, chaplain | CHA save: all foes take +2d8 radiant. |
 | Frost Cone | 5 | Storm | dmg | 8d8 | arcanist, wildblood | All foes, CON save, 8d8 cold. |
 | Greater Chorus | 5 | Calling | heal | 3d8 | chaplain, cantor, verdant | Heal all 3d8+mod. |
 | Mind Yoke | 5 | Thrall | cond |  | arcanist, wildblood, cantor | WIS save or it fights for you. |
-| Pillar Of Dawn | 5 | Storm | dmg | 8d6 | chaplain | All foes, DEX save, 8d6 radiant. |
-| Recall Soul | 5 | Grave | revive |  | chaplain, cantor, vanguard | Revive an ally at half HP. |
+| Pillar Of Dawn | 5 | Storm | dmg | 8d6 | chaplain, sunwarden | All foes, DEX save, 8d6 radiant. |
+| Recall Soul | 5 | Grave | revive |  | chaplain, cantor, vanguard, sunwarden | Revive an ally at half HP. |
 | Temporal Drift | 5 | Flux | buff |  | arcanist, wildblood | Bends time: extra speed and attacks for 3 rounds. |
-| Death Ring | 6 | Grave | dmg | 8d6 | arcanist, wildblood, pactbound | All foes, 8d6 necrotic. |
+| Death Ring | 6 | Grave | dmg | 8d6 | arcanist, wildblood, pactbound, necromancer | All foes, 8d6 necrotic. |
 | Great Mending | 6 | Calling | heal | 70 | chaplain, verdant | Heal 70 and cleanse. |
 | Stormchain | 6 | Storm | dmg | 10d8 | arcanist, wildblood | All foes, 10d8 lightning. |
 | Unmake | 6 | Flux | dmg | 10d6+40 | arcanist, wildblood | DEX save, 10d6+40 force. |
 | Aura Of Warding | 7 | Aegis | buff |  | chaplain, vanguard, arcanist | +5 AC barrier protects party. |
-| Doom Finger | 7 | Grave | dmg | 7d8+30 | arcanist, wildblood, pactbound | CON save, 7d8+30 necrotic. |
+| Doom Finger | 7 | Grave | dmg | 7d8+30 | arcanist, wildblood, pactbound, necromancer | CON save, 7d8+30 necrotic. |
 | Phantom Parade | 7 | Veil | cond |  | cantor, arcanist, pactbound | All foes WIS save or terrified. |
 | Renewal | 7 | Flux | heal | 4d8+15 | chaplain, verdant, cantor | Heal 4d8+15, regenerate. |
 | Star Shard | 7 | Storm | dmg | 12d6 | arcanist, wildblood | All foes, 12d6 fire. |
-| Noon Flare | 8 | Storm | dmg | 12d6 | chaplain, verdant, arcanist, wildblood | All foes, 12d6 radiant + blind. |
+| Noon Flare | 8 | Storm | dmg | 12d6 | chaplain, verdant, arcanist, wildblood, sunwarden | All foes, 12d6 radiant + blind. |
 | Prismatic Aegis | 8 | Aegis | buff |  | arcanist | +8 AC and immune to lower magic. |
-| Soul Reap | 8 | Grave | dmg | 10d8 | arcanist, pactbound, chaplain | All foes, 10d8 necrotic. |
+| Soul Reap | 8 | Grave | dmg | 10d8 | arcanist, pactbound, chaplain, necromancer | All foes, 10d8 necrotic. |
 | True Transmute | 8 | Flux | cond |  | arcanist, verdant | WIS save or permanently polymorphed. |
 | Word Of Stillness | 8 | Thrall | cond |  | arcanist, wildblood, cantor, pactbound | Stun a foe under 150 HP. |
 | Foresight | 9 | Omen | buff |  | arcanist, cantor, verdant, pactbound | Advantage on everything. |

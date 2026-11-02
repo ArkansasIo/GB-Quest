@@ -289,7 +289,7 @@ class CharCreate {
     const list = (n, i) => { const c = this.cur[i]; const v = up ? (c + n - 1) % n : dn ? (c + 1) % n : c; if (v !== c) SFX.cursor(); this.cur[i] = v; return v; };
     if (s === 0) { const L = Object.keys(SPECIES), i = list(L.length, 0); if (p.species !== L[i]) { p.species = L[i]; p.portrait = null; } if (a) this.next(); }
     if (s === 1) {
-      let i = this.cur[1]; if (lf) i = (i + 11) % 12; if (rt) i = (i + 1) % 12; if (up || dn) i = (i + 6) % 12;
+      let i = this.cur[1]; if (lf) i = (i + CLASS_ORDER.length - 1) % CLASS_ORDER.length; if (rt) i = (i + 1) % CLASS_ORDER.length; if (up || dn) i = (i + 6) % CLASS_ORDER.length;
       if (i !== this.cur[1]) { SFX.cursor(); this.cur[1] = i; p.cls = CLASS_ORDER[i]; p.look = null; p.portrait = null; this.setMethod(this.method === 2 ? 0 : this.method); }
       if (a) this.next();
     }
@@ -388,7 +388,7 @@ class CharCreate {
       text(wrap(sp.desc, 13).slice(0, 6).join('\n'), 74, 80);
       hint('A/START:NEXT  SEL:RANDOM');
     } else if (s === 1) {
-      CLASS_ORDER.forEach((id, j) => { const x = 4 + (j % 6) * 26, y = 25 + Math.floor(j / 6) * 30; if (j === this.cur[1]) fill(x - 1, y - 1, 25, 29, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 26) : sprH(`c_${id}_0`, 24); blit(sp2, x + 12 - sp2.width / 2, y); });
+      CLASS_ORDER.forEach((id, j) => { const x = 4 + (j % 6) * 26, y = 24 + Math.floor(j / 6) * 19; if (j === this.cur[1]) fill(x - 1, y - 1, 25, 18, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 16) : sprH(`c_${id}_0`, 16); blit(sp2, x + 12 - sp2.width / 2, y); });
       const c = CLASSES[p.cls]; frame(2, 85, 156, 48);
       text(c.name, 6, 87, 'gold'); textR(`${c.role.toUpperCase()} D${c.hd} ${c.primary}`, 154, 87, 2);
       text(wrap(c.desc, 25).slice(0, 2).join('\n'), 6, 96);
@@ -466,7 +466,7 @@ const CITY_NPCS = [
   [26, 7, 'elder_2', 'GUILDMASTER', 'guild'], [13, 10, 'villager_1', 'MERCHANT', 'vendor'], [19, 10, 'hero_2', 'QUARTERMASTER', 'honor'], [15, 14, 'villager_3', 'LFG BOARD', 'lfg'],
   [12, 14, 'elder_3', 'ORACLE', 'difficulty'], [17, 5, 'hero_3', 'SPIRE KEEPER', 'tower'], [21, 18, 'villager_5', 'TRIALS MASTER', 'trials'], [27, 13, 'villager_4', 'HARBORMASTER', 'portal'],
   [19, 14, 'elder_5', 'REALM STONE', 'server'], [10, 18, 'villager_0', 'STABLEMASTER', 'stable'], [23, 18, 'hero_0', 'ARENAMASTER', 'arena'],
-  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'],
+  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'], [13, 18, 'villager_2', 'HOUSING STEWARD', 'housing'],
 ];
 const BLACKSMITH_TIERS = [
   { tier: 1, name: 'APPRENTICE', level: 1, maxRarity: 2 },
@@ -507,16 +507,16 @@ class Field {
       if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
       e.push({ kind: 'npc', x, y, spr: s, name, svc });
     });
-    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith']].forEach(([x, y, s, name, svc]) => {
+    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'], [9, 15, 'villager_2', 'HOUSING STEWARD', 'housing']].forEach(([x, y, s, name, svc]) => {
       if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
       e.push({ kind: 'npc', x, y, spr: s, name, svc });
     });
     else {
-      if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); }
+      if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); e.push({ kind: 'npc', x: 11, y: 14, spr: 'villager_2', name: 'VILLAGE STEWARD', svc: 'housing' }); }
       else { const r = RNG('warden-' + z.id); e.push({ kind: 'npc', x: m.hub[0], y: m.hub[1] - 1, spr: r.pick(['villager_1', 'villager_3', 'elder_1', 'hero_2']), name: `WARDEN ${r.pick(NPC_FIRST)}`, svc: 'warden' }); }
       if (m.poi.waypoint) e.push({ kind: 'waypoint', x: m.poi.waypoint.x, y: m.poi.waypoint.y });
       const nodes = G.nodes[z.id] || {};
-      m.nodes.forEach(([x, y, herb], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) e.push({ kind: 'herb', i, x, y, herb, walk: true }); });
+      m.nodes.forEach(([x, y, profession, item], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) e.push({ kind: 'gather', i, x, y, profession, item, walk: true }); });
       for (const b of m.bosses) { const k = G.bossKills[b.id]; if (!k || Date.now() - k > (b.arc ? 3600e3 : 1800e3)) e.push({ kind: 'boss', b, x: b.x, y: b.y }); }
       if (G.ghost && G.ghost.map === z.id) e.push({ kind: 'grave', x: G.ghost.x, y: G.ghost.y, walk: true });
     }
@@ -583,7 +583,7 @@ class Field {
     if (e) {
       if (e.kind === 'npc') return npcService(e);
       if (e.kind === 'waypoint') { if (!G.waypoints[G.map]) { G.waypoints[G.map] = true; SFX.waypoint(); toast('WAYPOINT', this.zone.name, 'px_waypoint', 'waypoint'); checkAchievements(); } return push(new WaypointMenu()); }
-      if (e.kind === 'herb') return gatherHerb(e);
+      if (e.kind === 'gather' || e.kind === 'herb') return gatherProfessionNode(e);
       if (e.kind === 'boss') return fightBoss(e.b);
       if (e.kind === 'pull') return fightPull(e.p);
       if (e.kind === 'chest') return openInstanceChest();
@@ -618,7 +618,7 @@ class Field {
     if (G.inst) {
       const trap = G.inst.map.traps.find(tr => tr.x === G.x && tr.y === G.y && !tr.done);
       const room = instRoomAt(G.inst, G.x, G.y), seen = G.inst.seenRooms = G.inst.seenRooms || [];
-      if (room && !seen.includes(room.x + ',' + room.y)) { seen.push(room.x + ',' + room.y); if (seen.length > 1 || G.inst.kind === 'tower') toast(room.name, room.desc.toUpperCase().slice(0, 22), 'px_map', 'page'); }
+      if (room && !seen.includes(room.x + ',' + room.y)) { seen.push(room.x + ',' + room.y); if (seen.length > 1 || G.inst.kind === 'tower') toast(`ROOM ${room.number || seen.length}/${G.inst.map.roomCount || G.inst.map.rooms.length} T${room.difficulty || G.inst.difficulty || G.difficulty}`, room.name.slice(0, 22), 'px_map', 'page'); }
       if (ch === '^') { const sv = skillCheck(G, 'acrobatics', G.inst.map.trapDC || 12); if (!sv.ok) { const d = roll(G.inst.map.spikeDmg || '1d4').total; G.hp = Math.max(1, G.hp - d); shake = 3; SFX.hurt(); FX.number(76, 56, String(d), 'red'); } else SFX.dodge(); }
       if (trap) { trap.done = true; const sv = skillCheck(G, 'acrobatics', trap.dc); const d = sv.ok ? 0 : roll(trap.dmg).total; if (d) G.hp = Math.max(1, G.hp - d); shake = 6; SFX[d ? 'hurt' : 'dodge'](); say([`A hidden trap! ${sv.text}`, d ? `You take ${d} damage.` : 'You leap clear!']); }
       return;
@@ -679,14 +679,14 @@ class Field {
         const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
         fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
       }
-      else if (e.kind === 'herb') { if (PIX) blit(spr('go_herb', 16, 16), ex, ey - ((frameN >> 5) % 4 === 0 ? 1 : 0)); else blit(sprH(e.herb === 'sandroot' ? 'px_sandroot' : 'item_herb', 11), ex + 3, ey + 3); }
+      else if (e.kind === 'gather' || e.kind === 'herb') { const icon = sprH(ITEMS[e.item || e.herb]?.icon || 'item_herb', 12); if (icon) blit(icon, ex + (T - icon.width) / 2, ey + 2 - ((frameN >> 5) % 4 === 0 ? 1 : 0)); }
       else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }
       else if (e.kind === 'grave') blit(PIX ? spr('go_grave', 16, 16) : sprH('px_skull', 10), ex + (PIX ? 0 : 3), ey + (PIX ? 0 : 4));
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'vault') blit(PIX ? spr(e.open ? 'go_chestopen' : 'go_chest', 16, 16) : sprFit(e.open ? 'item_chest_open' : 'item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
@@ -719,14 +719,19 @@ function npcMarker(e) {
 }
 
 // ================================================================ interactions
-function gatherHerb(e) {
+const GATHER_CHECK = { herb: 'nature', mining: 'athletics', forestry: 'nature', hidecraft: 'survival', salvaging: 'investigation', relic: 'investigation', cultivation: 'nature', beast_lore: 'nature' };
+function gatherProfessionNode(e) {
+  const profession = e.profession || 'herb', item = e.item || e.herb;
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
-  const chk = skillCheck(G, 'nature', 8 + Math.floor(G.prof.herb / 10));
+  const skill = GATHER_CHECK[profession] || 'nature';
+  const chk = skillCheck(G, skill, 8 + Math.floor(G.prof[profession] / 80));
   nodes[e.i] = G.stats.steps;
-  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); progressProfessionQuest('herb', 'gather', n); SFX.gather();
-  const up = gainProf('herb', G.prof.herb);
-  questEvent('gather', e.herb);
-  toast(`+${n} ${ITEMS[e.herb].name}`, up ? `HERBALISM ${G.prof.herb}` : chk.text.slice(0, 22), ITEMS[e.herb].icon, 'pickup');
+  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank(profession, 'yield') / 24);
+  addItem(item, n); progressProfessionQuest(profession, 'gather', n); SFX.gather();
+  const up = gainProf(profession, G.prof[profession]);
+  if (profession === 'herb') questEvent('gather', item);
+  const name = ITEMS[item]?.name || item.toUpperCase();
+  toast(`+${n} ${name}`, up ? `${PROFS[profession]} ${G.prof[profession]}` : chk.text.slice(0, 22), ITEMS[item]?.icon || 'item_herb', 'pickup');
 }
 function fightBoss(b) {
   const B = BOSS_BY_ID[b.id];
@@ -816,6 +821,7 @@ function npcService(e) {
   if (svc === 'auction') return push(new AuctionHouse());
   if (svc === 'mail') return mailMenu();
   if (svc === 'bank') return push(new StashScene());
+  if (svc === 'housing') return push(new HousingScene(G.map));
   if (svc === 'guild') return guildMenu();
   if (svc === 'honor') return honorMenu();
   if (svc === 'lfg') return lfgMenu();
@@ -1166,20 +1172,21 @@ function enterInstance(kind, def, floor, size) {
   SFX.door(); Music.stop();
   fadeTo(() => {
     const ret = G.inst ? G.inst.return : { map: G.map, x: G.x, y: G.y };
-    G.inst = { kind, def, floor, map, cleared: [], chest: false, size, return: ret };
+    G.inst = { kind, def, floor, map, difficulty: map.difficulty || G.difficulty, cleared: [], chest: false, size, return: ret };
     G.x = map.entry.x; G.y = map.entry.y; G.mounted = false;
     if (FIELD) FIELD.reload();
-    toast(map.name, kind === 'tower' ? `F${floor}/100 ${map.mod && map.mod.id !== 'none' ? map.mod.name : ''}` : `GROUP OF ${size}`, kind === 'tower' ? 'px_tower' : 'item_key', 'stairs');
+    toast(map.name, kind === 'tower' ? `F${floor}/100 ${map.mod && map.mod.id !== 'none' ? map.mod.name : ''}` : `${map.roomCount || map.rooms.length} ROOMS TIER ${map.difficulty} GROUP ${size}`, kind === 'tower' ? 'px_tower' : 'item_key', 'stairs');
   });
 }
 function fightPull(p) {
   const inst = G.inst;
+  const difficulty = p.difficulty || inst.difficulty || G.difficulty;
   let foes;
-  if (p.boss) { const B = BOSS_BY_ID[p.boss]; const f = makeMonster(B, p.lvl, G.difficulty, { bossId: B.id, cat: B.cat }); f.name = B.name.slice(0, 16); foes = [f]; }
-  else foes = p.mobs.map(id => makeMonster(BEAST_BY_ID[id] || BESTIARY[0], p.lvl, G.difficulty));
-  if (p.elite) foes.forEach(f => { f.elite = true; f.maxhp = Math.round(f.maxhp * 1.5); f.hp = f.maxhp; f.name = ('ELITE ' + f.name).slice(0, 16); });
+  if (p.boss) { const B = BOSS_BY_ID[p.boss]; const f = makeMonster(B, p.lvl, difficulty, { bossId: B.id, cat: B.cat }); f.name = B.name.slice(0, 16); foes = [f]; }
+  else foes = p.mobs.map(id => makeMonster(BEAST_BY_ID[id] || BESTIARY[0], p.lvl, difficulty));
+  if (p.elite) foes.forEach(f => { f.elite = true; f.maxhp = Math.round(f.maxhp * 1.5); f.hp = f.maxhp; f.name = ((p.miniboss ? 'MINI ' : 'ELITE ') + f.name).slice(0, 16); });
   applyFloorMod(foes, inst.map.mod);
-  startBattle(foes, { size: inst.size, kind: inst.kind, music: p.boss ? (p.final ? 'arcboss' : 'boss') : 'battle', onEnd: r => {
+  startBattle(foes, { size: inst.size, kind: inst.kind, diff: difficulty, music: p.boss ? (p.final ? 'arcboss' : 'boss') : 'battle', onEnd: r => {
     if (r === 'lose') return onPartyWipe();
     if (r !== 'win') return;
     inst.cleared.push(p.id); updateSeals(inst); checkAchievements();
@@ -1190,15 +1197,16 @@ function fightPull(p) {
       checkAchievements();
     }
     if (inst.kind === 'tower' && p.boss) { G.towerBest = Math.max(G.towerBest, inst.floor); NET.publishHero(); checkAchievements(); }
-    if (p.boss && inst.size > 1 && R() < 0.6) push(new LootRoll(makeItem({ lvl: p.lvl, boss: true, mf: derive(G).mf, loot: diffOf().loot }), inst.size));
+    if (p.boss && inst.size > 1 && R() < 0.6) push(new LootRoll(makeItem({ lvl: p.lvl, boss: true, mf: derive(G).mf, loot: DIFFICULTY[difficulty - 1].loot }), inst.size));
   } });
 }
 function openInstanceChest() {
   const inst = G.inst;
   if (!inst.cleared.some(id => inst.map.pulls.find(p => p.id === id && p.final)) && inst.kind !== 'tower' && inst.map.pulls.some(p => p.final)) return say('The chest is sealed by a powerful ward. Defeat the final boss.');
   inst.chest = true; SFX.chest();
-  const it = makeItem({ lvl: inst.map.lvl + 2, mf: derive(G).mf, loot: diffOf().loot, rarity: Math.max(2, rollRarity(inst.map.lvl, derive(G).mf)) });
-  addGear(it); const g = 20 + inst.map.lvl * 8; G.gold += g;
+  const tier = inst.difficulty || G.difficulty, loot = DIFFICULTY[tier - 1].loot;
+  const it = makeItem({ lvl: inst.map.lvl + 2, mf: derive(G).mf, loot, rarity: Math.max(2, rollRarity(inst.map.lvl, derive(G).mf)) });
+  addGear(it); const g = Math.round((20 + inst.map.lvl * 8) * loot); G.gold += g;
   say([`The chest holds ${g} G and:`, `[${RARITY[it.rarity].name}] ${it.name}`]);
 }
 function leaveInstance() {

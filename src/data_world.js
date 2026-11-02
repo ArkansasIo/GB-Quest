@@ -341,11 +341,22 @@ const NPC_ROLE = ['SCOUT', 'HERBALIST', 'SMITH', 'HUNTER', 'PRIEST', 'TRADER', '
 const FACTIONS = { lantern: 'LANTERN PACT', nomad: 'SAND NOMADS', stonekin: 'STONEKIN', fey: 'THORN COURT', haven: 'SILVERHAVEN' };
 const REP_TIERS = [[0, 'NEUTRAL'], [300, 'FRIENDLY'], [900, 'HONORED'], [2100, 'REVERED'], [4000, 'EXALTED']];
 const PROF_CAP = 720;
-const PROFS = { herb: 'HERBALISM', alch: 'ALCHEMY', fish: 'FISHING', cook: 'COOKING', blacksmith: 'BLACKSMITHING', armorsmith: 'ARMORSMITHING', weaponsmith: 'WEAPONSMITHING' };
+const PROFS = {
+  herb: 'HERBALISM', mining: 'ORE MINING', forestry: 'FORESTRY', hidecraft: 'HIDECRAFT', fish: 'FISHING',
+  salvaging: 'SALVAGING', relic: 'RELIC SURVEY', cultivation: 'CULTIVATION', beast_lore: 'BEAST LORE',
+  alch: 'ALCHEMY', cook: 'COOKING', blacksmith: 'BLACKSMITHING', armorsmith: 'ARMORSMITHING', weaponsmith: 'WEAPONSMITHING'
+};
 const PROFESSION_TREES = {
   herb: { yield: 'DEEP ROOTS', efficiency: 'GENTLE HARVEST', mastery: 'FIELD LORE' },
+  mining: { yield: 'RICH VEINS', efficiency: 'CAREFUL STRIKES', mastery: 'STONE LORE' },
+  forestry: { yield: 'SUSTAINABLE CUT', efficiency: 'WOODCRAFT', mastery: 'FOREST LORE' },
+  hidecraft: { yield: 'CLEAN SKINNING', efficiency: 'LIGHT TOUCH', mastery: 'HIDE LORE' },
   alch: { yield: 'BATCH BREWING', efficiency: 'REAGENT SAVER', mastery: 'ALCHEMICAL THEORY' },
   fish: { yield: 'FULL NETS', efficiency: 'PATIENT HAND', mastery: 'WATER LORE' },
+  salvaging: { yield: 'USEFUL PARTS', efficiency: 'QUICK SORT', mastery: 'SALVAGER LORE' },
+  relic: { yield: 'HIDDEN CACHE', efficiency: 'GENTLE EXTRACTION', mastery: 'ANCIENT LORE' },
+  cultivation: { yield: 'ABUNDANT CROP', efficiency: 'SOIL CARE', mastery: 'GROWER LORE' },
+  beast_lore: { yield: 'FIELD DRESSING', efficiency: 'CLEAN CUTS', mastery: 'BEAST LORE' },
   cook: { yield: 'HEARTH FEAST', efficiency: 'PANTRY SAVER', mastery: 'SEASONING ARTS' },
   blacksmith: { yield: 'FORGE OUTPUT', efficiency: 'MATERIAL SAVER', mastery: 'TEMPERING LORE' },
   armorsmith: { yield: 'ARMOR BATCHES', efficiency: 'FIT ECONOMY', mastery: 'ARMOR MASTERY' },
@@ -353,8 +364,15 @@ const PROFESSION_TREES = {
 };
 const PROFESSION_QUESTS = {
   herb: { sideName: 'THE FIELD GUIDE', sideText: 'Gather herbs for the town apothecary.', action: 'gather', sideCount: 20, orderText: 'Gather a bundle of herbs for local healers.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'peacebloom' },
+  mining: { sideName: 'THE DEEP VEIN', sideText: 'Mine ore for the city forge.', action: 'gather', sideCount: 20, orderText: 'Deliver ore to the local smith.', orderCount: 5, xp: 1400, gold: 200, skill: 3, item: 'iron_ore' },
+  forestry: { sideName: 'TIMBER FOR THE WATCH', sideText: 'Gather timber and resin for the road wardens.', action: 'gather', sideCount: 20, orderText: 'Bring gathered wood to the carpenter.', orderCount: 5, xp: 1300, gold: 190, skill: 3, item: 'sap' },
+  hidecraft: { sideName: 'HIDE FOR THE ROAD', sideText: 'Prepare field hides for the traveling outfitters.', action: 'gather', sideCount: 20, orderText: 'Gather usable hides for the leatherworker.', orderCount: 5, xp: 1400, gold: 200, skill: 3, item: 'hide' },
   alch: { sideName: 'A CLEARER MIXTURE', sideText: 'Brew draughts for the traveling medics.', action: 'craft', sideCount: 12, orderText: 'Complete alchemy work for the clinic.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'antitoxin' },
   fish: { sideName: 'THE OLD FISHER', sideText: 'Bring a generous catch to the harbor.', action: 'fish', sideCount: 20, orderText: 'Catch fish for the harbor kitchen.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'ration' },
+  salvaging: { sideName: 'SCRAP INTO STEEL', sideText: 'Recover useful metal from forgotten camps.', action: 'gather', sideCount: 20, orderText: 'Collect reusable scrap for the blacksmith.', orderCount: 5, xp: 1300, gold: 190, skill: 3, item: 'scrap' },
+  relic: { sideName: 'FRAGMENTS OF THE PAST', sideText: 'Survey ruins and recover old relic pieces.', action: 'gather', sideCount: 20, orderText: 'Find relic fragments for the archivist.', orderCount: 5, xp: 1600, gold: 250, skill: 3, item: 'relic_fragment' },
+  cultivation: { sideName: 'THE COMMUNITY GARDEN', sideText: 'Gather field fiber for the town growers.', action: 'gather', sideCount: 20, orderText: 'Harvest useful fibers for local crafters.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'field_fiber' },
+  beast_lore: { sideName: "TRACKER'S NOTES", sideText: 'Study signs of beasts and recover field samples.', action: 'gather', sideCount: 20, orderText: 'Bring beast samples to the naturalist.', orderCount: 5, xp: 1500, gold: 220, skill: 3, item: 'bone_dust' },
   cook: { sideName: 'THE FEAST TABLE', sideText: 'Prepare meals for the road wardens.', action: 'craft', sideCount: 12, orderText: 'Cook provisions for a passing party.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'ration' },
   blacksmith: { sideName: 'THE HEARTHGUARD OATH', sideText: 'Reinforce equipment for the town watch.', action: 'reinforce', sideCount: 10, orderText: 'Temper equipment brought in by adventurers.', orderCount: 2, xp: 2200, gold: 350, skill: 3, item: 'scrap' },
   armorsmith: { sideName: 'A SAFE RETURN', sideText: 'Trade armor with the frontier patrol.', action: 'trade', sideCount: 15, orderText: 'Complete armor orders for local travelers.', orderCount: 3, xp: 2200, gold: 350, skill: 3, item: 'iron_ore' },
@@ -375,6 +393,13 @@ const ITEMS = {
   scroll_dawn: { name: 'SCROLL: DAWN', icon: 'item_scroll', type: 'scroll', spell: 'dawn', combat: true, price: 400, desc: 'Revive an ally.' },
   hearthstone: { name: 'HEARTHSTONE', icon: 'px_waypoint', type: 'hearth', price: 0, desc: 'Return to your inn.' },
   peacebloom: { name: 'PEACEBLOOM', icon: 'item_herb', type: 'mat', price: 2, desc: 'Herb. Alchemy.' },
+  field_fiber: { name: 'FIELD FIBER', icon: 'ne_reagent_0', type: 'mat', price: 4, desc: 'Cultivated fiber used by crafters.' },
+  relic_fragment: { name: 'RELIC FRAGMENT', icon: 'ne_relic_0', type: 'mat', price: 12, desc: 'A recovered piece of an ancient relic.' },
+  fish_stew: { name: 'FISHERMAN STEW', icon: 'px_fishcooked', type: 'use', heal: '4d6', buff: 'fed', price: 18, desc: 'A hearty fish stew. Restores 4d6 HP and leaves you well fed.' },
+  herb_roast: { name: 'HERB ROAST', icon: 'px_ration', type: 'use', heal: '5d6', buff: 'fed', price: 24, desc: 'A fragrant roast with gathered herbs. Restores 5d6 HP and leaves you well fed.' },
+  silverfin_plate: { name: 'SILVERFIN PLATE', icon: 'px_fishcooked', type: 'use', heal: '6d6', buff: 'fed', price: 35, desc: 'A rich silverfin meal. Restores 6d6 HP and leaves you well fed.' },
+  eel_skewers: { name: 'SPICED EEL SKEWERS', icon: 'px_fishcooked', type: 'use', heal: '7d6', buff: 'fed', price: 42, desc: 'Hot spiced eel. Restores 7d6 HP and leaves you well fed.' },
+  travelers_feast: { name: "TRAVELER'S FEAST", icon: 'px_ration', type: 'use', heal: '10d6', buff: 'fed', price: 70, desc: 'A generous feast for the road. Restores 10d6 HP and leaves you well fed.' },
   sandroot: { name: 'SANDROOT', icon: 'px_sandroot', type: 'mat', price: 5, desc: 'Herb. Alchemy.' },
   frostbloom: { name: 'FROSTBLOOM', icon: 'item_herb', type: 'mat', price: 8, desc: 'Cold herb. Alchemy.' },
   small_fish: { name: 'SMALL FISH', icon: 'px_fish', type: 'mat', price: 2, desc: 'Raw fish. Cooking.' },
@@ -393,15 +418,20 @@ const ITEMS = {
   tower_key: { name: 'SPIRE SIGIL', icon: 'px_tower', type: 'key', desc: 'Opens the Spire of a Hundred.' },
 };
 const RECIPES = [
-  { prof: 'alch', name: 'HEALING DRAUGHT', skill: 1, needs: { peacebloom: 2 }, makes: 'potion' },
-  { prof: 'alch', name: 'ANTITOXIN', skill: 10, needs: { peacebloom: 1, sandroot: 1 }, makes: 'antitoxin' },
-  { prof: 'alch', name: 'ETHER', skill: 30, needs: { sandroot: 2, peacebloom: 1 }, makes: 'ether' },
-  { prof: 'alch', name: 'ELIXIR OF MIGHT', skill: 45, needs: { sandroot: 2, frostbloom: 1 }, makes: 'might' },
-  { prof: 'alch', name: 'GREATER DRAUGHT', skill: 60, needs: { frostbloom: 2, sandroot: 1 }, makes: 'greater' },
-  { prof: 'alch', name: 'SUPERIOR DRAUGHT', skill: 85, needs: { frostbloom: 4 }, makes: 'superior' },
-  { prof: 'cook', name: 'GRILLED FISH', skill: 1, needs: { small_fish: 1 }, makes: 'grilled' },
-  { prof: 'cook', name: 'TRAIL RATION', skill: 10, needs: { small_fish: 1, peacebloom: 1 }, makes: 'ration' },
-  { prof: 'cook', name: 'HERO FEAST', skill: 50, needs: { big_fish: 2, eel: 1 }, makes: 'feast' },
+  { id: 'healing_draught', prof: 'alch', name: 'HEALING DRAUGHT', skill: 1, needs: { peacebloom: 2 }, makes: 'potion' },
+  { id: 'antitoxin', prof: 'alch', name: 'ANTITOXIN', skill: 10, needs: { peacebloom: 1, sandroot: 1 }, makes: 'antitoxin' },
+  { id: 'ether', prof: 'alch', name: 'ETHER', skill: 30, needs: { sandroot: 2, peacebloom: 1 }, makes: 'ether' },
+  { id: 'elixir_might', prof: 'alch', name: 'ELIXIR OF MIGHT', skill: 45, needs: { sandroot: 2, frostbloom: 1 }, makes: 'might' },
+  { id: 'greater_draught', prof: 'alch', name: 'GREATER DRAUGHT', skill: 60, needs: { frostbloom: 2, sandroot: 1 }, makes: 'greater' },
+  { id: 'superior_draught', prof: 'alch', name: 'SUPERIOR DRAUGHT', skill: 85, needs: { frostbloom: 4 }, makes: 'superior' },
+  { id: 'grilled_fish', prof: 'cook', name: 'GRILLED FISH', skill: 1, needs: { small_fish: 1 }, makes: 'grilled' },
+  { id: 'trail_ration', prof: 'cook', name: 'TRAIL RATION', skill: 1, needs: { small_fish: 1, peacebloom: 1 }, makes: 'ration' },
+  { id: 'fish_stew', prof: 'cook', name: 'FISHERMAN STEW', skill: 5, needs: { small_fish: 2, peacebloom: 1 }, makes: 'fish_stew' },
+  { id: 'herb_roast', prof: 'cook', name: 'HERB ROAST', skill: 15, needs: { small_fish: 1, sandroot: 2 }, makes: 'herb_roast' },
+  { id: 'silverfin_plate', prof: 'cook', name: 'SILVERFIN PLATE', skill: 30, needs: { big_fish: 2, peacebloom: 1 }, makes: 'silverfin_plate' },
+  { id: 'eel_skewers', prof: 'cook', name: 'SPICED EEL SKEWERS', skill: 50, needs: { eel: 2, sandroot: 1 }, makes: 'eel_skewers' },
+  { id: 'hero_feast', prof: 'cook', name: 'HERO FEAST', skill: 75, needs: { big_fish: 2, eel: 1 }, makes: 'feast' },
+  { id: 'travelers_feast', prof: 'cook', name: "TRAVELER'S FEAST", skill: 100, needs: { big_fish: 3, eel: 2, frostbloom: 1 }, makes: 'travelers_feast' },
 ];
 const HERB_BY_BIOME = { meadow: 'peacebloom', coast: 'peacebloom', marsh: 'peacebloom', jungle: 'peacebloom', snow: 'frostbloom', badlands: 'sandroot', volcanic: 'sandroot', dusk: 'frostbloom', crystal: 'frostbloom' };
 

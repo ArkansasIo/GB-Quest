@@ -40,8 +40,8 @@ On phones, use the on-screen buttons. The full list of controls is in [docs/CONT
 | System | Details |
 |---|---|
 | Rules | 9 attributes (STR DEX CON INT WIS CHA LCK WIL SPD), proficiency, AC, saves, 18 skills, advantage and disadvantage, crits, death saves, short and long rests, hit dice, concentration, attunement (3 items) |
-| Characters | 6 species, 6 backgrounds, 12 classes with 24 subclasses, ability score increases or feats at levels 4/8/12/16/19 |
-| Levels | 1–720. Levels 1–20 follow class progression. Levels 21–720 are ascension levels: +1 attribute and +2 substat points per level, plus a mythic boon every 50 levels |
+| Characters | 9 species, 6 backgrounds, 16 classes with 32 subclasses, ability score increases or feats at levels 4/8/12/16/19 |
+| Levels | 1–720. Levels 1–20 follow class progression. Earn points every 3 levels to learn class-specific active skills and passives; levels 21–720 also grant +1 attribute and +2 substat points, plus a mythic boon every 50 levels |
 | Magic | 59 spells, cantrips to level 9, across 8 renamed schools: Aegis, Calling, Omen, Thrall, Storm, Veil, Grave, Flux. Full, half and pact casters, plus mystic arcana |
 | Combat | Initiative, multiattack, 20 conditions, 30 buffs and debuffs, 13 damage types, resistances, threat and tanking, legendary actions and resistances, recharge abilities, boss phases (enrage, summon, shield, curse and more), AI companions |
 | Gear | 17 weapons, 11 armours, wondrous items. Six rarities (poor to legendary) with +1/+2/+3 bonuses and Diablo-style substat affixes |
@@ -51,7 +51,8 @@ On phones, use the on-screen buttons. The full list of controls is in [docs/CONT
 | Bosses | 350: 12 arc bosses, 177 world bosses, 66 dungeon, 45 raid, 30 trial and 20 tower bosses |
 | Endgame | 22 dungeons, 9 raids (12 players), 6 trials, the 100-floor Spire, 9 difficulty tiers (Story to Apocalypse), 5 built-out expansion worlds covering levels 40–720; 13 expansion titles are listed in the game metadata |
 | MMO features | Dungeon/raid/activity finder, a 100-floor tower finder, scheduled public event finder, auction house, mail, bank, guilds, reputation with 5 factions, ranked arena, flagged open-world PvP, two objective battlegrounds, honor gear, need/greed loot rolls, mounts, pets, a hearthstone, 36 achievements, a simulated realm with NPC players and chat |
-| Professions | Herbalism, Alchemy, Fishing, Cooking, Blacksmithing, Armorsmithing and Weaponsmithing. Each job has 720 skill ranks, a 720-point specialization tree, a side quest and repeatable work orders; smithing tiers reach Grandmaster. |
+| Housing | Buy a home in the capital, harbor ward or Elderwood village. Rest for free, store gear, upgrade chest space, decorate, and bind your hearth; a study desk improves profession skill gains. |
+| Professions | 14 gathering and crafting jobs with 720 skill ranks, 720-point specialization trees, profession quests and work orders. Learn recipe blueprints with profession skill and gold; cooking includes fish, herb and feast recipes. Smithing tiers reach Grandmaster. |
 | Multiplayer | 1, 4 or 12 player modes. When the page is shared, live players appear on the map with chat. A built-in host server lets friends fight in your party: the host runs each battle and guests take their own turns. A realm leaderboard is shared between players. |
 | Audio | Two engines. **Chip 4CH**: 2 pulse, wave and noise channels. **64-bit**: stereo, 8 voices, reverb, echo and a compressor, with strings, brass, flute, harp, FM bells, choir, organ, piano, bass and a full drum kit. 103 + 8 sound effects and 24 tracks, each with an orchestral arrangement, plus a sound test. |
 | Engine | Fixed 60 fps, scene stack, sprite and palette pipeline (DMG dithering, GBC 4-colour palettes per sprite), physics bodies and particles, an Events bus, Tween, Cam, a game Clock, a Profiler, save slots, autosave |
