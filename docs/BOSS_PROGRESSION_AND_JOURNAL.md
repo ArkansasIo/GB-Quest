@@ -25,7 +25,7 @@ A first clear grants gold based on boss level and category sigils:
 
 Gold reward: `max(100, round(500 + bossLevel * 25))`.
 
-These are first-clear progression rewards, separate from the existing repeatable gear, named-item, material, consumable and rune reward rolls. The existing weekly raid instance save remains the raid lockout mechanism; the boss journal does not add a second conflicting lockout per boss.
+These are first-clear progression rewards, separate from the existing repeatable gear, named-item, material, consumable and rune reward rolls. Raid instances enforce the existing per-raid weekly save: after a clear, entry is blocked until the next weekly reset. The boss journal does not add a second conflicting lockout per boss.
 
 ## Difficulty ranks
 
