@@ -237,7 +237,7 @@ const NAMED_ITEMS = [
   { id: 'n_frostmantle', name: 'MANTLE OF THE RIME THRONE', kind: 'wondrous', base: 'pauldrons', rarity: 7, setId: 'rime_throne', affixes: [['cold', 24], ['resist', 18], ['hp', 100]], lore: 'A blizzard follows every footstep.', src: { raid: 'rd_palace' } },
   { id: 'n_icebound', name: 'ICEBOUND OATH', kind: 'weapon', base: 'longsword', rarity: 7, setId: 'rime_throne', affixes: [['cold', 28], ['crit', 8], ['hit', 3]], lore: 'Its edge remembers the first frost.', src: { raid: 'rd_palace' } },
   { id: 'n_duskguard', name: 'DUSKGUARD', kind: 'armor', base: 'plate_armor', rarity: 7, setId: 'long_night', affixes: [['hp', 150], ['crit', 6], ['resist', 14]], lore: 'Armour for the final watch.', src: { raid: 'rd_dusk' } },
-  { id: 'n_voidedge', name: 'VOID EDGE', kind: 'wondrous', base: 'gorget', rarity: 7, setId: 'long_night', affixes: [['critdmg', 55], ['leech', 8], ['shadow', 1]], lore: 'The night cuts both ways.', src: { raid: 'rd_dusk' } },
+  { id: 'n_voidedge', name: 'VOID EDGE', kind: 'wondrous', base: 'gorget', rarity: 7, setId: 'long_night', affixes: [['critdmg', 55], ['leech', 8], ['crit', 8]], lore: 'The night cuts both ways.', src: { raid: 'rd_dusk' } },
   // tower
   { id: 'n_spirekey', name: 'KEY OF THE SPIRE', kind: 'wondrous', base: 'pendant', rarity: 6, affixes: [['gf', 30], ['mf', 30]], lore: 'Opens doors that are not there.', src: { tower: 50 } },
   { id: 'n_hundred', name: 'CROWN OF A HUNDRED', kind: 'wondrous', base: 'kabuto', rarity: 8, affixes: [['hp', 250], ['resist', 3], ['acb', 3]], lore: 'For those who stood on the hundredth floor.', src: { tower: 100 } },
