@@ -187,7 +187,7 @@ function itemDesc(it) {
 
 // ================================================================ EQUIPMENT
 class EquipScene extends ListScene {
-  constructor() { super(6); }
+  constructor() { super(9); }
   items() { return SLOTS; }
   update() {
     this.navList();
@@ -208,11 +208,11 @@ class EquipScene extends ListScene {
     blit(heroPortrait(G) ? sprFit(heroPortrait(G), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
     text(`AC ${D.ac}`, 6, 70); text(`ATK ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 6, 80); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`, 6, 90); text(`x${D.attacks}`, 6, 100, 2);
     const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 112, 2);
-    SLOTS.forEach((s, i) => {
-      const y = 16 + i * 16, it = G.eq[s];
-      if (i === this.i) fill(52, y - 2, 106, 15, 1);
-      blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 12), 55, y);
-      text(SLOT_NAME[s], 70, y - 1, 2); text(it ? it.name.slice(0, 14) : '-', 70, y + 6, it ? rarityCol(it.rarity) : 1);
+    SLOTS.slice(this.top, this.top + this.rows).forEach((s, j) => {
+      const i = this.top + j, y = 29 + j * 9, it = G.eq[s];
+      if (i === this.i) fill(52, y - 1, 106, 8, 1);
+      blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 7), 54, y);
+      text(SLOT_NAME[s].slice(0, 8), 64, y, 2); text(it ? it.name.slice(0, 11) : '-', 112, y, it ? rarityCol(it.rarity) : 1);
     });
     frame(2, 114, 156, 28);
     const it = G.eq[SLOTS[this.i]]; text(wrap(it ? itemDesc(it) : 'Empty slot. A: equip from bag.', 24).slice(0, 2).join('\n'), 6, 118);
@@ -291,11 +291,11 @@ class CharacterMenu {
     text(`LEVEL ${G.lvl}`, 5, 115, 3);
     text('HP', 5, 125, 2); bar(18, 126, 31, 4, G.hp, D.hpMax, 'hp');
     text(`AC ${D.ac}`, 5, 136, 3);
-    const gearSlots = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'offhand', 'waist', 'legs', 'feet', 'ring1', 'ring2'];
+    const gearSlots = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'offhand', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'artifact', 'relic'];
     gearSlots.forEach((slot, index) => {
-      const item = G.eq[slot], y = 49 + index * 6.2;
+      const item = G.eq[slot], y = 49 + index * 5.7;
       const label = SLOT_NAME[slot].replace('MAIN HAND', 'WEAPON').replace('OFF HAND', 'OFFHAND');
-      text(`${label.slice(0, 7).padEnd(7)} ${item ? item.name : '--'}`.slice(0, 16), 61, y, item ? rarityCol(item.rarity) : 2);
+      text(`${label.slice(0, 7).padEnd(7)} ${item ? item.name.slice(0, 8) : '--'}`.slice(0, 16), 61, y, item ? rarityCol(item.rarity) : 2);
     });
     text(`BAG ${G.bag.length}/${BAG_MAX}  GOLD ${fmt(G.gold)}`.slice(0, 23), 61, 130, 'gold');
     fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
