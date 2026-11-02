@@ -14,7 +14,7 @@ function newGameState(o) {
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, quests: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0 },
     ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1 }, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
-    mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
+    mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
   });
   return c;
 }

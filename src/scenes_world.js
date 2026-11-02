@@ -208,7 +208,7 @@ class Field {
     this.toast = 90; this.trail = []; Physics.clear();
     window.SOLID_AT = null;
     Music.play(this.m.music);
-    if (this.zone) { if (!G.waypoints[G.map] && this.m.poi.waypoint) {} questEvent('enter', G.map); this.discover(); }
+    if (this.zone) { if (!G.waypoints[G.map] && this.m.poi.waypoint) {} G.visited = G.visited || {}; G.visited[G.map] = true; questEvent('enter', G.map); this.discover(); }
   }
   enter() { this.reload(); }
   resume() { Music.play(this.m.music); FIELD = this; }
@@ -763,46 +763,186 @@ class Fishing {
   }
 }
 
-// ================================================================ world map (parchment, all regions & sub-zones)
+// ================================================================ world map: an atlas drawn from the real terrain of all 90 zones
+// WORLD view: 1 px per tile (each zone is 32x24 px), with coastlines, roads, towns, dungeons, raids,
+// waypoints, world bosses, the story objective and fog over unvisited lands. ZONE view: 4 px per tile.
+const MAP_TERRAIN = {
+  water: [64, 112, 200], deep: [40, 76, 160], lava: [232, 96, 32], forest: [40, 110, 50], pine: [28, 84, 44], mountain: [120, 104, 92], snowcap: [236, 240, 248],
+  grass: [124, 172, 80], grass2: [108, 156, 70], sand: [214, 190, 130], road: [196, 164, 112], town: [168, 64, 48], ocean: [176, 196, 214], parchment: [228, 214, 172], ink: [60, 44, 30],
+};
+const BIOME_TINT = { snow: { grass: [222, 230, 238], grass2: [206, 216, 228], forest: [70, 110, 100], water: [150, 196, 226] }, volcanic: { grass: [76, 56, 52], grass2: [64, 46, 44], forest: [70, 50, 40], water: 'lava' },
+  marsh: { grass: [96, 120, 72], grass2: [86, 108, 64], water: [70, 104, 96] }, badlands: { grass: [178, 120, 80], grass2: [166, 108, 72], sand: [200, 132, 86] }, dusk: { grass: [88, 70, 110], grass2: [76, 60, 98], forest: [52, 44, 76], water: [70, 56, 120] },
+  crystal: { grass: [110, 196, 190], grass2: [96, 180, 176], forest: [60, 140, 150], water: [80, 170, 230] }, jungle: { grass: [70, 160, 60], grass2: [60, 146, 52], forest: [24, 100, 40] } };
+function terrainColor(ch, biome, x, y) {
+  const t = BIOME_TINT[biome] || {}, P = k => (t[k] === 'lava' ? MAP_TERRAIN.lava : t[k]) || MAP_TERRAIN[k];
+  if ('~Wwv'.includes(ch)) return ((x + y) % 7 === 0 ? P('water').map(v => v + 30) : ch === 'W' ? (t.water === 'lava' ? [200, 60, 20] : MAP_TERRAIN.deep) : P('water'));
+  if ('TFD'.includes(ch)) return (x * 3 + y) % 4 === 0 ? MAP_TERRAIN.pine : P('forest');
+  if (ch === 'P') return MAP_TERRAIN.pine;
+  if (ch === 'M') return (x + y) % 3 === 0 ? MAP_TERRAIN.mountain.map(v => v - 30) : MAP_TERRAIN.mountain;
+  if (ch === 'N') return MAP_TERRAIN.snowcap;
+  if ('sS'.includes(ch)) return P('sand');
+  if ('h|X='.includes(ch)) return MAP_TERRAIN.road;
+  if ('AaKkHJrqRQ'.includes(ch)) return MAP_TERRAIN.town;
+  return (x + y * 2) % 5 === 0 ? P('grass2') : P('grass');
+}
+function monoShade(ch) { return '~Wwv'.includes(ch) ? 1 : 'TFDPM'.includes(ch) ? 2 : 'AaKkHJrqRQ'.includes(ch) ? 3 : 0; }
+const ATLAS = { canvas: null, key: null, w: 0, h: 0, bounds: null };
+function buildAtlas() {
+  const key = S.palette + ':' + Object.keys(G.visited || {}).length;
+  if (ATLAS.key === key) return ATLAS;
+  let maxX = 0, maxY = 0; for (const z of ZONES) { maxX = Math.max(maxX, z.fx); maxY = Math.max(maxY, z.fy); }
+  const pad = 12, w = (maxX + 1) * ZW + pad * 2, h = (maxY + 1) * ZH + pad * 2;
+  const c = ATLAS.canvas && ATLAS.w === w ? ATLAS.canvas : mkCanvas(w, h), x = c.getContext('2d');
+  const id = x.createImageData(w, h), d = id.data, mono = MONO(S.palette), UIP = UI.ui;
+  const land = new Uint8Array(w * h);
+  const put = (px, py, rgb) => { const i = (py * w + px) * 4; d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2]; d[i + 3] = 255; };
+  // ocean with a light wave texture
+  for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
+    const wave = ((px + (py >> 1) * 3) % 11 === 0 && py % 4 === 0);
+    put(px, py, mono ? UIP[wave ? 1 : 0] : (wave ? [150, 176, 200] : MAP_TERRAIN.ocean));
+  }
+  for (const z of ZONES) {
+    const m = buildZoneCached(z.id), ox = pad + z.fx * ZW, oy = pad + z.fy * ZH;
+    const seen = !G.visited || G.visited[z.id] || G.waypoints[z.id];
+    for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
+      const ch = m.rows[ty][tx]; let rgb = mono ? UIP[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
+      // soften the generated mountain borders so neighbouring zones read as one continent
+      if (ch === 'M' && (tx === 0 || ty === 0 || tx === ZW - 1 || ty === ZH - 1)) rgb = mono ? UIP[2] : terrainColor('M', z.biome, tx + 1, ty);
+      if (!seen) { rgb = mono ? UIP[(tx + ty) % 3 === 0 ? 2 : 1] : rgb.map((v, k) => Math.round(v * 0.35 + MAP_TERRAIN.parchment[k] * 0.45 - ((tx + ty) % 4 === 0 ? 18 : 0))); }
+      put(ox + tx, oy + ty, rgb); land[(oy + ty) * w + ox + tx] = 1;
+    }
+  }
+  // coastline: dark ink on ocean pixels touching land
+  for (let py = 1; py < h - 1; py++) for (let px = 1; px < w - 1; px++) {
+    if (land[py * w + px]) continue;
+    if (land[py * w + px - 1] || land[py * w + px + 1] || land[(py - 1) * w + px] || land[(py + 1) * w + px]) put(px, py, mono ? UIP[3] : MAP_TERRAIN.ink);
+  }
+  x.putImageData(id, 0, 0);
+  // region borders (dotted)
+  x.fillStyle = mono ? css(UIP[3]) : 'rgba(60,40,30,0.75)';
+  for (const z of ZONES) {
+    const ox = pad + z.fx * ZW, oy = pad + z.fy * ZH;
+    const r = ZONES.find(o => o.fx === z.fx + 1 && o.fy === z.fy), b = ZONES.find(o => o.fx === z.fx && o.fy === z.fy + 1);
+    if (r && r.region !== z.region) for (let k = 0; k < ZH; k += 3) x.fillRect(ox + ZW - 1, oy + k, 1, 2);
+    if (b && b.region !== z.region) for (let k = 0; k < ZW; k += 3) x.fillRect(ox + k, oy + ZH - 1, 2, 1);
+  }
+  Object.assign(ATLAS, { canvas: c, key, w, h, pad });
+  return ATLAS;
+}
 class WorldMap {
-  constructor() { this.opaque = true; const z = ZONE_BY_ID[G.map] || ZONE_BY_ID[(G.inst && G.inst.return.map) || 'elderwood']; this.cx = z.fx; this.cy = z.fy; }
+  constructor() {
+    this.opaque = true; this.zoom = 0;
+    const z = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map] || ZONE_BY_ID.elderwood;
+    this.sel = z; this.camx = null; this.legend = false;
+    G.visited = G.visited || {}; G.visited[z.id] = true;
+  }
+  move(dx, dy) {
+    const z = this.sel;
+    let t = ZONES.find(o => o.fx === z.fx + dx && o.fy === z.fy + dy);
+    for (let s = 2; !t && s < 30; s++) t = ZONES.find(o => o.fx === z.fx + dx * s && o.fy === z.fy + dy * s);
+    if (!t && dy) t = ZONES.filter(o => Math.sign(o.fy - z.fy) === dy).sort((a, b) => Math.abs(a.fx - z.fx) - Math.abs(b.fx - z.fx))[0];
+    if (t) { this.sel = t; SFX.cursor(); }
+  }
   update() {
-    const move = (dx, dy) => { const t = ZONES.find(z => z.fx === this.cx + dx && z.fy === this.cy + dy); if (t) { this.cx += dx; this.cy += dy; SFX.cursor(); } else { for (let s = 2; s < 26; s++) { const t2 = ZONES.find(z => z.fx === this.cx + dx * s && z.fy === this.cy + dy * s); if (t2) { this.cx = t2.fx; this.cy = t2.fy; SFX.cursor(); break; } } } };
-    if (nav('left')) move(-1, 0); if (nav('right')) move(1, 0); if (nav('up')) move(0, -1); if (nav('down')) move(0, 1);
-    if (P('b') || P('select') || P('start')) { removeScene(this); SFX.close(); return; }
-    if (P('a')) { const z = ZONES.find(zz => zz.fx === this.cx && zz.fy === this.cy); if (z && G.waypoints[z.id] && !G.inst && !G.ghost) { removeScene(this); const wp = buildZoneCached(z.id).poi.waypoint; travelTo(z.id, wp ? wp.x : null, wp ? wp.y + 1 : null); } else SFX.error(); }
+    if (nav('left')) this.move(-1, 0); if (nav('right')) this.move(1, 0); if (nav('up')) this.move(0, -1); if (nav('down')) this.move(0, 1);
+    if (P('start')) { this.legend = !this.legend; SFX.page(); }
+    if (P('b') || P('select')) { if (this.zoom) { this.zoom = 0; SFX.back(); } else { removeScene(this); SFX.close(); } return; }
+    if (P('a')) {
+      if (!this.zoom) { this.zoom = 1; SFX.select(); return; }
+      const z = this.sel;
+      if (G.waypoints[z.id] && !G.inst && !G.ghost) { removeScene(this); const wp = buildZoneCached(z.id).poi.waypoint; travelTo(z.id, wp ? wp.x : null, wp ? wp.y + 1 : null); }
+      else SFX.error();
+    }
+  }
+  icons(z) { // points of interest for a zone, in tile coordinates
+    const m = buildZoneCached(z.id), out = [];
+    if (z.town) out.push({ x: m.hub[0], y: m.hub[1] - 2, k: 'town' });
+    if (m.poi.waypoint && (G.visited[z.id] || G.waypoints[z.id])) out.push({ x: m.poi.waypoint.x, y: m.poi.waypoint.y, k: G.waypoints[z.id] ? 'wp' : 'wp0' });
+    if (m.poi.dungeon) out.push({ x: m.poi.dungeon.x, y: m.poi.dungeon.y, k: 'dungeon' });
+    if (m.poi.raid) out.push({ x: m.poi.raid.x, y: m.poi.raid.y, k: 'raid' });
+    for (const b of m.bosses) if (G.visited[z.id]) out.push({ x: b.x, y: b.y, k: b.arc ? 'arc' : 'boss', dead: G.bossKills[b.id] && Date.now() - G.bossKills[b.id] < 1800e3 });
+    const ch = chapterDef();
+    if (ch && regionOf(z.id) === ch.region && (ch.type !== 'boss' || m.bosses.some(b => b.arc))) out.push({ x: m.hub[0], y: m.hub[1], k: 'quest' });
+    return out;
+  }
+  drawIcon(k, x, y, big, dead) {
+    const s = big ? 2 : 1;
+    if (k === 'town') { fill(x - 2 * s, y - 2 * s, 5 * s, 4 * s, 3); fill(x - s, y - 3 * s, 3 * s, 2 * s, 'red'); fill(x - 1 * s, y - s, s * 2, s * 3, 0); }
+    else if (k === 'wp' || k === 'wp0') { fill(x - s, y - 2 * s, 3 * s, 4 * s, k === 'wp' ? 'blue' : 1); fill(x, y - 3 * s, s, 6 * s, k === 'wp' ? 'blue' : 1); }
+    else if (k === 'dungeon') { fill(x - 2 * s, y - 2 * s, 5 * s, 5 * s, 3); fill(x - s, y - s, 3 * s, 4 * s, 0); fill(x, y, s, 2 * s, 3); }
+    else if (k === 'raid') { fill(x - 2 * s, y - s, 5 * s, 3 * s, 'gold'); fill(x - 2 * s, y - 3 * s, s, 2 * s, 'gold'); fill(x, y - 3 * s, s, 2 * s, 'gold'); fill(x + 2 * s, y - 3 * s, s, 2 * s, 'gold'); }
+    else if ((k === 'boss' || k === 'arc') && !big) { fill(x - 1, y - 1, 3, 3, dead ? 1 : 3); fill(x, y, 1, 1, dead ? 1 : k === 'arc' ? 'purple' : 'red'); }
+    else if (k === 'boss' || k === 'arc') { if (dead) { fill(x - s, y - s, 3 * s, 3 * s, 1); return; } fill(x - 2 * s, y - 2 * s, 5 * s, 4 * s, k === 'arc' ? 'purple' : 'red'); fill(x - s, y - s, s, s, 0); fill(x + s, y - s, s, s, 0); fill(x - s, y + s, 3 * s, s, k === 'arc' ? 'purple' : 'red'); }
+    else if (k === 'quest' && (frameN >> 4) % 2) { fill(x - s, y - 4 * s, 3 * s, 5 * s, 3); fill(x, y - 3 * s, s, 2 * s, 'gold'); fill(x, y, s, s, 'gold'); }
   }
   draw() {
     fill(0, 0, W, H, 0);
-    const cell = 12, ox = Math.round(80 - this.cx * cell - cell / 2), oy = 16;
-    const BCOL = { meadow: [120, 170, 70], coast: [200, 190, 130], marsh: [90, 110, 70], jungle: [40, 130, 60], snow: [220, 230, 240], badlands: [190, 110, 70], volcanic: [120, 50, 40], dusk: [90, 60, 120], crystal: [120, 200, 210] };
-    // ocean
-    for (let y = 0; y < 9; y++) for (let x = -2; x < 30; x++) if ((x + y + (frameN >> 5)) % 4 === 0) fill(ox + x * cell + 4, oy + y * cell + 6, 3, 1, 1);
-    for (const z of ZONES) {
-      const x = ox + z.fx * cell, y = oy + z.fy * cell; if (x < -cell || x > W) continue;
-      const c = BCOL[z.biome] || [150, 150, 150];
-      ctx.fillStyle = MONO(S.palette) ? col(z.town ? 3 : 1 + (z.fx + z.fy) % 2) : `rgb(${c})`; ctx.fillRect(x, y, cell, cell);
-      // glyphs: mountains, trees, waves
-      const glyph = { snow: '^', volcanic: '^', jungle: 'T', marsh: '~', crystal: '*', dusk: '+', badlands: '.', coast: '~', meadow: '"' }[z.biome];
-      text(glyph, x + 3, y + 2, 3);
-      if (z.town) { fill(x + 3, y + 3, 6, 6, 3); fill(x + 4, y + 4, 4, 4, 0); }
-      if (G.waypoints[z.id]) fill(x + cell - 3, y + 1, 2, 2, 'blue');
-      // region borders
-      const nb = ZONES.find(o => o.fx === z.fx + 1 && o.fy === z.fy); if (!nb || nb.region !== z.region) fill(x + cell - 1, y, 1, cell, 3);
-      const nd = ZONES.find(o => o.fx === z.fx && o.fy === z.fy + 1); if (!nd || nd.region !== z.region) fill(x, y + cell - 1, cell, 1, 3);
+    const z = this.sel, reg = REGIONS.find(r => r.id === z.region);
+    if (this.zoom === 0) {
+      const A = buildAtlas();
+      const vh = 96, tx = A.pad + z.fx * ZW + ZW / 2, ty = A.pad + z.fy * ZH + ZH / 2;
+      const tcx = Math.max(0, Math.min(A.w - W, tx - W / 2)), tcy = Math.max(0, Math.min(A.h - vh, ty - vh / 2));
+      this.camx = this.camx == null ? tcx : this.camx + (tcx - this.camx) * 0.25; this.camy = this.camy == null ? tcy : this.camy + (tcy - this.camy) * 0.25;
+      const cx = Math.round(this.camx), cy = Math.round(this.camy);
+      ctx.drawImage(A.canvas, cx, cy, W, vh, 0, 12, W, vh);
+      // icons
+      for (const o of ZONES) {
+        const ox = A.pad + o.fx * ZW - cx, oy = A.pad + o.fy * ZH - cy + 12;
+        if (ox < -ZW || ox > W || oy < -ZH || oy > 12 + vh) continue;
+        for (const ic of this.icons(o)) this.drawIcon(ic.k, ox + ic.x, oy + ic.y, false, ic.dead);
+      }
+      // region names at the centre of each region
+      const done = {};
+      for (const o of ZONES) {
+        if (done[o.region]) continue; done[o.region] = true;
+        const cells = ZONES.filter(q => q.region === o.region), mx = cells.reduce((a, q) => a + q.fx, 0) / cells.length, my = cells.reduce((a, q) => a + q.fy, 0) / cells.length;
+        const r = REGIONS.find(q => q.id === o.region), label = r.name.split(' ')[0].slice(0, 9);
+        const lx = A.pad + (mx + 0.5) * ZW - cx, ly = A.pad + (my + 0.5) * ZH - cy + 8;
+        if (lx < -40 || lx > W + 40 || ly < 12 || ly > 12 + vh - 8) continue;
+        const known = G.visited[o.id] || cells.some(q => G.visited[q.id]);
+        const L = known ? label : '???', lx0 = Math.round(lx - L.length * 3);
+        for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) text(L, lx0 + dx, Math.round(ly) + dy, 0);
+        text(L, lx0, Math.round(ly), r.id === z.region ? 'red' : 3);
+      }
+      // player + selection box
+      const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map];
+      if (here) { const px = A.pad + here.fx * ZW + (G.inst ? G.inst.return.x : G.x) - cx, py = A.pad + here.fy * ZH + (G.inst ? G.inst.return.y : G.y) - cy + 12; if ((frameN >> 3) % 2) { fill(px - 2, py - 2, 5, 5, 3); fill(px - 1, py - 1, 3, 3, 'red'); } }
+      const sx = A.pad + z.fx * ZW - cx, sy = A.pad + z.fy * ZH - cy + 12;
+      ctx.strokeStyle = col((frameN >> 4) % 2 ? 3 : 0); ctx.lineWidth = 1; ctx.strokeRect(sx - 0.5, sy - 0.5, ZW + 1, ZH + 1);
+      // compass rose
+      fill(146, 14, 12, 12, 0); text('N', 149, 14, 3); fill(151, 23, 2, 3, 3);
+    } else {
+      // ZONE view: the zone itself at 4 px per tile with every point of interest
+      const m = buildZoneCached(z.id), s = 4, ox = Math.floor((W - ZW * s) / 2), oy = 13;
+      const seen = G.visited[z.id] || G.waypoints[z.id];
+      for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
+        const ch = m.rows[ty][tx];
+        const rgb = MONO(S.palette) ? UI.ui[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
+        ctx.fillStyle = css(seen ? rgb : rgb.map((v, k) => Math.round(v * 0.35 + MAP_TERRAIN.parchment[k] * 0.45))); ctx.fillRect(ox + tx * s, oy + ty * s, s, s);
+        if (seen && 'TFD'.includes(ch) && (tx + ty) % 2 === 0) fill(ox + tx * s + 1, oy + ty * s, 2, 2, 3);
+        if (seen && 'MN'.includes(ch) && (tx + ty) % 2 === 0) { fill(ox + tx * s + 1, oy + ty * s, 2, 1, 3); fill(ox + tx * s, oy + ty * s + 1, 4, 1, 3); }
+      }
+      fill(ox - 1, oy - 1, ZW * s + 2, 1, 3); fill(ox - 1, oy + ZH * s, ZW * s + 2, 1, 3); fill(ox - 1, oy - 1, 1, ZH * s + 2, 3); fill(ox + ZW * s, oy - 1, 1, ZH * s + 2, 3);
+      if (seen) {
+        for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay, aw] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
+        for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
+        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
+        for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
+      } else textC('UNEXPLORED', 80, oy + 44, 3);
+      if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
-    const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map];
-    if (here && (frameN >> 3) % 2) fill(ox + here.fx * cell + 4, oy + here.fy * cell + 4, 4, 4, 'red');
-    const sel = ZONES.find(z => z.fx === this.cx && z.fy === this.cy);
-    ctx.strokeStyle = col(3); ctx.lineWidth = 1; ctx.strokeRect(ox + this.cx * cell - 0.5, oy + this.cy * cell - 0.5, cell + 1, cell + 1);
-    fill(0, 0, W, 12, 3); textC('MAP OF AELMOOR', 80, 2, 0);
-    frame(2, 112, 156, 30);
-    if (sel) {
-      text(sel.name.slice(0, 22), 6, 115, 3); textR(sel.town ? 'SAFE' : `LV${sel.lvl[0]}-${sel.lvl[1]}`, 154, 115, 2);
-      const reg = REGIONS.find(r => r.id === sel.region);
-      text(`${sel.sub}${reg.exp ? ' EXP' + reg.exp : reg.act ? ' ACT' + reg.act : ''}`.slice(0, 24), 6, 124, 2);
-      text(G.waypoints[sel.id] ? 'A: TRAVEL (WAYPOINT)' : 'Find its waypoint', 6, 133, G.waypoints[sel.id] ? 'blue' : 1);
+    // title bar + info panel
+    fill(0, 0, W, 12, 3); textC(this.zoom ? z.name.slice(0, 24) : 'ATLAS OF AELMOOR', 80, 2, 0);
+    frame(2, 109, 156, 33);
+    if (this.legend) {
+      [['town', 'TOWN'], ['wp', 'WAYPOINT'], ['dungeon', 'DUNGEON'], ['raid', 'RAID'], ['boss', 'WORLD BOSS'], ['arc', 'ARC BOSS']].forEach(([k, n], i) => { const x = 10 + (i % 3) * 50, y = 117 + Math.floor(i / 3) * 12; this.drawIcon(k, x, y + 3); text(n.slice(0, 7), x + 6, y, 3); });
+      return;
     }
+    const seen = G.visited[z.id] || G.waypoints[z.id];
+    text(seen ? z.name.slice(0, 18) : '??? UNEXPLORED', 6, 112, 3); textR(z.town ? 'SAFE' : `LV${z.lvl[0]}-${z.lvl[1]}`, 154, 112, 'gold');
+    text(`${seen ? z.sub : '???'} ${reg.exp ? 'EXP' + reg.exp : reg.act ? 'ACT ' + reg.act : 'HUB'}`.slice(0, 24), 6, 122, 2);
+    const ex = this.zoom ? (G.waypoints[z.id] ? 'A:TRAVEL B:BACK START:KEY' : 'NO WAYPOINT  B:BACK') : 'A:ZOOM  START:LEGEND';
+    text(ex, 6, 132, G.waypoints[z.id] && this.zoom ? 'blue' : 1);
   }
 }
 
