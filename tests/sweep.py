@@ -241,6 +241,31 @@ async () => {
     if (!armorSetBonus(G).length) return 'no set bonus';
     push(new ArmoryScene()); for (const k of ['down', 'down', 'right', 'down', 'up']) { press(k); render(); }
   });
+  step('trading hub + direct trade', () => {
+    fresh('warden', 'hearthkin', 'soldier', 10); G.gold = 100000;
+    const wasOff = NET.offline; NET.offline = true;
+    if (Market.mode() !== 'local') return 'mode ' + Market.mode();
+    const L = Market.npcList(); if (L.length < 20) return 'npc listings';
+    const it = makeItem({ kind: 'weapon', lvl: 10 }); G.bag.push(it);
+    let err = null; Market.post({ item: it }, it.value * 3).then(e => err = e); if (G.ah.length !== 1) return 'post failed';
+    addItem('iron_ore', 10); Market.post({ stack: { id: 'iron_ore', n: 10 } }, 500); if ((G.inv.iron_ore || 0) !== 0) return 'stack not removed';
+    const g0 = G.gold; Market.buy(L[0]).then(e => err = e); if (G.gold >= g0) return 'buy did not charge';
+    Market.cancel(G.ah[0]); G.stats.steps += 2000; Market.settleLocal();
+    push(new MarketScene()); for (const k of ['right', 'down', 'select', 'down', 'select', 'select', 'a']) { press(k); render(); }
+    // direct trade with a fake partner
+    const sent = []; const room0 = NET.room; NET.room = { emit: (t, d) => { sent.push(d); return Promise.resolve(); }, on: () => {}, peers: () => [] };
+    Trade.myPeer = 'me'; Trade.peerId = () => 'me';
+    Trade.invite('p2', 'FRIEND'); const give = makeItem({ kind: 'armor', lvl: 5 }); G.bag.push(give); Trade.me.items.push(give); Trade.me.gold = 50; Trade.sync();
+    const theirs = slimItem(makeItem({ kind: 'weapon', lvl: 30 }));
+    Trade.onMsg({ peer: 'p2', data: { to: 'me', kind: 'offer', offer: { gold: 500, items: [theirs], stacks: [{ id: 'peacebloom', n: 3 }] } } });
+    Trade.myLock = true; Trade.onMsg({ peer: 'p2', data: { to: 'me', kind: 'lock' } }); Trade.myOk = true;
+    const gb = G.gold; Trade.onMsg({ peer: 'p2', data: { to: 'me', kind: 'confirm' } });
+    if (G.gold !== gb - 50 + 500) return 'trade gold ' + (G.gold - gb);
+    if (G.bag.includes(give)) return 'gave item still in bag';
+    if (!G.bag.some(x => x.base === theirs.base && x.ilvl === theirs.ilvl)) return 'received item missing';
+    if (cleanItem({ kind: 'weapon', base: 'nope' })) return 'bad item accepted';
+    NET.room = room0; NET.offline = wasOff; render();
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas

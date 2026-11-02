@@ -882,7 +882,7 @@ function npcService(e) {
   if (svc === 'weaponsmith') return smithMenu('weapon');
   if (svc === 'inn') return innMenu();
   if (svc === 'trainer') return trainerMenu();
-  if (svc === 'auction') return push(new AuctionHouse());
+  if (svc === 'auction') return push(new MarketScene());
   if (svc === 'mail') return mailMenu();
   if (svc === 'bank') return push(new StashScene());
   if (svc === 'housing') return push(new HousingScene(G.map));
@@ -1035,8 +1035,8 @@ function trainerMenu() {
 }
 function mailMenu() {
   if (!G.mail.length) return say('Your mailbox is empty.');
-  const m = G.mail.shift(); if (m.gold) G.gold += m.gold; if (m.item) addGear(m.item); SFX.mail();
-  say([`FROM ${m.from}: ${m.text}`, m.gold ? `+${m.gold} G` : m.item ? `Received ${m.item.name}` : '']);
+  const m = G.mail.shift(); if (m.gold) G.gold += m.gold; if (m.item) addGear(m.item); if (m.stack && ITEMS[m.stack.id]) addItem(m.stack.id, m.stack.n); SFX.mail();
+  say([`FROM ${m.from}: ${m.text}`, m.gold ? `+${m.gold} G` : m.item ? `Received ${m.item.name}` : m.stack && ITEMS[m.stack.id] ? `Received ${ITEMS[m.stack.id].name} x${m.stack.n}` : '']);
 }
 function guildMenu() {
   if (G.guild) return choose(['ROSTER', 'LEAVE GUILD', 'BACK'], k => { if (k === 0) say([`<${G.guild}>`, `Members: ${G.name}, ${SIM_NAMES.slice(0, 5).join(', ')}`]); if (k === 1) { G.guild = null; SFX.back(); } }, `<${G.guild}>`);

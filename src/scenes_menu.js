@@ -137,7 +137,7 @@ class BagScene extends ListScene {
       choose(['EQUIP', 'SELL ' + e.value + 'G', 'LIST ON AUCTION', 'DROP', 'BACK'], k => {
         if (k === 0) { const why = equipItem(G, e, G.bag); SFX[why ? 'error' : 'equip'](); this.flash(why || `Equipped ${e.name}.`); }
         if (k === 1) { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
-        if (k === 2) { G.bag.splice(G.bag.indexOf(e), 1); G.ah.push({ item: e, price: e.value * 4, steps: G.stats.steps }); G.stats.auctions = (G.stats.auctions || 0) + 1; SFX.auction(); this.flash('Listed! Gold arrives by mail.'); }
+        if (k === 2) { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err); } else { SFX.auction(); this.flash('Listed at 4x value.'); } }).catch(er => this.flash(String(er.message || er))); }
         if (k === 3) { G.bag.splice(G.bag.indexOf(e), 1); SFX.back(); }
       }, e.name);
     } else {
@@ -676,13 +676,15 @@ class RepScene {
 // ================================================================ SOCIAL: party, leaderboard, server, guild, who
 class SocialScene extends ListScene {
   constructor() { super(9); this.lb = null; this.loading = false; }
-  items() { return ['PARTY', 'SERVER / MULTIPLAYER', 'LEADERBOARD', 'WHO (ONLINE)', 'GUILD', 'PET', 'CHAT HELP']; }
+  items() { return ['PARTY', 'TRADE', 'TRADING HUB', 'SERVER / MULTIPLAYER', 'LEADERBOARD', 'WHO (ONLINE)', 'GUILD', 'PET', 'CHAT HELP']; }
   update() {
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
     const o = this.items()[this.i]; SFX.select();
     if (o === 'PARTY') push(new CompanionScene());
+    if (o === 'TRADE') tradeMenu();
+    if (o === 'TRADING HUB') push(new MarketScene());
     if (o === 'SERVER / MULTIPLAYER') serverMenu();
     if (o === 'LEADERBOARD') { this.loading = true; NET.leaderboard().then(r => { this.loading = false; const rows = (r && r.length ? r : realmPlayersIn('ardenhold').map(p => ({ name: p.name, lvl: p.lvl, cls: p.cls, ach: 0 }))).slice(0, 10); say([r && r.length ? 'REALM LEADERBOARD (LIVE)' : 'LEADERBOARD (OFFLINE SAMPLE)'].concat(rows.map((h, i) => `${i + 1}. ${clean(h.name)} LV${h.lvl} ${(CLASSES[h.cls] || { name: '' }).name.slice(0, 6)}`))); }); }
     if (o === 'WHO (ONLINE)') say([`LIVE PLAYERS: ${NET.peers.length} (${NET.status || 'OFFLINE'})`].concat(NET.peers.slice(0, 8).map(p => `${clean((p.presence || {}).n || 'HERO')} LV${(p.presence || {}).l || '?'}`)).concat([`REALM NPC HEROES: ${realmPlayersIn(G.map).length} here`]));

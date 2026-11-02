@@ -114,7 +114,7 @@ class InventoryScene {
       }
       else if (o === 'SALVAGE') { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); const y = salvage(e); SFX.craft(); this.flash('GOT ' + yieldText(y).toUpperCase().slice(0, 24)); }
       else if (o.startsWith('SELL')) { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
-      else if (o === 'LIST ON AUCTION') { G.bag.splice(G.bag.indexOf(e), 1); G.ah.push({ item: e, price: e.value * 4, steps: G.stats.steps }); G.stats.auctions = (G.stats.auctions || 0) + 1; SFX.auction(); this.flash('LISTED! GOLD COMES BY MAIL'); }
+      else if (o === 'LIST ON AUCTION') { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err.toUpperCase()); } else { SFX.auction(); this.flash('LISTED AT 4X VALUE (5% DEPOSIT)'); } }).catch(er => this.flash(String(er.message || er).toUpperCase())); }
     }, e.name.slice(0, 24));
   }
   useMenu(k) {

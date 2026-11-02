@@ -18,11 +18,11 @@ const ROOT = path.join(__dirname, '..');
 const PORT = +process.env.PORT || 8787, HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = process.env.GBQ_DATA || path.join(__dirname, 'data'), DB_FILE = path.join(DATA_DIR, 'realm.json');
 const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3;
-const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end', 'chat']);
+const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end', 'chat', 'trade']);
 
 // ---------------------------------------------------------------- storage
 fs.mkdirSync(DATA_DIR, { recursive: true });
-let db = { accounts: {}, sessions: {}, saves: {}, heroes: {} };
+let db = { accounts: {}, sessions: {}, saves: {}, heroes: {}, market: {}, proceeds: {} };
 try { db = Object.assign(db, JSON.parse(fs.readFileSync(DB_FILE, 'utf8'))); } catch (e) { /* first run */ }
 let dirty = false;
 const save = () => { dirty = true; };
@@ -146,6 +146,44 @@ const server = http.createServer(async (req, res) => {
         return json(res, 200, { ok: true, saved: mine[slot].saved });
       }
       if (req.method === 'DELETE') { delete mine[slot]; save(); return json(res, 200, { ok: true }); }
+    }
+
+    // trading hub (auction house): the server holds listings, takes the 5% cut and pays sellers
+    //   GET /api/market            active listings
+    //   POST /api/market           { item | stack:{id,n}, price, hours } -> list (deposit is charged client-side)
+    //   POST /api/market/buy       { id } -> { listing } (buyer pays client-side; seller is credited here)
+    //   POST /api/market/cancel    { id } -> { listing } back to the seller
+    //   GET /api/market/claim      -> { gold, returned:[listings] } proceeds and expired listings
+    if (p.startsWith('/api/market')) {
+      const now = Date.now(); db.market = db.market || {}; db.proceeds = db.proceeds || {};
+      for (const [id, l] of Object.entries(db.market)) if (l.expires < now) { (db.proceeds[l.seller] ||= { gold: 0, returned: [] }).returned.push(l); delete db.market[id]; }
+      if (p === '/api/market' && req.method === 'GET') return json(res, 200, { listings: Object.values(db.market).sort((a, b) => b.ts - a.ts).slice(0, 300) });
+      if (p === '/api/market' && req.method === 'POST') {
+        const b = await body(req, 16384), price = Math.floor(+b.price);
+        if (!Number.isFinite(price) || price < 1 || price > 1e9) return json(res, 400, { error: 'Bad price.' });
+        const item = b.item && typeof b.item === 'object' ? b.item : null, stack = b.stack && typeof b.stack.id === 'string' ? { id: b.stack.id.slice(0, 40), n: Math.max(1, Math.min(999, Math.floor(+b.stack.n) || 1)) } : null;
+        if (!item === !stack) return json(res, 400, { error: 'List one item or one stack.' });
+        if (Object.values(db.market).filter(l => l.seller === uid).length >= 20) return json(res, 400, { error: 'You already have 20 listings.' });
+        const id = crypto.randomBytes(8).toString('hex'), hours = Math.max(1, Math.min(48, +b.hours || 12));
+        db.market[id] = { id, seller: uid, sellerName: String(b.sellerName || sess.acct.name).slice(0, 12), item, stack, price, ts: now, expires: now + hours * 3600e3 };
+        save(); return json(res, 200, { ok: true, id });
+      }
+      if (p === '/api/market/buy' && req.method === 'POST') {
+        const { id } = await body(req), l = db.market[id];
+        if (!l) return json(res, 404, { error: 'That listing is gone.' });
+        if (l.seller === uid) return json(res, 400, { error: 'That is your own listing.' });
+        delete db.market[id]; (db.proceeds[l.seller] ||= { gold: 0, returned: [] }).gold += Math.floor(l.price * 0.95);
+        save(); return json(res, 200, { ok: true, listing: l });
+      }
+      if (p === '/api/market/cancel' && req.method === 'POST') {
+        const { id } = await body(req), l = db.market[id];
+        if (!l || l.seller !== uid) return json(res, 404, { error: 'Not your listing.' });
+        delete db.market[id]; save(); return json(res, 200, { ok: true, listing: l });
+      }
+      if (p === '/api/market/claim' && req.method === 'GET') {
+        const pr = db.proceeds[uid] || { gold: 0, returned: [] }; delete db.proceeds[uid]; save();
+        return json(res, 200, pr);
+      }
     }
 
     // leaderboard

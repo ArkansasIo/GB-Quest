@@ -44,3 +44,29 @@ It needs Node 18+ and has no dependencies. Data is kept in `server/data/realm.js
 | POST | `/api/emit` | Bearer | `{ peer, topic, data }`. Topics: `srv_join srv_char srv_battle srv_turn srv_act srv_end chat` |
 
 The client (`src/netlocal.js`) wraps this API in an object with the same shape as the shared page's room (`presence`, `onPeers`, `on`, `emit`, `peers`). The host-server battle code in `systems.js` therefore runs unchanged on either transport. See the protocol in [MULTIPLAYER.md](MULTIPLAYER.md).
+
+## Trading hub (auction house) and direct trade
+
+`src/market.js` picks the backend automatically:
+
+| Mode | When | Listings live in |
+|---|---|---|
+| `realm` | the game is served by `server/server.cjs` and you are logged in | the server (`db.market`); the server pays sellers 95% into `db.proceeds` |
+| `page` | a shared claude.ai page | the page's shared database, collection `market` |
+| `local` | offline | a simulated market: NPC sellers (gear, tiered materials, consumables) and NPC buyers |
+
+There are two gold sinks: a 5% deposit when you list, and a 5% cut when the item sells. You can have up to 20 listings, and each lasts 12 hours. Unsold items are returned through **CLAIM**, or by mail when offline.
+
+Server endpoints:
+
+| Method | Path | Does |
+|---|---|---|
+| `GET` | `/api/market` | lists active listings |
+| `POST` | `/api/market` | creates a listing: `{ item \| stack, price, hours }` |
+| `POST` | `/api/market/buy` | buys a listing: `{ id }` |
+| `POST` | `/api/market/cancel` | cancels a listing: `{ id }` |
+| `GET` | `/api/market/claim` | collects gold from sales and returned items |
+
+**Direct trade** (`SOCIAL > TRADE`) runs over the `trade` room topic, on the page room or on the realm server. You invite a player who is online with you, and each of you puts up items, stacks and gold. Both sides LOCK, then both CONFIRM, and each client applies the swap. Received items are re-validated with `cleanItem`. Trades have no fees.
+
+Item ownership is not checked on the server yet. A realm or page you host trusts its players' clients, so a modified client could list or trade items it doesn't own.
