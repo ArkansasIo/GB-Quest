@@ -278,6 +278,53 @@ ipcMain.handle('gbq:realm-api', async (event, input = {}) => {
   if (input.body !== undefined && Buffer.byteLength(JSON.stringify(input.body)) > 1024 * 1024) throw new Error('Realm API request body is too large.');
   return realmRequest(realmBaseUrl(), endpoint, { method, body: input.body, token: realmSession.token });
 });
+ipcMain.on('gbq:realm-stream-stop', event => {
+  if (gameWindow && event.sender === gameWindow.webContents && realmStreamController) {
+    realmStreamController.abort();
+    realmStreamController = null;
+  }
+});
+ipcMain.on('gbq:realm-stream-start', event => {
+  if (!gameWindow || event.sender !== gameWindow.webContents || !event.senderFrame.url.startsWith('file://') || !realmSession) return;
+  if (realmStreamController) realmStreamController.abort();
+  const controller = new AbortController();
+  realmStreamController = controller;
+  (async () => {
+    const response = await fetch(realmBaseUrl() + '/api/stream', {
+      headers: { Accept: 'text/event-stream', Authorization: `Bearer ${realmSession.token}` },
+      signal: controller.signal,
+    });
+    if (!response.ok || !response.body) throw new Error(`Realm stream returned HTTP ${response.status}.`);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (!controller.signal.aborted) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true }).replace(/\r/g, '');
+      let boundary;
+      while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+        const frame = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        let eventName = 'message';
+        const data = [];
+        for (const line of frame.split('\n')) {
+          if (line.startsWith('event:')) eventName = line.slice(6).trim();
+          else if (line.startsWith('data:')) data.push(line.slice(5).trim());
+        }
+        if (data.length && gameWindow && !gameWindow.isDestroyed()) {
+          gameWindow.webContents.send('gbq:realm-stream-event', { event: eventName, data: data.join('\n') });
+        }
+      }
+    }
+  })().catch(error => {
+    if (!controller.signal.aborted && gameWindow && !gameWindow.isDestroyed()) {
+      gameWindow.webContents.send('gbq:realm-stream-error', error.message);
+    }
+  }).finally(() => {
+    if (realmStreamController === controller) realmStreamController = null;
+  });
+});
 ipcMain.handle('gbq:realm-logout', async event => {
   if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
   if (realmSession) {
