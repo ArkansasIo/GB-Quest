@@ -7,16 +7,28 @@
 // own room/db capabilities, or plays offline.
 
 const LocalRealm = {
-  base: '', available: false, token: null, account: null, peer: null, es: null, info: null,
+  base: '', available: false, token: null, account: null, peer: null, es: null, info: null, desktop: false, desktopSlot: null,
   load() { try { this.token = localStorage.getItem('gbq_token'); this.account = JSON.parse(localStorage.getItem('gbq_account') || 'null'); } catch (e) {} },
-  store() { try { if (this.token) { localStorage.setItem('gbq_token', this.token); localStorage.setItem('gbq_account', JSON.stringify(this.account)); } else { localStorage.removeItem('gbq_token'); localStorage.removeItem('gbq_account'); } } catch (e) {} },
+  store() { if (this.desktop) return; try { if (this.token) { localStorage.setItem('gbq_token', this.token); localStorage.setItem('gbq_account', JSON.stringify(this.account)); } else { localStorage.removeItem('gbq_token'); localStorage.removeItem('gbq_account'); } } catch (e) {} },
   async api(path, opts = {}) {
+    if (this.desktop) return window.gbqLauncher.realmApi(path, opts);
     const r = await fetch(this.base + path, { method: opts.method || 'GET', headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: 'Bearer ' + this.token } : {}) }, body: opts.body ? JSON.stringify(opts.body) : undefined });
     let j = null; try { j = await r.json(); } catch (e) {}
     if (!r.ok) { const err = new Error((j && j.error) || `HTTP ${r.status}`); err.status = r.status; throw err; }
     return j;
   },
   async detect() {
+    if (location.protocol === 'file:' && window.gbqLauncher?.getGameSession) {
+      try {
+        const context = await window.gbqLauncher.getGameSession();
+        this.desktop = true;
+        this.desktopSlot = Number.isInteger(context.characterSlot) ? context.characterSlot : null;
+        window.GBQ_DESKTOP_LAUNCH = { characterSlot: this.desktopSlot, authenticated: !!context.authenticated };
+        if (!context.authenticated || !context.url || !context.account) { this.available = false; return false; }
+        this.base = context.url; this.token = 'desktop-session'; this.account = context.account;
+        this.info = { ok: true }; this.available = true; return true;
+      } catch (e) { this.desktop = true; this.available = false; return false; }
+    }
     if (!/^https?:$/.test(location.protocol)) return false;
     try { const c = new AbortController(); setTimeout(() => c.abort(), 1500); const r = await fetch('/api/health', { signal: c.signal }); if (!r.ok) return false; this.info = await r.json(); this.available = !!(this.info && this.info.ok); } catch (e) { this.available = false; }
     return this.available;
@@ -36,11 +48,21 @@ const LocalRealm = {
     const L = this, handlers = {}, peerSubs = [];
     let peers = [];
     L.disconnect();
-    L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
-    L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; });
-    L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
-    L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
-    L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+    if (L.desktop) {
+      const close = window.gbqLauncher.startRealmStream(message => {
+        let d; try { d = JSON.parse(message.data); } catch (e) { return; }
+        if (message.event === 'hello') L.peer = d.peer;
+        else if (message.event === 'peers') { peers = d.peers || []; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); }
+        else if (message.event === 'msg') (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data }));
+      }, error => peerSubs.forEach(([, err]) => err && err(error)));
+      L.es = { close };
+    } else {
+      L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
+      L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; });
+      L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
+      L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
+      L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+    }
     const post = (path, body) => L.peer ? L.api(path, { method: 'POST', body: { peer: L.peer, ...body } }) : Promise.reject(new Error('connecting'));
     return {
       transport: 'server',
@@ -63,13 +85,22 @@ LocalRealm.load();
 {
   const init0 = NET.init.bind(NET);
   NET.init = async function () {
-    if (S.netMode === 'offline') return init0();
+    const desktop = location.protocol === 'file:' && !!window.gbqLauncher?.getGameSession;
+    if (S.netMode === 'offline' && !desktop) return init0();
     const ok = await LocalRealm.detect();
     if (!ok) return init0();                                  // shared page / file: use the page's room or go offline
     this.transport = 'server';
     if (!LocalRealm.token || !(await LocalRealm.me())) { this.status = 'SERVER: LOG IN'; this.room = null; return; }
     this.offline = false; this.status = 'ONLINE';
     this.myId = LocalRealm.account.id;
+    if (LocalRealm.desktop && LocalRealm.desktopSlot !== null) {
+      try {
+        await LocalRealm.download(LocalRealm.desktopSlot);
+        window.GBQ_DESKTOP_LAUNCH.loaded = true;
+      } catch (error) {
+        window.GBQ_DESKTOP_LAUNCH.loadError = error.message;
+      }
+    }
     this.room = LocalRealm.room();
     this.room.onPeers(ch => { if (this.offline) { this.peers = []; return; } this.peers = ch.peers.filter(p => !p.sameTab); this.onPeers(ch); }, () => { this.status = 'SERVER LOST'; });
     ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m)));
