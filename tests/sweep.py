@@ -311,6 +311,21 @@ async () => {
     if (!CHAT_UI.entries.some(m => m.channel === 'combat')) return 'combat log';
     scenes.length = 0; reset(new Field()); NET.sendChat('/s bubble test'); document.body.classList.remove('chat-on'); run(3); render(); document.body.classList.add('chat-on');
   });
+  step('admin control', () => {
+    fresh('warden', 'hearthkin', 'soldier', 5); S.devMode = true; if (!adminAllowed()) return 'not allowed';
+    // walk every menu and run every safe leaf (skip teleports, battles, instances, wipes and the debug panel)
+    const skip = /TELEPORT|SPAWN|ENTER INSTANCE|WIPE|COPY TO|DEBUG PANEL|BROADCAST|RESET TALENTS|CLEAR MY|DEVELOPER/;
+    let leaves = 0;
+    const walk = (nodes, depth) => { for (const n of nodes) { if (skip.test(n.label)) continue; if (n.value) n.value(); if (n.kids && depth < 4) walk(n.kids().slice(0, 3), depth + 1); else if (n.run) { n.run(); leaves++; while (scenes.length && !(scenes[scenes.length - 1] instanceof Field) && !(scenes[scenes.length - 1] instanceof AdminScene)) removeScene(scenes[scenes.length - 1]); } } };
+    reset(new Field()); walk(adminTree(), 0);
+    if (leaves < 15) return 'only ' + leaves + ' leaves';
+    if (G.lvl < 100) return 'level not raised';
+    push(new AdminScene()); for (const k of ['down', 'a', 'down', 'a', 'b', 'b', 'down', 'down', 'a', 'b']) { press(k); render(); }
+    for (const c of ['/gm help', '/gm level 30', '/gm gold 500', '/gm heal', '/gm item armor 12 6', '/gm mats 6', '/gm prof 200', '/gm mount all', '/gm time dusk', '/gm reveal', '/gm bestiary', '/gm xp 2', '/gm save', '/gm tp ardenhold', '/gm nope']) NET.sendChat(c);
+    if (G.lvl < 30 || G.prof.herb !== 200 || G.mounts.length !== 120) return 'gm commands';
+    S.xpRate = 1;
+    S.devMode = false; DBG.god = false; DBG.noEnc = false; Clock.override = null;
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas

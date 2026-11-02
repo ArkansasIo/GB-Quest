@@ -151,7 +151,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   const say0 = Battle.prototype.say;
   Battle.prototype.say = function (text, act, wait) {
     const t = String(text || '').replace(/\n/g, ' · ').trim();
-    if (t) chatLog('combat', 'COMBAT', t.slice(0, 170));
+    if (t && S.combatLog !== false) chatLog('combat', 'COMBAT', t.slice(0, 170));
     return say0.call(this, text, act, wait);
   };
 }
@@ -177,7 +177,7 @@ function chatBubble(msg, cx, top, yell) {
 }
 function drawFieldChat(field) {
   if (!field.cam || G.inst) return;
-  const now = Date.now(), B = CHAT_STATE.bubbles, T0 = 16;
+  const now = Date.now(), B = S.bubbles === false ? {} : CHAT_STATE.bubbles, T0 = 16;
   const at = (name, tx, ty) => { const b = B[String(name).toUpperCase()]; if (!b || now - b.t > 4500) return; chatBubble(b.msg, tx * T0 - field.cam[0] + 8, ty * T0 - field.cam[1] - 2, b.yell); };
   at(G.name, G.x, G.y);
   for (const p of realmPlayersIn(G.map)) at(p.name, p.x, p.y);

@@ -62,7 +62,7 @@
       ['settings', 'Game settings', 'settings.manage'], ['permissions', 'Permissions', 'staff.manage'], ['audit', 'Audit log', 'audit.view'],
     ].filter(([, , permission]) => can(permission));
     for (const [id, label] of tabs) {
-      const button = document.createElement('button'); button.type = 'button'; button.dataset.tab = id; button.textContent = label;
+      const button = document.createElement('button'); button.type = 'button'; button.dataset.tab = id; button.textContent = label; button.className = 'ic ic-' + id;
       button.addEventListener('click', () => showTab(id)); nav.append(button);
     }
     if (!tabs.some(([id]) => id === activeTab)) activeTab = tabs[0]?.[0] || 'overview';
