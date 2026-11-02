@@ -220,15 +220,24 @@ const NAMED_ITEMS = [
   { id: 'n_lanternkeeper', name: 'LANTERNKEEPER', kind: 'weapon', base: 'crozier', rarity: 6, affixes: [['dmg', 25], ['heal', 3]], lore: 'It holds a flame from the first lantern.', src: { act: 11 } },
   { id: 'n_codexblade', name: 'BLADE OF THE CODEX', kind: 'weapon', base: 'zweihander', rarity: 7, affixes: [['critdmg', 60], ['hit', 3], ['leech', 5]], lore: 'Every school of magic, written in steel.', src: { act: 12 } },
   // raids
-  { id: 'n_bonelord', name: "BONELORD'S MANTLE", kind: 'wondrous', base: 'pauldrons', rarity: 6, affixes: [['acb', 2], ['hp', 50]], lore: 'Stitched from the crypt kings.', src: { raid: 'rd_crypt' } },
-  { id: 'n_forgefire', name: 'FORGEFIRE MAUL', kind: 'weapon', base: 'maul', rarity: 6, affixes: [['critdmg', 45], ['dmg', 10]], lore: 'The heart of embers beats inside it.', src: { raid: 'rd_forge' } },
-  { id: 'n_glacier', name: 'GLACIER AEGIS', kind: 'armor', base: 'tower_shield', rarity: 6, affixes: [['acb', 3], ['resist', 15]], lore: 'A slab of the Rime Throne itself.', src: { raid: 'rd_palace' } },
-  { id: 'n_longnight', name: 'THE LONG NIGHT', kind: 'weapon', base: 'flamberge', rarity: 7, affixes: [['critdmg', 70], ['crit', 8], ['leech', 6]], lore: 'Dawn never came for its last owner.', src: { raid: 'rd_dusk' } },
+  { id: 'n_bonelord', name: "BONELORD'S MANTLE", kind: 'wondrous', base: 'pauldrons', rarity: 6, setId: 'crypt_warden', affixes: [['acb', 2], ['hp', 50]], lore: 'Stitched from the crypt kings.', src: { raid: 'rd_crypt' } },
+  { id: 'n_forgefire', name: 'FORGEFIRE MAUL', kind: 'weapon', base: 'maul', rarity: 6, setId: 'forgefire', affixes: [['critdmg', 45], ['dmg', 10]], lore: 'The heart of embers beats inside it.', src: { raid: 'rd_forge' } },
+  { id: 'n_glacier', name: 'GLACIER AEGIS', kind: 'armor', base: 'tower_shield', rarity: 6, setId: 'rime_throne', affixes: [['acb', 3], ['resist', 15]], lore: 'A slab of the Rime Throne itself.', src: { raid: 'rd_palace' } },
+  { id: 'n_longnight', name: 'THE LONG NIGHT', kind: 'weapon', base: 'flamberge', rarity: 7, setId: 'long_night', affixes: [['critdmg', 70], ['crit', 8], ['leech', 6]], lore: 'Dawn never came for its last owner.', src: { raid: 'rd_dusk' } },
   { id: 'n_drowned', name: 'DROWNED CROWN', kind: 'wondrous', base: 'circlet', rarity: 7, affixes: [['dmg', 35], ['resist', 2]], lore: 'Pulled from the sea floor, still singing.', src: { raid: 'rd_x1' } },
   { id: 'n_choir', name: 'ABYSSAL CHOIR', kind: 'wondrous', base: 'torc', rarity: 7, affixes: [['dmg', 40], ['heal', 4]], lore: 'You can hear them if you hold it close.', src: { raid: 'rd_x2' } },
   { id: 'n_winds', name: 'THRONE OF WINDS', kind: 'weapon', base: 'yumi', rarity: 8, affixes: [['hit', 4], ['crit', 10], ['haste', 15]], lore: 'The wind itself draws the string.', src: { raid: 'rd_x3' } },
   { id: 'n_starfall', name: 'STARFALL', kind: 'weapon', base: 'bastard_sword', rarity: 8, affixes: [['critdmg', 90], ['hit', 4], ['leech', 7]], lore: 'It fell burning from the sky.', src: { raid: 'rd_x4' } },
   { id: 'n_ascendant', name: 'THE ASCENDANT', kind: 'armor', base: 'maximilian_plate', rarity: 8, affixes: [['hp', 200], ['acb', 4], ['resist', 20]], lore: 'Worn by the first who climbed to the top.', src: { raid: 'rd_x5' } },
+  // additional legendary raid-set pieces
+  { id: 'n_cryptseal', name: 'SEAL OF THE DEEP CRYPT', kind: 'wondrous', base: 'torc', rarity: 6, setId: 'crypt_warden', affixes: [['resist', 12], ['hp', 80]], lore: 'The dead obey its quiet command.', src: { raid: 'rd_crypt' } },
+  { id: 'n_cryptwarden', name: 'CRYPT WARDEN PLATE', kind: 'armor', base: 'splint_mail', rarity: 7, setId: 'crypt_warden', affixes: [['hp', 140], ['acb', 2], ['resist', 12]], lore: 'The last shield between the living and the crypt.', src: { raid: 'rd_crypt' } },
+  { id: 'n_forgeheart', name: 'HEART OF THE FORGE', kind: 'armor', base: 'maximilian_plate', rarity: 7, setId: 'forgefire', affixes: [['hp', 160], ['fire', 20], ['thorns', 20]], lore: 'Still warm after a thousand winters.', src: { raid: 'rd_forge' } },
+  { id: 'n_embergrip', name: 'EMBERGRIP', kind: 'wondrous', base: 'vambraces', rarity: 6, setId: 'forgefire', affixes: [['dmg', 28], ['fire', 18]], lore: 'The forge answers its wearer.', src: { raid: 'rd_forge' } },
+  { id: 'n_frostmantle', name: 'MANTLE OF THE RIME THRONE', kind: 'wondrous', base: 'pauldrons', rarity: 7, setId: 'rime_throne', affixes: [['cold', 24], ['resist', 18], ['hp', 100]], lore: 'A blizzard follows every footstep.', src: { raid: 'rd_palace' } },
+  { id: 'n_icebound', name: 'ICEBOUND OATH', kind: 'weapon', base: 'longsword', rarity: 7, setId: 'rime_throne', affixes: [['cold', 28], ['crit', 8], ['hit', 3]], lore: 'Its edge remembers the first frost.', src: { raid: 'rd_palace' } },
+  { id: 'n_duskguard', name: 'DUSKGUARD', kind: 'armor', base: 'plate_armor', rarity: 7, setId: 'long_night', affixes: [['hp', 150], ['crit', 6], ['resist', 14]], lore: 'Armour for the final watch.', src: { raid: 'rd_dusk' } },
+  { id: 'n_voidedge', name: 'VOID EDGE', kind: 'wondrous', base: 'gorget', rarity: 7, setId: 'long_night', affixes: [['critdmg', 55], ['leech', 8], ['shadow', 1]], lore: 'The night cuts both ways.', src: { raid: 'rd_dusk' } },
   // tower
   { id: 'n_spirekey', name: 'KEY OF THE SPIRE', kind: 'wondrous', base: 'pendant', rarity: 6, affixes: [['gf', 30], ['mf', 30]], lore: 'Opens doors that are not there.', src: { tower: 50 } },
   { id: 'n_hundred', name: 'CROWN OF A HUNDRED', kind: 'wondrous', base: 'kabuto', rarity: 8, affixes: [['hp', 250], ['resist', 3], ['acb', 3]], lore: 'For those who stood on the hundredth floor.', src: { tower: 100 } },
@@ -253,7 +262,7 @@ const NAMED_BY_ID = Object.fromEntries(NAMED_ITEMS.map(n => [n.id, n]));
 function makeNamed(id, lvl) {
   const n = NAMED_BY_ID[id]; if (!n) return null;
   const it = makeItem({ kind: n.kind, base: n.base, rarity: n.rarity, lvl: Math.max(lvl, n.src.minLvl || 1) });
-  it.name = n.name; it.named = n.id; it.lore = n.lore;
+  it.name = n.name; it.named = n.id; it.lore = n.lore; if (n.setId) it.setId = n.setId;
   const scale = 1 + Math.max(0, it.ilvl - 20) / 60;
   it.affixes = n.affixes.map(([k, v]) => [k, SUBSTATS[k] ? Math.min(SUBSTATS[k].max, Math.round(v * scale)) : v]).filter(([k]) => SUBSTATS[k]);
   it.value = Math.round(it.value * 3);
@@ -350,7 +359,7 @@ function smartKind(c) {
 }
 // resolve the drops of one defeated foe
 function rollDrops(f, ctx = {}) {
-  const c = ctx.hero || G, D = derive(c), diffLoot = ctx.loot || 1, out = { items: [], gold: 0, mats: {}, cons: [] };
+  const c = ctx.hero || G, D = derive(c), diffLoot = ctx.loot || 1, out = { items: [], gold: 0, mats: {}, cons: [], runes: [] };
   const B = f.bossId && BOSS_BY_ID[f.bossId];
   const T = B ? LOOT_TABLES[B.cat] || LOOT_TABLES.world : f.elite ? LOOT_TABLES.elite : f.champion ? LOOT_TABLES.champion : LOOT_TABLES.normal;
   // gear
@@ -361,6 +370,8 @@ function rollDrops(f, ctx = {}) {
   }
   // named
   if (B && T.named) { const pool = namedPoolFor(f); if (pool.length && R() < T.named * diffLoot) { const n = pick(pool); out.items.push(makeNamed(n.id, f.lvl)); } }
+  // boss rune rewards (the reward roll is separate from gear and named drops)
+  if (B && typeof rollBossRuneDrops === 'function') out.runes = rollBossRuneDrops(B, f.lvl, R);
   // gold
   out.gold = Math.round((f.gold || 0) * (T.gold || 1) * (1 + D.gf / 100));
   // materials by family
@@ -377,7 +388,7 @@ function rollDrops(f, ctx = {}) {
 // what a foe can drop, for the bestiary / debug
 function dropTableFor(f) {
   const B = f.bossId && BOSS_BY_ID[f.bossId], T = B ? LOOT_TABLES[B.cat] : f.elite ? LOOT_TABLES.elite : LOOT_TABLES.normal;
-  return { gearChance: T.gear, count: T.count, minRarity: RARITY[T.floor].name, named: B ? namedPoolFor(f).map(n => n.name) : [], mats: (FAMILY_MATS[f.fam] || ['scrap']).map(k => ITEMS[k] && ITEMS[k].name) };
+  return { gearChance: T.gear, count: T.count, minRarity: RARITY[T.floor].name, runeChance: B && BOSS_RUNE_DROP_CHANCE ? BOSS_RUNE_DROP_CHANCE[B.cat] : 0, named: B ? namedPoolFor(f).map(n => n.name) : [], mats: (FAMILY_MATS[f.fam] || ['scrap']).map(k => ITEMS[k] && ITEMS[k].name) };
 }
 
 // ---------------------------------------------------------------- TITLES (earned, pick one to wear)
