@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 
 const ranks = JSON.parse(fs.readFileSync(new URL('../data/progression/ranks.json', import.meta.url), 'utf8'));
 const tiles = JSON.parse(fs.readFileSync(new URL('../world/catalog/tile-system.json', import.meta.url), 'utf8'));
@@ -31,4 +32,18 @@ test('tile system defines layered 16px tiles and all 16 cardinal autotile masks'
   assert.ok(tiles.requiredCategories.includes('ui map markers'));
   assert.ok(tiles.biomes.length >= 8);
   assert.ok(tiles.dungeonThemes.length >= 6);
+});
+
+test('rank system calculates score and resolves each rank boundary', () => {
+  const context = { Math, Object, Number, globalThis: null };
+  context.globalThis = context;
+  vm.runInNewContext(fs.readFileSync(new URL('../src/rank-system.js', import.meta.url), 'utf8'), context);
+  const system = context.GBQRankSystem;
+  assert.ok(system);
+  assert.deepEqual(Array.from(system.ladder, rank => rank.id), ranks.order);
+  for (const rank of ranks.ranks) assert.equal(system.forScore(rank.scoreMin).id, rank.id);
+  assert.equal(system.forScore(999999).id, 'SSS');
+  assert.equal(system.forScore(-10).id, 'F');
+  const character = { ach: { one: true }, stats: { kills: 10, raids: 1 }, bossKills: { dragon: 2 }, visited: { meadow: true }, towerBest: 5 };
+  assert.equal(system.score(character), 10 + 10 + 40 + 50 + 5 + 10);
 });
