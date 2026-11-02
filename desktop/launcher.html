@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d12">
+<title>Shadowbane Chronicles Launcher</title>
+<style>
+:root{color-scheme:dark;--bg:#090d12;--panel:#111a23;--line:#263747;--muted:#91a4b4;--gold:#d7b36a;--cyan:#76c8d4;--text:#e8edf0}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -15%,#294052 0,#111c27 38%,var(--bg) 75%);color:var(--text);font:15px/1.5 Segoe UI,Arial,sans-serif}
+main{width:min(1080px,calc(100% - 36px));margin:34px auto}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:14px}.sigil{width:54px;height:54px;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-size:26px;background:#18232c;clip-path:polygon(50% 0,92% 22%,92% 78%,50% 100%,8% 78%,8% 22%)}h1{font-size:clamp(20px,3vw,30px);letter-spacing:.08em;margin:0;text-transform:uppercase}.subtitle{color:var(--muted);font-size:12px;letter-spacing:.18em;text-transform:uppercase}.version{color:var(--gold);font-size:12px;text-align:right}.hero{border:1px solid var(--line);background:linear-gradient(120deg,#182633eF,#101820f2),repeating-linear-gradient(135deg,#fff0 0 14px,#ffffff08 14px 15px);padding:34px;min-height:210px;display:flex;flex-direction:column;justify-content:end;position:relative;overflow:hidden}.hero:after{content:"✦";position:absolute;right:8%;top:-65px;font-size:250px;color:#d7b36a12}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:.22em;text-transform:uppercase}.hero h2{font-size:clamp(25px,4vw,42px);line-height:1.1;margin:8px 0}.hero p{color:#b8c6cf;max-width:620px;margin:0}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:18px}.panel{background:#101820;border:1px solid var(--line);padding:22px}.panel h3{margin:0 0 16px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.field select{width:100%;padding:12px;background:#0a1118;color:var(--text);border:1px solid #344858;border-radius:3px;font:inherit}.status{display:flex;gap:10px;align-items:flex-start;padding:12px;background:#0b131a;border:1px solid #263747;color:#b8c6cf;font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#d7a34d;margin-top:6px;flex:none}.status strong{display:block;color:var(--text);font-size:13px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.btn{border:1px solid #657887;background:#182632;color:var(--text);padding:12px 18px;cursor:pointer;font:600 13px inherit;letter-spacing:.08em;text-transform:uppercase}.btn.primary{background:linear-gradient(#e3c27e,#b88e48);border-color:#e3c27e;color:#15120c;min-width:180px}.btn:hover{filter:brightness(1.12)}.btn:disabled{opacity:.45;cursor:not-allowed}.muted{color:var(--muted);font-size:12px}.links{display:flex;gap:16px;margin-top:18px}.links button{background:none;border:0;color:var(--cyan);cursor:pointer;padding:0;font:inherit;font-size:12px}.foot{display:flex;justify-content:space-between;gap:15px;color:#718493;font-size:11px;margin:22px 2px}.notice{margin-top:14px;color:#b5c5ce;font-size:12px}
+@media(max-width:720px){main{margin:18px auto}.grid{grid-template-columns:1fr}.hero{padding:24px;min-height:180px}.top{align-items:flex-start}.fields{grid-template-columns:1fr}.version{max-width:105px}.foot{flex-direction:column}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div class="brand"><div class="sigil">✦</div><div><div class="subtitle">ArkansasIo presents</div><h1>Lost Kingdom</h1><div class="subtitle">of Shadowbane Chronicles</div></div></div><div class="version">DESKTOP CLIENT<br>v0.3.0 · ALPHA</div></header>
+<section class="hero"><div class="eyebrow">The realm awaits</div><h2>Choose your world.</h2><p>Enter Valendria, continue your campaign, and prepare for the wider online realm. Select a regional destination before launching the game.</p></section>
+<div class="grid">
+<section class="panel"><h3>Realm destination</h3><div class="fields">
+<div class="field"><label for="region">Geographic region</label><select id="region"><option value="na">North America</option><option value="eu">Europe</option><option value="jp">Japan</option><option value="oc">Oceania</option></select></div>
+<div class="field"><label for="dc">Data center</label><select id="dc"></select></div>
+<div class="field"><label for="world">Game world</label><select id="world"></select></div>
+<div class="field"><label>Connection mode</label><select disabled><option>Online realm — awaiting server deployment</option></select></div>
+</div><div class="notice">Your destination choice is saved on this device. The current game build is playable locally; live realm authentication and world transfer are not connected yet.</div><div class="actions"><button class="btn primary" id="play">▶ Launch game</button><button class="btn" id="updates">Check updates</button></div></section>
+<aside class="panel"><h3>Realm network</h3><div class="status"><span class="dot"></span><div><strong>Online services not configured</strong>Account login, live world status, chat, and character synchronization will activate when the authoritative realm services are deployed.</div></div><div style="height:12px"></div><div class="status"><span class="dot" style="background:#76c8d4"></span><div><strong>Local game client ready</strong>The installed game can launch in offline/local mode. Existing desktop saves remain on this device.</div></div><div class="links"><button id="project">Project repository ↗</button><button id="docs">Build documentation ↗</button></div></aside>
+</div>
+<footer class="foot"><span>© ArkansasIo · Lost Kingdom of Shadowbane Chronicles</span><span>Original game world · Client build 0.3.0</span></footer>
+</main>
+<script>
+const centers={
+ na:[['Northstar',8],['Ironwood',8],['Sunreach',8],['Stormhold',8]],
+ eu:[['Crownfall',8],['Evermere',8]],
+ jp:[['Dawnveil',8],['Mooncrest',8],['Starfall',8],['Ashen',8]],
+ oc:[['Southern Cross',5]]
+};
+const region=document.querySelector('#region'),dc=document.querySelector('#dc'),world=document.querySelector('#world');
+const saved=(()=>{try{return JSON.parse(localStorage.getItem('gbq-launcher-selection')||'{}')}catch{return {}}})();
+function fillCenters(preferred){dc.replaceChildren();for(const [name,count] of centers[region.value]){const o=document.createElement('option');o.value=name;o.textContent=name+' Data Center';o.dataset.count=count;dc.append(o)}if(preferred&&[...dc.options].some(o=>o.value===preferred))dc.value=preferred;fillWorlds(saved.world)}
+function fillWorlds(preferred){world.replaceChildren();const count=Number(dc.selectedOptions[0]?.dataset.count||8);for(let i=1;i<=count;i++){const o=document.createElement('option');o.value=String(i).padStart(2,'0');o.textContent='World '+String(i).padStart(2,'0');world.append(o)}if(preferred&&[...world.options].some(o=>o.value===preferred))world.value=preferred}
+region.addEventListener('change',()=>{fillCenters();save()});dc.addEventListener('change',()=>{fillWorlds();save()});world.addEventListener('change',save);
+function save(){localStorage.setItem('gbq-launcher-selection',JSON.stringify({region:region.value,dc:dc.value,world:world.value}))}
+region.value=centers[saved.region]?saved.region:'na';fillCenters(saved.dc);if(saved.world)world.value=saved.world;
+document.querySelector('#play').addEventListener('click',()=>{save();window.gbqLauncher?.launch({region:region.value,dataCenter:dc.value,world:world.value})});
+document.querySelector('#updates').addEventListener('click',()=>window.gbqLauncher?.checkUpdates());
+document.querySelector('#project').addEventListener('click',()=>window.gbqLauncher?.openProject());
+document.querySelector('#docs').addEventListener('click',()=>window.gbqLauncher?.openDocs());
+</script>
+</body>
+</html>
