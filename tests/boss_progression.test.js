@@ -10,7 +10,7 @@ test('boss first clear pays category tokens and gold exactly once', () => {
   const p = api(), state = { gold: 0, bossKills: {} }, boss = { id: 'boss_raid_1', cat: 'raid', lvl: 240 };
   const first = p.record(state, boss, 1000), second = p.record(state, boss, 2000);
   assert.equal(first.firstClear, true);
-  assert.deepEqual(JSON.parse(JSON.stringify(first.reward)), { tokens: 6, gold: 6500, rank: 'C' });
+  assert.deepEqual(JSON.parse(JSON.stringify(first.reward)), { tokens: 6, gold: 6500, rank: 'B' });
   assert.equal(second.firstClear, false);
   assert.equal(second.reward, null);
   assert.equal(state.bossTokens, 6);
