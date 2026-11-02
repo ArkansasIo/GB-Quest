@@ -13,7 +13,7 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profPerks: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], homes: {}, hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
@@ -265,7 +265,7 @@ function gainProf(k, diff = 1) {
   if (!PROFS[k]) return false;
   if (!Number.isInteger(G.prof[k]) || G.prof[k] < 0) G.prof[k] = 0;
   if (G.prof[k] === 0) G.prof[k] = 1;
-  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960 + (Object.values(G.homes || {}).some(home => home.decor && home.decor.includes('study')) ? 0.08 : 0));
+  const bonus = Math.min(0.6, perkVal(k, 'xp') + profTalentRank(k, 'mastery') / 960 + (Object.values(G.homes || {}).some(home => home.decor && home.decor.includes('study')) ? 0.08 : 0));
   if (G.prof[k] < PROF_CAP && R() < Math.min(1, Math.max(0.15, 1 - (G.prof[k] - diff) / 40) + bonus)) { G.prof[k]++; return true; }
   return false;
 }
@@ -275,12 +275,16 @@ function craft(rec) {
   const needs = Object.fromEntries(Object.entries(rec.needs).map(([item, quantity]) => [item, Math.max(1, quantity - reduction)]));
   for (const k in needs) if ((G.inv[k] || 0) < needs[k]) return 'Missing materials.';
   if (G.prof[rec.prof] < rec.skill) return `Need ${PROFS[rec.prof]} ${rec.skill}.`;
-  for (const k in needs) for (let i = 0; i < needs[k]; i++) takeItem(k);
-  const output = 1 + Math.floor(profTalentRank(rec.prof, 'yield') / 24);
+  const kept = R() < perkVal(rec.prof, 'save');
+  if (!kept) for (const k in needs) for (let i = 0; i < needs[k]; i++) takeItem(k);
+  let output = 1 + Math.floor(profTalentRank(rec.prof, 'yield') / 24);
+  if (R() < perkVal(rec.prof, 'double')) output *= 2;
+  if (R() < perkVal(rec.prof, 'extra')) output += 1;
+  const perkNote = perkAfterWork(rec.prof);
   addItem(rec.makes, output); G.stats.crafted++;
   const up = gainProf(rec.prof, rec.skill);
   progressProfessionQuest(rec.prof, 'craft', 1);
-  return `Made ${output} ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+  return `Made ${output} ${ITEMS[rec.makes].name}!${kept ? ' Materials kept!' : ''}${perkNote ? ` ${perkNote}` : ''}${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
 }
 function recipeBlueprintCost(recipe) { return Math.max(15, Math.round(15 + recipe.skill * 1.5)); }
 function learnRecipeBlueprint(recipeId) {
@@ -333,7 +337,7 @@ function claimProfessionQuest(professionId, questId) {
   const definition = status && PROFESSION_QUESTS[professionId];
   const state = professionQuestRecord(professionId, questId).state;
   const scale = questId === 'side' ? 3 : 1;
-  const xp = definition.xp * scale, gold = definition.gold * scale, skill = definition.skill * scale;
+  const xp = definition.xp * scale, gold = Math.round(definition.gold * scale * (1 + perkVal(professionId, 'gold'))), skill = definition.skill * scale;
   G.gold += gold;
   const levelUps = gainXP(G, xp).ups;
   G.prof[professionId] = Math.min(PROF_CAP, G.prof[professionId] + skill);

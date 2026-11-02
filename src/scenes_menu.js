@@ -553,6 +553,7 @@ class ProfessionTreeScene extends ListScene {
   pointsAvailable() { return Math.max(0, G.prof[this.professionId()] - professionTalentSpend(this.professionId())); }
   update() {
     if (P('select')) { this.professionIndex = (this.professionIndex + 1) % this.professionIds.length; this.i = this.top = 0; SFX.page(); }
+    if (P('start')) { SFX.select(); push(new PerkTreeScene(this.professionId())); return; }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
@@ -579,7 +580,7 @@ class ProfessionTreeScene extends ListScene {
     const selected = branches[this.i];
     const help = selected.id === 'yield' ? 'Every 24 ranks add one resource or crafted item.' : selected.id === 'efficiency' ? 'Every 24 ranks save one ingredient; blacksmiths also reduce tempering costs.' : 'Raises the chance to gain another profession skill level.';
     text(wrap(help, 24).slice(0, 2).join('\n'), 6, 111, 3);
-    text('SELECT: JOB', 4, 143, 1);
+    text('SELECT: JOB  START: PERKS', 4, 143, 1);
   }
 }
 

@@ -155,6 +155,22 @@ async () => {
 
   // 10. settings screen + sound test with input
   step('settings', () => { reset(new Field()); push(new SettingsScene()); for (let i = 0; i < 20; i++) { press('down'); press('right'); press('left'); render(); } press('b'); });
+  step('profession perks', () => {
+    fresh('warden', 'hearthkin', 'soldier', 1);
+    for (const k of Object.keys(PROFS)) { if (PERK_TREES[k].length !== 4 || PERK_TREES[k].some(r => r.length !== 6)) return 'bad tree ' + k; }
+    G.prof.herb = 1; if (perkPoints('herb') !== 1) return 'points at 1';
+    if (!learnPerk('herb', 't1_0')) return 'tier gate missing';
+    if (learnPerk('herb', 't0_0')) return 'tier 1 failed';
+    G.prof.herb = 720; if (perkPoints('herb') !== 21) return 'points at 720';
+    for (const id of ['t1_0', 't2_0', 't3_0', 't3_1', 't3_2', 't2_1']) learnPerk('herb', id);
+    if (perkSpent('herb') > 21) return 'overspent ' + perkSpent('herb');
+    if (!(perkVal('herb', 'double') > 0)) return 'no double value';
+    push(new PerkTreeScene('herb')); for (const b of ['right', 'down', 'a', 'right', 'down', 'a', 'select', 'a', 'start', 'start']) { press(b); render(); }
+    G.gold = 99999; const before = perkSpent('herb'); resetPerks('herb'); if (perkSpent('herb') !== 0 || before === 0) return 'reset failed';
+    const z = ZONES.find(z => !z.town); G.map = z.id; for (let i = 0; i < 5; i++) gatherProfessionNode({ profession: 'herb', item: 'peacebloom', i: 0 });
+    const r = RECIPES.find(r => r.skill <= 1); if (r) { for (const k in r.needs) addItem(k, 20); G.profPerks[r.prof] = []; G.prof[r.prof] = 720; for (const id of ['t0_0', 't1_0', 't2_0', 't3_0']) learnPerk(r.prof, id); craft(r); }
+    render();
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas

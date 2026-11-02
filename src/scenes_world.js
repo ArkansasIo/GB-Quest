@@ -575,7 +575,7 @@ class Field {
       else { const r = RNG('warden-' + z.id); e.push({ kind: 'npc', x: m.hub[0], y: m.hub[1] - 1, spr: r.pick(['villager_1', 'villager_3', 'elder_1', 'hero_2']), name: `WARDEN ${r.pick(NPC_FIRST)}`, svc: 'warden' }); }
       if (m.poi.waypoint) e.push({ kind: 'waypoint', x: m.poi.waypoint.x, y: m.poi.waypoint.y });
       const nodes = G.nodes[z.id] || {};
-      m.nodes.forEach(([x, y, profession, item], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) e.push({ kind: 'gather', i, x, y, profession, item, walk: true }); });
+      m.nodes.forEach(([x, y, profession, item], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) e.push({ kind: 'gather', i, x, y, profession, item, walk: true }); });
       for (const b of m.bosses) { const k = G.bossKills[b.id]; if (!k || Date.now() - k > (b.arc ? 3600e3 : 1800e3)) e.push({ kind: 'boss', b, x: b.x, y: b.y }); }
       if (G.ghost && G.ghost.map === z.id) e.push({ kind: 'grave', x: G.ghost.x, y: G.ghost.y, walk: true });
     }
@@ -784,14 +784,16 @@ function gatherProfessionNode(e) {
   const profession = e.profession || 'herb', item = e.item || e.herb;
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
   const skill = GATHER_CHECK[profession] || 'nature';
-  const chk = skillCheck(G, skill, 8 + Math.floor(G.prof[profession] / 80));
+  const chk = skillCheck(G, skill, 8 + Math.floor(G.prof[profession] / 80) - perkVal(profession, 'check'));
   nodes[e.i] = G.stats.steps;
-  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank(profession, 'yield') / 24);
+  let n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank(profession, 'yield') / 24);
+  if (R() < perkVal(profession, 'double')) n *= 2;
+  const perkNote = perkAfterWork(profession);
   addItem(item, n); progressProfessionQuest(profession, 'gather', n); SFX.gather();
   const up = gainProf(profession, G.prof[profession]);
   if (profession === 'herb') questEvent('gather', item);
   const name = ITEMS[item]?.name || item.toUpperCase();
-  toast(`+${n} ${name}`, up ? `${PROFS[profession]} ${G.prof[profession]}` : chk.text.slice(0, 22), ITEMS[item]?.icon || 'item_herb', 'pickup');
+  toast(`+${n} ${name}`, perkNote || (up ? `${PROFS[profession]} ${G.prof[profession]}` : chk.text.slice(0, 22)), ITEMS[item]?.icon || 'item_herb', 'pickup');
 }
 function fightBoss(b) {
   const B = BOSS_BY_ID[b.id];
@@ -1018,12 +1020,13 @@ function innMenu() {
   }, 'INNKEEPER: A warm bed and good company.');
 }
 function trainerMenu() {
-  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSION TREES', 'PROFESSION QUESTS', 'LEAVE'], k => {
+  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSION TREES', 'PROFESSION PERKS', 'PROFESSION QUESTS', 'LEAVE'], k => {
     if (k === 0) push(new GrowthScene());
     if (k === 1) { if (classLevel(G) < 3) return say('Subclasses unlock at level 3.'); if (G.gold < 100) return say('Not enough gold.'); G.gold -= 100; G.sub = null; G.pending.sub = true; push(new GrowthScene()); }
     if (k === 2) { if (G.hasMount) return say('You already ride.'); if (G.lvl < 10 || G.gold < 300) return say('Need level 10 and 300 G.'); G.gold -= 300; G.hasMount = true; SFX.howl(); checkAchievements(); say('You learn to ride! Press B in the field to mount.'); }
     if (k === 3) push(new ProfessionTreeScene());
-    if (k === 4) push(new ProfessionQuestScene());
+    if (k === 4) push(new PerkTreeScene());
+    if (k === 5) push(new ProfessionQuestScene());
   }, 'TRAINER: Knowledge is power.');
 }
 function mailMenu() {
@@ -1343,14 +1346,16 @@ class Fishing {
     this.t++;
     if (this.state === 'cast') { if (this.t === 1) SFX.cast_line(); if (this.t > 20) this.state = 'wait'; return; }
     if (this.state === 'wait') { if (P('b')) { removeScene(this); return; } if (P('a')) return this.fail('Too early! The fish swims off.'); if (this.t > this.wait) { this.state = 'bite'; this.bt = this.t; SFX.bite(); FX.splash(80, 70); } return; }
-    if (this.state === 'bite') { if (P('a')) return this.catch_(); if (this.t - this.bt > 28 + Math.floor(G.prof.fish / 10)) return this.fail('It got away...'); return; }
+    if (this.state === 'bite') { if (P('a')) return this.catch_(); if (this.t - this.bt > 28 + Math.floor(G.prof.fish / 10) + perkVal('fish', 'check') * 2) return this.fail('It got away...'); return; }
   }
   fail(msg) { removeScene(this); SFX.splash(); say(msg); }
   catch_() {
     removeScene(this);
-    const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4;
+    const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4 + perkVal('fish', 'respawn') * 40;
     const k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
-    const quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
+    let quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
+    if (R() < perkVal('fish', 'double')) quantity *= 2;
+    perkAfterWork('fish');
     addItem(k, quantity); G.stats.fish += quantity; progressProfessionQuest('fish', 'fish', quantity); SFX.reel();
     const up = gainProf('fish', G.prof.fish);
     questEvent('fish', k); checkAchievements();
@@ -1552,7 +1557,7 @@ class WorldMap {
       if (seen) {
         for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
         for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
-        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
+        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
         for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
