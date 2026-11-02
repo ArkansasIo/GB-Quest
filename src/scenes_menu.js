@@ -743,7 +743,7 @@ class SecretWorldJournalScene extends ListScene {
     const e = entries[this.i];
     frame(3, 119, 154, 23);
     text(e.found ? e.hint : 'A secret remains concealed.', 7, 124, 2);
-    text(e.found ? e.type.toUpperCase() + '  LV' + e.minLvl + '+' : 'Explore every region carefully.', 7, 134, 1);
+    text(e.found ? e.type.toUpperCase() + ' LV' + e.minLvl + '  +' + ((e.reward && e.reward.gold) || 0) + 'G' : 'Explore every region carefully.', 7, 134, 1);
   }
 }
 class EasterEggArchiveScene extends ListScene {
