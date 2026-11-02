@@ -597,9 +597,8 @@ class Field {
       if (G.ghost && G.ghost.map === z.id) e.push({ kind: 'grave', x: G.ghost.x, y: G.ghost.y, walk: true });
     }
     if (!G.inst && this.zone && globalThis.GBQSecretWorld) {
-      const secret = globalThis.GBQSecretWorld.definitions.find(d => d.zone === this.zone.id);
-      const known = G.secretWorld && G.secretWorld[secret && secret.id];
-      if (secret && !known) {
+      for (const secret of globalThis.GBQSecretWorld.definitions) {
+        if (secret.zone !== this.zone.id || G.lvl < secret.minLvl || (G.secretWorld && G.secretWorld[secret.id])) continue;
         const pos = globalThis.GBQSecretWorld.position(secret, this.m);
         if (pos && Math.abs(pos.x - G.x) <= 3 && Math.abs(pos.y - G.y) <= 3) e.push({ kind: 'secret_hint', x: pos.x, y: pos.y, walk: true });
       }
