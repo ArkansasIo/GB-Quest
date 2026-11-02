@@ -389,8 +389,24 @@ const CLASSES = {
     features: [[2, 'wildshape']],
     subs: [{ id: 'moon', name: 'MOON', keys: { moon: 1 }, desc: 'Stronger beast shapes.' }, { id: 'land', name: 'LAND', keys: { landrecover: 1 }, desc: 'Recover slots on short rest.' }],
     desc: 'Keepers of the green. Beast shapes and nature spells.' },
+  necromancer: { name: 'NECROMANCER', hd: 6, primary: 'INT', saves: ['INT', 'WIS'], armor: [], weapons: 'simple', caster: 'full', cast: 'INT',
+    skills: ['arcana', 'medicine'], gear: ['walkstaff'], role: 'dps', features: [[1, 'recovery']],
+    subs: [{ id: 'gravecaller', name: 'GRAVECALLER', keys: { fiend: 1 }, desc: 'Claim vitality when you defeat an enemy.' }, { id: 'boneweaver', name: 'BONEWEAVER', keys: { ward: 1 }, desc: 'Gain a protective arcane ward each fight.' }],
+    desc: 'Wield grave magic, drain life, and command the power of death.' },
+  summoner: { name: 'SUMMONER', hd: 8, primary: 'CHA', saves: ['CON', 'CHA'], armor: ['light'], weapons: 'simple', caster: 'full', cast: 'CHA',
+    skills: ['arcana', 'animal'], gear: ['walkstaff', 'quilted'], role: 'dps', features: [[1, 'recovery']],
+    subs: [{ id: 'spiritcaller', name: 'SPIRITCALLER', keys: { wolf: 1 }, desc: 'Call a spirit companion to fight at your side.' }, { id: 'wardbinder', name: 'WARDBINDER', keys: { ward: 1 }, desc: 'Protect yourself with a ward at the start of battle.' }],
+    desc: 'Bind spirits and call allies from beyond the veil.' },
+  sunwarden: { name: 'SUNWARDEN', hd: 10, primary: 'WIS', saves: ['WIS', 'CHA'], armor: ['light', 'medium', 'shield'], weapons: 'martial', caster: 'half', cast: 'WIS',
+    skills: ['religion', 'athletics'], gear: ['ironhammer', 'scalevest', 'buckler'], role: 'healer', features: [[1, 'layhands'], [5, 'extra1']],
+    subs: [{ id: 'dawnkeeper', name: 'DAWNKEEPER', keys: { lifedomain: 1 }, desc: 'Restore more health with healing spells.' }, { id: 'sunstriker', name: 'SUNSTRIKER', keys: { sacred: 1 }, desc: 'Invoke sacred power to empower your weapon.' }],
+    desc: 'Guardians of the dawn who heal allies and burn foes with radiant light.' },
+  runeblade: { name: 'RUNEBLADE', hd: 10, primary: 'STR', saves: ['STR', 'CON'], armor: ['light', 'medium', 'heavy'], weapons: 'martial', caster: 'half', cast: 'CHA',
+    skills: ['athletics', 'intimidation'], gear: ['widesword', 'chainhauberk'], role: 'tank', features: [[1, 'rage'], [5, 'extra1']],
+    subs: [{ id: 'bloodrune', name: 'BLOOD RUNE', keys: { totem: 1 }, desc: 'Withstand damage through dark runic power.' }, { id: 'frostbrand', name: 'FROST BRAND', keys: { maneuver: 1 }, desc: 'Unleash a practiced runic strike.' }],
+    desc: 'A rune-armored death knight who mixes martial strength with dark magic.' },
 };
-const CLASS_ORDER = ['warden', 'berserker', 'vanguard', 'strider', 'shade', 'ascetic', 'arcanist', 'wildblood', 'pactbound', 'cantor', 'chaplain', 'verdant'];
+const CLASS_ORDER = ['warden', 'berserker', 'vanguard', 'strider', 'shade', 'ascetic', 'arcanist', 'wildblood', 'pactbound', 'cantor', 'chaplain', 'verdant', 'necromancer', 'summoner', 'sunwarden', 'runeblade'];
 const FEATURE_NAME = {
   style_def: 'DEFENSE STYLE', style_arch: 'ARCHERY STYLE', secondwind: 'SECOND WIND', surge: 'ACTION SURGE', surge2: 'ACTION SURGE x2',
   extra1: 'EXTRA ATTACK', extra2: 'EXTRA ATTACK x2', extra3: 'EXTRA ATTACK x3', indomitable: 'INDOMITABLE', rage: 'RAGE',
@@ -401,6 +417,26 @@ const FEATURE_NAME = {
   quicken: 'QUICKEN SPELL', hexbolt: 'HEXBOLT', agonizing: 'AGONIZING BLAST', arcanum: 'MYSTIC ARCANUM', inspire: 'INSPIRATION',
   restsong: 'SONG OF REST', jack: 'JACK OF TRADES', channel: 'CHANNEL DIVINITY', destroyundead: 'DESTROY UNDEAD', wildshape: 'BEASTSHAPE',
 };
+const ACTIVE_SKILLS = [
+  { id: 'power_strike', name: 'POWER STRIKE', effect: 'strike', level: 3, classes: ['warden', 'berserker', 'vanguard', 'strider', 'shade', 'ascetic', 'sunwarden', 'runeblade'], desc: 'Once per battle, make a weapon attack with bonus damage.' },
+  { id: 'rally', name: 'BATTLE RALLY', effect: 'rally', level: 6, classes: ['warden', 'berserker', 'vanguard', 'cantor', 'chaplain', 'sunwarden', 'runeblade'], desc: 'Once per battle, inspire the party for its next attack and saving throw.' },
+  { id: 'field_mend', name: 'FIELD MEND', effect: 'mend', level: 9, classes: ['vanguard', 'cantor', 'chaplain', 'verdant', 'sunwarden'], desc: 'Once per battle, restore health to an ally.' },
+  { id: 'shadowstep', name: 'SHADOW STEP', effect: 'shadow', level: 12, classes: ['strider', 'shade', 'ascetic', 'pactbound', 'verdant', 'necromancer', 'summoner', 'runeblade'], desc: 'Once per battle, vanish briefly and avoid incoming attacks.' },
+  { id: 'arcane_burst', name: 'ARCANE BURST', effect: 'arcane', level: 3, classes: ['arcanist', 'wildblood', 'pactbound', 'necromancer', 'summoner'], desc: 'Once per battle, launch a scaling force bolt using your spell attack.' },
+  { id: 'spirit_call', name: 'SPIRIT CALL', effect: 'summon', level: 6, classes: ['strider', 'verdant', 'summoner'], desc: 'Once per battle, call a spirit wolf to fight beside you.' },
+  { id: 'sunflare', name: 'SUNFLARE', effect: 'sun', level: 9, classes: ['vanguard', 'chaplain', 'sunwarden'], desc: 'Once per battle, blast an enemy with scaling radiant light.' },
+  { id: 'warding_aura', name: 'WARDING AURA', effect: 'ward', level: 12, classes: ['arcanist', 'wildblood', 'pactbound', 'necromancer', 'summoner'], desc: 'Once per battle, fortify the party against incoming damage.' },
+];
+const PASSIVE_SKILLS = [
+  { id: 'vitality', name: 'VITALITY', level: 3, classes: ['warden', 'berserker', 'vanguard', 'ascetic', 'chaplain', 'verdant', 'sunwarden', 'runeblade'], desc: '+10% maximum health.' },
+  { id: 'precision', name: 'PRECISION', level: 6, classes: ['warden', 'strider', 'shade', 'runeblade'], desc: '+1 weapon hit and spell attack.' },
+  { id: 'arcane_focus', name: 'ARCANE FOCUS', level: 9, classes: ['arcanist', 'wildblood', 'pactbound', 'cantor', 'necromancer', 'summoner'], desc: '+5% damage from weapon and spell attacks.' },
+  { id: 'resilience', name: 'RESILIENCE', level: 12, classes: ['vanguard', 'arcanist', 'wildblood', 'chaplain', 'necromancer', 'sunwarden'], desc: '+1 to all saving throws.' },
+  { id: 'swift', name: 'SWIFTNESS', level: 15, classes: ['strider', 'shade', 'ascetic', 'pactbound', 'verdant', 'summoner'], desc: '+2 initiative and +5 dodge.' },
+  { id: 'healing_hands', name: 'HEALING HANDS', level: 6, classes: ['vanguard', 'cantor', 'chaplain', 'verdant', 'sunwarden'], desc: '+10% healing from your abilities and spells.' },
+  { id: 'ferocity', name: 'FEROCITY', level: 9, classes: ['berserker', 'shade', 'runeblade'], desc: '+5% damage dealt.' },
+  { id: 'nature_lore', name: 'NATURE LORE', level: 6, classes: ['strider', 'verdant', 'summoner'], desc: '+2 to Nature and Animal Handling checks.' },
+];
 
 // ---------------------------------------------------------------- weapons (renamed, SRD-style mechanics)
 // props: f finesse, l light, h heavy, 2 two-handed, v versatile die, r ranged, t thrown, reach
@@ -494,8 +530,8 @@ const SPELLS = [
   { id: 'emberdart', name: 'EMBERDART', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d10', dt: 'fire', cls: ['arcanist', 'wildblood'], desc: 'Spell attack, 1d10 fire.' },
   { id: 'rimetouch', name: 'RIMETOUCH', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d8', dt: 'cold', cls: ['arcanist', 'wildblood', 'verdant'], desc: 'Spell attack, 1d8 cold.' },
   { id: 'hexbolt', name: 'HEXBOLT', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d10', dt: 'force', beams: true, cls: ['pactbound'], desc: '1-4 beams of 1d10 force.' },
-  { id: 'gravechill', name: 'GRAVECHILL', school: 'grave', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d8', dt: 'necrotic', cond: 'cursed', dur: 1, cls: ['arcanist', 'wildblood', 'pactbound', 'chaplain'], desc: '1d8 necrotic; no healing.' },
-  { id: 'brand', name: 'SACRED BRAND', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', save: 'DEX', dice: '1d8', dt: 'radiant', cls: ['chaplain'], desc: 'DEX save, 1d8 radiant.' },
+  { id: 'gravechill', name: 'GRAVECHILL', school: 'grave', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d8', dt: 'necrotic', cond: 'cursed', dur: 1, cls: ['arcanist', 'wildblood', 'pactbound', 'chaplain', 'necromancer', 'runeblade'], desc: '1d8 necrotic; no healing.' },
+  { id: 'brand', name: 'SACRED BRAND', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', save: 'DEX', dice: '1d8', dt: 'radiant', cls: ['chaplain', 'sunwarden'], desc: 'DEX save, 1d8 radiant.' },
   { id: 'thornlash', name: 'THORNLASH', school: 'flux', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d6', dt: 'piercing', cls: ['verdant'], desc: 'Spell attack, 1d6 piercing.' },
   { id: 'mocksong', name: 'MOCKSONG', school: 'thrall', lvl: 0, t: 'enemy', eff: 'dmg', save: 'WIS', dice: '1d4', dt: 'psychic', cond: 'frightened', dur: 1, cls: ['cantor'], desc: 'WIS save, 1d4 psychic + disadv.' },
   { id: 'wardspark', name: 'WARDSPARK', school: 'aegis', lvl: 0, t: 'self', eff: 'buff', buff: 'ac', val: 2, dur: 1, cls: ['arcanist', 'wildblood', 'pactbound', 'cantor'], desc: '+2 AC for a round.' },
@@ -505,7 +541,7 @@ const SPELLS = [
   // level 1
   { id: 'mend', name: 'MENDING TOUCH', school: 'calling', lvl: 1, t: 'ally', eff: 'heal', dice: '1d8', mod: true, scale: '1d8', cls: ['chaplain', 'cantor', 'verdant', 'vanguard', 'strider'], desc: 'Heal 1d8+mod.' },
   { id: 'quickmend', name: 'QUICK MEND', school: 'calling', lvl: 1, t: 'ally', eff: 'heal', dice: '1d4', mod: true, scale: '1d4', bonus: true, cls: ['chaplain', 'cantor', 'verdant'], desc: 'Bonus action. Heal 1d4+mod.' },
-  { id: 'darts', name: 'MAGIC DARTS', school: 'storm', lvl: 1, t: 'enemy', eff: 'dmg', auto: true, dice: '3d4+3', dt: 'force', scale: '1d4+1', cls: ['arcanist', 'wildblood'], desc: 'Never misses. 3d4+3 force.' },
+  { id: 'darts', name: 'MAGIC DARTS', school: 'storm', lvl: 1, t: 'enemy', eff: 'dmg', auto: true, dice: '3d4+3', dt: 'force', scale: '1d4+1', cls: ['arcanist', 'wildblood', 'summoner'], desc: 'Never misses. 3d4+3 force.' },
   { id: 'thunderwave', name: 'THUNDER WAVE', school: 'storm', lvl: 1, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '2d8', dt: 'thunder', scale: '1d8', cls: ['arcanist', 'wildblood', 'cantor', 'verdant'], desc: 'All foes, CON save, 2d8.' },
   { id: 'flamefan', name: 'FLAME FAN', school: 'storm', lvl: 1, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '3d6', dt: 'fire', scale: '1d6', cls: ['arcanist', 'wildblood'], desc: 'All foes, DEX save, 3d6 fire.' },
   { id: 'forceward', name: 'WARD OF FORCE', school: 'aegis', lvl: 1, t: 'self', eff: 'buff', buff: 'ac', val: 5, dur: 1, bonus: true, cls: ['arcanist', 'wildblood'], desc: '+5 AC until next turn.' },
@@ -519,26 +555,26 @@ const SPELLS = [
   { id: 'rays', name: 'SCORCHING TRIPLET', school: 'storm', lvl: 2, t: 'enemy', eff: 'dmg', atk: true, rays: 3, dice: '2d6', dt: 'fire', cls: ['arcanist', 'wildblood'], desc: 'Three rays, 2d6 fire each.' },
   { id: 'still', name: 'STILLNESS', school: 'thrall', lvl: 2, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'paralyzed', dur: 3, saveEnd: true, conc: true, cls: ['arcanist', 'wildblood', 'cantor', 'chaplain', 'verdant', 'pactbound'], desc: 'WIS save or paralyzed.' },
   { id: 'cloak', name: 'VANISHING CLOAK', school: 'veil', lvl: 2, t: 'self', eff: 'cond', cond: 'invisible', dur: 10, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'Invisible until you attack.' },
-  { id: 'mace', name: 'SPECTRAL MACE', school: 'storm', lvl: 2, t: 'self', eff: 'summon', summon: 'mace', bonus: true, cls: ['chaplain'], desc: 'A floating mace strikes each turn.' },
+  { id: 'mace', name: 'SPECTRAL MACE', school: 'storm', lvl: 2, t: 'self', eff: 'summon', summon: 'mace', bonus: true, cls: ['chaplain', 'summoner'], desc: 'A floating mace strikes each turn.' },
   { id: 'moonshaft', name: 'LUNAR SHAFT', school: 'storm', lvl: 2, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '2d10', dt: 'radiant', scale: '1d10', cls: ['verdant'], desc: 'CON save, 2d10 radiant.' },
   { id: 'mirror', name: 'MIRROR SELVES', school: 'veil', lvl: 2, t: 'self', eff: 'buff', buff: 'mirror', val: 3, dur: 10, cls: ['arcanist', 'wildblood', 'pactbound'], desc: 'Three images soak attacks.' },
   { id: 'restore', name: 'LESSER RESTORE', school: 'aegis', lvl: 2, t: 'ally', eff: 'cleanse', cls: ['chaplain', 'cantor', 'verdant', 'vanguard', 'strider'], desc: 'End one condition.' },
   { id: 'augury', name: 'OMEN OF RUIN', school: 'omen', lvl: 2, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'marked', dur: 5, bonus: true, conc: true, cls: ['cantor', 'strider', 'arcanist'], desc: 'WIS save or marked for extra damage.' },
   { id: 'barkskin', name: 'IRON BARK', school: 'flux', lvl: 2, t: 'self', eff: 'buff', buff: 'ac', val: 4, dur: 10, conc: true, cls: ['verdant', 'strider'], desc: '+4 AC for 10 rounds.' },
-  { id: 'lifetap', name: 'LIFE SIPHON', school: 'grave', lvl: 2, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '3d6', dt: 'necrotic', scale: '1d6', cls: ['arcanist', 'pactbound', 'wildblood', 'chaplain'], desc: 'CON save, 3d6 necrotic.' },
+  { id: 'lifetap', name: 'LIFE SIPHON', school: 'grave', lvl: 2, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '3d6', dt: 'necrotic', scale: '1d6', cls: ['arcanist', 'pactbound', 'wildblood', 'chaplain', 'necromancer', 'runeblade'], desc: 'CON save, 3d6 necrotic.' },
   // level 3
   { id: 'sunorb', name: 'SUNBURST ORB', school: 'storm', lvl: 3, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'fire', scale: '1d6', cls: ['arcanist', 'wildblood'], desc: 'All foes, DEX save, 8d6 fire.' },
   { id: 'lance', name: 'LIGHTNING LANCE', school: 'storm', lvl: 3, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'lightning', scale: '1d6', cls: ['arcanist', 'wildblood'], desc: 'All foes, DEX save, 8d6.' },
-  { id: 'dawn', name: 'SECOND DAWN', school: 'grave', lvl: 3, t: 'ally', eff: 'revive', cls: ['chaplain', 'vanguard'], desc: 'Revive a fallen ally at 1 HP.' },
+  { id: 'dawn', name: 'SECOND DAWN', school: 'grave', lvl: 3, t: 'ally', eff: 'revive', cls: ['chaplain', 'vanguard', 'sunwarden'], desc: 'Revive a fallen ally at 1 HP.' },
   { id: 'unweave', name: 'UNWEAVE', school: 'aegis', lvl: 3, t: 'enemy', eff: 'cond', cond: 'silenced', dur: 2, cls: ['arcanist', 'wildblood', 'pactbound'], desc: 'Target cannot cast for 2 turns.' },
   { id: 'quicken', name: 'QUICKEN', school: 'flux', lvl: 3, t: 'ally', eff: 'buff', buff: 'haste', dur: 10, conc: true, cls: ['arcanist', 'wildblood'], desc: '+2 AC and an extra attack.' },
-  { id: 'host', name: 'SPIRIT HOST', school: 'calling', lvl: 3, t: 'self', eff: 'buff', buff: 'host', dice: '3d8', dt: 'radiant', dur: 10, conc: true, cls: ['chaplain'], desc: 'Spirits sear all foes each turn.' },
+  { id: 'host', name: 'SPIRIT HOST', school: 'calling', lvl: 3, t: 'self', eff: 'buff', buff: 'host', dice: '3d8', dt: 'radiant', dur: 10, conc: true, cls: ['chaplain', 'summoner'], desc: 'Spirits sear all foes each turn.' },
   { id: 'chorus', name: 'CHORUS OF MENDING', school: 'calling', lvl: 3, t: 'allies', eff: 'heal', dice: '1d4', mod: true, bonus: true, cls: ['chaplain', 'cantor'], desc: 'Bonus: heal all 1d4+mod.' },
   { id: 'dreadwave', name: 'DREADWAVE', school: 'veil', lvl: 3, t: 'enemies', eff: 'cond', save: 'WIS', cond: 'frightened', dur: 3, conc: true, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'All foes WIS save or frightened.' },
   { id: 'calllightning', name: 'CALL LIGHTNING', school: 'calling', lvl: 3, t: 'enemy', eff: 'dmg', save: 'DEX', half: true, dice: '3d10', dt: 'lightning', scale: '1d10', cls: ['verdant'], desc: 'DEX save, 3d10 lightning.' },
   { id: 'truesight', name: 'CLARITY TRANCE', school: 'omen', lvl: 3, t: 'self', eff: 'buff', buff: 'foresight', dur: 5, conc: true, cls: ['arcanist', 'chaplain', 'cantor'], desc: 'Heightened perception and advantage on saves.' },
   // level 4
-  { id: 'wither', name: 'WITHERING', school: 'grave', lvl: 4, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '8d8', dt: 'necrotic', scale: '1d8', cls: ['arcanist', 'wildblood', 'verdant', 'pactbound'], desc: 'CON save, 8d8 necrotic.' },
+  { id: 'wither', name: 'WITHERING', school: 'grave', lvl: 4, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '8d8', dt: 'necrotic', scale: '1d8', cls: ['arcanist', 'wildblood', 'verdant', 'pactbound', 'necromancer', 'runeblade'], desc: 'CON save, 8d8 necrotic.' },
   { id: 'beastshape', name: 'BEASTSHAPE', school: 'flux', lvl: 4, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'beast', dur: 2, conc: true, cls: ['arcanist', 'wildblood', 'cantor', 'verdant'], desc: 'WIS save or turned into a newt.' },
   { id: 'hail', name: 'HAILFALL', school: 'storm', lvl: 4, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '6d8', dt: 'cold', cls: ['arcanist', 'wildblood', 'verdant'], desc: 'All foes, DEX save, 6d8 cold.' },
   { id: 'exile', name: 'EXILE', school: 'aegis', lvl: 4, t: 'enemy', eff: 'cond', save: 'CHA', cond: 'banished', dur: 3, conc: true, cls: ['arcanist', 'wildblood', 'chaplain', 'vanguard', 'pactbound'], desc: 'CHA save or banished.' },
@@ -546,9 +582,9 @@ const SPELLS = [
   // level 5
   { id: 'frostcone', name: 'FROST CONE', school: 'storm', lvl: 5, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '8d8', dt: 'cold', scale: '1d8', cls: ['arcanist', 'wildblood'], desc: 'All foes, CON save, 8d8 cold.' },
   { id: 'greatchorus', name: 'GREATER CHORUS', school: 'calling', lvl: 5, t: 'allies', eff: 'heal', dice: '3d8', mod: true, cls: ['chaplain', 'cantor', 'verdant'], desc: 'Heal all 3d8+mod.' },
-  { id: 'recall', name: 'RECALL SOUL', school: 'grave', lvl: 5, t: 'ally', eff: 'revive', full: true, cls: ['chaplain', 'cantor', 'vanguard'], desc: 'Revive an ally at half HP.' },
+  { id: 'recall', name: 'RECALL SOUL', school: 'grave', lvl: 5, t: 'ally', eff: 'revive', full: true, cls: ['chaplain', 'cantor', 'vanguard', 'sunwarden'], desc: 'Revive an ally at half HP.' },
   { id: 'yoke', name: 'MIND YOKE', school: 'thrall', lvl: 5, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'dominated', dur: 3, conc: true, cls: ['arcanist', 'wildblood', 'cantor'], desc: 'WIS save or it fights for you.' },
-  { id: 'pillar', name: 'PILLAR OF DAWN', school: 'storm', lvl: 5, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'radiant', cls: ['chaplain'], desc: 'All foes, DEX save, 8d6 radiant.' },
+  { id: 'pillar', name: 'PILLAR OF DAWN', school: 'storm', lvl: 5, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'radiant', cls: ['chaplain', 'sunwarden'], desc: 'All foes, DEX save, 8d6 radiant.' },
   { id: 'bastion', name: 'DAWN BASTION', school: 'aegis', lvl: 5, t: 'allies', eff: 'buff', buff: 'barrier', val: 30, dur: 5, conc: true, cls: ['chaplain', 'vanguard', 'arcanist'], desc: '30 HP barrier shields all allies.' },
   { id: 'threadcount', name: 'FATE WEAVE', school: 'omen', lvl: 5, t: 'enemies', eff: 'cond', save: 'CHA', cond: 'marked', dur: 5, cls: ['cantor', 'arcanist', 'chaplain'], desc: 'CHA save: all foes take +2d8 radiant.' },
   { id: 'timestop', name: 'TEMPORAL DRIFT', school: 'flux', lvl: 5, t: 'self', eff: 'buff', buff: 'haste', dur: 3, bonus: true, cls: ['arcanist', 'wildblood'], desc: 'Bends time: extra speed and attacks for 3 rounds.' },
@@ -556,16 +592,16 @@ const SPELLS = [
   { id: 'stormchain', name: 'STORMCHAIN', school: 'storm', lvl: 6, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '10d8', dt: 'lightning', cls: ['arcanist', 'wildblood'], desc: 'All foes, 10d8 lightning.' },
   { id: 'greatmend', name: 'GREAT MENDING', school: 'calling', lvl: 6, t: 'ally', eff: 'heal', dice: '70', cleanse: true, cls: ['chaplain', 'verdant'], desc: 'Heal 70 and cleanse.' },
   { id: 'unmake', name: 'UNMAKE', school: 'flux', lvl: 6, t: 'enemy', eff: 'dmg', save: 'DEX', dice: '10d6+40', dt: 'force', cls: ['arcanist', 'wildblood'], desc: 'DEX save, 10d6+40 force.' },
-  { id: 'deathring', name: 'DEATH RING', school: 'grave', lvl: 6, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '8d6', dt: 'necrotic', cls: ['arcanist', 'wildblood', 'pactbound'], desc: 'All foes, 8d6 necrotic.' },
-  { id: 'doomfinger', name: 'DOOM FINGER', school: 'grave', lvl: 7, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '7d8+30', dt: 'necrotic', cls: ['arcanist', 'wildblood', 'pactbound'], desc: 'CON save, 7d8+30 necrotic.' },
+  { id: 'deathring', name: 'DEATH RING', school: 'grave', lvl: 6, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '8d6', dt: 'necrotic', cls: ['arcanist', 'wildblood', 'pactbound', 'necromancer'], desc: 'All foes, 8d6 necrotic.' },
+  { id: 'doomfinger', name: 'DOOM FINGER', school: 'grave', lvl: 7, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '7d8+30', dt: 'necrotic', cls: ['arcanist', 'wildblood', 'pactbound', 'necromancer'], desc: 'CON save, 7d8+30 necrotic.' },
   { id: 'starshard', name: 'STAR SHARD', school: 'storm', lvl: 7, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '12d6', dt: 'fire', cls: ['arcanist', 'wildblood'], desc: 'All foes, 12d6 fire.' },
   { id: 'renewal', name: 'RENEWAL', school: 'flux', lvl: 7, t: 'ally', eff: 'heal', dice: '4d8+15', regen: true, cls: ['chaplain', 'verdant', 'cantor'], desc: 'Heal 4d8+15, regenerate.' },
   { id: 'spellward', name: 'AURA OF WARDING', school: 'aegis', lvl: 7, t: 'allies', eff: 'buff', buff: 'ac', val: 5, dur: 5, conc: true, cls: ['chaplain', 'vanguard', 'arcanist'], desc: '+5 AC barrier protects party.' },
   { id: 'phantom', name: 'PHANTOM PARADE', school: 'veil', lvl: 7, t: 'enemies', eff: 'cond', save: 'WIS', cond: 'frightened', dur: 3, conc: true, cls: ['cantor', 'arcanist', 'pactbound'], desc: 'All foes WIS save or terrified.' },
-  { id: 'noonflare', name: 'NOON FLARE', school: 'storm', lvl: 8, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '12d6', dt: 'radiant', cond: 'blinded', dur: 2, cls: ['chaplain', 'verdant', 'arcanist', 'wildblood'], desc: 'All foes, 12d6 radiant + blind.' },
+  { id: 'noonflare', name: 'NOON FLARE', school: 'storm', lvl: 8, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '12d6', dt: 'radiant', cond: 'blinded', dur: 2, cls: ['chaplain', 'verdant', 'arcanist', 'wildblood', 'sunwarden'], desc: 'All foes, 12d6 radiant + blind.' },
   { id: 'wordstill', name: 'WORD OF STILLNESS', school: 'thrall', lvl: 8, t: 'enemy', eff: 'cond', cond: 'stunned', maxHp: 150, dur: 2, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'Stun a foe under 150 HP.' },
   { id: 'prismatic', name: 'PRISMATIC AEGIS', school: 'aegis', lvl: 8, t: 'self', eff: 'buff', buff: 'ac', val: 8, dur: 10, cls: ['arcanist'], desc: '+8 AC and immune to lower magic.' },
-  { id: 'soulexchange', name: 'SOUL REAP', school: 'grave', lvl: 8, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '10d8', dt: 'necrotic', scale: '1d8', cls: ['arcanist', 'pactbound', 'chaplain'], desc: 'All foes, 10d8 necrotic.' },
+  { id: 'soulexchange', name: 'SOUL REAP', school: 'grave', lvl: 8, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '10d8', dt: 'necrotic', scale: '1d8', cls: ['arcanist', 'pactbound', 'chaplain', 'necromancer'], desc: 'All foes, 10d8 necrotic.' },
   { id: 'metamorph', name: 'TRUE TRANSMUTE', school: 'flux', lvl: 8, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'beast', dur: 5, conc: true, cls: ['arcanist', 'verdant'], desc: 'WIS save or permanently polymorphed.' },
   { id: 'skyfall', name: 'SKYFALL', school: 'storm', lvl: 9, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '40d6', dt: 'fire', cls: ['arcanist', 'wildblood'], desc: 'All foes, 40d6 fire and stone.' },
   { id: 'wordend', name: 'WORD OF ENDING', school: 'thrall', lvl: 9, t: 'enemy', eff: 'kill', maxHp: 100, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'Slay a foe under 100 HP.' },
@@ -967,11 +1003,22 @@ const NPC_ROLE = ['SCOUT', 'HERBALIST', 'SMITH', 'HUNTER', 'PRIEST', 'TRADER', '
 const FACTIONS = { lantern: 'LANTERN PACT', nomad: 'SAND NOMADS', stonekin: 'STONEKIN', fey: 'THORN COURT', haven: 'SILVERHAVEN' };
 const REP_TIERS = [[0, 'NEUTRAL'], [300, 'FRIENDLY'], [900, 'HONORED'], [2100, 'REVERED'], [4000, 'EXALTED']];
 const PROF_CAP = 720;
-const PROFS = { herb: 'HERBALISM', alch: 'ALCHEMY', fish: 'FISHING', cook: 'COOKING', blacksmith: 'BLACKSMITHING', armorsmith: 'ARMORSMITHING', weaponsmith: 'WEAPONSMITHING' };
+const PROFS = {
+  herb: 'HERBALISM', mining: 'ORE MINING', forestry: 'FORESTRY', hidecraft: 'HIDECRAFT', fish: 'FISHING',
+  salvaging: 'SALVAGING', relic: 'RELIC SURVEY', cultivation: 'CULTIVATION', beast_lore: 'BEAST LORE',
+  alch: 'ALCHEMY', cook: 'COOKING', blacksmith: 'BLACKSMITHING', armorsmith: 'ARMORSMITHING', weaponsmith: 'WEAPONSMITHING'
+};
 const PROFESSION_TREES = {
   herb: { yield: 'DEEP ROOTS', efficiency: 'GENTLE HARVEST', mastery: 'FIELD LORE' },
+  mining: { yield: 'RICH VEINS', efficiency: 'CAREFUL STRIKES', mastery: 'STONE LORE' },
+  forestry: { yield: 'SUSTAINABLE CUT', efficiency: 'WOODCRAFT', mastery: 'FOREST LORE' },
+  hidecraft: { yield: 'CLEAN SKINNING', efficiency: 'LIGHT TOUCH', mastery: 'HIDE LORE' },
   alch: { yield: 'BATCH BREWING', efficiency: 'REAGENT SAVER', mastery: 'ALCHEMICAL THEORY' },
   fish: { yield: 'FULL NETS', efficiency: 'PATIENT HAND', mastery: 'WATER LORE' },
+  salvaging: { yield: 'USEFUL PARTS', efficiency: 'QUICK SORT', mastery: 'SALVAGER LORE' },
+  relic: { yield: 'HIDDEN CACHE', efficiency: 'GENTLE EXTRACTION', mastery: 'ANCIENT LORE' },
+  cultivation: { yield: 'ABUNDANT CROP', efficiency: 'SOIL CARE', mastery: 'GROWER LORE' },
+  beast_lore: { yield: 'FIELD DRESSING', efficiency: 'CLEAN CUTS', mastery: 'BEAST LORE' },
   cook: { yield: 'HEARTH FEAST', efficiency: 'PANTRY SAVER', mastery: 'SEASONING ARTS' },
   blacksmith: { yield: 'FORGE OUTPUT', efficiency: 'MATERIAL SAVER', mastery: 'TEMPERING LORE' },
   armorsmith: { yield: 'ARMOR BATCHES', efficiency: 'FIT ECONOMY', mastery: 'ARMOR MASTERY' },
@@ -979,8 +1026,15 @@ const PROFESSION_TREES = {
 };
 const PROFESSION_QUESTS = {
   herb: { sideName: 'THE FIELD GUIDE', sideText: 'Gather herbs for the town apothecary.', action: 'gather', sideCount: 20, orderText: 'Gather a bundle of herbs for local healers.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'peacebloom' },
+  mining: { sideName: 'THE DEEP VEIN', sideText: 'Mine ore for the city forge.', action: 'gather', sideCount: 20, orderText: 'Deliver ore to the local smith.', orderCount: 5, xp: 1400, gold: 200, skill: 3, item: 'iron_ore' },
+  forestry: { sideName: 'TIMBER FOR THE WATCH', sideText: 'Gather timber and resin for the road wardens.', action: 'gather', sideCount: 20, orderText: 'Bring gathered wood to the carpenter.', orderCount: 5, xp: 1300, gold: 190, skill: 3, item: 'sap' },
+  hidecraft: { sideName: 'HIDE FOR THE ROAD', sideText: 'Prepare field hides for the traveling outfitters.', action: 'gather', sideCount: 20, orderText: 'Gather usable hides for the leatherworker.', orderCount: 5, xp: 1400, gold: 200, skill: 3, item: 'hide' },
   alch: { sideName: 'A CLEARER MIXTURE', sideText: 'Brew draughts for the traveling medics.', action: 'craft', sideCount: 12, orderText: 'Complete alchemy work for the clinic.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'antitoxin' },
   fish: { sideName: 'THE OLD FISHER', sideText: 'Bring a generous catch to the harbor.', action: 'fish', sideCount: 20, orderText: 'Catch fish for the harbor kitchen.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'ration' },
+  salvaging: { sideName: 'SCRAP INTO STEEL', sideText: 'Recover useful metal from forgotten camps.', action: 'gather', sideCount: 20, orderText: 'Collect reusable scrap for the blacksmith.', orderCount: 5, xp: 1300, gold: 190, skill: 3, item: 'scrap' },
+  relic: { sideName: 'FRAGMENTS OF THE PAST', sideText: 'Survey ruins and recover old relic pieces.', action: 'gather', sideCount: 20, orderText: 'Find relic fragments for the archivist.', orderCount: 5, xp: 1600, gold: 250, skill: 3, item: 'relic_fragment' },
+  cultivation: { sideName: 'THE COMMUNITY GARDEN', sideText: 'Gather field fiber for the town growers.', action: 'gather', sideCount: 20, orderText: 'Harvest useful fibers for local crafters.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'field_fiber' },
+  beast_lore: { sideName: "TRACKER'S NOTES", sideText: 'Study signs of beasts and recover field samples.', action: 'gather', sideCount: 20, orderText: 'Bring beast samples to the naturalist.', orderCount: 5, xp: 1500, gold: 220, skill: 3, item: 'bone_dust' },
   cook: { sideName: 'THE FEAST TABLE', sideText: 'Prepare meals for the road wardens.', action: 'craft', sideCount: 12, orderText: 'Cook provisions for a passing party.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'ration' },
   blacksmith: { sideName: 'THE HEARTHGUARD OATH', sideText: 'Reinforce equipment for the town watch.', action: 'reinforce', sideCount: 10, orderText: 'Temper equipment brought in by adventurers.', orderCount: 2, xp: 2200, gold: 350, skill: 3, item: 'scrap' },
   armorsmith: { sideName: 'A SAFE RETURN', sideText: 'Trade armor with the frontier patrol.', action: 'trade', sideCount: 15, orderText: 'Complete armor orders for local travelers.', orderCount: 3, xp: 2200, gold: 350, skill: 3, item: 'iron_ore' },
@@ -1001,6 +1055,13 @@ const ITEMS = {
   scroll_dawn: { name: 'SCROLL: DAWN', icon: 'item_scroll', type: 'scroll', spell: 'dawn', combat: true, price: 400, desc: 'Revive an ally.' },
   hearthstone: { name: 'HEARTHSTONE', icon: 'px_waypoint', type: 'hearth', price: 0, desc: 'Return to your inn.' },
   peacebloom: { name: 'PEACEBLOOM', icon: 'item_herb', type: 'mat', price: 2, desc: 'Herb. Alchemy.' },
+  field_fiber: { name: 'FIELD FIBER', icon: 'ne_reagent_0', type: 'mat', price: 4, desc: 'Cultivated fiber used by crafters.' },
+  relic_fragment: { name: 'RELIC FRAGMENT', icon: 'ne_relic_0', type: 'mat', price: 12, desc: 'A recovered piece of an ancient relic.' },
+  fish_stew: { name: 'FISHERMAN STEW', icon: 'px_fishcooked', type: 'use', heal: '4d6', buff: 'fed', price: 18, desc: 'A hearty fish stew. Restores 4d6 HP and leaves you well fed.' },
+  herb_roast: { name: 'HERB ROAST', icon: 'px_ration', type: 'use', heal: '5d6', buff: 'fed', price: 24, desc: 'A fragrant roast with gathered herbs. Restores 5d6 HP and leaves you well fed.' },
+  silverfin_plate: { name: 'SILVERFIN PLATE', icon: 'px_fishcooked', type: 'use', heal: '6d6', buff: 'fed', price: 35, desc: 'A rich silverfin meal. Restores 6d6 HP and leaves you well fed.' },
+  eel_skewers: { name: 'SPICED EEL SKEWERS', icon: 'px_fishcooked', type: 'use', heal: '7d6', buff: 'fed', price: 42, desc: 'Hot spiced eel. Restores 7d6 HP and leaves you well fed.' },
+  travelers_feast: { name: "TRAVELER'S FEAST", icon: 'px_ration', type: 'use', heal: '10d6', buff: 'fed', price: 70, desc: 'A generous feast for the road. Restores 10d6 HP and leaves you well fed.' },
   sandroot: { name: 'SANDROOT', icon: 'px_sandroot', type: 'mat', price: 5, desc: 'Herb. Alchemy.' },
   frostbloom: { name: 'FROSTBLOOM', icon: 'item_herb', type: 'mat', price: 8, desc: 'Cold herb. Alchemy.' },
   small_fish: { name: 'SMALL FISH', icon: 'px_fish', type: 'mat', price: 2, desc: 'Raw fish. Cooking.' },
@@ -1019,15 +1080,20 @@ const ITEMS = {
   tower_key: { name: 'SPIRE SIGIL', icon: 'px_tower', type: 'key', desc: 'Opens the Spire of a Hundred.' },
 };
 const RECIPES = [
-  { prof: 'alch', name: 'HEALING DRAUGHT', skill: 1, needs: { peacebloom: 2 }, makes: 'potion' },
-  { prof: 'alch', name: 'ANTITOXIN', skill: 10, needs: { peacebloom: 1, sandroot: 1 }, makes: 'antitoxin' },
-  { prof: 'alch', name: 'ETHER', skill: 30, needs: { sandroot: 2, peacebloom: 1 }, makes: 'ether' },
-  { prof: 'alch', name: 'ELIXIR OF MIGHT', skill: 45, needs: { sandroot: 2, frostbloom: 1 }, makes: 'might' },
-  { prof: 'alch', name: 'GREATER DRAUGHT', skill: 60, needs: { frostbloom: 2, sandroot: 1 }, makes: 'greater' },
-  { prof: 'alch', name: 'SUPERIOR DRAUGHT', skill: 85, needs: { frostbloom: 4 }, makes: 'superior' },
-  { prof: 'cook', name: 'GRILLED FISH', skill: 1, needs: { small_fish: 1 }, makes: 'grilled' },
-  { prof: 'cook', name: 'TRAIL RATION', skill: 10, needs: { small_fish: 1, peacebloom: 1 }, makes: 'ration' },
-  { prof: 'cook', name: 'HERO FEAST', skill: 50, needs: { big_fish: 2, eel: 1 }, makes: 'feast' },
+  { id: 'healing_draught', prof: 'alch', name: 'HEALING DRAUGHT', skill: 1, needs: { peacebloom: 2 }, makes: 'potion' },
+  { id: 'antitoxin', prof: 'alch', name: 'ANTITOXIN', skill: 10, needs: { peacebloom: 1, sandroot: 1 }, makes: 'antitoxin' },
+  { id: 'ether', prof: 'alch', name: 'ETHER', skill: 30, needs: { sandroot: 2, peacebloom: 1 }, makes: 'ether' },
+  { id: 'elixir_might', prof: 'alch', name: 'ELIXIR OF MIGHT', skill: 45, needs: { sandroot: 2, frostbloom: 1 }, makes: 'might' },
+  { id: 'greater_draught', prof: 'alch', name: 'GREATER DRAUGHT', skill: 60, needs: { frostbloom: 2, sandroot: 1 }, makes: 'greater' },
+  { id: 'superior_draught', prof: 'alch', name: 'SUPERIOR DRAUGHT', skill: 85, needs: { frostbloom: 4 }, makes: 'superior' },
+  { id: 'grilled_fish', prof: 'cook', name: 'GRILLED FISH', skill: 1, needs: { small_fish: 1 }, makes: 'grilled' },
+  { id: 'trail_ration', prof: 'cook', name: 'TRAIL RATION', skill: 1, needs: { small_fish: 1, peacebloom: 1 }, makes: 'ration' },
+  { id: 'fish_stew', prof: 'cook', name: 'FISHERMAN STEW', skill: 5, needs: { small_fish: 2, peacebloom: 1 }, makes: 'fish_stew' },
+  { id: 'herb_roast', prof: 'cook', name: 'HERB ROAST', skill: 15, needs: { small_fish: 1, sandroot: 2 }, makes: 'herb_roast' },
+  { id: 'silverfin_plate', prof: 'cook', name: 'SILVERFIN PLATE', skill: 30, needs: { big_fish: 2, peacebloom: 1 }, makes: 'silverfin_plate' },
+  { id: 'eel_skewers', prof: 'cook', name: 'SPICED EEL SKEWERS', skill: 50, needs: { eel: 2, sandroot: 1 }, makes: 'eel_skewers' },
+  { id: 'hero_feast', prof: 'cook', name: 'HERO FEAST', skill: 75, needs: { big_fish: 2, eel: 1 }, makes: 'feast' },
+  { id: 'travelers_feast', prof: 'cook', name: "TRAVELER'S FEAST", skill: 100, needs: { big_fish: 3, eel: 2, frostbloom: 1 }, makes: 'travelers_feast' },
 ];
 const HERB_BY_BIOME = { meadow: 'peacebloom', coast: 'peacebloom', marsh: 'peacebloom', jungle: 'peacebloom', snow: 'frostbloom', badlands: 'sandroot', volcanic: 'sandroot', dusk: 'frostbloom', crystal: 'frostbloom' };
 
@@ -1409,11 +1475,15 @@ function buildZone(z) {
       for (let j = -1; j <= 1; j++) for (let i = -2; i <= 2; i++) if (g[hub[1] + j] && g[hub[1] + j][hub[0] + i] && !'|h'.includes(g[hub[1] + j][hub[0] + i])) g[hub[1] + j][hub[0] + i] = '"';
     }
   }
-  // herb nodes, world boss spots
+  // gathering profession nodes, world boss spots
   const herb = HERB_BY_BIOME[z.biome] || 'peacebloom';
   const nodes = [], bosses = [];
   if (!z.town) {
-    for (let i = 0; i < 9; i++) { const [x, y] = free(); nodes.push([x, y, herb]); }
+    const resources = [
+      ['herb', herb], ['mining', 'iron_ore'], ['forestry', 'sap'], ['hidecraft', 'hide'],
+      ['salvaging', 'scrap'], ['relic', 'relic_fragment'], ['cultivation', 'field_fiber'], ['beast_lore', 'bone_dust'],
+    ];
+    for (const [profession, item] of resources) { const [x, y] = free(); nodes.push([x, y, profession, item]); }
     const wb = BOSSES.filter(b => b.cat === 'world' && b.where === z.id).slice(0, 4);
     wb.forEach(b => { const [x, y] = free(); bosses.push({ id: b.id, x, y }); });
     const arc = BOSSES.find(b => b.cat === 'arc' && b.where === z.id);
@@ -1577,6 +1647,7 @@ const TOWER_MODS = [
 
 function buildInstance(kind, def, floor = 0) {
   const r = RNG(`${kind}-${def.id}-${floor}`), theme = def.theme || 'dungeon';
+  const tier = Math.max(1, Math.min(9, Math.floor(Number(G && G.difficulty) || 2)));
   const lvl = (def.lvl ?? def.baseLvl ?? 1) + (kind === 'tower' ? floor * TOWER.perFloor : 0);
   const table = kind === 'tower' ? BESTIARY : spawnTable((REGIONS.find(z => z.id === def.zone) || { biome: 'dusk' }).biome);
   const mob = () => r.pick(table.length ? table : BESTIARY).id;
@@ -1699,11 +1770,28 @@ function buildInstance(kind, def, floor = 0) {
     if (!bosses.length) for (let k = 0; k < 4; k++) pack(3 + k, ar.cx, ar.cy, { wave: wave++, final: k === 3 });
     chest = { x: ar.x + ar.w - 3, y: ar.y, id: `chest_${def.id}` };
   }
+  if (kind === 'dungeon' || kind === 'raid') {
+    for (const o of rooms) {
+      if (o.type === 'entrance') continue;
+      let encounter = pulls.find(p => inside(o, p.x, p.y));
+      if (!encounter) { pack(2, o.cx, o.cy, { roomNumber: o.number }); encounter = pulls[pulls.length - 1]; }
+      encounter.roomNumber = o.number;
+      if (o.number % 4 === 0 && !encounter.boss) { encounter.elite = true; encounter.miniboss = true; encounter.mobs = encounter.mobs.slice(0, 1); encounter.lvl += 2; }
+    }
+    let minibosses = pulls.filter(p => p.miniboss).length;
+    for (const o of rooms.filter(room => room.type !== 'entrance' && room.type !== 'arena')) {
+      if (minibosses >= 2) break;
+      const encounter = pulls.find(p => inside(o, p.x, p.y));
+      if (!encounter || encounter.boss || encounter.miniboss) continue;
+      encounter.elite = true; encounter.miniboss = true; encounter.mobs = encounter.mobs.slice(0, 1); encounter.lvl += 2; minibosses++;
+    }
+  }
+  for (const pull of pulls) pull.difficulty = tier;
   // ---------------------------------------------------------------- hidden traps in trap galleries and corridors
   const traps = [];
   for (const o of rooms.filter(o => o.type === 'traps' || o.type === 'guard').slice(0, 3)) for (let k = 0; k < 2; k++) {
     const tx = o.x + r.int(0, o.w - 1), ty = o.y + r.int(0, o.h - 1);
-    if (at(tx, ty) === '.' && !pulls.some(p => p.x === tx && p.y === ty)) traps.push({ x: tx, y: ty, dc: 10 + Math.min(10, Math.floor(lvl / 5)), dmg: `${1 + Math.floor(lvl / 4)}d10` });
+    if (at(tx, ty) === '.' && !pulls.some(p => p.x === tx && p.y === ty)) traps.push({ x: tx, y: ty, dc: 10 + Math.min(10, Math.floor(lvl / 5)) + tier, dmg: `${1 + Math.floor(lvl / 4) + Math.floor(tier / 3)}d10` });
   }
   // ---------------------------------------------------------------- make sure everything is reachable; strip decor if not
   const targets = [...pulls, ...vaults, ...(chest ? [chest] : []), ...shrines, ...(M.up ? [{ x: M.up[0], y: M.up[1] }] : [])];
@@ -1718,7 +1806,7 @@ function buildInstance(kind, def, floor = 0) {
   const rowsOut = g.map(rw => rw.join(''));
   return {
     id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, theme), tiles: dungeonTiles(theme), entry: M.entry, pulls, chest, traps, lvl,
-    rooms: rooms.map(({ x, y, w, h, type, name, desc }) => ({ x, y, w, h, type, name, desc })), vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)), spikeDmg: `${1 + Math.floor(lvl / 8)}d4`,
+    rooms: rooms.map(({ x, y, w, h, type, name, desc, number }) => ({ x, y, w, h, type, name, desc, number, difficulty: tier })), roomCount: rooms.length, difficulty: tier, vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)) + tier, spikeDmg: `${1 + Math.floor(lvl / 8) + Math.floor(tier / 3)}d4`,
     name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind,
   };
 }
@@ -1747,6 +1835,18 @@ function gridLayout(r, kind, nBosses) {
     if (a < 0 || b < 0 || a >= cols || b >= rows || cell[key(a, b)]) continue;
     cell[key(a, b)] = 1; sides.push({ at: [a, b], from: [pc, pw] });
   }
+  // Fill a connected route to twelve chambers. Raids keep extra empty cells around the route.
+  const targetRooms = Math.min(12, cols * rows);
+  while (Object.keys(cell).length < targetRooms) {
+    const choices = [];
+    for (let a = 0; a < cols; a++) for (let b = 0; b < rows; b++) {
+      if (cell[key(a, b)]) continue;
+      const parents = [[a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]].filter(([x, y]) => x >= 0 && y >= 0 && x < cols && y < rows && cell[key(x, y)]);
+      if (parents.length) choices.push({ at: [a, b], from: r.pick(parents) });
+    }
+    if (!choices.length) break;
+    const next = r.pick(choices); cell[key(...next.at)] = 1; sides.push(next);
+  }
   // room types along the path: guardians evenly spaced (one per extra boss), arena last
   const nGuard = Math.max(0, nBosses - 1), types = path.map(() => null);
   types[0] = 'entrance'; types[path.length - 1] = 'arena';
@@ -1759,7 +1859,7 @@ function gridLayout(r, kind, nBosses) {
     const ox = 1 + c * CW, oy = 1 + w * CH, big = ['arena', 'guardian', 'barracks', 'pillars', 'flooded'].includes(type);
     const rw = big ? CW - 2 : r.int(5, 7), rh = big ? CH - 2 : r.int(4, 5);
     const x = ox + 1 + (big ? 0 : r.int(0, CW - 2 - rw)), y = oy + 1 + (big ? 0 : r.int(0, CH - 2 - rh));
-    const o = { x, y, w: rw, h: rh, cx: x + (rw >> 1), cy: y + (rh >> 1), type, cell: [c, w] };
+    const o = { x, y, w: rw, h: rh, cx: x + (rw >> 1), cy: y + (rh >> 1), type, cell: [c, w], number: rooms.length + 1 };
     const round = type === 'crossroads' || (type === 'shrine' && r() < 0.5);
     for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++) { if (round && (i === 0 || i === rw - 1) && (j === 0 || j === rh - 1)) continue; g[y + j][x + i] = '.'; }
     rooms.push(o); return o;
@@ -1767,7 +1867,8 @@ function gridLayout(r, kind, nBosses) {
   const byCell = {};
   path.forEach(([a, b], i) => { byCell[key(a, b)] = mk(a, b, types[i]); });
   const sideTypes = r.shuffle ? r.shuffle(SIDE_TYPES.slice()) : SIDE_TYPES.slice();
-  sides.forEach((s, i) => { byCell[key(...s.at)] = mk(s.at[0], s.at[1], sideTypes[i % sideTypes.length]); });
+  let extraGuardians = Math.max(0, nBosses - 1 - types.filter(type => type === 'guardian').length);
+  sides.forEach((s, i) => { const type = extraGuardians > 0 ? (extraGuardians--, 'guardian') : sideTypes[i % sideTypes.length]; byCell[key(...s.at)] = mk(s.at[0], s.at[1], type); });
   // corridors
   const keep = [];
   const link = (A, B, doorOnB) => {
@@ -1884,7 +1985,7 @@ function openVault(inst, v) {
   if (inst.vaultsOpened.includes(v.id)) return;
   if (v.needs && !inst.cleared.includes(v.needs)) return say('Bones shift over the chest. Defeat what guards it.');
   inst.vaultsOpened.push(v.id); SFX.chest();
-  const g = 10 + inst.map.lvl * 4 * ((inst.map.mod && inst.map.mod.gold) || 1); G.gold += g;
+  const tier = inst.difficulty || G.difficulty, g = Math.round((10 + inst.map.lvl * 4 * ((inst.map.mod && inst.map.mod.gold) || 1)) * DIFFICULTY[tier - 1].loot); G.gold += g;
   const lucky = R() < 0.6, it = lucky ? makeItem({ lvl: inst.map.lvl, mf: derive(G).mf, loot: diffOf().loot }) : null;
   if (it) addGear(it); else addItem('potion', 2);
   say([`A treasure chest! ${g} G`, it ? `[${RARITY[it.rarity].name}] ${it.name}` : 'and 2 POTIONS']);
@@ -2104,15 +2205,31 @@ function pages(lines, rows = 3, n = 23) {
 // ================================================================ input
 const BTNS = ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'];
 const held = {}, pressed = {}, rep = {};
+const DEFAULT_KEYBINDS = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', a: 'KeyZ', b: 'KeyX', start: 'Enter', select: 'ShiftLeft' };
+S.keybinds = Object.assign({}, DEFAULT_KEYBINDS, S.keybinds || {});
+let keyCaptureHandler = null;
+const KEY_LABELS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', Backspace: 'BACKSPACE', Tab: 'TAB' };
+function keyLabel(code) { return KEY_LABELS[code] || (code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5) : code); }
 function bDown(b) { audioCtx(); if (!held[b]) { held[b] = true; pressed[b] = true; rep[b] = 0; } }
 function bUp(b) { held[b] = false; }
 const mapBtn = b => S.swap ? (b === 'a' ? 'b' : b === 'b' ? 'a' : b) : b;
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right',
   z: 'a', j: 'a', ' ': 'a', x: 'b', k: 'b', Escape: 'b', Backspace: 'b', Enter: 'start', Shift: 'select', Tab: 'select' };
 const typing = () => { const a = document.activeElement; return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA'); };
-addEventListener('keydown', e => { if (typing()) return; const b = KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key]; if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
-addEventListener('keyup', e => { const b = KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key]; if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
+function keyAction(e) {
+  const code = e.code || '';
+  for (const b of BTNS) if (S.keybinds[b] === code) return b;
+  if (Object.values(DEFAULT_KEYBINDS).includes(code)) return null;
+  return KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
+}
+addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
+addEventListener('keyup', e => { const b = keyAction(e); if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
 addEventListener('blur', () => BTNS.forEach(bUp));
+LCD.addEventListener('contextmenu', e => e.preventDefault());
+LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
+const releaseMouse = e => { if (e.pointerType === 'mouse') { bUp('a'); bUp('b'); } };
+LCD.addEventListener('pointerup', releaseMouse); LCD.addEventListener('pointercancel', releaseMouse); LCD.addEventListener('lostpointercapture', releaseMouse);
+LCD.addEventListener('wheel', e => { e.preventDefault(); bDown(e.deltaY < 0 ? 'up' : 'down'); setTimeout(() => bUp(e.deltaY < 0 ? 'up' : 'down'), 80); }, { passive: false });
 document.querySelectorAll('[data-btn]').forEach(el => {
   const b = el.dataset.btn;
   const on = e => { e.preventDefault(); el.setPointerCapture && el.setPointerCapture(e.pointerId); el.classList.add('down'); bDown(mapBtn(b)); };
@@ -2865,7 +2982,7 @@ function newCharacter(o) {
   for (const a in sp.asi) base[a] += sp.asi[a];
   base.LCK = 10 + (sp.traits.includes('lucky') ? 2 : 0); base.WIL = 10 + (o.cls === 'ascetic' || o.cls === 'chaplain' ? 2 : 0); base.SPD = 10 + (o.cls === 'shade' || o.cls === 'strider' ? 2 : 0);
   const c = { name: o.name, species: o.species, cls: o.cls, bg: o.bg || 'wanderer', sub: null, lvl: 1, xp: 0, base,
-    feats: [], talents: [], talentPts: 0, ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
+    feats: [], talents: [], talentPts: 0, skillPts: 0, activeSkills: [], passiveSkills: [], ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
     eq: {}, hp: 1, hd: 1, res: {}, buffs: [], ai: o.ai || false, look: o.look || null, portrait: o.portrait || null, extraSkill: sp.traits.includes('versatile') ? 'perception' : null };
   (cls.gear || []).forEach(b => { const it = WEAPONS[b] ? makeItem({ kind: 'weapon', base: b, rarity: 1, lvl: 1 }) : makeItem({ kind: 'armor', base: b, rarity: 1, lvl: 1 }); c.eq[itemSlot(it)] = it; });
   const D = derive(c); c.hp = D.hpMax; c.hd = D.hdMax; c.res = resMax(c, D);
@@ -2918,6 +3035,7 @@ function derive(c) {
   const hd = cls.hd, conM = M.CON;
   let hpMax = hd + conM + (CL - 1) * (hd / 2 + 1 + conM) + Math.max(0, c.lvl - 20) * (hd / 2 + Math.max(1, conM));
   if (c.feats.includes('tough')) hpMax += 2 * c.lvl;
+  if ((c.passiveSkills || []).includes('vitality')) hpMax = Math.round(hpMax * 1.1);
   hpMax += (sub.hp || 0); hpMax = Math.round(hpMax * (1 + (sub.hpPct || 0) / 100));
   hpMax += 6 * wondrousBonus(c, 'hp') * Math.max(1, Math.floor(c.lvl / 5));
   hpMax = Math.max(1, Math.round(hpMax));
@@ -2936,12 +3054,14 @@ function derive(c) {
   // saves
   const saveProf = new Set(cls.saves); if (c.feats.includes('resilient')) saveProf.add('CON');
   const saveItem = wondrousBonus(c, 'save');
-  const saves = {}; for (const a of ATTRS) saves[a] = M[a] + (saveProf.has(a) ? pb : 0) + saveItem + (sub.saves || 0);
+  const passiveSave = (c.passiveSkills || []).includes('resilience') ? 1 : 0;
+  const saves = {}; for (const a of ATTRS) saves[a] = M[a] + (saveProf.has(a) ? pb : 0) + saveItem + (sub.saves || 0) + passiveSave;
   // skills
   const profSkills = new Set([...(cls.skills || []).slice(0, 3), ...BACKGROUNDS[c.bg].skills]); if (c.extraSkill) profSkills.add(c.extraSkill);
   if (sp.traits.includes('keen')) profSkills.add('perception');
   const expertise = new Set(cls.expertise || []);
   const skills = {}; for (const k in SKILLS) { const p = profSkills.has(k) ? (expertise.has(k) ? 2 * pb : pb) : (hasFeature(c, 'jack') ? Math.floor(pb / 2) : 0); skills[k] = M[SKILLS[k]] + p; }
+  if ((c.passiveSkills || []).includes('nature_lore')) { skills.nature += 2; skills.animal += 2; }
   // weapon
   const wi = c.eq.weapon, wd = wi ? WEAPONS[wi.base] : null;
   const props = wd ? wd.props : '';
@@ -2951,7 +3071,8 @@ function derive(c) {
   if (hasFeature(c, 'martial') && (!wd || wd.cat === 'simple')) { const md = CL >= 17 ? 10 : CL >= 11 ? 8 : CL >= 5 ? 6 : 4; const cur = wd ? +dice.split('d')[1] : 1; if (md > cur) dice = `1d${md}`; abil = M.DEX > M.STR ? 'DEX' : 'STR'; }
   const profW = !wd || wd.cat === 'simple' || cls.weapons === 'martial' || (cls.weapons === 'finesse' && props.includes('f'));
   const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (wi.rank || 1) - 1 : 0; // item rank adds flat damage
-  let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit');
+  const passivePrecision = (c.passiveSkills || []).includes('precision') ? 1 : 0;
+  let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit') + passivePrecision;
   if (props.includes('r') && hasFeature(c, 'style_arch')) hit += 2;
   if (props.includes('r') && c.feats.includes('sharpshot')) hit += 2;
   const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic + rankDmg, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
@@ -2969,22 +3090,22 @@ function derive(c) {
     const arcanum = cls.caster === 'pact' ? [[11, 6], [13, 7], [15, 8], [17, 9]].filter(([l]) => CL >= l).map(([, s]) => s) : [];
     const known = SPELLS.filter(s => s.cls.includes(c.cls) && (s.lvl <= maxL || arcanum.includes(s.lvl)));
     if (c.species === 'emberborn' && !known.find(s => s.id === 'emberdart')) known.unshift(SPELLS.find(s => s.id === 'emberdart'));
-    spell = { abil: cls.cast, mod: cm, dc: 8 + pb + cm + Math.floor((sub.hit || 0) / 2), atk: pb + cm + (sub.hit || 0), slots, pact, maxL, arcanum, known };
+    spell = { abil: cls.cast, mod: cm, dc: 8 + pb + cm + Math.floor((sub.hit || 0) / 2), atk: pb + cm + (sub.hit || 0) + passivePrecision, slots, pact, maxL, arcanum, known };
   } else if (c.species === 'emberborn') {
-    const cm = M.CHA; spell = { abil: 'CHA', mod: cm, dc: 8 + pb + cm, atk: pb + cm, slots: [], pact: null, maxL: 0, arcanum: [], known: [SPELLS.find(s => s.id === 'emberdart')] };
+    const cm = M.CHA; spell = { abil: 'CHA', mod: cm, dc: 8 + pb + cm, atk: pb + cm + passivePrecision, slots: [], pact: null, maxL: 0, arcanum: [], known: [SPELLS.find(s => s.id === 'emberdart')] };
   }
   const res = new Set(sp.res || []);
   return {
     c, cls, sp, CL, pb, A, M, sub, hpMax, hdMax: Math.min(c.lvl, 20), ac, saves, skills, weapon, attacks, spell, res,
-    init: M.DEX + M.SPD + (c.feats.includes('alert') ? 5 : 0) + Math.floor((sub.haste || 0) / 10) + wondrousBonus(c, 'init'),
+    init: M.DEX + M.SPD + (c.feats.includes('alert') ? 5 : 0) + ((c.passiveSkills || []).includes('swift') ? 2 : 0) + Math.floor((sub.haste || 0) / 10) + wondrousBonus(c, 'init'),
     passive: 10 + skills.perception,
     critRange: 20 - subKey(c, 'critRange'),
     crit: Math.min(SUBSTATS.crit.max, (sub.crit || 0) + Math.max(0, M.LCK)),
     critdmg: 100 + (sub.critdmg || 0),
-    dodge: Math.min(SUBSTATS.dodge.max, (sub.dodge || 0) + Math.max(0, Math.floor(M.SPD / 2))),
+    dodge: Math.min(SUBSTATS.dodge.max, (sub.dodge || 0) + ((c.passiveSkills || []).includes('swift') ? 5 : 0) + Math.max(0, Math.floor(M.SPD / 2))),
     block: Math.min(SUBSTATS.block.max, (sub.block || 0) + (shield ? 5 : 0)),
     leech: Math.min(SUBSTATS.leech.max, sub.leech || 0), haste: Math.min(SUBSTATS.haste.max, (sub.haste || 0) + Math.max(0, M.SPD) * 2),
-    dmgPct: (sub.dmg || 0), healPct: (sub.heal || 0) + Math.max(0, M.WIS), resistAll: Math.min(SUBSTATS.resist.max, sub.resist || 0),
+    dmgPct: (sub.dmg || 0) + ((c.passiveSkills || []).includes('arcane_focus') ? 5 : 0) + ((c.passiveSkills || []).includes('ferocity') ? 5 : 0), healPct: (sub.heal || 0) + Math.max(0, M.WIS) + ((c.passiveSkills || []).includes('healing_hands') ? 10 : 0), resistAll: Math.min(SUBSTATS.resist.max, sub.resist || 0),
     thorns: sub.thorns || 0, mf: (sub.mf || 0) + Math.max(0, M.LCK) * 5, gf: sub.gf || 0, xpPct: sub.xp || 0,
     condSave: Math.max(0, M.WIL), elem: { fire: sub.fire || 0, cold: sub.cold || 0, lightning: sub.lightning || 0, necrotic: sub.necrotic || 0, radiant: sub.radiant || 0 },
   };
@@ -3095,6 +3216,7 @@ function gainXP(c, amount) {
       c.talentPts = (c.talentPts || 0) + 1;
       g.notes.push('TALENT POINT AVAILABLE!');
     }
+    if (c.lvl % 3 === 0) { c.skillPts = (c.skillPts || 0) + 1; g.notes.push('ACTIVE / PASSIVE SKILL POINT!'); }
     const D2 = derive(c); g.hp = D2.hpMax - before.hpMax; c.hp = D2.hpMax; c.res = resMax(c, D2); c.hd = D2.hdMax;
     ups.push(g);
   }
@@ -3209,7 +3331,7 @@ class Battle {
     this.party = opt.party; this.foes = opt.foes.map(foeMember); this.all = [...this.party, ...this.foes];
     this.noFlee = opt.noFlee || this.foes.some(f => f.boss) || ['dungeon', 'raid', 'trial', 'tower', 'arena'].includes(this.kind);
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
-    this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.anim = { lunge: null, flash: {}, fx: null };
+    this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
     this.title = opt.title || null;
     for (const u of this.party) { if (u.ch.ai === false && this.rule === 'frail') u.ch.hp = Math.ceil(u.ch.hp / 2); }
@@ -3508,6 +3630,7 @@ class Battle {
     let dice = ws ? '2d6' : w.dice, dmg = roll(dice, crit).total + (ws ? Math.max(D.M.STR, D.M.WIS) : w.dmg);
     const parts = [];
     if (crit && hasFeature(att.ch, 'brutal')) dmg += roll(dice).total;
+    if (opt.skillBonus) { const sb = roll(opt.skillBonus, crit).total; dmg += sb; parts.push(`SKILL +${sb}`); }
     if (hasEff(att, 'rage')) { const rb = D.CL >= 16 ? 4 : D.CL >= 9 ? 3 : 2; dmg += rb; }
     if (w.extra && !ws) { const ex = roll(w.extra.dice, crit).total; dmg += ex; parts.push(`+${ex} ${w.extra.type}`); }
     if (hasFeature(att.ch, 'sneak') && !this.sneakUsed && (adv > 0 || this.party.filter(alive).length > 1 || tgt.effects.length)) {
@@ -3655,6 +3778,17 @@ class Battle {
   abilities(u) {
     const c = u.ch, D = derive(c), r = c.res, list = [];
     const add = (id, name, cost, ok, bonus, fn, target) => list.push({ id, name, cost, ok, bonus, fn, target });
+    if (!c.ai) for (const skill of (c.activeSkills || []).filter(id => ACTIVE_SKILLS.some(def => def.id === id && def.classes.includes(c.cls)))) {
+      const used = this.skillUses.has(skill);
+      if (skill === 'power_strike') add('skill_power_strike', 'POWER STRIKE', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.weaponAttack(u, t, { single: true, skillBonus: `${2 + Math.floor(D.CL / 10)}d8` }); }, 'enemy');
+      if (skill === 'rally') add('skill_rally', 'BATTLE RALLY', used ? 'USED' : 'ONCE', !used && !this.bonusUsed, true, () => { this.skillUses.add(skill); const targets = this.party.filter(member => isChar(member) && !member.ch.dead); return [this.say(`${c.name} rallies the party!`, () => { targets.forEach(member => addEffect(member, { id: 'inspired', rounds: 10 })); SFX.charm(); })]; });
+      if (skill === 'field_mend') add('skill_field_mend', 'FIELD MEND', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); const heal = roll(`${2 + Math.floor(D.CL / 8)}d8`).total + Math.max(1, D.M.WIS); return [this.say(`${c.name} mends ${t.name}: +${heal} HP`, () => { this.heal(t, heal); SFX.heal(); })]; }, 'ally');
+      if (skill === 'shadowstep') add('skill_shadowstep', 'SHADOW STEP', used ? 'USED' : 'ONCE', !used && !this.bonusUsed, true, () => { this.skillUses.add(skill); return [this.say(`${c.name} vanishes into a shadow.`, () => { addEffect(u, { id: 'invisible', rounds: 2 }); SFX.veil_cast(); })]; });
+      if (skill === 'arcane_burst') add('skill_arcane_burst', 'ARCANE BURST', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.castSpell(u, { id: 'skill_arcane_burst', name: 'ARCANE BURST', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '2d8', dt: 'force' }, [t]); }, 'enemy');
+      if (skill === 'spirit_call') add('skill_spirit_call', 'SPIRIT CALL', used ? 'USED' : 'ONCE', !used && this.party.length < 12, false, () => { this.skillUses.add(skill); return [this.say(`${c.name} calls a spirit wolf!`, () => { this.addSummon(u, 'wolf'); SFX.growl(); })]; });
+      if (skill === 'sunflare') add('skill_sunflare', 'SUNFLARE', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.castSpell(u, { id: 'skill_sunflare', name: 'SUNFLARE', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', save: 'DEX', half: true, dice: '2d8', dt: 'radiant' }, [t]); }, 'enemy');
+      if (skill === 'warding_aura') add('skill_warding_aura', 'WARDING AURA', used ? 'USED' : 'ONCE', !used, false, () => { this.skillUses.add(skill); const allies = this.party.filter(member => isChar(member) && !member.ch.dead); return [this.say(`${c.name} fortifies the party with an arcane ward.`, () => { allies.forEach(member => addEffect(member, { id: 'fortify', rounds: 3 })); SFX.buff(); })]; });
+    }
     if (hasFeature(c, 'secondwind')) add('wind', 'SECOND WIND', `${r.wind || 0}/1`, r.wind > 0 && !this.bonusUsed, true, () => { r.wind--; const h = roll('1d10').total + D.CL; return [this.say(`${c.name} catches a second wind: +${h} HP`, () => { this.heal(u, h); SFX.heal(); })]; });
     if (hasFeature(c, 'surge')) add('surge', 'ACTION SURGE', `${r.surge || 0}`, r.surge > 0, true, () => { r.surge--; this.extraAction = true; return [this.say(`${c.name} surges! One more action.`, () => SFX.buff())]; });
     if (hasFeature(c, 'rage')) add('rage', 'RAGE', `${r.rage || 0}`, r.rage > 0 && !hasEff(u, 'rage') && !this.bonusUsed, true, () => { r.rage--; return [this.say(`${c.name} flies into a RAGE!`, () => { addEffect(u, { id: 'rage', rounds: 99 }); SFX.roar(); })]; });
@@ -4181,8 +4315,8 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
-    mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
+    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    mail: [], ah: [], bank: [], homes: {}, hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
   return c;
@@ -4198,8 +4332,20 @@ function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; 
 function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
-  G.prof = Object.assign({ herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
+  G.homes = G.homes && typeof G.homes === 'object' && !Array.isArray(G.homes) ? G.homes : {};
+  G.skillPts = Math.max(0, Math.floor(Number(G.skillPts) || 0));
+  G.activeSkills = Array.isArray(G.activeSkills) ? [...new Set(G.activeSkills.filter(id => ACTIVE_SKILLS.some(skill => skill.id === id && skill.classes.includes(G.cls))))] : [];
+  G.passiveSkills = Array.isArray(G.passiveSkills) ? [...new Set(G.passiveSkills.filter(id => PASSIVE_SKILLS.some(skill => skill.id === id && skill.classes.includes(G.cls))))] : [];
+  for (const home of Object.values(G.homes)) {
+    home.level = Math.max(1, Math.min(5, Math.floor(Number(home.level) || 1)));
+    home.decor = Array.isArray(home.decor) ? home.decor.filter(item => typeof item === 'string').slice(0, 8) : [];
+    home.storage = Array.isArray(home.storage) ? home.storage : [];
+  }
+  G.prof = Object.assign({ herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
   for (const key of Object.keys(PROFS)) G.prof[key] = Math.max(0, Math.min(PROF_CAP, Math.floor(Number(G.prof[key]) || 0)));
+  const starterBlueprints = RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id);
+  G.blueprints = Array.isArray(G.blueprints) ? [...new Set(G.blueprints.filter(id => RECIPES.some(recipe => recipe.id === id))) ] : starterBlueprints;
+  for (const id of starterBlueprints) if (!G.blueprints.includes(id)) G.blueprints.push(id);
   G.profTalents = G.profTalents && typeof G.profTalents === 'object' ? G.profTalents : {};
   for (const key of Object.keys(PROFS)) {
     const saved = G.profTalents[key] && typeof G.profTalents[key] === 'object' ? G.profTalents[key] : {};
@@ -4421,11 +4567,12 @@ function gainProf(k, diff = 1) {
   if (!PROFS[k]) return false;
   if (!Number.isInteger(G.prof[k]) || G.prof[k] < 0) G.prof[k] = 0;
   if (G.prof[k] === 0) G.prof[k] = 1;
-  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960);
+  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960 + (Object.values(G.homes || {}).some(home => home.decor && home.decor.includes('study')) ? 0.08 : 0));
   if (G.prof[k] < PROF_CAP && R() < Math.min(1, Math.max(0.15, 1 - (G.prof[k] - diff) / 40) + bonus)) { G.prof[k]++; return true; }
   return false;
 }
 function craft(rec) {
+  if (!rec || !G.blueprints.includes(rec.id)) return 'You have not learned that recipe blueprint.';
   const reduction = Math.floor(profTalentRank(rec.prof, 'efficiency') / 24);
   const needs = Object.fromEntries(Object.entries(rec.needs).map(([item, quantity]) => [item, Math.max(1, quantity - reduction)]));
   for (const k in needs) if ((G.inv[k] || 0) < needs[k]) return 'Missing materials.';
@@ -4436,6 +4583,17 @@ function craft(rec) {
   const up = gainProf(rec.prof, rec.skill);
   progressProfessionQuest(rec.prof, 'craft', 1);
   return `Made ${output} ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+}
+function recipeBlueprintCost(recipe) { return Math.max(15, Math.round(15 + recipe.skill * 1.5)); }
+function learnRecipeBlueprint(recipeId) {
+  const recipe = RECIPES.find(entry => entry.id === recipeId);
+  if (!recipe) return 'Unknown recipe blueprint.';
+  if (G.blueprints.includes(recipe.id)) return 'You already know this recipe.';
+  if (G.prof[recipe.prof] < recipe.skill) return `Need ${PROFS[recipe.prof]} ${recipe.skill}.`;
+  const cost = recipeBlueprintCost(recipe);
+  if (G.gold < cost) return `Need ${cost} G for this blueprint.`;
+  G.gold -= cost; G.blueprints.push(recipe.id);
+  return `Learned ${recipe.name} blueprint!`;
 }
 
 function professionQuestRecord(professionId, questId) {
@@ -4723,7 +4881,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -4732,7 +4890,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
@@ -5047,7 +5205,8 @@ class Spellbook extends ListScene {
 class GrowthScene extends ListScene {
   constructor() { super(9); }
   items() {
-    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => { push(new TalentScene()); } }];
+    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => { push(new TalentScene()); } },
+      { t: `ACTIVE / PASSIVE SKILLS (${G.skillPts || 0} PTS)`, d: 'Learn once-per-battle active abilities and permanent passive bonuses.', fn: () => { push(new AbilitySkillsScene()); } }];
     if (G.pending.sub && classLevel(G) >= 3) CLASSES[G.cls].subs.forEach(s => o.push({ t: `SUBCLASS: ${s.name}`, d: s.desc, fn: () => { G.sub = s.id; G.pending.sub = false; G.res = resMax(G); } }));
     if (G.pending.asi) {
       ATTRS.slice(0, 6).forEach(a => o.push({ t: `+2 ${a} (${G.base[a]})`, d: 'Ability Score Increase. Max 20.', fn: () => { if (G.base[a] >= 20) return 'Already 20.'; G.base[a] = Math.min(20, G.base[a] + 2); G.pending.asi--; } }));
@@ -5071,6 +5230,44 @@ class GrowthScene extends ListScene {
     L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(e.t.slice(0, 24), 6, y); });
     this.scrollbar(156, 23, 90);
     frame(2, 114, 156, 28); text(wrap(L[this.i].d, 24).slice(0, 2).join('\n'), 6, 118);
+  }
+}
+
+class AbilitySkillsScene extends ListScene {
+  constructor() { super(8); this.kind = 'active'; }
+  catalog() { return (this.kind === 'active' ? ACTIVE_SKILLS : PASSIVE_SKILLS).filter(skill => skill.classes.includes(G.cls)); }
+  learned() { return this.kind === 'active' ? G.activeSkills : G.passiveSkills; }
+  update() {
+    if (P('select')) { this.kind = this.kind === 'active' ? 'passive' : 'active'; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const skill = this.catalog()[this.i];
+    if (this.learned().includes(skill.id)) { SFX.error(); return say(`${skill.name} is already learned.`); }
+    if (G.lvl < skill.level) { SFX.error(); return say(`${skill.name} unlocks at level ${skill.level}.`); }
+    if ((G.skillPts || 0) < 1) { SFX.error(); return say('No skill points available. Earn one every 3 levels.'); }
+    const before = derive(G).hpMax;
+    this.learned().push(skill.id); G.skillPts--;
+    const after = derive(G).hpMax; G.hp = Math.min(after, G.hp + Math.max(0, after - before));
+    SFX.levelup(); toast('SKILL LEARNED', skill.name, 'px_rune', 'levelup');
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC(`${CLASSES[G.cls].name} SKILLS`, 80, 13, 'gold');
+    fill(5, 22, 70, 10, this.kind === 'active' ? 3 : 1); textC('ACTIVE', 40, 23, this.kind === 'active' ? 0 : 3);
+    fill(85, 22, 70, 10, this.kind === 'passive' ? 3 : 1); textC('PASSIVE', 120, 23, this.kind === 'passive' ? 0 : 3);
+    text(`POINTS ${G.skillPts || 0}   LEVEL ${G.lvl}`, 5, 36, 2);
+    const list = this.catalog(), learned = this.learned();
+    list.slice(this.top, this.top + this.rows).forEach((skill, offset) => {
+      const index = this.top + offset, y = 49 + offset * 10, known = learned.includes(skill.id), eligible = G.lvl >= skill.level;
+      if (index === this.i) fill(3, y - 1, 153, 9, 1);
+      text(known ? '*' : eligible ? '+' : '-', 5, y, known ? 'gold' : eligible ? 3 : 1);
+      text(skill.name.slice(0, 20), 14, y, eligible ? 3 : 1); textR(`L${skill.level}`, 153, y, known ? 'gold' : 2);
+    });
+    const selected = list[this.i]; frame(2, 105, 156, 37);
+    text(selected ? `${selected.name}${learned.includes(selected.id) ? ' LEARNED' : ''}` : '', 6, 108, 'gold');
+    if (selected) text(wrap(selected.desc, 24).slice(0, 2).join('\n'), 6, 119, 3);
+    text('SELECT: ACTIVE/PASSIVE', 4, 143, 1);
   }
 }
 
@@ -5161,15 +5358,42 @@ class QuestLog extends ListScene {
 class CraftScene extends ListScene {
   constructor() { super(8); }
   items() { return RECIPES; }
-  update() { this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
+  update() { if (P('select')) { SFX.page(); push(new BlueprintScene()); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    text(`A${G.prof.alch} C${G.prof.cook} H${G.prof.herb} F${G.prof.fish}`, 2, 14, 2);
-    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24); const ok = G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text(r.name.slice(0, 18), 16, y, ok ? 3 : 1); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    text(`A${G.prof.alch} C${G.prof.cook}  SEL:BLUEPRINTS`, 2, 14, 2);
+    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 18), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
     const r = RECIPES[this.i]; frame(2, 108, 156, 34);
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
-    text(Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n'), 6, 111);
+    text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
+  }
+}
+
+class BlueprintScene extends ListScene {
+  constructor() { super(9); this.msg = ''; }
+  items() { return RECIPES; }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const result = learnRecipeBlueprint(RECIPES[this.i].id);
+    SFX[result.startsWith('Learned') ? 'craft' : 'error'](); this.msg = result;
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); textC('PROFESSION BLUEPRINTS', 80, 14, 'gold');
+    this.items().slice(this.top, this.top + this.rows).forEach((recipe, row) => {
+      const index = this.top + row, y = 25 + row * 10, learned = G.blueprints.includes(recipe.id);
+      if (index === this.i) fill(2, y - 1, 152, 10, 1);
+      blit(sprFit(ITEMS[recipe.makes].icon, 9), 4, y);
+      text((learned ? `KNOWN ${recipe.name}` : recipe.name).slice(0, 17), 16, y, learned ? 3 : 2);
+      textR(`${recipe.skill}/${PROFS[recipe.prof].slice(0, 3)}`, 154, y, 2);
+    });
+    const recipe = RECIPES[this.i], cost = recipeBlueprintCost(recipe);
+    frame(2, 108, 156, 34);
+    text(`${PROFS[recipe.prof]} ${G.prof[recipe.prof]}/${recipe.skill}`, 6, 111, 2);
+    text(G.blueprints.includes(recipe.id) ? 'ALREADY LEARNED' : `LEARN BLUEPRINT ${cost}G`, 6, 122, 'gold');
+    if (this.msg) text(this.msg.slice(0, 25), 6, 132, 2);
   }
 }
 
@@ -5352,20 +5576,99 @@ class AuctionHouse extends ListScene {
   }
 }
 class BankScene extends ListScene {
-  constructor() { super(8); this.side = 0; }
-  items() { return this.side ? G.bank : G.bag; }
+  constructor(homeKey = null) { super(8); this.side = 0; this.homeKey = homeKey; }
+  storage() { return this.homeKey ? G.homes[this.homeKey].storage : G.bank; }
+  limit() { return this.homeKey ? G.homes[this.homeKey].level * 20 : 60; }
+  items() { return this.side ? this.storage() : G.bag; }
   update() {
     if (P('select')) { this.side ^= 1; this.i = this.top = 0; SFX.page(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
     const L = this.items(), e = L[this.i]; if (!e) return;
-    L.splice(this.i, 1); (this.side ? G.bag : G.bank).push(e); SFX.equip();
+    const dest = this.side ? G.bag : this.storage(), cap = this.side ? BAG_MAX : this.limit();
+    if (dest.length >= cap) { SFX.error(); return say(this.side ? 'Your bag is full.' : 'This storage is full. Upgrade your home for more space.'); }
+    L.splice(this.i, 1); dest.push(e); SFX.equip();
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); text(this.side ? `BANK ${G.bank.length}/60 (A: withdraw)` : `BAG ${G.bag.length}/${BAG_MAX} (A: deposit)`, 4, 14, 'gold');
+    fill(0, 0, W, H, 0); hdr(); text(this.side ? `${this.homeKey ? 'HOUSE' : 'BANK'} ${this.storage().length}/${this.limit()} (A: withdraw)` : `BAG ${G.bag.length}/${BAG_MAX} (A: deposit)`, 4, 14, 'gold');
     this.items().slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 25 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); blit(sprFit(itemIcon(e), 9), 4, y); text(e.name.slice(0, 20), 16, y, rarityCol(e.rarity)); });
     text('SELECT: switch bag/bank', 6, 134, 1);
+  }
+}
+
+class HousingScene extends ListScene {
+  constructor(key = G.map) { super(5); this.key = key; this.zone = ZONE_BY_ID[key]; }
+  home() { return G.homes[this.key]; }
+  purchasePrice() { return this.zone && this.zone.town ? 500 : 250; }
+  upgradePrice() { const home = this.home(); return home ? home.level * 300 : 0; }
+  items() { return this.home() ? ['ENTER HOME', `UPGRADE STORAGE (${this.home().level >= 5 ? 'MAX' : this.upgradePrice() + 'G'})`, 'LEAVE'] : [`BUY HOME (${this.purchasePrice()}G)`, 'LEAVE']; }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    if (!this.home()) {
+      if (this.i === 0) {
+        const cost = this.purchasePrice();
+        if (G.gold < cost) { SFX.error(); return say(`A home here costs ${cost} G.`); }
+        G.gold -= cost; G.homes[this.key] = { level: 1, decor: [], storage: [] }; SFX.buy(); saveGame(); toast('NEW HOME', this.zone.name, 'item_chest', 'achievement');
+      } else { removeScene(this); SFX.back(); }
+      return;
+    }
+    if (this.i === 0) { push(new HomeInteriorScene(this.key)); return; }
+    if (this.i === 1) {
+      const home = this.home();
+      if (home.level >= 5) { SFX.error(); return say('Your house storage is fully upgraded.'); }
+      const cost = this.upgradePrice();
+      if (G.gold < cost) { SFX.error(); return say(`The storage upgrade costs ${cost} G.`); }
+      G.gold -= cost; home.level++; SFX.buy(); saveGame(); toast('HOME UPGRADED', `STORAGE ${home.level * 20}`, 'item_chest', 'achievement');
+    } else { removeScene(this); SFX.back(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); textC('SETTLEMENT HOUSING', 80, 14, 'gold');
+    const home = this.home(); textC(this.zone ? this.zone.name : this.key, 80, 27, 2);
+    const options = this.items(); options.forEach((option, index) => { const y = 48 + index * 18; if (index === this.i) fill(8, y - 2, 144, 14, 1); text(option.slice(0, 24), 13, y, index === this.i ? 3 : 2); });
+    if (home) textC(`HOUSE LEVEL ${home.level}  CHEST ${home.level * 20}`, 80, 133, 2);
+    else textC(`A home costs ${this.purchasePrice()} gold.`, 80, 133, 2);
+  }
+}
+
+class HomeInteriorScene extends ListScene {
+  constructor(homeKey) { super(5); this.homeKey = homeKey; }
+  home() { return G.homes[this.homeKey]; }
+  items() { return ['REST AT HOME', 'OPEN STORAGE', 'DECORATE HOME', 'BIND HEARTHSTONE', 'RETURN OUTSIDE']; }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const home = this.home();
+    if (this.i === 0) { longRest(G); G.companions.forEach(longRest); G.ghost = null; saveGame(); SFX.heal(); toast('HOME REST', 'You feel rested and ready.', 'px_tent', 'heal'); }
+    if (this.i === 1) push(new BankScene(this.homeKey));
+    if (this.i === 2) {
+      const choices = [['study', 'STUDY DESK', 250], ['trophy', 'TROPHY CASE', 180], ['garden', 'WINDOW GARDEN', 150], ['banner', 'HOUSE BANNER', 120]];
+      choose(choices.map(([, name, price]) => `${name} (${price}G)`), index => {
+        if (index < 0) return;
+        const [id, name, price] = choices[index];
+        if (home.decor.includes(id)) return say(`You already have a ${name.toLowerCase()}.`);
+        if (home.decor.length >= home.level + 1) return say('No room for more furnishings. Upgrade your home first.');
+        if (G.gold < price) return say(`${name} costs ${price} G.`);
+        G.gold -= price; home.decor.push(id); SFX.buy(); saveGame(); toast('FURNISHED', name, 'item_chest', 'achievement');
+      }, 'Choose a furnishing.');
+    }
+    if (this.i === 3) { G.hearth = { map: this.homeKey, x: 16, y: 12 }; saveGame(); SFX.confirm(); toast('HEARTH BOUND', ZONE_BY_ID[this.homeKey]?.name || 'HOME', 'px_waypoint', 'waypoint'); }
+    if (this.i === 4) { removeScene(this); SFX.back(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 11, 0); hdr();
+    textC(`${ZONE_BY_ID[this.homeKey]?.name || 'HOME'} HOME`, 80, 14, 'gold');
+    fill(7, 30, 146, 77, '#594332'); fill(11, 34, 138, 68, '#b58a5e');
+    fill(15, 86, 130, 13, '#784d48'); fill(18, 89, 124, 7, '#a46d62');
+    fill(20, 59, 29, 22, '#6d4d3a'); fill(22, 56, 25, 15, '#e0c99b'); fill(18, 77, 33, 5, '#4a3026');
+    fill(111, 81, 25, 18, '#79512e'); fill(114, 77, 19, 8, '#a67742');
+    textC('BED', 34, 67, 0); textC('CHEST', 123, 87, 0);
+    this.home().decor.forEach((id, index) => { const x = 16 + (index % 4) * 35, y = 43 + Math.floor(index / 4) * 15; fill(x, y, 29, 10, id === 'garden' ? 'green' : id === 'banner' ? 'red' : 'gold'); textC(({ study: 'BOOKS', trophy: 'CUP', garden: 'LEAF', banner: 'FLAG' })[id] || id, x + 14, y + 1, 0); });
+    this.items().forEach((option, index) => { const y = 103 + index * 7; if (index === this.i) fill(4, y - 1, 152, 8, 1); text(option.slice(0, 24), 7, y, index === this.i ? 'gold' : 3); });
+    textC(`CHEST ${this.home().storage.length}/${this.home().level * 20}  DECOR ${this.home().decor.length}/${this.home().level + 1}`, 80, 141, 2);
   }
 }
 
@@ -5373,10 +5676,11 @@ class BankScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'FULL SCREEN']; }
+  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'FULL SCREEN', 'KEY BINDINGS']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
+    if (this.items()[this.i] === 'KEY BINDINGS' && P('a')) { push(new KeybindScene()); SFX.confirm(); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
     const o = this.items()[this.i], clamp = v => Math.max(0, Math.min(6, v));
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
@@ -5403,8 +5707,32 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', S.fullscreen ? 'ON' : 'OFF'];
+    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', S.fullscreen ? 'ON' : 'OFF', '>'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
+  }
+}
+class KeybindScene extends ListScene {
+  constructor() { super(8); this.actions = [['up', 'MOVE UP'], ['down', 'MOVE DOWN'], ['left', 'MOVE LEFT'], ['right', 'MOVE RIGHT'], ['a', 'CONFIRM / ATTACK'], ['b', 'BACK / CANCEL'], ['start', 'MENU'], ['select', 'SECONDARY']]; this.capture = null; }
+  items() { return this.actions.map(([, label]) => label).concat(['RESTORE DEFAULTS']); }
+  update() {
+    this.navList();
+    if (P('b') && !this.capture) { SFX.back(); removeScene(this); return; }
+    if (!P('a') || this.capture) return;
+    if (this.i === this.actions.length) { S.keybinds = Object.assign({}, DEFAULT_KEYBINDS); saveSettings(); SFX.confirm(); return; }
+    this.capture = this.actions[this.i][0]; keyCaptureHandler = code => {
+      if (!code || code === 'Unidentified') return;
+      const action = this.capture, previous = S.keybinds[action], owner = this.actions.find(([key]) => key !== action && S.keybinds[key] === code);
+      if (owner) S.keybinds[owner[0]] = previous;
+      S.keybinds[action] = code; this.capture = null; keyCaptureHandler = null; saveSettings(); SFX.confirm();
+    };
+    SFX.confirm();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); if (G) hdr(); else fill(0, 0, W, 11, 0);
+    textC('KEY BINDINGS', 80, 13, 'gold');
+    this.actions.forEach(([action, label], index) => { const y = 29 + index * 12; if (index === this.i) fill(3, y - 2, 154, 11, 1); text(label, 7, y); textR(this.capture === action ? 'PRESS KEY…' : keyLabel(S.keybinds[action]), 151, y, this.capture === action ? 'gold' : 2); });
+    const y = 29 + this.actions.length * 12; if (this.i === this.actions.length) fill(3, y - 2, 154, 11, 1); text('RESTORE DEFAULTS', 7, y, this.i === this.actions.length ? 3 : 2);
+    textC(this.capture ? 'PRESS A KEY  •  ESC ALSO WORKS' : 'ENTER: CHANGE  B: BACK', 80, 132, 2);
   }
 }
 class SoundTest extends ListScene {
@@ -5762,7 +6090,7 @@ class CharCreate {
     const list = (n, i) => { const c = this.cur[i]; const v = up ? (c + n - 1) % n : dn ? (c + 1) % n : c; if (v !== c) SFX.cursor(); this.cur[i] = v; return v; };
     if (s === 0) { const L = Object.keys(SPECIES), i = list(L.length, 0); if (p.species !== L[i]) { p.species = L[i]; p.portrait = null; } if (a) this.next(); }
     if (s === 1) {
-      let i = this.cur[1]; if (lf) i = (i + 11) % 12; if (rt) i = (i + 1) % 12; if (up || dn) i = (i + 6) % 12;
+      let i = this.cur[1]; if (lf) i = (i + CLASS_ORDER.length - 1) % CLASS_ORDER.length; if (rt) i = (i + 1) % CLASS_ORDER.length; if (up || dn) i = (i + 6) % CLASS_ORDER.length;
       if (i !== this.cur[1]) { SFX.cursor(); this.cur[1] = i; p.cls = CLASS_ORDER[i]; p.look = null; p.portrait = null; this.setMethod(this.method === 2 ? 0 : this.method); }
       if (a) this.next();
     }
@@ -5861,7 +6189,7 @@ class CharCreate {
       text(wrap(sp.desc, 13).slice(0, 6).join('\n'), 74, 80);
       hint('A/START:NEXT  SEL:RANDOM');
     } else if (s === 1) {
-      CLASS_ORDER.forEach((id, j) => { const x = 4 + (j % 6) * 26, y = 25 + Math.floor(j / 6) * 30; if (j === this.cur[1]) fill(x - 1, y - 1, 25, 29, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 26) : sprH(`c_${id}_0`, 24); blit(sp2, x + 12 - sp2.width / 2, y); });
+      CLASS_ORDER.forEach((id, j) => { const x = 4 + (j % 6) * 26, y = 24 + Math.floor(j / 6) * 19; if (j === this.cur[1]) fill(x - 1, y - 1, 25, 18, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 16) : sprH(`c_${id}_0`, 16); blit(sp2, x + 12 - sp2.width / 2, y); });
       const c = CLASSES[p.cls]; frame(2, 85, 156, 48);
       text(c.name, 6, 87, 'gold'); textR(`${c.role.toUpperCase()} D${c.hd} ${c.primary}`, 154, 87, 2);
       text(wrap(c.desc, 25).slice(0, 2).join('\n'), 6, 96);
@@ -5939,7 +6267,7 @@ const CITY_NPCS = [
   [26, 7, 'elder_2', 'GUILDMASTER', 'guild'], [13, 10, 'villager_1', 'MERCHANT', 'vendor'], [19, 10, 'hero_2', 'QUARTERMASTER', 'honor'], [15, 14, 'villager_3', 'LFG BOARD', 'lfg'],
   [12, 14, 'elder_3', 'ORACLE', 'difficulty'], [17, 5, 'hero_3', 'SPIRE KEEPER', 'tower'], [21, 18, 'villager_5', 'TRIALS MASTER', 'trials'], [27, 13, 'villager_4', 'HARBORMASTER', 'portal'],
   [19, 14, 'elder_5', 'REALM STONE', 'server'], [10, 18, 'villager_0', 'STABLEMASTER', 'stable'], [23, 18, 'hero_0', 'ARENAMASTER', 'arena'],
-  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'],
+  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'], [13, 18, 'villager_2', 'HOUSING STEWARD', 'housing'],
 ];
 const BLACKSMITH_TIERS = [
   { tier: 1, name: 'APPRENTICE', level: 1, maxRarity: 2 },
@@ -5980,16 +6308,16 @@ class Field {
       if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
       e.push({ kind: 'npc', x, y, spr: s, name, svc });
     });
-    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith']].forEach(([x, y, s, name, svc]) => {
+    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'], [9, 15, 'villager_2', 'HOUSING STEWARD', 'housing']].forEach(([x, y, s, name, svc]) => {
       if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
       e.push({ kind: 'npc', x, y, spr: s, name, svc });
     });
     else {
-      if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); }
+      if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); e.push({ kind: 'npc', x: 11, y: 14, spr: 'villager_2', name: 'VILLAGE STEWARD', svc: 'housing' }); }
       else { const r = RNG('warden-' + z.id); e.push({ kind: 'npc', x: m.hub[0], y: m.hub[1] - 1, spr: r.pick(['villager_1', 'villager_3', 'elder_1', 'hero_2']), name: `WARDEN ${r.pick(NPC_FIRST)}`, svc: 'warden' }); }
       if (m.poi.waypoint) e.push({ kind: 'waypoint', x: m.poi.waypoint.x, y: m.poi.waypoint.y });
       const nodes = G.nodes[z.id] || {};
-      m.nodes.forEach(([x, y, herb], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) e.push({ kind: 'herb', i, x, y, herb, walk: true }); });
+      m.nodes.forEach(([x, y, profession, item], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) e.push({ kind: 'gather', i, x, y, profession, item, walk: true }); });
       for (const b of m.bosses) { const k = G.bossKills[b.id]; if (!k || Date.now() - k > (b.arc ? 3600e3 : 1800e3)) e.push({ kind: 'boss', b, x: b.x, y: b.y }); }
       if (G.ghost && G.ghost.map === z.id) e.push({ kind: 'grave', x: G.ghost.x, y: G.ghost.y, walk: true });
     }
@@ -6056,7 +6384,7 @@ class Field {
     if (e) {
       if (e.kind === 'npc') return npcService(e);
       if (e.kind === 'waypoint') { if (!G.waypoints[G.map]) { G.waypoints[G.map] = true; SFX.waypoint(); toast('WAYPOINT', this.zone.name, 'px_waypoint', 'waypoint'); checkAchievements(); } return push(new WaypointMenu()); }
-      if (e.kind === 'herb') return gatherHerb(e);
+      if (e.kind === 'gather' || e.kind === 'herb') return gatherProfessionNode(e);
       if (e.kind === 'boss') return fightBoss(e.b);
       if (e.kind === 'pull') return fightPull(e.p);
       if (e.kind === 'chest') return openInstanceChest();
@@ -6091,7 +6419,7 @@ class Field {
     if (G.inst) {
       const trap = G.inst.map.traps.find(tr => tr.x === G.x && tr.y === G.y && !tr.done);
       const room = instRoomAt(G.inst, G.x, G.y), seen = G.inst.seenRooms = G.inst.seenRooms || [];
-      if (room && !seen.includes(room.x + ',' + room.y)) { seen.push(room.x + ',' + room.y); if (seen.length > 1 || G.inst.kind === 'tower') toast(room.name, room.desc.toUpperCase().slice(0, 22), 'px_map', 'page'); }
+      if (room && !seen.includes(room.x + ',' + room.y)) { seen.push(room.x + ',' + room.y); if (seen.length > 1 || G.inst.kind === 'tower') toast(`ROOM ${room.number || seen.length}/${G.inst.map.roomCount || G.inst.map.rooms.length} T${room.difficulty || G.inst.difficulty || G.difficulty}`, room.name.slice(0, 22), 'px_map', 'page'); }
       if (ch === '^') { const sv = skillCheck(G, 'acrobatics', G.inst.map.trapDC || 12); if (!sv.ok) { const d = roll(G.inst.map.spikeDmg || '1d4').total; G.hp = Math.max(1, G.hp - d); shake = 3; SFX.hurt(); FX.number(76, 56, String(d), 'red'); } else SFX.dodge(); }
       if (trap) { trap.done = true; const sv = skillCheck(G, 'acrobatics', trap.dc); const d = sv.ok ? 0 : roll(trap.dmg).total; if (d) G.hp = Math.max(1, G.hp - d); shake = 6; SFX[d ? 'hurt' : 'dodge'](); say([`A hidden trap! ${sv.text}`, d ? `You take ${d} damage.` : 'You leap clear!']); }
       return;
@@ -6152,14 +6480,14 @@ class Field {
         const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
         fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
       }
-      else if (e.kind === 'herb') { if (PIX) blit(spr('go_herb', 16, 16), ex, ey - ((frameN >> 5) % 4 === 0 ? 1 : 0)); else blit(sprH(e.herb === 'sandroot' ? 'px_sandroot' : 'item_herb', 11), ex + 3, ey + 3); }
+      else if (e.kind === 'gather' || e.kind === 'herb') { const icon = sprH(ITEMS[e.item || e.herb]?.icon || 'item_herb', 12); if (icon) blit(icon, ex + (T - icon.width) / 2, ey + 2 - ((frameN >> 5) % 4 === 0 ? 1 : 0)); }
       else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }
       else if (e.kind === 'grave') blit(PIX ? spr('go_grave', 16, 16) : sprH('px_skull', 10), ex + (PIX ? 0 : 3), ey + (PIX ? 0 : 4));
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'vault') blit(PIX ? spr(e.open ? 'go_chestopen' : 'go_chest', 16, 16) : sprFit(e.open ? 'item_chest_open' : 'item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
@@ -6192,14 +6520,19 @@ function npcMarker(e) {
 }
 
 // ================================================================ interactions
-function gatherHerb(e) {
+const GATHER_CHECK = { herb: 'nature', mining: 'athletics', forestry: 'nature', hidecraft: 'survival', salvaging: 'investigation', relic: 'investigation', cultivation: 'nature', beast_lore: 'nature' };
+function gatherProfessionNode(e) {
+  const profession = e.profession || 'herb', item = e.item || e.herb;
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
-  const chk = skillCheck(G, 'nature', 8 + Math.floor(G.prof.herb / 10));
+  const skill = GATHER_CHECK[profession] || 'nature';
+  const chk = skillCheck(G, skill, 8 + Math.floor(G.prof[profession] / 80));
   nodes[e.i] = G.stats.steps;
-  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); progressProfessionQuest('herb', 'gather', n); SFX.gather();
-  const up = gainProf('herb', G.prof.herb);
-  questEvent('gather', e.herb);
-  toast(`+${n} ${ITEMS[e.herb].name}`, up ? `HERBALISM ${G.prof.herb}` : chk.text.slice(0, 22), ITEMS[e.herb].icon, 'pickup');
+  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank(profession, 'yield') / 24);
+  addItem(item, n); progressProfessionQuest(profession, 'gather', n); SFX.gather();
+  const up = gainProf(profession, G.prof[profession]);
+  if (profession === 'herb') questEvent('gather', item);
+  const name = ITEMS[item]?.name || item.toUpperCase();
+  toast(`+${n} ${name}`, up ? `${PROFS[profession]} ${G.prof[profession]}` : chk.text.slice(0, 22), ITEMS[item]?.icon || 'item_herb', 'pickup');
 }
 function fightBoss(b) {
   const B = BOSS_BY_ID[b.id];
@@ -6289,6 +6622,7 @@ function npcService(e) {
   if (svc === 'auction') return push(new AuctionHouse());
   if (svc === 'mail') return mailMenu();
   if (svc === 'bank') return push(new StashScene());
+  if (svc === 'housing') return push(new HousingScene(G.map));
   if (svc === 'guild') return guildMenu();
   if (svc === 'honor') return honorMenu();
   if (svc === 'lfg') return lfgMenu();
@@ -6639,20 +6973,21 @@ function enterInstance(kind, def, floor, size) {
   SFX.door(); Music.stop();
   fadeTo(() => {
     const ret = G.inst ? G.inst.return : { map: G.map, x: G.x, y: G.y };
-    G.inst = { kind, def, floor, map, cleared: [], chest: false, size, return: ret };
+    G.inst = { kind, def, floor, map, difficulty: map.difficulty || G.difficulty, cleared: [], chest: false, size, return: ret };
     G.x = map.entry.x; G.y = map.entry.y; G.mounted = false;
     if (FIELD) FIELD.reload();
-    toast(map.name, kind === 'tower' ? `F${floor}/100 ${map.mod && map.mod.id !== 'none' ? map.mod.name : ''}` : `GROUP OF ${size}`, kind === 'tower' ? 'px_tower' : 'item_key', 'stairs');
+    toast(map.name, kind === 'tower' ? `F${floor}/100 ${map.mod && map.mod.id !== 'none' ? map.mod.name : ''}` : `${map.roomCount || map.rooms.length} ROOMS TIER ${map.difficulty} GROUP ${size}`, kind === 'tower' ? 'px_tower' : 'item_key', 'stairs');
   });
 }
 function fightPull(p) {
   const inst = G.inst;
+  const difficulty = p.difficulty || inst.difficulty || G.difficulty;
   let foes;
-  if (p.boss) { const B = BOSS_BY_ID[p.boss]; const f = makeMonster(B, p.lvl, G.difficulty, { bossId: B.id, cat: B.cat }); f.name = B.name.slice(0, 16); foes = [f]; }
-  else foes = p.mobs.map(id => makeMonster(BEAST_BY_ID[id] || BESTIARY[0], p.lvl, G.difficulty));
-  if (p.elite) foes.forEach(f => { f.elite = true; f.maxhp = Math.round(f.maxhp * 1.5); f.hp = f.maxhp; f.name = ('ELITE ' + f.name).slice(0, 16); });
+  if (p.boss) { const B = BOSS_BY_ID[p.boss]; const f = makeMonster(B, p.lvl, difficulty, { bossId: B.id, cat: B.cat }); f.name = B.name.slice(0, 16); foes = [f]; }
+  else foes = p.mobs.map(id => makeMonster(BEAST_BY_ID[id] || BESTIARY[0], p.lvl, difficulty));
+  if (p.elite) foes.forEach(f => { f.elite = true; f.maxhp = Math.round(f.maxhp * 1.5); f.hp = f.maxhp; f.name = ((p.miniboss ? 'MINI ' : 'ELITE ') + f.name).slice(0, 16); });
   applyFloorMod(foes, inst.map.mod);
-  startBattle(foes, { size: inst.size, kind: inst.kind, music: p.boss ? (p.final ? 'arcboss' : 'boss') : 'battle', onEnd: r => {
+  startBattle(foes, { size: inst.size, kind: inst.kind, diff: difficulty, music: p.boss ? (p.final ? 'arcboss' : 'boss') : 'battle', onEnd: r => {
     if (r === 'lose') return onPartyWipe();
     if (r !== 'win') return;
     inst.cleared.push(p.id); updateSeals(inst); checkAchievements();
@@ -6663,15 +6998,16 @@ function fightPull(p) {
       checkAchievements();
     }
     if (inst.kind === 'tower' && p.boss) { G.towerBest = Math.max(G.towerBest, inst.floor); NET.publishHero(); checkAchievements(); }
-    if (p.boss && inst.size > 1 && R() < 0.6) push(new LootRoll(makeItem({ lvl: p.lvl, boss: true, mf: derive(G).mf, loot: diffOf().loot }), inst.size));
+    if (p.boss && inst.size > 1 && R() < 0.6) push(new LootRoll(makeItem({ lvl: p.lvl, boss: true, mf: derive(G).mf, loot: DIFFICULTY[difficulty - 1].loot }), inst.size));
   } });
 }
 function openInstanceChest() {
   const inst = G.inst;
   if (!inst.cleared.some(id => inst.map.pulls.find(p => p.id === id && p.final)) && inst.kind !== 'tower' && inst.map.pulls.some(p => p.final)) return say('The chest is sealed by a powerful ward. Defeat the final boss.');
   inst.chest = true; SFX.chest();
-  const it = makeItem({ lvl: inst.map.lvl + 2, mf: derive(G).mf, loot: diffOf().loot, rarity: Math.max(2, rollRarity(inst.map.lvl, derive(G).mf)) });
-  addGear(it); const g = 20 + inst.map.lvl * 8; G.gold += g;
+  const tier = inst.difficulty || G.difficulty, loot = DIFFICULTY[tier - 1].loot;
+  const it = makeItem({ lvl: inst.map.lvl + 2, mf: derive(G).mf, loot, rarity: Math.max(2, rollRarity(inst.map.lvl, derive(G).mf)) });
+  addGear(it); const g = Math.round((20 + inst.map.lvl * 8) * loot); G.gold += g;
   say([`The chest holds ${g} G and:`, `[${RARITY[it.rarity].name}] ${it.name}`]);
 }
 function leaveInstance() {
@@ -6974,6 +7310,51 @@ class WorldMap {
     text(`${pin[2]}${seen ? ' - ' + z.sub : ''}`.slice(0, 24), 6, 122, 2);
     const hint = this.zoom < 2 ? 'A:ZOOM  B:BACK  START:KEY' : (G.waypoints[z.id] ? 'A:TRAVEL  B:BACK' : 'NO WAYPOINT  B:BACK');
     text(hint, 6, 132, this.zoom === 2 && G.waypoints[z.id] ? 'blue' : 1);
+  }
+}
+
+// ================================================================ expansion maps: one terrain atlas for each endgame set
+class ExpansionMapsScene {
+  constructor() { this.opaque = true; this.expIndex = Math.max(0, (ZONE_BY_ID[G.map]?.exp || 1) - 1); this.zoneIndex = 0; }
+  expansion() { return EXPANSIONS[this.expIndex]; }
+  zones() {
+    const x = this.expansion();
+    return REGIONS.filter(r => r.exp === x.n).sort((a, b) => a.ex - b.ex)
+      .flatMap(r => ZONES.filter(z => z.region === r.id).sort((a, b) => a.fx - b.fx || a.fy - b.fy));
+  }
+  update() {
+    if (nav('left')) { this.zoneIndex = (this.zoneIndex + this.zones().length - 1) % this.zones().length; SFX.cursor(); }
+    if (nav('right')) { this.zoneIndex = (this.zoneIndex + 1) % this.zones().length; SFX.cursor(); }
+    if (nav('up') || nav('down')) { this.expIndex = (this.expIndex + (nav('down') ? 1 : EXPANSIONS.length - 1)) % EXPANSIONS.length; this.zoneIndex = 0; SFX.page(); }
+    if (P('b')) { removeScene(this); SFX.back(); return; }
+    if (P('a')) {
+      const map = new WorldMap(); map.sel = this.zones()[this.zoneIndex]; map.zoom = 2;
+      push(map); SFX.select();
+    }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 12, 3);
+    const x = this.expansion(), zones = this.zones();
+    textC(`${x.n}. ${x.name}`.slice(0, 25), 80, 2, 0);
+    textC(`LEVEL ${x.lvl[0]}-${x.lvl[1]}  ${x.desc}`.slice(0, 25), 80, 15, 'gold');
+    zones.forEach((z, index) => {
+      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 29 + row * 49;
+      const m = buildZoneCached(z.id), seen = !!(G.visited[z.id] || G.waypoints[z.id]);
+      for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
+        const ch = m.rows[ty][tx], rgb = MONO(S.palette) ? UI.ui[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
+        ctx.fillStyle = css(seen ? rgb : rgb.map((v, k) => Math.round(v * 0.38 + MAP_TERRAIN.parchment[k] * 0.42)));
+        ctx.fillRect(ox + tx, oy + 7 + ty, 1, 1);
+      }
+      if (m.poi.waypoint) fill(ox + m.poi.waypoint.x, oy + 7 + m.poi.waypoint.y, 2, 2, 'blue');
+      if (m.poi.dungeon) { fill(ox + m.poi.dungeon.x, oy + 7 + m.poi.dungeon.y, 2, 2, 'red'); text('D', ox + m.poi.dungeon.x - 1, oy + 6 + m.poi.dungeon.y, 0); }
+      if (m.poi.raid) { fill(ox + m.poi.raid.x, oy + 7 + m.poi.raid.y, 2, 2, 'gold'); text('R', ox + m.poi.raid.x - 1, oy + 6 + m.poi.raid.y, 3); }
+      if (index === this.zoneIndex) { ctx.strokeStyle = col('gold'); ctx.lineWidth = 1; ctx.strokeRect(ox - 2.5, oy + 4.5, ZW + 5, ZH + 5); }
+      text(`${index + 1} ${z.name}`.slice(0, 10), ox - 2, oy + 34, index === this.zoneIndex ? 'gold' : 2);
+      textR(`LV${z.lvl[0]}`, ox + ZW + 1, oy + 34, 2);
+    });
+    const selected = zones[this.zoneIndex];
+    fill(0, 125, W, 19, 0); textC(`${selected?.name || ''}  LV${selected?.lvl[0] || 0}-${selected?.lvl[1] || 0}`, 80, 126, 'gold');
+    textC('UP/DN: EXPANSION  LEFT/RIGHT: ZONE  A: DETAIL', 80, 136, 2);
   }
 }
 

@@ -13,8 +13,8 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
-    mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
+    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    mail: [], ah: [], bank: [], homes: {}, hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
   return c;
@@ -30,8 +30,20 @@ function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; 
 function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
-  G.prof = Object.assign({ herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
+  G.homes = G.homes && typeof G.homes === 'object' && !Array.isArray(G.homes) ? G.homes : {};
+  G.skillPts = Math.max(0, Math.floor(Number(G.skillPts) || 0));
+  G.activeSkills = Array.isArray(G.activeSkills) ? [...new Set(G.activeSkills.filter(id => ACTIVE_SKILLS.some(skill => skill.id === id && skill.classes.includes(G.cls))))] : [];
+  G.passiveSkills = Array.isArray(G.passiveSkills) ? [...new Set(G.passiveSkills.filter(id => PASSIVE_SKILLS.some(skill => skill.id === id && skill.classes.includes(G.cls))))] : [];
+  for (const home of Object.values(G.homes)) {
+    home.level = Math.max(1, Math.min(5, Math.floor(Number(home.level) || 1)));
+    home.decor = Array.isArray(home.decor) ? home.decor.filter(item => typeof item === 'string').slice(0, 8) : [];
+    home.storage = Array.isArray(home.storage) ? home.storage : [];
+  }
+  G.prof = Object.assign({ herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
   for (const key of Object.keys(PROFS)) G.prof[key] = Math.max(0, Math.min(PROF_CAP, Math.floor(Number(G.prof[key]) || 0)));
+  const starterBlueprints = RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id);
+  G.blueprints = Array.isArray(G.blueprints) ? [...new Set(G.blueprints.filter(id => RECIPES.some(recipe => recipe.id === id))) ] : starterBlueprints;
+  for (const id of starterBlueprints) if (!G.blueprints.includes(id)) G.blueprints.push(id);
   G.profTalents = G.profTalents && typeof G.profTalents === 'object' ? G.profTalents : {};
   for (const key of Object.keys(PROFS)) {
     const saved = G.profTalents[key] && typeof G.profTalents[key] === 'object' ? G.profTalents[key] : {};
@@ -253,11 +265,12 @@ function gainProf(k, diff = 1) {
   if (!PROFS[k]) return false;
   if (!Number.isInteger(G.prof[k]) || G.prof[k] < 0) G.prof[k] = 0;
   if (G.prof[k] === 0) G.prof[k] = 1;
-  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960);
+  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960 + (Object.values(G.homes || {}).some(home => home.decor && home.decor.includes('study')) ? 0.08 : 0));
   if (G.prof[k] < PROF_CAP && R() < Math.min(1, Math.max(0.15, 1 - (G.prof[k] - diff) / 40) + bonus)) { G.prof[k]++; return true; }
   return false;
 }
 function craft(rec) {
+  if (!rec || !G.blueprints.includes(rec.id)) return 'You have not learned that recipe blueprint.';
   const reduction = Math.floor(profTalentRank(rec.prof, 'efficiency') / 24);
   const needs = Object.fromEntries(Object.entries(rec.needs).map(([item, quantity]) => [item, Math.max(1, quantity - reduction)]));
   for (const k in needs) if ((G.inv[k] || 0) < needs[k]) return 'Missing materials.';
@@ -268,6 +281,17 @@ function craft(rec) {
   const up = gainProf(rec.prof, rec.skill);
   progressProfessionQuest(rec.prof, 'craft', 1);
   return `Made ${output} ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+}
+function recipeBlueprintCost(recipe) { return Math.max(15, Math.round(15 + recipe.skill * 1.5)); }
+function learnRecipeBlueprint(recipeId) {
+  const recipe = RECIPES.find(entry => entry.id === recipeId);
+  if (!recipe) return 'Unknown recipe blueprint.';
+  if (G.blueprints.includes(recipe.id)) return 'You already know this recipe.';
+  if (G.prof[recipe.prof] < recipe.skill) return `Need ${PROFS[recipe.prof]} ${recipe.skill}.`;
+  const cost = recipeBlueprintCost(recipe);
+  if (G.gold < cost) return `Need ${cost} G for this blueprint.`;
+  G.gold -= cost; G.blueprints.push(recipe.id);
+  return `Learned ${recipe.name} blueprint!`;
 }
 
 function professionQuestRecord(professionId, questId) {

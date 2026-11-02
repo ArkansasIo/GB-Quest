@@ -36,7 +36,7 @@ class Battle {
     this.party = opt.party; this.foes = opt.foes.map(foeMember); this.all = [...this.party, ...this.foes];
     this.noFlee = opt.noFlee || this.foes.some(f => f.boss) || ['dungeon', 'raid', 'trial', 'tower', 'arena'].includes(this.kind);
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
-    this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.anim = { lunge: null, flash: {}, fx: null };
+    this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
     this.title = opt.title || null;
     for (const u of this.party) { if (u.ch.ai === false && this.rule === 'frail') u.ch.hp = Math.ceil(u.ch.hp / 2); }
@@ -335,6 +335,7 @@ class Battle {
     let dice = ws ? '2d6' : w.dice, dmg = roll(dice, crit).total + (ws ? Math.max(D.M.STR, D.M.WIS) : w.dmg);
     const parts = [];
     if (crit && hasFeature(att.ch, 'brutal')) dmg += roll(dice).total;
+    if (opt.skillBonus) { const sb = roll(opt.skillBonus, crit).total; dmg += sb; parts.push(`SKILL +${sb}`); }
     if (hasEff(att, 'rage')) { const rb = D.CL >= 16 ? 4 : D.CL >= 9 ? 3 : 2; dmg += rb; }
     if (w.extra && !ws) { const ex = roll(w.extra.dice, crit).total; dmg += ex; parts.push(`+${ex} ${w.extra.type}`); }
     if (hasFeature(att.ch, 'sneak') && !this.sneakUsed && (adv > 0 || this.party.filter(alive).length > 1 || tgt.effects.length)) {
@@ -482,6 +483,17 @@ class Battle {
   abilities(u) {
     const c = u.ch, D = derive(c), r = c.res, list = [];
     const add = (id, name, cost, ok, bonus, fn, target) => list.push({ id, name, cost, ok, bonus, fn, target });
+    if (!c.ai) for (const skill of (c.activeSkills || []).filter(id => ACTIVE_SKILLS.some(def => def.id === id && def.classes.includes(c.cls)))) {
+      const used = this.skillUses.has(skill);
+      if (skill === 'power_strike') add('skill_power_strike', 'POWER STRIKE', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.weaponAttack(u, t, { single: true, skillBonus: `${2 + Math.floor(D.CL / 10)}d8` }); }, 'enemy');
+      if (skill === 'rally') add('skill_rally', 'BATTLE RALLY', used ? 'USED' : 'ONCE', !used && !this.bonusUsed, true, () => { this.skillUses.add(skill); const targets = this.party.filter(member => isChar(member) && !member.ch.dead); return [this.say(`${c.name} rallies the party!`, () => { targets.forEach(member => addEffect(member, { id: 'inspired', rounds: 10 })); SFX.charm(); })]; });
+      if (skill === 'field_mend') add('skill_field_mend', 'FIELD MEND', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); const heal = roll(`${2 + Math.floor(D.CL / 8)}d8`).total + Math.max(1, D.M.WIS); return [this.say(`${c.name} mends ${t.name}: +${heal} HP`, () => { this.heal(t, heal); SFX.heal(); })]; }, 'ally');
+      if (skill === 'shadowstep') add('skill_shadowstep', 'SHADOW STEP', used ? 'USED' : 'ONCE', !used && !this.bonusUsed, true, () => { this.skillUses.add(skill); return [this.say(`${c.name} vanishes into a shadow.`, () => { addEffect(u, { id: 'invisible', rounds: 2 }); SFX.veil_cast(); })]; });
+      if (skill === 'arcane_burst') add('skill_arcane_burst', 'ARCANE BURST', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.castSpell(u, { id: 'skill_arcane_burst', name: 'ARCANE BURST', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '2d8', dt: 'force' }, [t]); }, 'enemy');
+      if (skill === 'spirit_call') add('skill_spirit_call', 'SPIRIT CALL', used ? 'USED' : 'ONCE', !used && this.party.length < 12, false, () => { this.skillUses.add(skill); return [this.say(`${c.name} calls a spirit wolf!`, () => { this.addSummon(u, 'wolf'); SFX.growl(); })]; });
+      if (skill === 'sunflare') add('skill_sunflare', 'SUNFLARE', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.castSpell(u, { id: 'skill_sunflare', name: 'SUNFLARE', school: 'storm', lvl: 0, t: 'enemy', eff: 'dmg', save: 'DEX', half: true, dice: '2d8', dt: 'radiant' }, [t]); }, 'enemy');
+      if (skill === 'warding_aura') add('skill_warding_aura', 'WARDING AURA', used ? 'USED' : 'ONCE', !used, false, () => { this.skillUses.add(skill); const allies = this.party.filter(member => isChar(member) && !member.ch.dead); return [this.say(`${c.name} fortifies the party with an arcane ward.`, () => { allies.forEach(member => addEffect(member, { id: 'fortify', rounds: 3 })); SFX.buff(); })]; });
+    }
     if (hasFeature(c, 'secondwind')) add('wind', 'SECOND WIND', `${r.wind || 0}/1`, r.wind > 0 && !this.bonusUsed, true, () => { r.wind--; const h = roll('1d10').total + D.CL; return [this.say(`${c.name} catches a second wind: +${h} HP`, () => { this.heal(u, h); SFX.heal(); })]; });
     if (hasFeature(c, 'surge')) add('surge', 'ACTION SURGE', `${r.surge || 0}`, r.surge > 0, true, () => { r.surge--; this.extraAction = true; return [this.say(`${c.name} surges! One more action.`, () => SFX.buff())]; });
     if (hasFeature(c, 'rage')) add('rage', 'RAGE', `${r.rage || 0}`, r.rage > 0 && !hasEff(u, 'rage') && !this.bonusUsed, true, () => { r.rage--; return [this.say(`${c.name} flies into a RAGE!`, () => { addEffect(u, { id: 'rage', rounds: 99 }); SFX.roar(); })]; });

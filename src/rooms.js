@@ -45,6 +45,7 @@ const TOWER_MODS = [
 
 function buildInstance(kind, def, floor = 0) {
   const r = RNG(`${kind}-${def.id}-${floor}`), theme = def.theme || 'dungeon';
+  const tier = Math.max(1, Math.min(9, Math.floor(Number(G && G.difficulty) || 2)));
   const lvl = (def.lvl ?? def.baseLvl ?? 1) + (kind === 'tower' ? floor * TOWER.perFloor : 0);
   const table = kind === 'tower' ? BESTIARY : spawnTable((REGIONS.find(z => z.id === def.zone) || { biome: 'dusk' }).biome);
   const mob = () => r.pick(table.length ? table : BESTIARY).id;
@@ -167,11 +168,28 @@ function buildInstance(kind, def, floor = 0) {
     if (!bosses.length) for (let k = 0; k < 4; k++) pack(3 + k, ar.cx, ar.cy, { wave: wave++, final: k === 3 });
     chest = { x: ar.x + ar.w - 3, y: ar.y, id: `chest_${def.id}` };
   }
+  if (kind === 'dungeon' || kind === 'raid') {
+    for (const o of rooms) {
+      if (o.type === 'entrance') continue;
+      let encounter = pulls.find(p => inside(o, p.x, p.y));
+      if (!encounter) { pack(2, o.cx, o.cy, { roomNumber: o.number }); encounter = pulls[pulls.length - 1]; }
+      encounter.roomNumber = o.number;
+      if (o.number % 4 === 0 && !encounter.boss) { encounter.elite = true; encounter.miniboss = true; encounter.mobs = encounter.mobs.slice(0, 1); encounter.lvl += 2; }
+    }
+    let minibosses = pulls.filter(p => p.miniboss).length;
+    for (const o of rooms.filter(room => room.type !== 'entrance' && room.type !== 'arena')) {
+      if (minibosses >= 2) break;
+      const encounter = pulls.find(p => inside(o, p.x, p.y));
+      if (!encounter || encounter.boss || encounter.miniboss) continue;
+      encounter.elite = true; encounter.miniboss = true; encounter.mobs = encounter.mobs.slice(0, 1); encounter.lvl += 2; minibosses++;
+    }
+  }
+  for (const pull of pulls) pull.difficulty = tier;
   // ---------------------------------------------------------------- hidden traps in trap galleries and corridors
   const traps = [];
   for (const o of rooms.filter(o => o.type === 'traps' || o.type === 'guard').slice(0, 3)) for (let k = 0; k < 2; k++) {
     const tx = o.x + r.int(0, o.w - 1), ty = o.y + r.int(0, o.h - 1);
-    if (at(tx, ty) === '.' && !pulls.some(p => p.x === tx && p.y === ty)) traps.push({ x: tx, y: ty, dc: 10 + Math.min(10, Math.floor(lvl / 5)), dmg: `${1 + Math.floor(lvl / 4)}d10` });
+    if (at(tx, ty) === '.' && !pulls.some(p => p.x === tx && p.y === ty)) traps.push({ x: tx, y: ty, dc: 10 + Math.min(10, Math.floor(lvl / 5)) + tier, dmg: `${1 + Math.floor(lvl / 4) + Math.floor(tier / 3)}d10` });
   }
   // ---------------------------------------------------------------- make sure everything is reachable; strip decor if not
   const targets = [...pulls, ...vaults, ...(chest ? [chest] : []), ...shrines, ...(M.up ? [{ x: M.up[0], y: M.up[1] }] : [])];
@@ -186,7 +204,7 @@ function buildInstance(kind, def, floor = 0) {
   const rowsOut = g.map(rw => rw.join(''));
   return {
     id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, theme), tiles: dungeonTiles(theme), entry: M.entry, pulls, chest, traps, lvl,
-    rooms: rooms.map(({ x, y, w, h, type, name, desc }) => ({ x, y, w, h, type, name, desc })), vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)), spikeDmg: `${1 + Math.floor(lvl / 8)}d4`,
+    rooms: rooms.map(({ x, y, w, h, type, name, desc, number }) => ({ x, y, w, h, type, name, desc, number, difficulty: tier })), roomCount: rooms.length, difficulty: tier, vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)) + tier, spikeDmg: `${1 + Math.floor(lvl / 8) + Math.floor(tier / 3)}d4`,
     name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind,
   };
 }
@@ -215,6 +233,18 @@ function gridLayout(r, kind, nBosses) {
     if (a < 0 || b < 0 || a >= cols || b >= rows || cell[key(a, b)]) continue;
     cell[key(a, b)] = 1; sides.push({ at: [a, b], from: [pc, pw] });
   }
+  // Fill a connected route to twelve chambers. Raids keep extra empty cells around the route.
+  const targetRooms = Math.min(12, cols * rows);
+  while (Object.keys(cell).length < targetRooms) {
+    const choices = [];
+    for (let a = 0; a < cols; a++) for (let b = 0; b < rows; b++) {
+      if (cell[key(a, b)]) continue;
+      const parents = [[a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]].filter(([x, y]) => x >= 0 && y >= 0 && x < cols && y < rows && cell[key(x, y)]);
+      if (parents.length) choices.push({ at: [a, b], from: r.pick(parents) });
+    }
+    if (!choices.length) break;
+    const next = r.pick(choices); cell[key(...next.at)] = 1; sides.push(next);
+  }
   // room types along the path: guardians evenly spaced (one per extra boss), arena last
   const nGuard = Math.max(0, nBosses - 1), types = path.map(() => null);
   types[0] = 'entrance'; types[path.length - 1] = 'arena';
@@ -227,7 +257,7 @@ function gridLayout(r, kind, nBosses) {
     const ox = 1 + c * CW, oy = 1 + w * CH, big = ['arena', 'guardian', 'barracks', 'pillars', 'flooded'].includes(type);
     const rw = big ? CW - 2 : r.int(5, 7), rh = big ? CH - 2 : r.int(4, 5);
     const x = ox + 1 + (big ? 0 : r.int(0, CW - 2 - rw)), y = oy + 1 + (big ? 0 : r.int(0, CH - 2 - rh));
-    const o = { x, y, w: rw, h: rh, cx: x + (rw >> 1), cy: y + (rh >> 1), type, cell: [c, w] };
+    const o = { x, y, w: rw, h: rh, cx: x + (rw >> 1), cy: y + (rh >> 1), type, cell: [c, w], number: rooms.length + 1 };
     const round = type === 'crossroads' || (type === 'shrine' && r() < 0.5);
     for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++) { if (round && (i === 0 || i === rw - 1) && (j === 0 || j === rh - 1)) continue; g[y + j][x + i] = '.'; }
     rooms.push(o); return o;
@@ -235,7 +265,8 @@ function gridLayout(r, kind, nBosses) {
   const byCell = {};
   path.forEach(([a, b], i) => { byCell[key(a, b)] = mk(a, b, types[i]); });
   const sideTypes = r.shuffle ? r.shuffle(SIDE_TYPES.slice()) : SIDE_TYPES.slice();
-  sides.forEach((s, i) => { byCell[key(...s.at)] = mk(s.at[0], s.at[1], sideTypes[i % sideTypes.length]); });
+  let extraGuardians = Math.max(0, nBosses - 1 - types.filter(type => type === 'guardian').length);
+  sides.forEach((s, i) => { const type = extraGuardians > 0 ? (extraGuardians--, 'guardian') : sideTypes[i % sideTypes.length]; byCell[key(...s.at)] = mk(s.at[0], s.at[1], type); });
   // corridors
   const keep = [];
   const link = (A, B, doorOnB) => {
@@ -352,7 +383,7 @@ function openVault(inst, v) {
   if (inst.vaultsOpened.includes(v.id)) return;
   if (v.needs && !inst.cleared.includes(v.needs)) return say('Bones shift over the chest. Defeat what guards it.');
   inst.vaultsOpened.push(v.id); SFX.chest();
-  const g = 10 + inst.map.lvl * 4 * ((inst.map.mod && inst.map.mod.gold) || 1); G.gold += g;
+  const tier = inst.difficulty || G.difficulty, g = Math.round((10 + inst.map.lvl * 4 * ((inst.map.mod && inst.map.mod.gold) || 1)) * DIFFICULTY[tier - 1].loot); G.gold += g;
   const lucky = R() < 0.6, it = lucky ? makeItem({ lvl: inst.map.lvl, mf: derive(G).mf, loot: diffOf().loot }) : null;
   if (it) addGear(it); else addItem('potion', 2);
   say([`A treasure chest! ${g} G`, it ? `[${RARITY[it.rarity].name}] ${it.name}` : 'and 2 POTIONS']);

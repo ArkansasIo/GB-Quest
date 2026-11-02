@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -37,7 +37,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
@@ -352,7 +352,8 @@ class Spellbook extends ListScene {
 class GrowthScene extends ListScene {
   constructor() { super(9); }
   items() {
-    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => { push(new TalentScene()); } }];
+    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => { push(new TalentScene()); } },
+      { t: `ACTIVE / PASSIVE SKILLS (${G.skillPts || 0} PTS)`, d: 'Learn once-per-battle active abilities and permanent passive bonuses.', fn: () => { push(new AbilitySkillsScene()); } }];
     if (G.pending.sub && classLevel(G) >= 3) CLASSES[G.cls].subs.forEach(s => o.push({ t: `SUBCLASS: ${s.name}`, d: s.desc, fn: () => { G.sub = s.id; G.pending.sub = false; G.res = resMax(G); } }));
     if (G.pending.asi) {
       ATTRS.slice(0, 6).forEach(a => o.push({ t: `+2 ${a} (${G.base[a]})`, d: 'Ability Score Increase. Max 20.', fn: () => { if (G.base[a] >= 20) return 'Already 20.'; G.base[a] = Math.min(20, G.base[a] + 2); G.pending.asi--; } }));
@@ -376,6 +377,44 @@ class GrowthScene extends ListScene {
     L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(e.t.slice(0, 24), 6, y); });
     this.scrollbar(156, 23, 90);
     frame(2, 114, 156, 28); text(wrap(L[this.i].d, 24).slice(0, 2).join('\n'), 6, 118);
+  }
+}
+
+class AbilitySkillsScene extends ListScene {
+  constructor() { super(8); this.kind = 'active'; }
+  catalog() { return (this.kind === 'active' ? ACTIVE_SKILLS : PASSIVE_SKILLS).filter(skill => skill.classes.includes(G.cls)); }
+  learned() { return this.kind === 'active' ? G.activeSkills : G.passiveSkills; }
+  update() {
+    if (P('select')) { this.kind = this.kind === 'active' ? 'passive' : 'active'; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const skill = this.catalog()[this.i];
+    if (this.learned().includes(skill.id)) { SFX.error(); return say(`${skill.name} is already learned.`); }
+    if (G.lvl < skill.level) { SFX.error(); return say(`${skill.name} unlocks at level ${skill.level}.`); }
+    if ((G.skillPts || 0) < 1) { SFX.error(); return say('No skill points available. Earn one every 3 levels.'); }
+    const before = derive(G).hpMax;
+    this.learned().push(skill.id); G.skillPts--;
+    const after = derive(G).hpMax; G.hp = Math.min(after, G.hp + Math.max(0, after - before));
+    SFX.levelup(); toast('SKILL LEARNED', skill.name, 'px_rune', 'levelup');
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC(`${CLASSES[G.cls].name} SKILLS`, 80, 13, 'gold');
+    fill(5, 22, 70, 10, this.kind === 'active' ? 3 : 1); textC('ACTIVE', 40, 23, this.kind === 'active' ? 0 : 3);
+    fill(85, 22, 70, 10, this.kind === 'passive' ? 3 : 1); textC('PASSIVE', 120, 23, this.kind === 'passive' ? 0 : 3);
+    text(`POINTS ${G.skillPts || 0}   LEVEL ${G.lvl}`, 5, 36, 2);
+    const list = this.catalog(), learned = this.learned();
+    list.slice(this.top, this.top + this.rows).forEach((skill, offset) => {
+      const index = this.top + offset, y = 49 + offset * 10, known = learned.includes(skill.id), eligible = G.lvl >= skill.level;
+      if (index === this.i) fill(3, y - 1, 153, 9, 1);
+      text(known ? '*' : eligible ? '+' : '-', 5, y, known ? 'gold' : eligible ? 3 : 1);
+      text(skill.name.slice(0, 20), 14, y, eligible ? 3 : 1); textR(`L${skill.level}`, 153, y, known ? 'gold' : 2);
+    });
+    const selected = list[this.i]; frame(2, 105, 156, 37);
+    text(selected ? `${selected.name}${learned.includes(selected.id) ? ' LEARNED' : ''}` : '', 6, 108, 'gold');
+    if (selected) text(wrap(selected.desc, 24).slice(0, 2).join('\n'), 6, 119, 3);
+    text('SELECT: ACTIVE/PASSIVE', 4, 143, 1);
   }
 }
 
@@ -466,15 +505,42 @@ class QuestLog extends ListScene {
 class CraftScene extends ListScene {
   constructor() { super(8); }
   items() { return RECIPES; }
-  update() { this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
+  update() { if (P('select')) { SFX.page(); push(new BlueprintScene()); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    text(`A${G.prof.alch} C${G.prof.cook} H${G.prof.herb} F${G.prof.fish}`, 2, 14, 2);
-    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24); const ok = G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text(r.name.slice(0, 18), 16, y, ok ? 3 : 1); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    text(`A${G.prof.alch} C${G.prof.cook}  SEL:BLUEPRINTS`, 2, 14, 2);
+    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 18), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
     const r = RECIPES[this.i]; frame(2, 108, 156, 34);
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
-    text(Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n'), 6, 111);
+    text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
+  }
+}
+
+class BlueprintScene extends ListScene {
+  constructor() { super(9); this.msg = ''; }
+  items() { return RECIPES; }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const result = learnRecipeBlueprint(RECIPES[this.i].id);
+    SFX[result.startsWith('Learned') ? 'craft' : 'error'](); this.msg = result;
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); textC('PROFESSION BLUEPRINTS', 80, 14, 'gold');
+    this.items().slice(this.top, this.top + this.rows).forEach((recipe, row) => {
+      const index = this.top + row, y = 25 + row * 10, learned = G.blueprints.includes(recipe.id);
+      if (index === this.i) fill(2, y - 1, 152, 10, 1);
+      blit(sprFit(ITEMS[recipe.makes].icon, 9), 4, y);
+      text((learned ? `KNOWN ${recipe.name}` : recipe.name).slice(0, 17), 16, y, learned ? 3 : 2);
+      textR(`${recipe.skill}/${PROFS[recipe.prof].slice(0, 3)}`, 154, y, 2);
+    });
+    const recipe = RECIPES[this.i], cost = recipeBlueprintCost(recipe);
+    frame(2, 108, 156, 34);
+    text(`${PROFS[recipe.prof]} ${G.prof[recipe.prof]}/${recipe.skill}`, 6, 111, 2);
+    text(G.blueprints.includes(recipe.id) ? 'ALREADY LEARNED' : `LEARN BLUEPRINT ${cost}G`, 6, 122, 'gold');
+    if (this.msg) text(this.msg.slice(0, 25), 6, 132, 2);
   }
 }
 
@@ -657,20 +723,99 @@ class AuctionHouse extends ListScene {
   }
 }
 class BankScene extends ListScene {
-  constructor() { super(8); this.side = 0; }
-  items() { return this.side ? G.bank : G.bag; }
+  constructor(homeKey = null) { super(8); this.side = 0; this.homeKey = homeKey; }
+  storage() { return this.homeKey ? G.homes[this.homeKey].storage : G.bank; }
+  limit() { return this.homeKey ? G.homes[this.homeKey].level * 20 : 60; }
+  items() { return this.side ? this.storage() : G.bag; }
   update() {
     if (P('select')) { this.side ^= 1; this.i = this.top = 0; SFX.page(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
     const L = this.items(), e = L[this.i]; if (!e) return;
-    L.splice(this.i, 1); (this.side ? G.bag : G.bank).push(e); SFX.equip();
+    const dest = this.side ? G.bag : this.storage(), cap = this.side ? BAG_MAX : this.limit();
+    if (dest.length >= cap) { SFX.error(); return say(this.side ? 'Your bag is full.' : 'This storage is full. Upgrade your home for more space.'); }
+    L.splice(this.i, 1); dest.push(e); SFX.equip();
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); text(this.side ? `BANK ${G.bank.length}/60 (A: withdraw)` : `BAG ${G.bag.length}/${BAG_MAX} (A: deposit)`, 4, 14, 'gold');
+    fill(0, 0, W, H, 0); hdr(); text(this.side ? `${this.homeKey ? 'HOUSE' : 'BANK'} ${this.storage().length}/${this.limit()} (A: withdraw)` : `BAG ${G.bag.length}/${BAG_MAX} (A: deposit)`, 4, 14, 'gold');
     this.items().slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 25 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); blit(sprFit(itemIcon(e), 9), 4, y); text(e.name.slice(0, 20), 16, y, rarityCol(e.rarity)); });
     text('SELECT: switch bag/bank', 6, 134, 1);
+  }
+}
+
+class HousingScene extends ListScene {
+  constructor(key = G.map) { super(5); this.key = key; this.zone = ZONE_BY_ID[key]; }
+  home() { return G.homes[this.key]; }
+  purchasePrice() { return this.zone && this.zone.town ? 500 : 250; }
+  upgradePrice() { const home = this.home(); return home ? home.level * 300 : 0; }
+  items() { return this.home() ? ['ENTER HOME', `UPGRADE STORAGE (${this.home().level >= 5 ? 'MAX' : this.upgradePrice() + 'G'})`, 'LEAVE'] : [`BUY HOME (${this.purchasePrice()}G)`, 'LEAVE']; }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    if (!this.home()) {
+      if (this.i === 0) {
+        const cost = this.purchasePrice();
+        if (G.gold < cost) { SFX.error(); return say(`A home here costs ${cost} G.`); }
+        G.gold -= cost; G.homes[this.key] = { level: 1, decor: [], storage: [] }; SFX.buy(); saveGame(); toast('NEW HOME', this.zone.name, 'item_chest', 'achievement');
+      } else { removeScene(this); SFX.back(); }
+      return;
+    }
+    if (this.i === 0) { push(new HomeInteriorScene(this.key)); return; }
+    if (this.i === 1) {
+      const home = this.home();
+      if (home.level >= 5) { SFX.error(); return say('Your house storage is fully upgraded.'); }
+      const cost = this.upgradePrice();
+      if (G.gold < cost) { SFX.error(); return say(`The storage upgrade costs ${cost} G.`); }
+      G.gold -= cost; home.level++; SFX.buy(); saveGame(); toast('HOME UPGRADED', `STORAGE ${home.level * 20}`, 'item_chest', 'achievement');
+    } else { removeScene(this); SFX.back(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); textC('SETTLEMENT HOUSING', 80, 14, 'gold');
+    const home = this.home(); textC(this.zone ? this.zone.name : this.key, 80, 27, 2);
+    const options = this.items(); options.forEach((option, index) => { const y = 48 + index * 18; if (index === this.i) fill(8, y - 2, 144, 14, 1); text(option.slice(0, 24), 13, y, index === this.i ? 3 : 2); });
+    if (home) textC(`HOUSE LEVEL ${home.level}  CHEST ${home.level * 20}`, 80, 133, 2);
+    else textC(`A home costs ${this.purchasePrice()} gold.`, 80, 133, 2);
+  }
+}
+
+class HomeInteriorScene extends ListScene {
+  constructor(homeKey) { super(5); this.homeKey = homeKey; }
+  home() { return G.homes[this.homeKey]; }
+  items() { return ['REST AT HOME', 'OPEN STORAGE', 'DECORATE HOME', 'BIND HEARTHSTONE', 'RETURN OUTSIDE']; }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const home = this.home();
+    if (this.i === 0) { longRest(G); G.companions.forEach(longRest); G.ghost = null; saveGame(); SFX.heal(); toast('HOME REST', 'You feel rested and ready.', 'px_tent', 'heal'); }
+    if (this.i === 1) push(new BankScene(this.homeKey));
+    if (this.i === 2) {
+      const choices = [['study', 'STUDY DESK', 250], ['trophy', 'TROPHY CASE', 180], ['garden', 'WINDOW GARDEN', 150], ['banner', 'HOUSE BANNER', 120]];
+      choose(choices.map(([, name, price]) => `${name} (${price}G)`), index => {
+        if (index < 0) return;
+        const [id, name, price] = choices[index];
+        if (home.decor.includes(id)) return say(`You already have a ${name.toLowerCase()}.`);
+        if (home.decor.length >= home.level + 1) return say('No room for more furnishings. Upgrade your home first.');
+        if (G.gold < price) return say(`${name} costs ${price} G.`);
+        G.gold -= price; home.decor.push(id); SFX.buy(); saveGame(); toast('FURNISHED', name, 'item_chest', 'achievement');
+      }, 'Choose a furnishing.');
+    }
+    if (this.i === 3) { G.hearth = { map: this.homeKey, x: 16, y: 12 }; saveGame(); SFX.confirm(); toast('HEARTH BOUND', ZONE_BY_ID[this.homeKey]?.name || 'HOME', 'px_waypoint', 'waypoint'); }
+    if (this.i === 4) { removeScene(this); SFX.back(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 11, 0); hdr();
+    textC(`${ZONE_BY_ID[this.homeKey]?.name || 'HOME'} HOME`, 80, 14, 'gold');
+    fill(7, 30, 146, 77, '#594332'); fill(11, 34, 138, 68, '#b58a5e');
+    fill(15, 86, 130, 13, '#784d48'); fill(18, 89, 124, 7, '#a46d62');
+    fill(20, 59, 29, 22, '#6d4d3a'); fill(22, 56, 25, 15, '#e0c99b'); fill(18, 77, 33, 5, '#4a3026');
+    fill(111, 81, 25, 18, '#79512e'); fill(114, 77, 19, 8, '#a67742');
+    textC('BED', 34, 67, 0); textC('CHEST', 123, 87, 0);
+    this.home().decor.forEach((id, index) => { const x = 16 + (index % 4) * 35, y = 43 + Math.floor(index / 4) * 15; fill(x, y, 29, 10, id === 'garden' ? 'green' : id === 'banner' ? 'red' : 'gold'); textC(({ study: 'BOOKS', trophy: 'CUP', garden: 'LEAF', banner: 'FLAG' })[id] || id, x + 14, y + 1, 0); });
+    this.items().forEach((option, index) => { const y = 103 + index * 7; if (index === this.i) fill(4, y - 1, 152, 8, 1); text(option.slice(0, 24), 7, y, index === this.i ? 'gold' : 3); });
+    textC(`CHEST ${this.home().storage.length}/${this.home().level * 20}  DECOR ${this.home().decor.length}/${this.home().level + 1}`, 80, 141, 2);
   }
 }
 
@@ -678,10 +823,11 @@ class BankScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'FULL SCREEN']; }
+  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'FULL SCREEN', 'KEY BINDINGS']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
+    if (this.items()[this.i] === 'KEY BINDINGS' && P('a')) { push(new KeybindScene()); SFX.confirm(); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
     const o = this.items()[this.i], clamp = v => Math.max(0, Math.min(6, v));
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
@@ -708,8 +854,32 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', S.fullscreen ? 'ON' : 'OFF'];
+    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', S.fullscreen ? 'ON' : 'OFF', '>'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
+  }
+}
+class KeybindScene extends ListScene {
+  constructor() { super(8); this.actions = [['up', 'MOVE UP'], ['down', 'MOVE DOWN'], ['left', 'MOVE LEFT'], ['right', 'MOVE RIGHT'], ['a', 'CONFIRM / ATTACK'], ['b', 'BACK / CANCEL'], ['start', 'MENU'], ['select', 'SECONDARY']]; this.capture = null; }
+  items() { return this.actions.map(([, label]) => label).concat(['RESTORE DEFAULTS']); }
+  update() {
+    this.navList();
+    if (P('b') && !this.capture) { SFX.back(); removeScene(this); return; }
+    if (!P('a') || this.capture) return;
+    if (this.i === this.actions.length) { S.keybinds = Object.assign({}, DEFAULT_KEYBINDS); saveSettings(); SFX.confirm(); return; }
+    this.capture = this.actions[this.i][0]; keyCaptureHandler = code => {
+      if (!code || code === 'Unidentified') return;
+      const action = this.capture, previous = S.keybinds[action], owner = this.actions.find(([key]) => key !== action && S.keybinds[key] === code);
+      if (owner) S.keybinds[owner[0]] = previous;
+      S.keybinds[action] = code; this.capture = null; keyCaptureHandler = null; saveSettings(); SFX.confirm();
+    };
+    SFX.confirm();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); if (G) hdr(); else fill(0, 0, W, 11, 0);
+    textC('KEY BINDINGS', 80, 13, 'gold');
+    this.actions.forEach(([action, label], index) => { const y = 29 + index * 12; if (index === this.i) fill(3, y - 2, 154, 11, 1); text(label, 7, y); textR(this.capture === action ? 'PRESS KEY…' : keyLabel(S.keybinds[action]), 151, y, this.capture === action ? 'gold' : 2); });
+    const y = 29 + this.actions.length * 12; if (this.i === this.actions.length) fill(3, y - 2, 154, 11, 1); text('RESTORE DEFAULTS', 7, y, this.i === this.actions.length ? 3 : 2);
+    textC(this.capture ? 'PRESS A KEY  •  ESC ALSO WORKS' : 'ENTER: CHANGE  B: BACK', 80, 132, 2);
   }
 }
 class SoundTest extends ListScene {

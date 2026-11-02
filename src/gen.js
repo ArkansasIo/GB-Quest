@@ -227,11 +227,15 @@ function buildZone(z) {
       for (let j = -1; j <= 1; j++) for (let i = -2; i <= 2; i++) if (g[hub[1] + j] && g[hub[1] + j][hub[0] + i] && !'|h'.includes(g[hub[1] + j][hub[0] + i])) g[hub[1] + j][hub[0] + i] = '"';
     }
   }
-  // herb nodes, world boss spots
+  // gathering profession nodes, world boss spots
   const herb = HERB_BY_BIOME[z.biome] || 'peacebloom';
   const nodes = [], bosses = [];
   if (!z.town) {
-    for (let i = 0; i < 9; i++) { const [x, y] = free(); nodes.push([x, y, herb]); }
+    const resources = [
+      ['herb', herb], ['mining', 'iron_ore'], ['forestry', 'sap'], ['hidecraft', 'hide'],
+      ['salvaging', 'scrap'], ['relic', 'relic_fragment'], ['cultivation', 'field_fiber'], ['beast_lore', 'bone_dust'],
+    ];
+    for (const [profession, item] of resources) { const [x, y] = free(); nodes.push([x, y, profession, item]); }
     const wb = BOSSES.filter(b => b.cat === 'world' && b.where === z.id).slice(0, 4);
     wb.forEach(b => { const [x, y] = free(); bosses.push({ id: b.id, x, y }); });
     const arc = BOSSES.find(b => b.cat === 'arc' && b.where === z.id);

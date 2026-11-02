@@ -199,15 +199,31 @@ function pages(lines, rows = 3, n = 23) {
 // ================================================================ input
 const BTNS = ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'];
 const held = {}, pressed = {}, rep = {};
+const DEFAULT_KEYBINDS = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', a: 'KeyZ', b: 'KeyX', start: 'Enter', select: 'ShiftLeft' };
+S.keybinds = Object.assign({}, DEFAULT_KEYBINDS, S.keybinds || {});
+let keyCaptureHandler = null;
+const KEY_LABELS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', Backspace: 'BACKSPACE', Tab: 'TAB' };
+function keyLabel(code) { return KEY_LABELS[code] || (code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5) : code); }
 function bDown(b) { audioCtx(); if (!held[b]) { held[b] = true; pressed[b] = true; rep[b] = 0; } }
 function bUp(b) { held[b] = false; }
 const mapBtn = b => S.swap ? (b === 'a' ? 'b' : b === 'b' ? 'a' : b) : b;
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right',
   z: 'a', j: 'a', ' ': 'a', x: 'b', k: 'b', Escape: 'b', Backspace: 'b', Enter: 'start', Shift: 'select', Tab: 'select' };
 const typing = () => { const a = document.activeElement; return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA'); };
-addEventListener('keydown', e => { if (typing()) return; const b = KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key]; if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
-addEventListener('keyup', e => { const b = KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key]; if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
+function keyAction(e) {
+  const code = e.code || '';
+  for (const b of BTNS) if (S.keybinds[b] === code) return b;
+  if (Object.values(DEFAULT_KEYBINDS).includes(code)) return null;
+  return KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
+}
+addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
+addEventListener('keyup', e => { const b = keyAction(e); if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
 addEventListener('blur', () => BTNS.forEach(bUp));
+LCD.addEventListener('contextmenu', e => e.preventDefault());
+LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
+const releaseMouse = e => { if (e.pointerType === 'mouse') { bUp('a'); bUp('b'); } };
+LCD.addEventListener('pointerup', releaseMouse); LCD.addEventListener('pointercancel', releaseMouse); LCD.addEventListener('lostpointercapture', releaseMouse);
+LCD.addEventListener('wheel', e => { e.preventDefault(); bDown(e.deltaY < 0 ? 'up' : 'down'); setTimeout(() => bUp(e.deltaY < 0 ? 'up' : 'down'), 80); }, { passive: false });
 document.querySelectorAll('[data-btn]').forEach(el => {
   const b = el.dataset.btn;
   const on = e => { e.preventDefault(); el.setPointerCapture && el.setPointerCapture(e.pointerId); el.classList.add('down'); bDown(mapBtn(b)); };

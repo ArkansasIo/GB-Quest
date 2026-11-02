@@ -13,7 +13,7 @@ function newCharacter(o) {
   for (const a in sp.asi) base[a] += sp.asi[a];
   base.LCK = 10 + (sp.traits.includes('lucky') ? 2 : 0); base.WIL = 10 + (o.cls === 'ascetic' || o.cls === 'chaplain' ? 2 : 0); base.SPD = 10 + (o.cls === 'shade' || o.cls === 'strider' ? 2 : 0);
   const c = { name: o.name, species: o.species, cls: o.cls, bg: o.bg || 'wanderer', sub: null, lvl: 1, xp: 0, base,
-    feats: [], talents: [], talentPts: 0, ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
+    feats: [], talents: [], talentPts: 0, skillPts: 0, activeSkills: [], passiveSkills: [], ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
     eq: {}, hp: 1, hd: 1, res: {}, buffs: [], ai: o.ai || false, look: o.look || null, portrait: o.portrait || null, extraSkill: sp.traits.includes('versatile') ? 'perception' : null };
   (cls.gear || []).forEach(b => { const it = WEAPONS[b] ? makeItem({ kind: 'weapon', base: b, rarity: 1, lvl: 1 }) : makeItem({ kind: 'armor', base: b, rarity: 1, lvl: 1 }); c.eq[itemSlot(it)] = it; });
   const D = derive(c); c.hp = D.hpMax; c.hd = D.hdMax; c.res = resMax(c, D);
@@ -66,6 +66,7 @@ function derive(c) {
   const hd = cls.hd, conM = M.CON;
   let hpMax = hd + conM + (CL - 1) * (hd / 2 + 1 + conM) + Math.max(0, c.lvl - 20) * (hd / 2 + Math.max(1, conM));
   if (c.feats.includes('tough')) hpMax += 2 * c.lvl;
+  if ((c.passiveSkills || []).includes('vitality')) hpMax = Math.round(hpMax * 1.1);
   hpMax += (sub.hp || 0); hpMax = Math.round(hpMax * (1 + (sub.hpPct || 0) / 100));
   hpMax += 6 * wondrousBonus(c, 'hp') * Math.max(1, Math.floor(c.lvl / 5));
   hpMax = Math.max(1, Math.round(hpMax));
@@ -84,12 +85,14 @@ function derive(c) {
   // saves
   const saveProf = new Set(cls.saves); if (c.feats.includes('resilient')) saveProf.add('CON');
   const saveItem = wondrousBonus(c, 'save');
-  const saves = {}; for (const a of ATTRS) saves[a] = M[a] + (saveProf.has(a) ? pb : 0) + saveItem + (sub.saves || 0);
+  const passiveSave = (c.passiveSkills || []).includes('resilience') ? 1 : 0;
+  const saves = {}; for (const a of ATTRS) saves[a] = M[a] + (saveProf.has(a) ? pb : 0) + saveItem + (sub.saves || 0) + passiveSave;
   // skills
   const profSkills = new Set([...(cls.skills || []).slice(0, 3), ...BACKGROUNDS[c.bg].skills]); if (c.extraSkill) profSkills.add(c.extraSkill);
   if (sp.traits.includes('keen')) profSkills.add('perception');
   const expertise = new Set(cls.expertise || []);
   const skills = {}; for (const k in SKILLS) { const p = profSkills.has(k) ? (expertise.has(k) ? 2 * pb : pb) : (hasFeature(c, 'jack') ? Math.floor(pb / 2) : 0); skills[k] = M[SKILLS[k]] + p; }
+  if ((c.passiveSkills || []).includes('nature_lore')) { skills.nature += 2; skills.animal += 2; }
   // weapon
   const wi = c.eq.weapon, wd = wi ? WEAPONS[wi.base] : null;
   const props = wd ? wd.props : '';
@@ -99,7 +102,8 @@ function derive(c) {
   if (hasFeature(c, 'martial') && (!wd || wd.cat === 'simple')) { const md = CL >= 17 ? 10 : CL >= 11 ? 8 : CL >= 5 ? 6 : 4; const cur = wd ? +dice.split('d')[1] : 1; if (md > cur) dice = `1d${md}`; abil = M.DEX > M.STR ? 'DEX' : 'STR'; }
   const profW = !wd || wd.cat === 'simple' || cls.weapons === 'martial' || (cls.weapons === 'finesse' && props.includes('f'));
   const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (wi.rank || 1) - 1 : 0; // item rank adds flat damage
-  let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit');
+  const passivePrecision = (c.passiveSkills || []).includes('precision') ? 1 : 0;
+  let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit') + passivePrecision;
   if (props.includes('r') && hasFeature(c, 'style_arch')) hit += 2;
   if (props.includes('r') && c.feats.includes('sharpshot')) hit += 2;
   const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic + rankDmg, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
@@ -117,22 +121,22 @@ function derive(c) {
     const arcanum = cls.caster === 'pact' ? [[11, 6], [13, 7], [15, 8], [17, 9]].filter(([l]) => CL >= l).map(([, s]) => s) : [];
     const known = SPELLS.filter(s => s.cls.includes(c.cls) && (s.lvl <= maxL || arcanum.includes(s.lvl)));
     if (c.species === 'emberborn' && !known.find(s => s.id === 'emberdart')) known.unshift(SPELLS.find(s => s.id === 'emberdart'));
-    spell = { abil: cls.cast, mod: cm, dc: 8 + pb + cm + Math.floor((sub.hit || 0) / 2), atk: pb + cm + (sub.hit || 0), slots, pact, maxL, arcanum, known };
+    spell = { abil: cls.cast, mod: cm, dc: 8 + pb + cm + Math.floor((sub.hit || 0) / 2), atk: pb + cm + (sub.hit || 0) + passivePrecision, slots, pact, maxL, arcanum, known };
   } else if (c.species === 'emberborn') {
-    const cm = M.CHA; spell = { abil: 'CHA', mod: cm, dc: 8 + pb + cm, atk: pb + cm, slots: [], pact: null, maxL: 0, arcanum: [], known: [SPELLS.find(s => s.id === 'emberdart')] };
+    const cm = M.CHA; spell = { abil: 'CHA', mod: cm, dc: 8 + pb + cm, atk: pb + cm + passivePrecision, slots: [], pact: null, maxL: 0, arcanum: [], known: [SPELLS.find(s => s.id === 'emberdart')] };
   }
   const res = new Set(sp.res || []);
   return {
     c, cls, sp, CL, pb, A, M, sub, hpMax, hdMax: Math.min(c.lvl, 20), ac, saves, skills, weapon, attacks, spell, res,
-    init: M.DEX + M.SPD + (c.feats.includes('alert') ? 5 : 0) + Math.floor((sub.haste || 0) / 10) + wondrousBonus(c, 'init'),
+    init: M.DEX + M.SPD + (c.feats.includes('alert') ? 5 : 0) + ((c.passiveSkills || []).includes('swift') ? 2 : 0) + Math.floor((sub.haste || 0) / 10) + wondrousBonus(c, 'init'),
     passive: 10 + skills.perception,
     critRange: 20 - subKey(c, 'critRange'),
     crit: Math.min(SUBSTATS.crit.max, (sub.crit || 0) + Math.max(0, M.LCK)),
     critdmg: 100 + (sub.critdmg || 0),
-    dodge: Math.min(SUBSTATS.dodge.max, (sub.dodge || 0) + Math.max(0, Math.floor(M.SPD / 2))),
+    dodge: Math.min(SUBSTATS.dodge.max, (sub.dodge || 0) + ((c.passiveSkills || []).includes('swift') ? 5 : 0) + Math.max(0, Math.floor(M.SPD / 2))),
     block: Math.min(SUBSTATS.block.max, (sub.block || 0) + (shield ? 5 : 0)),
     leech: Math.min(SUBSTATS.leech.max, sub.leech || 0), haste: Math.min(SUBSTATS.haste.max, (sub.haste || 0) + Math.max(0, M.SPD) * 2),
-    dmgPct: (sub.dmg || 0), healPct: (sub.heal || 0) + Math.max(0, M.WIS), resistAll: Math.min(SUBSTATS.resist.max, sub.resist || 0),
+    dmgPct: (sub.dmg || 0) + ((c.passiveSkills || []).includes('arcane_focus') ? 5 : 0) + ((c.passiveSkills || []).includes('ferocity') ? 5 : 0), healPct: (sub.heal || 0) + Math.max(0, M.WIS) + ((c.passiveSkills || []).includes('healing_hands') ? 10 : 0), resistAll: Math.min(SUBSTATS.resist.max, sub.resist || 0),
     thorns: sub.thorns || 0, mf: (sub.mf || 0) + Math.max(0, M.LCK) * 5, gf: sub.gf || 0, xpPct: sub.xp || 0,
     condSave: Math.max(0, M.WIL), elem: { fire: sub.fire || 0, cold: sub.cold || 0, lightning: sub.lightning || 0, necrotic: sub.necrotic || 0, radiant: sub.radiant || 0 },
   };
@@ -243,6 +247,7 @@ function gainXP(c, amount) {
       c.talentPts = (c.talentPts || 0) + 1;
       g.notes.push('TALENT POINT AVAILABLE!');
     }
+    if (c.lvl % 3 === 0) { c.skillPts = (c.skillPts || 0) + 1; g.notes.push('ACTIVE / PASSIVE SKILL POINT!'); }
     const D2 = derive(c); g.hp = D2.hpMax - before.hpMax; c.hp = D2.hpMax; c.res = resMax(c, D2); c.hd = D2.hdMax;
     ups.push(g);
   }
