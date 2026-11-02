@@ -327,6 +327,7 @@ class Battle {
     // threat, leech, thorns
     if (src && tgt.side === 'foe') tgt.threat[src.id] = (tgt.threat[src.id] || 0) + a * (isChar(src) && CLASSES[src.ch.cls].role === 'tank' ? 2.5 : 1) + 1;
     if (src && isChar(src) && a > 0) { const L = derive(src.ch).leech; if (L) this.heal(src, Math.ceil(a * L / 100)); }
+    if (a > 0 && !opt.proc && typeof gearTierProc === 'function') { gearTierProc(this, src, tgt, a); if (src && !isChar(src)) gearTierGuard(this, tgt); }
     if (src && a > 0 && opt.attack && !opt.ranged) {
       let th = isChar(tgt) ? derive(tgt.ch).thorns : (tgt.mechs && tgt.mechs.includes('reflect') ? Math.ceil(a * 0.15) : 0);
       if (hasEff(tgt, 'thornskin')) th += 6;
@@ -408,6 +409,7 @@ class Battle {
     if (subKey(att.ch, 'maneuver') && !this.maneuverUsed && att.ch.res.maneuver > 0) { this.maneuverUsed = true; att.ch.res.maneuver--; const md = roll('1d8').total; dmg += md; parts.push(`MANEUVER +${md}`); }
     if (hasFeature(att.ch, 'brightsmite')) dmg += roll('1d8', crit).total;
     let smiteTxt = '';
+    if (opt.execute && hpOf(tgt) < maxHpOf(tgt) / 2) { dmg *= 2; parts.push('EXECUTE'); }
     if (opt.smite) { const sl = this.spendSlot(att, 1, true); if (sl) { const nd = Math.min(5, 1 + sl) + (['undead', 'fiend'].includes(tgt.fam) ? 1 : 0); const sd = roll(`${nd}d8`, crit).total; smiteTxt = ` SMITE +${sd}`; dmg += sd; } }
     dmg = Math.round(dmg * (1 + (D.dmgPct + (effOf(att, 'might') ? 15 : 0) + (effOf(att, 'weakened') ? -25 : 0)) / 100) * (crit ? D.critdmg / 100 : 1));
     const type = ws ? 'slashing' : w.type, magic = w.magic || !!ws;
@@ -416,6 +418,7 @@ class Battle {
         this.anim.lunge = att.id; if (crit) { SFX.crit(); shake = 8; } if (nat === 20) SFX.nat20();
         this.applyDamage(att, tgt, dmg, type, { attack: true, crit, magic, ranged: w.ranged });
         if (opt.stun && alive(tgt)) { const sv = this.save(tgt, 'CON', 8 + D.pb + D.M.WIS); if (!sv.ok && !tgt.condImm.includes('stunned')) { addEffect(tgt, { id: 'stunned', rounds: 1 }); this.pushNote(`${tgt.name} is STUNNED!`); SFX.stun(); } else this.pushNote(`${tgt.name} resists the stun.`); }
+        if (opt.rider && alive(tgt) && !(tgt.condImm || []).includes(opt.rider)) { addEffect(tgt, { id: opt.rider, rounds: 3, lvl: att.ch.lvl, src: att.id }); this.pushNote(`${tgt.name} is ${BUFFS[opt.rider].name}!`); }
         if (opt.prone && alive(tgt)) { const sv = this.save(tgt, 'DEX', 8 + D.pb + D.M.WIS); if (!sv.ok) { addEffect(tgt, { id: 'prone', rounds: 1 }); this.pushNote(`${tgt.name} is knocked PRONE!`); } }
       } };
   }
@@ -544,6 +547,7 @@ class Battle {
   abilities(u) {
     const c = u.ch, D = derive(c), r = c.res, list = [];
     const add = (id, name, cost, ok, bonus, fn, target) => list.push({ id, name, cost, ok, bonus, fn, target });
+    if (typeof artAbilities === 'function') list.push(...artAbilities(this, u));
     if (!c.ai) for (const skill of (c.activeSkills || []).filter(id => ACTIVE_SKILLS.some(def => def.id === id && def.classes.includes(c.cls)))) {
       const used = this.skillUses.has(skill);
       if (skill === 'power_strike') add('skill_power_strike', 'POWER STRIKE', used ? 'USED' : 'ONCE', !used, false, t => { this.skillUses.add(skill); return this.weaponAttack(u, t, { single: true, skillBonus: `${2 + Math.floor(D.CL / 10)}d8` }); }, 'enemy');
@@ -630,6 +634,7 @@ class Battle {
     if (abil.find(a => a.id === 'breath' && a.ok) && foes.length >= 2) return pre.concat(useAbil('breath'));
     if (abil.find(a => a.id === 'wild' && a.ok) && !hasEff(u, 'wildshape') && boss.boss) return pre.concat(useAbil('wild'));
     if (abil.find(a => a.id === 'smite' && a.ok) && boss.boss) return pre.concat(useAbil('smite', boss));
+    { const art = typeof aiArt === 'function' ? aiArt(this, u, foes, boss, weakest) : null; if (art) return pre.concat(art); }
     if (!this.bonusUsed && abil.find(a => a.id === 'flurry' && a.ok) && R() < 0.5) { this.bonusUsed = true; pre = pre.concat(useAbil('flurry', weakest)); }
     return pre.concat(this.weaponAttack(u, role === 'tank' || st === 'defensive' || st === 'aggressive' ? boss : weakest));
   }

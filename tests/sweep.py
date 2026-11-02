@@ -89,7 +89,7 @@ async () => {
 
   // 4. every main-menu screen with input
   fresh('arcanist', 'emberborn', 'scholar', 30);
-  for (let k = 0; k < 17; k++) step('menu item ' + k, () => {
+  for (let k = 0; k < 18; k++) step('menu item ' + k, () => {
     reset(new Field()); run(2); push(new MainMenu()); const mm = topScene(); mm.i = k; const name = mm.items()[k];
     if (name.startsWith('SAVE & QUIT')) return;
     press('a'); run(4);
@@ -187,6 +187,32 @@ async () => {
     push(new CompanionScene()); for (const k of ['down', 'down', 'up']) { press(k); render(); }
     talkTo(G.companions[0]); addItem('ration', 2); giveGift(G.companions[0], 'ration');
     render();
+  });
+  step('gear tiers', () => {
+    fresh('warden', 'hearthkin', 'soldier', 1);
+    if (ITEM_RANKS.length !== 23 || rankFor(1).n !== 1 || rankFor(720).n !== 23 || rankFor(100).n !== 11) return 'tier table';
+    for (let i = 1; i < 23; i++) if (ITEM_RANKS[i].min <= ITEM_RANKS[i - 1].min) return 'tiers not ascending';
+    const w = makeItem({ kind: 'weapon', lvl: 700 }), a = makeItem({ kind: 'armor', lvl: 700 });
+    if (w.rank !== 23 || a.rank !== 23) return 'item rank ' + w.rank;
+    const d0 = derive(G).weapon.dmg; G.bag.push(w); equipItem(G, w, G.bag); const d1 = derive(G).weapon.dmg;
+    if (!(d1 >= d0)) return 'tier damage';
+    if (tierAC(a) > 5) return 'ac uncapped';
+    retierGear(); render();
+  });
+  for (const cls of ['warden', 'arcanist', 'chaplain', 'shade', 'necromancer']) step('combat arts ' + cls, () => {
+    fresh(cls, 'hearthkin', 'soldier', 25);
+    const L = artLoadout(G); if (!L.length) return 'no arts';
+    if (L.length > ART_MAX) return 'loadout over max';
+    for (const a of ARTS) if (!ART_GROUPS[a.g]) return 'bad group ' + a.id;
+    const w = makeItem({ kind: 'weapon', lvl: 600 }); G.bag.push(w); equipItem(G, w, G.bag); const ar = makeItem({ kind: 'armor', lvl: 600 }); G.bag.push(ar); equipItem(G, ar, G.bag);
+    if (!tierPowerText(w) || !tierPowerText(ar)) return 'tier text';
+    reset(new Field()); run(2); startBattle(rollEncounter(ZONE_BY_ID[G.map])); if (!waitBattle()) return 'no battle';
+    const bt = scenes.find(s => s instanceof Battle);
+    const me = bt.party.find(u => u.ch === G), foe = bt.foes[0];
+    for (const a of L) { const st = artUse(bt, me, a, foe); if (!Array.isArray(st) || !st.length) return 'art steps ' + a.id; }
+    const ab = S.autoBattle; S.autoBattle = true; for (let i = 0; i < 9000 && scenes.some(s => s instanceof Battle); i++) { tick(); if (i % 30 === 0) press('a'); } S.autoBattle = ab;
+    if (scenes.some(s => s instanceof Battle)) return 'battle stuck';
+    push(new ArtsScene()); for (const k of ['down', 'a', 'a', 'up']) { press(k); render(); }
   });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 

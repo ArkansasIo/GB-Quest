@@ -72,6 +72,7 @@ function fixupState() {
   if (typeof G.trackedEvent !== 'string') G.trackedEvent = null;
   G.companions = (G.companions || []).filter(c => c && c.cls);
   migrateGear(G); G.companions.forEach(migrateGear); if (typeof stashOf === 'function') stashOf();
+  if (typeof retierGear === 'function') retierGear();
   if (typeof companionsMigrate === 'function') { companionsMigrate(); G.bench.forEach(migrateGear); }
   if (G.inst) { G.inst = null; const z = ZONE_BY_ID[G.map]; if (!z) { G.map = 'elderwood'; G.x = 3; G.y = 7; } }
 }

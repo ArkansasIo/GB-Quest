@@ -20,11 +20,25 @@ MAX_PLUS.length = 0; RARITY.forEach(r => MAX_PLUS.push(r.maxPlus));
 const RARITY_GATE = [0, 0, 0, 0, 5, 8, 40, 100, 250]; // minimum item level for each tier to roll
 
 // ---------------------------------------------------------------- item ranks (by item level): base-stat steps
-const ITEM_RANKS = [
-  { n: 1, min: 1, name: 'CRUDE' }, { n: 2, min: 10, name: 'STURDY' }, { n: 3, min: 25, name: 'FINE' }, { n: 4, min: 50, name: 'MASTERWORK' },
-  { n: 5, min: 100, name: 'EXALTED' }, { n: 6, min: 200, name: 'ANCIENT' }, { n: 7, min: 400, name: 'PRIMORDIAL' },
-];
-const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+// 23 gear tiers over item levels 1-720. Each tier adds flat weapon damage (+1.5 per tier) and,
+// slowly, armour AC (+1 per 4 tiers, capped at +5) so d20 accuracy stays bounded.
+const GEAR_TIER_NAMES = ['CRUDE', 'IRONBOUND', 'STEEL', 'TEMPERED', 'SILVERED', 'DUSKSTEEL', 'RUNEFORGED', 'MOONSILVER',
+  'EMBERSTEEL', 'STORMFORGED', 'STARMETAL', 'DRAGONBONE', 'ADAMANT', 'ASTRAL', 'ABYSSAL', 'CELESTIAL', 'PRIMORDIAL',
+  'ETERNAL', 'MYTHFORGED', 'WORLDSTONE', 'GODSTEEL', 'AETHERIC', 'DAWNFORGED'];
+const GEAR_TIER_MIN = [1, 5, 10, 15, 20, 30, 40, 50, 65, 80, 100, 125, 150, 180, 215, 255, 300, 350, 405, 465, 530, 600, 670];
+const ITEM_RANKS = GEAR_TIER_NAMES.map((name, i) => ({ n: i + 1, min: GEAR_TIER_MIN[i], max: (GEAR_TIER_MIN[i + 1] || 721) - 1, name,
+  dmg: Math.floor(i * 1.5), ac: Math.min(5, Math.floor(i / 4)) }));
+const GEAR_TIERS = ITEM_RANKS;
+const ROMAN = (() => { const r = ['']; for (let n = 1; n <= 30; n++) { let s = '', x = n; for (const [v, l] of [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (x >= v) { s += l; x -= v; } r.push(s); } return r; })();
+const tierDmg = it => (ITEM_RANKS[(it && it.rank || 1) - 1] || ITEM_RANKS[0]).dmg;
+const tierAC = it => (ITEM_RANKS[(it && it.rank || 1) - 1] || ITEM_RANKS[0]).ac;
+// re-tier every owned item from its item level (saves from the old 7-rank scheme)
+function retierGear() {
+  const fix = it => { if (it && it.ilvl && (it.kind === 'weapon' || it.kind === 'armor' || it.kind === 'wondrous')) it.rank = rankFor(it.ilvl).n; };
+  if (!G) return;
+  [G, ...(G.companions || []), ...(G.bench || [])].forEach(c => { Object.values(c.eq || {}).forEach(fix); (c.bag || []).forEach(fix); });
+  const st = G.stash; if (st && Array.isArray(st.tabs)) st.tabs.forEach(t => (t.items || t || []).forEach && (t.items || t).forEach(fix));
+}
 const rankFor = ilvl => ITEM_RANKS.filter(r => ilvl >= r.min).pop() || ITEM_RANKS[0];
 
 // ---------------------------------------------------------------- the medieval armoury
@@ -251,7 +265,7 @@ rollRarity = function (lvl, mfPct = 0, boss = false, diffLoot = 1, floor = 0) {
     return n0(Object.assign({}, it, { rarity: Math.min(5, it.rarity) }));
   };
 }
-const rankText = it => `RANK ${ROMAN[it.rank || rankFor(it.ilvl || 1).n]} ${rankFor(it.ilvl || 1).name}`;
+const rankText = it => `T${it.rank || rankFor(it.ilvl || 1).n} ${(ITEM_RANKS[(it.rank || rankFor(it.ilvl || 1).n) - 1] || ITEM_RANKS[0]).name}`;
 
 // ---------------------------------------------------------------- rarity for every item: consumables and materials too
 for (const k in ITEMS) { const it = ITEMS[k]; if (it.rarity == null) it.rarity = it.type === 'junk' ? 0 : it.price >= 500 ? 5 : it.price >= 150 ? 4 : it.price >= 50 ? 3 : it.price >= 10 ? 2 : 1; }
@@ -398,3 +412,88 @@ for (const k in ITEMS) if (!ITEMS[k].icon0) ITEMS[k].icon0 = ITEMS[k].icon;
   itemIcon = function (it) { if (it && it.named && IMG['nn_' + it.named]) return 'nn_' + it.named; return icon0(it); };
 }
 const effectIcon = id => { const n = (BUFFS[id] && BUFFS[id].icon) || 'cd_' + id; return IMG[n] ? n : null; };
+
+// ---------------------------------------------------------------- gear tier effects (tiers 1-23)
+// 1) implicit stats: every weapon / armour / trinket carries stats that grow with its tier.
+// 2) tier powers: the weapon (or caster offhand) tier power procs from ANY damage you deal:
+//    weapon attacks, spells, class abilities and skills. Armour tiers carry a guard power that
+//    procs when you are hit. Chance: 8% + 0.6% per tier (power) and 6% + 0.5% per tier (guard).
+const TIER_IMPLICIT = {
+  weapon: t => [['dmg', 2 + t * 3], ...(t >= 4 ? [['crit', Math.min(15, Math.floor(t / 2))]] : []), ...(t >= 10 ? [['critdmg', (t - 9) * 6]] : []), ...(t >= 16 ? [['hit', Math.min(4, t - 15)]] : [])],
+  armor: t => [['hp', 4 + t * 6], ...(t >= 3 ? [['resist', Math.min(20, Math.floor(t * 0.8))]] : []), ...(t >= 8 ? [['block', Math.min(15, t - 7)]] : []), ...(t >= 14 ? [['thorns', (t - 13) * 4]] : [])],
+  wondrous: t => [['heal', 2 + t * 2], ...(t >= 3 ? [['xp', t]] : []), ...(t >= 6 ? [['haste', Math.min(15, Math.floor(t / 2))]] : []), ...(t >= 12 ? [['mf', t * 2]] : [])],
+};
+function tierImplicit(it) { if (!it || !it.rank) return []; const f = TIER_IMPLICIT[it.kind]; return f ? f(it.rank) : []; }
+
+// eff: dmg [dice, type, all?], debuff id, heal dice (self or party), buff id, drain, echo
+const TIER_POWERS = [
+  { name: 'BRUTE FORCE', dmg: ['1d4', 'bludgeoning'] },
+  { name: 'BITE OF IRON', dmg: ['1d6', 'piercing'] },
+  { name: 'KEEN EDGE', debuff: 'bleeding' },
+  { name: 'TEMPERED BLOW', dmg: ['1d10', 'slashing'] },
+  { name: 'SILVER BANE', dmg: ['2d6', 'radiant'], bane: ['undead', 'fiend'] },
+  { name: 'DUSK CUT', debuff: 'weakened' },
+  { name: 'RUNE BURST', dmg: ['2d8', 'force'] },
+  { name: 'MOONLIGHT', heal: '2d8' },
+  { name: 'EMBER BRAND', dmg: ['2d6', 'fire'], debuff: 'burning' },
+  { name: 'STORM CALL', dmg: ['3d8', 'lightning'], debuff: 'shocked' },
+  { name: 'STARFALL', dmg: ['3d10', 'radiant'] },
+  { name: "DRAGON'S BREATH", dmg: ['2d10', 'fire', true] },
+  { name: 'ADAMANT SUNDER', dmg: ['2d10', 'force'], debuff: 'sundered' },
+  { name: 'ASTRAL RIFT', debuff: 'vulnerable', dmg: ['2d12', 'force'] },
+  { name: 'ABYSSAL DRAIN', dmg: ['4d8', 'necrotic'], drain: 0.5 },
+  { name: 'CELESTIAL HYMN', heal: '3d8', party: true },
+  { name: 'PRIMORDIAL QUAKE', dmg: ['4d10', 'bludgeoning', true], debuff: 'slowed' },
+  { name: 'ETERNAL ECHO', echo: 0.6 },
+  { name: 'MYTHIC HASTE', buff: 'haste', dmg: ['4d10', 'force'] },
+  { name: 'WORLDBREAKER', dmg: ['6d10', 'force'], debuff: 'sundered' },
+  { name: 'GODSTRIKE', dmg: ['6d12', 'radiant'], debuff: 'doomed' },
+  { name: 'AETHER STORM', dmg: ['6d10', 'lightning', true], debuff: 'shocked' },
+  { name: 'DAWNBREAK', dmg: ['8d12', 'radiant', true], heal: '4d10', party: true },
+];
+const TIER_GUARDS = ['fortify', 'regen', 'thornskin', 'barrier', 'ac'];
+const tierPower = it => it && it.rank ? TIER_POWERS[Math.min(23, it.rank) - 1] : null;
+const tierGuard = it => it && it.rank ? { name: `${(ITEM_RANKS[it.rank - 1] || ITEM_RANKS[0]).name} GUARD`, buff: TIER_GUARDS[it.rank % 5] } : null;
+function tierPowerText(it) {
+  if (!it) return '';
+  if (it.kind === 'weapon' || (it.kind === 'wondrous' && it.slot === 'offhand')) { const p = tierPower(it); if (!p) return ''; const bits = [];
+    if (p.dmg) bits.push(`+${p.dmg[0]} ${p.dmg[1]}${p.dmg[2] ? ' to all' : ''}`); if (p.debuff) bits.push(BUFFS[p.debuff] ? BUFFS[p.debuff].name : p.debuff);
+    if (p.heal) bits.push(`heal ${p.heal}${p.party ? ' party' : ''}`); if (p.buff) bits.push(BUFFS[p.buff].name); if (p.drain) bits.push('drain'); if (p.echo) bits.push('echo hit');
+    return `${p.name}: ${bits.join(', ')}`; }
+  if (it.kind === 'armor') { const g = tierGuard(it); return `${g.name}: ${BUFFS[g.buff].name} when hit`; }
+  return '';
+}
+function powerSource(ch) {
+  const w = ch.eq && ch.eq.weapon, o = ch.eq && ch.eq.offhand;
+  const ow = o && o.kind === 'wondrous' ? o : null;
+  return (w && ow) ? ((w.rank || 1) >= (ow.rank || 1) ? w : ow) : (w || ow);
+}
+function gearTierProc(battle, src, tgt, dealt) {
+  if (!src || !isChar(src) || !tgt || tgt.side !== 'foe') return;
+  const it = powerSource(src.ch), p = tierPower(it); if (!p) return;
+  if (R() * 100 >= 8 + it.rank * 0.6) return;
+  const notes = [];
+  const scale = 1 + Math.max(0, (src.ch.lvl || 1) - 20) / 120;
+  if (p.dmg) {
+    const targets = p.dmg[2] ? battle.enemiesOf(src).filter(alive) : [tgt];
+    let total = 0;
+    for (const t of targets) { let d = Math.round(roll(p.dmg[0]).total * scale); if (p.bane && p.bane.includes(t.fam)) d *= 2; total += battle.applyDamage(src, t, d, p.dmg[1], { proc: true, magic: true }) || d; }
+    notes.push(`${p.dmg[2] ? 'ALL FOES' : tgt.name} +${total} ${p.dmg[1].toUpperCase()}`);
+    if (p.drain) battle.heal(src, Math.ceil(total * p.drain));
+  }
+  if (p.echo) { const d = Math.max(1, Math.round(dealt * p.echo)); battle.applyDamage(src, tgt, d, 'force', { proc: true, magic: true }); notes.push(`ECHO +${d}`); }
+  if (p.debuff && alive(tgt) && !(tgt.condImm || []).includes(p.debuff)) { addEffect(tgt, { id: p.debuff, rounds: 3, lvl: src.ch.lvl, src: src.id }); notes.push(BUFFS[p.debuff].name); }
+  if (p.heal) { const who = p.party ? battle.party.filter(u => isChar(u) && alive(u)) : [src]; for (const u of who) battle.heal(u, Math.round(roll(p.heal).total * scale)); notes.push(p.party ? 'PARTY HEALED' : 'HEALED'); }
+  if (p.buff) { addEffect(src, { id: p.buff, rounds: 3 }); notes.push(BUFFS[p.buff].name); }
+  battle.pushNote(`${p.name}! ${notes.join(' ')}`.slice(0, 60));
+  if (src.ch === G) G.stats.tierProcs = (G.stats.tierProcs || 0) + 1;
+}
+function gearTierGuard(battle, tgt) {
+  if (!isChar(tgt)) return;
+  const it = tgt.ch.eq && tgt.ch.eq.armor, g = tierGuard(it); if (!g) return;
+  if (hasEff(tgt, g.buff) || R() * 100 >= 6 + it.rank * 0.5) return;
+  const e = { id: g.buff, rounds: 2 };
+  if (g.buff === 'barrier') e.pool = 5 + it.rank * 4;
+  addEffect(tgt, e);
+  battle.pushNote(`${tgt.name}: ${g.name} - ${BUFFS[g.buff].name}!`.slice(0, 60));
+}

@@ -42,7 +42,7 @@ const profBonus = c => 2 + Math.floor((classLevel(c) - 1) / 4) + Math.floor(Math
 
 function gearAffixes(c) {
   const s = {};
-  for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; }
+  for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) s[k] = (s[k] || 0) + v; }
   for (const k in c.ascSub || {}) s[k] = (s[k] || 0) + c.ascSub[k] * (AFFIX_K[k] || 1);
   for (const k in c.bond || {}) s[k] = (s[k] || 0) + c.bond[k] * (AFFIX_K[k] || 1); // companion bond tier
   for (const tree of TALENT_TREES) for (const talent of tree.nodes) {
@@ -74,7 +74,7 @@ function derive(c) {
   // armour class
   const armor = c.eq.armor && ARMORS[c.eq.armor.base], shield = c.eq.offhand && ARMORS[c.eq.offhand.base];
   let ac;
-  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus) + Math.floor(((c.eq.armor.rank || 1) - 1) / 2);
+  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus) + (typeof tierAC === 'function' ? tierAC(c.eq.armor) : 0);
   else if (hasFeature(c, 'unarmored_con')) ac = 10 + M.DEX + M.CON;
   else if (hasFeature(c, 'unarmored_wis')) ac = 10 + M.DEX + M.WIS;
   else if (subKey(c, 'draconic')) ac = 13 + M.DEX;
@@ -102,7 +102,7 @@ function derive(c) {
   let abil = props.includes('r') ? 'DEX' : props.includes('f') ? (M.DEX > M.STR ? 'DEX' : 'STR') : 'STR';
   if (hasFeature(c, 'martial') && (!wd || wd.cat === 'simple')) { const md = CL >= 17 ? 10 : CL >= 11 ? 8 : CL >= 5 ? 6 : 4; const cur = wd ? +dice.split('d')[1] : 1; if (md > cur) dice = `1d${md}`; abil = M.DEX > M.STR ? 'DEX' : 'STR'; }
   const profW = !wd || wd.cat === 'simple' || cls.weapons === 'martial' || (cls.weapons === 'finesse' && props.includes('f'));
-  const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (wi.rank || 1) - 1 : 0; // item rank adds flat damage
+  const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (typeof tierDmg === 'function' ? tierDmg(wi) : 0) : 0; // gear tier adds flat damage
   const passivePrecision = (c.passiveSkills || []).includes('precision') ? 1 : 0;
   let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit') + passivePrecision;
   if (props.includes('r') && hasFeature(c, 'style_arch')) hit += 2;
