@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "ranks": {
+    "common": { "health": 1, "damage": 1, "armor": 0, "controlResistance": 0, "loot": 1 },
+    "veteran": { "health": 1.5, "damage": 1.2, "armor": 1, "controlResistance": 0.1, "loot": 1.25 },
+    "elite": { "health": 2.5, "damage": 1.5, "armor": 2, "controlResistance": 0.25, "loot": 1.75 },
+    "rare": { "health": 2, "damage": 1.35, "armor": 1, "controlResistance": 0.15, "loot": 2 },
+    "champion": { "health": 3, "damage": 1.75, "armor": 3, "controlResistance": 0.4, "loot": 2.5 },
+    "boss": { "health": 5, "damage": 2, "armor": 4, "controlResistance": 0.75, "loot": 3 },
+    "mythic": { "health": 8, "damage": 2.5, "armor": 6, "controlResistance": 0.9, "loot": 5 },
+    "ascended": { "health": 12, "damage": 3, "armor": 8, "controlResistance": 0.95, "loot": 8 }
+  },
+  "difficulties": {
+    "normal": { "health": 1, "damage": 1, "armor": 0 },
+    "hard": { "health": 1.25, "damage": 1.1, "armor": 1 },
+    "nightmare": { "health": 1.6, "damage": 1.25, "armor": 2 },
+    "mythic": { "health": 2, "damage": 1.5, "armor": 3 },
+    "ascended": { "health": 3, "damage": 2, "armor": 5 }
+  },
+  "partyScaling": {
+    "additionalPlayerHealth": 0.12,
+    "maximumHealthMultiplier": 3.28
+  },
+  "affixes": {
+    "berserk": { "damage": 1.25 },
+    "vampiric": { "lifeSteal": 0.1 },
+    "arcane_shield": { "shieldFromMaxHealth": 0.15 },
+    "reflective": { "damageReflection": 0.1 },
+    "regenerating": { "healthRegenerationPerTurn": 0.03 },
+    "toxic": { "onHitCondition": "poisoned" },
+    "frenzied": { "damageBelowHalfHealth": 1.35 },
+    "phase_shift": { "controlResistanceBonus": 0.2 }
+  },
+  "bossPhases": [
+    { "id": "phase-2", "trigger": { "type": "hp_percent", "value": 0.75 }, "actions": [] },
+    { "id": "phase-3", "trigger": { "type": "hp_percent", "value": 0.5 }, "actions": [] },
+    { "id": "final-phase", "trigger": { "type": "hp_percent", "value": 0.25 }, "actions": [] }
+  ]
+}

@@ -38,6 +38,9 @@ No proprietary World of Warcraft code, assets, quests or data are copied. D&D da
 ## Monster bestiary
 `src/mmorpg/data/monsters.json` contains the structured SRD 5.2.1 monster dataset. `systems/monsters.js` exposes lookup, search/filter, combatant creation, hit-point rolling, initiative, XP lookup and encounter composition. Monster trait/action text is retained as source data; complex abilities still require dedicated rule handlers before they can be resolved automatically by the combat engine. The dataset is attributed under CC BY 4.0 in `docs/SRD_ATTRIBUTION.md`.
 
+## Enemy ranks and boss encounters
+`systems/enemy-encounters.js` layers configurable ranks and difficulties, capped party-size scaling, original enemy affixes, validated monster archetypes/subclasses and filters over the SRD bestiary. It also indexes the 350 original world/arc bosses and provides a deterministic boss-phase state machine for HP, elapsed-time and player-death triggers. Phase actions are emitted as events for the authoritative combat adapter to execute; the data layer does not pretend to run unimplemented boss mechanics. `systems/threat.js` supports damage, multi-target healing, buffs, taunts, threat multipliers, ranking and decay. Tune multipliers and affix effects in `data/enemy-framework.json`.
+
 ## D&D equipment and itemization
 - SRD weapon and armor catalogs, including weapon mastery metadata, damage dice, range, properties, armor class, stealth and Strength requirements.
 - Adventuring gear, tools, equipment packs, mounts, vehicles and magic-item catalog entries.
