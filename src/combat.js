@@ -64,6 +64,20 @@ class Battle {
       const dodge = this.abilities(this.rt.player).find(a => a.id === 'dodge');
       if (dodge && this.rt.gcd <= 0) { this.rt.gcd = 90; this.actor = this.rt.player; this.bonusUsed = false; this.doPlayerSteps(dodge.fn(), false); return; }
     }
+    // pad / touch controls: LEFT/RIGHT pick a hotbar slot, A uses it; SELECT auto-battle fights for you
+    const me = this.rt.player, meUp = me && isChar(me) && me.ch.hp > 0 && !me.ch.dead;
+    const slots = meUp ? this.hotbarEntries(me) : [];
+    if (slots.length) {
+      this.rt.slot = Math.min(this.rt.slot || 0, slots.length - 1);
+      if (nav('left')) { this.rt.slot = (this.rt.slot + slots.length - 1) % slots.length; SFX.cursor(); }
+      if (nav('right')) { this.rt.slot = (this.rt.slot + 1) % slots.length; SFX.cursor(); }
+      if (P('a')) { this.actor = me; this.bonusUsed = false; this.useHotbar(this.rt.slot); return; }
+      if (S.autoBattle && this.rt.gcd <= 0) {
+        this.rt.gcd = 90; this.actor = me; this.bonusUsed = false;
+        const steps = this.aiTurn(me);
+        if (steps) { this.run(steps, () => { if (this.checkEnd()) return; this.actor = me; this.bonusUsed = false; this.state = 'realtime'; }); return; }
+      }
+    }
     if (this.checkEnd()) return;
     if (this.rt.ticks >= this.rt.nextDecay) {
       this.rt.nextDecay += 180; this.round++; this.onRound();
@@ -974,7 +988,7 @@ class Battle {
       const slots = this.hotbarEntries(this.actor);
       for (let i = 0; i < 10; i++) {
         const x = 2 + i * 15.6, e = slots[i];
-        frame(x, 81, 14, 12);
+        frame(x, 81, 14, 12, this.combatMode === 'realtime' && this.state === 'realtime' && i === (this.rt?.slot || 0) ? 1 : 0);
         const ready = e?.ok && !(this.combatMode === 'realtime' && (this.rt?.gcd > 0 || this.rt?.cooldowns[e.id] > 0));
         text(i === 9 ? '0' : String(i + 1), x + 1, 82, ready ? 2 : 1);
         if (e) text(e.name.replace(/[^A-Z0-9 ]/gi, '').slice(0, 2).toUpperCase(), x + 1, 88, ready ? 3 : 1);
