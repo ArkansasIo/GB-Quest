@@ -107,7 +107,7 @@ function spr(name, w, h, opt) {
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   const mode = S.palette;
   if (MONO(mode)) {
-    const pixelArt = /^g[tdoh]_/.test(name);
+    const pixelArt = /^g[tdohm]_/.test(name);
     const g = tileGroup(name), th = pixelArt ? [78, 128, 182] : g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
     const P = PALS[mode].ui;
     for (let i = 0; i < d.length; i += 4) {
@@ -116,7 +116,7 @@ function spr(name, w, h, opt) {
       const l = lum(d, i) + dith, k = l < th[0] ? 3 : l < th[1] ? 2 : l < th[2] ? 1 : 0;
       d[i] = P[k][0]; d[i + 1] = P[k][1]; d[i + 2] = P[k][2];
     }
-  } else if (mode === 'gbc' && !/^g[tdoh]_/.test(name)) {
+  } else if (mode === 'gbc' && !/^g[tdohm]_/.test(name)) {
     const pal = medianCut4(d);
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 110) { d[i + 3] = 0; continue; } d[i + 3] = 255;

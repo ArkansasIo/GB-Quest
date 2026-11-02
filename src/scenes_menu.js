@@ -48,7 +48,7 @@ class MainMenu extends ListScene {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
     fill(58, 12, 1, H - 12, 3);
-    blit(sprH(`c_${G.cls}_0`, 34), 12, 16);
+    blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 40) : sprH(`c_${G.cls}_0`, 34), 9, 14);
     textC(G.name.slice(0, 9), 29, 54, 3); textC(CLASSES[G.cls].name, 29, 64, 2);
     text('HP', 3, 76, 2); bar(16, 77, 40, 4, G.hp, D.hpMax, 'hp');
     text('XP', 3, 86, 2); bar(16, 87, 40, 4, G.xp - xpForLevel(G.lvl), xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)) - xpForLevel(G.lvl), 'xp');
@@ -154,7 +154,7 @@ class EquipScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
-    blit(sprH(`c_${G.cls}_0`, 46), 6, 18);
+    blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
     text(`AC ${D.ac}`, 6, 70); text(`ATK ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 6, 80); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`, 6, 90); text(`x${D.attacks}`, 6, 100, 2);
     const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 112, 2);
     SLOTS.forEach((s, i) => {
@@ -183,7 +183,7 @@ class CharSheet {
     textC(`< ${pages[this.page]} >`, 80, 13, 2); fill(2, 22, 156, 1, 3);
     const p = this.page;
     if (p === 0) {
-      blit(sprH(`c_${G.cls}_0`, 40), 6, 26);
+      blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 44) : sprH(`c_${G.cls}_0`, 40), 2, 26);
       const sub = G.sub ? CLASSES[G.cls].subs.find(s => s.id === G.sub).name : '-';
       [[G.name], [`${SPECIES[G.species].name} ${CLASSES[G.cls].name}`], [`SUB: ${sub}`], [`BG: ${BACKGROUNDS[G.bg].name}`], [`LEVEL ${G.lvl}${G.lvl > 20 ? ' (ASCENDED)' : ''}`], [`XP ${fmt(G.xp)}/${fmt(xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)))}`]].forEach(([s], i) => text(s.slice(0, 18), 48, 26 + i * 10, i ? 3 : 'gold'));
       const rows = [`HP ${G.hp}/${D.hpMax}   AC ${D.ac}`, `PROF +${D.pb}   INIT ${D.init >= 0 ? '+' : ''}${D.init}`, `HIT DICE ${G.hd}/${D.hdMax} (d${D.cls.hd})`, `PASSIVE PERCEPTION ${D.passive}`, D.spell ? `SPELL DC ${D.spell.dc}  ATK +${D.spell.atk}` : 'NO SPELLCASTING', `CRIT ${D.critRange}-20 +${D.crit}%`];
@@ -314,7 +314,7 @@ class BestiaryScene extends ListScene {
     BESTIARY.slice(this.top, this.top + this.rows).forEach((b, j) => { const i = this.top + j, y = 25 + j * 10, seen = G.bestiary[b.id]; if (i === this.i) fill(2, y - 1, 90, 10, 1); text(`${String(b.no).padStart(3, '0')} ${seen ? b.name.slice(0, 10) : '???'}`, 4, y, seen ? 3 : 1); });
     this.scrollbar(93, 24, 80);
     const b = BESTIARY[this.i], seen = G.bestiary[b.id];
-    frame(96, 24, 62, 62); if (seen) blit(sprFit(b.spr, 50), 102, 30); else textC('?', 127, 50, 1, 2);
+    frame(96, 24, 62, 62); if (seen) blit(sprFit(monsterArt(b), 50), 102, 30); else textC('?', 127, 50, 1, 2);
     frame(2, 106, 156, 36);
     if (seen) { text(`${b.type} / ${b.sub}${b.rank === 'elite' ? ' ELITE' : ''}`.slice(0, 24), 6, 109, 2); text(`DMG ${b.dt.toUpperCase()} ${b.res.length ? 'RES ' + b.res[0].toUpperCase() : ''}`.slice(0, 24), 6, 118); text(`${b.lore}`.slice(0, 24), 6, 127, 1); textR(`KILLS ${seen.kills}`, 154, 90, 2); }
     else text('Defeat one to learn more.', 6, 115, 1);
@@ -404,13 +404,14 @@ class BankScene extends ListScene {
 // ================================================================ SETTINGS & SOUND TEST
 class SettingsScene extends ListScene {
   constructor() { super(11); }
-  items() { return ['PALETTE', 'TILES', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT']; }
+  items() { return ['PALETTE', 'TILES', 'ART', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
     const o = this.items()[this.i], clamp = v => Math.max(0, Math.min(6, v));
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
+    if (o === 'ART') { S.art = S.art === 'classic' ? 'nes' : 'classic'; applyArt(); clearCaches(); }
     if (o === 'TILES') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
     if (o === 'SFX VOLUME') S.vol = clamp(S.vol + d);
     if (o === 'MUSIC VOLUME') S.music = clamp(S.music + d);
@@ -428,7 +429,7 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [PALS[S.palette].name, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', '>'];
+    const v = [PALS[S.palette].name, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', '>'];
     this.items().forEach((s, i) => { const y = 24 + i * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }

@@ -62,6 +62,9 @@ tools/gen_gbtiles.py       crisp 16x16 Game Boy pixel art: terrain for 9 biomes 
                            and shores, animated water), buildings, 6 dungeon themes, map objects,
                            and walking sprites for 12 classes + 8 NPC looks
 tools/make_font.py         6x9 bitmap font
+tools/make_worldmap.py     pixelates src_sheet/world_map.png (DUNIA) into the world map art
+tools/slice_sheets.py      slices the NES-style sheets (monsters, equipment, class/species
+                           portraits) into ~1,100 sprites + assets/nes_index.json
 tools/build.py             builds index.html, dist/gbquest.html and assets/index.json
 src/data_rules.js          d20 rules: classes, species, spells, weapons, armour, monsters
 src/data_world.js          attributes, buffs, difficulty, zones, story, bosses, expansions
@@ -80,6 +83,7 @@ Rebuild after any change:
 ```
 python3 tools/extract_assets.py && python3 tools/gen_assets.py   # only if the sheet changes
 python3 tools/gen_gbtiles.py                                     # Game Boy pixel tiles and sprites
+python3 tools/make_worldmap.py && python3 tools/slice_sheets.py # DUNIA map + NES art sheets
 python3 tools/build.py
 ```
 

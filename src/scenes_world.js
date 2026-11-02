@@ -160,12 +160,12 @@ class CharCreate {
     if (this.step === 0 || this.step === 2 || this.step === 4) {
       L.forEach((k, j) => { const y = 18 + j * 11; if (j === this.i) fill(4, y - 2, 70, 11, 1); text((this.step === 0 ? SPECIES[k].name : this.step === 2 ? BACKGROUNDS[k].name : PLAY_MODES[j].name), 8, y); });
       const k = L[this.i], d = this.step === 0 ? SPECIES[k] : this.step === 2 ? BACKGROUNDS[k] : PLAY_MODES[this.i];
-      frame(78, 16, 78, 120); text(wrap(d.desc, 12).join('\n'), 82, 20);
-      if (this.step === 0) text(Object.entries(SPECIES[k].asi).map(([a, v]) => `${a}+${v}`).join(' ').slice(0, 12), 82, 108, 2);
+      frame(78, 16, 78, 120); text(wrap(d.desc, 12).slice(0, this.step === 0 ? 5 : 8).join('\n'), 82, 20);
+      if (this.step === 0) { const r0 = racePortrait(k, 0), r1 = racePortrait(k, 1); if (r0) blit(sprH(r0, 30), 84, 74); if (r1 && r1 !== r0) blit(sprH(r1, 30), 118, 74); text(Object.entries(SPECIES[k].asi).map(([a, v]) => `${a}+${v}`).join(' ').slice(0, 12), 82, 108, 2); }
       if (this.step === 2) text(BACKGROUNDS[k].skills.map(s => SKILL_NAME[s].slice(0, 8)).join('\n'), 82, 108, 2);
     } else if (this.step === 1) {
       const k = L[this.i], c = CLASSES[k];
-      CLASS_ORDER.forEach((id, j) => { const x = 6 + (j % 6) * 25, y = 18 + Math.floor(j / 6) * 30; if (j === this.i) fill(x - 2, y - 2, 24, 30, 1); blit(sprH(`c_${id}_0`, 24), x + 2, y); });
+      CLASS_ORDER.forEach((id, j) => { const x = 6 + (j % 6) * 25, y = 18 + Math.floor(j / 6) * 30; if (j === this.i) fill(x - 2, y - 2, 24, 30, 1); const pr = classPortrait(id); const sp2 = pr ? sprFit(pr, 26) : sprH(`c_${id}_0`, 24); blit(sp2, x + 10 - sp2.width / 2, y); });
       frame(4, 78, 152, 60);
       text(c.name, 8, 82, 2); textR(`d${c.hd} ${c.primary}`, 152, 82, 2);
       text(wrap(c.desc, 24).slice(0, 3).join('\n'), 8, 93);
@@ -177,7 +177,7 @@ class CharCreate {
       text('A: add  B: delete  START: done', 4, 132, 2);
     } else {
       const p = this.pick;
-      blit(sprH(`c_${p.cls}_0`, 44), 12, 24);
+      blit(classPortrait(p.cls) ? sprFit(classPortrait(p.cls), 48) : sprH(`c_${p.cls}_0`, 44), 8, 22);
       text(p.name, 60, 22, 3, 1); text(SPECIES[p.species].name, 60, 34, 2); text(CLASSES[p.cls].name, 60, 44, 2); text(BACKGROUNDS[p.bg].name, 60, 54, 2); text(PLAY_MODES.find(m => m.id === p.mode).name, 60, 64, 2);
       const c = newCharacter(p), D = derive(c);
       text(ATTRS.map(a => `${a}${String(D.A[a]).padStart(3)}`).reduce((acc, s, i) => acc + s + (i % 3 === 2 ? '\n' : ' '), ''), 8, 80);
@@ -364,7 +364,7 @@ class Field {
       const ex = e.x * T - cx, ey = e.y * T - cy;
       if (e.kind === 'player') {
         const f = LOOK_F[G.dir][(this.ox || this.oy) ? (this.walk >> 3) % 2 : 0];
-        if (G.mounted) { const mnt = sprH('enemy_lizard', 14); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
+        if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
         if (PIX) blit(walker(G.cls, G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') { if (PIX) blit(walker(e.c.cls, e.dir, (this.walk >> 3) % 2), ex, ey - 3); else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); } }
@@ -380,8 +380,8 @@ class Field {
       else if (e.kind === 'grave') blit(PIX ? spr('go_grave', 16, 16) : sprH('px_skull', 10), ex + (PIX ? 0 : 3), ey + (PIX ? 0 : 4));
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
-      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(B.spr, 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? BOSS_BY_ID[p.boss].spr : (BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]).spr; const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); }
+      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); }
     }
     FX.draw(cx, cy);
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
@@ -841,25 +841,29 @@ function buildAtlas() {
   return ATLAS;
 }
 class WorldMap {
+  // zoom 0: all of DUNIA (160 px), zoom 1: detail map (320 px, scrolls), zoom 2: the zone's own tiles
   constructor() {
-    this.opaque = true; this.zoom = 0;
+    this.opaque = true; this.zoom = 0; this.legend = false;
     const z = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map] || ZONE_BY_ID.elderwood;
-    this.sel = z; this.camx = null; this.legend = false;
-    G.visited = G.visited || {}; G.visited[z.id] = true;
+    this.sel = z; G.visited = G.visited || {}; G.visited[z.id] = true;
   }
   move(dx, dy) {
-    const z = this.sel;
-    let t = ZONES.find(o => o.fx === z.fx + dx && o.fy === z.fy + dy);
-    for (let s = 2; !t && s < 30; s++) t = ZONES.find(o => o.fx === z.fx + dx * s && o.fy === z.fy + dy * s);
-    if (!t && dy) t = ZONES.filter(o => Math.sign(o.fy - z.fy) === dy).sort((a, b) => Math.abs(a.fx - z.fx) - Math.abs(b.fx - z.fx))[0];
-    if (t) { this.sel = t; SFX.cursor(); }
+    const [sx, sy] = zonePin(this.sel); let best = null, bd = 1e9;
+    for (const o of ZONES) {
+      if (o === this.sel) continue;
+      const [ox, oy] = zonePin(o), vx = (ox - sx) * 1.6, vy = oy - sy, d = Math.hypot(vx, vy);
+      if (!d || (vx * dx + vy * dy) / d < 0.5) continue;
+      const score = d * (1.6 - (vx * dx + vy * dy) / d);
+      if (score < bd) { bd = score; best = o; }
+    }
+    if (best) { this.sel = best; SFX.cursor(); }
   }
   update() {
     if (nav('left')) this.move(-1, 0); if (nav('right')) this.move(1, 0); if (nav('up')) this.move(0, -1); if (nav('down')) this.move(0, 1);
     if (P('start')) { this.legend = !this.legend; SFX.page(); }
-    if (P('b') || P('select')) { if (this.zoom) { this.zoom = 0; SFX.back(); } else { removeScene(this); SFX.close(); } return; }
+    if (P('b') || P('select')) { if (this.zoom) { this.zoom--; SFX.back(); } else { removeScene(this); SFX.close(); } return; }
     if (P('a')) {
-      if (!this.zoom) { this.zoom = 1; SFX.select(); return; }
+      if (this.zoom < 2) { this.zoom++; SFX.select(); return; }
       const z = this.sel;
       if (G.waypoints[z.id] && !G.inst && !G.ghost) { removeScene(this); const wp = buildZoneCached(z.id).poi.waypoint; travelTo(z.id, wp ? wp.x : null, wp ? wp.y + 1 : null); }
       else SFX.error();
@@ -886,44 +890,35 @@ class WorldMap {
     else if (k === 'boss' || k === 'arc') { if (dead) { fill(x - s, y - s, 3 * s, 3 * s, 1); return; } fill(x - 2 * s, y - 2 * s, 5 * s, 4 * s, k === 'arc' ? 'purple' : 'red'); fill(x - s, y - s, s, s, 0); fill(x + s, y - s, s, s, 0); fill(x - s, y + s, 3 * s, s, k === 'arc' ? 'purple' : 'red'); }
     else if (k === 'quest' && (frameN >> 4) % 2) { fill(x - s, y - 4 * s, 3 * s, 5 * s, 3); fill(x, y - 3 * s, s, 2 * s, 'gold'); fill(x, y, s, s, 'gold'); }
   }
+  pinMarks(img, ox, oy, scale) {
+    const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map], ch = chapterDef();
+    for (const o of ZONES) {
+      const [nx, ny] = zonePin(o), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
+      if (x < -4 || x > W + 4 || y < 10 || y > 110) continue;
+      const known = G.visited[o.id] || G.waypoints[o.id];
+      const s = scale > 1 ? 2 : 1;
+      fill(x - s, y - s, 2 * s + 1, 2 * s + 1, 3);
+      fill(x - s + 1, y - s + 1, 2 * s - 1, 2 * s - 1, o.town ? 'red' : G.waypoints[o.id] ? 'blue' : known ? 0 : 1);
+      if (ch && o.region === ch.region && o.last && (frameN >> 4) % 2) { fill(x - 1, y - 7, 3, 4, 'gold'); fill(x - 1, y - 2, 3, 1, 'gold'); }
+    }
+    if (here && (frameN >> 3) % 2) { const [nx, ny] = zonePin(here), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale); fill(x - 1, y - 6, 3, 3, 'red'); fill(x, y - 3, 1, 2, 'red'); }
+    const [nx, ny] = zonePin(this.sel), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
+    ctx.strokeStyle = col((frameN >> 3) % 2 ? 0 : 3); ctx.lineWidth = 1; ctx.strokeRect(x - 4.5, y - 4.5, 9, 9);
+  }
   draw() {
     fill(0, 0, W, H, 0);
-    const z = this.sel, reg = REGIONS.find(r => r.id === z.region);
+    const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
     if (this.zoom === 0) {
-      const A = buildAtlas();
-      const vh = 96, tx = A.pad + z.fx * ZW + ZW / 2, ty = A.pad + z.fy * ZH + ZH / 2;
-      const tcx = Math.max(0, Math.min(A.w - W, tx - W / 2)), tcy = Math.max(0, Math.min(A.h - vh, ty - vh / 2));
-      this.camx = this.camx == null ? tcx : this.camx + (tcx - this.camx) * 0.25; this.camy = this.camy == null ? tcy : this.camy + (tcy - this.camy) * 0.25;
-      const cx = Math.round(this.camx), cy = Math.round(this.camy);
-      ctx.drawImage(A.canvas, cx, cy, W, vh, 0, 12, W, vh);
-      // icons
-      for (const o of ZONES) {
-        const ox = A.pad + o.fx * ZW - cx, oy = A.pad + o.fy * ZH - cy + 12;
-        if (ox < -ZW || ox > W || oy < -ZH || oy > 12 + vh) continue;
-        for (const ic of this.icons(o)) this.drawIcon(ic.k, ox + ic.x, oy + ic.y, false, ic.dead);
-      }
-      // region names at the centre of each region
-      const done = {};
-      for (const o of ZONES) {
-        if (done[o.region]) continue; done[o.region] = true;
-        const cells = ZONES.filter(q => q.region === o.region), mx = cells.reduce((a, q) => a + q.fx, 0) / cells.length, my = cells.reduce((a, q) => a + q.fy, 0) / cells.length;
-        const r = REGIONS.find(q => q.id === o.region), label = r.name.split(' ')[0].slice(0, 9);
-        const lx = A.pad + (mx + 0.5) * ZW - cx, ly = A.pad + (my + 0.5) * ZH - cy + 8;
-        if (lx < -40 || lx > W + 40 || ly < 12 || ly > 12 + vh - 8) continue;
-        const known = G.visited[o.id] || cells.some(q => G.visited[q.id]);
-        const L = known ? label : '???', lx0 = Math.round(lx - L.length * 3);
-        for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) text(L, lx0 + dx, Math.round(ly) + dy, 0);
-        text(L, lx0, Math.round(ly), r.id === z.region ? 'red' : 3);
-      }
-      // player + selection box
-      const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map];
-      if (here) { const px = A.pad + here.fx * ZW + (G.inst ? G.inst.return.x : G.x) - cx, py = A.pad + here.fy * ZH + (G.inst ? G.inst.return.y : G.y) - cy + 12; if ((frameN >> 3) % 2) { fill(px - 2, py - 2, 5, 5, 3); fill(px - 1, py - 1, 3, 3, 'red'); } }
-      const sx = A.pad + z.fx * ZW - cx, sy = A.pad + z.fy * ZH - cy + 12;
-      ctx.strokeStyle = col((frameN >> 4) % 2 ? 3 : 0); ctx.lineWidth = 1; ctx.strokeRect(sx - 0.5, sy - 0.5, ZW + 1, ZH + 1);
-      // compass rose
-      fill(146, 14, 12, 12, 0); text('N', 149, 14, 3); fill(151, 23, 2, 3, 3);
+      const img = IMG.gm_dunia_s; const m = spr('gm_dunia_s', img.width, img.height);
+      blit(m, 0, 12); this.pinMarks(img, 0, 12, 1);
+    } else if (this.zoom === 1) {
+      const img = IMG.gm_dunia, m = spr('gm_dunia', img.width, img.height);
+      const [nx, ny] = zonePin(z), tx = nx * img.width, ty = ny * img.height, vh = 97;
+      const cx = Math.max(0, Math.min(img.width - W, tx - W / 2)), cy = Math.max(0, Math.min(img.height - vh, ty - vh / 2));
+      this.camx = this.camx == null ? cx : this.camx + (cx - this.camx) * 0.25; this.camy = this.camy == null ? cy : this.camy + (cy - this.camy) * 0.25;
+      ctx.drawImage(m, Math.round(this.camx), Math.round(this.camy), W, vh, 0, 12, W, vh);
+      this.pinMarks(img, -Math.round(this.camx), 12 - Math.round(this.camy), 1);
     } else {
-      // ZONE view: the zone itself at 4 px per tile with every point of interest
       const m = buildZoneCached(z.id), s = 4, ox = Math.floor((W - ZW * s) / 2), oy = 13;
       const seen = G.visited[z.id] || G.waypoints[z.id];
       for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
@@ -935,25 +930,25 @@ class WorldMap {
       }
       fill(ox - 1, oy - 1, ZW * s + 2, 1, 3); fill(ox - 1, oy + ZH * s, ZW * s + 2, 1, 3); fill(ox - 1, oy - 1, 1, ZH * s + 2, 3); fill(ox + ZW * s, oy - 1, 1, ZH * s + 2, 3);
       if (seen) {
-        for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay, aw] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
+        for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
         for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
         const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
         for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
-    // title bar + info panel
-    fill(0, 0, W, 12, 3); textC(this.zoom ? z.name.slice(0, 24) : 'ATLAS OF AELMOOR', 80, 2, 0);
+    fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : ['DUNIA', 'DUNIA - ' + continentOf(z)][this.zoom], 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
-      [['town', 'TOWN'], ['wp', 'WAYPOINT'], ['dungeon', 'DUNGEON'], ['raid', 'RAID'], ['boss', 'WORLD BOSS'], ['arc', 'ARC BOSS']].forEach(([k, n], i) => { const x = 10 + (i % 3) * 50, y = 117 + Math.floor(i / 3) * 12; this.drawIcon(k, x, y + 3); text(n.slice(0, 7), x + 6, y, 3); });
+      const L = [[0, 'red', 'TOWN'], [1, 'blue', 'WAYPOINT'], [2, 0, 'VISITED'], [3, 1, 'UNKNOWN'], [4, 'gold', 'STORY'], [5, 'red', 'YOU']];
+      L.forEach(([i, c, n]) => { const x = 8 + (i % 3) * 50, y = 115 + Math.floor(i / 3) * 12; fill(x, y + 1, 5, 5, 3); fill(x + 1, y + 2, 3, 3, c); text(n, x + 8, y, 3); });
       return;
     }
     const seen = G.visited[z.id] || G.waypoints[z.id];
     text(seen ? z.name.slice(0, 18) : '??? UNEXPLORED', 6, 112, 3); textR(z.town ? 'SAFE' : `LV${z.lvl[0]}-${z.lvl[1]}`, 154, 112, 'gold');
-    text(`${seen ? z.sub : '???'} ${reg.exp ? 'EXP' + reg.exp : reg.act ? 'ACT ' + reg.act : 'HUB'}`.slice(0, 24), 6, 122, 2);
-    const ex = this.zoom ? (G.waypoints[z.id] ? 'A:TRAVEL B:BACK START:KEY' : 'NO WAYPOINT  B:BACK') : 'A:ZOOM  START:LEGEND';
-    text(ex, 6, 132, G.waypoints[z.id] && this.zoom ? 'blue' : 1);
+    text(`${pin[2]}${seen ? ' - ' + z.sub : ''}`.slice(0, 24), 6, 122, 2);
+    const hint = this.zoom < 2 ? 'A:ZOOM  B:BACK  START:KEY' : (G.waypoints[z.id] ? 'A:TRAVEL  B:BACK' : 'NO WAYPOINT  B:BACK');
+    text(hint, 6, 132, this.zoom === 2 && G.waypoints[z.id] ? 'blue' : 1);
   }
 }
 
@@ -964,7 +959,7 @@ class LevelUpScene {
   update() { this.t++; if (this.t > 30 && (P('a') || P('b') || P('start'))) { SFX.select(); removeScene(this); this.cb && this.cb(); } }
   draw() {
     fill(0, 0, W, H, 0); frame(3, 3, 154, 138);
-    blit(sprH(`c_${G.cls}_0`, 44), 10, 40 + (this.t < 20 ? Math.round(Math.sin(this.t / 2) * 3) : 0));
+    blit(classPortrait(G.cls) ? sprFit(classPortrait(G.cls), 46) : sprH(`c_${G.cls}_0`, 44), 8, 40 + (this.t < 20 ? Math.round(Math.sin(this.t / 2) * 3) : 0));
     for (let i = 0; i < 9; i++) { const x = 50 + ((i * 37) % 100), y = 20 + ((i * 53) % 110); if (((this.t >> 3) + i) % 3 === 0) text('+', x, y, 'gold'); }
     textC('LEVEL UP!', 100, 10, 'gold', 2);
     textC(`LEVEL ${this.g.lvl}`, 100, 34, 3);

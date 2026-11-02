@@ -65,6 +65,9 @@ const SPECIES = {
   stonekin: { name: 'STONEKIN', asi: { CON: 2, STR: 1 }, traits: ['stoneblood'], res: ['poison'], desc: 'Mountain delvers. Resist poison; advantage on poison saves.' },
   wispling: { name: 'WISPLING', asi: { DEX: 2, CHA: 1 }, traits: ['lucky', 'brave'], desc: 'Small and lucky. Reroll natural 1s; advantage vs fear.' },
   emberborn: { name: 'EMBERBORN', asi: { CHA: 2, INT: 1 }, traits: ['emberbolt'], res: ['fire'], desc: 'Touched by old fire. Resist fire; know EMBERDART.' },
+  burrowkin: { name: 'BURROWKIN', asi: { INT: 2, CON: 1 }, traits: ['cunning'], desc: 'Clever tunnel folk. Advantage on INT/WIS/CHA saves against magic.' },
+  twinblood: { name: 'TWINBLOOD', asi: { CHA: 2, DEX: 1, CON: 1 }, traits: ['feyblood', 'versatile'], desc: 'Born of two peoples. Resist charm; an extra skill.' },
+  tuskborn: { name: 'TUSKBORN', asi: { STR: 2, CON: 1 }, traits: ['relentless'], desc: 'Fierce and hardy. Once per rest, drop to 1 HP instead of 0.' },
   drakkin: { name: 'DRAKKIN', asi: { STR: 2, CHA: 1 }, traits: ['breath'], res: ['fire'], desc: 'Dragon-blooded. Fire breath once per rest; resist fire.' },
 };
 

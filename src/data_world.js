@@ -427,3 +427,25 @@ const ZONES = [];
 })();
 const ZONE_BY_ID = Object.fromEntries(ZONES.map(z => [z.id, z]));
 const regionLastZone = rid => ZONES.filter(z => z.region === rid).pop();
+
+// ================================================================ the world map of DUNIA: where each region sits on src_sheet/world_map.png
+// [x, y] as fractions of the map image, plus the place name painted there
+const REGION_PINS = {
+  ardenhold: [0.71, 0.44, 'IKLISTZEFON'], elderwood: [0.70, 0.20, 'PLAINS OF STRIFE'], hollowmere: [0.57, 0.43, 'WETLANDS'],
+  thornwood: [0.74, 0.29, 'THE BLACKWOOD'], greypeak: [0.67, 0.06, 'WHITECHAPEL PEAKS'], sandspire: [0.71, 0.63, 'CANYON OF WOE'],
+  saltreach: [0.46, 0.42, 'GOLDSTAR COAST'], emberwaste: [0.12, 0.29, "VUL'KEN"], frostmarch: [0.56, 0.15, 'HYLONIA'],
+  verdantdeep: [0.89, 0.87, 'EMERALD JUNGLE'], ashenbarrows: [0.16, 0.47, 'DREAD WASTES'], silverhaven: [0.92, 0.37, "TEL'LAYL"],
+  duskmoor: [0.53, 0.62, 'SWAMP OF SORROW'],
+  x1_0: [0.36, 0.18, 'NORTHERN ISLES'], x1_1: [0.33, 0.61, 'WESTERN ISLES'], x1_2: [0.42, 0.83, 'SOUTHERN ISLES'],
+  x2_0: [0.73, 0.53, 'CRYSTAL LAKE'], x2_1: [0.66, 0.37, 'CRYSTAL RIVER'], x2_2: [0.27, 0.47, 'HATCHERY'],
+  x3_0: [0.87, 0.11, 'ESTATE THORNHAART'], x3_1: [0.84, 0.25, 'REOTHIAN GLADES'], x3_2: [0.82, 0.38, 'CREEK OF LIFE'],
+  x4_0: [0.08, 0.38, 'ASHLANDS'], x4_1: [0.51, 0.73, 'REDROCK'], x4_2: [0.91, 0.72, "KRON'MAR"],
+  x5_0: [0.77, 0.76, 'DESERT OF ESRAH N'], x5_1: [0.68, 0.87, 'DESERT OF ESRAH S'], x5_2: [0.19, 0.38, 'DRAENIN'],
+};
+function zonePin(z) {
+  const p = REGION_PINS[z.region] || [0.5, 0.5, ''];
+  const sibs = ZONES.filter(o => o.region === z.region), i = sibs.indexOf(z);
+  const off = sibs.length > 3 && !REGIONS.find(r => r.id === z.region).exp ? [[0, 0], [0.028, 0], [0, 0.04], [0.028, 0.04]][i] : [i * 0.026, 0];
+  return [p[0] + off[0] - 0.012, p[1] + off[1] - 0.016];
+}
+function continentOf(z) { const p = REGION_PINS[z.region] || [0.5, 0.5]; return p[0] < 0.38 ? 'THE WEST ISLES' : p[1] < 0.5 ? 'NORTH KARRA' : 'SOUTH KARRA'; }
