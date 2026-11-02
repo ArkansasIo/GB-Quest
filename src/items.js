@@ -374,10 +374,27 @@ class TitleScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr(); const got = new Set(titlesEarned(G).map(t => t.id));
     textC(`TITLES ${got.size}/${TITLES.length}`, 80, 13, 3);
-    TITLES.slice(this.top, this.top + this.rows).forEach((t, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text((G.title === t.id ? '> ' : '') + t.name, 5, y, got.has(t.id) ? 3 : 1); });
+    TITLES.slice(this.top, this.top + this.rows).forEach((t, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); if (t.icon && IMG[t.icon]) blit(spr(t.icon, 8, 8, { ghost: !got.has(t.id) }), 4, y); text((G.title === t.id ? '> ' : '') + t.name, 14, y, got.has(t.id) ? 3 : 1); });
     this.scrollbar(156, 23, 92); frame(1, 116, 158, 27); const t = TITLES[this.i];
     text(t.how, 5, 120, 2); text(got.has(t.id) ? (G.title === t.id ? 'WORN. A: REMOVE' : 'A: WEAR THIS TITLE') : 'LOCKED', 5, 131, got.has(t.id) ? 'gold' : 1);
   }
 }
 
 for (const k in ITEMS) if (!ITEMS[k].icon0) ITEMS[k].icon0 = ITEMS[k].icon;
+
+// ---------------------------------------------------------------- icons for everything (tools/gen_newart.py)
+{
+  // assets load after this script runs, so check the asset list, not IMG
+  const NAMES = new Set(Object.keys(window.GB_ASSETS || {}).concat(window.ASSET_NAMES || [])), has = n => NAMES.size ? NAMES.has(n) : true;
+  for (const k in BUFFS) if (has('bf_' + k)) BUFFS[k].icon = 'bf_' + k;
+  for (const k in CONDITIONS) if (has('cd_' + k) && CONDITIONS[k] && typeof CONDITIONS[k] === 'object') CONDITIONS[k].icon = 'cd_' + k;
+  if (typeof ACTIVE_SKILLS !== 'undefined') ACTIVE_SKILLS.forEach(s => { if (has('sk_' + s.id)) s.icon = 'sk_' + s.id; });
+  if (typeof PASSIVE_SKILLS !== 'undefined') PASSIVE_SKILLS.forEach(s => { if (has('ps_' + s.id)) s.icon = 'ps_' + s.id; });
+  if (typeof TALENT_TREES !== 'undefined') TALENT_TREES.forEach(t => t.nodes.forEach(n => { if (has('tl_' + n.id)) n.icon = 'tl_' + n.id; }));
+  ACHIEVEMENTS.forEach(a => { if (has('ac_' + a.id)) a.icon = 'ac_' + a.id; });
+  TITLES.forEach(t => { if (has('tt_' + t.id)) t.icon = 'tt_' + t.id; });
+  for (const s of SLOTS) if (has('sl_' + s)) SLOT_ICON[s] = 'sl_' + s;
+  const icon0 = itemIcon;
+  itemIcon = function (it) { if (it && it.named && IMG['nn_' + it.named]) return 'nn_' + it.named; return icon0(it); };
+}
+const effectIcon = id => { const n = (BUFFS[id] && BUFFS[id].icon) || 'cd_' + id; return IMG[n] ? n : null; };

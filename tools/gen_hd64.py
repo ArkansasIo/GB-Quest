@@ -19,6 +19,8 @@ SRC, OUT = os.path.join(ROOT, 'assets'), os.path.join(ROOT, 'assets_hd64')
 FAMILIES = {
     'monsters': 'nm_', 'equipment': 'ne_', 'portraits': 'np_', 'walkers': 'gh_',
     'tiles': 'gt_', 'dungeon_tiles': 'gd_', 'objects': 'go_', 'icons': 'i_', 'battle': 'b_',
+    'buffs': 'bf_', 'conditions': 'cd_', 'skills': 'sk_', 'passives': 'ps_', 'talents': 'tl_', 'achievements': 'ac_', 'titles': 'tt_',
+    'slots': 'sl_', 'rarity_gems': 'rg_', 'ranks': 'rk_', 'named_items': 'nn_', 'class_sheets': 'c_',
 }
 
 def scale2x(a):

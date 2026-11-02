@@ -140,7 +140,7 @@ class InventoryScene {
     const e = this.cur();
     if (this.msg) { text(wrap(this.msg, 25).slice(0, 2).join('\n'), 5, 118, 'gold'); }
     else if (e && this.tab === 0) {
-      text(e.name.slice(0, 17), 5, 117, rarityCol(e.rarity)); textR(`${SLOT_NAME[itemSlot(e)] === 'RING 1' ? 'RING' : SLOT_NAME[itemSlot(e)]}`, 156, 117, 2);
+      if (IMG['rg_' + e.rarity]) blit(spr('rg_' + e.rarity, 8, 8), 4, 117); text(e.name.slice(0, 16), 13, 117, rarityCol(e.rarity)); textR(`${SLOT_NAME[itemSlot(e)] === 'RING 1' ? 'RING' : SLOT_NAME[itemSlot(e)]}`, 156, 117, 2);
       const { cur, d } = compareDelta(G, e), sgn = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
       let line = `${itemKeyStat(e)} R${ROMAN[e.rank || 1]}`;
       if (d) { const bits = []; if (d.ac) bits.push(`AC${sgn(d.ac)}`); if (d.hp) bits.push(`HP${sgn(d.hp)}`); if (d.hit) bits.push(`HIT${sgn(d.hit)}`); if (Math.abs(d.dmg) >= 0.1) bits.push(`DMG${sgn(d.dmg)}`); if (d.init) bits.push(`INI${sgn(d.init)}`); line += ' ' + (bits.join(' ') || '= SAME'); }

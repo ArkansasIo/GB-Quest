@@ -1247,7 +1247,11 @@
 "np_class_verdant",
 "np_class_wildblood",
 "np_class_cantor",
-"np_class_ascetic"
+"np_class_ascetic",
+"np_class_necromancer",
+"np_class_summoner",
+"np_class_sunwarden",
+"np_class_runeblade"
 ],
 "race_portrait": [
 "np_race_hearthkin_0",

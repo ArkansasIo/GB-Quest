@@ -946,16 +946,17 @@ class Battle {
       const y = 1 + i * 9; const act = this.actor === u;
       if (act) fill(0, y - 1, 79, 9, 1);
       text(u.name.slice(0, 6), 2, y, isChar(u) && u.ch.hp <= 0 ? 1 : 3);
-      bar(40, y + 1, 36, 4, Math.max(0, hpOf(u)), maxHpOf(u), hpOf(u) < maxHpOf(u) * 0.3 ? 'red' : 'hp');
-      if (u.temp) fill(40, y + 5, Math.min(36, u.temp), 1, 'blue');
-      const flags = u.effects.filter(e => !BUFFS[e.id] || !BUFFS[e.id].good).length; if (flags) fill(77, y + 1, 2, 4, 'purple');
+      bar(40, y + 1, 30, 4, Math.max(0, hpOf(u)), maxHpOf(u), hpOf(u) < maxHpOf(u) * 0.3 ? 'red' : 'hp');
+      if (u.temp) fill(40, y + 5, Math.min(30, u.temp), 1, 'blue');
+      { const ic = u.effects.map(e => effectIcon(e.id)).filter(Boolean); if (ic.length) blit(spr(ic[Math.floor(frameN / 40) % ic.length], 7, 7), 71, y); }
     });
     // foe panel
     this.foes.slice(0, 4).forEach((f, i) => {
       const y = 1 + i * 9; const tgt = this.state === 'target' && this.targets[this.ti] === f;
       if (tgt && (frameN >> 3) % 2) fill(81, y - 1, 79, 9, 1);
-      textR(f.name.slice(0, 7), 120, y, f.hp <= 0 ? 1 : f.boss ? 'red' : 3);
-      bar(122, y + 1, 36, 4, Math.max(0, f.hp), f.maxhp, f.boss ? 'red' : 2);
+      textR(f.name.slice(0, 6), 118, y, f.hp <= 0 ? 1 : f.boss ? 'red' : 3);
+      bar(128, y + 1, 30, 4, Math.max(0, f.hp), f.maxhp, f.boss ? 'red' : 2);
+      { const ic = (f.effects || []).map(e => effectIcon(e.id)).filter(Boolean); if (ic.length) blit(spr(ic[Math.floor(frameN / 40) % ic.length], 7, 7), 120, y); }
     });
     if (this.foes.length > 4) textR(`+${this.foes.length - 4}`, 158, 37, 2);
     // sprites

@@ -238,6 +238,22 @@ function keyAction(e) {
   return KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
 }
 addEventListener('keydown', e => { if (keyCaptureHandler) { e.preventDefault(); if (!e.repeat) keyCaptureHandler(e.code || e.key); return; } if (typing()) return; const code = e.code || ''; const slot = code.startsWith('Digit') ? Number(code.slice(5)) : code.startsWith('Numpad') ? Number(code.slice(6)) : NaN; if (combatHotkeyHandler && (slot >= 1 && slot <= 9 || slot === 0)) { e.preventDefault(); if (!e.repeat) combatHotkeyHandler(slot === 0 ? 9 : slot - 1); return; } const b = keyAction(e); if (b) { e.preventDefault(); bDown(mapBtn(b)); } });
+// ---- keyboard focus: the game must own the keyboard, or keys go to whatever else has focus (e.g. the host app's chat box)
+LCD.tabIndex = 0; LCD.style.outline = 'none';
+const focusGame = () => { if (typing()) return; try { window.focus(); } catch (e) {} try { LCD.focus({ preventScroll: true }); } catch (e) {} };
+addEventListener('pointerdown', e => { const t = e.target; if (t && t.closest && t.closest('input, textarea, select, #acctForm, #dbg')) return; focusGame(); }, true);
+const focusHint = (() => {
+  const el = document.createElement('div'); el.id = 'focusHint'; el.setAttribute('role', 'status');
+  el.textContent = 'CLICK THE GAME TO USE YOUR KEYBOARD';
+  el.style.cssText = 'position:fixed;z-index:90;pointer-events:none;padding:4px 8px;border-radius:4px;background:#000c;color:#ffe08a;border:1px solid #ffe08a;font:700 10px Silkscreen,"Courier New",monospace;letter-spacing:.06em;white-space:nowrap;display:none';
+  const place = () => { const r = LCD.getBoundingClientRect(); el.textContent = r.width < 300 ? 'CLICK TO PLAY' : 'CLICK THE GAME TO USE YOUR KEYBOARD'; const w = el.offsetWidth || 120; el.style.left = Math.round(Math.max(4, Math.min(innerWidth - w - 4, r.left + r.width / 2 - w / 2))) + 'px'; el.style.top = Math.round(r.top + r.height - 22) + 'px'; el.style.transform = 'none'; };
+  const upd = () => { const show = !document.hasFocus() && !document.getElementById('atlasOverlay') && !document.getElementById('acctForm'); el.style.display = show ? 'block' : 'none'; if (show) place(); };
+  const add = () => { document.body.appendChild(el); upd(); };
+  if (document.body) add(); else addEventListener('DOMContentLoaded', add);
+  addEventListener('focus', upd); addEventListener('blur', upd); addEventListener('resize', upd); setInterval(upd, 600);
+  return { upd };
+})();
+setTimeout(focusGame, 300);
 addEventListener('keyup', e => { const b = keyAction(e); if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
 addEventListener('blur', () => BTNS.forEach(bUp));
 LCD.addEventListener('contextmenu', e => e.preventDefault());

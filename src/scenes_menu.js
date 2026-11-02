@@ -408,7 +408,8 @@ class AbilitySkillsScene extends ListScene {
     list.slice(this.top, this.top + this.rows).forEach((skill, offset) => {
       const index = this.top + offset, y = 49 + offset * 10, known = learned.includes(skill.id), eligible = G.lvl >= skill.level;
       if (index === this.i) fill(3, y - 1, 153, 9, 1);
-      text(known ? '*' : eligible ? '+' : '-', 5, y, known ? 'gold' : eligible ? 3 : 1);
+      if (skill.icon && IMG[skill.icon]) blit(spr(skill.icon, 8, 8, { ghost: !eligible }), 4, y); else text(known ? '*' : eligible ? '+' : '-', 5, y, known ? 'gold' : eligible ? 3 : 1);
+      if (known) text('*', 134, y, 'gold');
       text(skill.name.slice(0, 20), 14, y, eligible ? 3 : 1); textR(`L${skill.level}`, 153, y, known ? 'gold' : 2);
     });
     const selected = list[this.i]; frame(2, 105, 156, 37);
@@ -467,7 +468,8 @@ class TalentScene extends ListScene {
       const learned = !node.respec && G.talents.includes(node.id);
       const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
       if (index === this.i) fill(3, y - 1, 153, 10, 1);
-      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+      if (node.icon && IMG[node.icon]) blit(spr(node.icon, 8, 8, { ghost: !eligible }), 4, y); else text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+      if (learned) text('*', 134, y, 'gold');
       text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
       if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
     });
@@ -639,7 +641,7 @@ class AchievementScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     text(`POINTS ${achPoints()}  ${Object.keys(G.ach).length}/${ACHIEVEMENTS.length}`, 4, 14, 'gold');
-    ACHIEVEMENTS.slice(this.top, this.top + this.rows).forEach((a, j) => { const i = this.top + j, y = 25 + j * 10, got = !!G.ach[a.id]; if (i === this.i) fill(2, y - 1, 152, 10, 1); checkbox(4, y + 1, got); text(a.name.slice(0, 22), 14, y, got ? 3 : 1); });
+    ACHIEVEMENTS.slice(this.top, this.top + this.rows).forEach((a, j) => { const i = this.top + j, y = 25 + j * 10, got = !!G.ach[a.id]; if (i === this.i) fill(2, y - 1, 152, 10, 1); a.icon && IMG[a.icon] ? blit(spr(a.icon, 8, 8, { ghost: !got }), 4, y) : checkbox(4, y + 1, got); text(a.name.slice(0, 22), 14, y, got ? 3 : 1); });
     frame(2, 126, 156, 16); text(ACHIEVEMENTS[this.i].desc.slice(0, 24), 6, 130);
   }
 }

@@ -6,7 +6,8 @@
   // chat box under the handheld
   const input = document.getElementById('chatinput');
   const form = document.getElementById('chatform');
-  if (form) form.addEventListener('submit', e => { e.preventDefault(); const v = input.value.trim(); if (!v) return; if (G) NET.sendChat(v); else chatLog('Say', 'YOU', v); input.value = ''; input.blur(); });
+  if (form) form.addEventListener('submit', e => { e.preventDefault(); const v = input.value.trim(); if (!v) return; if (G) NET.sendChat(v); else chatLog('Say', 'YOU', v); input.value = ''; input.blur(); focusGame(); });
+  if (input) input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); input.blur(); focusGame(); } });
   chatLog('System', BUILD.studio, `${BUILD.game} v${BUILD.version} - welcome to AELMOOR!`);
   // live page updates keep your run
   const hot = window.claude && window.claude.hot;
