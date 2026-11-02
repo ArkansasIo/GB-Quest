@@ -942,10 +942,8 @@ class Battle {
   }
   draw() {
     fill(0, 0, W, H, 0);
-    const bgn = battleBackdrop(this.kind);
-    if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); }
-    // backdrop floor
-    fill(0, 93, W, 1, 2); for (let x = 0; x < W; x += 8) fill(x + ((frameN >> 4) % 8), 92, 3, 1, 1);
+    if (typeof drawBattleBackdrop === 'function') drawBattleBackdrop(this);
+    else { const bgn = battleBackdrop(this.kind); if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); } fill(0, 93, W, 1, 2); }
     // party panel
     const big = this.party.length > 4;
     this.party.forEach((u, i) => {
@@ -970,7 +968,8 @@ class Battle {
     const shownP = this.party.filter(u => isChar(u)).slice(0, 3);
     shownP.forEach((u, k) => {
       const c = u.ch, look = `c_${c.cls}_4`, por = heroPortrait(c);
-      let s = por ? sprH(por, 34) : IMG[look] ? sprH(look, 30) : sprH('hero_4', 30);
+      const cl = S.battleBg !== 'painted' ? { clean: true } : undefined;
+      let s = por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
@@ -983,7 +982,7 @@ class Battle {
       if (f.hp <= 0 && !(this.anim.flash[f.id] && (this.anim.flash[f.id] >> 1) % 2)) return;
       const n = Math.min(4, this.foes.length), base = IMG[f.spr] ? f.spr : 'enemy_goblin';
       const hh = Math.min(n === 1 ? 52 : 30, Math.round(IMG[base].height * (f.scale || 1) * (n === 1 ? 1 : 0.75)));
-      const s = sprH(base, hh, { flip: true }); const [px, py] = this.posOf(f);
+      const s = sprH(base, hh, { flip: true, clean: S.battleBg !== 'painted' }); const [px, py] = this.posOf(f);
       if (this.anim.flash[f.id] && f.hp > 0 && (this.anim.flash[f.id] >> 1) % 2) return;
       const lx = this.anim.lunge === f.id ? -4 : 0;
       blit(s, px - s.width / 2 + lx, py + 24 - s.height);

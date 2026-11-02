@@ -127,7 +127,7 @@ function spr(name, w, h, opt) {
   const img = IMG[name]; if (!img) return null;
   opt = opt || {};
   w = w || img.width; h = h || Math.round(img.height * w / img.width);
-  const key = `${name}|${w}|${h}|${S.palette}|${opt.flip ? 1 : 0}|${opt.rot ? 1 : 0}|${opt.ghost ? 1 : 0}`;
+  const key = `${name}|${w}|${h}|${S.palette}|${opt.flip ? 1 : 0}|${opt.rot ? 1 : 0}|${opt.ghost ? 1 : 0}|${opt.clean ? 1 : 0}`;
   let c = sprCache.get(key); if (c) return c;
   c = scaled(img, w, h);
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
@@ -142,7 +142,7 @@ function spr(name, w, h, opt) {
       const l = lum(d, i) + dith, k = l < th[0] ? 3 : l < th[1] ? 2 : l < th[2] ? 1 : 0;
       d[i] = P[k][0]; d[i + 1] = P[k][1]; d[i + 2] = P[k][2];
     }
-  } else if (mode === 'gbc' && !/^g[tdohm]_/.test(name)) {
+  } else if (mode === 'gbc' && !/^g[tdohm]_/.test(name) && !opt.clean) {
     const pal = medianCut4(d);
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 110) { d[i + 3] = 0; continue; } d[i + 3] = 255;
@@ -150,6 +150,13 @@ function spr(name, w, h, opt) {
       d[i] = pal[bi][0]; d[i + 1] = pal[bi][1]; d[i + 2] = pal[bi][2];
     }
   } else for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 110) d[i + 3] = 0; else { d[i + 3] = 255; if (mode === 'gbc') { d[i] &= 0xf8; d[i + 1] &= 0xf8; d[i + 2] &= 0xf8; } } }
+  if (opt.clean) { // battle sprites: posterize, solid alpha, 1px dark outline (clean handheld-RPG look)
+    const solid = new Uint8Array(w * h);
+    for (let i = 0, p = 0; i < d.length; i += 4, p++) { if (d[i + 3] < 128) { d[i + 3] = 0; continue; } d[i + 3] = 255; solid[p] = 1; if (!MONO(mode)) { d[i] = (d[i] >> 4) * 17; d[i + 1] = (d[i + 1] >> 4) * 17; d[i + 2] = (d[i + 2] >> 4) * 17; } }
+    const ink = MONO(mode) ? PALS[mode].ui[3] : [22, 18, 26];
+    for (let y = 0; y < h; y++) for (let x0 = 0; x0 < w; x0++) { const p = y * w + x0; if (solid[p]) continue;
+      if ((x0 > 0 && solid[p - 1]) || (x0 < w - 1 && solid[p + 1]) || (y > 0 && solid[p - w]) || (y < h - 1 && solid[p + w])) { const i = p * 4; d[i] = ink[0]; d[i + 1] = ink[1]; d[i + 2] = ink[2]; d[i + 3] = 255; } }
+  }
   if (opt.ghost) for (let i = 0; i < d.length; i += 4) { const l = lum(d, i); d[i] = l * 0.6 + 60; d[i + 1] = l * 0.7 + 70; d[i + 2] = l * 0.9 + 90; d[i + 3] = d[i + 3] ? 170 : 0; }
   x.putImageData(id, 0, 0);
   if (opt.flip || opt.rot) {
