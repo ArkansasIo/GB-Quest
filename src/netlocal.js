@@ -111,7 +111,7 @@ LocalRealm.load();
   NET.publishHero = async function () {
     if (this.transport !== 'server') return pub0();
     if (this.offline || !G || !LocalRealm.token) return;
-    try { await LocalRealm.api('/api/hero', { method: 'PUT', body: { name: G.name, cls: G.cls, lvl: G.lvl, ach: achPoints(), tower: G.towerBest || 0, rating: G.rating || 1000, ch: G.chapter } }); } catch (e) {}
+    try { await LocalRealm.api('/api/hero', { method: 'PUT', body: { name: G.name, cls: G.cls, lvl: G.lvl, ach: achPoints(), tower: G.towerBest || 0, rating: G.rating || 1000, ch: G.chapter, rank: typeof RankSystem !== 'undefined' ? RankSystem.forCharacter(G) : null } }); } catch (e) {}
   };
   const lb0 = NET.leaderboard.bind(NET);
   NET.leaderboard = async function () {
@@ -123,6 +123,7 @@ LocalRealm.load();
   let desktopSaveSyncPromise = null;
   const saveGame0 = saveGame;
   saveGame = function () {
+    if (G && typeof RankSystem !== 'undefined') G.adventurerRank = RankSystem.forCharacter(G);
     const ok = saveGame0();
     if (ok && LocalRealm.desktop && LocalRealm.token && G && !NET.offline) {
       const now = Date.now();
