@@ -1,6 +1,6 @@
 # Hidden World Secrets
 
-The world contains **100 concealed discoveries distributed across the world zones**. The original six named encounters remain fixed; the other discoveries are generated from a curated title, clue and encounter catalog and assigned deterministically across the zone list. They are not marked on the map. Each location is derived deterministically from its zone map and stable secret ID, avoiding generated points of interest, boss positions, gathering nodes, exits and other secret locations. A faint glimmer appears only when the player is within three tiles.
+The world contains **100 concealed discoveries distributed across the world zones**. The original six named encounters remain fixed; the other discoveries are generated from a curated title, clue and encounter catalog and assigned deterministically across the zone list. Every generated entry has its own reward amount, and secret bosses have individual relic names. They are not marked on the map. Each location is derived deterministically from its zone map and stable secret ID, avoiding generated points of interest, boss positions, gathering nodes, exits and other secret locations. A faint glimmer appears only when the player is within three tiles.
 
 | Secret | Region | Encounter | Requirement |
 |---|---|---|---:|
@@ -18,7 +18,7 @@ The world contains **100 concealed discoveries distributed across the world zone
 - Void Herald: 12,000 gold, 8 boss sigils and the guaranteed legendary **Herald’s Last Star**.
 - Secret dungeons use the existing dungeon generator and instance chest reward flow.
 
-Secret NPC/cache/boss rewards are one-time per character. Dungeon and portal entrances can be revisited. Discoveries are persisted in `G.secretWorld`; the Hidden World journal unlocks in the main menu after the first discovery.
+NPC, cache, dungeon and boss discovery rewards are one-time per character. Dungeon and portal entrances can be revisited; their first discovery also grants the listed reward. Discoveries are persisted in `G.secretWorld`; the Hidden World journal unlocks in the main menu after the first discovery.
 
 ## Implementation
 
