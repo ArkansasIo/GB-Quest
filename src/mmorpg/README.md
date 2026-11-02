@@ -2,6 +2,10 @@
 
 The legacy 160x144 renderer remains intact. The modular layer contains D&D 5e-inspired rules and an independently implemented WoW-style MMO foundation.
 
+## Native C++23 core
+
+A standalone native rules library now lives in `native/`. It provides deterministic ability modifiers, proficiency progression, armor class and attack resolution, with an optional x86-64 System V assembly fast path and a portable C++23 fallback. See [native/README.md](../../native/README.md) for build instructions. This library is not yet wired into the JavaScript runtime or packaged as WebAssembly.
+
 ## D&D rules runtime
 - d20 checks, advantage/disadvantage, proficiency, all 18 skills and expertise
 - Dice expressions, attack rolls, armor class, saving throws, critical hits and damage mitigation
