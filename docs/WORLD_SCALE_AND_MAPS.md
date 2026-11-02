@@ -104,3 +104,22 @@ The playable map registry is in `world/maps/index.json` and contains exactly 90 
 - 14 original raid maps with instance metadata, encounter-wing layers, difficulty modes and weekly lockout metadata.
 
 Each map defines tile dimensions, chunk size, layer names, zone/continent links, level bands and streaming policy. These are deterministic procedural map manifests, not 90 finished hand-painted tilemaps. Terrain and encounter cells are generated from the world seed and map/chunk coordinates by the chunk generator. The registry API is `src/mmorpg/world/map-registry.js`.
+
+## Expansion worlds 6-13
+
+Expansions 6-13 are worlds of their own. Each has a painted map (`tools/gen_worldmaps.py` writes `assets/gm_x<N>.png` and `gm_x<N>_s.png`, with a contact sheet in `assets_preview/expansion_maps.png`) and 3 regions split into 8 zones. Each world also has 2 dungeons, a raid, world bosses, a hub town with trainers, and villages.
+
+| # | World | Levels | Biomes | Raid |
+|---|---|---|---|---|
+| 6 | CRYSTALIZED REALMS | 100-220 | crystal, coast, dusk | THE MIRROR CROWN |
+| 7 | FROSTSONG DYNASTY | 160-300 | snow, crystal, badlands | THE RIME DYNASTY |
+| 8 | ARCANE ASCENSION | 220-380 | crystal, meadow, volcanic | THE SPELL-LIGHT SPIRE |
+| 9 | BLOODMOON CONSPIRACY | 300-460 | dusk, marsh, badlands | THE ECLIPSE COURT |
+| 10 | DRAGONSPIRE ODYSSEY | 380-540 | volcanic, snow, badlands | THE DRAGONSPIRE |
+| 11 | WHISPERS OF VALHALLA | 460-620 | snow, coast, meadow | HALL OF ECHOING SHIELDS |
+| 12 | NIGHTSHADE CHRONICLES | 540-700 | dusk, jungle, marsh | THE FIRST SHADE |
+| 13 | MYTHICAL MEADOWLANDS | 600-720 | meadow, jungle, coast | THE GREEN HORIZON |
+
+- **Reaching them:** use the harbormaster (portal), MENU > EXPANSION MAPS, or the overland road from expansion 5.
+- **World map:** shows the world of the selected zone (`worldOf(z)`), with only that world's pins and roads.
+- **Atlas:** `dist/atlas.html` still draws DUNIA only. The new worlds are listed in `atlas.json` under `expansions[].zones`.

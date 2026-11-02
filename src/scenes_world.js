@@ -1472,7 +1472,7 @@ class WorldMap {
   move(dx, dy) {
     const [sx, sy] = zonePin(this.sel); let best = null, bd = 1e9;
     for (const o of ZONES) {
-      if (o === this.sel) continue;
+      if (o === this.sel || worldOf(o) !== worldOf(this.sel)) continue;
       const [ox, oy] = zonePin(o), vx = (ox - sx) * 1.6, vy = oy - sy, d = Math.hypot(vx, vy);
       if (!d || (vx * dx + vy * dy) / d < 0.5) continue;
       const score = d * (1.6 - (vx * dx + vy * dy) / d);
@@ -1527,7 +1527,9 @@ class WorldMap {
   }
   drawRoads(img, ox, oy, scale) {
     const P = o => { const [nx, ny] = zonePin(o); return [ox + nx * img.width * scale, oy + ny * img.height * scale]; };
+    const wn = worldOf(this.sel);
     for (const r of this.roads()) {
+      if (worldOf(r.a) !== wn || worldOf(r.b) !== wn) continue;
       const [x0, y0] = P(r.a), [x1, y1] = P(r.b);
       if (Math.max(x0, x1) < 0 || Math.min(x0, x1) > W || Math.max(y0, y1) < 12 || Math.min(y0, y1) > 110) continue;
       const known = (G.visited[r.a.id] || G.waypoints[r.a.id]) && (G.visited[r.b.id] || G.waypoints[r.b.id]);
@@ -1544,6 +1546,7 @@ class WorldMap {
     if (S.roads !== false) this.drawRoads(img, ox, oy, scale);
     const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map], ch = chapterDef();
     for (const o of ZONES) {
+      if (worldOf(o) !== worldOf(this.sel)) continue;
       const [nx, ny] = zonePin(o), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
       if (x < -4 || x > W + 4 || y < 10 || y > 110) continue;
       const known = G.visited[o.id] || G.waypoints[o.id];
@@ -1552,7 +1555,7 @@ class WorldMap {
       fill(x - s + 1, y - s + 1, 2 * s - 1, 2 * s - 1, o.town ? 'red' : G.waypoints[o.id] ? 'blue' : known ? 0 : 1);
       if (ch && o.region === ch.region && o.last && (frameN >> 4) % 2) { fill(x - 1, y - 7, 3, 4, 'gold'); fill(x - 1, y - 2, 3, 1, 'gold'); }
     }
-    if (here && (frameN >> 3) % 2) { const [nx, ny] = zonePin(here), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale); fill(x - 1, y - 6, 3, 3, 'red'); fill(x, y - 3, 1, 2, 'red'); }
+    if (here && worldOf(here) === worldOf(this.sel) && (frameN >> 3) % 2) { const [nx, ny] = zonePin(here), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale); fill(x - 1, y - 6, 3, 3, 'red'); fill(x, y - 3, 1, 2, 'red'); }
     const [nx, ny] = zonePin(this.sel), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
     ctx.strokeStyle = col((frameN >> 3) % 2 ? 0 : 3); ctx.lineWidth = 1; ctx.strokeRect(x - 4.5, y - 4.5, 9, 9);
   }
@@ -1560,10 +1563,10 @@ class WorldMap {
     fill(0, 0, W, H, 0);
     const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
     if (this.zoom === 0) {
-      const img = IMG.gm_dunia_s; const m = spr('gm_dunia_s', img.width, img.height);
+      const wi = IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s', img = IMG[wi]; const m = spr(wi, img.width, img.height);
       blit(m, 0, 12); this.pinMarks(img, 0, 12, 1);
     } else if (this.zoom === 1) {
-      const img = IMG.gm_dunia, m = spr('gm_dunia', img.width, img.height);
+      const wi = IMG[worldImg(worldOf(z))] ? worldImg(worldOf(z)) : 'gm_dunia', img = IMG[wi], m = spr(wi, img.width, img.height);
       const [nx, ny] = zonePin(z), tx = nx * img.width, ty = ny * img.height, vh = 97;
       const cx = Math.max(0, Math.min(img.width - W, tx - W / 2)), cy = Math.max(0, Math.min(img.height - vh, ty - vh / 2));
       this.camx = this.camx == null ? cx : this.camx + (cx - this.camx) * 0.25; this.camy = this.camy == null ? cy : this.camy + (cy - this.camy) * 0.25;
@@ -1588,7 +1591,7 @@ class WorldMap {
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
-    fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : ['DUNIA', 'DUNIA - ' + continentOf(z)][this.zoom], 80, 2, 0);
+    fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'DUNIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
       const L = [[0, 'red', 'TOWN'], [1, 'blue', 'WAYPOINT'], [2, 0, 'VISITED'], [3, 1, 'UNKNOWN'], [4, 'gold', 'STORY'], [5, 'red', 'YOU']];

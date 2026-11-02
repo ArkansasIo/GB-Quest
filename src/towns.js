@@ -47,7 +47,8 @@ function settlementOf(z) {
   if (!z || G.inst) return null;
   if (z.town && z.id === z.region) return { kind: 'CITY', name: z.name, districts: CITY_DISTRICTS.map(d => d.slice()) };
   if (z.town) return { kind: 'DOCKS', name: z.name, districts: [DOCK_DISTRICT.slice()] };
-  if (z.id !== z.region || z.exp) return null;
+  if (z.id !== z.region) return null;
+  if (z.exp) { const g = BIOME_GATHER[z.biome] || BIOME_GATHER.meadow, c = BIOME_CRAFT[z.biome] || BIOME_CRAFT.meadow; return /_0$/.test(z.region) ? { kind: 'TOWN', name: z.name, hubCentred: true, profs: ['blacksmith', g[0], g[1], c[0], c[1], 'relic'] } : { kind: 'VILLAGE', name: z.name, hubCentred: true, profs: [g[0], g[1], c[0]] }; }
   const idx = REGIONS.findIndex(r => r.id === z.region), r = RNG('settle-' + z.id);
   const g = BIOME_GATHER[z.biome] || BIOME_GATHER.meadow, c = BIOME_CRAFT[z.biome] || BIOME_CRAFT.meadow;
   if (idx % 3 === 0) return { kind: 'TOWN', name: z.name, hubCentred: true, profs: ['blacksmith', g[0], g[1], c[0], c[1], 'relic'] };

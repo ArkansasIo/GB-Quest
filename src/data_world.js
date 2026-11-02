@@ -497,10 +497,22 @@ const EXPANSIONS = [
   { n: 3, id: 'x3', name: 'SKYREACH', lvl: [240, 360], biomes: ['snow', 'crystal', 'meadow'], raid: 'THRONE OF WINDS', theme: 'void', desc: 'Floating isles above the clouds.' },
   { n: 4, id: 'x4', name: 'THE ABYSSAL RIFT', lvl: [360, 540], biomes: ['volcanic', 'dusk', 'badlands'], raid: 'HEART OF THE RIFT', theme: 'lava', desc: 'A wound in the world, bleeding fiends.' },
   { n: 5, id: 'x5', name: 'ETERNAL DAWN', lvl: [540, 720], biomes: ['crystal', 'coast', 'snow'], raid: 'THE FIRST LANTERN', theme: 'crypt', desc: 'Beyond the sunrise, the gods wait.' },
+  // expansions 6-13 are worlds of their own, each with its own painted map (assets/gm_x<N>.png)
+  { n: 6, id: 'x6', name: 'CRYSTALIZED REALMS', lvl: [100, 220], biomes: ['crystal', 'coast', 'dusk'], raid: 'THE MIRROR CROWN', theme: 'temple', desc: 'A living crystal repeats the dead.', world: true },
+  { n: 7, id: 'x7', name: 'FROSTSONG DYNASTY', lvl: [160, 300], biomes: ['snow', 'crystal', 'badlands'], raid: 'THE RIME DYNASTY', theme: 'ice', desc: 'An old crown wakes under the ice.', world: true },
+  { n: 8, id: 'x8', name: 'ARCANE ASCENSION', lvl: [220, 380], biomes: ['crystal', 'meadow', 'volcanic'], raid: 'THE SPELL-LIGHT SPIRE', theme: 'void', desc: 'Floating isles of spell-light.', world: true },
+  { n: 9, id: 'x9', name: 'BLOODMOON CONSPIRACY', lvl: [300, 460], biomes: ['dusk', 'marsh', 'badlands'], raid: 'THE ECLIPSE COURT', theme: 'crypt', desc: 'Under a red moon, allies vanish.', world: true },
+  { n: 10, id: 'x10', name: 'DRAGONSPIRE ODYSSEY', lvl: [380, 540], biomes: ['volcanic', 'snow', 'badlands'], raid: 'THE DRAGONSPIRE', theme: 'lava', desc: 'A dragon guards the cloud city.', world: true },
+  { n: 11, id: 'x11', name: 'WHISPERS OF VALHALLA', lvl: [460, 620], biomes: ['snow', 'coast', 'meadow'], raid: 'HALL OF ECHOING SHIELDS', theme: 'ice', desc: 'Old heroes wake to a northern song.', world: true },
+  { n: 12, id: 'x12', name: 'NIGHTSHADE CHRONICLES', lvl: [540, 700], biomes: ['dusk', 'jungle', 'marsh'], raid: 'THE FIRST SHADE', theme: 'void', desc: 'Shadows move before their owners.', world: true },
+  { n: 13, id: 'x13', name: 'MYTHICAL MEADOWLANDS', lvl: [600, 720], biomes: ['meadow', 'jungle', 'coast'], raid: 'THE GREEN HORIZON', theme: 'temple', desc: 'A wild green world, left to grow.', world: true },
 ];
 const EXP_ZONE_NAMES = [
   ['CORAL STRAND', 'WRECKWOOD', 'MANGROVE MAZE'], ['PEARL TRENCH', 'GLIMMER REEF', 'BLACK FATHOM'],
   ['CLOUDHOLM', 'GLASS PEAKS', 'WINDMEADOW'], ['CINDER RIFT', 'HOWLING GAP', 'SCAR PLAINS'], ['DAWNSHORE', 'HALO FIELDS', 'LAST PEAK'],
+  ['PRISM COAST', 'GLASSWATER BAY', 'ECHO MIRE'], ['RIMEHOLD', 'SHARDWIND PASS', 'FROSTSCAR WASTE'], ['SPELLGROVE', 'LEYMEADOW', 'CINDER ARCANUM'],
+  ['CRIMSON MOOR', 'LEECH FEN', 'RED DUNES'], ['WYRMFIRE CALDERA', 'SKYPEAK', 'SCORCHED PLAINS'], ['FJORDHOLM', 'SHIELD COAST', 'MEAD HALLS'],
+  ['GLOOMHAVEN WOODS', 'NIGHTVINE JUNGLE', 'SHADE MARSH'], ['GREENHEART VALE', 'WILDROOT JUNGLE', 'SUNSHORE'],
 ];
 EXPANSIONS.forEach((x, xi) => x.biomes.forEach((b, i) => {
   const span = (x.lvl[1] - x.lvl[0]) / 3;
@@ -581,6 +593,14 @@ const REGION_PINS = {
   x3_0: [0.87, 0.11, 'ESTATE THORNHAART'], x3_1: [0.84, 0.25, 'REOTHIAN GLADES'], x3_2: [0.82, 0.38, 'CREEK OF LIFE'],
   x4_0: [0.08, 0.38, 'ASHLANDS'], x4_1: [0.51, 0.73, 'REDROCK'], x4_2: [0.91, 0.72, "KRON'MAR"],
   x5_0: [0.77, 0.76, 'DESERT OF ESRAH N'], x5_1: [0.68, 0.87, 'DESERT OF ESRAH S'], x5_2: [0.19, 0.38, 'DRAENIN'],
+  x6_0: [0.28, 0.42, 'PRISM COAST'], x6_1: [0.64, 0.33, 'GLASSWATER'], x6_2: [0.7, 0.7, 'ECHO MIRE'],
+  x7_0: [0.48, 0.26, 'RIMEHOLD'], x7_1: [0.3, 0.62, 'SHARDWIND'], x7_2: [0.72, 0.64, 'FROSTSCAR'],
+  x8_0: [0.32, 0.3, 'SPELLGROVE'], x8_1: [0.42, 0.6, 'LEYMEADOW'], x8_2: [0.76, 0.62, 'ARCANUM'],
+  x9_0: [0.34, 0.38, 'CRIMSON MOOR'], x9_1: [0.55, 0.62, 'LEECH FEN'], x9_2: [0.72, 0.4, 'RED DUNES'],
+  x10_0: [0.36, 0.62, 'CALDERA'], x10_1: [0.68, 0.3, 'SKYPEAK'], x10_2: [0.62, 0.62, 'SCORCHLANDS'],
+  x11_0: [0.32, 0.3, 'FJORDHOLM'], x11_1: [0.7, 0.48, 'SHIELD COAST'], x11_2: [0.48, 0.72, 'MEAD HALLS'],
+  x12_0: [0.42, 0.34, 'GLOOMHAVEN'], x12_1: [0.7, 0.62, 'NIGHTVINE'], x12_2: [0.36, 0.62, 'SHADE MARSH'],
+  x13_0: [0.4, 0.38, 'GREENHEART'], x13_1: [0.64, 0.58, 'WILDROOT'], x13_2: [0.3, 0.66, 'SUNSHORE'],
 };
 function zonePin(z) {
   const p = REGION_PINS[z.region] || [0.5, 0.5, ''];
@@ -588,4 +608,8 @@ function zonePin(z) {
   const off = sibs.length > 3 && !REGIONS.find(r => r.id === z.region).exp ? [[0, 0], [0.028, 0], [0, 0.04], [0.028, 0.04]][i] : [i * 0.026, 0];
   return [p[0] + off[0] - 0.012, p[1] + off[1] - 0.016];
 }
-function continentOf(z) { const p = REGION_PINS[z.region] || [0.5, 0.5]; return p[0] < 0.38 ? 'THE WEST ISLES' : p[1] < 0.5 ? 'NORTH KARRA' : 'SOUTH KARRA'; }
+// which painted map a zone lives on: 0 = DUNIA (base game + expansions 1-5), else the expansion number
+const worldOf = z => { const x = z && z.exp ? EXPANSIONS.find(e => e.n === z.exp) : null; return x && x.world ? x.n : 0; };
+const worldName = n => n ? EXPANSIONS.find(e => e.n === n).name : 'DUNIA';
+const worldImg = (n, small) => n ? `gm_x${n}${small ? '_s' : ''}` : (small ? 'gm_dunia_s' : 'gm_dunia');
+function continentOf(z) { if (worldOf(z)) return worldName(worldOf(z)); const p = REGION_PINS[z.region] || [0.5, 0.5]; return p[0] < 0.38 ? 'THE WEST ISLES' : p[1] < 0.5 ? 'NORTH KARRA' : 'SOUTH KARRA'; }
