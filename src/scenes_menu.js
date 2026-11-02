@@ -700,7 +700,7 @@ class BossJournalScene extends ListScene {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    const all = globalThis.GBQBossProgression ? GBQBossProgression.summary(G, BOSSES) : { total: BOSSES.length, cleared: 0, percent: 0 };
+    const all = globalThis.GBQBossProgression ? globalThis.GBQBossProgression.summary(G, BOSSES) : { total: BOSSES.length, cleared: 0, percent: 0 };
     const rows = this.items(), namedMode = this.category === 'NAMED', b = rows[this.i] || BOSSES[0], state = !namedMode && G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[b.id] || {}; 
     const namedFound = NAMED_ITEMS.filter(n => (G.named && G.named[n.id]) || (G.bossProgress && G.bossProgress.named && G.bossProgress.named[n.id])).length;
     text(namedMode ? `NAMED ${namedFound}/${NAMED_ITEMS.length}` : `BOSSES ${all.cleared}/${all.total} ${all.percent}%`, 4, 14, 'gold');
