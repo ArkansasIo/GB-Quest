@@ -1,33 +1,48 @@
 'use strict';
 // ================================================================ HEIRLOOMS: account-wide set gear from level 1
-// LANTERNBORN HEIRLOOMS is a nine-piece set (weapon, chest, helm, amulet, cloak, gloves, belt,
-// leggings, boots) that belongs to the ACCOUNT, not to one hero. Every character on this device,
-// in every save slot, can summon a copy of each piece from MAIN MENU > HEIRLOOMS, starting at level 1.
+// LANTERNBORN HEIRLOOMS is a fourteen-piece set that belongs to the ACCOUNT, not to one hero:
+//   gear      weapon (six styles), chest, helm, cloak, gloves, belt, leggings, boots
+//   jewellery amulet, two rings, earrings
+//   trinkets  two trinkets (battle-start effects from trinkets.js)
+//   * BUYING: each piece is bought once with gold from a merchant (MERCHANT > HEIRLOOMS). A purchase
+//     unlocks the piece for the whole account, so every hero on this device, in every save slot,
+//     can then summon a copy for free from MAIN MENU > HEIRLOOMS, starting at level 1.
 //   * Copies scale with the wearer: item level = hero level (1-720), so they never need replacing
 //     while levelling. Stats are deliberately below good drops of the same level.
 //   * The chest adapts to the hero's heaviest armour proficiency and the weapon comes in six styles.
 //     Any class can wear the other pieces; they count toward their own set, not the armour-weight sets.
+//   * The built-in bonus of the bases (saves, initiative, accuracy) is capped for heirlooms as a whole
+//     at +1 / +2 / +3 (by level), so fourteen pieces cannot stack +40 to every save.
 //   * Copies are soulbound: no auction, trade or salvage, and they sell for 0 G. Lose one and you
 //     can summon it again. One copy of each piece per hero.
-//   * Wearing 2 / 4 / 6 / 9 pieces grants the set bonus (XP first, like classic heirlooms).
-// The pure rules (catalog, scaling, collection, set bonus) are exported as GBQHeirlooms for tests;
-// the game wiring below them runs only inside the game.
+//   * Wearing 2 / 4 / 6 / 9 / 12 / 14 pieces grants the set bonus (XP first, like classic heirlooms).
+// The pure rules (catalog, scaling, collection, prices, set bonus) are exported as GBQHeirlooms for
+// tests; the game wiring below them runs only inside the game.
 
 const HEIRLOOM_SET = { id: 'lanternborn', name: 'LANTERNBORN HEIRLOOMS', storeKey: 'gbq2_heirlooms' };
 // two stats per piece; 'fixed' stats do not scale with level (keeps XP bonuses sane).
 // Bases are chosen for their small built-in bonus (save / init / hit), not the level-scaled HP of
 // kettle hats, amulets and chausses, so a full set does not multiply a level-1 hero's health.
+// price: gold, paid once per account at a merchant
 const HEIRLOOM_PIECES = [
-  { id: 'hl_weapon', name: 'WEAPON', slot: 'weapon', kind: 'weapon', stats: ['dmg', 'crit'] },
-  { id: 'hl_chest', name: 'CHEST', slot: 'armor', kind: 'armor', stats: ['hp', 'resist'] },
-  { id: 'hl_helm', name: 'HELM', slot: 'head', kind: 'wondrous', base: 'circlet', stats: ['crit', 'resist'] },
-  { id: 'hl_amulet', name: 'AMULET', slot: 'neck', kind: 'wondrous', base: 'pendant', stats: ['dmg'], fixed: [['xp', 5]] },
-  { id: 'hl_cloak', name: 'CLOAK', slot: 'back', kind: 'wondrous', base: 'cloak', stats: ['dodge'], fixed: [['xp', 5]] },
-  { id: 'hl_gloves', name: 'GLOVES', slot: 'hands', kind: 'wondrous', base: 'bracers', stats: ['hit', 'critdmg'] },
-  { id: 'hl_belt', name: 'BELT', slot: 'waist', kind: 'wondrous', base: 'baldric', stats: ['haste', 'block'] },
-  { id: 'hl_legs', name: 'LEGGINGS', slot: 'legs', kind: 'wondrous', base: 'leggings', stats: ['hp', 'dodge'] },
-  { id: 'hl_boots', name: 'BOOTS', slot: 'feet', kind: 'wondrous', base: 'boots', stats: ['haste', 'resist'] },
+  { id: 'hl_weapon', name: 'WEAPON', slot: 'weapon', kind: 'weapon', stats: ['dmg', 'crit'], price: 2000 },
+  { id: 'hl_chest', name: 'CHEST', slot: 'armor', kind: 'armor', stats: ['hp', 'resist'], price: 1500 },
+  { id: 'hl_helm', name: 'HELM', slot: 'head', kind: 'wondrous', base: 'circlet', stats: ['crit', 'resist'], price: 750 },
+  { id: 'hl_cloak', name: 'CLOAK', slot: 'back', kind: 'wondrous', base: 'cloak', stats: ['dodge'], fixed: [['xp', 5]], price: 750 },
+  { id: 'hl_gloves', name: 'GLOVES', slot: 'hands', kind: 'wondrous', base: 'bracers', stats: ['hit', 'critdmg'], price: 750 },
+  { id: 'hl_belt', name: 'BELT', slot: 'waist', kind: 'wondrous', base: 'baldric', stats: ['haste', 'block'], price: 750 },
+  { id: 'hl_legs', name: 'LEGGINGS', slot: 'legs', kind: 'wondrous', base: 'leggings', stats: ['hp', 'dodge'], price: 750 },
+  { id: 'hl_boots', name: 'BOOTS', slot: 'feet', kind: 'wondrous', base: 'boots', stats: ['haste', 'resist'], price: 750 },
+  // jewellery
+  { id: 'hl_amulet', name: 'AMULET', slot: 'neck', kind: 'wondrous', base: 'pendant', stats: ['dmg'], fixed: [['xp', 5]], price: 1000, group: 'jewel' },
+  { id: 'hl_ring1', name: 'RING', slot: 'ring', kind: 'wondrous', base: 'ring', stats: ['crit', 'dmg'], price: 1200, group: 'jewel' },
+  { id: 'hl_ring2', name: 'BAND', slot: 'ring', kind: 'wondrous', base: 'band', stats: ['leech', 'resist'], price: 1200, group: 'jewel' },
+  { id: 'hl_earrings', name: 'EARRINGS', slot: 'ear', kind: 'wondrous', base: 'earring', stats: ['crit', 'dodge'], price: 1000, group: 'jewel' },
+  // trinkets (effects in trinkets.js: war horn = MIGHTY, lucky coin = FOCUSED at battle start)
+  { id: 'hl_trinket1', name: 'WAR HORN', slot: 'trinket', kind: 'wondrous', base: 'war_horn', stats: ['dmg'], price: 2500, group: 'trinket' },
+  { id: 'hl_trinket2', name: 'LUCKY COIN', slot: 'trinket', kind: 'wondrous', base: 'lucky_coin', stats: ['crit'], price: 2500, group: 'trinket' },
 ];
+const heirloomPrice = id => (HEIRLOOM_BY_ID[id] || {}).price || 0;
 const HEIRLOOM_BY_ID = Object.fromEntries(HEIRLOOM_PIECES.map(p => [p.id, p]));
 // weapon styles: base weapon, display name and a replacement stat pair for casters
 const HEIRLOOM_WEAPONS = {
@@ -46,10 +61,12 @@ const HEIRLOOM_SET_BONUS = [
   { need: 4, stats: [['xp', 10], ['resist', 3]], perLevel: [['hp', 5, 0.5]] },
   { need: 6, stats: [['dmg', 10], ['heal', 10]] },
   { need: 9, stats: [['xp', 10], ['gf', 15], ['mf', 15], ['crit', 3]] },
+  { need: 12, stats: [['critdmg', 15], ['leech', 2]] },
+  { need: 14, stats: [['dmg', 10], ['haste', 5]] },
 ];
 // mirrors gen.js AFFIX_K / data_world.js SUBSTATS caps so the rules work outside the game too
-const HL_AFFIX_K = { crit: 1.2, critdmg: 5, dodge: 0.8, block: 1.2, haste: 1.2, dmg: 3, heal: 3, resist: 1.2, hp: 5, hit: 0.2, radiant: 4, xp: 1.5 };
-const HL_CAPS = { crit: 50, critdmg: 300, dodge: 40, block: 40, haste: 50, dmg: 500, heal: 200, resist: 60, hp: 99999, hit: 30, radiant: 300, xp: 200 };
+const HL_AFFIX_K = { crit: 1.2, critdmg: 5, dodge: 0.8, block: 1.2, haste: 1.2, dmg: 3, heal: 3, resist: 1.2, hp: 5, hit: 0.2, radiant: 4, xp: 1.5, leech: 0.4 };
+const HL_CAPS = { crit: 50, critdmg: 300, dodge: 40, block: 40, haste: 50, dmg: 500, heal: 200, resist: 60, hp: 99999, hit: 30, radiant: 300, xp: 200, leech: 20 };
 const HL_LEVEL_MAX = 720;
 
 const clampHeirloomLevel = lvl => Math.max(1, Math.min(HL_LEVEL_MAX, Math.floor(Number(lvl) || 1)));
@@ -58,8 +75,10 @@ function heirloomStat(stat, lvl) {
   const L = clampHeirloomLevel(lvl), k = HL_AFFIX_K[stat] || 1;
   return Math.max(1, Math.min(HL_CAPS[stat] || 9999, Math.round(k * (1 + L / 12) * 1.1)));
 }
-// +1 at level 1, one more every 240 levels, +3 at most (plus also raises each base's save/init/hit bonus)
+// +1 at level 1, one more every 240 levels, +3 at most. The same number caps the combined built-in
+// save / init / hit / ... bonus of all equipped heirlooms (per bonus kind).
 const heirloomPlus = lvl => Math.min(3, 1 + Math.floor((clampHeirloomLevel(lvl) - 1) / 240));
+const heirloomBonusCap = heirloomPlus;
 function heirloomStats(pieceId, lvl, style) {
   const p = HEIRLOOM_BY_ID[pieceId]; if (!p) return null;
   const stats = p.kind === 'weapon' && style && HEIRLOOM_WEAPONS[style] && HEIRLOOM_WEAPONS[style].stats || p.stats;
@@ -85,18 +104,29 @@ function heirloomSetBonus(count, lvl) {
   return out;
 }
 // ---------------------------------------------------------------- account collection
-// { v, unlocked: [pieceIds], summons, firstSummonAt, heroes: { "slot:name": true } }.
-// Every piece is unlocked for every account: the set is the account's starter inheritance.
+// { v, unlocked: [pieceIds], spent, summons, firstSummonAt, heroes: { "slot:name": true } }.
+// v1 (the first release) unlocked the original nine pieces for free; collections saved by it keep them.
 function normalizeCollection(raw) {
   const c = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const unlocked = new Set(Array.isArray(c.unlocked) ? c.unlocked.filter(id => HEIRLOOM_BY_ID[id]) : []);
-  for (const p of HEIRLOOM_PIECES) unlocked.add(p.id);
   return {
-    v: 1, unlocked: HEIRLOOM_PIECES.map(p => p.id).filter(id => unlocked.has(id)),
+    v: 2, unlocked: HEIRLOOM_PIECES.map(p => p.id).filter(id => unlocked.has(id)),
+    spent: Math.max(0, Math.floor(Number(c.spent) || 0)),
     summons: Math.max(0, Math.floor(Number(c.summons) || 0)),
     firstSummonAt: Number(c.firstSummonAt) || null,
     heroes: c.heroes && typeof c.heroes === 'object' && !Array.isArray(c.heroes) ? Object.fromEntries(Object.entries(c.heroes).filter(([, v]) => v === true).slice(0, 200)) : {},
   };
+}
+// buy (unlock) a piece for the account: { ok, collection, gold } or { ok: false, error }
+function buyHeirloom(collection, pieceId, gold) {
+  const c = normalizeCollection(collection), p = HEIRLOOM_BY_ID[pieceId];
+  if (!p) return { ok: false, error: 'No such heirloom.' };
+  if (c.unlocked.includes(pieceId)) return { ok: false, error: 'Your account already owns that heirloom.' };
+  const have = Math.max(0, Math.floor(Number(gold) || 0));
+  if (have < p.price) return { ok: false, error: `It costs ${p.price} G. You have ${have} G.` };
+  c.unlocked = HEIRLOOM_PIECES.map(x => x.id).filter(id => id === pieceId || c.unlocked.includes(id));
+  c.spent += p.price;
+  return { ok: true, collection: c, gold: have - p.price, cost: p.price };
 }
 function recordSummon(collection, heroKey, now) {
   const c = normalizeCollection(collection);
@@ -119,8 +149,8 @@ const equippedHeirloomCount = c => Object.values(c && c.eq || {}).filter(it => i
 
 if (typeof globalThis !== 'undefined') globalThis.GBQHeirlooms = {
   HEIRLOOM_SET, HEIRLOOM_PIECES, HEIRLOOM_WEAPONS, HEIRLOOM_CHESTS, HEIRLOOM_SET_BONUS,
-  heirloomStat, heirloomPlus, heirloomStats, defaultWeaponStyle, heaviestArmor, heirloomSetBonus,
-  normalizeCollection, recordSummon, heirloomCopies, hasHeirloom, equippedHeirloomCount,
+  heirloomStat, heirloomPlus, heirloomBonusCap, heirloomStats, defaultWeaponStyle, heaviestArmor, heirloomSetBonus,
+  heirloomPrice, normalizeCollection, buyHeirloom, recordSummon, heirloomCopies, hasHeirloom, equippedHeirloomCount,
 };
 
 // ================================================================ game wiring (browser build only)
@@ -170,16 +200,25 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
     if (typeof BAG_MAX !== 'undefined' && G.bag.length >= BAG_MAX) return 'Your bag is full.';
     const it = makeHeirloom(pieceId, G, opts.style);
     G.bag.push(it);
-    // equip straight away; whatever was in the slot goes to the bag (equipItem refuses only on a real conflict)
-    if (opts.equip !== false) equipItem(G, it, G.bag);
+    // equip straight away; whatever was in the slot goes to the bag (equipItem refuses only on a real conflict).
+    // Rings and trinkets have two slots: use an empty one, else one that is not holding another heirloom.
+    if (opts.equip !== false) { const slots = slotsFor(it), want = slots.find(s => !G.eq[s]) || slots.find(s => !G.eq[s].heirloom) || slots[0]; equipItem(G, it, G.bag, want); }
     saveHeirloomCollection(recordSummon(col, heroKey()));
     return null;
   }
-  // summon and equip every missing piece; replaced gear goes to the bag
+  // summon and equip every unlocked piece this hero is missing; replaced gear goes to the bag
   function summonHeirloomSet() {
-    const got = [], failed = [];
-    for (const p of HEIRLOOM_PIECES) { if (hasHeirloom(G, p.id)) continue; const why = summonHeirloom(p.id); (why ? failed : got).push(why ? `${p.name}: ${why}` : p.name); }
-    return { got, failed };
+    const got = [], failed = [], owned = loadHeirloomCollection().unlocked;
+    for (const p of HEIRLOOM_PIECES) { if (!owned.includes(p.id) || hasHeirloom(G, p.id)) continue; const why = summonHeirloom(p.id); (why ? failed : got).push(why ? `${p.name}: ${why}` : p.name); }
+    return { got, failed, locked: HEIRLOOM_PIECES.length - owned.length };
+  }
+  // pay with this hero's gold; the piece unlocks for every hero on the account
+  function buyHeirloomForAccount(pieceId) {
+    if (!G) return 'No hero loaded.';
+    const r = buyHeirloom(loadHeirloomCollection(), pieceId, G.gold);
+    if (!r.ok) return r.error;
+    G.gold = r.gold; saveHeirloomCollection(r.collection); saveGame();
+    return null;
   }
   // swap the heirloom weapon's style in place (wherever it is)
   function restyleHeirloomWeapon(style) {
@@ -197,11 +236,24 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
       for (const list of [h.bag, h === G ? G.bank : null]) if (Array.isArray(list)) { const i = list.indexOf(it); if (i >= 0) list.splice(i, 1); }
     }
   }
-  Object.assign(window, { syncAllHeirlooms, summonHeirloom, summonHeirloomSet, restyleHeirloomWeapon, returnHeirloom, loadHeirloomCollection });
+  Object.assign(window, { syncAllHeirlooms, summonHeirloom, summonHeirloomSet, buyHeirloomForAccount, restyleHeirloomWeapon, returnHeirloom, loadHeirloomCollection });
 
   // ---------------------------------------------------------------- hooks
   // set bonus rides on the armour-set hook that derive() already reads
   { const sb0 = armorSetBonus; armorSetBonus = function (c) { const out = sb0(c); const n = equippedHeirloomCount(c); return n >= 2 ? out.concat(heirloomSetBonus(n, c.lvl)) : out; }; }
+  // the built-in save / init / hit / ... bonus of heirloom bases counts once for the whole set, capped by level.
+  // (Same rule as rules.js for everything else: each wondrous item adds max(1, plus) to its bonus kind.)
+  {
+    wondrousBonus = function (c, kind) {
+      let normal = 0, heir = 0;
+      for (const slot of SLOTS) {
+        const it = c.eq[slot]; if (!it || it.kind !== 'wondrous') continue;
+        const w = WONDROUS.find(x => x.id === it.base); if (!w || w.bonus !== kind) continue;
+        if (it.heirloom) heir += Math.max(1, it.plus); else normal += Math.max(1, it.plus);
+      }
+      return normal + Math.min(heir, heirloomBonusCap(c.lvl));
+    };
+  }
   // copies follow the hero's level
   { const gx0 = gainXP; gainXP = function (c, amount) { const before = c.lvl, r = gx0(c, amount); if (c.lvl !== before) syncAllHeirlooms(); return r; }; }
   { const ls0 = loadSlot; loadSlot = function (i) { const ok = ls0(i); if (ok) syncAllHeirlooms(); return ok; }; }
@@ -238,22 +290,49 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
   }
 
   // ---------------------------------------------------------------- MAIN MENU > HEIRLOOMS
+  // MAIN MENU > HEIRLOOMS summons what the account owns; MERCHANT > HEIRLOOMS ({ vendor: true }) sells pieces.
   class HeirloomScene extends ListScene {
-    constructor() { super(9); syncAllHeirlooms(); }
+    constructor(opts = {}) { super(9); this.vendor = !!opts.vendor; syncAllHeirlooms(); }
     items() { return ['SET', ...HEIRLOOM_PIECES.map(p => p.id)]; }
+    missing() { const owned = loadHeirloomCollection().unlocked; return HEIRLOOM_PIECES.filter(p => !owned.includes(p.id)); }
+    buy(p, after) {
+      choose([`BUY FOR ${fmt(p.price)} G`, 'NOT NOW'], k => {
+        if (k !== 0) return;
+        const why = buyHeirloomForAccount(p.id); SFX[why ? 'error' : 'buy']();
+        if (why) return say(why);
+        toast('HEIRLOOM', `${p.name} UNLOCKED`, 'item_coin', 'buy');
+        if (after) after();
+      }, `${p.name}: unlocks for every hero on this account. You have ${fmt(G.gold)} G.`);
+    }
     update() {
       this.navList();
       if (P('b')) { SFX.back(); removeScene(this); return; }
       if (!P('a')) return;
       const id = this.items()[this.i];
       if (id === 'SET') {
+        if (this.vendor) {
+          const miss = this.missing(), total = miss.reduce((a, p) => a + p.price, 0);
+          if (!miss.length) { SFX.error(); return say('Your account owns every heirloom.'); }
+          return choose([`BUY ALL ${miss.length} FOR ${fmt(total)} G`, 'NOT NOW'], k => {
+            if (k !== 0) return;
+            if (G.gold < total) { SFX.error(); return say(`That costs ${fmt(total)} G. You have ${fmt(G.gold)} G.`); }
+            for (const p of miss) buyHeirloomForAccount(p.id);
+            SFX.buy(); say([`Unlocked ${miss.length} heirlooms for your account.`, 'Summon them from MENU > HEIRLOOMS.']);
+          }, 'Unlock every missing piece for the whole account.');
+        }
         const r = summonHeirloomSet();
-        if (!r.got.length && !r.failed.length) { SFX.error(); return say('You already carry every heirloom.'); }
+        if (!r.got.length && !r.failed.length) { SFX.error(); return say(r.locked ? ['Nothing to summon.', `${r.locked} pieces are not unlocked yet.`, 'Buy them from a merchant: HEIRLOOMS.'] : 'You already carry every heirloom.'); }
         SFX[r.got.length ? 'levelup' : 'error'](); saveGame();
-        return say([r.got.length ? `Summoned ${r.got.length}: ${r.got.join(', ')}.` : 'Nothing summoned.', ...r.failed.slice(0, 2), 'They are equipped. Your old gear is in your bag.']);
+        return say([r.got.length ? `Summoned ${r.got.length}: ${r.got.join(', ')}.` : 'Nothing summoned.', ...r.failed.slice(0, 2), 'They are equipped. Your old gear is in your bag.', ...(r.locked ? [`${r.locked} more can be bought from a merchant.`] : [])]);
       }
       const p = HEIRLOOM_BY_ID[id], copy = heirloomCopies(G).find(c => c.item.heirloom === id);
-      if (copy) {
+      if (!loadHeirloomCollection().unlocked.includes(id)) {
+        if (this.vendor) return this.buy(p);
+        SFX.error(); return say([`${p.name} is not unlocked.`, `A merchant sells it for ${fmt(p.price)} G.`, 'Visit a merchant and choose HEIRLOOMS.']);
+      }
+      if (this.vendor && !copy) return choose(['SUMMON IT NOW', 'LATER'], k => { if (k === 0) this.summon(p); }, `Your account owns the ${p.name}.`);
+      if (this.vendor) return say(`Your account owns the ${p.name}, and this hero carries it.`);
+      if (copy && !this.vendor) {
         const opts = [...(p.kind === 'weapon' ? ['CHANGE STYLE'] : []), copy.where === 'eq' ? 'ALREADY EQUIPPED' : 'EQUIP NOW', 'BACK'];
         return choose(opts, k => {
           const o = opts[k];
@@ -261,25 +340,42 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
           if (o === 'EQUIP NOW') { const bag = copy.where === 'bank' ? G.bank : G.bag, why = equipItem(G, copy.item, bag); SFX[why ? 'error' : 'equip'](); if (why) say(why); else saveGame(); }
         }, `${copy.item.name} is ${copy.where === 'eq' ? (copy.holder === G ? 'equipped' : 'on ' + copy.holder.name) : 'in your ' + copy.where}.`);
       }
-      const go = style => { const why = summonHeirloom(id, { style }); SFX[why ? 'error' : 'levelup'](); if (why) say(why); else { saveGame(); toast('HEIRLOOM', `${p.name} SUMMONED`, 'item_chest', 'chest'); } };
+      this.summon(p);
+    }
+    // summon one owned piece (the weapon asks for a style first)
+    summon(p) {
+      const go = style => { const why = summonHeirloom(p.id, { style }); SFX[why ? 'error' : 'levelup'](); if (why) say(why); else { saveGame(); toast('HEIRLOOM', `${p.name} SUMMONED`, 'item_chest', 'chest'); } };
       if (p.kind === 'weapon') { const keys = Object.keys(HEIRLOOM_WEAPONS), def = defaultWeaponStyle(G.cls, CLASSES[G.cls]); return choose(keys.map(k => `${HEIRLOOM_WEAPONS[k].name}${k === def ? ' (SUGGESTED)' : ''}`), k => { if (k >= 0) go(keys[k]); }, 'Choose a weapon style'); }
       go();
     }
     draw() {
-      fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3); textC('HEIRLOOMS', 80, 1, 'gold');
-      const n = equippedHeirloomCount(G), list = this.items();
+      fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3); textC(this.vendor ? 'HEIRLOOM VENDOR' : 'HEIRLOOMS', 80, 1, 'gold');
+      const n = equippedHeirloomCount(G), list = this.items(), owned = loadHeirloomCollection().unlocked;
       list.slice(this.top, this.top + this.rows).forEach((id, j) => {
         const i = this.top + j, y = 14 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1);
-        if (id === 'SET') { text('SUMMON FULL SET', 5, y, 'gold'); textR(`${heirloomCopies(G).length}/${HEIRLOOM_PIECES.length}`, 152, y, 2); return; }
-        const p = HEIRLOOM_BY_ID[id], copy = heirloomCopies(G).find(c => c.item.heirloom === id);
-        text(p.name, 5, y, copy ? 3 : 2); textR(copy ? (copy.where === 'eq' ? 'WORN' : copy.where.toUpperCase()) : 'SUMMON', 152, y, copy && copy.where === 'eq' ? 'green' : 1);
+        if (id === 'SET') {
+          if (this.vendor) { const miss = this.missing(); text('BUY ALL MISSING', 5, y, 'gold'); textR(miss.length ? fmt(miss.reduce((a, p) => a + p.price, 0)) + 'G' : 'OWNED', 152, y, 2); }
+          else { text('SUMMON FULL SET', 5, y, 'gold'); textR(`${heirloomCopies(G).length}/${owned.length}`, 152, y, 2); }
+          return;
+        }
+        const p = HEIRLOOM_BY_ID[id], copy = heirloomCopies(G).find(c => c.item.heirloom === id), own = owned.includes(id);
+        text(p.name, 5, y, own ? (copy ? 3 : 2) : 1);
+        const tag = !own ? (this.vendor ? fmt(p.price) + 'G' : 'LOCKED') : this.vendor ? 'OWNED' : copy ? (copy.where === 'eq' ? 'WORN' : copy.where.toUpperCase()) : 'SUMMON';
+        textR(tag, 152, y, !own ? (this.vendor && G.gold >= p.price ? 'gold' : 1) : copy && copy.where === 'eq' ? 'green' : 2);
       });
       this.scrollbar(156, 13, 90);
       frame(1, 105, 158, 38);
-      text(`SET ${n}/9  ITEM LV ${G.lvl}`, 5, 108, n >= 2 ? 'gold' : 2);
+      if (this.vendor) {
+        const p = HEIRLOOM_BY_ID[list[this.i]];
+        text(`GOLD ${fmt(G.gold)}  OWNED ${owned.length}/${HEIRLOOM_PIECES.length}`.slice(0, 25), 5, 108, 'gold');
+        text(p ? `${p.name}: ${p.group === 'trinket' ? 'BATTLE-START BUFF' : p.group === 'jewel' ? 'JEWELLERY' : 'GEAR'}`.slice(0, 25) : 'UNLOCK EVERY MISSING PIECE', 5, 118, 2);
+        text('BUY ONCE: ALL HEROES', 5, 128, 2); text('SUMMON FROM MENU>HEIRLOOMS', 5, 137, 1);
+        return;
+      }
+      text(`SET ${n}/${HEIRLOOM_PIECES.length}  ITEM LV ${G.lvl}`, 5, 108, n >= 2 ? 'gold' : 2);
       const next = HEIRLOOM_SET_BONUS.find(t => n < t.need), totals = {};
       for (const [s, v] of heirloomSetBonus(n, G.lvl)) totals[s] = (totals[s] || 0) + v;
-      const have = Object.entries(totals), short = { xp: 'XP', hp: 'HP', resist: 'RES', dmg: 'DMG', heal: 'HEAL', gf: 'GOLD', mf: 'MF', crit: 'CRIT' };
+      const have = Object.entries(totals), short = { xp: 'XP', hp: 'HP', resist: 'RES', dmg: 'DMG', heal: 'HEAL', gf: 'GOLD', mf: 'MF', crit: 'CRIT', critdmg: 'CDMG', leech: 'LEECH', haste: 'HASTE' };
       text(have.length ? have.map(([s, v]) => `${short[s] || s.toUpperCase()}+${v}`).join(' ').slice(0, 25) : 'NO SET BONUS YET', 5, 118, have.length ? 'green' : 1);
       text(next ? `${next.need}PC: ${heirloomSetBonus(next.need, G.lvl).slice(-2).map(([s, v]) => `${SUBSTATS[s].name.slice(0, 5)}+${v}`).join(' ')}`.slice(0, 25) : 'FULL SET BONUS ACTIVE', 5, 128, next ? 2 : 'gold');
       text('SHARED BY ALL YOUR HEROES', 5, 137, 1);

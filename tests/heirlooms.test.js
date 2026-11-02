@@ -7,11 +7,14 @@ const source = fs.readFileSync(new URL('../src/heirlooms.js', import.meta.url), 
 function load() { const context = { Math, Number, String, Object, Array, Set, Date, globalThis: null }; context.globalThis = context; vm.runInNewContext(source, context); return context.GBQHeirlooms; }
 const plain = v => JSON.parse(JSON.stringify(v));
 
-test('the heirloom set covers nine distinct equipment slots', () => {
+test('the heirloom set covers gear, jewellery and two trinkets', () => {
   const h = load();
-  assert.equal(h.HEIRLOOM_PIECES.length, 9);
-  assert.deepEqual(plain(h.HEIRLOOM_PIECES.map(p => p.slot)).sort(), ['armor', 'back', 'feet', 'hands', 'head', 'legs', 'neck', 'waist', 'weapon']);
-  assert.equal(new Set(h.HEIRLOOM_PIECES.map(p => p.id)).size, 9);
+  assert.equal(h.HEIRLOOM_PIECES.length, 14);
+  assert.deepEqual(plain(h.HEIRLOOM_PIECES.map(p => p.slot)).sort(), ['armor', 'back', 'ear', 'feet', 'hands', 'head', 'legs', 'neck', 'ring', 'ring', 'trinket', 'trinket', 'waist', 'weapon']);
+  assert.equal(new Set(h.HEIRLOOM_PIECES.map(p => p.id)).size, 14);
+  assert.deepEqual(plain(h.HEIRLOOM_PIECES.filter(p => p.group === 'jewel').map(p => p.id)), ['hl_amulet', 'hl_ring1', 'hl_ring2', 'hl_earrings']);
+  assert.deepEqual(plain(h.HEIRLOOM_PIECES.filter(p => p.group === 'trinket').map(p => p.base)), ['war_horn', 'lucky_coin']);
+  for (const p of h.HEIRLOOM_PIECES) assert.ok(p.price > 0, p.id + ' has a price');
   assert.deepEqual(Object.keys(h.HEIRLOOM_WEAPONS), ['blade', 'mace', 'staff', 'bow', 'dagger', 'fist']);
 });
 
@@ -55,7 +58,7 @@ test('each class gets a sensible default weapon style and chest weight', () => {
   assert.equal(h.heaviestArmor([]), 'cloth');
 });
 
-test('set bonus steps in at 2, 4, 6 and 9 pieces and scales its health with level', () => {
+test('set bonus steps in at 2, 4, 6, 9, 12 and 14 pieces and scales its health with level', () => {
   const h = load(), sum = (list, stat) => list.filter(([s]) => s === stat).reduce((a, [, v]) => a + v, 0);
   assert.deepEqual(plain(h.heirloomSetBonus(1, 10)), []);
   assert.equal(sum(h.heirloomSetBonus(2, 10), 'xp'), 10);
@@ -64,18 +67,44 @@ test('set bonus steps in at 2, 4, 6 and 9 pieces and scales its health with leve
   assert.equal(sum(h.heirloomSetBonus(6, 10), 'dmg'), 10);
   const full = h.heirloomSetBonus(9, 1);
   assert.equal(sum(full, 'xp'), 30); assert.equal(sum(full, 'gf'), 15); assert.equal(sum(full, 'crit'), 3);
+  assert.equal(sum(h.heirloomSetBonus(12, 1), 'critdmg'), 15); assert.equal(sum(h.heirloomSetBonus(11, 1), 'critdmg'), 0);
+  const all = h.heirloomSetBonus(14, 1);
+  assert.equal(sum(all, 'dmg'), 20); assert.equal(sum(all, 'haste'), 5); assert.equal(sum(all, 'xp'), 30, 'XP stops growing after 9 pieces');
 });
 
-test('the account collection unlocks every piece, sanitises input and records summons', () => {
+test('the combined base bonus cap follows the plus: +1, +2 at 241, +3 at 481', () => {
+  const h = load();
+  assert.deepEqual([1, 240, 241, 480, 481, 720].map(h.heirloomBonusCap), [1, 1, 2, 2, 3, 3]);
+});
+
+test('a new account owns nothing; collections are sanitised and record summons', () => {
   const h = load();
   const fresh = h.normalizeCollection(null);
-  assert.equal(fresh.unlocked.length, 9); assert.equal(fresh.summons, 0);
-  const odd = h.normalizeCollection({ unlocked: ['hl_helm', 'junk'], summons: '3', heroes: { '0:Ana': true, bad: 'x' } });
-  assert.equal(odd.unlocked.length, 9); assert.equal(odd.summons, 3); assert.deepEqual(plain(odd.heroes), { '0:Ana': true });
+  assert.deepEqual(plain(fresh.unlocked), []); assert.equal(fresh.summons, 0); assert.equal(fresh.spent, 0); assert.equal(fresh.v, 2);
+  const odd = h.normalizeCollection({ unlocked: ['hl_helm', 'junk', 'hl_weapon'], summons: '3', heroes: { '0:Ana': true, bad: 'x' } });
+  assert.deepEqual(plain(odd.unlocked), ['hl_weapon', 'hl_helm'], 'known ids only, catalog order'); assert.equal(odd.summons, 3); assert.deepEqual(plain(odd.heroes), { '0:Ana': true });
   const after = h.recordSummon(odd, '1:Bo', 1234);
   assert.equal(after.summons, 4); assert.equal(after.firstSummonAt, 1234); assert.equal(after.heroes['1:Bo'], true);
   assert.equal(odd.summons, 3, 'input not mutated');
-  assert.deepEqual(plain(h.normalizeCollection([1, 2])).unlocked.length, 9);
+  assert.deepEqual(plain(h.normalizeCollection([1, 2]).unlocked), []);
+  // a collection saved by the first release (all nine original pieces) keeps them
+  const v1 = h.normalizeCollection({ v: 1, unlocked: ['hl_weapon', 'hl_chest', 'hl_helm', 'hl_amulet', 'hl_cloak', 'hl_gloves', 'hl_belt', 'hl_legs', 'hl_boots'], summons: 9 });
+  assert.equal(v1.unlocked.length, 9); assert.ok(!v1.unlocked.includes('hl_ring1'));
+});
+
+test('buying unlocks a piece for the account once and charges its price', () => {
+  const h = load();
+  const poor = h.buyHeirloom(null, 'hl_trinket1', 2499);
+  assert.equal(poor.ok, false); assert.match(poor.error, /2500 G/);
+  const r = h.buyHeirloom(null, 'hl_trinket1', 3000);
+  assert.equal(r.ok, true); assert.equal(r.gold, 500); assert.equal(r.cost, 2500);
+  assert.deepEqual(plain(r.collection.unlocked), ['hl_trinket1']); assert.equal(r.collection.spent, 2500);
+  const again = h.buyHeirloom(r.collection, 'hl_trinket1', 99999);
+  assert.equal(again.ok, false); assert.match(again.error, /already owns/);
+  const two = h.buyHeirloom(r.collection, 'hl_weapon', 2000);
+  assert.deepEqual(plain(two.collection.unlocked), ['hl_weapon', 'hl_trinket1']); assert.equal(two.gold, 0); assert.equal(two.collection.spent, 4500);
+  assert.equal(h.buyHeirloom(null, 'nope', 1e9).ok, false);
+  assert.equal(h.HEIRLOOM_PIECES.reduce((a, p) => a + p.price, 0), 17400, 'full set price');
 });
 
 test('copies are found on the hero, in bags, in the bank and on companions', () => {

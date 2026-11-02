@@ -350,5 +350,5 @@ function itemBaseName(it) {
   return (it.plus > 0 ? `+${it.plus} ` : '') + b;
 }
 function itemBaseCost(it) { return it.kind === 'weapon' ? WEAPONS[it.base].cost : it.kind === 'armor' ? ARMORS[it.base].cost / 4 : 20; }
-function itemSlot(it) { if (it.kind === 'weapon') return 'weapon'; if (it.kind === 'armor') return ARMORS[it.base].type === 'shield' ? 'offhand' : 'armor'; const s = it.slot || (WONDROUS.find(w => w.id === it.base) || {}).slot; return s === 'ring' || s === 'trinket' ? 'ring1' : s; }
+function itemSlot(it) { if (it.kind === 'weapon') return 'weapon'; if (it.kind === 'armor') return ARMORS[it.base].type === 'shield' ? 'offhand' : 'armor'; const s = it.slot || (WONDROUS.find(w => w.id === it.base) || {}).slot; return s === 'ring' ? 'ring1' : s === 'trinket' ? 'trinket1' : s; }
 function itemIcon(it) { if (typeof nesItemIcon === 'function') { const n = nesItemIcon(it); if (n && IMG[n]) return n; } return it.kind === 'weapon' ? WEAPONS[it.base].icon : it.kind === 'armor' ? ARMORS[it.base].icon : WONDROUS.find(w => w.id === it.base).icon; }

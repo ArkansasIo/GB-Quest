@@ -268,12 +268,17 @@ class StashScene {
 // ---------------------------------------------------------------- EQUIPMENT (paper doll)
 class PaperDoll {
   constructor() { this.opaque = true; this.col = 0; this.row = 0; }
-  slot() { return SLOT_COLS[this.col][this.row]; }
+  slot() { return SLOT_COLS[this.col][Math.min(this.row, this.rows() - 1)]; }
+  rows() { return Math.min(6, SLOT_COLS[this.col].length); }
   update() {
     if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (nav('up')) { this.row = (this.row + 5) % 6; SFX.cursor(); }
-    if (nav('down')) { this.row = (this.row + 1) % 6; SFX.cursor(); }
-    if (nav('left') || nav('right')) { this.col ^= 1; SFX.cursor(); }
+    const n = this.rows();
+    if (nav('up')) { this.row = (Math.min(this.row, n - 1) + n - 1) % n; SFX.cursor(); }
+    if (nav('down')) { this.row = (Math.min(this.row, n - 1) + 1) % n; SFX.cursor(); }
+    // columns in screen order: left (0), earrings beside the portrait (2), right (1)
+    const order = [0, 2, 1], at = order.indexOf(this.col);
+    if (nav('right')) { this.col = order[(at + 1) % 3]; SFX.cursor(); }
+    if (nav('left')) { this.col = order[(at + 2) % 3]; SFX.cursor(); }
     if (P('select')) { removeScene(this); push(new InventoryScene('field')); return; }
     if (!P('a')) return;
     const slot = this.slot(), opts = G.bag.filter(it => fitsSlot(it, slot)).sort((a, b) => itemPower(G, b) - itemPower(G, a));
@@ -289,7 +294,7 @@ class PaperDoll {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
     SLOT_COLS.forEach((col, c) => col.forEach((s, r) => {
-      const x = c ? 140 : 2, y = 13 + r * 17, it = G.eq[s], sel = c === this.col && r === this.row;
+      const x = c === 2 ? 110 : c ? 140 : 2, y = 13 + r * 17, it = G.eq[s], sel = c === this.col && r === Math.min(this.row, this.rows() - 1);
       fill(x, y, 18, 16, sel ? 'gold' : 3); fill(x + 1, y + 1, 16, 14, it ? rarityCol(it.rarity) : 1); fill(x + 2, y + 2, 14, 12, 0);
       blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 11), x + 3, y + 2);
     }));

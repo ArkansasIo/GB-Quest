@@ -374,10 +374,11 @@ const LEGENDARY_WEAPON = [
 ];
 const MAX_ATTUNE = 3;
 // 12 equipment slots (paper doll: left column, right column)
-const SLOTS = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand', 'artifact', 'relic'];
-const SLOT_NAME = { weapon: 'MAIN HAND', offhand: 'OFF HAND', armor: 'CHEST', head: 'HEAD', back: 'CLOAK', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', neck: 'NECK', ring1: 'RING 1', ring2: 'RING 2', artifact: 'ARTIFACT', relic: 'RELIC' };
-const SLOT_ICON = { weapon: 'icon_0_0', offhand: 'icon_0_1', armor: 'icon_0_2', head: 'icon_3_0', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', neck: 'px_orb', ring1: 'icon_0_5', ring2: 'icon_0_5', artifact: 'icon_3_3', relic: 'px_orb' };
-const SLOT_COLS = [['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'artifact'], ['waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand', 'relic']];
+const SLOTS = ['head', 'neck', 'ear', 'armor', 'back', 'hands', 'weapon', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'trinket1', 'trinket2', 'offhand', 'artifact', 'relic'];
+const SLOT_NAME = { weapon: 'MAIN HAND', offhand: 'OFF HAND', armor: 'CHEST', head: 'HEAD', back: 'CLOAK', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', neck: 'NECK', ear: 'EARRINGS', ring1: 'RING 1', ring2: 'RING 2', trinket1: 'TRINKET 1', trinket2: 'TRINKET 2', artifact: 'ARTIFACT', relic: 'RELIC' };
+const SLOT_ICON = { weapon: 'icon_0_0', offhand: 'icon_0_1', armor: 'icon_0_2', head: 'icon_3_0', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', neck: 'px_orb', ear: 'icon_0_5', ring1: 'icon_0_5', ring2: 'icon_0_5', trinket1: 'px_orb', trinket2: 'px_orb', artifact: 'icon_3_3', relic: 'px_orb' };
+// paper doll: left column, right column, and earrings + trinkets beside the portrait
+const SLOT_COLS = [['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'artifact'], ['waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand', 'relic'], ['ear', 'trinket1', 'trinket2']];
 
 // ---------------------------------------------------------------- spells
 // t: target enemy|enemies|ally|allies|self. eff: dmg|heal|cond|buff|summon|revive|kill|cleanse

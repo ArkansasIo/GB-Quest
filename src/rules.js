@@ -208,8 +208,8 @@ function canEquip(c, it) {
   if (it.attune) { const n = SLOTS.filter(s => c.eq[s] && c.eq[s].attune && !slotsFor(it).includes(s)).length; if (n >= MAX_ATTUNE) return 'Attuned to 3 items already.'; }
   return null;
 }
-// which slots an item can go in (rings: either ring slot)
-const slotsFor = it => { const s = itemSlot(it); return s === 'ring1' ? ['ring1', 'ring2'] : [s]; };
+// which slots an item can go in (rings and trinkets: either of their two slots)
+const slotsFor = it => { const s = itemSlot(it); return s === 'ring1' ? ['ring1', 'ring2'] : s === 'trinket1' ? ['trinket1', 'trinket2'] : [s]; };
 const fitsSlot = (it, slot) => slotsFor(it).includes(slot);
 function equipItem(c, it, bag, want) {
   const why = canEquip(c, it); if (why) return why;

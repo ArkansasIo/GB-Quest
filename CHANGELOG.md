@@ -8,13 +8,19 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **Realm audit log** (`audit.log`): a hash-chained, append-only record of sign-ins (including failures and throttling), registrations, password changes, staff actions, denied staff access, cloud saves and marketplace trades. Each entry records the account, IP, outcome and request ID. The control plane's **Audit log** tab can filter, verify and export it.
 - **Realm debug log** (`debug.log`): a leveled server log that records every 500 with its stack trace, slow requests and storage failures. Every request is logged at `debug`. Every response carries `X-Request-Id`. Root and admin can view it, search it and change its level in the new **Debug log** tab.
 - See [backend/README.md](backend/README.md#audit-and-debug-logs).
-- **Heirlooms** (MENU > HEIRLOOMS): **LANTERNBORN HEIRLOOMS**, a nine-piece set that belongs to the account rather than one hero.
-  - **Who can use it:** every hero in every save slot can summon and equip it from level 1. **SUMMON FULL SET** equips all pieces and moves replaced gear to the bag.
+- **Heirlooms** (MENU > HEIRLOOMS): **LANTERNBORN HEIRLOOMS**, a set that belongs to the account rather than one hero. The jewellery, trinkets and merchant purchase are described below.
+  - **Who can use it:** once a piece is bought, every hero in every save slot can summon and equip it from level 1. **SUMMON FULL SET** equips all pieces and moves replaced gear to the bag.
   - **Scaling:** item level follows the wearer's level from 1 to 720. Heirlooms are +1 at level 1, rising to +3 by level 481. Their stats stay below epic drops of the same level.
   - **Class fit:** the chest matches the hero's heaviest armour (plate, mail, jerkin or robe). The weapon comes in six styles (blade, mace, staff, bow, dagger, knuckles); each class gets a suggested style, and the style can be changed at any time.
   - **Set bonus:** 2 pieces give +10% XP; 4 add +10% XP, resistance and level-scaled HP; 6 add damage and healing; 9 add XP, gold find, magic find and crit. The amulet and cloak each add a fixed +5% XP.
   - **Soulbound:** heirlooms can't be listed on the auction house, traded or salvaged, and they sell for 0 G. Each hero holds one copy of each piece, and a lost or returned piece can be summoned again.
   - **Storage:** the collection is kept in this browser's storage, so it is shared by every save slot on the device.
+
+- **Earrings slot and two trinket slots** (paper doll: the column beside the portrait). New earring bases (earrings, ear cuff, drop earrings) and eight trinket types drop as loot. Each trinket gives its wearer a buff when a battle starts, lasting longer at rare and legendary; the effect is logged in combat chat.
+- **Heirloom jewellery, trinkets and vendor:** LANTERNBORN HEIRLOOMS grows to 14 pieces with two rings, earrings and two trinkets (war horn and lucky coin), plus 12- and 14-piece set bonuses.
+  - **Buying:** pieces are bought once per account at any merchant (**MERCHANT > HEIRLOOMS**): 750 G to 2,500 G each, or 17,400 G for the whole set. Every hero on the account can then summon them for free.
+  - **Existing collections:** the nine pieces unlocked by the first heirloom release stay unlocked.
+  - **Bonus cap:** the built-in save, initiative and accuracy bonuses of all heirloom pieces combined are capped at +1 to +3, rising with level.
 
 ### Fixed
 - Server errors were returned as "Server error." without being logged anywhere.

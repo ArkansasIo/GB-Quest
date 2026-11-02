@@ -198,10 +198,12 @@ WONDROUS.push(
   { id: 'baldric', name: 'BALDRIC', slot: 'waist', bonus: 'hit' }, { id: 'faulds', name: 'FAULDS', slot: 'waist', bonus: 'ac' },
   { id: 'chausses', name: 'CHAUSSES', slot: 'legs', bonus: 'hp' }, { id: 'cuisses', name: 'CUISSES', slot: 'legs', bonus: 'ac' },
   { id: 'poulaines', name: 'POULAINES', slot: 'feet', bonus: 'init' }, { id: 'riding_boots', name: 'RIDING BOOTS', slot: 'feet', bonus: 'save' },
+  // earrings (EARRINGS slot)
+  { id: 'earring', name: 'EARRINGS', slot: 'ear', bonus: 'init' }, { id: 'ear_cuff', name: 'EAR CUFF', slot: 'ear', bonus: 'save' }, { id: 'drop_earring', name: 'DROP EARRINGS', slot: 'ear', bonus: 'abil' },
 );
 WONDROUS.forEach(w => { if (!w.icon) w.icon = { head: 'item_iron_helm', neck: 'px_orb', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', ring: 'icon_0_5' }[w.slot] || 'icon_0_5'; });
 Object.assign(WONDROUS_ART, { great_helm: 'heavyarmor', bascinet: 'heavyarmor', sallet: 'mediumarmor', barbute: 'heavyarmor', armet: 'heavyarmor', kettle_hat: 'mediumarmor', nasal_helm: 'mediumarmor', coif: 'mediumarmor', kabuto: 'heavyarmor',
-  gorget: 'amulet', torc: 'amulet', tabard: 'lightarmor', surcoat: 'lightarmor', pauldrons: 'heavyarmor', mitten_gauntlets: 'glove', vambraces: 'glove', bracers: 'glove', baldric: 'belt', faulds: 'belt', chausses: 'mediumarmor', cuisses: 'heavyarmor', poulaines: 'boots', riding_boots: 'boots' });
+  gorget: 'amulet', torc: 'amulet', tabard: 'lightarmor', surcoat: 'lightarmor', pauldrons: 'heavyarmor', mitten_gauntlets: 'glove', vambraces: 'glove', bracers: 'glove', baldric: 'belt', faulds: 'belt', chausses: 'mediumarmor', cuisses: 'heavyarmor', poulaines: 'boots', riding_boots: 'boots', earring: 'ring', ear_cuff: 'ring', drop_earring: 'amulet' });
 
 // ---------------------------------------------------------------- named (unique) items
 // fixed name, base, rarity, affixes and a line of lore; each has drop sources (boss ids or categories)
