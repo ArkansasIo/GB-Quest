@@ -124,6 +124,34 @@ async function checkForGameUpdates() {
   }
 }
 
+const REALM_CENTERS = {
+  na: ['Northstar', 'Ironwood', 'Sunreach', 'Stormhold'],
+  eu: ['Crownfall', 'Evermere'],
+  jp: ['Dawnveil', 'Mooncrest', 'Starfall', 'Ashen'],
+  oc: ['Southern Cross'],
+};
+ipcMain.on('gbq:launch-game', (event, selection = {}) => {
+  if (!gameWindow || event.sender !== gameWindow.webContents) return;
+  const region = String(selection.region || '');
+  const dataCenter = String(selection.dataCenter || '');
+  const world = String(selection.world || '');
+  if (!Object.hasOwn(REALM_CENTERS, region) || !REALM_CENTERS[region].includes(dataCenter) || !/^(0[1-8])$/.test(world) && !(region === 'oc' && /^0[1-5]$/.test(world))) {
+    dialog.showErrorBox('Invalid realm selection', 'Choose a valid region, data center, and world.');
+    return;
+  }
+  gameWindow.setTitle(`Lost Kingdom of Shadowbane Chronicles — ${dataCenter} / World ${world}`);
+  gameWindow.loadFile(activeGameFile(), { query: { region, dataCenter, world } });
+});
+ipcMain.on('gbq:check-updates', event => {
+  if (gameWindow && event.sender === gameWindow.webContents) checkForGameUpdates();
+});
+ipcMain.on('gbq:open-project', event => {
+  if (gameWindow && event.sender === gameWindow.webContents) shell.openExternal('https://github.com/ArkansasIo/GB-Quest');
+});
+ipcMain.on('gbq:open-docs', event => {
+  if (gameWindow && event.sender === gameWindow.webContents) shell.openExternal('https://github.com/ArkansasIo/GB-Quest/tree/main/desktop');
+});
+
 ipcMain.on('gbq:read-storage-mirror', event => {
   try { event.returnValue = JSON.parse(fs.readFileSync(STORAGE_MIRROR, 'utf8')); }
   catch { event.returnValue = null; }
@@ -190,7 +218,7 @@ function createWindow() {
   gameWindow.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith('file://')) event.preventDefault();
   });
-  gameWindow.loadFile(activeGameFile());
+  gameWindow.loadFile(path.join(__dirname, 'launcher.html'));
   gameWindow.on('closed', () => { gameWindow = null; });
 }
 
