@@ -35,3 +35,7 @@ The NASM-independent GNU assembler source uses the System V AMD64 calling conven
 ## Determinism and security
 
 The native library does not generate random numbers or trust client-supplied random outcomes. Callers provide an already-rolled d20 value to `resolve_attack`; production combat rolls must be generated and validated by the authoritative server. This first native increment is a rules-core foundation, not a complete native game engine, renderer, networking stack or WebAssembly binding.
+
+## Dice and damage
+
+The native API also parses bounded dice expressions (`NdS`, `dS`, optional signed modifier), resolves caller-supplied die faces, doubles the dice pool for critical hits, and applies a selected damage disposition (normal, resistance, vulnerability or immunity). Random values are deliberately supplied by the caller so the core remains deterministic and can be driven by an authoritative server RNG. Critical damage doubles the dice, not the flat modifier.
