@@ -43,3 +43,7 @@ The native API also parses bounded dice expressions (`NdS`, `dS`, optional signe
 ## Character health transitions
 
 The native API includes mutable health-state transitions with validation: damage consumes temporary hit points before current hit points, lethal damage marks the character defeated, and healing restores hit points up to the configured maximum and clears the defeated flag when hit points become positive. Healing does not alter temporary hit points. Invalid state and negative damage/healing are rejected before mutation.
+
+## Ability scores and passive checks
+
+The core stores the six D&D ability scores in a fixed-order `AbilityScores` value (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma), validates the supported 1–30 range, and exposes typed lookup by `Ability`. Passive checks calculate 10 + the selected ability modifier, optional proficiency bonus for character levels 1–20, and an explicit situational bonus. The native core does not own character persistence or class-specific saving-throw proficiency data.
