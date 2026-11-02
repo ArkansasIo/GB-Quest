@@ -3,6 +3,7 @@
 | Document | What's inside |
 |---|---|
 | [ARTIFACTS_AND_RELICS.md](ARTIFACTS_AND_RELICS.md) | Full catalog of 42 dedicated artifacts and 42 dedicated relics, slot rules and progression |
+| [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | Confirmed implementation, outstanding feature work, C++/assembly port plan and completion criteria |
 | [GDD.md](GDD.md) | Game design document: vision, pillars, loops, systems, content scale, economy, multiplayer, presentation, roadmap |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Module map, runtime model, data flow, rendering, builds, extension points |
 | [UML.md](UML.md) | Component, class, state, sequence, activity and deployment diagrams (Mermaid) |
