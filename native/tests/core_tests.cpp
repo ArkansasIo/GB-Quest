@@ -147,6 +147,40 @@ void test_dice_and_damage() {
   }, "reject empty damage type");
 }
 
+
+void test_health_transitions() {
+  gbquest::HealthState character{
+      .hit_points = 20, .maximum_hit_points = 30, .temporary_hit_points = 5};
+  const auto damage = gbquest::apply_damage(character, 12);
+  check(damage.applied == 12 && character.temporary_hit_points == 0
+            && character.hit_points == 13 && !character.defeated,
+        "damage consumes temporary HP before hit points");
+
+  const auto healing = gbquest::apply_healing(character, 50);
+  check(healing.applied == 17 && character.hit_points == 30,
+        "healing is capped at maximum hit points");
+
+  const auto lethal = gbquest::apply_damage(character, 99);
+  check(lethal.applied == 30 && character.hit_points == 0 && character.defeated,
+        "lethal damage sets defeated state");
+
+  const auto revive = gbquest::apply_healing(character, 7);
+  check(revive.applied == 7 && character.hit_points == 7 && !character.defeated,
+        "healing restores a defeated character");
+
+  check_throws([&] {
+    (void)gbquest::apply_damage(character, -1);
+  }, "reject negative damage");
+  check_throws([&] {
+    (void)gbquest::apply_healing(character, -1);
+  }, "reject negative healing");
+
+  gbquest::HealthState invalid{.hit_points = 40, .maximum_hit_points = 30};
+  check_throws([&] {
+    (void)gbquest::apply_damage(invalid, 1);
+  }, "reject invalid health state without mutation");
+}
+
 } // namespace
 
 int main() {
@@ -155,6 +189,7 @@ int main() {
   test_armor_class();
   test_attack_resolution();
   test_dice_and_damage();
+  test_health_transitions();
 
   if (failures != 0) {
     std::cerr << failures << " native test(s) failed\n";
