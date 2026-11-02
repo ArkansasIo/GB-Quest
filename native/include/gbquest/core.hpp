@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <span>
+#include <string_view>
+#include <vector>
 
 namespace gbquest {
 
@@ -52,5 +55,56 @@ struct AttackResult {
 // Resolves one already-rolled d20 attack. Random-number generation deliberately
 // remains outside this deterministic rules library.
 [[nodiscard]] AttackResult resolve_attack(const AttackInput& input);
+
+
+struct DiceExpression {
+  std::int32_t count{};
+  std::int32_t sides{};
+  std::int32_t modifier{};
+};
+
+struct DiceResult {
+  std::vector<std::int32_t> rolls;
+  std::int32_t modifier{};
+  std::int32_t total{};
+};
+
+enum class DamageDisposition : std::uint8_t {
+  normal,
+  resistance,
+  vulnerability,
+  immunity
+};
+
+struct DamageInput {
+  std::string_view damage_type;
+  DamageDisposition disposition{DamageDisposition::normal};
+  std::int32_t flat_modifier{0};
+  bool critical{false};
+};
+
+struct DamageResult {
+  std::int32_t amount{};
+  std::string damage_type;
+  bool critical{};
+  DamageDisposition disposition{DamageDisposition::normal};
+};
+
+// Supported notation: NdS, dS, NdS+M and NdS-M.
+// Count is limited to 1..100 and sides to 2..1000.
+[[nodiscard]] DiceExpression parse_dice_expression(std::string_view expression);
+
+// Faces are supplied by the caller (normally authoritative server RNG).
+// The number of supplied faces must equal count, or 2*count for a critical.
+[[nodiscard]] DiceResult resolve_dice(
+    const DiceExpression& expression,
+    std::span<const std::int32_t> faces,
+    bool critical = false);
+
+// Applies one already-resolved resistance/vulnerability/immunity disposition.
+// Critical damage doubles dice only; the flat modifier is applied once.
+[[nodiscard]] DamageResult resolve_damage(
+    const DiceResult& dice,
+    const DamageInput& input);
 
 } // namespace gbquest
