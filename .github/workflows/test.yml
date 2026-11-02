@@ -58,3 +58,35 @@ jobs:
         run: cmake -S desktop -B desktop/build -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build desktop/build --parallel 2
+
+  asset-pipeline:
+    name: Generate pixel-art assets and atlases
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install art generator dependencies
+        run: python -m pip install --upgrade Pillow numpy
+      - name: Generate native 16x16 world and dungeon tiles
+        run: python tools/gen_gbtiles.py
+      - name: Generate rank badges, equipment and UI sprites
+        run: python tools/gen_newart.py
+      - name: Build enhanced 64-bit atlas pages
+        run: python tools/gen_hd64.py
+      - name: Build browser and desktop game bundles
+        run: node tools/build.cjs
+      - name: Upload generated art package
+        uses: actions/upload-artifact@v4
+        with:
+          name: gb-quest-generated-art
+          path: |
+            assets/*.png
+            assets_hd64/*.png
+            assets_hd64/*.json
+            assets/index.json
+            dist/gbquest.html
+            dist/gbquest-fullscreen.html
+          if-no-files-found: error
+          retention-days: 14
