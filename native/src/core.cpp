@@ -5,6 +5,7 @@
 #include <string>
 #include <system_error>
 #include <utility>
+#include <numeric>
 #include <limits>
 #include <stdexcept>
 
@@ -40,6 +41,161 @@ std::int32_t ability_modifier(std::int32_t score) noexcept {
 #endif
 }
 
+
+
+namespace {
+
+void validate_item_definition(const ItemDefinition& definition) {
+  if (definition.id.empty() || definition.weight_grams < 0 || definition.max_stack < 1) {
+    throw std::invalid_argument("Invalid item definition");
+  }
+}
+
+void validate_inventory(const InventoryState& inventory) {
+  if (inventory.slot_capacity < 0 || inventory.weight_capacity_grams < 0
+      || inventory.current_weight_grams < 0
+      || inventory.current_weight_grams > inventory.weight_capacity_grams
+      || inventory.items.size() > static_cast<std::size_t>(inventory.slot_capacity)) {
+    throw std::invalid_argument("Invalid inventory state");
+  }
+  for (const auto& stack : inventory.items) {
+    if (stack.item_id.empty() || stack.quantity < 1) {
+      throw std::invalid_argument("Invalid inventory stack");
+    }
+  }
+}
+
+[[nodiscard]] InventoryResult inventory_failure(
+    const InventoryState& inventory, std::string reason) {
+  return InventoryResult{
+      .success = false,
+      .quantity_changed = 0,
+      .total_weight_grams = inventory.current_weight_grams,
+      .reason = std::move(reason),
+  };
+}
+
+} // namespace
+
+InventoryResult add_item(
+    InventoryState& inventory,
+    const ItemDefinition& definition,
+    std::int32_t quantity) {
+  validate_inventory(inventory);
+  validate_item_definition(definition);
+  if (quantity < 1) {
+    throw std::invalid_argument("Item quantity must be positive");
+  }
+
+  const std::int64_t added_weight =
+      static_cast<std::int64_t>(definition.weight_grams) * quantity;
+  if (added_weight > inventory.weight_capacity_grams - inventory.current_weight_grams) {
+    return inventory_failure(inventory, "weight_capacity_exceeded");
+  }
+
+  auto staged = inventory.items;
+  std::int32_t remaining = quantity;
+  for (auto& stack : staged) {
+    if (stack.item_id != definition.id || stack.quantity >= definition.max_stack) {
+      continue;
+    }
+    const std::int32_t space = definition.max_stack - stack.quantity;
+    const std::int32_t moved = std::min(space, remaining);
+    stack.quantity += moved;
+    remaining -= moved;
+    if (remaining == 0) {
+      break;
+    }
+  }
+
+  const std::int32_t new_stacks =
+      remaining == 0 ? 0 : (remaining + definition.max_stack - 1) / definition.max_stack;
+  const std::size_t resulting_slots = staged.size() + static_cast<std::size_t>(new_stacks);
+  if (resulting_slots > static_cast<std::size_t>(inventory.slot_capacity)) {
+    return inventory_failure(inventory, "slot_capacity_exceeded");
+  }
+
+  while (remaining > 0) {
+    const std::int32_t moved = std::min(remaining, definition.max_stack);
+    staged.push_back(ItemStack{.item_id = definition.id, .quantity = moved});
+    remaining -= moved;
+  }
+
+  inventory.items = std::move(staged);
+  inventory.current_weight_grams += added_weight;
+  return InventoryResult{
+      .success = true,
+      .quantity_changed = quantity,
+      .total_weight_grams = inventory.current_weight_grams,
+      .reason = {},
+  };
+}
+
+InventoryResult remove_item(
+    InventoryState& inventory,
+    std::string_view item_id,
+    std::int32_t quantity,
+    const ItemDefinition& definition) {
+  validate_inventory(inventory);
+  validate_item_definition(definition);
+  if (item_id.empty() || item_id != definition.id || quantity < 1) {
+    throw std::invalid_argument("Removal item ID, definition and quantity must be valid");
+  }
+
+  std::int64_t available = 0;
+  for (const auto& stack : inventory.items) {
+    if (stack.item_id == item_id) {
+      available += stack.quantity;
+    }
+  }
+  if (available < quantity) {
+    return inventory_failure(inventory, "insufficient_quantity");
+  }
+
+  const std::int64_t removed_weight =
+      static_cast<std::int64_t>(definition.weight_grams) * quantity;
+  if (removed_weight > inventory.current_weight_grams) {
+    throw std::invalid_argument("Inventory weight does not match its item stacks");
+  }
+
+  auto staged = inventory.items;
+  std::int32_t remaining = quantity;
+  for (auto& stack : staged) {
+    if (stack.item_id != item_id || remaining == 0) {
+      continue;
+    }
+    const std::int32_t moved = std::min(stack.quantity, remaining);
+    stack.quantity -= moved;
+    remaining -= moved;
+  }
+  std::erase_if(staged, [](const ItemStack& stack) { return stack.quantity == 0; });
+
+  inventory.items = std::move(staged);
+  inventory.current_weight_grams -= removed_weight;
+  return InventoryResult{
+      .success = true,
+      .quantity_changed = quantity,
+      .total_weight_grams = inventory.current_weight_grams,
+      .reason = {},
+  };
+}
+
+std::int64_t inventory_weight(
+    const InventoryState& inventory,
+    std::span<const ItemDefinition> definitions) {
+  validate_inventory(inventory);
+  std::int64_t total = 0;
+  for (const auto& stack : inventory.items) {
+    const auto found = std::find_if(definitions.begin(), definitions.end(),
+        [&stack](const ItemDefinition& item) { return item.id == stack.item_id; });
+    if (found == definitions.end()) {
+      throw std::invalid_argument("Missing item definition for inventory stack");
+    }
+    validate_item_definition(*found);
+    total += static_cast<std::int64_t>(found->weight_grams) * stack.quantity;
+  }
+  return total;
+}
 
 std::int32_t ability_score(const AbilityScores& scores, Ability ability) {
   const auto index = static_cast<std::size_t>(ability);
