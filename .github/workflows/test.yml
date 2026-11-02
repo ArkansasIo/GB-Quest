@@ -18,7 +18,10 @@ jobs:
         with:
           node-version: 22
       - name: Validate Electron launcher JavaScript
-        run: node --check desktop/main.cjs && node --check desktop/preload.cjs
+        run: |
+          node --check desktop/main.cjs
+          node --check desktop/preload.cjs
+          node -e "const fs=require('node:fs'); const html=fs.readFileSync('desktop/launcher.html','utf8'); const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)]; if (!scripts.length) throw new Error('Launcher script missing'); for (const match of scripts) new Function(match[1]);"
       - name: Run Node.js test suite
         run: npm test
 
