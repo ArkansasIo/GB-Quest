@@ -6109,8 +6109,13 @@ class Title {
 
     { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
     const bob = Math.round(Math.sin(this.t / 12));
-    blit(sprH('c_warden_4', 36), 99, 93 + bob);
-    blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
+    { // title heroes: your last saved hero's portrait, else the warden and arcanist portraits
+      const li = lastSlot(), info = li >= 0 ? slotInfo(li) : null;
+      const mine = info && (info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls));
+      const a = mine || classPortrait('warden'), b = mine ? null : classPortrait('arcanist');
+      if (a) { const s = sprFit(a, 44); blit(s, (b ? 104 : 116) - s.width / 2, 131 - s.height + bob); } else blit(sprH('c_warden_4', 36), 99, 93 + bob);
+      if (b) { const s = sprFit(b, 40); blit(s, 136 - s.width / 2, 131 - s.height - bob); } else if (!mine) blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
+    }
     frame(4, 5, 152, 43);
     textC('LOST KINGDOM OF', 80, 8, 1); textC('SHADOWBANE', 80, 17, 2); textC('CHRONICLES', 80, 26, 3);
     textC(BUILD.subtitle, 80, 37, 2);
@@ -6712,6 +6717,7 @@ class Field {
     if (this.zone && !G.inst) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
     // HUD: hp/xp micro bars
     const D = derive(G);
+    { const por = heroPortrait(G); if (por) { fill(1, H - 23, 18, 18, 3); fill(2, H - 22, 16, 16, 0); const s = sprFit(por, 16); blit(s, 2 + Math.round((16 - s.width) / 2), H - 22 + Math.round((16 - s.height) / 2)); } }
     bar(1, H - 5, 50, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
     const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1));
     bar(53, H - 4, 106, 3, G.xp - x0, Math.max(1, x1 - x0), 'xp');
@@ -6787,7 +6793,7 @@ function simPlayerMenu(p) {
 function adventurerFoe(c) {
   const D = derive(c);
   const m = makeMonster(BESTIARY[0], c.lvl, 2);
-  Object.assign(m, { name: c.name, spr: `c_${c.cls}_4`, hp: D.hpMax, maxhp: D.hpMax, ac: D.ac, hit: D.weapon.hit, dc: D.spell ? D.spell.dc : 10, fam: 'humanoid', bestId: null, res: [], imm: [], vuln: [],
+  Object.assign(m, { name: c.name, spr: heroPortrait(c) || `c_${c.cls}_4`, hp: D.hpMax, maxhp: D.hpMax, ac: D.ac, hit: D.weapon.hit, dc: D.spell ? D.spell.dc : 10, fam: 'humanoid', bestId: null, res: [], imm: [], vuln: [],
     attacks: [{ name: D.weapon.name, type: D.weapon.type, hit: D.weapon.hit, dice: `${D.weapon.dice}+${D.weapon.dmg}` }], multi: D.attacks, spells: D.spell ? D.spell.known.filter(s => s.eff === 'dmg' && s.lvl > 0).slice(-2).map(s => s.id) : [], xp: xpForMonster(c.lvl) * 2, gold: 10 + c.lvl * 3, pvp: true });
   return m;
 }
@@ -7610,7 +7616,7 @@ class RemoteBattleView {
     fill(0, 0, W, H, 0);
     v.party.slice(0, 6).forEach(([n, hp, mx], i) => { text(n.slice(0, 6), 2, 1 + i * 9); bar(40, 2 + i * 9, 36, 4, hp, mx, 'hp'); });
     v.foes.slice(0, 4).forEach(([n, hp, mx, id, sp], i) => { textR(n.slice(0, 7), 120, 1 + i * 9); bar(122, 2 + i * 9, 36, 4, hp, mx, 'red'); const s = sprH(IMG[sp] ? sp : 'enemy_goblin', 26, { flip: true }); if (s && hp > 0) blit(s, 92 + (i % 2) * 32, 60 + Math.floor(i / 2) * 20 - s.height + 26); });
-    blit(sprH(`c_${G.cls}_4`, 30), 14, 58);
+    { const por = heroPortrait(G); const s = por ? sprFit(por, 34) : sprH(`c_${G.cls}_4`, 30); blit(s, 30 - s.width / 2, 92 - s.height); }
     frame(2, 95, 156, 47);
     if (NET.myTurn) { text('YOUR TURN! Attack:', 7, 99, 'gold'); (NET.myTurn.foes || []).slice(0, 2).concat([['', 'BEST SPELL']]).forEach((f, i) => { if (i === this.i) text('>', 7, 110 + i * 10); text(f[1], 14, 110 + i * 10); }); }
     else text(wrap(v.text || 'Battle in progress...', 24).slice(0, 4).join('\n'), 7, 99);
