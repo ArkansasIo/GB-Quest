@@ -616,7 +616,7 @@ class Field {
       return;
     }
     if (globalThis.GBQEasterEggs && G) {
-      for (const key of ['up', 'up', 'down', 'down', 'left', 'right', 'a', 'b', 'start']) {
+      for (const key of ['up', 'down', 'left', 'right', 'a', 'b', 'start']) {
         if (P(key)) { const found = globalThis.GBQEasterEggs.feed(G, key); if (found && found.ok) return; }
       }
     }
