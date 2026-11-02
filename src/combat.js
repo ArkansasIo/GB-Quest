@@ -591,7 +591,8 @@ class Battle {
     const known = D.spell ? D.spell.known.filter(s => this.canCast(u, s)) : [];
     const weakest = foes.slice().sort((a, b) => hpOf(a) - hpOf(b))[0];
     const boss = foes.find(f => f.boss) || weakest;
-    const hurt = allies.filter(a => hpOf(a) < maxHpOf(a) * 0.45).sort((a, b) => hpOf(a) / maxHpOf(a) - hpOf(b) / maxHpOf(b));
+    const st = c.stance || 'balanced', hurtAt = st === 'support' ? 0.7 : st === 'defensive' ? 0.55 : st === 'aggressive' ? 0.3 : 0.45;
+    const hurt = allies.filter(a => hpOf(a) < maxHpOf(a) * hurtAt).sort((a, b) => hpOf(a) / maxHpOf(a) - hpOf(b) / maxHpOf(b));
     const abil = this.abilities(u);
     const useAbil = (id, t) => { const a = abil.find(x => x.id === id && x.ok); if (!a) return null; if (a.bonus) this.bonusUsed = true; return a.fn(t); };
     let pre = [];
@@ -608,7 +609,7 @@ class Battle {
     const reviveSp = known.find(s => s.eff === 'revive'); const dead = allies.find(a => a.ch.dead);
     if (dead && reviveSp) return pre.concat(this.castSpell(u, reviveSp, [dead]));
     // heal
-    if (hurt.length && healSpells.length && (role === 'healer' || hurt[0] === u)) {
+    if (hurt.length && healSpells.length && ((role === 'healer' && st !== 'aggressive') || st === 'support' || hurt[0] === u)) {
       const mass = healSpells.find(s => s.t === 'allies');
       if (hurt.length >= 2 && mass) return pre.concat(this.castSpell(u, mass, allies.filter(a => a.ch.hp > -1)));
       return pre.concat(this.castSpell(u, healSpells.find(s => s.t === 'ally') || healSpells[0], [hurt[0]]));
@@ -616,21 +617,21 @@ class Battle {
     if (hurt.length && abil.find(a => a.id === 'layhands' && a.ok)) return pre.concat(useAbil('layhands', hurt[0]));
     // buffs & control on bosses
     const buff = known.find(s => s.id === 'bless' || s.id === 'host' || s.id === 'quicken');
-    if (buff && !u.conc && boss.boss) return pre.concat(this.castSpell(u, buff, buff.t === 'allies' ? allies.filter(alive) : buff.t === 'ally' ? [allies.find(a => CLASSES[a.ch.cls].role !== 'healer') || u] : [u]));
+    if (buff && !u.conc && (boss.boss || st === 'support')) return pre.concat(this.castSpell(u, buff, buff.t === 'allies' ? allies.filter(alive) : buff.t === 'ally' ? [allies.find(a => CLASSES[a.ch.cls].role !== 'healer') || u] : [u]));
     // damage spells
     const dmg = known.filter(s => s.eff === 'dmg').sort((a, b) => b.lvl - a.lvl);
     const aoe = dmg.find(s => s.t === 'enemies' && s.lvl > 0);
     if (foes.length >= 2 && aoe) return pre.concat(this.castSpell(u, aoe, foes));
     const big = dmg.find(s => s.t === 'enemy' && s.lvl > 0 && (boss.boss || s.lvl <= 2));
     const isCaster = ['arcanist', 'wildblood', 'pactbound'].includes(c.cls) || (['chaplain', 'cantor', 'verdant'].includes(c.cls) && !c.eq.weapon);
-    if (big && (boss.boss || R() < 0.5) && (isCaster || role === 'healer')) return pre.concat(this.castSpell(u, big, [boss]));
+    if (big && (boss.boss || st === 'aggressive' || R() < 0.5) && (isCaster || role === 'healer' || st === 'aggressive')) return pre.concat(this.castSpell(u, big, [boss]));
     const cantrip = dmg.find(s => s.lvl === 0);
     if (isCaster && cantrip) return pre.concat(this.castSpell(u, cantrip, [weakest]));
     if (abil.find(a => a.id === 'breath' && a.ok) && foes.length >= 2) return pre.concat(useAbil('breath'));
     if (abil.find(a => a.id === 'wild' && a.ok) && !hasEff(u, 'wildshape') && boss.boss) return pre.concat(useAbil('wild'));
     if (abil.find(a => a.id === 'smite' && a.ok) && boss.boss) return pre.concat(useAbil('smite', boss));
     if (!this.bonusUsed && abil.find(a => a.id === 'flurry' && a.ok) && R() < 0.5) { this.bonusUsed = true; pre = pre.concat(useAbil('flurry', weakest)); }
-    return pre.concat(this.weaponAttack(u, role === 'tank' ? boss : weakest));
+    return pre.concat(this.weaponAttack(u, role === 'tank' || st === 'defensive' || st === 'aggressive' ? boss : weakest));
   }
   pickTarget(m) {
     const pool = this.enemiesOf(m);
@@ -911,6 +912,7 @@ class Battle {
       const res = this.noRewards ? { ups: [] } : gainXP(G, xp);
       if (!this.noRewards) for (const u of this.party) if (isChar(u) && u.ch !== G && u.ch.ai) { if (u.ch.lvl < G.lvl) { u.ch.lvl = G.lvl; u.ch.xp = xpForLevel(G.lvl); const DD = derive(u.ch); u.ch.hp = DD.hpMax; u.ch.res = resMax(u.ch, DD); } }
       if (!this.noRewards) recordVictory(this);
+      if (!this.noRewards && typeof companionVictory === 'function') { const bu = companionVictory(this.party, this.foes.some(f => f.boss)); if (bu.length) toast('BOND', bu[0].slice(0, 24), 'pp_xp', 'pickup'); }
       this.finish('win', res.ups);
     });
   }

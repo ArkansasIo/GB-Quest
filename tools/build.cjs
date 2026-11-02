@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['data_rules', 'data_world', 'gen', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'profperks', 'netlocal', 'main', 'debug'];
+const ORDER = ['data_rules', 'data_world', 'gen', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'profperks', 'companions', 'netlocal', 'main', 'debug'];
 
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 

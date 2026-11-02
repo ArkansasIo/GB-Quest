@@ -1012,7 +1012,9 @@ function smithUpgradeMenu(tier) {
 }
 function innMenu() {
   const price = 5 + Math.floor(G.lvl / 2);
-  choose([`LONG REST (${price}G)`, 'SET HEARTH HERE', 'HIRE COMPANION', 'DISMISS COMPANION', 'LEAVE'], k => {
+  choose([`LONG REST (${price}G)`, 'SET HEARTH HERE', 'HIRE COMPANION', 'DISMISS COMPANION', 'COMPANION BOARD', 'PARTY', 'LEAVE'], k => {
+    if (k === 4) return companionBoard();
+    if (k === 5) return push(new CompanionScene());
     if (k === 0) { if (G.gold < price) return say('Not enough gold.'); G.gold -= price; longRest(G); G.companions.forEach(longRest); G.ghost = null; Music.play('inn'); SFX.heal(); saveGame(); say(['You sleep soundly. HP, hit dice and spell slots restored.', 'Game saved.']); }
     if (k === 1) { G.hearth = { map: G.map, x: G.x, y: G.y + 1 }; SFX.confirm(); say('Your hearthstone is bound here.'); }
     if (k === 2) { const max = Math.max(3, modeOf().size - 1); if (G.companions.length >= max) return say(`Your party is full (${max}).`); choose(['TANK', 'HEALER', 'DAMAGE'], r => { if (r < 0) return; const c = hireCompanion(['tank', 'healer', 'dps'][r]); SFX.lfg_ready(); say(`${c.name} the ${CLASSES[c.cls].name} joins you!`); }, 'Which role?'); }

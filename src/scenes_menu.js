@@ -681,7 +681,7 @@ class SocialScene extends ListScene {
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
     const o = this.items()[this.i]; SFX.select();
-    if (o === 'PARTY') say(G.companions.length ? G.companions.map(c => `${c.name} LV${c.lvl} ${CLASSES[c.cls].name} HP${c.hp}`) : ['No companions. Hire them at an inn (TANK/HEALER/DAMAGE) or invite players you meet.']);
+    if (o === 'PARTY') push(new CompanionScene());
     if (o === 'SERVER / MULTIPLAYER') serverMenu();
     if (o === 'LEADERBOARD') { this.loading = true; NET.leaderboard().then(r => { this.loading = false; const rows = (r && r.length ? r : realmPlayersIn('ardenhold').map(p => ({ name: p.name, lvl: p.lvl, cls: p.cls, ach: 0 }))).slice(0, 10); say([r && r.length ? 'REALM LEADERBOARD (LIVE)' : 'LEADERBOARD (OFFLINE SAMPLE)'].concat(rows.map((h, i) => `${i + 1}. ${clean(h.name)} LV${h.lvl} ${(CLASSES[h.cls] || { name: '' }).name.slice(0, 6)}`))); }); }
     if (o === 'WHO (ONLINE)') say([`LIVE PLAYERS: ${NET.peers.length} (${NET.status || 'OFFLINE'})`].concat(NET.peers.slice(0, 8).map(p => `${clean((p.presence || {}).n || 'HERO')} LV${(p.presence || {}).l || '?'}`)).concat([`REALM NPC HEROES: ${realmPlayersIn(G.map).length} here`]));

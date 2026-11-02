@@ -44,6 +44,7 @@ function gearAffixes(c) {
   const s = {};
   for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; }
   for (const k in c.ascSub || {}) s[k] = (s[k] || 0) + c.ascSub[k] * (AFFIX_K[k] || 1);
+  for (const k in c.bond || {}) s[k] = (s[k] || 0) + c.bond[k] * (AFFIX_K[k] || 1); // companion bond tier
   for (const tree of TALENT_TREES) for (const talent of tree.nodes) {
     if (c.talents && c.talents.includes(talent.id)) {
       for (const k in talent.mods) s[k] = (s[k] || 0) + talent.mods[k];

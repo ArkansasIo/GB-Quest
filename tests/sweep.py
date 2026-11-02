@@ -171,6 +171,21 @@ async () => {
     const r = RECIPES.find(r => r.skill <= 1); if (r) { for (const k in r.needs) addItem(k, 20); G.profPerks[r.prof] = []; G.prof[r.prof] = 720; for (const id of ['t0_0', 't1_0', 't2_0', 't3_0']) learnPerk(r.prof, id); craft(r); }
     render();
   });
+  step('companions', () => {
+    fresh('warden', 'hearthkin', 'soldier', 1); G.lvl = 40; G.gold = 99999; G.companions = []; G.bench = [];
+    let n = 0; for (const d of COMPANION_DEFS) { const e = recruitCompanion(d.id); if (e) return d.id + ': ' + e; n++; }
+    if (allCompanions().length !== n) return 'roster size';
+    if (G.companions.length > companionMax()) return 'party over cap';
+    if (!recruitCompanion(COMPANION_DEFS[0].id)) return 'duplicate recruit allowed';
+    const c = G.companions[0]; c.affinity = 0; applyBond(c);
+    const up = addAffinity(c, 50); if (!up || bondTier(c).name !== 'FRIEND') return 'bond tier';
+    if (!(derive(c).hpMax > 0)) return 'derive with bond';
+    const b = G.bench[0]; if (b) { benchCompanion(c); if (joinCompanion(b)) return 'join failed'; }
+    for (const st of STANCES) { G.companions.forEach(x => x.stance = st); reset(new Field()); run(2); startBattle(rollEncounter(ZONE_BY_ID[G.map])); if (!waitBattle()) return 'no battle ' + st; const ab = S.autoBattle; S.autoBattle = true; for (let i = 0; i < 8000 && scenes.some(s => s instanceof Battle); i++) { tick(); if (i % 30 === 0) press('a'); } S.autoBattle = ab; if (scenes.some(s => s instanceof Battle)) return 'battle stuck ' + st; G.hp = derive(G).hpMax; }
+    push(new CompanionScene()); for (const k of ['down', 'down', 'up']) { press(k); render(); }
+    talkTo(G.companions[0]); addItem('ration', 2); giveGift(G.companions[0], 'ration');
+    render();
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas
