@@ -596,6 +596,14 @@ class Field {
       for (const b of m.bosses) { const k = G.bossKills[b.id]; if (!k || Date.now() - k > (b.arc ? 3600e3 : 1800e3)) e.push({ kind: 'boss', b, x: b.x, y: b.y }); }
       if (G.ghost && G.ghost.map === z.id) e.push({ kind: 'grave', x: G.ghost.x, y: G.ghost.y, walk: true });
     }
+    if (!G.inst && this.zone && globalThis.GBQSecretWorld) {
+      const secret = globalThis.GBQSecretWorld.definitions.find(d => d.zone === this.zone.id);
+      const known = G.secretWorld && G.secretWorld[secret && secret.id];
+      if (secret && !known) {
+        const pos = globalThis.GBQSecretWorld.position(secret, this.m);
+        if (pos && Math.abs(pos.x - G.x) <= 3 && Math.abs(pos.y - G.y) <= 3) e.push({ kind: 'secret_hint', x: pos.x, y: pos.y, walk: true });
+      }
+    }
     for (const p of realmPlayersIn(G.map)) e.push({ kind: 'sim', p, x: p.x, y: p.y, walk: true });
     for (const p of NET.peersInZone(G.map)) e.push({ kind: 'peer', p, x: p.presence.x, y: p.presence.y, walk: true });
     return e;
@@ -777,6 +785,7 @@ class Field {
       }
       else if (e.kind === 'gather' || e.kind === 'herb') { const icon = sprH(ITEMS[e.item || e.herb]?.icon || 'item_herb', 12); if (icon) blit(icon, ex + (T - icon.width) / 2, ey + 2 - ((frameN >> 5) % 4 === 0 ? 1 : 0)); }
       else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }
+      else if (e.kind === 'secret_hint') { if ((frameN >> 3) % 3 === 0) { fill(ex + 7, ey + 5, 2, 2, 'gold'); fill(ex + 6, ey + 7, 4, 1, '#b8a6ff'); } }
       else if (e.kind === 'grave') blit(PIX ? spr('go_grave', 16, 16) : sprH('px_skull', 10), ex + (PIX ? 0 : 3), ey + (PIX ? 0 : 4));
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
