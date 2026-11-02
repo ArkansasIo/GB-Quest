@@ -42,7 +42,7 @@ const profBonus = c => 2 + Math.floor((classLevel(c) - 1) / 4) + Math.floor(Math
 
 function gearAffixes(c) {
   const s = {};
-  for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) s[k] = (s[k] || 0) + v; }
+  for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; if (typeof gemAffixes === 'function') for (const [k, v] of Object.entries(gemAffixes(it))) s[k] = (s[k] || 0) + v; if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) s[k] = (s[k] || 0) + v; }
   for (const k in c.ascSub || {}) s[k] = (s[k] || 0) + c.ascSub[k] * (AFFIX_K[k] || 1);
   for (const k in c.bond || {}) s[k] = (s[k] || 0) + c.bond[k] * (AFFIX_K[k] || 1); // companion bond tier
   if (typeof armorSetBonus === 'function') for (const [k, v] of armorSetBonus(c)) s[k] = (s[k] || 0) + v; // armour class sets
