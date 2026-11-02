@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -36,7 +36,7 @@ class MainMenu extends ListScene {
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
-      'COMBAT ARTS': () => new ArtsScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
+      'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();

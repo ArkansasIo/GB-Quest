@@ -89,7 +89,7 @@ async () => {
 
   // 4. every main-menu screen with input
   fresh('arcanist', 'emberborn', 'scholar', 30);
-  for (let k = 0; k < 18; k++) step('menu item ' + k, () => {
+  for (let k = 0; k < 19; k++) step('menu item ' + k, () => {
     reset(new Field()); run(2); push(new MainMenu()); const mm = topScene(); mm.i = k; const name = mm.items()[k];
     if (name.startsWith('SAVE & QUIT')) return;
     press('a'); run(4);
@@ -226,6 +226,20 @@ async () => {
     const g = G.bag[G.bag.length - 1]; if (g.rank !== 10) return 'forged tier ' + g.rank;
     const a = RECIPES.find(r => r.id === 't_alch_5'); G.prof.alch = 720; G.blueprints.push(a.id); for (const k in a.needs) addItem(k, 30); if (!/^Made/.test(craft(a))) return 'alch';
     push(new CraftScene()); for (const k of ['right', 'down', 'a', 'left', 'select', 'right', 'down', 'a']) { press(k); render(); }
+  });
+  step('armoury', () => {
+    fresh('arcanist', 'hearthkin', 'soldier', 20);
+    if (Object.keys(WEAPON_CLASSES).length !== 12 || ARMOR_CATEGORIES.length !== 7 || ACLASS_ORDER.length !== 4) return 'counts';
+    for (const k in WEAPONS) if (!WEAPON_CLASSES[WEAPONS[k].fam]) return 'weapon without subclass ' + k;
+    const plate = makeItem({ kind: 'wondrous', base: 'gauntlets', lvl: 50, aclass: 'plate' }); if (!canEquip(G, plate)) return 'arcanist wore plate';
+    const robe = makeItem({ kind: 'armor', base: 'silkrobe', lvl: 50 }); if (canEquip(G, robe)) return 'robe: ' + canEquip(G, robe);
+    fresh('warden', 'hearthkin', 'soldier', 40);
+    for (const [slot, base] of [['head', 'helm'], ['back', 'mantle'], ['hands', 'gauntlets'], ['waist', 'belt'], ['legs', 'greaves'], ['feet', null]]) {
+      const w = WONDROUS.find(x => x.slot === slot && (!base || x.id === base)); if (!w) continue; const it = makeItem({ kind: 'wondrous', base: w.id, lvl: 60, aclass: 'plate' }); G.bag.push(it); const e = equipItem(G, it, G.bag); if (e) return slot + ': ' + e; }
+    const ch = makeItem({ kind: 'armor', base: 'fullplate', lvl: 60 }); G.bag.push(ch); equipItem(G, ch, G.bag);
+    const n = armorSetCounts(G); if (n.plate < 6) return 'plate count ' + n.plate;
+    if (!armorSetBonus(G).length) return 'no set bonus';
+    push(new ArmoryScene()); for (const k of ['down', 'down', 'right', 'down', 'up']) { press(k); render(); }
   });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 

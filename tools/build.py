@@ -7,7 +7,7 @@
 """
 import base64, glob, json, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'main', 'debug']
+ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'armory', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'main', 'debug']
 import subprocess
 subprocess.run(['python3', os.path.join(ROOT, 'tools', 'build_atlas.py')], check=True)
 rd = lambda p: open(os.path.join(ROOT, p), encoding='utf8').read()

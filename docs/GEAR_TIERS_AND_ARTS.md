@@ -43,3 +43,35 @@ There are 36 arts: 18 physical and 18 casting, unlocking from level 1 to 100. Ea
 - **Cost:** arts use cooldowns in rounds, not spell slots.
 - **Riders:** effects like bleed, slow, sunder, stun, prone, burn, frostbite, shock, venom, bane, vulnerable and doomed land on a hit, or on damage dealt for casting arts.
 - **Other effects:** EXECUTE doubles damage below half health, drain arts heal you, and nova arts heal the party.
+
+## Armour classes, armour categories and weapon subclasses
+
+`src/armory.js`. Open the reference screen from `MENU > ARMOURY`.
+
+**4 armour classes**, gated by 5e armour proficiency:
+
+| Class | Needs | Per-piece implicit stats (scale with tier) | 4-piece set | 7-piece set |
+|---|---|---|---|---|
+| CLOTH | anyone | healing, damage % | +10% damage, +15% healing | +10 haste, +10% damage |
+| LEATHER | light | dodge, crit | +5 crit | +6 dodge, +25% crit damage |
+| MAIL | medium | max HP, resist | +6 resist | +60 HP, +1 accuracy |
+| PLATE | heavy | max HP, block, thorns | +1 AC | +1 AC, +8 block (+2 AC total, capped) |
+
+**7 armour categories** (piece slots): HELM, CLOAK, CHEST, GLOVES, BELT, LEGGINGS and BOOTS. Chest armour takes its class from its 5e type: light is leather, medium is mail, heavy is plate. There are also four new cloth robes. The other six categories roll a class when they drop, with a 60% chance of the heaviest class you can wear (smart loot). Items from older saves count as cloth.
+
+**12 weapon subclasses**, each with a signature implicit that stacks with the tier implicit:
+
+| Subclass | Implicit |
+|---|---|
+| SWORD | crit chance, accuracy |
+| AXE | crit damage |
+| MACE | damage, holy damage |
+| HAMMER | big damage, crit damage |
+| DAGGER | high crit chance and crit damage |
+| POLEARM | damage, block |
+| STAFF | healing, fire, cold and shock damage |
+| WAND | shadow and holy damage |
+| BOW | accuracy, crit chance |
+| CROSSBOW | heavy crit damage |
+| THROWN | haste, crit chance |
+| FIST | haste, dodge (4 new fist weapons) |
