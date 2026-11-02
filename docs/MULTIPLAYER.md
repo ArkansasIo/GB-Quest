@@ -51,3 +51,42 @@ The chat panel keeps timestamped messages and filters for **All**, **Say**, **Pa
 A Node service with the same `srv_*` message shapes over WebSocket, persistent world bosses, an auction house and mail, and server-side loot. It is designed so that the existing host code path becomes the server's battle worker.
 
 The current server now exposes a nine-name realm directory, account friend requests, and short-lived invite codes. Live play remains one shared server room; independent realm shards and cross-realm character rules are not implemented yet. See [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md) for the current contract and store-frame status.
+
+## WoW-style chat
+
+`src/chatwow.js`, built on `NET.sendChat` and `chatLog`. Press **C** to show or hide the chat panel and **Enter** to type.
+
+| Channel | Command | Notes |
+|---|---|---|
+| Say / Yell / Emote | `/s` `/y` `/e` | nearby players (say is limited to 12 tiles); shows as a chat bubble over the speaker |
+| 1. GENERAL - zone | `/1` | the channel is labelled with your current zone |
+| 2. TRADE - CITY | `/2` | cities only |
+| 3. LOCAL DEFENSE | `/3` | |
+| 4. LOOKING FOR GROUP | `/4` | |
+| Custom channels | `/join name`, `/5`-`/9`, `/leave n`, `/chatlist` | up to 5 |
+| Party / Raid / Instance | `/p` `/ra` `/i` | |
+| Guild / Officer | `/g` `/o` | |
+| Whisper / Reply | `/w name msg`, `/r` | |
+
+**Other commands:**
+
+| Command | Does |
+|---|---|
+| `/who` | lists real players and adventurers in your zone |
+| `/afk`, `/dnd` | sets away or busy; incoming whispers show an auto-reply note |
+| `/roll [max]` | rolls a number, 1-100 by default |
+| `/played` | shows time played on this hero |
+| `/ignore`, `/unignore` | hides or shows a player's messages |
+| `/friend`, `/unfriend` | adds or removes a friend |
+| `/invite name` | invites a nearby adventurer into your party |
+| `/clear` | clears the chat window |
+| `/help` | lists every command |
+| `/wave` and 19 others | emotes: dance, cheer, bow, laugh, cry, flex, sit, sleep, salute, thank, hug, clap, roar, shrug, point, kneel, taunt, yawn, kiss |
+
+**Tabs:** GENERAL (everything except the combat log), COMBAT (every battle line), LOOT (loot, money, XP, level-ups, achievements, quests and rolls), WHISPER, SOCIAL.
+
+**Automatic messages:** loot pickups, gold, XP gained, level-ups, achievements, toasts and battle lines are posted to the right tab. Townsfolk and adventurers talk now and then in say, trade or LFG.
+
+**In the world:** say, yell and emote messages appear as bubbles over the speaker (you, real players and adventurers). While the chat panel is hidden, the last 3 lines appear in the game screen above the HUD.
+
+Ignore, friend and custom-channel lists are saved with the hero (`G.chat`).

@@ -297,6 +297,20 @@ async () => {
     push(new MountScene()); for (const k of ['down', 'right', 'a', 'left', 'up', 'a']) { press(k); render(); }
     G.mounted = true; reset(new Field()); run(4); render();
   });
+  step('wow chat', () => {
+    fresh('warden', 'hearthkin', 'soldier', 10);
+    const n0 = CHAT_UI.entries.length;
+    for (const c of ['/help', '/wave', '/dance Bram', '/join guildies', '/5 hello channel', '/chatlist', '/leave 5', '/who', '/afk lunch', 'hello world', '/roll 20', '/played', '/ignore SPAMMER', '/friend ESME', '/3 orcs at the gate', '/2 wts ore', '/1 hello general', '/s hi there', '/y FOR THE LANTERN', '/invite NOBODY', '/bogus']) NET.sendChat(c);
+    for (const want of ['Joined channel', 'rolls', 'AFK', 'waves', 'LOCAL DEFENSE']) if (!CHAT_UI.entries.some(m => (m.msg + ' ' + m.channel).includes(want) || (want === 'LOCAL DEFENSE' && m.channel === 'defense'))) return 'missing ' + want;
+    if (!G.chat || !G.chat.ignore.includes('SPAMMER') || !G.chat.friends.includes('ESME')) return 'prefs';
+    for (const k of Object.keys(CHAT_TABS)) { setChatFilter(k); }
+    setChatFilter('all');
+    gainXP(G, 50); toast('ACHIEVEMENT', 'TEST', 'pp_xp', 'achievement');
+    if (!CHAT_UI.entries.some(m => m.channel === 'xp') || !CHAT_UI.entries.some(m => m.channel === 'achievement')) return 'auto messages';
+    reset(new Field()); run(3); startBattle(rollEncounter(ZONE_BY_ID[G.map])); waitBattle(); for (let i = 0; i < 60; i++) tick();
+    if (!CHAT_UI.entries.some(m => m.channel === 'combat')) return 'combat log';
+    scenes.length = 0; reset(new Field()); NET.sendChat('/s bubble test'); document.body.classList.remove('chat-on'); run(3); render(); document.body.classList.add('chat-on');
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas

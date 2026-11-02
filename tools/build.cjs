@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'armory', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'towns', 'ui_dark', 'battlebg', 'mount_data', 'mounts', 'main', 'debug'];
+const ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'armory', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'towns', 'ui_dark', 'battlebg', 'mount_data', 'mounts', 'chatwow', 'main', 'debug'];
 
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const clientFile = (name) => name === 'main' ? 'client/main.js' : `src/${name}.js`;
