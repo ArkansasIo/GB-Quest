@@ -18,6 +18,12 @@ PORT=9000 HOST=0.0.0.0 REALM="ARKANSAS REALM" node server/server.cjs   # LAN pla
 
 It needs Node 18+ and has no dependencies. Data is kept in `server/data/realm.json`, written atomically once a second and on shutdown; set `GBQ_DATA` to move it. The server serves the client on the same origin: `/` (handheld), `/fullscreen` and `/atlas`. For play over the internet, put it behind an HTTPS reverse proxy.
 
+### Desktop launcher connection
+
+The Electron launcher can connect to this API by entering the server base URL (for local development, `http://127.0.0.1:8787`; for remote hosting, an HTTPS URL). It checks `GET /api/health` and `GET /api/realms`, and uses `POST /api/register` or `POST /api/login` for account access. The desktop main process performs these requests, so browser CORS is not involved. Passwords are not persisted by the launcher. Session tokens are stored using Electron `safeStorage` only when a non-plaintext OS-backed storage provider is available; otherwise they remain in memory until the app closes.
+
+This connection currently authenticates the launcher only. It does not yet bind the in-game SSE transport to the desktop session, expose a character list, or route a selected logical world to a distinct regional server. The current `/api/realms` endpoint returns the legacy realm list; it is not the 11-data-center/85-world directory.
+
 ## Accounts
 
 - **Register:** TITLE > ACCOUNT > CREATE ACCOUNT. Names are 3–16 letters, digits or `_`; passwords are 8–72 characters.
