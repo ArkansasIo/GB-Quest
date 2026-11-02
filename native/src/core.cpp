@@ -40,6 +40,34 @@ std::int32_t ability_modifier(std::int32_t score) noexcept {
 #endif
 }
 
+
+std::int32_t ability_score(const AbilityScores& scores, Ability ability) {
+  const auto index = static_cast<std::size_t>(ability);
+  if (index >= scores.values.size()) {
+    throw std::invalid_argument("Unknown ability identifier");
+  }
+  return scores.values[index];
+}
+
+void validate_ability_scores(const AbilityScores& scores) {
+  for (const std::int32_t score : scores.values) {
+    if (score < 1 || score > 30) {
+      throw std::out_of_range("Ability scores must be between 1 and 30");
+    }
+  }
+}
+
+std::int32_t passive_score(const PassiveScoreInput& input) {
+  if (input.ability_score < 1 || input.ability_score > 30) {
+    throw std::out_of_range("Ability score must be between 1 and 30");
+  }
+  const std::int32_t proficiency = input.proficient
+      ? proficiency_bonus(input.character_level) : 0;
+  const std::int64_t total = 10LL + ability_modifier(input.ability_score)
+      + proficiency + input.bonus;
+  return clamp_to_i32(total);
+}
+
 std::int32_t proficiency_bonus(std::int32_t character_level) {
   if (character_level < 1 || character_level > 20) {
     throw std::out_of_range("D&D character level must be between 1 and 20");
