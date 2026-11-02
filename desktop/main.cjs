@@ -135,7 +135,8 @@ ipcMain.on('gbq:launch-game', (event, selection = {}) => {
   const region = String(selection.region || '');
   const dataCenter = String(selection.dataCenter || '');
   const world = String(selection.world || '');
-  if (!Object.hasOwn(REALM_CENTERS, region) || !REALM_CENTERS[region].includes(dataCenter) || !/^(0[1-8])$/.test(world) && !(region === 'oc' && /^0[1-5]$/.test(world))) {
+  const validWorld = region === 'oc' ? /^0[1-5]$/.test(world) : /^0[1-8]$/.test(world);
+  if (!Object.hasOwn(REALM_CENTERS, region) || !REALM_CENTERS[region].includes(dataCenter) || !validWorld) {
     dialog.showErrorBox('Invalid realm selection', 'Choose a valid region, data center, and world.');
     return;
   }
