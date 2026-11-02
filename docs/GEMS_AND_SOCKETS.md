@@ -2,7 +2,7 @@
 
 ## Scope
 
-The first gem socket rules layer is implemented in `src/gems.js` and loaded by the browser build after `src/items.js`. It is a gameplay rules/API layer; the player-facing socketing screen, gem loot tables, vendors and Rune Forge are not yet implemented.
+The gem rules layer is implemented in `src/gems.js`. The player-facing socket forge is implemented in `src/gem_ui.js` and is loaded after `src/gems.js` in both the development page and generated browser build. Players can open it from an eligible weapon/armour entry in Inventory > Gear. The screen supports socket insertion, extraction, owned-gem counts, socket capacity and a fusion menu.
 
 ## Gem families
 
@@ -38,12 +38,12 @@ Each family has nine tiers (`ruby_t1` through `ruby_t9`, etc.). The modifier sca
 
 ## Current limitations
 
-- There is no player-facing socket management UI yet.
-- No gem drop tables, gathering recipes, crafting recipes or vendor stock have been added yet.
+- Gem loot tables and automatic monster/boss rewards are not yet connected.
+- No gathering recipes, vendor stock or full loot-table integration have been added yet.
 - No socket unlock/upgrade currency or extraction fee exists yet.
 - The rules currently allow the defined gem families in any eligible weapon or armour socket; slot-specific gem restrictions are not yet defined.
 - Online server-side validation and synchronization must be added before socket operations are trusted in multiplayer.
 
 ## Tests
 
-`tests/gems.test.js` covers catalog bounds, socket capacity, immutable insertion/extraction, inventory consumption/refund and modifier aggregation. Run with `npm test`.
+Gem fusion is available from the socket forge: three identical gems of tiers 1–8 produce one gem of the next tier. `tests/gems.test.js` covers catalog bounds, socket capacity, immutable insertion/extraction, inventory consumption/refund and modifier aggregation. Run with `npm test`.
