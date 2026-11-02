@@ -346,9 +346,21 @@ const CHAT_LINES = [
   ['General', 'what difficulty for leveling?'], ['Trade', 'LF alchemist, mats provided'], ['General', 'anyone wanna duel?'],
 ];
 const NAME_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const NAME_POOLS = {
+  hearthkin: ['ARIN', 'BRYN', 'CALE', 'DESS', 'EDRIC', 'GWEN', 'HALE', 'MIRA', 'TOMAS', 'ELSA', 'ROWAN', 'NELL'],
+  thornelf: ['AELIR', 'SYLWEN', 'THALEN', 'ILYRA', 'FAELAN', 'NIMRA', 'LORIEL', 'VAEL', 'SERETH', 'ELOWEN'],
+  stonekin: ['BRAKKA', 'DURREK', 'HELGA', 'KORMAK', 'RUNA', 'TORVI', 'BALDUR', 'GRETA', 'ODRIK', 'SIGNA'],
+  wispling: ['PIP', 'TANSY', 'WREN', 'MILO', 'POPPY', 'BIXBY', 'FENNA', 'LARK', 'TUCK', 'MOSS'],
+  emberborn: ['ASHA', 'CINDRA', 'EMBRIC', 'KAELIS', 'PYRA', 'SOLEN', 'VEXA', 'ZAREK', 'IGNA', 'TOREN'],
+  burrowkin: ['NIBBS', 'TOCK', 'FIZZWICK', 'DORLA', 'QUILL', 'SPROCKET', 'MABBLE', 'TINK', 'GIMBLE', 'ROOTA'],
+  twinblood: ['ELIAN', 'SERA', 'KAIDEN', 'MAREN', 'ORREN', 'LYSA', 'DARIEN', 'IVY', 'CORIN', 'TALIA'],
+  tuskborn: ['GRASH', 'UGRA', 'KRUL', 'MOGHA', 'THARG', 'ZUGA', 'BROKK', 'RASHKA', 'DURGA', 'VORN'],
+  drakkin: ['RHAEZ', 'KORVATH', 'SYTHA', 'DRAVEN', 'ZORA', 'VERITH', 'KHAAL', 'ISSRA', 'ARDEX', 'NYRA'],
+};
+const POINT_BUY = { budget: 27, min: 8, max: 15, cost: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 } };
 
 // ================================================================ build info & studio
-const BUILD = { game: 'GB QUEST', subtitle: 'LANTERNS OF AELMOOR', version: '2.0.0', build: 'B2026.11.01', studio: 'ArkansasIo', year: 2026 };
+const BUILD = { game: 'GB QUEST', subtitle: 'LANTERNS OF AELMOOR', version: '2.1.1', build: 'B2026.11.01', studio: 'ArkansasIo', year: 2026 };
 
 // ================================================================ expansions (endgame, levels 40-720)
 const EXPANSIONS = [
@@ -427,3 +439,25 @@ const ZONES = [];
 })();
 const ZONE_BY_ID = Object.fromEntries(ZONES.map(z => [z.id, z]));
 const regionLastZone = rid => ZONES.filter(z => z.region === rid).pop();
+
+// ================================================================ the world map of DUNIA: where each region sits on src_sheet/world_map.png
+// [x, y] as fractions of the map image, plus the place name painted there
+const REGION_PINS = {
+  ardenhold: [0.71, 0.44, 'IKLISTZEFON'], elderwood: [0.70, 0.20, 'PLAINS OF STRIFE'], hollowmere: [0.57, 0.43, 'WETLANDS'],
+  thornwood: [0.74, 0.29, 'THE BLACKWOOD'], greypeak: [0.67, 0.06, 'WHITECHAPEL PEAKS'], sandspire: [0.71, 0.63, 'CANYON OF WOE'],
+  saltreach: [0.46, 0.42, 'GOLDSTAR COAST'], emberwaste: [0.12, 0.29, "VUL'KEN"], frostmarch: [0.56, 0.15, 'HYLONIA'],
+  verdantdeep: [0.89, 0.87, 'EMERALD JUNGLE'], ashenbarrows: [0.16, 0.47, 'DREAD WASTES'], silverhaven: [0.92, 0.37, "TEL'LAYL"],
+  duskmoor: [0.53, 0.62, 'SWAMP OF SORROW'],
+  x1_0: [0.36, 0.18, 'NORTHERN ISLES'], x1_1: [0.33, 0.61, 'WESTERN ISLES'], x1_2: [0.42, 0.83, 'SOUTHERN ISLES'],
+  x2_0: [0.73, 0.53, 'CRYSTAL LAKE'], x2_1: [0.66, 0.37, 'CRYSTAL RIVER'], x2_2: [0.27, 0.47, 'HATCHERY'],
+  x3_0: [0.87, 0.11, 'ESTATE THORNHAART'], x3_1: [0.84, 0.25, 'REOTHIAN GLADES'], x3_2: [0.82, 0.38, 'CREEK OF LIFE'],
+  x4_0: [0.08, 0.38, 'ASHLANDS'], x4_1: [0.51, 0.73, 'REDROCK'], x4_2: [0.91, 0.72, "KRON'MAR"],
+  x5_0: [0.77, 0.76, 'DESERT OF ESRAH N'], x5_1: [0.68, 0.87, 'DESERT OF ESRAH S'], x5_2: [0.19, 0.38, 'DRAENIN'],
+};
+function zonePin(z) {
+  const p = REGION_PINS[z.region] || [0.5, 0.5, ''];
+  const sibs = ZONES.filter(o => o.region === z.region), i = sibs.indexOf(z);
+  const off = sibs.length > 3 && !REGIONS.find(r => r.id === z.region).exp ? [[0, 0], [0.028, 0], [0, 0.04], [0.028, 0.04]][i] : [i * 0.026, 0];
+  return [p[0] + off[0] - 0.012, p[1] + off[1] - 0.016];
+}
+function continentOf(z) { const p = REGION_PINS[z.region] || [0.5, 0.5]; return p[0] < 0.38 ? 'THE WEST ISLES' : p[1] < 0.5 ? 'NORTH KARRA' : 'SOUTH KARRA'; }

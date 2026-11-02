@@ -28,16 +28,16 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
     if (!P('a')) return;
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
-    const map = { BAG: () => new BagScene('field'), EQUIPMENT: () => new EquipScene(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
+    const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
@@ -48,7 +48,7 @@ class MainMenu extends ListScene {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
     fill(58, 12, 1, H - 12, 3);
-    blit(sprH(`c_${G.cls}_0`, 34), 12, 16);
+    blit(heroPortrait(G) ? sprFit(heroPortrait(G), 40) : sprH(`c_${G.cls}_0`, 34), 9, 14);
     textC(G.name.slice(0, 9), 29, 54, 3); textC(CLASSES[G.cls].name, 29, 64, 2);
     text('HP', 3, 76, 2); bar(16, 77, 40, 4, G.hp, D.hpMax, 'hp');
     text('XP', 3, 86, 2); bar(16, 87, 40, 4, G.xp - xpForLevel(G.lvl), xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)) - xpForLevel(G.lvl), 'xp');
@@ -154,7 +154,7 @@ class EquipScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G);
-    blit(sprH(`c_${G.cls}_0`, 46), 6, 18);
+    blit(heroPortrait(G) ? sprFit(heroPortrait(G), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
     text(`AC ${D.ac}`, 6, 70); text(`ATK ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 6, 80); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`, 6, 90); text(`x${D.attacks}`, 6, 100, 2);
     const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 112, 2);
     SLOTS.forEach((s, i) => {
@@ -183,7 +183,7 @@ class CharSheet {
     textC(`< ${pages[this.page]} >`, 80, 13, 2); fill(2, 22, 156, 1, 3);
     const p = this.page;
     if (p === 0) {
-      blit(sprH(`c_${G.cls}_0`, 40), 6, 26);
+      blit(heroPortrait(G) ? sprFit(heroPortrait(G), 44) : sprH(`c_${G.cls}_0`, 40), 2, 26);
       const sub = G.sub ? CLASSES[G.cls].subs.find(s => s.id === G.sub).name : '-';
       [[G.name], [`${SPECIES[G.species].name} ${CLASSES[G.cls].name}`], [`SUB: ${sub}`], [`BG: ${BACKGROUNDS[G.bg].name}`], [`LEVEL ${G.lvl}${G.lvl > 20 ? ' (ASCENDED)' : ''}`], [`XP ${fmt(G.xp)}/${fmt(xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)))}`]].forEach(([s], i) => text(s.slice(0, 18), 48, 26 + i * 10, i ? 3 : 'gold'));
       const rows = [`HP ${G.hp}/${D.hpMax}   AC ${D.ac}`, `PROF +${D.pb}   INIT ${D.init >= 0 ? '+' : ''}${D.init}`, `HIT DICE ${G.hd}/${D.hdMax} (d${D.cls.hd})`, `PASSIVE PERCEPTION ${D.passive}`, D.spell ? `SPELL DC ${D.spell.dc}  ATK +${D.spell.atk}` : 'NO SPELLCASTING', `CRIT ${D.critRange}-20 +${D.crit}%`];
@@ -314,7 +314,7 @@ class BestiaryScene extends ListScene {
     BESTIARY.slice(this.top, this.top + this.rows).forEach((b, j) => { const i = this.top + j, y = 25 + j * 10, seen = G.bestiary[b.id]; if (i === this.i) fill(2, y - 1, 90, 10, 1); text(`${String(b.no).padStart(3, '0')} ${seen ? b.name.slice(0, 10) : '???'}`, 4, y, seen ? 3 : 1); });
     this.scrollbar(93, 24, 80);
     const b = BESTIARY[this.i], seen = G.bestiary[b.id];
-    frame(96, 24, 62, 62); if (seen) blit(sprFit(b.spr, 50), 102, 30); else textC('?', 127, 50, 1, 2);
+    frame(96, 24, 62, 62); if (seen) blit(sprFit(monsterArt(b), 50), 102, 30); else textC('?', 127, 50, 1, 2);
     frame(2, 106, 156, 36);
     if (seen) { text(`${b.type} / ${b.sub}${b.rank === 'elite' ? ' ELITE' : ''}`.slice(0, 24), 6, 109, 2); text(`DMG ${b.dt.toUpperCase()} ${b.res.length ? 'RES ' + b.res[0].toUpperCase() : ''}`.slice(0, 24), 6, 118); text(`${b.lore}`.slice(0, 24), 6, 127, 1); textR(`KILLS ${seen.kills}`, 154, 90, 2); }
     else text('Defeat one to learn more.', 6, 115, 1);
@@ -369,7 +369,7 @@ class AuctionHouse extends ListScene {
   update() {
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (P('select')) { removeScene(this); push(new BagScene('field')); return; }
+    if (P('select')) { removeScene(this); push(new InventoryScene('field')); return; }
     if (!P('a')) return;
     const e = this.list[this.i]; if (!e) return;
     if (G.gold < e.price) { SFX.error(); return say('Not enough gold.'); }
@@ -404,13 +404,18 @@ class BankScene extends ListScene {
 // ================================================================ SETTINGS & SOUND TEST
 class SettingsScene extends ListScene {
   constructor() { super(11); }
-  items() { return ['PALETTE', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT']; }
+  navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
+  items() { return ['PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
     const o = this.items()[this.i], clamp = v => Math.max(0, Math.min(6, v));
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
+    if (o === 'AUDIO') { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; const c = Music.cur; Music.cur = null; Music.step = 0; if (c) Music.play(c); }
+    if (o === 'VIDEO') { if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; } else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; } UI = PALS[S.palette]; clearCaches(); }
+    if (o === 'ART') { S.art = S.art === 'classic' ? 'nes' : 'classic'; applyArt(); clearCaches(); }
+    if (o === 'TILES') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
     if (o === 'SFX VOLUME') S.vol = clamp(S.vol + d);
     if (o === 'MUSIC VOLUME') S.music = clamp(S.music + d);
     if (o === 'BRIGHTNESS') S.bright = clamp(S.bright + d);
@@ -421,30 +426,32 @@ class SettingsScene extends ListScene {
     if (o === 'SWAP A/B') S.swap = !S.swap;
     if (o === 'DIFFICULTY' && G) { difficultyMenu(); return; }
     if (o === 'SOUND TEST' && P('a')) { push(new SoundTest()); return; }
+    if (o === 'DEBUG PANEL' && P('a')) { window.DBG && DBG.toggle(); return; }
     if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
     saveSettings(); SFX.toggle();
   }
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [PALS[S.palette].name, S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', '>'];
-    this.items().forEach((s, i) => { const y = 24 + i * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
+    const v = [PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>'];
+    this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
 class SoundTest extends ListScene {
   constructor() { super(10); this.tab = 0; }
-  items() { return this.tab ? Object.keys(TRACKS) : SFX_NAMES; }
+  items() { return this.tab ? Object.keys(TRACKS) : (S.audio === 'hd64' && typeof SFX64_ONLY !== 'undefined' ? SFX_NAMES.concat(SFX64_ONLY) : SFX_NAMES); }
   update() {
     if (P('select')) { this.tab ^= 1; this.i = this.top = 0; SFX.page(); }
+    if (P('start')) { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; saveSettings(); this.i = Math.min(this.i, this.items().length - 1); const c = Music.cur; Music.cur = null; if (c && this.tab) Music.play(c); SFX.toggle(); }
     this.navList();
     if (P('b')) { removeScene(this); Music.stop(); const t = topScene(); t && t.resume && t.resume(); return; }
     if (P('a')) { const k = this.items()[this.i]; if (this.tab) { Music.cur = null; Music.play(k); } else SFX[k](); }
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
-    textC(this.tab ? `MUSIC ${Object.keys(TRACKS).length} TRACKS` : `SOUND FX ${SFX_NAMES.length}`, 80, 1, 0);
+    textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, 0);
     this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
     this.scrollbar(156, 14, 110);
-    text('A: PLAY  SELECT: SFX/MUSIC', 4, 134, 2);
+    text('A:PLAY SEL:SFX/MUSIC START:ENGINE', 2, 134, 2);
   }
 }

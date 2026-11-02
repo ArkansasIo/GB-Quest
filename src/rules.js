@@ -9,16 +9,33 @@ function newCharacter(o) {
   const prio = [cls.primary, ...['CON', 'DEX', 'WIS', 'STR', 'INT', 'CHA'].filter(a => a !== cls.primary)];
   if (cls.cast && cls.cast !== cls.primary) { prio.splice(prio.indexOf(cls.cast), 1); prio.splice(1, 0, cls.cast); }
   const base = {}; prio.slice(0, 6).forEach((a, i) => base[a] = STANDARD_ARRAY[i]);
+  if (o.scores) for (const a of ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']) if (Number.isFinite(o.scores[a])) base[a] = Math.max(3, Math.min(18, o.scores[a])); // from the creator (before species bonus)
   for (const a in sp.asi) base[a] += sp.asi[a];
   base.LCK = 10 + (sp.traits.includes('lucky') ? 2 : 0); base.WIL = 10 + (o.cls === 'ascetic' || o.cls === 'chaplain' ? 2 : 0); base.SPD = 10 + (o.cls === 'shade' || o.cls === 'strider' ? 2 : 0);
   const c = { name: o.name, species: o.species, cls: o.cls, bg: o.bg || 'wanderer', sub: null, lvl: 1, xp: 0, base,
     feats: [], ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
-    eq: {}, hp: 1, hd: 1, res: {}, buffs: [], ai: o.ai || false, extraSkill: sp.traits.includes('versatile') ? 'perception' : null };
+    eq: {}, hp: 1, hd: 1, res: {}, buffs: [], ai: o.ai || false, look: o.look || null, portrait: o.portrait || null, extraSkill: sp.traits.includes('versatile') ? 'perception' : null };
   (cls.gear || []).forEach(b => { const it = WEAPONS[b] ? makeItem({ kind: 'weapon', base: b, rarity: 1, lvl: 1 }) : makeItem({ kind: 'armor', base: b, rarity: 1, lvl: 1 }); c.eq[itemSlot(it)] = it; });
   const D = derive(c); c.hp = D.hpMax; c.hd = D.hdMax; c.res = resMax(c, D);
   return c;
 }
 const classLevel = c => Math.min(c.lvl, CLASS_LEVEL_CAP);
+// saves from before the 12-slot update kept rings and amulets in one 'trinket' slot
+function migrateGear(c) {
+  if (!c || !c.eq) return;
+  const fixItem = it => { if (it && it.kind === 'wondrous') { const w = WONDROUS.find(x => x.id === it.base); if (w) it.slot = w.slot; } };
+  (c.bag || []).forEach(fixItem); Object.values(c.eq).forEach(fixItem);
+  if (c.eq.trinket) { const it = c.eq.trinket; delete c.eq.trinket; const to = it.slot === 'neck' ? 'neck' : !c.eq.ring1 ? 'ring1' : 'ring2'; if (c.eq[to]) (c.bag || (c.bag = [])).push(it); else c.eq[to] = it; }
+}
+// ability order a class wants: primary, casting stat, then CON DEX WIS STR INT CHA
+function abilityPriority(clsId) {
+  const cls = CLASSES[clsId], prio = [cls.primary, ...['CON', 'DEX', 'WIS', 'STR', 'INT', 'CHA'].filter(a => a !== cls.primary)];
+  if (cls.cast && cls.cast !== cls.primary) { prio.splice(prio.indexOf(cls.cast), 1); prio.splice(1, 0, cls.cast); }
+  return prio.slice(0, 6);
+}
+// the hero's chosen looks (fall back to the class art)
+const heroLook = c => (c && c.look && IMG[`gh_${c.look}_down0`]) ? c.look : c ? c.cls : 'warden';
+const heroPortrait = c => (c && c.portrait && IMG[c.portrait]) ? c.portrait : classPortrait(c.cls);
 const hasFeature = (c, f) => CLASSES[c.cls].features.some(([l, id]) => id === f && classLevel(c) >= l);
 const subKey = (c, k) => { if (!c.sub || classLevel(c) < 3) return 0; const s = CLASSES[c.cls].subs.find(x => x.id === c.sub); return (s && s.keys[k]) || 0; };
 const profBonus = c => 2 + Math.floor((classLevel(c) - 1) / 4) + Math.floor(Math.max(0, c.lvl - 20) / 60);
@@ -31,11 +48,13 @@ function gearAffixes(c) {
   for (const bf of c.buffs || []) { const def = BUFFS[bf.id]; if (def && def.mods) for (const k in def.mods) s[k] = (s[k] || 0) + def.mods[k] * (bf.stacks || 1); }
   return s;
 }
+// sum of wondrous bonuses of one kind over every equipped slot
+function wondrousBonus(c, kind) { let n = 0; for (const slot of SLOTS) { const it = c.eq[slot]; if (it && it.kind === 'wondrous') { const w = WONDROUS.find(x => x.id === it.base); if (w && w.bonus === kind) n += Math.max(1, it.plus); } } return n; }
 function derive(c) {
   const cls = CLASSES[c.cls], sp = SPECIES[c.species], CL = classLevel(c), pb = profBonus(c);
   const A = {}; for (const a of ATTRS) A[a] = (c.base[a] || 10) + (c.ascAttr[a] || 0);
   // wondrous 'abil' items raise the primary ability
-  for (const slot of ['head', 'trinket']) { const it = c.eq[slot]; if (it && it.kind === 'wondrous') { const w = WONDROUS.find(x => x.id === it.base); if (w && w.bonus === 'abil') A[cls.primary] += 2 * Math.max(1, it.plus); } }
+  A[cls.primary] += 2 * wondrousBonus(c, 'abil');
   const M = {}; for (const a of ATTRS) M[a] = mod(A[a]);
   const sub = gearAffixes(c);
   // hit points
@@ -43,23 +62,23 @@ function derive(c) {
   let hpMax = hd + conM + (CL - 1) * (hd / 2 + 1 + conM) + Math.max(0, c.lvl - 20) * (hd / 2 + Math.max(1, conM));
   if (c.feats.includes('tough')) hpMax += 2 * c.lvl;
   hpMax += (sub.hp || 0); hpMax = Math.round(hpMax * (1 + (sub.hpPct || 0) / 100));
-  for (const slot of ['head', 'trinket']) { const it = c.eq[slot]; if (it && it.kind === 'wondrous' && WONDROUS.find(x => x.id === it.base).bonus === 'hp') hpMax += 6 * it.plus * Math.max(1, Math.floor(c.lvl / 5)); }
+  hpMax += 6 * wondrousBonus(c, 'hp') * Math.max(1, Math.floor(c.lvl / 5));
   hpMax = Math.max(1, Math.round(hpMax));
   // armour class
   const armor = c.eq.armor && ARMORS[c.eq.armor.base], shield = c.eq.offhand && ARMORS[c.eq.offhand.base];
   let ac;
-  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus);
+  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus) + Math.floor(((c.eq.armor.rank || 1) - 1) / 2);
   else if (hasFeature(c, 'unarmored_con')) ac = 10 + M.DEX + M.CON;
   else if (hasFeature(c, 'unarmored_wis')) ac = 10 + M.DEX + M.WIS;
   else if (subKey(c, 'draconic')) ac = 13 + M.DEX;
   else ac = 10 + M.DEX;
   if (shield) ac += 2 + Math.max(0, c.eq.offhand.plus);
   if (armor && hasFeature(c, 'style_def')) ac += 1;
-  for (const slot of ['head', 'feet', 'trinket']) { const it = c.eq[slot]; if (it && it.kind === 'wondrous' && WONDROUS.find(x => x.id === it.base).bonus === 'ac') ac += it.plus; }
+  ac += wondrousBonus(c, 'ac');
   ac += Math.min(SUBSTATS.acb.max, sub.acb || 0);
   // saves
   const saveProf = new Set(cls.saves); if (c.feats.includes('resilient')) saveProf.add('CON');
-  let saveItem = 0; for (const slot of ['head', 'trinket']) { const it = c.eq[slot]; if (it && it.kind === 'wondrous' && WONDROUS.find(x => x.id === it.base).bonus === 'save') saveItem += it.plus; }
+  const saveItem = wondrousBonus(c, 'save');
   const saves = {}; for (const a of ATTRS) saves[a] = M[a] + (saveProf.has(a) ? pb : 0) + saveItem + (sub.saves || 0);
   // skills
   const profSkills = new Set([...(cls.skills || []).slice(0, 3), ...BACKGROUNDS[c.bg].skills]); if (c.extraSkill) profSkills.add(c.extraSkill);
@@ -74,11 +93,11 @@ function derive(c) {
   let abil = props.includes('r') ? 'DEX' : props.includes('f') ? (M.DEX > M.STR ? 'DEX' : 'STR') : 'STR';
   if (hasFeature(c, 'martial') && (!wd || wd.cat === 'simple')) { const md = CL >= 17 ? 10 : CL >= 11 ? 8 : CL >= 5 ? 6 : 4; const cur = wd ? +dice.split('d')[1] : 1; if (md > cur) dice = `1d${md}`; abil = M.DEX > M.STR ? 'DEX' : 'STR'; }
   const profW = !wd || wd.cat === 'simple' || cls.weapons === 'martial' || (cls.weapons === 'finesse' && props.includes('f'));
-  const magic = wi ? Math.max(0, wi.plus) : 0;
-  let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0);
+  const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (wi.rank || 1) - 1 : 0; // item rank adds flat damage
+  let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit');
   if (props.includes('r') && hasFeature(c, 'style_arch')) hit += 2;
   if (props.includes('r') && c.feats.includes('sharpshot')) hit += 2;
-  const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
+  const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic + rankDmg, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
     extra: wi && wi.legend ? { dice: wi.legend.extra, type: wi.legend.etype } : null };
   let attacks = 1;
   if (hasFeature(c, 'extra3')) attacks = 4; else if (hasFeature(c, 'extra2')) attacks = 3; else if (hasFeature(c, 'extra1') || (subKey(c, 'valor') && CL >= 6)) attacks = 2;
@@ -100,7 +119,7 @@ function derive(c) {
   const res = new Set(sp.res || []);
   return {
     c, cls, sp, CL, pb, A, M, sub, hpMax, hdMax: Math.min(c.lvl, 20), ac, saves, skills, weapon, attacks, spell, res,
-    init: M.DEX + M.SPD + (c.feats.includes('alert') ? 5 : 0) + Math.floor((sub.haste || 0) / 10),
+    init: M.DEX + M.SPD + (c.feats.includes('alert') ? 5 : 0) + Math.floor((sub.haste || 0) / 10) + wondrousBonus(c, 'init'),
     passive: 10 + skills.perception,
     critRange: 20 - subKey(c, 'critRange'),
     crit: Math.min(SUBSTATS.crit.max, (sub.crit || 0) + Math.max(0, M.LCK)),
@@ -175,12 +194,15 @@ function canEquip(c, it) {
   const cls = CLASSES[c.cls];
   if (it.kind === 'armor') { const a = ARMORS[it.base]; if (!cls.armor.includes(a.type)) return `${cls.name} can't use ${a.type} armour.`; if (a.type === 'shield' && c.eq.weapon && WEAPONS[c.eq.weapon.base].props.includes('2')) return 'Two-handed weapon equipped.'; }
   if (it.kind === 'weapon' && WEAPONS[it.base].props.includes('2') && c.eq.offhand) return 'Remove your shield first.';
-  if (it.attune) { const n = SLOTS.filter(s => c.eq[s] && c.eq[s].attune && itemSlot(c.eq[s]) !== itemSlot(it)).length; if (n >= MAX_ATTUNE) return 'Attuned to 3 items already.'; }
+  if (it.attune) { const n = SLOTS.filter(s => c.eq[s] && c.eq[s].attune && !slotsFor(it).includes(s)).length; if (n >= MAX_ATTUNE) return 'Attuned to 3 items already.'; }
   return null;
 }
-function equipItem(c, it, bag) {
+// which slots an item can go in (rings: either ring slot)
+const slotsFor = it => { const s = itemSlot(it); return s === 'ring1' ? ['ring1', 'ring2'] : [s]; };
+const fitsSlot = (it, slot) => slotsFor(it).includes(slot);
+function equipItem(c, it, bag, want) {
   const why = canEquip(c, it); if (why) return why;
-  const slot = itemSlot(it), old = c.eq[slot];
+  const opts = slotsFor(it), slot = want && opts.includes(want) ? want : (opts.find(s => !c.eq[s]) || opts[0]), old = c.eq[slot];
   const i = bag.indexOf(it); if (i >= 0) bag.splice(i, 1);
   if (old) bag.push(old);
   c.eq[slot] = it;
@@ -263,6 +285,7 @@ function makeMonster(src, L, diff = 2, extra = {}) {
   const totalShare = attacks.reduce((a, x) => a + x.share, 0) / attacks.length;
   const atks = attacks.map(a => ({ name: a.name, type: a.type, eff: a.eff, hit: num.hit, dice: a.eff && a.eff.save && a.eff.aoe ? dmgDice(per * 1.8) : dmgDice(per * a.share / totalShare) }));
   const saveFor = a => mod(ab[ATTRS.indexOf(a)]) + (boss && ['DEX', 'CON', 'WIS'].includes(a) ? num.pb : 0);
+  if (typeof monsterArt === 'function' && artOn()) { const art = src.cat ? (BOSS_BY_ID[src.id] || src) : (bestId ? BEAST_BY_ID[bestId] : null); if (art && art.nspr && IMG[art.nspr]) spr = art.nspr; }
   return Object.assign({
     side: 'foe', name, lvl: L, hp, maxhp: hp, ac: num.ac, hit: num.hit, dc: num.dc, ab, attacks: atks, multi, res, imm, vuln,
     condImm: ft.condImm || [], traits, spells, legendary, legLeft: legendary, legRes: traits.includes('legres') ? 3 : 0, summon, mechs, spr, boss, elite, fam, bestId, uniqueKey, scale,

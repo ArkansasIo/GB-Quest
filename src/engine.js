@@ -3,8 +3,9 @@
 // scene stack, transitions, and a small physics + particle system.
 'use strict';
 const W = 160, H = 144, T = 16;
-const cv = document.getElementById('lcd');
-const ctx = cv.getContext('2d');
+const LCD = document.getElementById('lcd'), lctx = LCD.getContext('2d');
+const cv = document.createElement('canvas'); cv.width = W; cv.height = H; // the 160x144 framebuffer; present() shows it on the LCD
+const ctx = cv.getContext('2d', { willReadFrequently: true });
 ctx.imageSmoothingEnabled = false;
 
 // ================================================================ storage & settings
@@ -13,9 +14,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
+const S = Object.assign({ audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
   store.get('gbq2_settings') || {});
-function applyFilter() { cv.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
+function applyFilter() { LCD.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
 applyFilter();
 
@@ -107,22 +108,23 @@ function spr(name, w, h, opt) {
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   const mode = S.palette;
   if (MONO(mode)) {
-    const g = tileGroup(name), th = g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
+    const pixelArt = /^g[tdohm]_/.test(name);
+    const g = tileGroup(name), th = pixelArt ? [78, 128, 182] : g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
     const P = PALS[mode].ui;
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 110) { d[i + 3] = 0; continue; } d[i + 3] = 255;
-      const px = (i >> 2) % w, py = ((i >> 2) / w) | 0, dith = (BAYER[(py & 3) * 4 + (px & 3)] / 16 - 0.5) * 10;
+      const px = (i >> 2) % w, py = ((i >> 2) / w) | 0, dith = pixelArt ? 0 : (BAYER[(py & 3) * 4 + (px & 3)] / 16 - 0.5) * 10;
       const l = lum(d, i) + dith, k = l < th[0] ? 3 : l < th[1] ? 2 : l < th[2] ? 1 : 0;
       d[i] = P[k][0]; d[i + 1] = P[k][1]; d[i + 2] = P[k][2];
     }
-  } else if (mode === 'gbc') {
+  } else if (mode === 'gbc' && !/^g[tdohm]_/.test(name)) {
     const pal = medianCut4(d);
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 110) { d[i + 3] = 0; continue; } d[i + 3] = 255;
       let bi = 0, bd = 1e9; for (let k = 0; k < 4; k++) { const p = pal[k], dd = (p[0] - d[i]) ** 2 + (p[1] - d[i + 1]) ** 2 + (p[2] - d[i + 2]) ** 2; if (dd < bd) { bd = dd; bi = k; } }
       d[i] = pal[bi][0]; d[i + 1] = pal[bi][1]; d[i + 2] = pal[bi][2];
     }
-  } else for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 110) d[i + 3] = 0; else d[i + 3] = 255; }
+  } else for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 110) d[i + 3] = 0; else { d[i + 3] = 255; if (mode === 'gbc') { d[i] &= 0xf8; d[i + 1] &= 0xf8; d[i + 2] &= 0xf8; } } }
   if (opt.ghost) for (let i = 0; i < d.length; i += 4) { const l = lum(d, i); d[i] = l * 0.6 + 60; d[i + 1] = l * 0.7 + 70; d[i + 2] = l * 0.9 + 90; d[i + 3] = d[i + 3] ? 170 : 0; }
   x.putImageData(id, 0, 0);
   if (opt.flip || opt.rot) {
@@ -246,6 +248,7 @@ function audioCtx() {
 // note: [wave, f0, f1, dur, vol, delay]; wave s=square(50%) p=pulse25 q=pulse12 t=triangle w=saw n=noise
 function play(notes, bus = 'sfx') {
   if (!AC) return;
+  if (S.audio === 'hd64' && typeof play64 === 'function') return play64(notes, bus);
   const v = bus === 'music' ? S.music : S.vol; if (!v) return;
   for (const [wv, f0, f1, dur, vol, del = 0] of notes) {
     const t = AC.currentTime + Math.max(0, del), g = AC.createGain();
@@ -309,7 +312,7 @@ const SFX_BANK = {
   growl: [['w', 110, 80, 0.4, 0.06], ['n', 400, 300, 0.4, 0.03]], screech: [['q', 2200, 1600, 0.3, 0.05]], hiss: [['n', 6000, 5000, 0.4, 0.05]], roar: [['w', 160, 60, 0.7, 0.08], ['n', 500, 150, 0.7, 0.06]],
   gurgle: [['t', 200, 120, 0.2, 0.06], ['t', 180, 100, 0.2, 0.06, 0.15]], moan: [['t', 220, 160, 0.6, 0.07]], chitter: arp('q', [96, 98, 96, 98], 0.03, 0.04), howl: [['t', 400, 700, 0.5, 0.07], ['t', 700, 500, 0.4, 0.06, 0.5]],
 };
-const SFX = new Proxy({}, { get: (_, k) => () => play(SFX_BANK[k] || SFX_BANK.cursor) });
+const SFX = new Proxy({}, { get: (_, k) => () => (typeof Events !== 'undefined' && Events.emit('sfx', k), 0) || (S.audio === 'hd64' && typeof sfx64 === 'function') ? sfx64(k) : play(SFX_BANK[k] || SFX_BANK.cursor) });
 const SFX_NAMES = Object.keys(SFX_BANK);
 
 // ---------------------------------------------------------------- procedural music (24 tracks)
@@ -347,16 +350,17 @@ function composeTrack(id) {
   return { lead, harm, bass, drums: t.drums || '', bpm: t.bpm };
 }
 const Music = {
-  cur: null, step: 0, next: 0, song: null, cacheSongs: {},
+  cur: null, step: 0, next: 0, song: null, cacheSongs: {}, cache64: {}, song64: null,
   play(id) {
     if (this.cur === id) return;
     this.cur = id; this.step = 0; this.next = AC ? AC.currentTime + 0.08 : 0;
     const t = TRACKS[id]; if (!t) { this.song = null; return; }
-    if (t.jingle) { this.song = null; if (AC) play(JINGLES[id].map((m, i) => ['s', N(m), N(m), 0.16, m ? 0.05 : 0.0001, i * 0.13]), 'music'); return; }
+    if (t.jingle) { this.song = null; if (AC && S.audio === 'hd64' && typeof jingle64 === 'function') { jingle64(id); return; } if (AC) play(JINGLES[id].map((m, i) => ['s', N(m), N(m), 0.16, m ? 0.05 : 0.0001, i * 0.13]), 'music'); return; }
     this.song = this.cacheSongs[id] || (this.cacheSongs[id] = composeTrack(id));
   },
   stop() { this.cur = null; this.song = null; },
   tick() {
+    if (AC && S.music && this.cur && S.audio === 'hd64' && typeof music64Tick === 'function') return music64Tick(this);
     if (!AC || !this.song || !S.music) return;
     const s = this.song, dt = 60 / s.bpm / 2;
     if (this.next < AC.currentTime - 0.5) this.next = AC.currentTime + 0.05;
@@ -509,6 +513,7 @@ function tick() {
   const s = topScene(); if (s) s.update();
   Physics.step(window.SOLID_AT || null);
   if (shake > 0) shake--;
+  if (typeof Tween !== 'undefined') Tween.tick();
   if (toasts[0] && --toasts[0].t <= 0) toasts.shift();
   for (const b of BTNS) { pressed[b] = false; if (held[b]) rep[b]++; }
   window.NET && NET.tick && NET.tick();
@@ -520,12 +525,21 @@ function render() {
   for (; i < scenes.length; i++) scenes[i].draw();
   ctx.restore();
   drawToasts();
+  if (window.DBG && DBG.overlay) DBG.overlay();
+  present();
+}
+function present() {
+  if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx);
+  if (LCD.width !== W) { LCD.width = W; LCD.height = H; }
+  lctx.drawImage(cv, 0, 0);
 }
 function loop(t) {
   requestAnimationFrame(loop);
   if (!lastT) lastT = t;
   acc += Math.min(100, t - lastT); lastT = t;
   let n = 0;
-  while (acc >= 1000 / 60 && n < 4) { acc -= 1000 / 60; tick(); n++; }
+  if (window.DBG && DBG.paused) { acc = 0; while (DBG.steps > 0) { DBG.steps--; tick(); } render(); return; }
+  const spd = window.DBG ? DBG.speed : 1;
+  while (acc >= 1000 / 60 / spd && n < 4 * spd) { acc -= 1000 / 60 / spd; tick(); n++; }
   render();
 }

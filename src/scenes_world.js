@@ -89,7 +89,7 @@ class SlotPicker {
       frame(6, y, 148, 36, i === this.i ? 1 : 0);
       text(`SLOT ${i + 1}`, 12, y + 4, 2);
       if (info) {
-        blit(sprH(`c_${info.cls}_0`, 22), 128, y + 7);
+        { const por = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls); blit(por ? sprFit(por, 26) : sprH(`c_${info.cls}_0`, 22), 126, y + 5); }
         text(`${info.name}`, 12, y + 14); text(`LV${info.lvl} ${CLASSES[info.cls].name}`, 12, y + 24, 2);
         textR(info.zone.slice(0, 12), 124, y + 4, 2);
       } else text('- EMPTY -', 12, y + 16, 1);
@@ -122,67 +122,227 @@ class Prologue {
 }
 
 // ================================================================ CHARACTER CREATION
+// 8 steps: species, class, background, ability scores (standard array / point buy / 4d6), looks,
+// name, play mode + difficulty, review. Tabs on top show progress; START = next, B = back,
+// SELECT = randomise this step (on the review: randomise everything).
+const CC_STEPS = ['SPECIES', 'CLASS', 'BACKGROUND', 'ABILITIES', 'LOOKS', 'NAME', 'MODE', 'REVIEW'];
+const CC_METHODS = ['STANDARD ARRAY', 'POINT BUY', 'ROLL 4D6'];
+const CC_LOOKS = ['warden', 'berserker', 'vanguard', 'strider', 'shade', 'ascetic', 'arcanist', 'wildblood', 'pactbound', 'cantor', 'chaplain', 'verdant', 'guard', 'merchant', 'elder', 'sage', 'villager0', 'villager1', 'villager2', 'villager3'];
+const ABIL6 = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+const CC_KEYS = [[...'ABCDEFGH'], [...'IJKLMNOP'], [...'QRSTUVWX'], [...'YZ-'], ['?', '<', '>']];
 class CharCreate {
-  constructor(slot) { this.opaque = true; this.slot = slot; this.step = 0; this.i = 0; this.pick = { species: 'hearthkin', cls: 'warden', bg: 'soldier', name: '', mode: 'solo' }; this.li = 0; }
+  constructor(slot) {
+    this.opaque = true; this.slot = slot; this.step = 0; this.done = 0; this.t = 0;
+    this.cur = [0, 0, 0, 1, 0, 0, 0, 7];               // cursor per step
+    this.pick = { species: 'hearthkin', cls: 'warden', bg: 'soldier', name: '', mode: 'solo', diff: 2, look: null, portrait: null };
+    this.method = 0; this.sel = -1; this.rolls = null; this.li = 0;
+    this.assign(STANDARD_ARRAY);
+  }
   enter() { Music.play('character'); }
-  lists() { return [Object.keys(SPECIES), CLASS_ORDER, Object.keys(BACKGROUNDS), null, PLAY_MODES.map(m => m.id), null]; }
+  // ---------------------------------------------------------------- helpers
+  assign(values) { const v = values.slice().sort((a, b) => b - a), pr = abilityPriority(this.pick.cls); this.scores = {}; pr.forEach((a, i) => this.scores[a] = v[i]); }
+  roll4d6() { return Array.from({ length: 6 }, () => { const d = [0, 0, 0, 0].map(() => 1 + Math.floor(Math.random() * 6)).sort((a, b) => a - b); return d[1] + d[2] + d[3]; }); }
+  pointsLeft() { return POINT_BUY.budget - ABIL6.reduce((s, a) => s + POINT_BUY.cost[this.scores[a]], 0); }
+  setMethod(m) {
+    this.method = m; this.sel = -1;
+    if (m === 2) { this.rolls = this.roll4d6(); this.assign(this.rolls); } else this.assign(STANDARD_ARRAY);
+  }
+  portraits() { const p = this.pick, o = [classPortrait(p.cls), racePortrait(p.species, 0), racePortrait(p.species, 1)].filter((x, i, a) => x && IMG[x] && a.indexOf(x) === i); return o.length ? o : [null]; }
+  preview() { const p = this.pick; return newCharacter({ ...p, name: p.name || 'HERO', scores: this.scores }); }
+  randomName() { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; let n; do n = pool[Math.floor(Math.random() * pool.length)]; while (n === this.pick.name && pool.length > 1); return n; }
+  go(s) { this.step = Math.max(0, Math.min(7, s)); this.done = Math.max(this.done, this.step); this.sel = -1; SFX.page(); }
+  next() { if (this.step === 5 && !this.pick.name) { SFX.error(); toast('NAME', 'YOUR HERO NEEDS A NAME', 'px_rune', 'error'); return; } if (this.step === 7) return this.finish(); SFX.select(); this.go(this.step + 1); }
+  randomStep(s) {
+    const p = this.pick, rnd = a => a[Math.floor(Math.random() * a.length)];
+    if (s === 0) { p.species = rnd(Object.keys(SPECIES)); this.cur[0] = Object.keys(SPECIES).indexOf(p.species); p.portrait = null; }
+    if (s === 1) { p.cls = rnd(CLASS_ORDER); this.cur[1] = CLASS_ORDER.indexOf(p.cls); p.look = null; p.portrait = null; this.setMethod(this.method); }
+    if (s === 2) { p.bg = rnd(Object.keys(BACKGROUNDS)); this.cur[2] = Object.keys(BACKGROUNDS).indexOf(p.bg); }
+    if (s === 3) this.setMethod(2);
+    if (s === 4) { p.look = rnd(CC_LOOKS); p.portrait = rnd(this.portraits()); }
+    if (s === 5) p.name = this.randomName();
+    if (s === 6) { p.mode = 'solo'; p.diff = 1 + Math.floor(Math.random() * 4); }
+  }
+  // ---------------------------------------------------------------- input
   update() {
-    const L = this.lists()[this.step];
-    if (this.step === 3) return this.updateName();
-    if (this.step === 5) { if (P('a') || P('start')) { SFX.confirm(); this.finish(); } if (P('b')) { this.step = 4; SFX.back(); } return; }
-    if (nav('up') || nav('left')) { this.i = (this.i + L.length - 1) % L.length; SFX.cursor(); }
-    if (nav('down') || nav('right')) { this.i = (this.i + 1) % L.length; SFX.cursor(); }
-    if (P('b')) { if (this.step > 0) { this.step--; this.i = 0; SFX.back(); } return; }
-    if (P('a')) { SFX.select(); this.pick[['species', 'cls', 'bg', null, 'mode'][this.step]] = L[this.i]; this.step++; this.i = 0; if (this.step === 3 && !this.pick.name) this.pick.name = pick(['ARIN', 'BRYN', 'CALE', 'DESS', 'EDRIC', 'FENN', 'GWEN', 'HALE']); }
+    this.t++;
+    const p = this.pick, s = this.step;
+    if (P('select')) { if (s === 7) { for (let k = 0; k < 7; k++) this.randomStep(k); SFX.levelup(); } else { this.randomStep(s); SFX.toggle(); } return; }
+    if (s === 5) return this.updateName();
+    if (P('start')) { this.next(); return; }
+    if (P('b')) {
+      if (s === 3 && this.sel >= 0) { this.sel = -1; SFX.back(); return; }
+      if (s === 0) { choose(['KEEP CREATING', 'BACK TO TITLE'], k => { if (k === 1) fadeTo(() => { scenes.length = 0; push(new Title()); }); }, 'Leave character creation?'); return; }
+      SFX.back(); this.go(s - 1); return;
+    }
+    const up = nav('up'), dn = nav('down'), lf = nav('left'), rt = nav('right'), a = P('a');
+    const list = (n, i) => { const c = this.cur[i]; const v = up ? (c + n - 1) % n : dn ? (c + 1) % n : c; if (v !== c) SFX.cursor(); this.cur[i] = v; return v; };
+    if (s === 0) { const L = Object.keys(SPECIES), i = list(L.length, 0); if (p.species !== L[i]) { p.species = L[i]; p.portrait = null; } if (a) this.next(); }
+    if (s === 1) {
+      let i = this.cur[1]; if (lf) i = (i + 11) % 12; if (rt) i = (i + 1) % 12; if (up || dn) i = (i + 6) % 12;
+      if (i !== this.cur[1]) { SFX.cursor(); this.cur[1] = i; p.cls = CLASS_ORDER[i]; p.look = null; p.portrait = null; this.setMethod(this.method === 2 ? 0 : this.method); }
+      if (a) this.next();
+    }
+    if (s === 2) { const L = Object.keys(BACKGROUNDS), i = list(L.length, 2); p.bg = L[i]; if (a) this.next(); }
+    if (s === 3) this.updateAbilities(up, dn, lf, rt, a);
+    if (s === 4) {
+      const r = list(3, 4);
+      if (r === 0 && (lf || rt)) { const k = CC_LOOKS.indexOf(heroLook(p)); p.look = CC_LOOKS[(k + (rt ? 1 : CC_LOOKS.length - 1)) % CC_LOOKS.length]; SFX.cursor(); }
+      if (r === 1 && (lf || rt)) { const o = this.portraits(), k = Math.max(0, o.indexOf(p.portrait || o[0])); p.portrait = o[(k + (rt ? 1 : o.length - 1)) % o.length]; SFX.cursor(); }
+      if (a) { if (r === 2) this.next(); else SFX.cursor(); }
+    }
+    if (s === 6) {
+      const r = list(3, 6);
+      if (r === 0 && (lf || rt)) { const k = PLAY_MODES.findIndex(m => m.id === p.mode); p.mode = PLAY_MODES[(k + (rt ? 1 : PLAY_MODES.length - 1)) % PLAY_MODES.length].id; SFX.cursor(); }
+      if (r === 1 && (lf || rt)) { p.diff = Math.max(1, Math.min(DIFFICULTY.length, p.diff + (rt ? 1 : -1))); SFX.cursor(); }
+      if (a) { if (r === 2) this.next(); else SFX.cursor(); }
+    }
+    if (s === 7) { const r = list(8, 7); if (a) { if (r === 7) this.finish(); else { SFX.select(); this.go(r === 6 ? 6 : r); } } }
+  }
+  updateAbilities(up, dn, lf, rt, a) {
+    // rows: 0 method, 1-6 abilities, 7 auto/reset, 8 reroll (roll only), last = continue
+    const rows = this.method === 2 ? 10 : 9, last = rows - 1;
+    let r = this.cur[3]; if (up) r = (r + rows - 1) % rows; if (dn) r = (r + 1) % rows; if (r !== this.cur[3]) SFX.cursor(); this.cur[3] = r;
+    if (r === 0 && (lf || rt)) { this.setMethod((this.method + (rt ? 1 : 2)) % 3); SFX.toggle(); return; }
+    if (r >= 1 && r <= 6) {
+      const ab = ABIL6[r - 1];
+      if (this.method === 1 && (lf || rt)) {
+        const v = this.scores[ab] + (rt ? 1 : -1);
+        if (v < POINT_BUY.min || v > POINT_BUY.max) { SFX.error(); return; }
+        const old = this.scores[ab]; this.scores[ab] = v; if (this.pointsLeft() < 0) { this.scores[ab] = old; SFX.error(); return; } SFX.cursor(); return;
+      }
+      if (this.method !== 1 && a) {
+        if (this.sel < 0) { this.sel = r - 1; SFX.select(); }
+        else { const b = ABIL6[this.sel]; [this.scores[ab], this.scores[b]] = [this.scores[b], this.scores[ab]]; this.sel = -1; SFX.confirm(); }
+        return;
+      }
+    }
+    if (r === 7 && a) { this.method === 1 ? this.assign(STANDARD_ARRAY) : this.assign(this.method === 2 ? this.rolls : STANDARD_ARRAY); this.sel = -1; SFX.confirm(); }
+    if (this.method === 2 && r === 8 && a) { this.rolls = this.roll4d6(); this.assign(this.rolls); SFX.nat20(); }
+    if (r === last && a) this.next();
   }
   updateName() {
-    const keys = NAME_LETTERS + '<>', n = keys.length, cols = 7;
-    if (nav('left')) { this.li = (this.li + n - 1) % n; SFX.cursor(); }
-    if (nav('right')) { this.li = (this.li + 1) % n; SFX.cursor(); }
-    if (nav('up')) { this.li = (this.li + n - cols) % n; SFX.cursor(); }
-    if (nav('down')) { this.li = (this.li + cols) % n; SFX.cursor(); }
-    if (P('b')) { this.pick.name = this.pick.name.slice(0, -1); SFX.back(); }
-    if (P('start') && this.pick.name) { this.step = 4; SFX.select(); return; }
-    if (P('a')) { const k = keys[this.li]; if (k === '<') this.pick.name = this.pick.name.slice(0, -1); else if (k === '>') { if (this.pick.name) { this.step = 4; } } else if (this.pick.name.length < 10) this.pick.name += k; SFX.type(); }
+    const R = CC_KEYS, n = R.length; let [cx, cy] = this.kc || [0, 0];
+    if (nav('left')) { cx = (cx + R[cy].length - 1) % R[cy].length; SFX.cursor(); }
+    if (nav('right')) { cx = (cx + 1) % R[cy].length; SFX.cursor(); }
+    if (nav('up')) { cy = (cy + n - 1) % n; cx = Math.min(cx, R[cy].length - 1); SFX.cursor(); }
+    if (nav('down')) { cy = (cy + 1) % n; cx = Math.min(cx, R[cy].length - 1); SFX.cursor(); }
+    this.kc = [cx, cy];
+    if (P('b')) { if (this.pick.name) { this.pick.name = this.pick.name.slice(0, -1); SFX.back(); } else { SFX.back(); this.go(4); } return; }
+    if (P('start')) { this.next(); return; }
+    if (P('a')) {
+      const k = R[cy][cx];
+      if (k === '<') this.pick.name = this.pick.name.slice(0, -1);
+      else if (k === '>') { this.next(); return; }
+      else if (k === '?') this.pick.name = this.randomName();
+      else if (this.pick.name.length < 10 && !(k === '-' && (!this.pick.name || this.pick.name.endsWith('-')))) this.pick.name += k;
+      SFX.type();
+    }
   }
   finish() {
-    G = newGameState(Object.assign({ slot: this.slot }, this.pick));
+    const p = this.pick; if (!p.name) { this.go(5); SFX.error(); return; }
+    SFX.confirm();
+    G = newGameState(Object.assign({ slot: this.slot }, p, { scores: this.scores, look: p.look || null, portrait: p.portrait || null }));
+    G.difficulty = p.diff;
     const role = CLASSES[G.cls].role === 'tank' ? 'healer' : 'tank';
     const buddy = makeAdventurer(role === 'tank' ? 'warden' : 'chaplain', 1, role === 'tank' ? 'BRAM' : 'ESME'); G.companions.push(buddy);
     saveGame();
-    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you. Hire more at any inn.`, `CHAPTER 1: ${ch.title}`, ch.line, 'START: menu   SELECT: map   B: mount   A: talk/act'], null, { who: 'NARRATOR' }); });
+    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you. Hire more at any inn.`, `CHAPTER 1: ${ch.title}`, ch.line, 'START: menu   SELECT: map   B: mount   A: talk/act'], null, { who: 'ELDER' }); });
+  }
+  // ---------------------------------------------------------------- drawing
+  drawPortrait(p, x, y, size) {
+    const por = p.portrait && IMG[p.portrait] ? p.portrait : this.portraits()[0];
+    const s = por ? sprFit(por, size) : sprH(`c_${p.cls}_0`, size - 4); blit(s, x + Math.round((size - s.width) / 2), y + Math.round((size - s.height) / 2));
+  }
+  drawWalker(look, x, y, size = 32) {
+    const seq = ['down', 'side', 'up', 'sideL'], d = seq[Math.floor(this.t / 48) % 4], f = (this.t >> 4) % 2;
+    const name = `gh_${look}_${d === 'sideL' ? 'side' : d}${f}`;
+    blit(spr(IMG[name] ? name : `gh_warden_down${f}`, size, size, { flip: d === 'sideL' }), x, y);
   }
   draw() {
     fill(0, 0, W, H, 0);
-    const titles = ['CHOOSE YOUR SPECIES', 'CHOOSE YOUR CLASS', 'CHOOSE A BACKGROUND', 'NAME YOUR HERO', 'CHOOSE PLAY MODE', 'READY?'];
-    textC(titles[this.step], 80, 3, 3); fill(4, 13, 152, 1, 2);
-    const L = this.lists()[this.step];
-    if (this.step === 0 || this.step === 2 || this.step === 4) {
-      L.forEach((k, j) => { const y = 18 + j * 11; if (j === this.i) fill(4, y - 2, 70, 11, 1); text((this.step === 0 ? SPECIES[k].name : this.step === 2 ? BACKGROUNDS[k].name : PLAY_MODES[j].name), 8, y); });
-      const k = L[this.i], d = this.step === 0 ? SPECIES[k] : this.step === 2 ? BACKGROUNDS[k] : PLAY_MODES[this.i];
-      frame(78, 16, 78, 120); text(wrap(d.desc, 12).join('\n'), 82, 20);
-      if (this.step === 0) text(Object.entries(SPECIES[k].asi).map(([a, v]) => `${a}+${v}`).join(' ').slice(0, 12), 82, 108, 2);
-      if (this.step === 2) text(BACKGROUNDS[k].skills.map(s => SKILL_NAME[s].slice(0, 8)).join('\n'), 82, 108, 2);
-    } else if (this.step === 1) {
-      const k = L[this.i], c = CLASSES[k];
-      CLASS_ORDER.forEach((id, j) => { const x = 6 + (j % 6) * 25, y = 18 + Math.floor(j / 6) * 30; if (j === this.i) fill(x - 2, y - 2, 24, 30, 1); blit(sprH(`c_${id}_0`, 24), x + 2, y); });
-      frame(4, 78, 152, 60);
-      text(c.name, 8, 82, 2); textR(`d${c.hd} ${c.primary}`, 152, 82, 2);
-      text(wrap(c.desc, 24).slice(0, 3).join('\n'), 8, 93);
-      text(`SAVES ${c.saves.join('/')} ${c.caster ? c.caster.toUpperCase() + ' CASTER' : 'MARTIAL'}`.slice(0, 24), 8, 125, 2);
-    } else if (this.step === 3) {
-      frame(30, 18, 100, 16); text(this.pick.name + ((frameN >> 4) % 2 ? '_' : ''), 36, 22);
-      const keys = NAME_LETTERS + '<>';
-      [...keys].forEach((k, j) => { const x = 22 + (j % 7) * 17, y = 44 + Math.floor(j / 7) * 14; if (j === this.li) fill(x - 3, y - 2, 13, 12, 1); text(k === '<' ? '<-' : k === '>' ? 'OK' : k, x, y); });
-      text('A: add  B: delete  START: done', 4, 132, 2);
+    // tabs
+    fill(0, 0, W, 11, 3);
+    CC_STEPS.forEach((n, j) => { const x = 1 + j * 20; const st = j === this.step ? 'gold' : j <= this.done ? 1 : 2; fill(x, 1, 18, 9, st); text(String(j + 1), x + 6, 1, j === this.step ? 3 : 3); });
+    textC(CC_STEPS[this.step] === 'REVIEW' ? 'YOUR HERO' : 'CHOOSE ' + CC_STEPS[this.step], 80, 13, 3); fill(4, 22, 152, 1, 2);
+    const p = this.pick, s = this.step;
+    const hint = h => text(h, 2, 135, 2);
+    if (s === 0) {
+      const L = Object.keys(SPECIES);
+      L.forEach((k, j) => { const y = 25 + j * 11; if (j === this.cur[0]) fill(2, y - 1, 66, 11, 1); text(SPECIES[k].name, 5, y); });
+      const sp = SPECIES[p.species]; frame(70, 24, 88, 109);
+      const r0 = racePortrait(p.species, 0), r1 = racePortrait(p.species, 1);
+      if (r0) blit(sprFit(r0, 30), 76, 27); if (r1 && r1 !== r0) blit(sprFit(r1, 30), 116, 27);
+      text(Object.entries(sp.asi).map(([a, v]) => `${a}+${v}`).join(' ').slice(0, 13), 74, 60, 'gold');
+      text(sp.traits.map(t => t.toUpperCase()).join(' ').slice(0, 13), 74, 70, 2);
+      text(wrap(sp.desc, 13).slice(0, 6).join('\n'), 74, 80);
+      hint('A/START:NEXT  SEL:RANDOM');
+    } else if (s === 1) {
+      CLASS_ORDER.forEach((id, j) => { const x = 4 + (j % 6) * 26, y = 25 + Math.floor(j / 6) * 30; if (j === this.cur[1]) fill(x - 1, y - 1, 25, 29, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 26) : sprH(`c_${id}_0`, 24); blit(sp2, x + 12 - sp2.width / 2, y); });
+      const c = CLASSES[p.cls]; frame(2, 85, 156, 48);
+      text(c.name, 6, 87, 'gold'); textR(`${c.role.toUpperCase()} D${c.hd} ${c.primary}`, 154, 87, 2);
+      text(wrap(c.desc, 25).slice(0, 2).join('\n'), 6, 96);
+      text(`SAVES ${c.saves.join('/')} ${c.caster ? c.caster.toUpperCase() + ' CASTER' : 'MARTIAL'}`.slice(0, 25), 6, 114, 2);
+      text(('GEAR ' + (c.gear || []).map(g => (WEAPONS[g] || ARMORS[g] || { name: g }).name).join(', ')).slice(0, 25), 6, 123, 2);
+      hint('D-PAD:PICK A:NEXT SEL:RND');
+    } else if (s === 2) {
+      const L = Object.keys(BACKGROUNDS);
+      L.forEach((k, j) => { const y = 25 + j * 12; if (j === this.cur[2]) fill(2, y - 1, 66, 12, 1); text(BACKGROUNDS[k].name, 5, y); });
+      const b = BACKGROUNDS[p.bg]; frame(70, 24, 88, 109);
+      text(wrap(b.desc, 13).slice(0, 5).join('\n'), 74, 28);
+      text('SKILLS', 74, 78, 'gold'); text(b.skills.map(k => SKILL_NAME[k]).join('\n').slice(0, 40), 74, 88, 2);
+      text(`GOLD ${b.gold * 5}`, 74, 118, 'gold');
+      hint('A/START:NEXT  SEL:RANDOM');
+    } else if (s === 3) {
+      const r = this.cur[3], rows = this.method === 2 ? 10 : 9, sp = SPECIES[p.species], pr = abilityPriority(p.cls);
+      const row = (i, y) => { if (r === i) fill(2, y - 1, 100, 10, 1); };
+      row(0, 25); text(`< ${CC_METHODS[this.method]} >`.slice(0, 16), 5, 25, 'gold');
+      ABIL6.forEach((a, j) => {
+        const y = 36 + j * 10, v = this.scores[a], bon = sp.asi[a] || 0, tot = v + bon, m = mod(tot);
+        row(j + 1, y); if (this.sel === j) fill(2, y - 1, 100, 10, 'gold');
+        text(a, 5, y, a === pr[0] ? 'gold' : 3); text(String(v).padStart(2), 30, y); text(bon ? `+${bon}` : '  ', 46, y, 2); text(`=${String(tot).padStart(2)}`, 62, y); text(`${m >= 0 ? '+' : ''}${m}`, 86, y, 2);
+      });
+      row(7, 97); text(this.method === 1 ? 'RESET' : 'AUTO-ASSIGN', 5, 97);
+      if (this.method === 2) { row(8, 107); text('REROLL 4D6', 5, 107); }
+      row(rows - 1, 25 + (rows - 1) * 10 + 7); text('CONTINUE >', 5, 25 + (rows - 1) * 10 + 7, 'gold');
+      frame(104, 24, 54, 109);
+      text('PRIMARY', 108, 28, 2); text(pr[0], 108, 37, 'gold');
+      const D = derive(this.preview()); text(`HP ${D.hpMax}`, 108, 50); text(`AC ${D.ac}`, 108, 60); text(`INIT${D.init >= 0 ? '+' : ''}${D.init}`, 108, 70);
+      if (this.method === 1) { text('POINTS', 108, 86, 2); text(`${this.pointsLeft()}/${POINT_BUY.budget}`, 108, 95, this.pointsLeft() ? 'gold' : 3); }
+      if (this.method === 2 && this.rolls) { text('ROLLED', 108, 86, 2); text(this.rolls.slice().sort((a, b) => b - a).join(' ').slice(0, 8), 108, 95); text(this.rolls.slice().sort((a, b) => b - a).slice(4).join(' '), 108, 104); }
+      text(this.method === 1 ? '<> SET' : 'A SWAP', 108, 120, 2);
+      hint(this.method === 1 ? 'LEFT/RIGHT: SPEND POINTS' : 'A: PICK TWO ROWS TO SWAP');
+    } else if (s === 4) {
+      const r = this.cur[4];
+      frame(2, 24, 70, 76); this.drawWalker(heroLook(p), 21, 34, 32); text('WORLD', 20, 72, 2); text(`${CC_LOOKS.indexOf(heroLook(p)) + 1}/${CC_LOOKS.length}`, 20, 82, 2);
+      frame(76, 24, 82, 76); this.drawPortrait(p, 93, 28, 48); text('PORTRAIT', 90, 82, 2);
+      [['< SPRITE >', 0], ['< PORTRAIT >', 1], ['CONTINUE >', 2]].forEach(([l, i]) => { const y = 104 + i * 10; if (r === i) fill(2, y - 1, 156, 10, 1); text(l, 6, y, i === 2 ? 'gold' : 3); });
+      hint('LEFT/RIGHT:CHANGE SEL:RND');
+    } else if (s === 5) {
+      frame(24, 25, 112, 16); text(p.name + ((frameN >> 4) % 2 ? '_' : ' '), 30, 29); text(`${p.name.length}/10`, 138, 29, 2);
+      const [kx, ky] = this.kc || [0, 0];
+      CC_KEYS.forEach((row, ry) => row.forEach((k, rx) => {
+        const special = ry === CC_KEYS.length - 1, x = special ? 14 + rx * 48 : 12 + rx * 18, y = 47 + ry * 14, w = special ? 40 : 14;
+        if (rx === kx && ry === ky) fill(x - 3, y - 2, w, 12, 1);
+        text(special ? { '?': 'RANDOM', '<': 'DELETE', '>': 'DONE' }[k] : k, x, y, special ? 'gold' : 3);
+      }));
+      hint('A:TYPE B:DEL START:DONE');
+    } else if (s === 6) {
+      const r = this.cur[6], m = PLAY_MODES.find(x => x.id === p.mode), d = DIFFICULTY[p.diff - 1];
+      [[`MODE  < ${m.name} >`, 0], [`TIER  < ${p.diff} ${d.name} >`, 1], ['CONTINUE >', 2]].forEach(([l, i]) => { const y = 27 + i * 12; if (r === i) fill(2, y - 1, 156, 11, 1); text(l.slice(0, 25), 6, y, i === 2 ? 'gold' : 3); });
+      frame(2, 64, 156, 68);
+      if (r === 1) { text(`${d.name}: MONSTERS LV+${d.lvl}`, 6, 68, 'gold'); text(`HP x${d.hp}  DMG x${d.dmg}`, 6, 80); text(`XP x${d.xp}  LOOT x${d.loot}`, 6, 90); text('CHANGE LATER: ORACLE', 6, 108, 2); text('IN ARDENHOLD / SETTINGS', 6, 118, 2); }
+      else { text(m.name, 6, 68, 'gold'); text(wrap(m.desc, 25).slice(0, 3).join('\n'), 6, 80); text('FRIENDS ON YOUR SHARED', 6, 108, 2); text('PAGE JOIN YOUR REALM', 6, 118, 2); }
+      hint('LEFT/RIGHT:CHANGE A:NEXT');
     } else {
-      const p = this.pick;
-      blit(sprH(`c_${p.cls}_0`, 44), 12, 24);
-      text(p.name, 60, 22, 3, 1); text(SPECIES[p.species].name, 60, 34, 2); text(CLASSES[p.cls].name, 60, 44, 2); text(BACKGROUNDS[p.bg].name, 60, 54, 2); text(PLAY_MODES.find(m => m.id === p.mode).name, 60, 64, 2);
-      const c = newCharacter(p), D = derive(c);
-      text(ATTRS.map(a => `${a}${String(D.A[a]).padStart(3)}`).reduce((acc, s, i) => acc + s + (i % 3 === 2 ? '\n' : ' '), ''), 8, 80);
-      text(`HP ${D.hpMax}  AC ${D.ac}  INIT ${D.init >= 0 ? '+' : ''}${D.init}`, 8, 112, 2);
-      textC('A: BEGIN YOUR STORY', 80, 128, (frameN >> 4) % 2 ? 3 : 2);
+      const r = this.cur[7], c = this.preview(), D = derive(c), m = PLAY_MODES.find(x => x.id === p.mode);
+      frame(2, 24, 44, 46); this.drawPortrait(p, 4, 26, 40);
+      this.drawWalker(heroLook(p), 15, 72, 16);
+      const lines = [['SPC', SPECIES[p.species].name], ['CLS', CLASSES[p.cls].name], ['BKG', BACKGROUNDS[p.bg].name], ['ABL', CC_METHODS[this.method]], ['LOK', heroLook(p).toUpperCase()], ['NAM', p.name || '- NONE -'], ['MOD', `${m.name} T${p.diff}`]];
+      lines.forEach(([k, v], i) => { const y = 25 + i * 9; if (r === i) fill(48, y - 1, 110, 9, 1); text(k, 51, y, 2); text(String(v).slice(0, 14), 72, y, i === 5 && !p.name ? 'red' : 3); });
+      text(ATTRS.map(a => `${a}${String(D.A[a]).padStart(3)}`).reduce((acc, s2, i) => acc + s2 + (i % 3 === 2 ? '\n' : ' '), ''), 4, 91);
+      text(`HP ${D.hpMax} AC ${D.ac} INIT${D.init >= 0 ? '+' : ''}${D.init} PB+${profBonus(c)}`, 4, 119, 2);
+      if (r === 7) fill(20, 128, 120, 11, 'gold');
+      textC('BEGIN YOUR STORY', 80, 129, r === 7 ? 3 : (frameN >> 4) % 2 ? 3 : 2);
     }
   }
 }
@@ -217,8 +377,9 @@ class Field {
   entities() {
     const e = [];
     if (G.inst) {
-      for (const p of G.inst.map.pulls) if (!G.inst.cleared.includes(p.id)) e.push({ kind: 'pull', p, x: p.x, y: p.y });
-      if (!G.inst.chest) e.push({ kind: 'chest', x: G.inst.map.chest.x, y: G.inst.map.chest.y });
+      for (const p of instVisiblePulls(G.inst)) e.push({ kind: 'pull', p, x: p.x, y: p.y });
+      if (!G.inst.chest && G.inst.map.chest) e.push({ kind: 'chest', x: G.inst.map.chest.x, y: G.inst.map.chest.y });
+      for (const v of G.inst.map.vaults || []) e.push({ kind: 'vault', v, x: v.x, y: v.y, open: (G.inst.vaultsOpened || []).includes(v.id) });
       for (const t of G.inst.map.traps) if (!t.done && derive(G).passive >= t.dc) e.push({ kind: 'trap', t, x: t.x, y: t.y, walk: true });
       return e;
     }
@@ -257,13 +418,18 @@ class Field {
     if (P('select')) { SFX.open(); push(new WorldMap()); return; }
     if (P('b') && G.hasMount && !G.inst && !G.ghost) { G.mounted = !G.mounted; SFX[G.mounted ? 'howl' : 'cursor'](); return; }
     if (P('a')) { this.interact(); return; }
+    if (!['up', 'down', 'left', 'right'].some(d => held[d])) this.contact = null; // let go: next bump counts again
     for (const d of ['up', 'down', 'left', 'right']) {
       if (!held[d]) continue;
       G.dir = d;
       const [dx, dy] = DIRS[d], nx = G.x + dx, ny = G.y + dy;
       if (this.exitAt(nx, ny)) return;
-      if (this.blocked(nx, ny)) { if (P(d) || rep[d] % 20 === 0) { if (!this.bump(nx, ny)) SFX.cursor(); } }
-      else { this.trail.unshift([G.x, G.y, G.dir]); this.trail.length = 12; G.x = nx; G.y = ny; this.ox = -dx * T; this.oy = -dy * T; }
+      if (this.blocked(nx, ny)) {
+        // bump once per contact: holding a direction into a door or NPC must not re-open its menu after you close it
+        const key = nx + ',' + ny;
+        if (P(d) || this.contact !== key) { this.contact = key; if (!this.bump(nx, ny)) SFX.cursor(); }
+      }
+      else { this.contact = null; this.trail.unshift([G.x, G.y, G.dir]); this.trail.length = 12; G.x = nx; G.y = ny; this.ox = -dx * T; this.oy = -dy * T; }
       break;
     }
   }
@@ -296,11 +462,18 @@ class Field {
       if (e.kind === 'boss') return fightBoss(e.b);
       if (e.kind === 'pull') return fightPull(e.p);
       if (e.kind === 'chest') return openInstanceChest();
+      if (e.kind === 'vault') return e.open ? say('An empty chest.') : openVault(G.inst, e.v);
       if (e.kind === 'sim') return simPlayerMenu(e.p);
       if (e.kind === 'peer') return say([`${clean(e.p.presence.n)} - LV${e.p.presence.l} ${(CLASSES[e.p.presence.c] || { name: '' }).name}`, e.p.presence.h ? `Hosting server: ${clean(e.p.presence.h, 20)}` : 'A fellow adventurer (live player).']);
     }
     const ch = this.chAt(x, y), t = this.tileAt(x, y);
-    if (G.inst) { if (ch === 'L') return leaveInstance(); if (ch === 'U') return towerNext(); if (ch === 't') return say('A torch flickers.'); if (ch === 's') return say('A grim statue watches you.'); return; }
+    if (G.inst) {
+      if (ch === 'L') return leaveInstance(); if (ch === 'U') return towerNext();
+      if (ch === 'A' && useShrine(G.inst, x, y)) return;
+      const LINES = { t: 'A torch flickers.', s: 'A grim statue watches you.', D: 'A sealed door. Its runes answer to the guardians of this place.', h: 'Old tomes. One is titled: ' + pick(['ON LANTERNS', 'THE EMBER CODEX, VOL. II', 'A HISTORY OF AELMOOR', 'WARDS AND SEALS', 'BESTIARY OF THE DEEP']) + '.', T: 'An empty throne. For now.', B: 'The brazier burns without fuel.', i: 'Rusted bars. The cell is empty.', p: 'You cannot cross that.', o: 'A carved pillar.', n: `${G.inst.map.name}. ${(instRoomAt(G.inst, G.x, G.y) || {}).desc || ''}`, b: 'An old barrel. Empty.' };
+      if (LINES[ch]) return say(LINES[ch]);
+      return;
+    }
     if (t && (ch === '~' || ch === 'W' || ch === 'w' || ch === 'v')) return push(new Fishing());
     if (this.zone.town && this.zone.id === this.zone.region) {
       const svc = { K: 'tower', k: 'tower', Q: 'arena', R: 'portal', H: 'auction', J: 'inn', r: 'mail', q: 'trainer' }[ch]; if (svc) return npcService({ svc, name: svc.toUpperCase() });
@@ -319,6 +492,9 @@ class Field {
     if (G.mounted && this.cam) FX.dust(G.x * T - this.cam[0] + 4, G.y * T - this.cam[1] + 14);
     if (G.inst) {
       const trap = G.inst.map.traps.find(tr => tr.x === G.x && tr.y === G.y && !tr.done);
+      const room = instRoomAt(G.inst, G.x, G.y), seen = G.inst.seenRooms = G.inst.seenRooms || [];
+      if (room && !seen.includes(room.x + ',' + room.y)) { seen.push(room.x + ',' + room.y); if (seen.length > 1 || G.inst.kind === 'tower') toast(room.name, room.desc.toUpperCase().slice(0, 22), 'px_map', 'page'); }
+      if (ch === '^') { const sv = skillCheck(G, 'acrobatics', G.inst.map.trapDC || 12); if (!sv.ok) { const d = roll(G.inst.map.spikeDmg || '1d4').total; G.hp = Math.max(1, G.hp - d); shake = 3; SFX.hurt(); FX.number(76, 56, String(d), 'red'); } else SFX.dodge(); }
       if (trap) { trap.done = true; const sv = skillCheck(G, 'acrobatics', trap.dc); const d = sv.ok ? 0 : roll(trap.dmg).total; if (d) G.hp = Math.max(1, G.hp - d); shake = 6; SFX[d ? 'hurt' : 'dodge'](); say([`A hidden trap! ${sv.text}`, d ? `You take ${d} damage.` : 'You leap clear!']); }
       return;
     }
@@ -326,7 +502,7 @@ class Field {
     this.discover();
     const zt = t && t[2];
     const rate = zt === 'wood' ? 0.1 : zt === 'open' ? 0.06 : 0;
-    if (rate && !G.ghost && this.since > 5 && R() < rate * (G.mounted ? 0.6 : 1)) {
+    if (rate && !G.ghost && !(window.DBG && DBG.noEnc) && this.since > 5 && R() < rate * (G.mounted ? 0.6 : 1)) {
       this.since = 0;
       const foes = rollEncounter(this.zone, { group: zt === 'wood' });
       const st = skillCheck(G, 'stealth', 10 + Math.floor(foes[0].lvl / 2));
@@ -348,11 +524,13 @@ class Field {
     const px = G.x * T + this.ox, py = G.y * T + this.oy;
     const cx = Math.max(0, Math.min(cols * T - W, px - 72)), cy = Math.max(0, Math.min(rows * T - H, py - 64));
     this.cam = [cx, cy];
-    const ghost = !!G.ghost;
+    if (S.video === 'hd64' && typeof Light64 !== 'undefined') Light64.fromField(this);
+    const ghost = !!G.ghost, PIX = S.tiles !== 'painted', anim = (frameN >> 5) % 2;
     for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++)
       for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
         const d = this.tileAt(tx, ty); if (!d) continue;
-        blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
+        if (PIX && m.gfx) blit(spr(m.gfx[ty][tx].replace('%f', anim), T, T, { ghost }), tx * T - cx, ty * T - cy);
+        else blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
       }
     const list = this.entities().map(e => Object.assign(e, { sy: e.y * T }));
     list.push({ kind: 'player', sy: py });
@@ -363,23 +541,25 @@ class Field {
       const ex = e.x * T - cx, ey = e.y * T - cy;
       if (e.kind === 'player') {
         const f = LOOK_F[G.dir][(this.ox || this.oy) ? (this.walk >> 3) % 2 : 0];
-        if (G.mounted) { const mnt = sprH('enemy_lizard', 14); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
-        const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1));
-      } else if (e.kind === 'follower') { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
+        if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
+        if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
+        else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
+      } else if (e.kind === 'follower') { if (PIX) blit(walker(heroLook(e.c), e.dir, (this.walk >> 3) % 2), ex, ey - 3); else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); } }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
-      else if (e.kind === 'npc') { const c = sprH(e.spr, 23); blit(c, ex + (T - c.width) / 2, ey + T - 24); if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } } }
+      else if (e.kind === 'npc') { if (PIX) blit(walker(npcLook(e.spr), 'down', (frameN >> 5) % 2 && e.svc !== 'server' ? 0 : 0), ex, ey - 3); else { const c = sprH(e.spr, 23); blit(c, ex + (T - c.width) / 2, ey + T - 24); } if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } } }
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
-        const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22);
+        if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3); else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
         const nm = (p.name || '').slice(0, 8); fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
       }
-      else if (e.kind === 'herb') blit(sprH(e.herb === 'sandroot' ? 'px_sandroot' : 'item_herb', 11), ex + 3, ey + 3 - ((frameN >> 5) % 4 === 0 ? 1 : 0));
-      else if (e.kind === 'waypoint') blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15)));
-      else if (e.kind === 'grave') blit(sprH('px_skull', 10), ex + 3, ey + 4);
-      else if (e.kind === 'trap') { fill(ex + 4, ey + 6, 8, 4, 'red'); }
-      else if (e.kind === 'chest') blit(sprFit('item_chest', 14), ex + 1, ey + 2);
-      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(B.spr, 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? BOSS_BY_ID[p.boss].spr : (BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]).spr; const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); }
+      else if (e.kind === 'herb') { if (PIX) blit(spr('go_herb', 16, 16), ex, ey - ((frameN >> 5) % 4 === 0 ? 1 : 0)); else blit(sprH(e.herb === 'sandroot' ? 'px_sandroot' : 'item_herb', 11), ex + 3, ey + 3); }
+      else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }
+      else if (e.kind === 'grave') blit(PIX ? spr('go_grave', 16, 16) : sprH('px_skull', 10), ex + (PIX ? 0 : 3), ey + (PIX ? 0 : 4));
+      else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
+      else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
+      else if (e.kind === 'vault') blit(PIX ? spr(e.open ? 'go_chestopen' : 'go_chest', 16, 16) : sprFit(e.open ? 'item_chest_open' : 'item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
+      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); }
     }
     FX.draw(cx, cy);
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
@@ -391,6 +571,15 @@ class Field {
     if (ghost) textC('SPIRIT', 80, H - 14, 'blue');
   }
 }
+// Game Boy walking sprites: 3 directions x 2 frames (left = mirrored side view)
+function walker(look, dir, frame, ghost) {
+  const d = dir === 'up' ? 'up' : dir === 'down' ? 'down' : 'side';
+  const name = `gh_${look}_${d}${frame}`;
+  return spr(IMG[name] ? name : `gh_warden_${d}${frame}`, 16, 16, { flip: dir === 'left', ghost });
+}
+const NPC_LOOK = { villager_0: 'villager0', villager_1: 'villager1', villager_2: 'villager2', villager_3: 'villager3', villager_4: 'guard', villager_5: 'merchant',
+  elder_0: 'elder', elder_1: 'sage', elder_2: 'elder', elder_3: 'sage', elder_4: 'sage', elder_5: 'elder', hero_0: 'guard', hero_1: 'guard', hero_2: 'vanguard', hero_3: 'warden' };
+const npcLook = s => NPC_LOOK[s] || 'villager0';
 function npcMarker(e) {
   if (e.svc === 'elder') { const ch = chapterDef(); return ch && ch.type === 'talk' && ch.arg === 'elder' ? '!' : null; }
   const zid = G.map; const ch = chapterDef();
@@ -450,7 +639,7 @@ function npcService(e) {
   if (svc === 'trainer') return trainerMenu();
   if (svc === 'auction') return push(new AuctionHouse());
   if (svc === 'mail') return mailMenu();
-  if (svc === 'bank') return push(new BankScene());
+  if (svc === 'bank') return push(new StashScene());
   if (svc === 'guild') return guildMenu();
   if (svc === 'honor') return honorMenu();
   if (svc === 'lfg') return lfgMenu();
@@ -514,7 +703,7 @@ function vendorMenu() {
   choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'LEAVE'], k => {
     if (k === 0) choose(stock.map(s => `${ITEMS[s].name.slice(0, 14)} ${Math.round(ITEMS[s].price * disc)}G`), i => { if (i < 0) return; const s = stock[i], p = Math.round(ITEMS[s].price * disc); if (G.gold < p) { SFX.error(); return say('Not enough gold.'); } G.gold -= p; addItem(s); SFX.buy(); vendorMenu(); }, `Gold: ${fmt(G.gold)}`);
     if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i]; if (G.gold < it.value * 2) return say('Not enough gold.'); G.gold -= it.value * 2; addGear(it); SFX.buy(); }, 'Fresh stock from the forge.'); }
-    if (k === 2) push(new BagScene('sell'));
+    if (k === 2) push(new InventoryScene('sell'));
     if (k === 3) { let g = 0; for (const key of Object.keys(G.inv)) if (ITEMS[key] && ITEMS[key].type === 'junk') { g += ITEMS[key].price * G.inv[key]; delete G.inv[key]; } G.bag = G.bag.filter(it => { if (it.rarity === 0) { g += it.value; return false; } return true; }); G.gold += g; SFX.sell(); say(`Sold junk for ${g} G.`); }
     if (k === 4) { if (G.daily.haggle === new Date().toDateString()) return say('The merchant will not haggle again today.'); G.daily.haggle = new Date().toDateString(); const r = skillCheck(G, 'persuasion', 13); if (r.ok) G.daily.discount = new Date().toDateString(); say([r.text, r.ok ? '10% discount for today!' : 'The merchant shrugs. Prices stay.']); }
   }, 'MERCHANT: What will it be?');
@@ -639,7 +828,7 @@ function enterInstance(kind, def, floor, size) {
     G.inst = { kind, def, floor, map, cleared: [], chest: false, size, return: ret };
     G.x = map.entry.x; G.y = map.entry.y; G.mounted = false;
     if (FIELD) FIELD.reload();
-    toast(map.name, kind === 'tower' ? `FLOOR ${floor} / 100` : `GROUP OF ${size}`, kind === 'tower' ? 'px_tower' : 'item_key', 'stairs');
+    toast(map.name, kind === 'tower' ? `F${floor}/100 ${map.mod && map.mod.id !== 'none' ? map.mod.name : ''}` : `GROUP OF ${size}`, kind === 'tower' ? 'px_tower' : 'item_key', 'stairs');
   });
 }
 function fightPull(p) {
@@ -647,10 +836,13 @@ function fightPull(p) {
   let foes;
   if (p.boss) { const B = BOSS_BY_ID[p.boss]; const f = makeMonster(B, p.lvl, G.difficulty, { bossId: B.id, cat: B.cat }); f.name = B.name.slice(0, 16); foes = [f]; }
   else foes = p.mobs.map(id => makeMonster(BEAST_BY_ID[id] || BESTIARY[0], p.lvl, G.difficulty));
+  if (p.elite) foes.forEach(f => { f.elite = true; f.maxhp = Math.round(f.maxhp * 1.5); f.hp = f.maxhp; f.name = ('ELITE ' + f.name).slice(0, 16); });
+  applyFloorMod(foes, inst.map.mod);
   startBattle(foes, { size: inst.size, kind: inst.kind, music: p.boss ? (p.final ? 'arcboss' : 'boss') : 'battle', onEnd: r => {
     if (r === 'lose') return onPartyWipe();
     if (r !== 'win') return;
-    inst.cleared.push(p.id); checkAchievements();
+    inst.cleared.push(p.id); updateSeals(inst); checkAchievements();
+    if (inst.kind === 'trial' && !p.final) { const nx = instVisiblePulls(inst)[0]; if (nx) toast('NEXT WAVE', nx.boss ? 'A CHAMPION ENTERS' : 'FOES POUR IN', 'px_skull', 'boss_appear'); }
     if (p.final) {
       if (inst.kind === 'dungeon') { G.stats.dungeons++; questEvent('dungeon', inst.def.id); toast('DUNGEON CLEARED', inst.def.name, 'item_chest', 'quest_done'); }
       if (inst.kind === 'raid') { G.stats.raids++; G.raidWeek[inst.def.id] = weekKey(); toast('RAID CLEARED', inst.def.name, 'px_crown', 'act_complete'); }
@@ -830,25 +1022,29 @@ function buildAtlas() {
   return ATLAS;
 }
 class WorldMap {
+  // zoom 0: all of DUNIA (160 px), zoom 1: detail map (320 px, scrolls), zoom 2: the zone's own tiles
   constructor() {
-    this.opaque = true; this.zoom = 0;
+    this.opaque = true; this.zoom = 0; this.legend = false;
     const z = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map] || ZONE_BY_ID.elderwood;
-    this.sel = z; this.camx = null; this.legend = false;
-    G.visited = G.visited || {}; G.visited[z.id] = true;
+    this.sel = z; G.visited = G.visited || {}; G.visited[z.id] = true;
   }
   move(dx, dy) {
-    const z = this.sel;
-    let t = ZONES.find(o => o.fx === z.fx + dx && o.fy === z.fy + dy);
-    for (let s = 2; !t && s < 30; s++) t = ZONES.find(o => o.fx === z.fx + dx * s && o.fy === z.fy + dy * s);
-    if (!t && dy) t = ZONES.filter(o => Math.sign(o.fy - z.fy) === dy).sort((a, b) => Math.abs(a.fx - z.fx) - Math.abs(b.fx - z.fx))[0];
-    if (t) { this.sel = t; SFX.cursor(); }
+    const [sx, sy] = zonePin(this.sel); let best = null, bd = 1e9;
+    for (const o of ZONES) {
+      if (o === this.sel) continue;
+      const [ox, oy] = zonePin(o), vx = (ox - sx) * 1.6, vy = oy - sy, d = Math.hypot(vx, vy);
+      if (!d || (vx * dx + vy * dy) / d < 0.5) continue;
+      const score = d * (1.6 - (vx * dx + vy * dy) / d);
+      if (score < bd) { bd = score; best = o; }
+    }
+    if (best) { this.sel = best; SFX.cursor(); }
   }
   update() {
     if (nav('left')) this.move(-1, 0); if (nav('right')) this.move(1, 0); if (nav('up')) this.move(0, -1); if (nav('down')) this.move(0, 1);
     if (P('start')) { this.legend = !this.legend; SFX.page(); }
-    if (P('b') || P('select')) { if (this.zoom) { this.zoom = 0; SFX.back(); } else { removeScene(this); SFX.close(); } return; }
+    if (P('b') || P('select')) { if (this.zoom) { this.zoom--; SFX.back(); } else { removeScene(this); SFX.close(); } return; }
     if (P('a')) {
-      if (!this.zoom) { this.zoom = 1; SFX.select(); return; }
+      if (this.zoom < 2) { this.zoom++; SFX.select(); return; }
       const z = this.sel;
       if (G.waypoints[z.id] && !G.inst && !G.ghost) { removeScene(this); const wp = buildZoneCached(z.id).poi.waypoint; travelTo(z.id, wp ? wp.x : null, wp ? wp.y + 1 : null); }
       else SFX.error();
@@ -875,44 +1071,64 @@ class WorldMap {
     else if (k === 'boss' || k === 'arc') { if (dead) { fill(x - s, y - s, 3 * s, 3 * s, 1); return; } fill(x - 2 * s, y - 2 * s, 5 * s, 4 * s, k === 'arc' ? 'purple' : 'red'); fill(x - s, y - s, s, s, 0); fill(x + s, y - s, s, s, 0); fill(x - s, y + s, 3 * s, s, k === 'arc' ? 'purple' : 'red'); }
     else if (k === 'quest' && (frameN >> 4) % 2) { fill(x - s, y - 4 * s, 3 * s, 5 * s, 3); fill(x, y - 3 * s, s, 2 * s, 'gold'); fill(x, y, s, s, 'gold'); }
   }
+  roads() {
+    if (WorldMap._roads) return WorldMap._roads;
+    const out = [], seen = new Set();
+    for (const z of ZONES) {
+      const m = buildZoneCached(z.id);
+      for (const e of Object.values(m.exits || {})) {
+        const o = ZONE_BY_ID[e.to]; if (!o) continue;
+        const k = [z.id, o.id].sort().join('|'); if (seen.has(k)) continue; seen.add(k);
+        out.push({ a: z, b: o, sea: continentOf(z) !== continentOf(o) });
+      }
+    }
+    return (WorldMap._roads = out);
+  }
+  drawRoads(img, ox, oy, scale) {
+    const P = o => { const [nx, ny] = zonePin(o); return [ox + nx * img.width * scale, oy + ny * img.height * scale]; };
+    for (const r of this.roads()) {
+      const [x0, y0] = P(r.a), [x1, y1] = P(r.b);
+      if (Math.max(x0, x1) < 0 || Math.min(x0, x1) > W || Math.max(y0, y1) < 12 || Math.min(y0, y1) > 110) continue;
+      const known = (G.visited[r.a.id] || G.waypoints[r.a.id]) && (G.visited[r.b.id] || G.waypoints[r.b.id]);
+      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0))), gap = r.sea ? (scale > 1 || this.zoom ? 4 : 6) : 2;
+      const c = r.sea ? 'blue' : known ? 'gold' : 3;
+      for (let i = 0; i <= n; i += gap) {
+        const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n);
+        if (y < 12 || y > 110) continue;
+        fill(x, y, 1, 1, c);
+      }
+    }
+  }
+  pinMarks(img, ox, oy, scale) {
+    if (S.roads !== false) this.drawRoads(img, ox, oy, scale);
+    const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map], ch = chapterDef();
+    for (const o of ZONES) {
+      const [nx, ny] = zonePin(o), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
+      if (x < -4 || x > W + 4 || y < 10 || y > 110) continue;
+      const known = G.visited[o.id] || G.waypoints[o.id];
+      const s = scale > 1 ? 2 : 1;
+      fill(x - s, y - s, 2 * s + 1, 2 * s + 1, 3);
+      fill(x - s + 1, y - s + 1, 2 * s - 1, 2 * s - 1, o.town ? 'red' : G.waypoints[o.id] ? 'blue' : known ? 0 : 1);
+      if (ch && o.region === ch.region && o.last && (frameN >> 4) % 2) { fill(x - 1, y - 7, 3, 4, 'gold'); fill(x - 1, y - 2, 3, 1, 'gold'); }
+    }
+    if (here && (frameN >> 3) % 2) { const [nx, ny] = zonePin(here), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale); fill(x - 1, y - 6, 3, 3, 'red'); fill(x, y - 3, 1, 2, 'red'); }
+    const [nx, ny] = zonePin(this.sel), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
+    ctx.strokeStyle = col((frameN >> 3) % 2 ? 0 : 3); ctx.lineWidth = 1; ctx.strokeRect(x - 4.5, y - 4.5, 9, 9);
+  }
   draw() {
     fill(0, 0, W, H, 0);
-    const z = this.sel, reg = REGIONS.find(r => r.id === z.region);
+    const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
     if (this.zoom === 0) {
-      const A = buildAtlas();
-      const vh = 96, tx = A.pad + z.fx * ZW + ZW / 2, ty = A.pad + z.fy * ZH + ZH / 2;
-      const tcx = Math.max(0, Math.min(A.w - W, tx - W / 2)), tcy = Math.max(0, Math.min(A.h - vh, ty - vh / 2));
-      this.camx = this.camx == null ? tcx : this.camx + (tcx - this.camx) * 0.25; this.camy = this.camy == null ? tcy : this.camy + (tcy - this.camy) * 0.25;
-      const cx = Math.round(this.camx), cy = Math.round(this.camy);
-      ctx.drawImage(A.canvas, cx, cy, W, vh, 0, 12, W, vh);
-      // icons
-      for (const o of ZONES) {
-        const ox = A.pad + o.fx * ZW - cx, oy = A.pad + o.fy * ZH - cy + 12;
-        if (ox < -ZW || ox > W || oy < -ZH || oy > 12 + vh) continue;
-        for (const ic of this.icons(o)) this.drawIcon(ic.k, ox + ic.x, oy + ic.y, false, ic.dead);
-      }
-      // region names at the centre of each region
-      const done = {};
-      for (const o of ZONES) {
-        if (done[o.region]) continue; done[o.region] = true;
-        const cells = ZONES.filter(q => q.region === o.region), mx = cells.reduce((a, q) => a + q.fx, 0) / cells.length, my = cells.reduce((a, q) => a + q.fy, 0) / cells.length;
-        const r = REGIONS.find(q => q.id === o.region), label = r.name.split(' ')[0].slice(0, 9);
-        const lx = A.pad + (mx + 0.5) * ZW - cx, ly = A.pad + (my + 0.5) * ZH - cy + 8;
-        if (lx < -40 || lx > W + 40 || ly < 12 || ly > 12 + vh - 8) continue;
-        const known = G.visited[o.id] || cells.some(q => G.visited[q.id]);
-        const L = known ? label : '???', lx0 = Math.round(lx - L.length * 3);
-        for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) text(L, lx0 + dx, Math.round(ly) + dy, 0);
-        text(L, lx0, Math.round(ly), r.id === z.region ? 'red' : 3);
-      }
-      // player + selection box
-      const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map];
-      if (here) { const px = A.pad + here.fx * ZW + (G.inst ? G.inst.return.x : G.x) - cx, py = A.pad + here.fy * ZH + (G.inst ? G.inst.return.y : G.y) - cy + 12; if ((frameN >> 3) % 2) { fill(px - 2, py - 2, 5, 5, 3); fill(px - 1, py - 1, 3, 3, 'red'); } }
-      const sx = A.pad + z.fx * ZW - cx, sy = A.pad + z.fy * ZH - cy + 12;
-      ctx.strokeStyle = col((frameN >> 4) % 2 ? 3 : 0); ctx.lineWidth = 1; ctx.strokeRect(sx - 0.5, sy - 0.5, ZW + 1, ZH + 1);
-      // compass rose
-      fill(146, 14, 12, 12, 0); text('N', 149, 14, 3); fill(151, 23, 2, 3, 3);
+      const img = IMG.gm_dunia_s; const m = spr('gm_dunia_s', img.width, img.height);
+      blit(m, 0, 12); this.pinMarks(img, 0, 12, 1);
+    } else if (this.zoom === 1) {
+      const img = IMG.gm_dunia, m = spr('gm_dunia', img.width, img.height);
+      const [nx, ny] = zonePin(z), tx = nx * img.width, ty = ny * img.height, vh = 97;
+      const cx = Math.max(0, Math.min(img.width - W, tx - W / 2)), cy = Math.max(0, Math.min(img.height - vh, ty - vh / 2));
+      this.camx = this.camx == null ? cx : this.camx + (cx - this.camx) * 0.25; this.camy = this.camy == null ? cy : this.camy + (cy - this.camy) * 0.25;
+      ctx.drawImage(m, Math.round(this.camx), Math.round(this.camy), W, vh, 0, 12, W, vh);
+      this.pinMarks(img, -Math.round(this.camx), 12 - Math.round(this.camy), 1);
     } else {
-      // ZONE view: the zone itself at 4 px per tile with every point of interest
       const m = buildZoneCached(z.id), s = 4, ox = Math.floor((W - ZW * s) / 2), oy = 13;
       const seen = G.visited[z.id] || G.waypoints[z.id];
       for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
@@ -924,25 +1140,25 @@ class WorldMap {
       }
       fill(ox - 1, oy - 1, ZW * s + 2, 1, 3); fill(ox - 1, oy + ZH * s, ZW * s + 2, 1, 3); fill(ox - 1, oy - 1, 1, ZH * s + 2, 3); fill(ox + ZW * s, oy - 1, 1, ZH * s + 2, 3);
       if (seen) {
-        for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay, aw] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
+        for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
         for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
         const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > 250) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
         for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
-    // title bar + info panel
-    fill(0, 0, W, 12, 3); textC(this.zoom ? z.name.slice(0, 24) : 'ATLAS OF AELMOOR', 80, 2, 0);
+    fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : ['DUNIA', 'DUNIA - ' + continentOf(z)][this.zoom], 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
-      [['town', 'TOWN'], ['wp', 'WAYPOINT'], ['dungeon', 'DUNGEON'], ['raid', 'RAID'], ['boss', 'WORLD BOSS'], ['arc', 'ARC BOSS']].forEach(([k, n], i) => { const x = 10 + (i % 3) * 50, y = 117 + Math.floor(i / 3) * 12; this.drawIcon(k, x, y + 3); text(n.slice(0, 7), x + 6, y, 3); });
+      const L = [[0, 'red', 'TOWN'], [1, 'blue', 'WAYPOINT'], [2, 0, 'VISITED'], [3, 1, 'UNKNOWN'], [4, 'gold', 'STORY'], [5, 'red', 'YOU']];
+      L.forEach(([i, c, n]) => { const x = 8 + (i % 3) * 50, y = 115 + Math.floor(i / 3) * 12; fill(x, y + 1, 5, 5, 3); fill(x + 1, y + 2, 3, 3, c); text(n, x + 8, y, 3); });
       return;
     }
     const seen = G.visited[z.id] || G.waypoints[z.id];
     text(seen ? z.name.slice(0, 18) : '??? UNEXPLORED', 6, 112, 3); textR(z.town ? 'SAFE' : `LV${z.lvl[0]}-${z.lvl[1]}`, 154, 112, 'gold');
-    text(`${seen ? z.sub : '???'} ${reg.exp ? 'EXP' + reg.exp : reg.act ? 'ACT ' + reg.act : 'HUB'}`.slice(0, 24), 6, 122, 2);
-    const ex = this.zoom ? (G.waypoints[z.id] ? 'A:TRAVEL B:BACK START:KEY' : 'NO WAYPOINT  B:BACK') : 'A:ZOOM  START:LEGEND';
-    text(ex, 6, 132, G.waypoints[z.id] && this.zoom ? 'blue' : 1);
+    text(`${pin[2]}${seen ? ' - ' + z.sub : ''}`.slice(0, 24), 6, 122, 2);
+    const hint = this.zoom < 2 ? 'A:ZOOM  B:BACK  START:KEY' : (G.waypoints[z.id] ? 'A:TRAVEL  B:BACK' : 'NO WAYPOINT  B:BACK');
+    text(hint, 6, 132, this.zoom === 2 && G.waypoints[z.id] ? 'blue' : 1);
   }
 }
 
@@ -953,7 +1169,7 @@ class LevelUpScene {
   update() { this.t++; if (this.t > 30 && (P('a') || P('b') || P('start'))) { SFX.select(); removeScene(this); this.cb && this.cb(); } }
   draw() {
     fill(0, 0, W, H, 0); frame(3, 3, 154, 138);
-    blit(sprH(`c_${G.cls}_0`, 44), 10, 40 + (this.t < 20 ? Math.round(Math.sin(this.t / 2) * 3) : 0));
+    blit(heroPortrait(G) ? sprFit(heroPortrait(G), 46) : sprH(`c_${G.cls}_0`, 44), 8, 40 + (this.t < 20 ? Math.round(Math.sin(this.t / 2) * 3) : 0));
     for (let i = 0; i < 9; i++) { const x = 50 + ((i * 37) % 100), y = 20 + ((i * 53) % 110); if (((this.t >> 3) + i) % 3 === 0) text('+', x, y, 'gold'); }
     textC('LEVEL UP!', 100, 10, 'gold', 2);
     textC(`LEVEL ${this.g.lvl}`, 100, 34, 3);

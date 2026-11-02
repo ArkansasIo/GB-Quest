@@ -65,6 +65,9 @@ const SPECIES = {
   stonekin: { name: 'STONEKIN', asi: { CON: 2, STR: 1 }, traits: ['stoneblood'], res: ['poison'], desc: 'Mountain delvers. Resist poison; advantage on poison saves.' },
   wispling: { name: 'WISPLING', asi: { DEX: 2, CHA: 1 }, traits: ['lucky', 'brave'], desc: 'Small and lucky. Reroll natural 1s; advantage vs fear.' },
   emberborn: { name: 'EMBERBORN', asi: { CHA: 2, INT: 1 }, traits: ['emberbolt'], res: ['fire'], desc: 'Touched by old fire. Resist fire; know EMBERDART.' },
+  burrowkin: { name: 'BURROWKIN', asi: { INT: 2, CON: 1 }, traits: ['cunning'], desc: 'Clever tunnel folk. Advantage on INT/WIS/CHA saves against magic.' },
+  twinblood: { name: 'TWINBLOOD', asi: { CHA: 2, DEX: 1, CON: 1 }, traits: ['feyblood', 'versatile'], desc: 'Born of two peoples. Resist charm; an extra skill.' },
+  tuskborn: { name: 'TUSKBORN', asi: { STR: 2, CON: 1 }, traits: ['relentless'], desc: 'Fierce and hardy. Once per rest, drop to 1 HP instead of 0.' },
   drakkin: { name: 'DRAKKIN', asi: { STR: 2, CHA: 1 }, traits: ['breath'], res: ['fire'], desc: 'Dragon-blooded. Fire breath once per rest; resist fire.' },
 };
 
@@ -205,15 +208,34 @@ const ARMORS = {
   fullplate: { name: 'FULL PLATE', ac: 18, dexMax: 0, type: 'heavy', icon: 'icon_0_2', stealthDis: true, str: 15, cost: 1500 },
   buckler: { name: 'BUCKLER', ac: 2, type: 'shield', icon: 'icon_0_1', cost: 10 },
 };
-// wondrous items for head / feet / trinket slots: bonus keys
+// wondrous items for the head, back, hands, waist, legs, feet, neck and ring slots. bonus: ac, save, hp, abil, hit, init
 const WONDROUS = [
+  // head
   { id: 'circlet', name: 'CIRCLET', slot: 'head', icon: 'item_cap', bonus: 'save' },
   { id: 'helm', name: 'WARDHELM', slot: 'head', icon: 'item_iron_helm', bonus: 'ac' },
   { id: 'mask', name: 'DREAD MASK', slot: 'head', icon: 'item_goblin_mask', bonus: 'abil' },
+  // back
+  { id: 'cloak', name: 'CLOAK', slot: 'back', icon: 'icon_0_2', bonus: 'save' },
+  { id: 'mantle', name: 'MANTLE', slot: 'back', icon: 'icon_0_2', bonus: 'ac' },
+  // hands
+  { id: 'gloves', name: 'GLOVES', slot: 'hands', icon: 'icon_0_1', bonus: 'hit' },
+  { id: 'gauntlets', name: 'GAUNTLETS', slot: 'hands', icon: 'icon_0_1', bonus: 'ac' },
+  // waist
+  { id: 'belt', name: 'BELT', slot: 'waist', icon: 'icon_1_4', bonus: 'hp' },
+  { id: 'girdle', name: 'GIRDLE', slot: 'waist', icon: 'icon_1_4', bonus: 'abil' },
+  // legs
+  { id: 'leggings', name: 'LEGGINGS', slot: 'legs', icon: 'icon_0_2', bonus: 'init' },
+  { id: 'greaves', name: 'GREAVES', slot: 'legs', icon: 'icon_0_2', bonus: 'ac' },
+  // feet
   { id: 'boots', name: 'BOOTS', slot: 'feet', icon: 'item_boots', bonus: 'init' },
-  { id: 'ring', name: 'RING', slot: 'trinket', icon: 'icon_0_5', bonus: 'save' },
-  { id: 'amulet', name: 'AMULET', slot: 'trinket', icon: 'px_orb', bonus: 'hp' },
-  { id: 'charm', name: 'CHARM', slot: 'trinket', icon: 'icon_1_4', bonus: 'abil' },
+  { id: 'sabatons', name: 'SABATONS', slot: 'feet', icon: 'item_boots', bonus: 'ac' },
+  // neck
+  { id: 'amulet', name: 'AMULET', slot: 'neck', icon: 'px_orb', bonus: 'hp' },
+  { id: 'pendant', name: 'PENDANT', slot: 'neck', icon: 'px_orb', bonus: 'save' },
+  // rings (either ring slot)
+  { id: 'ring', name: 'RING', slot: 'ring', icon: 'icon_0_5', bonus: 'save' },
+  { id: 'charm', name: 'SIGNET', slot: 'ring', icon: 'icon_0_5', bonus: 'abil' },
+  { id: 'band', name: 'BAND', slot: 'ring', icon: 'icon_0_5', bonus: 'hit' },
 ];
 const RARITY = [
   { id: 'poor', name: 'POOR', plus: -1, tag: '.', color: '#9d9d9d', gbc: 1, value: 0.3 },
@@ -229,9 +251,11 @@ const LEGENDARY_WEAPON = [
   { name: 'WHISPER', base: 'needleblade', extra: '2d6', etype: 'necrotic' }, { name: 'STAFF OF AGES', base: 'walkstaff', extra: '1d6', etype: 'force', spell: 2 },
 ];
 const MAX_ATTUNE = 3;
-const SLOTS = ['weapon', 'offhand', 'armor', 'head', 'feet', 'trinket'];
-const SLOT_NAME = { weapon: 'WEAPON', offhand: 'OFF HAND', armor: 'ARMOUR', head: 'HEAD', feet: 'FEET', trinket: 'TRINKET' };
-const SLOT_ICON = { weapon: 'icon_0_0', offhand: 'icon_0_1', armor: 'icon_0_2', head: 'icon_3_0', feet: 'item_boots', trinket: 'icon_0_5' };
+// 12 equipment slots (paper doll: left column, right column)
+const SLOTS = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand'];
+const SLOT_NAME = { weapon: 'MAIN HAND', offhand: 'OFF HAND', armor: 'CHEST', head: 'HEAD', back: 'CLOAK', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', neck: 'NECK', ring1: 'RING 1', ring2: 'RING 2' };
+const SLOT_ICON = { weapon: 'icon_0_0', offhand: 'icon_0_1', armor: 'icon_0_2', head: 'icon_3_0', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', neck: 'px_orb', ring1: 'icon_0_5', ring2: 'icon_0_5' };
+const SLOT_COLS = [['head', 'neck', 'armor', 'back', 'hands', 'weapon'], ['waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand']];
 
 // ---------------------------------------------------------------- spells
 // t: target enemy|enemies|ally|allies|self. eff: dmg|heal|cond|buff|summon|revive|kill|cleanse

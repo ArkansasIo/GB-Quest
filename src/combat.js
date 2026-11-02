@@ -210,7 +210,7 @@ class Battle {
   }
   save(u, abil, dc, opt = {}) {
     let bonus;
-    if (isChar(u)) { const D = derive(u.ch); bonus = D.saves[abil] + (opt.cond ? D.condSave : 0); if (D.sp.traits.includes('feyblood') && opt.charm) opt.adv = 1; if (D.sp.traits.includes('stoneblood') && opt.poison) opt.adv = 1; }
+    if (isChar(u)) { const D = derive(u.ch); bonus = D.saves[abil] + (opt.cond ? D.condSave : 0); if (D.sp.traits.includes('feyblood') && opt.charm) opt.adv = 1; if (D.sp.traits.includes('stoneblood') && opt.poison) opt.adv = 1; if (D.sp.traits.includes('cunning') && opt.spell && ['INT', 'WIS', 'CHA'].includes(abil)) opt.adv = 1; }
     else bonus = (u.saves[abil] || 0);
     for (const v of this.party) if (u.side === 'party' && isChar(v) && hasFeature(v.ch, 'aura') && alive(v)) { bonus += Math.max(1, derive(v.ch).M.CHA); break; }
     if (hasEff(u, 'bless')) bonus += roll('1d4').total;
@@ -274,6 +274,7 @@ class Battle {
     if (src && !isChar(src) && src.mechs && src.mechs.includes('drain') && opt.attack) src.hp = Math.min(src.maxhp, src.hp + Math.ceil(a / 2));
     // falling to 0
     if (hpOf(tgt) <= 0) {
+      if (isChar(tgt) && tgt.ch.species === 'tuskborn' && !tgt.relentUsed && -hpOf(tgt) < maxHpOf(tgt)) { tgt.relentUsed = true; tgt.ch.hp = 1; this.pushNote(`${tgt.name} refuses to fall! (RELENTLESS)`); return a; }
       if (isChar(tgt)) {
         if (-hpOf(tgt) >= maxHpOf(tgt)) { tgt.ch.dead = true; }
         tgt.ch.hp = 0; tgt.ch.dying = tgt.ch.dead ? null : (tgt.ch.dying || { ok: 0, fail: 0 }); if (opt.crit && tgt.ch.dying) tgt.ch.dying.fail++;
@@ -394,7 +395,7 @@ class Battle {
     const dc = this.spellDC(u), atk = this.spellAtk(u);
     const powerScale = isChar(u) ? 1 + (D.dmgPct + (D.elem[sp.dt] || 0)) / 100 + Math.max(0, lvlOf - 20) / 40 : 1 + Math.max(0, lvlOf - 20) / 30;
     const schoolSfx = sp.school + '_cast';
-    steps.push(this.say(`${u.name} casts ${sp.name}!${slot ? ` (L${slot})` : ''}`, () => { SFX[schoolSfx](); this.anim.lunge = u.id; this.anim.fx = { name: sp.dt === 'fire' ? 'fx_burst' : sp.eff === 'heal' ? 'fx_sparkle' : 'fx_sparkle', t: 20, on: targets.map(t => t.id) }; }, 6));
+    steps.push(this.say(`${u.name} casts ${sp.name}!${slot ? ` (L${slot})` : ''}`, () => { SFX[schoolSfx](); this.anim.lunge = u.id; this.anim.fx = { name: spellArt(sp) || (sp.dt === 'fire' ? 'fx_burst' : 'fx_sparkle'), t: 20, on: targets.map(t => t.id) }; }, 6));
     const dmgRoll = (crit = false) => {
       let ex = sp.dice; const cnt = ex.match(/^(\d+)d(\d+)(.*)$/);
       if (cnt && sp.lvl === 0) ex = `${+cnt[1] * tier}d${cnt[2]}${cnt[3] || ''}`;
@@ -789,18 +790,18 @@ class Battle {
     this.state = 'over';
     const player = this.party.find(u => u.ch === G);
     const D = derive(G);
-    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0), gold = Math.round(this.foes.reduce((a, f) => a + (f.gold || 0), 0) * (1 + D.gf / 100));
-    const drops = [];
+    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0);
     const lootMul = (DIFFICULTY[this.diff - 1] || DIFFICULTY[1]).loot;
+    const drops = [], mats = {}, cons = []; let gold = 0;
     for (const f of this.foes) {
-      if (f.boss || R() < (f.elite ? 0.6 : 0.18) * lootMul) drops.push(makeItem({ lvl: f.lvl, mf: D.mf, boss: f.boss, loot: lootMul }));
-      if (f.boss && R() < 0.5) drops.push(makeItem({ lvl: f.lvl, mf: D.mf, boss: true, loot: lootMul }));
-      const tpl = MONSTERS[f.uniqueKey]; const junk = tpl && tpl.drop ? tpl.drop : null; if (junk && ITEMS[junk] && R() < 0.5) addItem(junk);
-      if (R() < 0.12) addItem(pick(['potion', 'potion', 'ration', 'antitoxin', 'ether']));
+      const d = rollDrops(f, { loot: lootMul }); drops.push(...d.items); gold += d.gold; cons.push(...d.cons);
+      for (const k in d.mats) mats[k] = (mats[k] || 0) + d.mats[k];
     }
     const steps = [this.say(this.foes.length > 1 ? 'Victory!' : `${this.foes[0].name} is defeated!`, () => { Music.play('victory'); SFX.quest_done(); }, 20)];
     steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
-    for (const it of drops) steps.push(this.say(`Loot: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX.pickup(); if (it.rarity === 5) G.stats.legendaries++; }));
+    for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; } }));
+    const got = Object.entries(mats).map(([k, n]) => `${n} ${ITEMS[k].name}`).concat(cons.map(k => ITEMS[k].name));
+    if (got.length) steps.push(this.say(('Found: ' + got.join(', ')).slice(0, 70), () => { for (const k in mats) addItem(k, mats[k]); cons.forEach(k => addItem(k)); SFX.coin(); }));
     this.run(steps, () => {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }
@@ -831,6 +832,8 @@ class Battle {
   }
   draw() {
     fill(0, 0, W, H, 0);
+    const bgn = battleBackdrop(this.kind);
+    if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); }
     // backdrop floor
     fill(0, 93, W, 1, 2); for (let x = 0; x < W; x += 8) fill(x + ((frameN >> 4) % 8), 92, 3, 1, 1);
     // party panel
@@ -855,8 +858,8 @@ class Battle {
     // sprites
     const shownP = this.party.filter(u => isChar(u)).slice(0, 3);
     shownP.forEach((u, k) => {
-      const c = u.ch, look = `c_${c.cls}_4`;
-      let s = IMG[look] ? sprH(look, 30) : sprH('hero_4', 30);
+      const c = u.ch, look = `c_${c.cls}_4`, por = heroPortrait(c);
+      let s = por ? sprH(por, 34) : IMG[look] ? sprH(look, 30) : sprH('hero_4', 30);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
