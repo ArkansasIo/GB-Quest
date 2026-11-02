@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <span>
 #include <string>
@@ -15,6 +16,18 @@ enum class Ability : std::uint8_t {
   intelligence,
   wisdom,
   charisma
+};
+
+
+struct AbilityScores {
+  std::array<std::int32_t, 6> values{10, 10, 10, 10, 10, 10};
+};
+
+struct PassiveScoreInput {
+  std::int32_t ability_score{10};
+  std::int32_t character_level{1};
+  bool proficient{false};
+  std::int32_t bonus{0};
 };
 
 struct ArmorClassInput {
@@ -45,6 +58,16 @@ struct AttackResult {
 // Uses the x86-64 assembly implementation when the build target supports it;
 // otherwise uses the equivalent portable C++23 implementation.
 [[nodiscard]] std::int32_t ability_modifier(std::int32_t score) noexcept;
+
+
+[[nodiscard]] std::int32_t ability_score(
+    const AbilityScores& scores, Ability ability);
+
+// Validates all six scores against the supported 1..30 range.
+void validate_ability_scores(const AbilityScores& scores);
+
+// Passive score: 10 + ability modifier + proficiency when proficient + bonus.
+[[nodiscard]] std::int32_t passive_score(const PassiveScoreInput& input);
 
 // D&D character-level proficiency progression, levels 1 through 20.
 [[nodiscard]] std::int32_t proficiency_bonus(std::int32_t character_level);
