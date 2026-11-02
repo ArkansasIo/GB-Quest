@@ -163,7 +163,7 @@ class InventoryScene {
       if (d) { const bits = []; if (d.ac) bits.push(`AC${sgn(d.ac)}`); if (d.hp) bits.push(`HP${sgn(d.hp)}`); if (d.hit) bits.push(`HIT${sgn(d.hit)}`); if (Math.abs(d.dmg) >= 0.1) bits.push(`DMG${sgn(d.dmg)}`); if (d.init) bits.push(`INI${sgn(d.init)}`); line += ' ' + (bits.join(' ') || '= SAME'); }
       else line += ' NEW SLOT!';
       text(line.slice(0, 25), 5, 126, d && Object.values(d).some(v => v < 0) && !Object.values(d).some(v => v > 0) ? 'red' : 'green');
-      { const tp = typeof tierPowerText === 'function' ? tierPowerText(e) : ''; const alt = tp && (Date.now() / 2200 | 0) % 2; text((alt ? tp : `${e.adventurerRank || 'F'} RANK  ${'★'.repeat(Math.min(12, e.starLevel || 1))}`).slice(0, 25), 5, 135, alt ? 'gold' : 2); }
+      { const tp = typeof tierPowerText === 'function' ? tierPowerText(e) : ''; const alt = tp && (Date.now() / 2200 | 0) % 2; text((alt ? tp : `${e.adventurerRank || 'F'} RANK  ★${Math.min(12, e.starLevel || 1)}`).slice(0, 25), 5, 135, alt ? 'gold' : 2); }
     } else if (e) { const it = ITEMS[e]; text(it.name.slice(0, 20), 5, 117, 3); textR('x' + G.inv[e], 156, 117, 2); text(wrap(it.desc, 25).slice(0, 2).join('\n'), 5, 126, 2); }
     else text(this.tab === 0 ? `BAG ${G.bag.length}/${BAG_MAX}   ${G.gold} G` : 'EMPTY', 5, 118, 2), text('A:ITEM SEL:TAB START:SORT/JUNK', 5, 130, 1);
   }
