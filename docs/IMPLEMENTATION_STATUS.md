@@ -83,7 +83,7 @@ The current character state already contains PvP-related fields such as `pvpEnab
 
 ## 3. C++ and assembly source-port plan
 
-The current playable implementation is JavaScript. A C++ and assembly implementation is **not yet present as a completed, tested port**. The correct approach is to create separate targets that share documented game data and rules contracts; renaming JavaScript files or mechanically translating syntax would not create working native ports.
+The main playable browser game is JavaScript. The repository also contains a **partial C++23 native rules core** and an **optional x86-64 System V assembly fast path**. These are real native source files with build/test scaffolding, but they are not a full port of the JavaScript game. The Game Boy SM83/RGBDS ROM target is not yet present. The correct approach is to expand the existing native target and create a separate handheld target; renaming JavaScript files or mechanically translating syntax would not create working ports.
 
 ### C++ native target
 
@@ -115,7 +115,7 @@ native/
   tests/
 ```
 
-The C++ target should provide portable gameplay systems, deterministic simulation, data loading, save serialization and test coverage. Rendering and platform input should sit behind interfaces so the game can target desktop first and other platforms later. The native target must have its own build and test pipeline before it is called playable.
+Existing native files include `native/CMakeLists.txt`, `native/include/gbquest/core.hpp`, `native/src/core.cpp`, `native/src/cli.cpp`, and `native/tests/core_tests.cpp`. The current core covers selected rules operations (ability modifiers, proficiency, armour class, attack resolution and other documented primitives) and is built as a C++23 library plus CLI. Expand it toward portable gameplay systems, deterministic simulation, data loading, save serialization and broader test coverage. Rendering and platform input should sit behind interfaces. This remains a partial rules core, not a complete native game client.
 
 ### Assembly / Game Boy target
 
@@ -139,7 +139,7 @@ gb/
   tests/
 ```
 
-The assembly build should produce a ROM and include emulator smoke tests. Online account services, authoritative MMO simulation and large-scale world generation remain server/desktop responsibilities; the handheld build would use a compatible offline or connected-client subset.
+The existing `native/src/ability_modifier_x86_64.S` is a desktop x86-64 System V routine used by the native C++ core on supported toolchains. It is not Game Boy assembly. The separate RGBDS target should produce an SM83 ROM and include emulator smoke tests. Online account services, authoritative MMO simulation and large-scale world generation remain server/desktop responsibilities; the handheld build would use a compatible offline or connected-client subset.
 
 ## 4. Recommended implementation order
 
@@ -168,4 +168,4 @@ A feature is complete only when all relevant layers are present:
 
 ## 6. Current delivery statement
 
-As of 2026-11-02, the repository contains the JavaScript browser game, a local minimap implementation, and the 42-item Artifact plus 42-item Relic catalogs with dedicated equipment slots and documentation. The additional systems listed in Section 2 remain planned or require end-to-end verification. The C++ native target and RGBDS assembly target are roadmap items, not completed ports.
+As of 2026-11-02, the repository contains the JavaScript browser game, a local minimap implementation, the 42-item Artifact and 42-item Relic catalogs, and the first gem socket rules layer (nine gem families, nine tiers each, socket validation, inventory consumption/refund and derived-stat integration). The gem socket UI, loot/crafting sources and multiplayer authority remain outstanding. The repository also has a partial C++23 native rules core and optional x86-64 assembly fast path; neither is a full game port. The Game Boy SM83/RGBDS ROM target remains a roadmap item.
