@@ -84,12 +84,33 @@ struct DamageInput {
   bool critical{false};
 };
 
+struct HealthState {
+  std::int32_t hit_points{};
+  std::int32_t maximum_hit_points{};
+  std::int32_t temporary_hit_points{};
+  bool defeated{false};
+};
+
+struct HealthChangeResult {
+  std::int32_t requested{};
+  std::int32_t applied{};
+  std::int32_t hit_points_remaining{};
+  std::int32_t temporary_hit_points_remaining{};
+  bool defeated{};
+};
+
 struct DamageResult {
   std::int32_t amount{};
   std::string damage_type;
   bool critical{};
   DamageDisposition disposition{DamageDisposition::normal};
 };
+
+// Applies damage to temporary HP first, then current HP. Amount must be non-negative.
+[[nodiscard]] HealthChangeResult apply_damage(HealthState& target, std::int32_t amount);
+
+// Restores HP up to maximum HP. Temporary HP is not affected.
+[[nodiscard]] HealthChangeResult apply_healing(HealthState& target, std::int32_t amount);
 
 // Supported notation: NdS, dS, NdS+M and NdS-M.
 // Count is limited to 1..100 and sides to 2..1000.
