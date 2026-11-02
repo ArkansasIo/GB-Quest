@@ -47,3 +47,7 @@ The native API includes mutable health-state transitions with validation: damage
 ## Ability scores and passive checks
 
 The core stores the six D&D ability scores in a fixed-order `AbilityScores` value (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma), validates the supported 1–30 range, and exposes typed lookup by `Ability`. Passive checks calculate 10 + the selected ability modifier, optional proficiency bonus for character levels 1–20, and an explicit situational bonus. The native core does not own character persistence or class-specific saving-throw proficiency data.
+
+## Native inventory transactions
+
+The native inventory API models item definitions, stack quantities, slot capacity and weight capacity in grams. Adding items fills partial stacks before allocating new stacks; removal can span stacks. Both operations stage changes before committing, so insufficient quantity, slot capacity or weight capacity leaves inventory unchanged. Item definitions are passed by the caller, and `inventory_weight` validates and calculates weight from an explicit definition span. The caller remains responsible for loading trusted item definitions and persisting the resulting inventory state.
