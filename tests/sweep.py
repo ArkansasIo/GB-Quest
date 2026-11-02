@@ -326,6 +326,42 @@ async () => {
     S.xpRate = 1;
     S.devMode = false; DBG.god = false; DBG.noEnc = false; Clock.override = null;
   });
+  step('chat box', () => {
+    fresh('warden', 'hearthkin', 'soldier', 10); reset(new Field());
+    const inp = document.getElementById('chatinput'), form = document.getElementById('chatform'), lab = document.getElementById('chatlabel');
+    if (!inp || !lab || !document.querySelector('.cb-bar') || !document.querySelector('.cb-grip')) return 'not installed';
+    const type = v => { inp.value = v; inp.dispatchEvent(new Event('input')); };
+    const send = () => form.requestSubmit();
+    const key = (k, sh) => inp.dispatchEvent(new KeyboardEvent('keydown', { key: k, shiftKey: !!sh, bubbles: true, cancelable: true }));
+    if (lab.textContent !== 'Say:') return 'label ' + lab.textContent;
+    type('/g '); if (lab.textContent !== 'Guild:' || inp.value !== '') return 'switch ' + lab.textContent;
+    type('/1 '); if (lab.textContent !== '[1. General]:') return 'general ' + lab.textContent;
+    type('hello sticky'); send(); if (lab.textContent !== '[1. General]:') return 'not sticky';
+    if (!CHAT_UI.entries.some(m => m.channel === 'world' && m.msg === 'hello sticky') && !CHAT_UI.entries.some(m => /offline|ONLINE/i.test(m.msg))) return 'not sent to general';
+    type('/y '); if (lab.textContent !== 'Yell:') return 'yell'; type('LOUD'); send(); if (lab.textContent !== '[1. General]:') return 'yell stuck';
+    type('/w Bram '); if (lab.textContent !== 'Tell BRAM:') return 'whisper ' + lab.textContent;
+    key('Backspace'); if (lab.textContent !== 'Say:') return 'backspace reset';
+    type('plain words'); send(); if (!CHAT_UI.entries.some(m => m.channel === 'say' && m.msg === 'plain words')) return 'say';
+    key('ArrowUp'); if (inp.value !== 'plain words') return 'history ' + inp.value; key('ArrowUp'); key('ArrowDown'); inp.value = '';
+    type('/da'); key('Tab'); if (inp.value !== '/dance ') return 'complete cmd ' + inp.value;
+    type('/w '); type('/w ' ); inp.value = '/w '; key('Tab'); if (!/^\/w \S+ $/.test(inp.value)) return 'complete name ' + inp.value; inp.value = '';
+    for (const b of document.querySelectorAll('.cb-bar button')) { b.click(); const m = document.getElementById('cbmenu'); if (b.title !== 'Text size' && b.title !== 'Jump to latest' && !m) return 'no menu ' + b.title; if (m) { const it = m.querySelector('button'); if (b.title === 'Channels') it.click(); else cbCloseMenu(); } }
+    const nm = document.querySelector('#chatlog .cb-name'); if (!nm) return 'no names'; nm.click(); if (!/^Tell /.test(lab.textContent)) return 'name click';
+    nm.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 20 })); if (!document.getElementById('cbmenu')) return 'name menu'; cbCloseMenu();
+    chatLog('whisper', 'ESME', 'psst'); setChatFilter('all'); if (!document.querySelector('[data-chat-filter="whisper"].cb-new')) return 'no flash'; setChatFilter('whisper'); setChatFilter('all');
+    cbSetMode({ ch: 'say', to: '' }); inp.blur(); CHATBOX.opts.x = 10; CHATBOX.opts.y = 10; CHATBOX.opts.w = 300; CHATBOX.opts.h = 200; cbApply(); delete CHATBOX.opts.x; delete CHATBOX.opts.y; delete CHATBOX.opts.w; delete CHATBOX.opts.h; cbApply(); cbSave();
+  });
+  step('identity', () => {
+    fresh('warden', 'hearthkin', 'soldier', 5);
+    const a = currentAccount(); if (!validUid(a.uid) || String(a.uid).length !== 9) return 'account uid ' + a.uid;
+    if (!validUid(G.pid) || !/^[A-Z0-9]+#\d{4}$/.test(G.username) || G.acct !== a.uid) return 'hero ids ' + G.pid + ' ' + G.username;
+    if (fmtUid(123456789) !== '123-456-789' || uidFromString('x') !== uidFromString('x')) return 'fmt';
+    const old = JSON.parse(JSON.stringify(G)); delete old.pid; delete old.username; delete old.acct; G = old; fixupState(); if (!validUid(G.pid) || !G.username) return 'migrate';
+    DeviceAccount.rename('tester_01'); if (DeviceAccount.get().name !== 'TESTER_01') return 'rename';
+    NET.sendChat('/id'); if (!CHAT_UI.entries.some(m => m.channel === 'system' && m.msg.includes(fmtUid(G.pid)))) return '/id';
+    const sc = new AccountScene(); push(sc); if (!sc.opts().includes('HEROES & IDS')) return 'opts'; render(); push(new IdentityScene()); press('down'); render(); press('b'); removeScene(sc);
+    push(new CharSheet()); render(); press('b');
+  });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
   // 11. atlas

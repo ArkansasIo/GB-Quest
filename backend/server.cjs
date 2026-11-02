@@ -61,7 +61,7 @@ function sessionFor(req, url) {
 const fails = new Map();
 const throttled = key => { const f = fails.get(key); return f && f.n >= 10 && Date.now() - f.t < 600e3; };
 const fail = key => { const f = fails.get(key); if (!f || Date.now() - f.t > 600e3) fails.set(key, { n: 1, t: Date.now() }); else f.n++; };
-const publicAcct = a => ({ id: a.id, name: a.name, created: a.created });
+const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created });
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
 const adminRoleFor = acct => isRoot(acct) ? 'root' : isAdmin(acct) ? 'admin' : (['admin', 'moderator'].includes(db.staffRoles[acct.id]) ? db.staffRoles[acct.id] : 'player');

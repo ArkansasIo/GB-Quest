@@ -437,7 +437,7 @@ const NET = {
   tick() {
     realmTick();
     if (this.offline || !this.room || !G || frameN % 15) return;
-    const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0, w: G.pvpEnabled ? 1 : 0,
+    const pres = { n: (G.name || '').slice(0, 10), p: G.pid || null, c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0, w: G.pvpEnabled ? 1 : 0,
       h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
     const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
     this.room.presence(pres).catch(() => {});
