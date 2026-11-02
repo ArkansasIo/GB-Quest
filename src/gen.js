@@ -313,7 +313,7 @@ function rollRarity(lvl, mfPct = 0, boss = false, diffLoot = 1) {
   return 0;
 }
 const AFFIX_K = { crit: 1.2, critdmg: 5, dodge: 0.8, block: 1.2, leech: 0.4, haste: 1.2, dmg: 3, heal: 3, resist: 1.2, thorns: 2, mf: 4, gf: 5, xp: 1.5, hp: 5, acb: 0.2, hit: 0.2, fire: 4, cold: 4, lightning: 4, necrotic: 4, radiant: 4 };
-function makeItem(opts) {
+function makeItem(opts = {}) {
   const lvl = Math.max(1, Math.min(720, Math.floor(Number(opts.lvl) || 1))), rar = opts.rarity != null ? Math.max(0, Math.min(8, Math.floor(Number(opts.rarity) || 0))) : rollRarity(lvl, opts.mf, opts.boss, opts.loot);
   const r = R;
   let kind = opts.kind || r.pick(['weapon', 'weapon', 'armor', 'armor', 'wondrous', 'wondrous', 'wondrous', 'wondrous']);
@@ -341,6 +341,7 @@ function makeItem(opts) {
   if (!it.name) it.name = itemBaseName(it);
   it.value = Math.max(1, Math.round((itemBaseCost(it) + 5 * lvl) * RARITY[it.rarity].value));
   it.attune = !!RARITY[it.rarity].attune;
+  applyGearProgression(it); // Recompute after wondrous-item rarity normalization.
   return it;
 }
 function itemBaseName(it) {
