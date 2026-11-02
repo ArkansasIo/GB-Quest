@@ -83,11 +83,25 @@ const ARMOR_SETS = {
   mail: { 4: [['resist', 6]], 7: [['hp', 60], ['hit', 1]] },
   plate: { 4: [['acb', 1]], 7: [['acb', 1], ['block', 8]] },
 };
+const LEGENDARY_SET_DEFS = {
+  crypt_warden: { name: 'CRYPT WARDEN', pieces: ['n_bonelord', 'n_cryptseal', 'n_cryptwarden'], two: [['hp', 80], ['resist', 8]], three: [['acb', 1], ['heal', 10]] },
+  forgefire: { name: 'FORGEFIRE', pieces: ['n_forgefire', 'n_forgeheart', 'n_embergrip'], two: [['fire', 15], ['dmg', 8]], three: [['fire', 25], ['critdmg', 40]] },
+  rime_throne: { name: 'RIME THRONE', pieces: ['n_glacier', 'n_frostmantle', 'n_icebound'], two: [['cold', 18], ['resist', 10]], three: [['cold', 30], ['hp', 120]] },
+  long_night: { name: 'LONG NIGHT', pieces: ['n_longnight', 'n_duskguard', 'n_voidedge'], two: [['crit', 5], ['leech', 5]], three: [['critdmg', 50], ['haste', 12]] },
+};
+function legendarySetCounts(c) {
+  const counts = {};
+  for (const id of Object.keys(LEGENDARY_SET_DEFS)) counts[id] = 0;
+  for (const item of Object.values(c && c.eq || {})) if (item && item.setId && counts[item.setId] !== undefined) counts[item.setId]++;
+  return counts;
+}
 const pieceClass = it => !it ? null : it.kind === 'armor' ? (ARMORS[it.base] && ARMORS[it.base].aclass) || null : it.kind === 'wondrous' && PIECE_SLOTS.includes(it.slot) ? (it.aclass || 'cloth') : null;
 function armorSetCounts(c) { const n = { cloth: 0, leather: 0, mail: 0, plate: 0 }; for (const s of PIECE_SLOTS) { const k = pieceClass(c.eq && c.eq[s]); if (k) n[k]++; } return n; }
 function armorSetBonus(c) {
   const out = [], n = armorSetCounts(c);
   for (const k of ACLASS_ORDER) for (const need of [4, 7]) if (n[k] >= need) out.push(...ARMOR_SETS[k][need]);
+  const legendary = legendarySetCounts(c);
+  for (const [id, count] of Object.entries(legendary)) { const set = LEGENDARY_SET_DEFS[id]; if (count >= 2) out.push(...set.two); if (count >= 3) out.push(...set.three); }
   return out;
 }
 const canWearClass = (c, k) => { const p = ARMOR_CLASSES[k].prof; return !p || CLASSES[c.cls].armor.includes(p); };
@@ -145,14 +159,14 @@ class ArmoryScene {
   constructor() { this.opaque = true; this.tab = 0; this.i = 0; }
   update() {
     if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (P('left') || P('right') || P('select')) { this.tab = (this.tab + 1) % 2; this.i = 0; SFX.page(); }
+    if (P('left') || P('right') || P('select')) { this.tab = (this.tab + 1) % 3; this.i = 0; SFX.page(); }
     const n = this.tab === 0 ? 4 : 12;
     if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); }
     if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); }
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
-    textC(this.tab === 0 ? '< ARMOUR CLASSES >' : '< WEAPON SUBCLASSES >', 80, 1, 'gold');
+    textC(this.tab === 0 ? '< ARMOUR CLASSES >' : this.tab === 1 ? '< WEAPON SUBCLASSES >' : '< LEGENDARY SETS >', 80, 1, 'gold');
     if (this.tab === 0) {
       const n = armorSetCounts(G);
       ACLASS_ORDER.forEach((k, i) => { const y = 15 + i * 11, ok = canWearClass(G, k); if (i === this.i) fill(1, y - 1, 158, 11, 1); text(ARMOR_CLASSES[k].name, 5, y, ok ? 3 : 1); textR(`${n[k]}/7 ${ok ? 'OK' : 'NO'}`, 155, y, ok ? 'green' : 'red'); });
@@ -163,7 +177,7 @@ class ArmoryScene {
       text(`4 SET: ${sets[4].map(([s, v]) => `${SUBSTATS[s].name.slice(0, 6)}+${v}`).join(' ')}`.slice(0, 25), 5, 96, n[k] >= 4 ? 'gold' : 2);
       text(`7 SET: ${sets[7].map(([s, v]) => `${SUBSTATS[s].name.slice(0, 6)}+${v}`).join(' ')}`.slice(0, 25), 5, 106, n[k] >= 7 ? 'gold' : 2);
       text('HELM CLOAK CHEST GLOVES', 5, 120, 1); text('BELT LEGGINGS BOOTS', 5, 129, 1);
-    } else {
+    } else if (this.tab === 1) {
       const keys = Object.keys(WEAPON_CLASSES), top = Math.max(0, Math.min(this.i - 3, keys.length - 7));
       const cur = G.eq.weapon && WEAPONS[G.eq.weapon.base] && WEAPONS[G.eq.weapon.base].fam;
       keys.slice(top, top + 7).forEach((k, j) => { const i = top + j, y = 15 + j * 10; if (i === this.i) fill(1, y - 1, 158, 10, 1); text(WEAPON_CLASSES[k].name, 5, y, k === cur ? 'gold' : 3); textR(`${Object.values(WEAPONS).filter(w => w.fam === k).length} KINDS`, 155, y, 2); });
@@ -172,6 +186,16 @@ class ArmoryScene {
       text(wrap(WEAPON_CLASSES[k].desc, 25).slice(0, 2).join('\n'), 5, 91, 3);
       text(WEAPON_CLASSES[k].stats(10).filter(([, v]) => v > 0).map(([s, v]) => `${SUBSTATS[s].name.slice(0, 6)}+${v}`).join(' ').slice(0, 25), 5, 111, 2);
       text('(VALUES AT TIER 10)', 5, 121, 1);
+    } else {
+      const ids = Object.keys(LEGENDARY_SET_DEFS), counts = legendarySetCounts(G);
+      this.i = Math.min(this.i, ids.length - 1);
+      ids.forEach((id, i) => { const set = LEGENDARY_SET_DEFS[id], y = 17 + i * 11; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(set.name, 5, y, 3); textR((counts[id] || 0) + '/3', 154, y, counts[id] >= 3 ? 'gold' : 2); });
+      const id = ids[this.i], set = LEGENDARY_SET_DEFS[id], n = counts[id] || 0;
+      frame(2, 65, 156, 77);
+      text('EQUIPPED PIECES ' + n + '/3', 6, 69, n >= 2 ? 'gold' : 2);
+      text('2 PIECES: ' + set.two.map(([s, v]) => s.toUpperCase() + '+' + v).join(' ').slice(0, 24), 6, 84, n >= 2 ? 'green' : 2);
+      text('3 PIECES: ' + set.three.map(([s, v]) => s.toUpperCase() + '+' + v).join(' ').slice(0, 24), 6, 99, n >= 3 ? 'gold' : 2);
+      text('BOSS / RAID NAMED DROPS', 6, 119, 2); text('2-PIECE AND FULL SET BONUSES', 6, 130, 1);
     }
   }
 }
