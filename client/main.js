@@ -26,10 +26,37 @@
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(() => (G ? { G } : {}));
   const start = data => {
-    push(new Title()); render();
-    if (data && data.G) loading.then(() => { G = data.G; fixupState(); enterWorld(); });
-    requestAnimationFrame(loop);
-    NET.init();
+    const desktop = location.protocol === 'file:' && !!window.gbqLauncher?.getGameSession;
+    if (!desktop) {
+      push(new Title()); render();
+      if (data && data.G) loading.then(() => { G = data.G; fixupState(); enterWorld(); });
+      requestAnimationFrame(loop);
+      NET.init();
+      return;
+    }
+    (async () => {
+      await NET.init();
+      if (data && data.G) {
+        await loading;
+        push(new Title()); render();
+        G = data.G; fixupState(); enterWorld();
+      } else {
+        const launch = window.GBQ_DESKTOP_LAUNCH;
+        if (launch && launch.loaded && Number.isInteger(launch.characterSlot) && loadSlot(launch.characterSlot)) {
+          scenes.length = 0;
+          enterWorld();
+        } else {
+          push(new Title());
+          if (launch && launch.loadError) chatLog('System', 'Cloud save', 'Selected cloud character could not be loaded: ' + launch.loadError);
+        }
+        render();
+      }
+      requestAnimationFrame(loop);
+    })().catch(error => {
+      push(new Title()); render();
+      chatLog('System', 'Realm connection', String(error.message || error));
+      requestAnimationFrame(loop);
+    });
   };
   let started = false;
   const startOnce = data => { if (started) return; started = true; start(data); };
