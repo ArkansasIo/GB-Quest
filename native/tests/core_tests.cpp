@@ -189,7 +189,8 @@ int main() {
   test_armor_class();
   test_attack_resolution();
   test_dice_and_damage();
-  test_health_transitions();\n  test_ability_score_state();
+  test_health_transitions();
+  test_ability_score_state();
 
   if (failures != 0) {
     std::cerr << failures << " native test(s) failed\n";
