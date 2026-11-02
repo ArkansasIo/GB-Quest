@@ -14,6 +14,8 @@ const UPDATE_STATE = path.join(UPDATE_DIR, 'current.json');
 const STORAGE_MIRROR = path.join(USER_DATA, 'game-storage-mirror.json');
 const REALM_SESSION_FILE = path.join(USER_DATA, 'realm-session.bin');
 let realmSession = null;
+let gameLaunchContext = null;
+let realmStreamController = null;
 const REPO = 'ArkansasIo/GB-Quest';
 const BACKEND_OPTIONS = process.platform === 'win32'
   ? [
@@ -198,6 +200,7 @@ ipcMain.on('gbq:launch-game', (event, selection = {}) => {
   }
   const characterSlot = selection.characterSlot === null || selection.characterSlot === undefined || selection.characterSlot === '' ? '' : String(selection.characterSlot);
   if (characterSlot && !/^[0-2]$/.test(characterSlot)) { dialog.showErrorBox('Invalid character selection', 'Choose one of the three cloud save slots.'); return; }
+  gameLaunchContext = { region, dataCenter, world, characterSlot: characterSlot === '' ? null : Number(characterSlot) };
   gameWindow.setTitle(`Lost Kingdom of Shadowbane Chronicles — ${dataCenter} / World ${world}`);
   gameWindow.loadFile(activeGameFile(), { query: { region, dataCenter, world, characterSlot } });
 });
@@ -253,6 +256,27 @@ ipcMain.handle('gbq:realm-saves', async event => {
   const base = realmBaseUrl();
   const result = await realmRequest(base, '/api/saves', { token: realmSession.token });
   return Array.isArray(result.slots) ? result.slots : [];
+});
+ipcMain.handle('gbq:game-session', async event => {
+  if (!gameWindow || event.sender !== gameWindow.webContents || !event.senderFrame.url.startsWith('file://')) throw new Error('Unauthorized game session request.');
+  if (!realmSession) return { authenticated: false, characterSlot: gameLaunchContext?.characterSlot ?? null };
+  const base = realmBaseUrl();
+  try {
+    const result = await realmRequest(base, '/api/me', { token: realmSession.token });
+    return { authenticated: true, url: base, account: result.account || null, characterSlot: gameLaunchContext?.characterSlot ?? null };
+  } catch (error) {
+    if (error.status === 401) clearRealmSession();
+    return { authenticated: false, characterSlot: gameLaunchContext?.characterSlot ?? null, error: error.message };
+  }
+});
+ipcMain.handle('gbq:realm-api', async (event, input = {}) => {
+  if (!gameWindow || event.sender !== gameWindow.webContents || !event.senderFrame.url.startsWith('file://')) throw new Error('Unauthorized game API request.');
+  if (!realmSession) throw new Error('Sign in through the desktop launcher first.');
+  const endpoint = String(input.path || '');
+  const method = String(input.method || 'GET').toUpperCase();
+  if (!endpoint.startsWith('/api/') || endpoint.startsWith('/api/stream') || !['GET', 'POST', 'PUT', 'DELETE'].includes(method)) throw new Error('Unsupported realm API request.');
+  if (input.body !== undefined && Buffer.byteLength(JSON.stringify(input.body)) > 1024 * 1024) throw new Error('Realm API request body is too large.');
+  return realmRequest(realmBaseUrl(), endpoint, { method, body: input.body, token: realmSession.token });
 });
 ipcMain.handle('gbq:realm-logout', async event => {
   if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
