@@ -3,8 +3,9 @@
 // scene stack, transitions, and a small physics + particle system.
 'use strict';
 const W = 160, H = 144, T = 16;
-const cv = document.getElementById('lcd');
-const ctx = cv.getContext('2d');
+const LCD = document.getElementById('lcd'), lctx = LCD.getContext('2d');
+const cv = document.createElement('canvas'); cv.width = W; cv.height = H; // the 160x144 framebuffer; present() shows it on the LCD
+const ctx = cv.getContext('2d', { willReadFrequently: true });
 ctx.imageSmoothingEnabled = false;
 
 // ================================================================ storage & settings
@@ -13,9 +14,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
+const S = Object.assign({ audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
   store.get('gbq2_settings') || {});
-function applyFilter() { cv.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
+function applyFilter() { LCD.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
 applyFilter();
 
@@ -247,6 +248,7 @@ function audioCtx() {
 // note: [wave, f0, f1, dur, vol, delay]; wave s=square(50%) p=pulse25 q=pulse12 t=triangle w=saw n=noise
 function play(notes, bus = 'sfx') {
   if (!AC) return;
+  if (S.audio === 'hd64' && typeof play64 === 'function') return play64(notes, bus);
   const v = bus === 'music' ? S.music : S.vol; if (!v) return;
   for (const [wv, f0, f1, dur, vol, del = 0] of notes) {
     const t = AC.currentTime + Math.max(0, del), g = AC.createGain();
@@ -310,7 +312,7 @@ const SFX_BANK = {
   growl: [['w', 110, 80, 0.4, 0.06], ['n', 400, 300, 0.4, 0.03]], screech: [['q', 2200, 1600, 0.3, 0.05]], hiss: [['n', 6000, 5000, 0.4, 0.05]], roar: [['w', 160, 60, 0.7, 0.08], ['n', 500, 150, 0.7, 0.06]],
   gurgle: [['t', 200, 120, 0.2, 0.06], ['t', 180, 100, 0.2, 0.06, 0.15]], moan: [['t', 220, 160, 0.6, 0.07]], chitter: arp('q', [96, 98, 96, 98], 0.03, 0.04), howl: [['t', 400, 700, 0.5, 0.07], ['t', 700, 500, 0.4, 0.06, 0.5]],
 };
-const SFX = new Proxy({}, { get: (_, k) => () => play(SFX_BANK[k] || SFX_BANK.cursor) });
+const SFX = new Proxy({}, { get: (_, k) => () => (typeof Events !== 'undefined' && Events.emit('sfx', k), 0) || (S.audio === 'hd64' && typeof sfx64 === 'function') ? sfx64(k) : play(SFX_BANK[k] || SFX_BANK.cursor) });
 const SFX_NAMES = Object.keys(SFX_BANK);
 
 // ---------------------------------------------------------------- procedural music (24 tracks)
@@ -348,16 +350,17 @@ function composeTrack(id) {
   return { lead, harm, bass, drums: t.drums || '', bpm: t.bpm };
 }
 const Music = {
-  cur: null, step: 0, next: 0, song: null, cacheSongs: {},
+  cur: null, step: 0, next: 0, song: null, cacheSongs: {}, cache64: {}, song64: null,
   play(id) {
     if (this.cur === id) return;
     this.cur = id; this.step = 0; this.next = AC ? AC.currentTime + 0.08 : 0;
     const t = TRACKS[id]; if (!t) { this.song = null; return; }
-    if (t.jingle) { this.song = null; if (AC) play(JINGLES[id].map((m, i) => ['s', N(m), N(m), 0.16, m ? 0.05 : 0.0001, i * 0.13]), 'music'); return; }
+    if (t.jingle) { this.song = null; if (AC && S.audio === 'hd64' && typeof jingle64 === 'function') { jingle64(id); return; } if (AC) play(JINGLES[id].map((m, i) => ['s', N(m), N(m), 0.16, m ? 0.05 : 0.0001, i * 0.13]), 'music'); return; }
     this.song = this.cacheSongs[id] || (this.cacheSongs[id] = composeTrack(id));
   },
   stop() { this.cur = null; this.song = null; },
   tick() {
+    if (AC && S.music && this.cur && S.audio === 'hd64' && typeof music64Tick === 'function') return music64Tick(this);
     if (!AC || !this.song || !S.music) return;
     const s = this.song, dt = 60 / s.bpm / 2;
     if (this.next < AC.currentTime - 0.5) this.next = AC.currentTime + 0.05;
@@ -510,6 +513,7 @@ function tick() {
   const s = topScene(); if (s) s.update();
   Physics.step(window.SOLID_AT || null);
   if (shake > 0) shake--;
+  if (typeof Tween !== 'undefined') Tween.tick();
   if (toasts[0] && --toasts[0].t <= 0) toasts.shift();
   for (const b of BTNS) { pressed[b] = false; if (held[b]) rep[b]++; }
   window.NET && NET.tick && NET.tick();
@@ -521,6 +525,12 @@ function render() {
   for (; i < scenes.length; i++) scenes[i].draw();
   ctx.restore();
   drawToasts();
+  present();
+}
+function present() {
+  if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx);
+  if (LCD.width !== W) { LCD.width = W; LCD.height = H; }
+  lctx.drawImage(cv, 0, 0);
 }
 function loop(t) {
   requestAnimationFrame(loop);

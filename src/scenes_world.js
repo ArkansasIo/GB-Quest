@@ -348,6 +348,7 @@ class Field {
     const px = G.x * T + this.ox, py = G.y * T + this.oy;
     const cx = Math.max(0, Math.min(cols * T - W, px - 72)), cy = Math.max(0, Math.min(rows * T - H, py - 64));
     this.cam = [cx, cy];
+    if (S.video === 'hd64' && typeof Light64 !== 'undefined') Light64.fromField(this);
     const ghost = !!G.ghost, PIX = S.tiles !== 'painted', anim = (frameN >> 5) % 2;
     for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++)
       for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
@@ -890,7 +891,36 @@ class WorldMap {
     else if (k === 'boss' || k === 'arc') { if (dead) { fill(x - s, y - s, 3 * s, 3 * s, 1); return; } fill(x - 2 * s, y - 2 * s, 5 * s, 4 * s, k === 'arc' ? 'purple' : 'red'); fill(x - s, y - s, s, s, 0); fill(x + s, y - s, s, s, 0); fill(x - s, y + s, 3 * s, s, k === 'arc' ? 'purple' : 'red'); }
     else if (k === 'quest' && (frameN >> 4) % 2) { fill(x - s, y - 4 * s, 3 * s, 5 * s, 3); fill(x, y - 3 * s, s, 2 * s, 'gold'); fill(x, y, s, s, 'gold'); }
   }
+  roads() {
+    if (WorldMap._roads) return WorldMap._roads;
+    const out = [], seen = new Set();
+    for (const z of ZONES) {
+      const m = buildZoneCached(z.id);
+      for (const e of Object.values(m.exits || {})) {
+        const o = ZONE_BY_ID[e.to]; if (!o) continue;
+        const k = [z.id, o.id].sort().join('|'); if (seen.has(k)) continue; seen.add(k);
+        out.push({ a: z, b: o, sea: continentOf(z) !== continentOf(o) });
+      }
+    }
+    return (WorldMap._roads = out);
+  }
+  drawRoads(img, ox, oy, scale) {
+    const P = o => { const [nx, ny] = zonePin(o); return [ox + nx * img.width * scale, oy + ny * img.height * scale]; };
+    for (const r of this.roads()) {
+      const [x0, y0] = P(r.a), [x1, y1] = P(r.b);
+      if (Math.max(x0, x1) < 0 || Math.min(x0, x1) > W || Math.max(y0, y1) < 12 || Math.min(y0, y1) > 110) continue;
+      const known = (G.visited[r.a.id] || G.waypoints[r.a.id]) && (G.visited[r.b.id] || G.waypoints[r.b.id]);
+      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0))), gap = r.sea ? (scale > 1 || this.zoom ? 4 : 6) : 2;
+      const c = r.sea ? 'blue' : known ? 'gold' : 3;
+      for (let i = 0; i <= n; i += gap) {
+        const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n);
+        if (y < 12 || y > 110) continue;
+        fill(x, y, 1, 1, c);
+      }
+    }
+  }
   pinMarks(img, ox, oy, scale) {
+    if (S.roads !== false) this.drawRoads(img, ox, oy, scale);
     const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map], ch = chapterDef();
     for (const o of ZONES) {
       const [nx, ny] = zonePin(o), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);

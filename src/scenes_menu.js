@@ -404,13 +404,16 @@ class BankScene extends ListScene {
 // ================================================================ SETTINGS & SOUND TEST
 class SettingsScene extends ListScene {
   constructor() { super(11); }
-  items() { return ['PALETTE', 'TILES', 'ART', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT']; }
+  navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
+  items() { return ['PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
     const o = this.items()[this.i], clamp = v => Math.max(0, Math.min(6, v));
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
+    if (o === 'AUDIO') { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; const c = Music.cur; Music.cur = null; Music.step = 0; if (c) Music.play(c); }
+    if (o === 'VIDEO') { if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; } else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; } UI = PALS[S.palette]; clearCaches(); }
     if (o === 'ART') { S.art = S.art === 'classic' ? 'nes' : 'classic'; applyArt(); clearCaches(); }
     if (o === 'TILES') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
     if (o === 'SFX VOLUME') S.vol = clamp(S.vol + d);
@@ -429,24 +432,25 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [PALS[S.palette].name, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', '>'];
-    this.items().forEach((s, i) => { const y = 24 + i * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
+    const v = [PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', '>'];
+    this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
 class SoundTest extends ListScene {
   constructor() { super(10); this.tab = 0; }
-  items() { return this.tab ? Object.keys(TRACKS) : SFX_NAMES; }
+  items() { return this.tab ? Object.keys(TRACKS) : (S.audio === 'hd64' && typeof SFX64_ONLY !== 'undefined' ? SFX_NAMES.concat(SFX64_ONLY) : SFX_NAMES); }
   update() {
     if (P('select')) { this.tab ^= 1; this.i = this.top = 0; SFX.page(); }
+    if (P('start')) { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; saveSettings(); this.i = Math.min(this.i, this.items().length - 1); const c = Music.cur; Music.cur = null; if (c && this.tab) Music.play(c); SFX.toggle(); }
     this.navList();
     if (P('b')) { removeScene(this); Music.stop(); const t = topScene(); t && t.resume && t.resume(); return; }
     if (P('a')) { const k = this.items()[this.i]; if (this.tab) { Music.cur = null; Music.play(k); } else SFX[k](); }
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
-    textC(this.tab ? `MUSIC ${Object.keys(TRACKS).length} TRACKS` : `SOUND FX ${SFX_NAMES.length}`, 80, 1, 0);
+    textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, 0);
     this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
     this.scrollbar(156, 14, 110);
-    text('A: PLAY  SELECT: SFX/MUSIC', 4, 134, 2);
+    text('A:PLAY SEL:SFX/MUSIC START:ENGINE', 2, 134, 2);
   }
 }
