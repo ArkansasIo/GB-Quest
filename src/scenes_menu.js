@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -687,6 +687,34 @@ class AchievementScene extends ListScene {
     text(`POINTS ${achPoints()}  ${Object.keys(G.ach).length}/${ACHIEVEMENTS.length}`, 4, 14, 'gold');
     ACHIEVEMENTS.slice(this.top, this.top + this.rows).forEach((a, j) => { const i = this.top + j, y = 25 + j * 10, got = !!G.ach[a.id]; if (i === this.i) fill(2, y - 1, 152, 10, 1); a.icon && IMG[a.icon] ? blit(spr(a.icon, 8, 8, { ghost: !got }), 4, y) : checkbox(4, y + 1, got); text(a.name.slice(0, 22), 14, y, got ? 3 : 1); });
     frame(2, 126, 156, 16); text(ACHIEVEMENTS[this.i].desc.slice(0, 24), 6, 130);
+  }
+}
+class BossJournalScene extends ListScene {
+  constructor() { super(8); this.category = 'ALL'; }
+  items() { return BOSSES.filter(b => this.category === 'ALL' || b.cat === this.category); }
+  update() {
+    if (nav('left')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid']; this.category = cats[(cats.indexOf(this.category) + cats.length - 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
+    if (nav('right')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid']; this.category = cats[(cats.indexOf(this.category) + 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const all = globalThis.GBQBossProgression ? GBQBossProgression.summary(G, BOSSES) : { total: BOSSES.length, cleared: 0, percent: 0 };
+    const rows = this.items(), b = rows[this.i] || BOSSES[0], state = G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[b.id] || {};
+    text(`BOSSES ${all.cleared}/${all.total} ${all.percent}%`, 4, 14, 'gold');
+    text(`SIGILS ${G.bossTokens || 0}  ${this.category.toUpperCase()}`, 4, 23, 2);
+    rows.slice(this.top, this.top + this.rows).forEach((entry, j) => {
+      const i = this.top + j, y = 35 + j * 10, record = G.bossProgress && G.bossProgress.clears && G.bossProgress.clears[entry.id];
+      if (i === this.i) fill(2, y - 1, 154, 10, 1);
+      text(`${String(BOSSES.indexOf(entry) + 1).padStart(3, '0')} ${entry.name.slice(0, 15)}`, 5, y, record && record.firstClear ? 'gold' : (i === this.i ? 3 : 1));
+      textR(record ? `K${record.kills}` : 'NEW', 153, y, record ? 2 : 1);
+    });
+    this.scrollbar(156, 34, 82);
+    frame(2, 120, 156, 23);
+    text(`${b.cat.toUpperCase()} LV${b.lvl} RANK ${GBQBossProgression ? GBQBossProgression.rank(b) : 'F'}`, 6, 124, 'gold');
+    text(`${state.firstClear ? 'CLEARED' : 'NOT DEFEATED'}  KILLS ${state.kills || 0}`, 6, 134, state.firstClear ? 'green' : 2);
+    text('LEFT/RIGHT: CATEGORY', 6, 146, 1);
   }
 }
 class BestiaryScene extends ListScene {
