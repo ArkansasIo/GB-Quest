@@ -73,7 +73,7 @@ async function realmRequest(base, endpoint, { method = 'GET', body: payload, tok
   });
   let data = {};
   try { data = await response.json(); } catch {}
-  if (!response.ok) throw new Error(data.error || `Realm server returned HTTP ${response.status}.`);
+  if (!response.ok) { const error = new Error(data.error || `Realm server returned HTTP ${response.status}.`); error.status = response.status; throw error; }
   return data;
 }
 function persistRealmSession(token) {
