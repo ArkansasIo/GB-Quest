@@ -6,7 +6,7 @@
   sk_<skill>  ps_<skill>  tl_<node> active skills, passive skills, talent nodes
   ac_<ach>    tt_<title>            achievement medallions, title banners
   sl_<slot>                         12 equipment-slot silhouettes
-  rg_<0..8>   rk_<1..7>             rarity gems (tiers 1-9) and rank pips (I-VII)
+  rg_<0..8>   rk_<1..9>             rarity gems (tiers 1-9) and F-to-SSS rank badges
   nn_<named>                        a unique icon for every named item
 All original pixel art: 12x12 glyph masks, 3-tone shading, dark outline, category frame.
 Walking sprites for the new classes come from tools/gen_gbtiles.py (LOOKS).
@@ -157,14 +157,24 @@ for s in L['slots']: icon(f'sl_{s}', 'slot', (60, 60, 80), SLOTG.get(s, 'gem'), 
 RAR = [(157, 157, 157), (255, 255, 255), (30, 255, 0), (0, 112, 221), (163, 53, 238), (255, 128, 0), (230, 38, 77), (230, 204, 128), (127, 255, 212)]
 for i, c in enumerate(RAR):
     img = blank(); draw_glyph(img, 'gem', c); save(f'rg_{i}', img)
-for n in range(1, 8):
-    img = blank()
-    for j in range(n):
-        x, y = 1 + (j % 4) * 4, 3 + (j // 4) * 6
-        for dy in range(3):
-            for dx in range(3): px(img, x + dx, y + dy, (250, 220, 120) if dx + dy < 2 else (190, 140, 50))
-        for dx in range(-1, 4): px(img, x + dx, y + 3, OUT)
-    save(f'rk_{n}', img)
+# Competitive progression ranks: F -> E -> D -> C -> B -> A -> S -> SS -> SSS.
+# Each badge is a distinct medal with a rank glyph, readable at native 16x16.
+RANKS = [
+    ('F',  (128, 132, 140), 'shield'),
+    ('E',  (154, 166, 178), 'shield'),
+    ('D',  (96, 176, 112),  'leaf'),
+    ('C',  (72, 148, 224),  'star'),
+    ('B',  (164, 104, 224), 'crown'),
+    ('A',  (236, 164, 64),  'sun'),
+    ('S',  (232, 76, 92),   'sword'),
+    ('SS', (72, 212, 204),  'swirl'),
+    ('SSS',(248, 224, 132), 'crown'),
+]
+for n, (label, color, glyph) in enumerate(RANKS, 1):
+    icon(f'rk_{n}', 'medal', color, glyph, (255, 250, 226))
+    # Stable named aliases make UI/data consumers independent of numeric index.
+    import shutil
+    shutil.copyfile(os.path.join(A, f'rk_{n}.png'), os.path.join(A, f'rk_{label.lower()}.png'))
 # named items: base family glyph, unique hue, rarity-coloured frame with sparkle
 FAM = {'weapon': 'sword', 'armor': 'chest', 'wondrous': 'ring'}
 BASEG = [('bow', 'bow'), ('yumi', 'bow'), ('axe', 'axe'), ('maul', 'fist'), ('trident', 'staff'), ('guandao', 'axe'), ('crozier', 'staff'), ('sceptre', 'staff'), ('rondel', 'sword'), ('kukri', 'sword'), ('shield', 'shield'),
