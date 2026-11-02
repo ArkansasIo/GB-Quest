@@ -34,12 +34,41 @@ const tierDmg = it => (ITEM_RANKS[(it && it.rank || 1) - 1] || ITEM_RANKS[0]).dm
 const tierAC = it => (ITEM_RANKS[(it && it.rank || 1) - 1] || ITEM_RANKS[0]).ac;
 // re-tier every owned item from its item level (saves from the old 7-rank scheme)
 function retierGear() {
-  const fix = it => { if (it && it.ilvl && (it.kind === 'weapon' || it.kind === 'armor' || it.kind === 'wondrous')) it.rank = rankFor(it.ilvl).n; };
+  const fix = it => { if (it && it.ilvl && (it.kind === 'weapon' || it.kind === 'armor' || it.kind === 'wondrous')) { it.ilvl = clampGearLevel(it.ilvl); it.rank = rankFor(it.ilvl).n; applyGearProgression(it); } };
   if (!G) return;
   [G, ...(G.companions || []), ...(G.bench || [])].forEach(c => { Object.values(c.eq || {}).forEach(fix); (c.bag || []).forEach(fix); });
   const st = G.stash; if (st && Array.isArray(st.tabs)) st.tabs.forEach(t => (t.items || t || []).forEach && (t.items || t).forEach(fix));
 }
 const rankFor = ilvl => ITEM_RANKS.filter(r => ilvl >= r.min).pop() || ITEM_RANKS[0];
+const ADVENTURER_RANKS = Object.freeze(['F', 'E', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS']);
+const GEAR_STAR_MAX = 12;
+const GEAR_ITEM_LEVEL_MAX = 720;
+const clampGearLevel = value => Math.max(1, Math.min(GEAR_ITEM_LEVEL_MAX, Math.floor(Number(value) || 1)));
+function gearProgressionFor(ilvl, rarity = 0) {
+  const level = clampGearLevel(ilvl);
+  // 720 item levels are evenly distributed over 9 ranks x 12 stars.
+  const step = Math.min(107, Math.floor(((level - 1) * 108) / GEAR_ITEM_LEVEL_MAX));
+  const rankIndex = Math.floor(step / GEAR_STAR_MAX);
+  const starLevel = (step % GEAR_STAR_MAX) + 1;
+  const gearLevel = Math.min(9999, Math.max(1, Math.round(1 + ((level - 1) / 719) * 9998)));
+  const rarityIndex = Math.max(0, Math.min(8, Math.floor(Number(rarity) || 0)));
+  const basePower = 1 + ((level - 1) / 719) * 999998;
+  const powerLevel = Math.min(999999, Math.max(1, Math.round(basePower * (1 + rarityIndex * 0.003 + (starLevel - 1) * 0.001))));
+  return { gearLevel, powerLevel, adventurerRank: ADVENTURER_RANKS[rankIndex], rankIndex: rankIndex + 1, starLevel };
+}
+function applyGearProgression(item) {
+  if (!item || !['weapon', 'armor', 'wondrous'].includes(item.kind)) return item;
+  const p = gearProgressionFor(item.ilvl, item.rarity);
+  item.gearLevel = p.gearLevel;
+  item.powerLevel = p.powerLevel;
+  item.adventurerRank = p.adventurerRank;
+  item.rankIndex = p.rankIndex;
+  item.starLevel = p.starLevel;
+  return item;
+}
+const formatGearLevel = item => String(Math.max(1, Math.min(9999, Math.floor(Number(item && item.gearLevel) || 1)))).padStart(4, '0');
+const formatPowerLevel = item => String(Math.max(1, Math.min(999999, Math.floor(Number(item && item.powerLevel) || 1)))).padStart(6, '0');
+
 
 // ---------------------------------------------------------------- the medieval armoury
 // props: l light, f finesse, t thrown, v versatile (vdmg), h heavy, 2 two-handed, r ranged. fam = art family.
