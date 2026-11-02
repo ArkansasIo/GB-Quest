@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "title": "Lost Kingdom of Shadowbane Chronicles Rank Ladder",
+  "order": [
+    "F",
+    "E",
+    "D",
+    "C",
+    "B",
+    "A",
+    "S",
+    "SS",
+    "SSS"
+  ],
+  "ranks": [
+    {
+      "id": "F",
+      "name": "F-Rank",
+      "label": "Novice",
+      "scoreMin": 0,
+      "color": "#80848C",
+      "asset": "rk_f.png",
+      "numericAsset": "rk_1.png",
+      "description": "Unproven adventurer"
+    },
+    {
+      "id": "E",
+      "name": "E-Rank",
+      "label": "Initiate",
+      "scoreMin": 100,
+      "color": "#9AA6B2",
+      "asset": "rk_e.png",
+      "numericAsset": "rk_2.png",
+      "description": "Newly trained adventurer"
+    },
+    {
+      "id": "D",
+      "name": "D-Rank",
+      "label": "Apprentice",
+      "scoreMin": 250,
+      "color": "#60B070",
+      "asset": "rk_d.png",
+      "numericAsset": "rk_3.png",
+      "description": "Reliable field adventurer"
+    },
+    {
+      "id": "C",
+      "name": "C-Rank",
+      "label": "Veteran",
+      "scoreMin": 500,
+      "color": "#4894E0",
+      "asset": "rk_c.png",
+      "numericAsset": "rk_4.png",
+      "description": "Experienced expedition member"
+    },
+    {
+      "id": "B",
+      "name": "B-Rank",
+      "label": "Elite",
+      "scoreMin": 900,
+      "color": "#A468E0",
+      "asset": "rk_b.png",
+      "numericAsset": "rk_5.png",
+      "description": "Elite adventurer"
+    },
+    {
+      "id": "A",
+      "name": "A-Rank",
+      "label": "Champion",
+      "scoreMin": 1500,
+      "color": "#ECA440",
+      "asset": "rk_a.png",
+      "numericAsset": "rk_6.png",
+      "description": "Regional champion"
+    },
+    {
+      "id": "S",
+      "name": "S-Rank",
+      "label": "Heroic",
+      "scoreMin": 2500,
+      "color": "#E84C5C",
+      "asset": "rk_s.png",
+      "numericAsset": "rk_7.png",
+      "description": "World-class hero"
+    },
+    {
+      "id": "SS",
+      "name": "SS-Rank",
+      "label": "Mythic",
+      "scoreMin": 4000,
+      "color": "#48D4CC",
+      "asset": "rk_ss.png",
+      "numericAsset": "rk_8.png",
+      "description": "Mythic-level champion"
+    },
+    {
+      "id": "SSS",
+      "name": "SSS-Rank",
+      "label": "Transcendent",
+      "scoreMin": 6000,
+      "color": "#F8E084",
+      "asset": "rk_sss.png",
+      "numericAsset": "rk_9.png",
+      "description": "Transcendent legend"
+    }
+  ],
+  "scoring": {
+    "type": "adventure-score",
+    "note": "These are initial progression thresholds for the new rank ladder. They do not replace item rarity tiers or character levels.",
+    "sources": [
+      "bosses",
+      "dungeons",
+      "raids",
+      "trials",
+      "tower",
+      "pvp",
+      "quests",
+      "exploration"
+    ],
+    "antiAbuse": [
+      "cap repeated identical encounter score",
+      "validate rewards server-side",
+      "exclude simulated encounters from competitive score"
+    ]
+  },
+  "separation": {
+    "itemRarity": "Use the existing nine rarity tiers independently from character/adventurer rank.",
+    "characterLevel": "Character level remains 1-720 and does not directly determine rank."
+  }
+}
