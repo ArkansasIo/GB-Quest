@@ -28,9 +28,11 @@ The following items are roadmap work. They must not be represented as complete u
 
 ### Equipment enhancement
 
-- Gem socket definitions for eligible armour and weapons.
-- Gem inventory, tiers, stat effects, socket limits, insertion and removal rules.
-- A gem crafting and upgrade path.
+- **Gem socket rules implemented:** nine gem families with nine tiers each (81 variants), weapon/armour socket capacity from one to four based on item level, validated insertion/extraction, character gem inventory consumption/refund, and derived-stat modifier integration. See [GEMS_AND_SOCKETS.md](GEMS_AND_SOCKETS.md).
+- Player-facing gem socket management UI and inventory panels.
+- Gem drop tables, gathering/crafting sources, upgrade recipes and vendor stock.
+- Online server-side validation and synchronization for socket operations.
+- Slot-specific gem compatibility rules and any socket unlock/upgrade costs.
 - Rune definitions and rune socket compatibility for weapons and gear.
 - Rune combinations/recipes, activation conditions and effect resolution.
 - A Rune Forge service with a dedicated NPC, interaction, UI, costs, recipes and validation.
