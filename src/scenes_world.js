@@ -1261,7 +1261,7 @@ function instanceMenu(kind, def) {
   choose([`ENTER (GROUP OF ${size})`, `ENTER SOLO`, `DIFFICULTY: ${diffOf().name}`, 'LEAVE'], k => {
     if (k === 2) return difficultyMenu();
     if (k !== 0 && k !== 1) return;
-    if (kind === 'raid') { const wk = weekKey(); if (G.raidWeek[def.id] === wk) say('You are saved to this raid this week. No boss loot until reset.'); }
+    if (kind === 'raid' && G.raidWeek[def.id] === weekKey()) return say('You are locked to this raid until the weekly reset.');
     enterInstance(kind, def, 0, k === 0 ? size : 1);
   }, `${def.name} - LV${def.lvl}`);
 }
