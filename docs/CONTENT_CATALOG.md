@@ -909,6 +909,8 @@ Spire Of A Hundred: 100 floors, a mini-boss every 5 floors and a boss every 10; 
 
 Rarities: Poor · Common · Uncommon · Rare · Very Rare · Legendary.
 
+Dedicated equipment slots: Artifact and Relic. Each slot has 42 original item bases; both use the existing wondrous-gear progression, rarity, affix, item-level, enhancement and attunement rules. See [ARTIFACTS_AND_RELICS](ARTIFACTS_AND_RELICS.md) for the full catalog.
+
 ## Achievements (36)
 
 | Achievement | Description |
