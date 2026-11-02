@@ -5,11 +5,27 @@ on:
   pull_request:
     branches: ["main"]
 jobs:
-  test:
+  javascript-tests:
+    name: JavaScript rules and systems
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - run: npm test
+
+  desktop-build:
+    name: C++23 SDL2 desktop build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SDL2 and CMake
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libsdl2-dev
+      - name: Configure
+        run: cmake -S desktop -B desktop/build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build desktop/build --parallel 2
