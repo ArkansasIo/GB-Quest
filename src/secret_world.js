@@ -95,8 +95,8 @@ function activateSecretWorld(def, state) {
           if (result !== 'win') return;
           if (grantSecretWorldReward(state, def, { gold: 12000, sigils: 8 })) {
             const item = makeItem({ lvl: Math.max(level, 40), rarity: 8, boss: true, mf: derive(state).mf, loot: 2 });
-            item.name = 'HERALD’S LAST STAR'; item.legend = true; item.lore = 'A star that fell through the seam between worlds.';
-            addGear(item);
+            item.name = 'HERALD’S LAST STAR'; item.named = 'secret_herald_star'; item.legend = true; item.lore = 'A star that fell through the seam between worlds.';
+            addGear(item); if (typeof saveGame === 'function') saveGame();
             toast('SECRET BOSS DEFEATED', 'HERALD’S LAST STAR', 'px_crown', 'achievement');
           }
         } });
@@ -108,5 +108,5 @@ function secretWorldSummary(state) {
   return { total: GBQ_SECRET_WORLD_DEFS.length, discovered: GBQ_SECRET_WORLD_DEFS.filter(d => !!found[d.id]).length,
     entries: GBQ_SECRET_WORLD_DEFS.map(d => ({ ...d, found: !!found[d.id], claimed: !!(found[d.id] && found[d.id].claimed), entered: !!(found[d.id] && found[d.id].entered) })) };
 }
-const GBQSecretWorld = Object.freeze({ definitions: GBQ_SECRET_WORLD_DEFS, ensure: ensureSecretWorld, position: secretWorldPosition, at: secretWorldAt, activate: activateSecretWorld, summary: secretWorldSummary });
+const GBQSecretWorld = Object.freeze({ definitions: GBQ_SECRET_WORLD_DEFS, ensure: ensureSecretWorld, position: secretWorldPosition, at: secretWorldAt, activate: activateSecretWorld, grant: grantSecretWorldReward, summary: secretWorldSummary });
 globalThis.GBQSecretWorld = GBQSecretWorld;
