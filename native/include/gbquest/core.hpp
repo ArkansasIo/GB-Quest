@@ -19,6 +19,47 @@ enum class Ability : std::uint8_t {
 };
 
 
+
+struct ItemDefinition {
+  std::string id;
+  std::int32_t weight_grams{0};
+  std::int32_t max_stack{1};
+};
+
+struct ItemStack {
+  std::string item_id;
+  std::int32_t quantity{0};
+};
+
+struct InventoryState {
+  std::vector<ItemStack> items;
+  std::int32_t slot_capacity{20};
+  std::int64_t weight_capacity_grams{30000};
+};
+
+struct InventoryResult {
+  bool success{};
+  std::int32_t quantity_changed{};
+  std::int64_t total_weight_grams{};
+  std::string reason;
+};
+
+// Inventory changes are transactional: failure leaves the original inventory unchanged.
+[[nodiscard]] InventoryResult add_item(
+    InventoryState& inventory,
+    const ItemDefinition& definition,
+    std::int32_t quantity);
+
+[[nodiscard]] InventoryResult remove_item(
+    InventoryState& inventory,
+    std::string_view item_id,
+    std::int32_t quantity,
+    const ItemDefinition& definition);
+
+[[nodiscard]] std::int64_t inventory_weight(
+    const InventoryState& inventory,
+    std::span<const ItemDefinition> definitions);
+
 struct AbilityScores {
   std::array<std::int32_t, 6> values{10, 10, 10, 10, 10, 10};
 };
