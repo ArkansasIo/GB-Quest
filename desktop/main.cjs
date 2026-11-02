@@ -55,7 +55,6 @@ function loadRealmSession() {
     if (/^[0-9a-f]{64}$/.test(token)) realmSession = { token };
   } catch {}
 }
-loadRealmSession();
 async function realmRequest(base, endpoint, { method = 'GET', body: payload, token } = {}) {
   const headers = { Accept: 'application/json' };
   if (payload !== undefined) headers['Content-Type'] = 'application/json';
@@ -320,6 +319,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  loadRealmSession();
   session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   installMenu();
   createWindow();
