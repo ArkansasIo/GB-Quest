@@ -1,0 +1,341 @@
+// GB QUEST systems: save slots, inventory, story chapters & side quests, achievements,
+// bestiary, reputation, professions, waypoints, party/LFG, difficulty, the simulated realm,
+// and NET (live multiplayer: presence, chat, host server, leaderboard).
+'use strict';
+
+// ================================================================ game state
+let G = null;
+const SLOT_KEYS = ['gbq2_slot1', 'gbq2_slot2', 'gbq2_slot3'];
+function newGameState(o) {
+  const c = newCharacter(o);
+  Object.assign(c, {
+    slot: o.slot || 0, created: Date.now(), playtime: 0, gold: BACKGROUNDS[o.bg].gold * 5, bag: [], inv: { potion: 3, ration: 2, campkit: 1, hearthstone: 1 },
+    map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
+    chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
+    stats: { kills: 0, deaths: 0, quests: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0 },
+    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1 }, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
+  });
+  return c;
+}
+function saveGame() {
+  if (!G) return false;
+  G.saved = Date.now();
+  const ok = store.set(SLOT_KEYS[G.slot], G); store.set('gbq2_last', G.slot);
+  NET.publishHero && NET.publishHero();
+  return ok;
+}
+function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; G = s; G.slot = i; ITEM_UID = Math.max(ITEM_UID, ...[...(G.bag || []), ...Object.values(G.eq || {})].filter(Boolean).map(it => it.uid + 1), 1); fixupState(); return true; }
+function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
+function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
+function fixupState() {
+  G.stats = Object.assign(newGameState({ name: 'X', species: 'hearthkin', cls: 'warden', bg: 'wanderer' }).stats, G.stats);
+  G.companions = (G.companions || []).filter(c => c && c.cls);
+  if (G.inst) { G.inst = null; const z = ZONE_BY_ID[G.map]; if (!z) { G.map = 'elderwood'; G.x = 3; G.y = 7; } }
+}
+
+// ================================================================ inventory helpers
+function addItem(k, n = 1) { G.inv[k] = (G.inv[k] || 0) + n; }
+function takeItem(k) { if (!G.inv[k]) return false; G.inv[k]--; if (!G.inv[k]) delete G.inv[k]; return true; }
+const BAG_MAX = 40;
+function addGear(it) {
+  if (G.bag.length >= BAG_MAX) { G.mail.push({ from: 'LOST & FOUND', text: 'Your bags were full.', item: it }); return false; }
+  G.bag.push(it); if (it.rarity >= 4) G.stats.epics = (G.stats.epics || 0) + 1; return true;
+}
+
+// ================================================================ difficulty & play mode
+const diffOf = () => DIFFICULTY[(G.difficulty || 2) - 1];
+const modeOf = () => PLAY_MODES.find(m => m.id === G.playMode) || PLAY_MODES[0];
+const diffUnlocked = n => !DIFFICULTY[n - 1].req || G.lvl >= DIFFICULTY[n - 1].req;
+
+// ================================================================ party building
+function hireCompanion(role) {
+  const cls = pick(ROLE_CLASSES[role]);
+  const name = pick(SIM_NAMES.filter(n => !G.companions.some(c => c.name === n)));
+  const c = makeAdventurer(cls, G.lvl, name);
+  G.companions.push(c); return c;
+}
+function buildParty(size) {
+  const party = [partyMember(G, 'local')];
+  const roster = G.companions.slice(0, Math.max(0, size - 1));
+  roster.forEach(c => party.push(partyMember(c, 'ai')));
+  // real players joined to this host
+  for (const r of NET.partyChars()) if (party.length < size) party.push(partyMember(r.ch, 'remote:' + r.peer));
+  // fill with temporary AI adventurers (LFG / raid finder)
+  const roles = ['tank', 'healer', 'dps', 'dps', 'healer', 'dps', 'tank', 'dps', 'dps', 'healer', 'dps'];
+  let i = 0;
+  while (party.length < size) { const role = roles[i++ % roles.length]; party.push(partyMember(makeAdventurer(pick(ROLE_CLASSES[role]), G.lvl, pick(SIM_NAMES)), 'ai')); }
+  if (party.length >= 4) G.stats.party4++; if (party.length >= 12) G.stats.party12++;
+  return party;
+}
+function fieldPartySize() { return Math.max(1 + G.companions.length, NET.partyChars().length + 1); }
+
+// ================================================================ encounters
+function zoneLevel(z) { const [a, b] = z.lvl; return Math.max(a, Math.min(b, Math.round(a + (b - a) * R()))); }
+function rollEncounter(zoneDef, opts = {}) {
+  const table = spawnTable(zoneDef.biome);
+  const n = zoneDef.lvl[0] <= 2 && G.lvl <= 2 ? 1 : opts.group ? R() < 0.4 ? 3 : 2 : (R() < 0.3 ? 2 : 1);
+  const lvl = zoneLevel(zoneDef);
+  const foes = [];
+  for (let i = 0; i < n; i++) foes.push(makeMonster(pick(table.length ? table : BESTIARY), Math.max(1, lvl - (i ? 1 : 0)), G.difficulty));
+  if (R() < 0.05) { const elite = BESTIARY.filter(b => b.rank === 'elite' && BIOMES[zoneDef.biome].fam.includes(b.fam)); if (elite.length) foes[0] = makeMonster(pick(elite), lvl + 2, G.difficulty); }
+  return foes;
+}
+function startBattle(foes, opts = {}) {
+  const size = opts.size || fieldPartySize();
+  const party = opts.party || buildParty(size);
+  SFX.ambush();
+  push(new Flash(() => push(new Battle(Object.assign({ party, foes, diff: G.difficulty, onEnd: opts.onEnd || defaultBattleEnd }, opts)))));
+}
+function defaultBattleEnd(result) {
+  if (result === 'lose') return onPartyWipe();
+  if (result === 'win') checkAchievements();
+}
+function onPartyWipe() {
+  G.stats.deaths++;
+  const z = ZONE_BY_ID[G.map] || ZONE_BY_ID[G.inst ? G.inst.return.map : 'elderwood'] || ZONE_BY_ID.elderwood;
+  G.ghost = { map: G.inst ? G.inst.return.map : G.map, x: G.inst ? G.inst.return.x : G.x, y: G.inst ? G.inst.return.y : G.y };
+  G.inst = null;
+  const zone = ZONE_BY_ID[G.ghost.map] || ZONE_BY_ID.elderwood;
+  const gy = zone.town ? [16, 12] : buildZoneCached(zone.id).hub;
+  G.map = zone.id; G.x = gy[0]; G.y = gy[1] + 1; G.hp = 1;
+  G.companions.forEach(c => c.hp = Math.max(1, Math.floor(derive(c).hpMax / 2)));
+  checkAchievements();
+  const f = currentField(); if (f) f.reload();
+  say(['You have died.', 'Your spirit rises at the camp. Walk back to your body (the grave marker) to revive, or rest here.'], null, { who: 'SPIRIT' });
+}
+
+// ================================================================ victories: quests, bestiary, achievements
+function recordVictory(b) {
+  const zone = ZONE_BY_ID[G.map];
+  for (const f of b.foes) {
+    G.stats.kills++;
+    if (f.bestId) { const e = G.bestiary[f.bestId] || (G.bestiary[f.bestId] = { kills: 0 }); e.kills++; }
+    if (f.elite) G.stats.elites++;
+    if (f.bossId) {
+      const bd = BOSS_BY_ID[f.bossId]; G.bossKills[f.bossId] = Date.now();
+      if (bd.cat === 'world') { G.stats.worldBosses++; questEvent('worldboss', f.bossId); }
+      if (bd.cat === 'arc') { G.stats.arcBosses++; questEvent('arc', bd.act); }
+    }
+    questEvent('kill', f.fam, zone);
+  }
+  if (b.diff >= 5) G.stats.diff5++; if (b.diff >= 9) G.stats.diff9++;
+  // party members still standing get loyalty: nothing more to track
+}
+
+// ---------------------------------------------------------------- main story
+function chapterDef(i = G.chapter) { const c = CHAPTERS[i]; if (!c) return null; const [act, title, obj, line] = c; const [type, arg] = obj.split(':'); return { i, act, title, type, arg, line, region: ACTS[act - 1].zone }; }
+function chapterGoal(ch) {
+  if (!ch) return 'The story is complete. Endgame awaits!';
+  const reg = REGIONS.find(r => r.id === ch.region);
+  switch (ch.type) {
+    case 'talk': return ch.arg === 'elder' ? 'Talk to the ELDER in Elderwood village.' : `Talk to the warden at the ${reg.name} camp.`;
+    case 'kill': return `Defeat foes in ${reg.name} (${G.chProg}/${ch.arg}).`;
+    case 'explore': return `Discover areas of ${reg.name} (${G.chProg}/${ch.arg}).`;
+    case 'gather': return `Gather herbs in ${reg.name} (${G.chProg}/${ch.arg}).`;
+    case 'dungeon': return `Clear the dungeon ${DUNGEONS.find(d => d.zone === ch.region).name}.`;
+    case 'boss': return `Defeat ${BOSSES.find(b => b.cat === 'arc' && b.act === ch.act).name} in ${reg.name}.`;
+    case 'travel': return `Travel to ${reg.name}.`;
+  }
+  return '';
+}
+function advanceChapter() {
+  const ch = chapterDef(); if (!ch) return;
+  const reg = REGIONS.find(r => r.id === ch.region);
+  const xp = Math.round(xpForMonster(reg.lvl[1]) * 6), gold = 20 + reg.lvl[1] * 10;
+  G.gold += gold; G.rep.lantern = (G.rep.lantern || 0) + 150; G.stats.quests++;
+  const res = gainXP(G, xp);
+  const actDone = !CHAPTERS[G.chapter + 1] || CHAPTERS[G.chapter + 1][0] !== ch.act;
+  G.chapter++; G.chProg = 0;
+  toast(actDone ? `ACT ${ch.act} COMPLETE!` : 'CHAPTER COMPLETE', `${ch.title} +${fmt(xp)}XP`, 'item_spellbook', actDone ? 'act_complete' : 'quest_done');
+  if (actDone) addItem('codex_page');
+  const next = chapterDef();
+  if (next) setTimeout(() => toast(`CH.${next.i + 1}: ${next.title}`, next.line.slice(0, 22), 'px_map', 'quest_accept'), 2600);
+  res.ups.forEach(g => toast(`LEVEL ${g.lvl}!`, g.notes[0] || 'You feel stronger.', 'px_crown', 'levelup'));
+  if (next && next.type === 'travel' && regionOf(G.map) === next.region) advanceChapter();
+  checkAchievements();
+}
+const regionOf = zid => { const z = ZONE_BY_ID[zid]; return z ? z.region : null; };
+function questEvent(kind, arg, zone) {
+  const ch = chapterDef();
+  if (ch) {
+    const inRegion = zone ? zone.region === ch.region : regionOf(G.map) === ch.region;
+    if (kind === 'kill' && ch.type === 'kill' && inRegion) { G.chProg++; if (G.chProg >= +ch.arg) advanceChapter(); }
+    else if (kind === 'discover' && ch.type === 'explore' && inRegion) { G.chProg++; if (G.chProg >= +ch.arg) advanceChapter(); }
+    else if (kind === 'gather' && ch.type === 'gather' && inRegion) { G.chProg++; if (G.chProg >= +ch.arg) advanceChapter(); }
+    else if (kind === 'enter' && ch.type === 'travel' && regionOf(arg) === ch.region) advanceChapter();
+    else if (kind === 'dungeon' && ch.type === 'dungeon' && DUNGEONS.find(d => d.id === arg && d.zone === ch.region)) advanceChapter();
+    else if (kind === 'arc' && ch.type === 'boss' && arg === ch.act) advanceChapter();
+    else if (kind === 'talk' && ch.type === 'talk' && ((ch.arg === 'elder' && arg === 'elder') || (ch.arg === 'zone' && arg === 'warden:' + ch.region))) advanceChapter();
+  }
+  // side quests
+  for (const id in G.sideq) {
+    const sq = G.sideq[id]; if (sq.state !== 'active') continue;
+    const d = sideQuestDef(id); if (!d) continue;
+    const here = zone ? zone.id === d.zone : G.map === d.zone;
+    if ((kind === 'kill' && (d.kind === 'kill' || d.kind === 'elite') && here && arg === d.target) ||
+        (kind === 'gather' && d.kind === 'gather' && here) || (kind === 'fish' && d.kind === 'fish') ||
+        (kind === 'discover' && d.kind === 'explore' && here) || (kind === 'worldboss' && d.kind === 'worldboss' && arg === d.target) ||
+        (kind === 'discover' && d.kind === 'find' && here)) {
+      sq.prog++;
+      if (sq.prog >= d.count) { sq.state = 'ready'; toast('QUEST READY', d.name, 'px_map', 'quest_accept'); }
+    }
+  }
+}
+const SQ_CACHE = {};
+function sideQuestsFor(zid) { return SQ_CACHE[zid] || (SQ_CACHE[zid] = sideQuests(ZONE_BY_ID[zid])); }
+function sideQuestDef(id) { const zid = id.replace(/^sq_/, '').replace(/_\d+$/, ''); return sideQuestsFor(zid).find(q => q.id === id); }
+function turnInSide(id) {
+  const d = sideQuestDef(id), sq = G.sideq[id];
+  sq.state = 'done'; G.stats.quests++; G.gold += d.gold;
+  const res = gainXP(G, d.xp);
+  G.renown[d.zone] = (G.renown[d.zone] || 0) + 1;
+  const reg = REGIONS.find(r => r.id === ZONE_BY_ID[d.zone].region);
+  const fac = { snow: 'stonekin', badlands: 'nomad', jungle: 'fey', crystal: 'haven' }[reg.biome] || 'lantern';
+  G.rep[fac] = (G.rep[fac] || 0) + 120;
+  if (R() < 0.5) addGear(makeItem({ lvl: Math.max(G.lvl, ZONE_BY_ID[d.zone].lvl[1]), mf: derive(G).mf }));
+  toast('QUEST COMPLETE', `${d.name} +${fmt(d.xp)}XP`, 'px_map', 'quest_done');
+  res.ups.forEach(g => toast(`LEVEL ${g.lvl}!`, g.notes[0] || '', 'px_crown', 'levelup'));
+  checkAchievements();
+}
+
+// ================================================================ achievements
+function checkAchievements() {
+  if (!G) return;
+  for (const a of ACHIEVEMENTS) if (!G.ach[a.id]) { let ok = false; try { ok = a.test(G.stats, G); } catch (e) {} if (ok) { G.ach[a.id] = Date.now(); toast('ACHIEVEMENT', a.name, 'px_crown'); } }
+  if (G.stats.kills >= 100 && !G.pets.includes('slime')) { G.pets.push('slime'); toast('NEW PET', 'TINY SLIME', 'enemy_slime', 'pickup'); }
+}
+const achPoints = () => Object.keys(G.ach).length * 10;
+const repTier = v => { let t = REP_TIERS[0]; for (const r of REP_TIERS) if (v >= r[0]) t = r; return t[1]; };
+
+// ================================================================ professions
+function gainProf(k, diff = 1) { if (G.prof[k] < 100 && R() < Math.max(0.15, 1 - (G.prof[k] - diff) / 40)) { G.prof[k]++; return true; } return false; }
+function craft(rec) {
+  for (const k in rec.needs) if ((G.inv[k] || 0) < rec.needs[k]) return 'Missing materials.';
+  if (G.prof[rec.prof] < rec.skill) return `Need ${PROFS[rec.prof]} ${rec.skill}.`;
+  for (const k in rec.needs) for (let i = 0; i < rec.needs[k]; i++) takeItem(k);
+  addItem(rec.makes); G.stats.crafted++;
+  const up = gainProf(rec.prof, rec.skill);
+  return `Made ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+}
+
+// ================================================================ zone cache
+const ZONE_CACHE = {};
+function buildZoneCached(id) { return ZONE_CACHE[id] || (ZONE_CACHE[id] = buildZone(ZONE_BY_ID[id])); }
+
+// ================================================================ simulated realm: fake players & chat
+const REALM = { players: [], log: [], tick: 0 };
+function realmTick() {
+  REALM.tick++;
+  if (REALM.tick % 600 === 0 || REALM.log.length === 0 && REALM.tick % 120 === 0) {
+    const [ch, msg] = pick(CHAT_LINES); chatLog(ch, pick(SIM_NAMES), msg, true);
+  }
+}
+function realmPlayersIn(zid) {
+  if (!REALM.players[zid]) {
+    const r = RNG('realm-' + zid), z = ZONE_BY_ID[zid], m = buildZoneCached(zid), out = [];
+    const n = z.town ? 6 : 2;
+    for (let i = 0; i < n; i++) {
+      let x = m.hub[0] + r.int(-6, 6), y = m.hub[1] + r.int(-4, 4);
+      for (let k = 0; k < 30 && !(m.tiles[(m.rows[y] || '')[x]] || [0, 0])[1]; k++) { x = r.int(2, 29); y = r.int(2, 21); }
+      out.push({ name: r.pick(SIM_NAMES), cls: r.pick(CLASS_ORDER), lvl: Math.max(z.lvl[0], Math.min(720, z.lvl[1] + r.int(-2, 2))), x, y, dir: 'down', guild: r.chance(0.5) ? r.pick(GUILD_NAMES) : null, t: r.int(0, 200) });
+    }
+    REALM.players[zid] = out;
+  }
+  return REALM.players[zid];
+}
+function chatLog(channel, who, msg, sim) {
+  REALM.log.push({ channel, who, msg, t: Date.now() }); if (REALM.log.length > 60) REALM.log.shift();
+  const el = document.getElementById('chatlog'); if (!el) return;
+  const line = document.createElement('div'); line.className = 'ch-' + channel.toLowerCase();
+  const tag = document.createElement('b'); tag.textContent = `[${channel}] ${who}: `; line.appendChild(tag);
+  line.appendChild(document.createTextNode(msg)); el.appendChild(line);
+  while (el.childNodes.length > 40) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ================================================================ NET: live multiplayer through the artifact room + db
+const NET = {
+  room: null, db: null, user: null, myId: null, peers: [], hostOf: null, server: null, joined: {}, lastPres: '', seenSay: {}, remoteView: null,
+  async init() {
+    if (!window.claude || !window.claude.use) { this.status = 'OFFLINE'; return; }
+    this.status = 'CONNECTING';
+    try { this.user = await window.claude.use('user'); if (this.user && this.user.id) this.myId = await this.user.id(); } catch (e) {}
+    try {
+      this.room = await window.claude.use('room');
+      if (this.room) {
+        this.status = 'ONLINE';
+        this.room.onPeers(ch => { this.peers = ch.peers.filter(p => !p.sameTab && p.kind === 'viewer'); this.onPeers(ch); }, () => { this.status = 'OFFLINE'; this.room = null; });
+        ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m), () => {}));
+      } else this.status = 'OFFLINE';
+    } catch (e) { this.status = 'OFFLINE'; }
+    try { this.db = await window.claude.use('db'); } catch (e) { this.db = null; }
+    this.publishHero();
+  },
+  tick() {
+    realmTick();
+    if (!this.room || !G || frameN % 15) return;
+    const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0,
+      s: this.say || null, st: this.sayT || 0, h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
+    const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
+    this.room.presence(pres).catch(() => {});
+  },
+  onPeers(ch) {
+    for (const p of ch.peers) {
+      const pr = p.presence || {};
+      if (pr.s && pr.st && this.seenSay[p.peer] !== pr.st && !p.sameTab) { this.seenSay[p.peer] = pr.st; chatLog('Say', clean(pr.n || 'HERO'), clean(pr.s, 120)); SFX.whisper(); }
+    }
+    for (const p of ch.left) { delete this.joined[p.peer]; if (this.hostOf === p.peer) { this.hostOf = null; toast('SERVER', 'Host left the server', 'px_tower', 'error'); } }
+  },
+  sendChat(msg) {
+    msg = clean(msg, 120); if (!msg) return;
+    this.say = msg; this.sayT = Date.now(); chatLog('Say', G ? G.name : 'YOU', msg);
+  },
+  peersInZone(zid) { return this.peers.filter(p => p.presence && p.presence.z === zid && typeof p.presence.x === 'number'); },
+  servers() { return this.peers.filter(p => p.presence && p.presence.h).map(p => ({ peer: p.peer, name: clean(p.presence.h, 20), host: clean(p.presence.n), lvl: p.presence.l, players: this.peers.filter(q => q.presence && q.presence.j === p.peer).length + 1 })); },
+  hostServer(name) { this.server = { name: name || `${G.name}'S REALM` }; this.hostOf = null; toast('SERVER ONLINE', this.server.name, 'px_tower', 'confirm'); },
+  stopServer() { this.server = null; this.joined = {}; },
+  joinServer(peer) {
+    this.hostOf = peer; this.server = null;
+    if (this.room) this.room.emit('srv_char', { to: peer, ch: slimChar(G) }).catch(e => toast('SERVER', 'Joining needs Contributor access', 'px_tower', 'error'));
+    toast('JOINED SERVER', 'You fight in the host party', 'px_tower', 'confirm');
+  },
+  partyChars() { return this.server ? Object.entries(this.joined).map(([peer, ch]) => ({ peer, ch })) : []; },
+  onMsg(t, m) {
+    const d = m.data || {};
+    if (t === 'srv_char' && this.server && d.to === this.myPeer()) { const ch = unslimChar(d.ch); if (ch) { this.joined[m.peer] = ch; toast('PLAYER JOINED', ch.name, 'px_tower', 'lfg_ready'); } }
+    if (t === 'srv_battle' && this.hostOf === m.peer) { this.remoteView = d; const v = scenes.find(s => s instanceof RemoteBattleView); if (!v && d.active) push(new RemoteBattleView()); }
+    if (t === 'srv_turn' && this.hostOf === m.peer && d.to === this.myPeer()) { this.myTurn = d; }
+    if (t === 'srv_act' && this.server && this.joined[m.peer]) { const b = scenes.find(s => s instanceof Battle); if (b && b.actor && b.actor.ctrl === 'remote:' + m.peer) b.remoteAction(d); }
+    if (t === 'srv_end' && this.hostOf === m.peer) { if (d.to === this.myPeer() || !d.to) { if (d.xp) { const r = gainXP(G, d.xp); G.gold += d.gold || 0; r.ups.forEach(g => toast(`LEVEL ${g.lvl}!`, '', 'px_crown', 'levelup')); } this.remoteView = null; const v = scenes.find(s => s instanceof RemoteBattleView); if (v) removeScene(v); } }
+  },
+  myPeer() { const me = this.room && this.room.peers().find(p => p.sameTab); return me ? me.peer : null; },
+  battleSync(b) {
+    if (!this.room || !this.server || !Object.keys(this.joined).length) return;
+    if (frameN - (this.lastSync || 0) < 6 && b.state !== 'over') return; this.lastSync = frameN;
+    const snap = { active: b.state !== 'over', text: (b.cur && b.cur.text || '').slice(0, 120), party: b.party.slice(0, 12).map(u => [u.name.slice(0, 8), Math.max(0, hpOf(u)), maxHpOf(u)]), foes: b.foes.slice(0, 6).map(f => [f.name.slice(0, 10), Math.max(0, f.hp), f.maxhp, f.id, f.spr]) };
+    this.room.emit('srv_battle', snap).catch(() => {});
+    if (b.state === 'over') for (const peer in this.joined) this.room.emit('srv_end', { to: peer, xp: b.foes.reduce((a, f) => a + (f.xp || 0), 0), gold: Math.round(b.foes.reduce((a, f) => a + (f.gold || 0), 0) / 2) }).catch(() => {});
+  },
+  requestTurn(b, u) { if (this.room) this.room.emit('srv_turn', { to: u.ctrl.slice(7), foes: b.foes.filter(alive).map(f => [f.id, f.name.slice(0, 10)]) }).catch(() => {}); },
+  sendAct(a) { if (this.room) this.room.emit('srv_act', a).catch(() => {}); this.myTurn = null; },
+  async publishHero() {
+    if (!this.db || !this.myId || !G) return;
+    try { await this.db.doc('heroes/' + this.myId).set({ name: G.name.slice(0, 12), cls: G.cls, lvl: G.lvl, ach: achPoints(), tower: G.towerBest || 0, rating: G.rating || 1000, ch: G.chapter, ts: Date.now() }); } catch (e) {}
+  },
+  async leaderboard() {
+    if (!this.db) return null;
+    try { const snap = await this.db.collection('heroes').orderBy('lvl', 'desc').limit(20).get(); return snap.docs.map(d => d.data()); } catch (e) { return null; }
+  },
+};
+window.NET = NET;
+function clean(s, n = 12) { return String(s || '').replace(/[^\x20-\x7e]/g, '').slice(0, n); }
+function slimChar(c) { return { name: c.name, species: c.species, cls: c.cls, bg: c.bg, sub: c.sub, lvl: c.lvl, base: c.base, feats: c.feats, ascAttr: c.ascAttr, ascSub: c.ascSub, boons: c.boons, eq: c.eq }; }
+function unslimChar(o) {
+  if (!o || !CLASSES[o.cls] || !SPECIES[o.species]) return null;
+  const c = newCharacter({ name: clean(o.name), species: o.species, cls: o.cls, bg: BACKGROUNDS[o.bg] ? o.bg : 'wanderer' });
+  c.lvl = Math.max(1, Math.min(LEVEL_CAP, +o.lvl || 1)); c.sub = o.sub; c.base = o.base || c.base; c.feats = (o.feats || []).filter(f => FEATS[f]);
+  c.ascAttr = o.ascAttr || {}; c.ascSub = o.ascSub || {}; c.eq = o.eq || c.eq;
+  const D = derive(c); c.hp = D.hpMax; c.res = resMax(c, D); c.ai = true;
+  return c;
+}
