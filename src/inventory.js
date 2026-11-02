@@ -12,11 +12,28 @@ Object.assign(ITEMS, {
   ember: { name: 'EMBER SOUL', icon: 'ne_relic_1', type: 'mat', price: 60, desc: 'Salvaged from legendary gear. Upgrades legendaries.' },
 });
 const INV_COLS = 8, INV_ROWS = 5, STASH_TABS = 4, STASH_SIZE = INV_COLS * INV_ROWS, STASH_COST = [0, 0, 2000, 10000];
+const STASH_TAB_NAMES = ['GENERAL', 'GEAR', 'MATERIALS', 'CONSUMABLES'];
+const STASH_TAB_LABELS = { GENERAL: 'GEN', GEAR: 'GEAR', MATERIALS: 'MATS', CONSUMABLES: 'USE' };
 const INV_TABS = [['GEAR', null], ['USE', ['use', 'scroll', 'camp', 'hearth']], ['MATS', ['mat']], ['QUEST', ['junk', 'key']]];
 const MAX_PLUS = [0, 1, 2, 3, 4, 5]; // upgrade cap by rarity
 
 function stashOf() {
-  if (!G.stash) { G.stash = { tabs: Array.from({ length: STASH_TABS }, () => []), unlocked: 2 }; if (G.bank && G.bank.length) { G.stash.tabs[0] = G.bank.splice(0); } }
+  if (!G.stash || typeof G.stash !== 'object') G.stash = { tabs: Array.from({ length: STASH_TABS }, () => []), unlocked: 2 };
+  G.stash.tabs = Array.from({ length: STASH_TABS }, (_, i) => Array.isArray(G.stash.tabs && G.stash.tabs[i]) ? G.stash.tabs[i] : []);
+  G.stash.unlocked = Math.max(1, Math.min(STASH_TABS, Math.floor(Number(G.stash.unlocked) || 2)));
+  G.stash.names = Array.from({ length: STASH_TABS }, (_, i) => {
+    const name = String(G.stash.names && G.stash.names[i] || STASH_TAB_NAMES[i]).trim().toUpperCase();
+    return name.replace(/[^A-Z0-9 ]/g, '').slice(0, 10) || STASH_TAB_NAMES[i];
+  });
+  if (Array.isArray(G.bank) && G.bank.length) {
+    const legacy = G.bank.splice(0);
+    for (const item of legacy) {
+      let target = G.stash.tabs.slice(0, G.stash.unlocked).find(tab => tab.length < STASH_SIZE);
+      if (!target && G.stash.unlocked < STASH_TABS) target = G.stash.tabs[G.stash.unlocked++];
+      if (target) target.push(item);
+      else { G.mail ||= []; G.mail.push({ from: 'BANK VAULT', text: 'Your old bank was full. An item was mailed safely.', item }); }
+    }
+  }
   return G.stash;
 }
 // main stat line for an item, and the change against what is equipped in its slot
@@ -176,18 +193,47 @@ class CompareScene {
 class StashScene {
   constructor() { this.opaque = true; this.pane = 1; this.tab = 0; this.cx = 0; this.cy = 0; stashOf(); }
   list() { return this.pane ? G.stash.tabs[this.tab] : G.bag; }
+  manageTabs() {
+    const st = stashOf(), next = (this.tab + 1) % STASH_TABS;
+    const options = ['NEXT TAB', 'RENAME TAB', 'SORT BY RARITY', 'SORT BY NAME'];
+    if (next >= st.unlocked) options.unshift(`UNLOCK TAB ${next + 1} (${STASH_COST[next]}G)`);
+    choose(options, choice => {
+      if (next >= st.unlocked && choice === 0) {
+        const cost = STASH_COST[next];
+        if (G.gold < cost) { SFX.error(); return say(`Tab ${next + 1} costs ${cost} G.`); }
+        G.gold -= cost; st.unlocked = next + 1; this.tab = next; SFX.buy(); saveGame();
+        return toast('VAULT TAB UNLOCKED', st.names[next], 'item_chest', 'achievement');
+      }
+      const action = options[choice];
+      if (action === 'NEXT TAB') {
+        this.tab = next;
+        if (this.tab >= st.unlocked) this.tab = 0;
+        this.cx = this.cy = 0; SFX.page(); return;
+      }
+      if (action === 'RENAME TAB') {
+        const names = [...new Set(STASH_TAB_NAMES)].filter(name => name !== st.names[this.tab]);
+        choose(names.map(name => `NAME: ${name}`), index => {
+          if (index < 0) return;
+          st.names[this.tab] = names[index]; saveGame(); SFX.confirm();
+          toast('BANK TAB RENAMED', st.names[this.tab], 'item_chest', 'achievement');
+        }, `TAB ${this.tab + 1} NAME`);
+        return;
+      }
+      if (action === 'SORT BY RARITY') {
+        st.tabs[this.tab].sort((a, b) => (b.fav | 0) - (a.fav | 0) || (b.rarity || 0) - (a.rarity || 0) || (b.ilvl || 0) - (a.ilvl || 0));
+        saveGame(); SFX.page(); return say('VAULT TAB SORTED BY RARITY.');
+      }
+      if (action === 'SORT BY NAME') {
+        st.tabs[this.tab].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        saveGame(); SFX.page(); return say('VAULT TAB SORTED BY NAME.');
+      }
+    }, `${st.names[this.tab]} · BANK & VAULT`);
+  }
   update() {
     const st = stashOf();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (P('select')) { this.pane ^= 1; SFX.page(); return; }
-    if (P('start')) {
-      const nt = (this.tab + 1) % STASH_TABS;
-      if (nt >= st.unlocked) {
-        const cost = STASH_COST[nt];
-        return choose([`BUY TAB ${nt + 1} (${cost}G)`, 'BACK TO TAB 1'], k => { if (k === 0) { if (G.gold < cost) { SFX.error(); return say(`Tab ${nt + 1} costs ${cost} G.`); } G.gold -= cost; st.unlocked = nt + 1; this.tab = nt; SFX.buy(); toast('STASH', `TAB ${nt + 1} UNLOCKED`, 'item_chest', 'achievement'); } else this.tab = 0; });
-      }
-      this.tab = nt; SFX.page(); return;
-    }
+    if (P('start')) return this.manageTabs();
     if (nav('left')) { this.cx = (this.cx + INV_COLS - 1) % INV_COLS; SFX.cursor(); }
     if (nav('right')) { this.cx = (this.cx + 1) % INV_COLS; SFX.cursor(); }
     if (nav('up')) { this.cy = (this.cy + INV_ROWS - 1) % INV_ROWS; SFX.cursor(); }
@@ -196,13 +242,16 @@ class StashScene {
     const L = this.list(), i = this.cy * INV_COLS + this.cx, e = L[i]; if (!e) { SFX.error(); return; }
     const dest = this.pane ? G.bag : st.tabs[this.tab], cap = this.pane ? BAG_MAX : STASH_SIZE;
     if (dest.length >= cap) { SFX.error(); return say(this.pane ? 'Your bag is full.' : 'This stash tab is full. START: next tab.'); }
-    L.splice(i, 1); dest.push(e); SFX.equip();
+    L.splice(i, 1); dest.push(e); SFX.equip(); saveGame();
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const st = stashOf();
-    for (let t = 0; t < STASH_TABS; t++) { const x = 2 + t * 22, on = this.pane && t === this.tab, lock = t >= st.unlocked; fill(x, 12, 20, 10, on ? 3 : lock ? 2 : 1); textC(lock ? '$' : String(t + 1), x + 10, 13, on ? 0 : 3); }
-    fill(92, 12, 66, 10, this.pane ? 1 : 3); textC('BAG', 125, 13, this.pane ? 3 : 0);
+    for (let t = 0; t < STASH_TABS; t++) {
+      const x = 2 + t * 39, on = this.pane && t === this.tab, lock = t >= st.unlocked;
+      fill(x, 12, 37, 10, on ? 3 : lock ? 2 : 1);
+      textC(lock ? '$' : (STASH_TAB_LABELS[st.names[t]] || st.names[t].slice(0, 5)), x + 18, 13, on ? 0 : 3);
+    }
     const L = this.list();
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {
       const e = L[j * INV_COLS + i]; drawItemCell(e, 4 + i * 19, 24 + j * 18, i === this.cx && j === this.cy);
@@ -210,8 +259,8 @@ class StashScene {
     frame(1, 115, 158, 28);
     const e = L[this.cy * INV_COLS + this.cx];
     if (e) { text(e.name.slice(0, 18), 5, 117, rarityCol(e.rarity)); text(`${itemKeyStat(e)} IL${e.ilvl}`.slice(0, 25), 5, 126, 2); }
-    else text(this.pane ? `STASH TAB ${this.tab + 1}: ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`, 5, 118, 2);
-    text(this.pane ? 'A:TAKE SEL:BAG START:TAB' : 'A:STORE SEL:STASH', 5, 135, 1);
+    else text(this.pane ? `${st.names[this.tab]} ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`, 5, 118, 2);
+    text(this.pane ? 'A:TAKE  SEL:BAG  START:TABS' : 'A:STORE  SEL:VAULT', 5, 135, 1);
   }
 }
 // ---------------------------------------------------------------- EQUIPMENT (paper doll)

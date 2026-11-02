@@ -28,14 +28,14 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
     if (!P('a')) return;
     SFX.select();
     const o = this.items()[this.i].replace(' (!)', '');
-    const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
+    const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
@@ -257,6 +257,46 @@ class CharSheet {
       if (D.res.size) feats.push('RESIST: ' + [...D.res].join(',').toUpperCase());
       feats.slice(this.scroll % Math.max(1, feats.length)).slice(0, 12).forEach((s, i) => text(s.slice(0, 25), 4, 26 + i * 9));
     }
+  }
+}
+
+// ================================================================ CHARACTER HUB (profile, inventory, equipment)
+class CharacterMenu {
+  constructor() { this.opaque = true; this.tab = 0; }
+  tabs() { return [['CHARACTER', 'CHAR'], ['INVENTORY', 'BAG'], ['EQUIPMENT', 'GEAR']]; }
+  update() {
+    if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
+    if (nav('left')) { this.tab = (this.tab + 2) % 3; SFX.page(); }
+    if (nav('right') || P('select')) { this.tab = (this.tab + 1) % 3; SFX.page(); }
+    if (!P('a')) return;
+    SFX.select();
+    if (this.tab === 0) push(new CharSheet());
+    else if (this.tab === 1) push(new InventoryScene('field'));
+    else push(new PaperDoll());
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    this.tabs().forEach(([name, label], index) => {
+      const x = 2 + index * 52, active = index === this.tab;
+      fill(x, 12, 50, 10, active ? 3 : 1); textC(label, x + 25, 13, active ? 0 : 3);
+      if (active) text(name, x + 2, 25, 'gold');
+    });
+    const D = derive(G), portrait = heroPortrait(G);
+    fill(2, 36, 52, 96, 1); fill(57, 36, 101, 96, 1);
+    blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 39);
+    text(G.name.slice(0, 9), 5, 84, 'gold');
+    text(`${SPECIES[G.species].name.slice(0, 7)} ${CLASSES[G.cls].name.slice(0, 7)}`.slice(0, 16), 5, 94, 2);
+    text(`LEVEL ${G.lvl}`, 5, 105, 3);
+    text('HP', 5, 115, 2); bar(18, 116, 31, 4, G.hp, D.hpMax, 'hp');
+    text(`AC ${D.ac}`, 5, 126, 3);
+    const gearSlots = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'offhand', 'waist', 'legs', 'feet', 'ring1', 'ring2'];
+    gearSlots.forEach((slot, index) => {
+      const item = G.eq[slot], y = 39 + index * 7.5;
+      const label = SLOT_NAME[slot].replace('MAIN HAND', 'WEAPON').replace('OFF HAND', 'OFFHAND');
+      text(`${label.slice(0, 7).padEnd(7)} ${item ? item.name : '--'}`.slice(0, 16), 61, y, item ? rarityCol(item.rarity) : 2);
+    });
+    text(`BAG ${G.bag.length}/${BAG_MAX}  GOLD ${fmt(G.gold)}`.slice(0, 23), 61, 128, 'gold');
+    text('LEFT/RIGHT: TAB  A: OPEN  B: BACK', 4, 139, 1);
   }
 }
 

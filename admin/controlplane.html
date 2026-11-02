@@ -6,7 +6,7 @@
   <title>GB-Quest Admin Control Plane</title>
   <style>
     :root { color-scheme: dark; font: 14px/1.45 system-ui, sans-serif; background: #10151b; color: #e6edf3; }
-    body { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    body { max-width: 1240px; margin: 0 auto; padding: 24px; }
     header, .cards, .panel { border: 1px solid #303b45; background: #171e26; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
     header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     h1, h2 { margin: 0; } h1 { font-size: 20px; } h2 { font-size: 16px; margin-bottom: 12px; }
@@ -16,6 +16,20 @@
     button { border: 1px solid #536477; border-radius: 4px; padding: 7px 10px; color: inherit; background: #263440; cursor: pointer; }
     button.danger { background: #522b2b; border-color: #9c4b4b; }
     button:disabled { opacity: .55; cursor: wait; }
+    input { box-sizing: border-box; width: 100%; border: 1px solid #536477; border-radius: 4px; padding: 9px; color: inherit; background: #10151b; font: inherit; }
+    .login { max-width: 420px; }
+    .login form { display: grid; gap: 12px; }
+    .login label { display: grid; gap: 5px; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+    nav button[aria-current="page"] { border-color: #d7b96e; color: #f0d58e; }
+    .settings-form { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 14px; }
+    .settings-form label { display: flex; align-items: center; gap: 9px; }
+    .settings-form label.text-field { display: grid; align-items: initial; }
+    .settings-form input[type="checkbox"] { width: 18px; height: 18px; }
+    .settings-form input[type="number"], .settings-form input[type="text"], select { box-sizing: border-box; width: 100%; padding: 8px; color: inherit; background: #10151b; border: 1px solid #536477; border-radius: 4px; font: inherit; }
+    .settings-form button { justify-self: start; }
+    .warning { border-left: 3px solid #c48654; padding-left: 10px; }
+    [hidden] { display: none !important; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 8px; text-align: left; border-bottom: 1px solid #303b45; }
     th { color: #f0d58e; } .status { color: #92d69a; } .banned { color: #ff8e86; }
@@ -25,11 +39,48 @@
   </style>
 </head>
 <body>
-  <header><div><h1>GB-Quest Admin Control Plane</h1><div class="muted">Restricted realm operations</div></div><button id="refresh">Refresh</button></header>
+  <header><div><h1>GB-Quest Admin Control Plane</h1><div id="sessionLabel" class="muted">Sign in with your dedicated admin account</div></div><div><button id="refresh" hidden>Refresh</button> <button id="logout" hidden>Sign out</button></div></header>
   <div id="message" role="status">Checking admin access…</div>
-  <section id="overview" class="cards" aria-label="Realm overview"></section>
-  <section class="panel"><h2>Accounts</h2><div class="muted">Showing up to 200 accounts. Suspend revokes sessions and closes live connections.</div><div style="overflow:auto"><table><thead><tr><th>Account</th><th>Status</th><th>Last login</th><th>Action</th></tr></thead><tbody id="players"></tbody></table></div></section>
-  <section class="panel"><h2>Admin audit</h2><ol id="audit"></ol></section>
+  <section id="loginPanel" class="panel login" hidden><h2>Admin sign in</h2><form id="loginForm"><label>Username<input name="username" autocomplete="username" minlength="3" maxlength="16" required></label><label>Password<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><button type="submit">Sign in</button></form></section>
+  <section id="adminPanel" hidden>
+    <nav id="adminNav" aria-label="Admin sections"></nav>
+    <section id="overviewPanel" data-panel="overview"><div id="overview" class="cards" aria-label="Realm overview"></div><div id="realmState" class="panel"></div></section>
+    <section id="playersPanel" data-panel="players" class="panel" hidden><h2>Accounts</h2><div class="muted">Showing up to 200 accounts. Suspension revokes sessions and disconnects active realm connections.</div><div style="overflow:auto"><table><thead><tr><th>Account</th><th>Status</th><th>Last login</th><th>Action</th></tr></thead><tbody id="players"></tbody></table></div></section>
+    <section id="settingsPanel" data-panel="settings" class="panel" hidden>
+      <h2>Realm and game systems</h2><p class="muted">Changes apply immediately and are saved with the realm data.</p>
+      <form id="settingsForm" class="settings-form">
+        <label class="text-field">Realm name<input name="realmName" type="text" maxlength="40" required></label>
+        <label><input name="maintenance" type="checkbox"> Maintenance mode</label>
+        <label><input name="registrationOpen" type="checkbox"> New account registration</label>
+        <label><input name="chatEnabled" type="checkbox"> Realm chat</label>
+        <label><input name="marketplaceEnabled" type="checkbox"> Auction house</label>
+        <label><input name="invitesEnabled" type="checkbox"> Party invites</label>
+        <label><input name="socialEnabled" type="checkbox"> Friends and social</label>
+        <label><input name="cloudSavesEnabled" type="checkbox"> Cloud saves</label>
+        <label><input name="leaderboardEnabled" type="checkbox"> Realm leaderboard</label>
+        <label><input name="livePlayEnabled" type="checkbox"> Live presence and multiplayer events</label>
+        <label class="text-field">Listings per player<input name="maxListingsPerPlayer" type="number" min="1" max="20" step="1"></label>
+        <label class="text-field">Active invite codes per player<input name="maxInviteCodesPerPlayer" type="number" min="1" max="20" step="1"></label>
+        <label class="text-field">Invite lifetime (minutes)<input name="inviteTtlMinutes" type="number" min="1" max="60" step="1"></label>
+        <label class="text-field">Chat messages per 10 seconds<input name="chatMessagesPer10Seconds" type="number" min="1" max="20" step="1"></label>
+        <label class="text-field">Maximum save size (bytes)<input name="maxSaveBytes" type="number" min="65536" max="1048576" step="1024"></label>
+        <div><button type="submit">Save realm settings</button></div>
+      </form>
+      <p class="muted warning">Maintenance blocks player API access and closes active player connections. Admin access stays available.</p>
+    </section>
+    <section id="permissionsPanel" data-panel="permissions" class="panel" hidden>
+      <h2>Staff and permissions</h2><p class="muted">Root has full control. Admin manages realm systems and moderators. Moderators can review accounts, suspend accounts, and view the audit log.</p>
+      <div style="overflow:auto"><table><thead><tr><th>Account</th><th>Current role</th><th>Set role</th></tr></thead><tbody id="staff"></tbody></table></div>
+      <h2 style="margin-top:20px">Create account</h2><p class="muted">New accounts can sign in immediately. Share their password through a secure channel. Only root can create an admin account.</p>
+      <form id="createAccountForm" class="settings-form">
+        <label class="text-field">Username<input name="username" autocomplete="off" minlength="3" maxlength="16" required></label>
+        <label class="text-field">Temporary password<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required></label>
+        <label class="text-field">Initial role<select name="role"><option value="player">Player</option><option value="moderator">Moderator</option><option value="admin" id="createAdminRole" hidden>Admin</option></select></label>
+        <div><button type="submit">Create account</button></div>
+      </form>
+    </section>
+    <section id="auditPanel" data-panel="audit" class="panel" hidden><h2>Admin audit</h2><ol id="audit"></ol></section>
+  </section>
   <script src="/admin/controlplane.js" defer></script>
 </body>
 </html>
