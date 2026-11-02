@@ -694,7 +694,7 @@ class BossJournalScene extends ListScene {
   items() { return this.category === 'NAMED' ? NAMED_ITEMS : BOSSES.filter(b => this.category === 'ALL' || b.cat === this.category); }
   update() {
     if (nav('left')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid', 'NAMED']; this.category = cats[(cats.indexOf(this.category) + cats.length - 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
-    if (nav('right')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid']; this.category = cats[(cats.indexOf(this.category) + 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
+    if (nav('right')) { const cats = ['ALL', 'world', 'dungeon', 'trial', 'tower', 'arc', 'raid', 'NAMED']; this.category = cats[(cats.indexOf(this.category) + 1) % cats.length]; this.i = 0; this.top = 0; SFX.cursor(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); }
   }
