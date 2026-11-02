@@ -499,6 +499,9 @@ const SPELLS = [
   { id: 'thornlash', name: 'THORNLASH', school: 'flux', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d6', dt: 'piercing', cls: ['verdant'], desc: 'Spell attack, 1d6 piercing.' },
   { id: 'mocksong', name: 'MOCKSONG', school: 'thrall', lvl: 0, t: 'enemy', eff: 'dmg', save: 'WIS', dice: '1d4', dt: 'psychic', cond: 'frightened', dur: 1, cls: ['cantor'], desc: 'WIS save, 1d4 psychic + disadv.' },
   { id: 'wardspark', name: 'WARDSPARK', school: 'aegis', lvl: 0, t: 'self', eff: 'buff', buff: 'ac', val: 2, dur: 1, cls: ['arcanist', 'wildblood', 'pactbound', 'cantor'], desc: '+2 AC for a round.' },
+  { id: 'sparklife', name: 'SPARK OF LIFE', school: 'calling', lvl: 0, t: 'ally', eff: 'heal', dice: '1d4', cls: ['chaplain', 'verdant'], desc: 'Restore 1d4 HP to an ally.' },
+  { id: 'guidance', name: 'GUIDING EYE', school: 'omen', lvl: 0, t: 'ally', eff: 'buff', buff: 'bless', dur: 1, cls: ['chaplain', 'cantor', 'verdant', 'arcanist'], desc: 'Grant +1d4 to next attack or save.' },
+  { id: 'shadowdart', name: 'SHADOW DART', school: 'veil', lvl: 0, t: 'enemy', eff: 'dmg', atk: true, dice: '1d8', dt: 'psychic', cls: ['cantor', 'arcanist', 'pactbound'], desc: 'Spell attack, 1d8 psychic.' },
   // level 1
   { id: 'mend', name: 'MENDING TOUCH', school: 'calling', lvl: 1, t: 'ally', eff: 'heal', dice: '1d8', mod: true, scale: '1d8', cls: ['chaplain', 'cantor', 'verdant', 'vanguard', 'strider'], desc: 'Heal 1d8+mod.' },
   { id: 'quickmend', name: 'QUICK MEND', school: 'calling', lvl: 1, t: 'ally', eff: 'heal', dice: '1d4', mod: true, scale: '1d4', bonus: true, cls: ['chaplain', 'cantor', 'verdant'], desc: 'Bonus action. Heal 1d4+mod.' },
@@ -520,6 +523,9 @@ const SPELLS = [
   { id: 'moonshaft', name: 'LUNAR SHAFT', school: 'storm', lvl: 2, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '2d10', dt: 'radiant', scale: '1d10', cls: ['verdant'], desc: 'CON save, 2d10 radiant.' },
   { id: 'mirror', name: 'MIRROR SELVES', school: 'veil', lvl: 2, t: 'self', eff: 'buff', buff: 'mirror', val: 3, dur: 10, cls: ['arcanist', 'wildblood', 'pactbound'], desc: 'Three images soak attacks.' },
   { id: 'restore', name: 'LESSER RESTORE', school: 'aegis', lvl: 2, t: 'ally', eff: 'cleanse', cls: ['chaplain', 'cantor', 'verdant', 'vanguard', 'strider'], desc: 'End one condition.' },
+  { id: 'augury', name: 'OMEN OF RUIN', school: 'omen', lvl: 2, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'marked', dur: 5, bonus: true, conc: true, cls: ['cantor', 'strider', 'arcanist'], desc: 'WIS save or marked for extra damage.' },
+  { id: 'barkskin', name: 'IRON BARK', school: 'flux', lvl: 2, t: 'self', eff: 'buff', buff: 'ac', val: 4, dur: 10, conc: true, cls: ['verdant', 'strider'], desc: '+4 AC for 10 rounds.' },
+  { id: 'lifetap', name: 'LIFE SIPHON', school: 'grave', lvl: 2, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '3d6', dt: 'necrotic', scale: '1d6', cls: ['arcanist', 'pactbound', 'wildblood', 'chaplain'], desc: 'CON save, 3d6 necrotic.' },
   // level 3
   { id: 'sunorb', name: 'SUNBURST ORB', school: 'storm', lvl: 3, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'fire', scale: '1d6', cls: ['arcanist', 'wildblood'], desc: 'All foes, DEX save, 8d6 fire.' },
   { id: 'lance', name: 'LIGHTNING LANCE', school: 'storm', lvl: 3, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'lightning', scale: '1d6', cls: ['arcanist', 'wildblood'], desc: 'All foes, DEX save, 8d6.' },
@@ -530,6 +536,7 @@ const SPELLS = [
   { id: 'chorus', name: 'CHORUS OF MENDING', school: 'calling', lvl: 3, t: 'allies', eff: 'heal', dice: '1d4', mod: true, bonus: true, cls: ['chaplain', 'cantor'], desc: 'Bonus: heal all 1d4+mod.' },
   { id: 'dreadwave', name: 'DREADWAVE', school: 'veil', lvl: 3, t: 'enemies', eff: 'cond', save: 'WIS', cond: 'frightened', dur: 3, conc: true, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'All foes WIS save or frightened.' },
   { id: 'calllightning', name: 'CALL LIGHTNING', school: 'calling', lvl: 3, t: 'enemy', eff: 'dmg', save: 'DEX', half: true, dice: '3d10', dt: 'lightning', scale: '1d10', cls: ['verdant'], desc: 'DEX save, 3d10 lightning.' },
+  { id: 'truesight', name: 'CLARITY TRANCE', school: 'omen', lvl: 3, t: 'self', eff: 'buff', buff: 'foresight', dur: 5, conc: true, cls: ['arcanist', 'chaplain', 'cantor'], desc: 'Heightened perception and advantage on saves.' },
   // level 4
   { id: 'wither', name: 'WITHERING', school: 'grave', lvl: 4, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '8d8', dt: 'necrotic', scale: '1d8', cls: ['arcanist', 'wildblood', 'verdant', 'pactbound'], desc: 'CON save, 8d8 necrotic.' },
   { id: 'beastshape', name: 'BEASTSHAPE', school: 'flux', lvl: 4, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'beast', dur: 2, conc: true, cls: ['arcanist', 'wildblood', 'cantor', 'verdant'], desc: 'WIS save or turned into a newt.' },
@@ -542,6 +549,9 @@ const SPELLS = [
   { id: 'recall', name: 'RECALL SOUL', school: 'grave', lvl: 5, t: 'ally', eff: 'revive', full: true, cls: ['chaplain', 'cantor', 'vanguard'], desc: 'Revive an ally at half HP.' },
   { id: 'yoke', name: 'MIND YOKE', school: 'thrall', lvl: 5, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'dominated', dur: 3, conc: true, cls: ['arcanist', 'wildblood', 'cantor'], desc: 'WIS save or it fights for you.' },
   { id: 'pillar', name: 'PILLAR OF DAWN', school: 'storm', lvl: 5, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '8d6', dt: 'radiant', cls: ['chaplain'], desc: 'All foes, DEX save, 8d6 radiant.' },
+  { id: 'bastion', name: 'DAWN BASTION', school: 'aegis', lvl: 5, t: 'allies', eff: 'buff', buff: 'barrier', val: 30, dur: 5, conc: true, cls: ['chaplain', 'vanguard', 'arcanist'], desc: '30 HP barrier shields all allies.' },
+  { id: 'threadcount', name: 'FATE WEAVE', school: 'omen', lvl: 5, t: 'enemies', eff: 'cond', save: 'CHA', cond: 'marked', dur: 5, cls: ['cantor', 'arcanist', 'chaplain'], desc: 'CHA save: all foes take +2d8 radiant.' },
+  { id: 'timestop', name: 'TEMPORAL DRIFT', school: 'flux', lvl: 5, t: 'self', eff: 'buff', buff: 'haste', dur: 3, bonus: true, cls: ['arcanist', 'wildblood'], desc: 'Bends time: extra speed and attacks for 3 rounds.' },
   // level 6-9
   { id: 'stormchain', name: 'STORMCHAIN', school: 'storm', lvl: 6, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '10d8', dt: 'lightning', cls: ['arcanist', 'wildblood'], desc: 'All foes, 10d8 lightning.' },
   { id: 'greatmend', name: 'GREAT MENDING', school: 'calling', lvl: 6, t: 'ally', eff: 'heal', dice: '70', cleanse: true, cls: ['chaplain', 'verdant'], desc: 'Heal 70 and cleanse.' },
@@ -550,8 +560,13 @@ const SPELLS = [
   { id: 'doomfinger', name: 'DOOM FINGER', school: 'grave', lvl: 7, t: 'enemy', eff: 'dmg', save: 'CON', half: true, dice: '7d8+30', dt: 'necrotic', cls: ['arcanist', 'wildblood', 'pactbound'], desc: 'CON save, 7d8+30 necrotic.' },
   { id: 'starshard', name: 'STAR SHARD', school: 'storm', lvl: 7, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '12d6', dt: 'fire', cls: ['arcanist', 'wildblood'], desc: 'All foes, 12d6 fire.' },
   { id: 'renewal', name: 'RENEWAL', school: 'flux', lvl: 7, t: 'ally', eff: 'heal', dice: '4d8+15', regen: true, cls: ['chaplain', 'verdant', 'cantor'], desc: 'Heal 4d8+15, regenerate.' },
+  { id: 'spellward', name: 'AURA OF WARDING', school: 'aegis', lvl: 7, t: 'allies', eff: 'buff', buff: 'ac', val: 5, dur: 5, conc: true, cls: ['chaplain', 'vanguard', 'arcanist'], desc: '+5 AC barrier protects party.' },
+  { id: 'phantom', name: 'PHANTOM PARADE', school: 'veil', lvl: 7, t: 'enemies', eff: 'cond', save: 'WIS', cond: 'frightened', dur: 3, conc: true, cls: ['cantor', 'arcanist', 'pactbound'], desc: 'All foes WIS save or terrified.' },
   { id: 'noonflare', name: 'NOON FLARE', school: 'storm', lvl: 8, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '12d6', dt: 'radiant', cond: 'blinded', dur: 2, cls: ['chaplain', 'verdant', 'arcanist', 'wildblood'], desc: 'All foes, 12d6 radiant + blind.' },
   { id: 'wordstill', name: 'WORD OF STILLNESS', school: 'thrall', lvl: 8, t: 'enemy', eff: 'cond', cond: 'stunned', maxHp: 150, dur: 2, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'Stun a foe under 150 HP.' },
+  { id: 'prismatic', name: 'PRISMATIC AEGIS', school: 'aegis', lvl: 8, t: 'self', eff: 'buff', buff: 'ac', val: 8, dur: 10, cls: ['arcanist'], desc: '+8 AC and immune to lower magic.' },
+  { id: 'soulexchange', name: 'SOUL REAP', school: 'grave', lvl: 8, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: '10d8', dt: 'necrotic', scale: '1d8', cls: ['arcanist', 'pactbound', 'chaplain'], desc: 'All foes, 10d8 necrotic.' },
+  { id: 'metamorph', name: 'TRUE TRANSMUTE', school: 'flux', lvl: 8, t: 'enemy', eff: 'cond', save: 'WIS', cond: 'beast', dur: 5, conc: true, cls: ['arcanist', 'verdant'], desc: 'WIS save or permanently polymorphed.' },
   { id: 'skyfall', name: 'SKYFALL', school: 'storm', lvl: 9, t: 'enemies', eff: 'dmg', save: 'DEX', half: true, dice: '40d6', dt: 'fire', cls: ['arcanist', 'wildblood'], desc: 'All foes, 40d6 fire and stone.' },
   { id: 'wordend', name: 'WORD OF ENDING', school: 'thrall', lvl: 9, t: 'enemy', eff: 'kill', maxHp: 100, cls: ['arcanist', 'wildblood', 'cantor', 'pactbound'], desc: 'Slay a foe under 100 HP.' },
   { id: 'worldsong', name: 'WORLDSONG', school: 'calling', lvl: 9, t: 'allies', eff: 'heal', dice: '200', cleanse: true, cls: ['chaplain'], desc: 'Heal all fully, cleanse.' },
@@ -645,6 +660,28 @@ function xpForLevel(l) { // total XP needed to reach level l
   const a = l - 20; return 355000 + Math.round(30000 * a + 900 * a * a + 2.2 * a * a * a);
 }
 const ASCENSION = { attrPerLevel: 1, subPerLevel: 2, boonEvery: 50 };
+// Four talent points arrive at levels 5, 10, 15 and 20.
+// Each path is a four-step progression with readable, stack-free bonuses.
+const TALENT_TREES = [
+  { id: 'vanguard', name: 'VANGUARD', nodes: [
+    { id: 'vanguard_vitality', name: 'HARDENED', level: 5, desc: '+10 maximum HP.', mods: { hp: 10 } },
+    { id: 'vanguard_guard', name: 'IRON GUARD', level: 10, requires: 'vanguard_vitality', desc: '+2 armour.', mods: { acb: 2 } },
+    { id: 'vanguard_endure', name: 'ENDURE', level: 15, requires: 'vanguard_guard', desc: '+5% resistance to all damage.', mods: { resist: 5 } },
+    { id: 'vanguard_fortress', name: 'FORTRESS', level: 20, requires: 'vanguard_endure', desc: '+10% maximum HP.', mods: { hpPct: 10 } },
+  ] },
+  { id: 'ranger', name: 'RANGER', nodes: [
+    { id: 'ranger_aim', name: 'STEADY AIM', level: 5, desc: '+2 weapon accuracy.', mods: { hit: 2 } },
+    { id: 'ranger_footwork', name: 'QUICK FOOTWORK', level: 10, requires: 'ranger_aim', desc: '+3% dodge chance.', mods: { dodge: 3 } },
+    { id: 'ranger_critical', name: 'FIND THE GAP', level: 15, requires: 'ranger_footwork', desc: '+3% critical chance.', mods: { crit: 3 } },
+    { id: 'ranger_haste', name: 'SWIFT STRIKE', level: 20, requires: 'ranger_critical', desc: '+5% haste.', mods: { haste: 5 } },
+  ] },
+  { id: 'arcanist', name: 'ARCANIST', nodes: [
+    { id: 'arcanist_flame', name: 'EMBER LORE', level: 5, desc: '+10% fire damage.', mods: { fire: 10 } },
+    { id: 'arcanist_storm', name: 'STORM LORE', level: 10, requires: 'arcanist_flame', desc: '+10% lightning damage.', mods: { lightning: 10 } },
+    { id: 'arcanist_focus', name: 'ARCANE FOCUS', level: 15, requires: 'arcanist_storm', desc: '+5% damage.', mods: { dmg: 5 } },
+    { id: 'arcanist_mending', name: 'WELLSPRING', level: 20, requires: 'arcanist_focus', desc: '+10% healing.', mods: { heal: 10 } },
+  ] },
+];
 const MYTHIC_BOONS = [
   { id: 'b_vigor', name: 'MYTHIC VIGOR', desc: '+10% max HP', sub: { hp: 0, hpPct: 10 } },
   { id: 'b_fury', name: 'MYTHIC FURY', desc: '+15% damage', sub: { dmg: 15 } },
@@ -2809,7 +2846,7 @@ function newCharacter(o) {
   for (const a in sp.asi) base[a] += sp.asi[a];
   base.LCK = 10 + (sp.traits.includes('lucky') ? 2 : 0); base.WIL = 10 + (o.cls === 'ascetic' || o.cls === 'chaplain' ? 2 : 0); base.SPD = 10 + (o.cls === 'shade' || o.cls === 'strider' ? 2 : 0);
   const c = { name: o.name, species: o.species, cls: o.cls, bg: o.bg || 'wanderer', sub: null, lvl: 1, xp: 0, base,
-    feats: [], ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
+    feats: [], talents: [], talentPts: 0, ascAttr: {}, ascSub: {}, boons: [], pending: { asi: 0, sub: false, boon: 0 }, ascPts: 0, subPts: 0,
     eq: {}, hp: 1, hd: 1, res: {}, buffs: [], ai: o.ai || false, look: o.look || null, portrait: o.portrait || null, extraSkill: sp.traits.includes('versatile') ? 'perception' : null };
   (cls.gear || []).forEach(b => { const it = WEAPONS[b] ? makeItem({ kind: 'weapon', base: b, rarity: 1, lvl: 1 }) : makeItem({ kind: 'armor', base: b, rarity: 1, lvl: 1 }); c.eq[itemSlot(it)] = it; });
   const D = derive(c); c.hp = D.hpMax; c.hd = D.hdMax; c.res = resMax(c, D);
@@ -2840,6 +2877,11 @@ function gearAffixes(c) {
   const s = {};
   for (const slot of SLOTS) { const it = c.eq[slot]; if (!it) continue; for (const [k, v] of it.affixes || []) s[k] = (s[k] || 0) + v; }
   for (const k in c.ascSub || {}) s[k] = (s[k] || 0) + c.ascSub[k] * (AFFIX_K[k] || 1);
+  for (const tree of TALENT_TREES) for (const talent of tree.nodes) {
+    if (c.talents && c.talents.includes(talent.id)) {
+      for (const k in talent.mods) s[k] = (s[k] || 0) + talent.mods[k];
+    }
+  }
   for (const b of c.boons || []) { const bo = MYTHIC_BOONS.find(x => x.id === b); if (bo) for (const k in bo.sub) s[k] = (s[k] || 0) + bo.sub[k]; }
   for (const bf of c.buffs || []) { const def = BUFFS[bf.id]; if (def && def.mods) for (const k in def.mods) s[k] = (s[k] || 0) + def.mods[k] * (bf.stacks || 1); }
   return s;
@@ -3029,6 +3071,10 @@ function gainXP(c, amount) {
     } else {
       c.ascPts += ASCENSION.attrPerLevel; c.subPts += ASCENSION.subPerLevel; g.notes.push('+1 ATTRIBUTE, +2 SUBSTAT POINTS');
       if (c.lvl % ASCENSION.boonEvery === 0) { c.pending.boon++; g.notes.push('MYTHIC BOON AVAILABLE!'); }
+    }
+    if ([5, 10, 15, 20].includes(c.lvl)) {
+      c.talentPts = (c.talentPts || 0) + 1;
+      g.notes.push('TALENT POINT AVAILABLE!');
     }
     const D2 = derive(c); g.hp = D2.hpMax - before.hpMax; c.hp = D2.hpMax; c.res = resMax(c, D2); c.hd = D2.hdMax;
     ups.push(g);
@@ -4133,6 +4179,9 @@ function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; 
 function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
+  G.talents = Array.isArray(G.talents) ? G.talents.filter(id => TALENT_TREES.some(tree => tree.nodes.some(node => node.id === id))) : [];
+  const talentMilestones = [5, 10, 15, 20].filter(level => G.lvl >= level).length;
+  G.talentPts = Math.max(Number.isInteger(G.talentPts) ? G.talentPts : 0, talentMilestones - G.talents.length);
   G.stats = Object.assign(newGameState({ name: 'X', species: 'hearthkin', cls: 'warden', bg: 'wanderer' }).stats, G.stats);
   if (typeof G.pvpEnabled !== 'boolean') G.pvpEnabled = false;
   if (!['lantern', 'ashen'].includes(G.pvpFaction)) G.pvpFaction = 'lantern';
@@ -4549,7 +4598,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -4783,27 +4832,97 @@ class CharSheet {
 
 // ================================================================ SPELLBOOK
 class Spellbook extends ListScene {
-  constructor() { super(8); }
-  items() { const D = derive(G); return D.spell ? D.spell.known : []; }
-  update() { this.navList(); if (P('b') || P('a')) { SFX.back(); removeScene(this); } }
+  constructor() {
+    super(6);
+    this.schools = ['all', 'aegis', 'calling', 'omen', 'thrall', 'storm', 'veil', 'grave', 'flux'];
+    this.tab = 0;
+    this.all = false;
+  }
+  schoolDef() {
+    const k = this.schools[this.tab];
+    return k === 'all' ? { id: 'all', name: 'ALL SCHOOLS', desc: 'The eight arcane traditions of Aelmoor.' } : { id: k, ...SCHOOLS[k] };
+  }
+  items() {
+    const D = derive(G);
+    const k = this.schools[this.tab];
+    const hasSpells = D.spell && D.spell.known && D.spell.known.length;
+    const pool = (!hasSpells || this.all) ? SPELLS : D.spell.known;
+    return k === 'all' ? pool : pool.filter(s => s.school === k);
+  }
+  update() {
+    const n = this.schools.length;
+    if (P('select')) { this.tab = (this.tab + 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (nav('left')) { this.tab = (this.tab + n - 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (nav('right')) { this.tab = (this.tab + 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (P('start')) { this.all = !this.all; this.i = this.top = 0; SFX.toggle(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('a')) { SFX.select(); }
+  }
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G), L = this.items();
-    if (!L.length) { textC('No spellcasting.', 80, 50, 1); textC('Use ABILITY in battle.', 80, 62, 2); return; }
-    text(resLine(G, D), 4, 14, 2); textR(`DC${D.spell.dc} +${D.spell.atk}`, 156, 14, 2);
-    L.slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 25 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(s.lvl ? `L${s.lvl}` : 'C', 4, y, 2); text(s.name.slice(0, 17), 20, y); textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2); });
-    this.scrollbar(156, 24, 80);
-    const s = L[this.i]; frame(2, 106, 156, 36);
-    text(`${SCHOOLS[s.school].name}${s.conc ? ' CONC' : ''}${s.bonus ? ' BONUS' : ''}`, 6, 109, 'gold');
-    text(wrap(s.desc + (s.save ? ` ${s.save} save.` : s.atk ? ' Spell attack.' : ''), 24).slice(0, 2).join('\n'), 6, 119);
+    const sch = this.schoolDef();
+    const hasSpells = D.spell && D.spell.known && D.spell.known.length;
+    const mode = (!hasSpells || this.all) ? 'ALL' : 'KNOWN';
+
+    // Subheader
+    if (D.spell) {
+      text(resLine(G, D), 4, 13, 2);
+      textR(`DC${D.spell.dc} +${D.spell.atk}`, 156, 13, 2);
+    } else {
+      text('SPELL COMPENDIUM', 4, 13, 'gold');
+      textR('8 SCHOOLS', 156, 13, 2);
+    }
+
+    // School tab banner
+    fill(2, 23, 156, 10, 1);
+    textC(`< ${sch.name} (${L.length}) >`, 80, 24, 'gold');
+
+    // Spell list
+    if (!L.length) {
+      frame(2, 35, 156, 58);
+      textC(`No ${mode === 'KNOWN' ? 'known ' : ''}${sch.name} spells.`, 80, 48, 1);
+      if (mode === 'KNOWN') textC('Press START: view all in school', 80, 60, 'gold');
+      else textC(wrap(sch.desc, 24)[0] || '', 80, 60, 2);
+      textC('SEL / < >: cycle schools', 80, 74, 2);
+    } else {
+      L.slice(this.top, this.top + this.rows).forEach((s, j) => {
+        const i = this.top + j, y = 35 + j * 10;
+        const isKnown = D.spell && D.spell.known && D.spell.known.some(k => k.id === s.id);
+        if (i === this.i) fill(2, y - 1, 152, 10, 1);
+        text(s.lvl ? `L${s.lvl}` : 'C', 4, y, isKnown ? 'gold' : 2);
+        text((isKnown ? '*' : ' ') + s.name.slice(0, 15), 14, y, isKnown ? 3 : 1);
+        textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2);
+      });
+      this.scrollbar(156, 35, 58);
+    }
+
+    // Detail box
+    frame(2, 95, 156, 47);
+    const s = L[this.i];
+    if (s) {
+      text(`${SCHOOLS[s.school].name} · ${s.lvl ? 'L' + s.lvl : 'CANTRIP'}${s.conc ? ' · CONC' : ''}${s.bonus ? ' · BONUS' : ' · ACT'}`, 5, 97, 'gold');
+      const hit = s.save ? `${s.save} SAVE${s.half ? ' (1/2)' : ''}` : s.atk ? 'SPELL ATK' : (s.eff || '').toUpperCase();
+      const tags = [s.t ? s.t.toUpperCase() : '', hit, s.dt ? s.dt.toUpperCase() : '', s.dice || ''].filter(Boolean).join(' · ');
+      text(tags.slice(0, 25), 5, 106, 2);
+      text(wrap(s.desc + (s.scale ? ` (+${s.scale})` : ''), 25).slice(0, 2).join('\n'), 5, 115);
+      const clsList = (s.cls || []).map(c => c.slice(0, 3).toUpperCase()).join('/');
+      text(`CLS:${clsList || 'ALL'}`, 5, 133, 2);
+      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+    } else {
+      text(`${sch.name} TRADITION`, 5, 97, 'gold');
+      text(wrap(sch.desc, 25).slice(0, 2).join('\n'), 5, 108);
+      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+    }
   }
 }
 
-// ================================================================ GROWTH: ASI, feats, subclass, ascension, boons
+// ================================================================ GROWTH: talents, ASI, feats, subclass, ascension, boons
 class GrowthScene extends ListScene {
   constructor() { super(9); }
   items() {
-    const o = [];
+    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => push(new TalentScene()) }];
     if (G.pending.sub && classLevel(G) >= 3) CLASSES[G.cls].subs.forEach(s => o.push({ t: `SUBCLASS: ${s.name}`, d: s.desc, fn: () => { G.sub = s.id; G.pending.sub = false; G.res = resMax(G); } }));
     if (G.pending.asi) {
       ATTRS.slice(0, 6).forEach(a => o.push({ t: `+2 ${a} (${G.base[a]})`, d: 'Ability Score Increase. Max 20.', fn: () => { if (G.base[a] >= 20) return 'Already 20.'; G.base[a] = Math.min(20, G.base[a] + 2); G.pending.asi--; } }));
@@ -4827,6 +4946,70 @@ class GrowthScene extends ListScene {
     L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(e.t.slice(0, 24), 6, y); });
     this.scrollbar(156, 23, 90);
     frame(2, 114, 156, 28); text(wrap(L[this.i].d, 24).slice(0, 2).join('\n'), 6, 118);
+  }
+}
+
+class TalentScene extends ListScene {
+  constructor() { super(4); this.tree = 0; }
+  path() { return TALENT_TREES[this.tree]; }
+  items() { return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]); }
+  update() {
+    if (P('select')) { this.tree = (this.tree + 1) % TALENT_TREES.length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const node = this.items()[this.i];
+    if (!node) return;
+    if (node.respec) {
+      if (!G.talents.length) return say('No talents to reset.');
+      choose(['RESET ALL TALENTS', 'CANCEL'], index => {
+        if (index !== 0) return;
+        G.talentPts = (G.talentPts || 0) + G.talents.length;
+        G.talents = [];
+        G.hp = Math.min(G.hp, derive(G).hpMax);
+        SFX.levelup();
+      }, 'Refund all spent talent points?');
+      return;
+    }
+    if (G.talents.includes(node.id)) return say(`${node.name} is already learned.`);
+    if (G.lvl < node.level) return say(`Unlocks at level ${node.level}.`);
+    if (node.requires && !G.talents.includes(node.requires)) {
+      const prerequisite = this.path().nodes.find(candidate => candidate.id === node.requires);
+      return say(`Learn ${prerequisite ? prerequisite.name : 'the previous talent'} first.`);
+    }
+    if ((G.talentPts || 0) < 1) return say('No talent points available. Earn one at levels 5, 10, 15 and 20.');
+    G.talents.push(node.id);
+    G.talentPts--;
+    G.hp = Math.min(G.hp, derive(G).hpMax);
+    SFX.levelup();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC('TALENT SYSTEM', 80, 13, 'gold');
+    TALENT_TREES.forEach((tree, index) => {
+      const x = 3 + index * 52;
+      fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
+      textC(tree.name.slice(0, 8), x + 24, 25, index === this.tree ? 0 : 3);
+    });
+    text(`POINTS ${G.talentPts || 0}   LEVEL ${G.lvl}`, 5, 38, 2);
+    const L = this.items();
+    L.slice(this.top, this.top + this.rows).forEach((node, offset) => {
+      const index = this.top + offset, y = 50 + offset * 11;
+      const learned = !node.respec && G.talents.includes(node.id);
+      const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
+      if (index === this.i) fill(3, y - 1, 153, 10, 1);
+      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+      text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
+      if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
+    });
+    const node = L[this.i];
+    frame(2, 101, 156, 41);
+    if (node) {
+      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 104, 'gold');
+      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 114, 3);
+      if (node.requires && !G.talents.includes(node.id)) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 134, 2);
+    }
+    text('SELECT: PATH', 4, 143, 1);
   }
 }
 
@@ -5499,7 +5682,14 @@ const CITY_NPCS = [
   [26, 7, 'elder_2', 'GUILDMASTER', 'guild'], [13, 10, 'villager_1', 'MERCHANT', 'vendor'], [19, 10, 'hero_2', 'QUARTERMASTER', 'honor'], [15, 14, 'villager_3', 'LFG BOARD', 'lfg'],
   [12, 14, 'elder_3', 'ORACLE', 'difficulty'], [17, 5, 'hero_3', 'SPIRE KEEPER', 'tower'], [21, 18, 'villager_5', 'TRIALS MASTER', 'trials'], [27, 13, 'villager_4', 'HARBORMASTER', 'portal'],
   [19, 14, 'elder_5', 'REALM STONE', 'server'], [10, 18, 'villager_0', 'STABLEMASTER', 'stable'], [23, 18, 'hero_0', 'ARENAMASTER', 'arena'],
+  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'],
 ];
+const BLACKSMITH_TIERS = [
+  { tier: 1, name: 'APPRENTICE', level: 1, maxRarity: 2 },
+  { tier: 2, name: 'JOURNEYMAN', level: 20, maxRarity: 5 },
+  { tier: 3, name: 'MASTER', level: 40, maxRarity: 8 },
+];
+const blacksmithTier = level => BLACKSMITH_TIERS.filter(t => level >= t.level).at(-1) || BLACKSMITH_TIERS[0];
 const TILE_SVC = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', a: 'bank' };
 let FIELD = null;
 const currentField = () => FIELD;
@@ -5528,8 +5718,14 @@ class Field {
       return e;
     }
     const z = this.zone, m = this.m;
-    if (z.town && z.id === z.region) CITY_NPCS.forEach(([x, y, s, name, svc]) => e.push({ kind: 'npc', x, y, spr: s, name, svc }));
-    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer']].forEach(([x, y, s, name, svc]) => e.push({ kind: 'npc', x, y, spr: s, name, svc }));
+    if (z.town && z.id === z.region) CITY_NPCS.forEach(([x, y, s, name, svc]) => {
+      if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
+      e.push({ kind: 'npc', x, y, spr: s, name, svc });
+    });
+    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith']].forEach(([x, y, s, name, svc]) => {
+      if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
+      e.push({ kind: 'npc', x, y, spr: s, name, svc });
+    });
     else {
       if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); }
       else { const r = RNG('warden-' + z.id); e.push({ kind: 'npc', x: m.hub[0], y: m.hub[1] - 1, spr: r.pick(['villager_1', 'villager_3', 'elder_1', 'hero_2']), name: `WARDEN ${r.pick(NPC_FIRST)}`, svc: 'warden' }); }
@@ -5827,6 +6023,9 @@ function npcService(e) {
   if (svc === 'elder') return elderTalk();
   if (svc === 'warden') return wardenMenu(e);
   if (svc === 'vendor') return vendorMenu();
+  if (svc === 'blacksmith') return smithMenu('blacksmith');
+  if (svc === 'armorsmith') return smithMenu('armor');
+  if (svc === 'weaponsmith') return smithMenu('weapon');
   if (svc === 'inn') return innMenu();
   if (svc === 'trainer') return trainerMenu();
   if (svc === 'auction') return push(new AuctionHouse());
@@ -5899,6 +6098,64 @@ function vendorMenu() {
     if (k === 3) { let g = 0; for (const key of Object.keys(G.inv)) if (ITEMS[key] && ITEMS[key].type === 'junk') { g += ITEMS[key].price * G.inv[key]; delete G.inv[key]; } G.bag = G.bag.filter(it => { if (it.rarity === 0) { g += it.value; return false; } return true; }); G.gold += g; SFX.sell(); say(`Sold junk for ${g} G.`); }
     if (k === 4) { if (G.daily.haggle === new Date().toDateString()) return say('The merchant will not haggle again today.'); G.daily.haggle = new Date().toDateString(); const r = skillCheck(G, 'persuasion', 13); if (r.ok) G.daily.discount = new Date().toDateString(); say([r.text, r.ok ? '10% discount for today!' : 'The merchant shrugs. Prices stay.']); }
   }, 'MERCHANT: What will it be?');
+}
+function smithMenu(kind) {
+  if (kind === 'blacksmith') {
+    const tier = blacksmithTier(G.lvl);
+    return choose(['REINFORCE GEAR', 'SELL GEAR', 'LEAVE'], k => {
+      if (k === 0) smithUpgradeMenu(tier);
+      if (k === 1) push(new InventoryScene('sell'));
+    }, `${tier.name} BLACKSMITH TIER ${tier.tier}. ${tier.tier < 3 ? `NEXT TIER AT LV${BLACKSMITH_TIERS[tier.tier].level}.` : 'MY BEST WORK.'}`);
+  }
+  const label = kind === 'armor' ? 'ARMORSMITH' : 'WEAPONSMITH';
+  if (G.lvl < 20) return say(`${label} services unlock at player level 20.`);
+  return choose([`BUY ${kind === 'armor' ? 'ARMOUR' : 'WEAPONS'}`, `SELL ${kind === 'armor' ? 'ARMOUR' : 'WEAPONS'}`, 'LEAVE'], k => {
+    if (k === 0) smithBuyMenu(kind);
+    if (k === 1) smithSellMenu(kind);
+  }, `${label}: Properly fitted, properly forged.`);
+}
+function smithBuyMenu(kind) {
+  const catalog = kind === 'armor' ? ARMORS : WEAPONS;
+  const bases = Object.keys(catalog);
+  const rarity = Math.min(5, 1 + Math.floor(Math.max(0, G.lvl - 1) / 40));
+  const stock = Array.from({ length: 6 }, () => makeItem({ kind, base: pick(bases), lvl: G.lvl, rarity }));
+  choose(stock.map(it => `${it.name.slice(0, 15)} ${fmt(it.value * 2)}G`), index => {
+    if (index < 0) return;
+    const item = stock[index], price = item.value * 2;
+    if (G.gold < price) return say('Not enough gold.');
+    G.gold -= price; addGear(item); SFX.buy(); say(`Purchased ${item.name}.`);
+  }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
+}
+function smithSellMenu(kind) {
+  const gear = G.bag.filter(item => item.kind === kind);
+  if (!gear.length) return say(`You have no ${kind === 'armor' ? 'armour' : 'weapons'} to sell.`);
+  choose(gear.map(item => `${item.name.slice(0, 18)} ${fmt(item.value)}G`), index => {
+    if (index < 0) return;
+    const item = gear[index], bagIndex = G.bag.indexOf(item);
+    if (bagIndex < 0) return;
+    G.bag.splice(bagIndex, 1); G.gold += item.value; SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
+  }, `GOLD ${fmt(G.gold)}. Selling ${kind === 'armor' ? 'armour' : 'weapons'}.`);
+}
+function smithUpgradeMenu(tier) {
+  const gear = G.bag.filter(item => ['weapon', 'armor', 'wondrous'].includes(item.kind) && item.rarity <= tier.maxRarity);
+  if (!gear.length) return say('Bring me a weapon, armour or accessory to reinforce.');
+  choose(gear.map(item => `${item.name.slice(0, 17)} +${item.plus}`), index => {
+    if (index < 0) return;
+    const item = gear[index], cap = MAX_PLUS[item.rarity] ?? item.rarity;
+    if (item.plus >= cap) return say(`${item.name} has reached its reinforcement limit (+${cap}).`);
+    const rank = Math.max(0, item.plus) + 1;
+    const cost = { scrap: rank * 3, shard: item.rarity >= 3 ? rank : 0, ember: item.rarity >= 5 ? Math.max(0, rank - 3) : 0, gold: 50 * rank * Math.max(1, Math.floor(item.ilvl / 5)) };
+    const needs = Object.entries(cost).filter(([key, amount]) => key !== 'gold' && amount > 0).map(([key, amount]) => `${amount} ${ITEMS[key].name}`).concat(`${fmt(cost.gold)} G`);
+    if ((G.inv.scrap || 0) < cost.scrap || (G.inv.shard || 0) < cost.shard || (G.inv.ember || 0) < cost.ember || G.gold < cost.gold) {
+      return say(['Not enough materials.', `Need ${needs.join(', ')}.`, `Have ${G.inv.scrap || 0} scrap, ${G.inv.shard || 0} shards, ${G.inv.ember || 0} embers, ${fmt(G.gold)} G.`]);
+    }
+    choose(['TEMPER ITEM', 'CANCEL'], confirm => {
+      if (confirm !== 0) return;
+      for (const material of ['scrap', 'shard', 'ember']) for (let n = 0; n < cost[material]; n++) takeItem(material);
+      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3);
+      SFX.levelup(); say(`${item.name} is now +${item.plus}.`);
+    }, `REINFORCE ${item.name.slice(0, 16)}?\n${needs.join(', ')}`);
+  }, `${tier.name} TIER: REINFORCES ${RARITY[tier.maxRarity].name.toLowerCase()} GEAR OR LOWER. Materials come from salvaging gear.`);
 }
 function innMenu() {
   const price = 5 + Math.floor(G.lvl / 2);

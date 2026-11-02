@@ -34,6 +34,28 @@ function xpForLevel(l) { // total XP needed to reach level l
   const a = l - 20; return 355000 + Math.round(30000 * a + 900 * a * a + 2.2 * a * a * a);
 }
 const ASCENSION = { attrPerLevel: 1, subPerLevel: 2, boonEvery: 50 };
+// Four talent points arrive at levels 5, 10, 15 and 20.
+// Each path is a four-step progression with readable, stack-free bonuses.
+const TALENT_TREES = [
+  { id: 'vanguard', name: 'VANGUARD', nodes: [
+    { id: 'vanguard_vitality', name: 'HARDENED', level: 5, desc: '+10 maximum HP.', mods: { hp: 10 } },
+    { id: 'vanguard_guard', name: 'IRON GUARD', level: 10, requires: 'vanguard_vitality', desc: '+2 armour.', mods: { acb: 2 } },
+    { id: 'vanguard_endure', name: 'ENDURE', level: 15, requires: 'vanguard_guard', desc: '+5% resistance to all damage.', mods: { resist: 5 } },
+    { id: 'vanguard_fortress', name: 'FORTRESS', level: 20, requires: 'vanguard_endure', desc: '+10% maximum HP.', mods: { hpPct: 10 } },
+  ] },
+  { id: 'ranger', name: 'RANGER', nodes: [
+    { id: 'ranger_aim', name: 'STEADY AIM', level: 5, desc: '+2 weapon accuracy.', mods: { hit: 2 } },
+    { id: 'ranger_footwork', name: 'QUICK FOOTWORK', level: 10, requires: 'ranger_aim', desc: '+3% dodge chance.', mods: { dodge: 3 } },
+    { id: 'ranger_critical', name: 'FIND THE GAP', level: 15, requires: 'ranger_footwork', desc: '+3% critical chance.', mods: { crit: 3 } },
+    { id: 'ranger_haste', name: 'SWIFT STRIKE', level: 20, requires: 'ranger_critical', desc: '+5% haste.', mods: { haste: 5 } },
+  ] },
+  { id: 'arcanist', name: 'ARCANIST', nodes: [
+    { id: 'arcanist_flame', name: 'EMBER LORE', level: 5, desc: '+10% fire damage.', mods: { fire: 10 } },
+    { id: 'arcanist_storm', name: 'STORM LORE', level: 10, requires: 'arcanist_flame', desc: '+10% lightning damage.', mods: { lightning: 10 } },
+    { id: 'arcanist_focus', name: 'ARCANE FOCUS', level: 15, requires: 'arcanist_storm', desc: '+5% damage.', mods: { dmg: 5 } },
+    { id: 'arcanist_mending', name: 'WELLSPRING', level: 20, requires: 'arcanist_focus', desc: '+10% healing.', mods: { heal: 10 } },
+  ] },
+];
 const MYTHIC_BOONS = [
   { id: 'b_vigor', name: 'MYTHIC VIGOR', desc: '+10% max HP', sub: { hp: 0, hpPct: 10 } },
   { id: 'b_fury', name: 'MYTHIC FURY', desc: '+15% damage', sub: { dmg: 15 } },
@@ -318,7 +340,17 @@ const NPC_ROLE = ['SCOUT', 'HERBALIST', 'SMITH', 'HUNTER', 'PRIEST', 'TRADER', '
 // ================================================================ factions, achievements, professions
 const FACTIONS = { lantern: 'LANTERN PACT', nomad: 'SAND NOMADS', stonekin: 'STONEKIN', fey: 'THORN COURT', haven: 'SILVERHAVEN' };
 const REP_TIERS = [[0, 'NEUTRAL'], [300, 'FRIENDLY'], [900, 'HONORED'], [2100, 'REVERED'], [4000, 'EXALTED']];
-const PROFS = { herb: 'HERBALISM', alch: 'ALCHEMY', fish: 'FISHING', cook: 'COOKING' };
+const PROF_CAP = 720;
+const PROFS = { herb: 'HERBALISM', alch: 'ALCHEMY', fish: 'FISHING', cook: 'COOKING', blacksmith: 'BLACKSMITHING', armorsmith: 'ARMORSMITHING', weaponsmith: 'WEAPONSMITHING' };
+const PROFESSION_TREES = {
+  herb: { yield: 'DEEP ROOTS', efficiency: 'GENTLE HARVEST', mastery: 'FIELD LORE' },
+  alch: { yield: 'BATCH BREWING', efficiency: 'REAGENT SAVER', mastery: 'ALCHEMICAL THEORY' },
+  fish: { yield: 'FULL NETS', efficiency: 'PATIENT HAND', mastery: 'WATER LORE' },
+  cook: { yield: 'HEARTH FEAST', efficiency: 'PANTRY SAVER', mastery: 'SEASONING ARTS' },
+  blacksmith: { yield: 'FORGE OUTPUT', efficiency: 'MATERIAL SAVER', mastery: 'TEMPERING LORE' },
+  armorsmith: { yield: 'ARMOR BATCHES', efficiency: 'FIT ECONOMY', mastery: 'ARMOR MASTERY' },
+  weaponsmith: { yield: 'WEAPON BATCHES', efficiency: 'STEEL ECONOMY', mastery: 'WEAPON MASTERY' },
+};
 const ITEMS = {
   potion: { name: 'HEALING DRAUGHT', icon: 'item_health_potion', type: 'use', heal: '2d4+2', combat: true, price: 25, desc: 'Heal 2d4+2.' },
   greater: { name: 'GREATER DRAUGHT', icon: 'item_elixir', type: 'use', heal: '4d4+4', combat: true, price: 75, desc: 'Heal 4d4+4.' },

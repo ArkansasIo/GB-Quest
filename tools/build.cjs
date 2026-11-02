@@ -1,0 +1,42 @@
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = path.resolve(__dirname, '..');
+const ORDER = ['data_rules', 'data_world', 'gen', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'main', 'debug'];
+
+const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+
+const nes = '<script>window.NES_INDEX=' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'nes_index.json'), 'utf8'))) + ';</script>\n';
+const shell = rd('src/shell.html');
+
+const files = fs.readdirSync(path.join(ROOT, 'assets'))
+  .filter(f => f.endsWith('.png') && !f.startsWith('device_mockup') && !f.startsWith('bg_patterns'))
+  .sort();
+
+const names = files.map(f => f.slice(0, -4));
+fs.writeFileSync(path.join(ROOT, 'assets', 'index.json'), JSON.stringify(names));
+
+const dev = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
+  + shell.replace('<aside', '</head><body>\n<aside') + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n'
+  + ORDER.map(n => `<script src="src/${n}.js"></script>\n`).join('') + '</body></html>\n';
+fs.writeFileSync(path.join(ROOT, 'index.html'), dev);
+
+const assets = {};
+for (const n of names) {
+  const b64 = fs.readFileSync(path.join(ROOT, 'assets', n + '.png')).toString('base64');
+  assets[n] = 'data:image/png;base64,' + b64;
+}
+
+fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
+const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
+const single = shell + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\n' + nes + atlas
+  + ORDER.map(n => `<script>\n${rd(`src/${n}.js`)}\n</script>\n`).join('');
+fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);
+
+const fsHtml = rd('src/fullscreen.html');
+let full = single.replace('<title>Shadowbane Chronicles</title>', '<title>Shadowbane Chronicles Full Screen</title>')
+  .replace('</style>', '</style>\n' + fsHtml.split('<div class="fsbar"')[0]);
+full = full.replace('<section class="chat"', '<div class="fsbar"' + fsHtml.split('<div class="fsbar"')[1] + '\n<section class="chat"');
+fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest-fullscreen.html'), full);
+
+console.log(`Built index.html + dist/gbquest.html (${Math.round(single.length / 1024)} KB, ${Object.keys(assets).length} assets)`);

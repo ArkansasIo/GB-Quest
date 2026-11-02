@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -262,27 +262,97 @@ class CharSheet {
 
 // ================================================================ SPELLBOOK
 class Spellbook extends ListScene {
-  constructor() { super(8); }
-  items() { const D = derive(G); return D.spell ? D.spell.known : []; }
-  update() { this.navList(); if (P('b') || P('a')) { SFX.back(); removeScene(this); } }
+  constructor() {
+    super(6);
+    this.schools = ['all', 'aegis', 'calling', 'omen', 'thrall', 'storm', 'veil', 'grave', 'flux'];
+    this.tab = 0;
+    this.all = false;
+  }
+  schoolDef() {
+    const k = this.schools[this.tab];
+    return k === 'all' ? { id: 'all', name: 'ALL SCHOOLS', desc: 'The eight arcane traditions of Aelmoor.' } : { id: k, ...SCHOOLS[k] };
+  }
+  items() {
+    const D = derive(G);
+    const k = this.schools[this.tab];
+    const hasSpells = D.spell && D.spell.known && D.spell.known.length;
+    const pool = (!hasSpells || this.all) ? SPELLS : D.spell.known;
+    return k === 'all' ? pool : pool.filter(s => s.school === k);
+  }
+  update() {
+    const n = this.schools.length;
+    if (P('select')) { this.tab = (this.tab + 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (nav('left')) { this.tab = (this.tab + n - 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (nav('right')) { this.tab = (this.tab + 1) % n; this.i = this.top = 0; SFX.page(); }
+    if (P('start')) { this.all = !this.all; this.i = this.top = 0; SFX.toggle(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('a')) { SFX.select(); }
+  }
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const D = derive(G), L = this.items();
-    if (!L.length) { textC('No spellcasting.', 80, 50, 1); textC('Use ABILITY in battle.', 80, 62, 2); return; }
-    text(resLine(G, D), 4, 14, 2); textR(`DC${D.spell.dc} +${D.spell.atk}`, 156, 14, 2);
-    L.slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 25 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(s.lvl ? `L${s.lvl}` : 'C', 4, y, 2); text(s.name.slice(0, 17), 20, y); textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2); });
-    this.scrollbar(156, 24, 80);
-    const s = L[this.i]; frame(2, 106, 156, 36);
-    text(`${SCHOOLS[s.school].name}${s.conc ? ' CONC' : ''}${s.bonus ? ' BONUS' : ''}`, 6, 109, 'gold');
-    text(wrap(s.desc + (s.save ? ` ${s.save} save.` : s.atk ? ' Spell attack.' : ''), 24).slice(0, 2).join('\n'), 6, 119);
+    const sch = this.schoolDef();
+    const hasSpells = D.spell && D.spell.known && D.spell.known.length;
+    const mode = (!hasSpells || this.all) ? 'ALL' : 'KNOWN';
+
+    // Subheader
+    if (D.spell) {
+      text(resLine(G, D), 4, 13, 2);
+      textR(`DC${D.spell.dc} +${D.spell.atk}`, 156, 13, 2);
+    } else {
+      text('SPELL COMPENDIUM', 4, 13, 'gold');
+      textR('8 SCHOOLS', 156, 13, 2);
+    }
+
+    // School tab banner
+    fill(2, 23, 156, 10, 1);
+    textC(`< ${sch.name} (${L.length}) >`, 80, 24, 'gold');
+
+    // Spell list
+    if (!L.length) {
+      frame(2, 35, 156, 58);
+      textC(`No ${mode === 'KNOWN' ? 'known ' : ''}${sch.name} spells.`, 80, 48, 1);
+      if (mode === 'KNOWN') textC('Press START: view all in school', 80, 60, 'gold');
+      else textC(wrap(sch.desc, 24)[0] || '', 80, 60, 2);
+      textC('SEL / < >: cycle schools', 80, 74, 2);
+    } else {
+      L.slice(this.top, this.top + this.rows).forEach((s, j) => {
+        const i = this.top + j, y = 35 + j * 10;
+        const isKnown = D.spell && D.spell.known && D.spell.known.some(k => k.id === s.id);
+        if (i === this.i) fill(2, y - 1, 152, 10, 1);
+        text(s.lvl ? `L${s.lvl}` : 'C', 4, y, isKnown ? 'gold' : 2);
+        text((isKnown ? '*' : ' ') + s.name.slice(0, 15), 14, y, isKnown ? 3 : 1);
+        textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2);
+      });
+      this.scrollbar(156, 35, 58);
+    }
+
+    // Detail box
+    frame(2, 95, 156, 47);
+    const s = L[this.i];
+    if (s) {
+      text(`${SCHOOLS[s.school].name} · ${s.lvl ? 'L' + s.lvl : 'CANTRIP'}${s.conc ? ' · CONC' : ''}${s.bonus ? ' · BONUS' : ' · ACT'}`, 5, 97, 'gold');
+      const hit = s.save ? `${s.save} SAVE${s.half ? ' (1/2)' : ''}` : s.atk ? 'SPELL ATK' : (s.eff || '').toUpperCase();
+      const tags = [s.t ? s.t.toUpperCase() : '', hit, s.dt ? s.dt.toUpperCase() : '', s.dice || ''].filter(Boolean).join(' · ');
+      text(tags.slice(0, 25), 5, 106, 2);
+      text(wrap(s.desc + (s.scale ? ` (+${s.scale})` : ''), 25).slice(0, 2).join('\n'), 5, 115);
+      const clsList = (s.cls || []).map(c => c.slice(0, 3).toUpperCase()).join('/');
+      text(`CLS:${clsList || 'ALL'}`, 5, 133, 2);
+      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+    } else {
+      text(`${sch.name} TRADITION`, 5, 97, 'gold');
+      text(wrap(sch.desc, 25).slice(0, 2).join('\n'), 5, 108);
+      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+    }
   }
 }
 
-// ================================================================ GROWTH: ASI, feats, subclass, ascension, boons
+// ================================================================ GROWTH: talents, ASI, feats, subclass, ascension, boons
 class GrowthScene extends ListScene {
   constructor() { super(9); }
   items() {
-    const o = [];
+    const o = [{ t: `TALENT SYSTEM (${G.talentPts || 0} PTS)`, d: 'Choose a path and spend talent points on permanent character bonuses.', fn: () => push(new TalentScene()) }];
     if (G.pending.sub && classLevel(G) >= 3) CLASSES[G.cls].subs.forEach(s => o.push({ t: `SUBCLASS: ${s.name}`, d: s.desc, fn: () => { G.sub = s.id; G.pending.sub = false; G.res = resMax(G); } }));
     if (G.pending.asi) {
       ATTRS.slice(0, 6).forEach(a => o.push({ t: `+2 ${a} (${G.base[a]})`, d: 'Ability Score Increase. Max 20.', fn: () => { if (G.base[a] >= 20) return 'Already 20.'; G.base[a] = Math.min(20, G.base[a] + 2); G.pending.asi--; } }));
@@ -306,6 +376,70 @@ class GrowthScene extends ListScene {
     L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(e.t.slice(0, 24), 6, y); });
     this.scrollbar(156, 23, 90);
     frame(2, 114, 156, 28); text(wrap(L[this.i].d, 24).slice(0, 2).join('\n'), 6, 118);
+  }
+}
+
+class TalentScene extends ListScene {
+  constructor() { super(4); this.tree = 0; }
+  path() { return TALENT_TREES[this.tree]; }
+  items() { return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]); }
+  update() {
+    if (P('select')) { this.tree = (this.tree + 1) % TALENT_TREES.length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const node = this.items()[this.i];
+    if (!node) return;
+    if (node.respec) {
+      if (!G.talents.length) return say('No talents to reset.');
+      choose(['RESET ALL TALENTS', 'CANCEL'], index => {
+        if (index !== 0) return;
+        G.talentPts = (G.talentPts || 0) + G.talents.length;
+        G.talents = [];
+        G.hp = Math.min(G.hp, derive(G).hpMax);
+        SFX.levelup();
+      }, 'Refund all spent talent points?');
+      return;
+    }
+    if (G.talents.includes(node.id)) return say(`${node.name} is already learned.`);
+    if (G.lvl < node.level) return say(`Unlocks at level ${node.level}.`);
+    if (node.requires && !G.talents.includes(node.requires)) {
+      const prerequisite = this.path().nodes.find(candidate => candidate.id === node.requires);
+      return say(`Learn ${prerequisite ? prerequisite.name : 'the previous talent'} first.`);
+    }
+    if ((G.talentPts || 0) < 1) return say('No talent points available. Earn one at levels 5, 10, 15 and 20.');
+    G.talents.push(node.id);
+    G.talentPts--;
+    G.hp = Math.min(G.hp, derive(G).hpMax);
+    SFX.levelup();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC('TALENT SYSTEM', 80, 13, 'gold');
+    TALENT_TREES.forEach((tree, index) => {
+      const x = 3 + index * 52;
+      fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
+      textC(tree.name.slice(0, 8), x + 24, 25, index === this.tree ? 0 : 3);
+    });
+    text(`POINTS ${G.talentPts || 0}   LEVEL ${G.lvl}`, 5, 38, 2);
+    const L = this.items();
+    L.slice(this.top, this.top + this.rows).forEach((node, offset) => {
+      const index = this.top + offset, y = 50 + offset * 11;
+      const learned = !node.respec && G.talents.includes(node.id);
+      const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
+      if (index === this.i) fill(3, y - 1, 153, 10, 1);
+      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+      text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
+      if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
+    });
+    const node = L[this.i];
+    frame(2, 101, 156, 41);
+    if (node) {
+      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 104, 'gold');
+      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 114, 3);
+      if (node.requires && !G.talents.includes(node.id)) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 134, 2);
+    }
+    text('SELECT: PATH', 4, 143, 1);
   }
 }
 

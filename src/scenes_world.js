@@ -466,7 +466,15 @@ const CITY_NPCS = [
   [26, 7, 'elder_2', 'GUILDMASTER', 'guild'], [13, 10, 'villager_1', 'MERCHANT', 'vendor'], [19, 10, 'hero_2', 'QUARTERMASTER', 'honor'], [15, 14, 'villager_3', 'LFG BOARD', 'lfg'],
   [12, 14, 'elder_3', 'ORACLE', 'difficulty'], [17, 5, 'hero_3', 'SPIRE KEEPER', 'tower'], [21, 18, 'villager_5', 'TRIALS MASTER', 'trials'], [27, 13, 'villager_4', 'HARBORMASTER', 'portal'],
   [19, 14, 'elder_5', 'REALM STONE', 'server'], [10, 18, 'villager_0', 'STABLEMASTER', 'stable'], [23, 18, 'hero_0', 'ARENAMASTER', 'arena'],
+  [4, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [8, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [24, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith'],
 ];
+const BLACKSMITH_TIERS = [
+  { tier: 1, name: 'APPRENTICE', level: 1, maxRarity: 2 },
+  { tier: 2, name: 'JOURNEYMAN', level: 20, maxRarity: 5 },
+  { tier: 3, name: 'MASTER', level: 40, maxRarity: 6 },
+  { tier: 4, name: 'GRANDMASTER', level: 60, maxRarity: 8 },
+];
+const blacksmithTier = level => BLACKSMITH_TIERS.filter(t => level >= t.level).at(-1) || BLACKSMITH_TIERS[0];
 const TILE_SVC = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', a: 'bank' };
 let FIELD = null;
 const currentField = () => FIELD;
@@ -495,8 +503,14 @@ class Field {
       return e;
     }
     const z = this.zone, m = this.m;
-    if (z.town && z.id === z.region) CITY_NPCS.forEach(([x, y, s, name, svc]) => e.push({ kind: 'npc', x, y, spr: s, name, svc }));
-    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer']].forEach(([x, y, s, name, svc]) => e.push({ kind: 'npc', x, y, spr: s, name, svc }));
+    if (z.town && z.id === z.region) CITY_NPCS.forEach(([x, y, s, name, svc]) => {
+      if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
+      e.push({ kind: 'npc', x, y, spr: s, name, svc });
+    });
+    else if (z.town) [[6, 8, 'villager_4', 'DOCKHAND', 'portal'], [12, 8, 'villager_1', 'FISHMONGER', 'vendor'], [20, 8, 'hero_1', 'TRAINER', 'trainer'], [5, 11, 'hero_2', 'BLACKSMITH', 'blacksmith'], [14, 11, 'hero_1', 'ARMORSMITH', 'armorsmith'], [23, 11, 'hero_3', 'WEAPONSMITH', 'weaponsmith']].forEach(([x, y, s, name, svc]) => {
+      if (G.lvl < 20 && (svc === 'armorsmith' || svc === 'weaponsmith')) return;
+      e.push({ kind: 'npc', x, y, spr: s, name, svc });
+    });
     else {
       if (z.id === 'elderwood') { e.push({ kind: 'npc', x: 5, y: 16, spr: 'elder_0', name: 'ELDER MAE', svc: 'elder' }); e.push({ kind: 'npc', x: 7, y: 14, spr: 'villager_0', name: 'MERCHANT', svc: 'vendor' }); e.push({ kind: 'npc', x: 2, y: 7, spr: 'hero_1', name: 'CAPTAIN', svc: 'warden' }); }
       else { const r = RNG('warden-' + z.id); e.push({ kind: 'npc', x: m.hub[0], y: m.hub[1] - 1, spr: r.pick(['villager_1', 'villager_3', 'elder_1', 'hero_2']), name: `WARDEN ${r.pick(NPC_FIRST)}`, svc: 'warden' }); }
@@ -709,7 +723,7 @@ function gatherHerb(e) {
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
   const chk = skillCheck(G, 'nature', 8 + Math.floor(G.prof.herb / 10));
   nodes[e.i] = G.stats.steps;
-  const n = chk.ok ? 2 : 1; addItem(e.herb, n); SFX.gather();
+  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); SFX.gather();
   const up = gainProf('herb', G.prof.herb);
   questEvent('gather', e.herb);
   toast(`+${n} ${ITEMS[e.herb].name}`, up ? `HERBALISM ${G.prof.herb}` : chk.text.slice(0, 22), ITEMS[e.herb].icon, 'pickup');
@@ -794,6 +808,9 @@ function npcService(e) {
   if (svc === 'elder') return elderTalk();
   if (svc === 'warden') return wardenMenu(e);
   if (svc === 'vendor') return vendorMenu();
+  if (svc === 'blacksmith') return smithMenu('blacksmith');
+  if (svc === 'armorsmith') return smithMenu('armor');
+  if (svc === 'weaponsmith') return smithMenu('weapon');
   if (svc === 'inn') return innMenu();
   if (svc === 'trainer') return trainerMenu();
   if (svc === 'auction') return push(new AuctionHouse());
@@ -866,6 +883,64 @@ function vendorMenu() {
     if (k === 3) { let g = 0; for (const key of Object.keys(G.inv)) if (ITEMS[key] && ITEMS[key].type === 'junk') { g += ITEMS[key].price * G.inv[key]; delete G.inv[key]; } G.bag = G.bag.filter(it => { if (it.rarity === 0) { g += it.value; return false; } return true; }); G.gold += g; SFX.sell(); say(`Sold junk for ${g} G.`); }
     if (k === 4) { if (G.daily.haggle === new Date().toDateString()) return say('The merchant will not haggle again today.'); G.daily.haggle = new Date().toDateString(); const r = skillCheck(G, 'persuasion', 13); if (r.ok) G.daily.discount = new Date().toDateString(); say([r.text, r.ok ? '10% discount for today!' : 'The merchant shrugs. Prices stay.']); }
   }, 'MERCHANT: What will it be?');
+}
+function smithMenu(kind) {
+  if (kind === 'blacksmith') {
+    const tier = blacksmithTier(G.lvl);
+    return choose(['REINFORCE GEAR', 'SELL GEAR', 'LEAVE'], k => {
+      if (k === 0) smithUpgradeMenu(tier);
+      if (k === 1) push(new InventoryScene('sell'));
+    }, `${tier.name} BLACKSMITH TIER ${tier.tier}. ${tier.tier < 3 ? `NEXT TIER AT LV${BLACKSMITH_TIERS[tier.tier].level}.` : 'MY BEST WORK.'}`);
+  }
+  const label = kind === 'armor' ? 'ARMORSMITH' : 'WEAPONSMITH';
+  if (G.lvl < 20) return say(`${label} services unlock at player level 20.`);
+  return choose([`BUY ${kind === 'armor' ? 'ARMOUR' : 'WEAPONS'}`, `SELL ${kind === 'armor' ? 'ARMOUR' : 'WEAPONS'}`, 'LEAVE'], k => {
+    if (k === 0) smithBuyMenu(kind);
+    if (k === 1) smithSellMenu(kind);
+  }, `${label}: Properly fitted, properly forged.`);
+}
+function smithBuyMenu(kind) {
+  const catalog = kind === 'armor' ? ARMORS : WEAPONS;
+  const bases = Object.keys(catalog);
+  const rarity = Math.min(5, 1 + Math.floor(Math.max(0, G.lvl - 1) / 40));
+  const stock = Array.from({ length: 6 }, () => makeItem({ kind, base: pick(bases), lvl: G.lvl, rarity }));
+  choose(stock.map(it => `${it.name.slice(0, 15)} ${fmt(it.value * 2)}G`), index => {
+    if (index < 0) return;
+    const item = stock[index], price = item.value * 2;
+    if (G.gold < price) return say('Not enough gold.');
+    G.gold -= price; addGear(item); gainProf(kind === 'armor' ? 'armorsmith' : 'weaponsmith'); SFX.buy(); say(`Purchased ${item.name}.`);
+  }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
+}
+function smithSellMenu(kind) {
+  const gear = G.bag.filter(item => item.kind === kind);
+  if (!gear.length) return say(`You have no ${kind === 'armor' ? 'armour' : 'weapons'} to sell.`);
+  choose(gear.map(item => `${item.name.slice(0, 18)} ${fmt(item.value)}G`), index => {
+    if (index < 0) return;
+    const item = gear[index], bagIndex = G.bag.indexOf(item);
+    if (bagIndex < 0) return;
+    G.bag.splice(bagIndex, 1); G.gold += item.value; gainProf(kind === 'armor' ? 'armorsmith' : 'weaponsmith'); SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
+  }, `GOLD ${fmt(G.gold)}. Selling ${kind === 'armor' ? 'armour' : 'weapons'}.`);
+}
+function smithUpgradeMenu(tier) {
+  const gear = G.bag.filter(item => ['weapon', 'armor', 'wondrous'].includes(item.kind) && item.rarity <= tier.maxRarity);
+  if (!gear.length) return say('Bring me a weapon, armour or accessory to reinforce.');
+  choose(gear.map(item => `${item.name.slice(0, 17)} +${item.plus}`), index => {
+    if (index < 0) return;
+    const item = gear[index], cap = MAX_PLUS[item.rarity] ?? item.rarity;
+    if (item.plus >= cap) return say(`${item.name} has reached its reinforcement limit (+${cap}).`);
+    const rank = Math.max(0, item.plus) + 1, efficiency = profTalentRank('blacksmith', 'efficiency');
+    const cost = { scrap: Math.max(1, rank * 3 - Math.floor(efficiency / 24)), shard: item.rarity >= 3 ? Math.max(1, rank - Math.floor(efficiency / 48)) : 0, ember: item.rarity >= 5 ? Math.max(0, rank - 3) : 0, gold: Math.max(1, Math.floor(50 * rank * Math.max(1, Math.floor(item.ilvl / 5)) * (1 - Math.min(0.5, efficiency / 480)))) };
+    const needs = Object.entries(cost).filter(([key, amount]) => key !== 'gold' && amount > 0).map(([key, amount]) => `${amount} ${ITEMS[key].name}`).concat(`${fmt(cost.gold)} G`);
+    if ((G.inv.scrap || 0) < cost.scrap || (G.inv.shard || 0) < cost.shard || (G.inv.ember || 0) < cost.ember || G.gold < cost.gold) {
+      return say(['Not enough materials.', `Need ${needs.join(', ')}.`, `Have ${G.inv.scrap || 0} scrap, ${G.inv.shard || 0} shards, ${G.inv.ember || 0} embers, ${fmt(G.gold)} G.`]);
+    }
+    choose(['TEMPER ITEM', 'CANCEL'], confirm => {
+      if (confirm !== 0) return;
+      for (const material of ['scrap', 'shard', 'ember']) for (let n = 0; n < cost[material]; n++) takeItem(material);
+      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3); gainProf('blacksmith');
+      SFX.levelup(); say(`${item.name} is now +${item.plus}.`);
+    }, `REINFORCE ${item.name.slice(0, 16)}?\n${needs.join(', ')}`);
+  }, `${tier.name} TIER: REINFORCES ${RARITY[tier.maxRarity].name.toLowerCase()} GEAR OR LOWER. Materials come from salvaging gear.`);
 }
 function innMenu() {
   const price = 5 + Math.floor(G.lvl / 2);

@@ -13,7 +13,7 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1 }, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
@@ -30,6 +30,18 @@ function loadSlot(i) { const s = store.get(SLOT_KEYS[i]); if (!s) return false; 
 function slotInfo(i) { const s = store.get(SLOT_KEYS[i]); return s ? { name: s.name, lvl: s.lvl, cls: s.cls, portrait: s.portrait, look: s.look, zone: (ZONE_BY_ID[s.map] || { name: 'DUNGEON' }).name, saved: s.saved, chapter: s.chapter } : null; }
 function lastSlot() { const l = store.get('gbq2_last'); return l != null && slotInfo(l) ? l : SLOT_KEYS.findIndex((_, i) => slotInfo(i)); }
 function fixupState() {
+  G.prof = Object.assign({ herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
+  for (const key of Object.keys(PROFS)) G.prof[key] = Math.max(0, Math.min(PROF_CAP, Math.floor(Number(G.prof[key]) || 0)));
+  G.profTalents = G.profTalents && typeof G.profTalents === 'object' ? G.profTalents : {};
+  for (const key of Object.keys(PROFS)) {
+    const saved = G.profTalents[key] && typeof G.profTalents[key] === 'object' ? G.profTalents[key] : {};
+    G.profTalents[key] = Object.fromEntries(['yield', 'efficiency', 'mastery'].map(branch => [branch, Math.max(0, Math.min(240, Math.floor(Number(saved[branch]) || 0)))]));
+    let remaining = G.prof[key];
+    for (const branch of ['yield', 'efficiency', 'mastery']) { const rank = Math.min(remaining, G.profTalents[key][branch]); G.profTalents[key][branch] = rank; remaining -= rank; }
+  }
+  G.talents = Array.isArray(G.talents) ? G.talents.filter(id => TALENT_TREES.some(tree => tree.nodes.some(node => node.id === id))) : [];
+  const talentMilestones = [5, 10, 15, 20].filter(level => G.lvl >= level).length;
+  G.talentPts = Math.max(Number.isInteger(G.talentPts) ? G.talentPts : 0, talentMilestones - G.talents.length);
   G.stats = Object.assign(newGameState({ name: 'X', species: 'hearthkin', cls: 'warden', bg: 'wanderer' }).stats, G.stats);
   if (typeof G.pvpEnabled !== 'boolean') G.pvpEnabled = false;
   if (!['lantern', 'ashen'].includes(G.pvpFaction)) G.pvpFaction = 'lantern';
@@ -216,14 +228,35 @@ const achPoints = () => Object.keys(G.ach).length * 10;
 const repTier = v => { let t = REP_TIERS[0]; for (const r of REP_TIERS) if (v >= r[0]) t = r; return t[1]; };
 
 // ================================================================ professions
-function gainProf(k, diff = 1) { if (G.prof[k] < 100 && R() < Math.max(0.15, 1 - (G.prof[k] - diff) / 40)) { G.prof[k]++; return true; } return false; }
+function profTalentRank(k, branch) { return G.profTalents && G.profTalents[k] ? G.profTalents[k][branch] || 0 : 0; }
+function professionTalentSpend(k) { const tree = G.profTalents[k] || {}; return (tree.yield || 0) + (tree.efficiency || 0) + (tree.mastery || 0); }
+function spendProfessionTalent(k, branch) {
+  if (!PROFS[k] || !PROFESSION_TREES[k] || !Object.hasOwn(PROFESSION_TREES[k], branch)) return 'Unknown profession talent.';
+  G.profTalents[k] ||= { yield: 0, efficiency: 0, mastery: 0 };
+  const rank = profTalentRank(k, branch);
+  if (rank >= 240) return 'That talent is at maximum rank (240).';
+  if (G.prof[k] <= professionTalentSpend(k)) return 'No profession talent points available. Gain a profession skill level first.';
+  G.profTalents[k][branch]++;
+  return null;
+}
+function gainProf(k, diff = 1) {
+  if (!PROFS[k]) return false;
+  if (!Number.isInteger(G.prof[k]) || G.prof[k] < 0) G.prof[k] = 0;
+  if (G.prof[k] === 0) G.prof[k] = 1;
+  const bonus = Math.min(0.25, profTalentRank(k, 'mastery') / 960);
+  if (G.prof[k] < PROF_CAP && R() < Math.min(1, Math.max(0.15, 1 - (G.prof[k] - diff) / 40) + bonus)) { G.prof[k]++; return true; }
+  return false;
+}
 function craft(rec) {
-  for (const k in rec.needs) if ((G.inv[k] || 0) < rec.needs[k]) return 'Missing materials.';
+  const reduction = Math.floor(profTalentRank(rec.prof, 'efficiency') / 24);
+  const needs = Object.fromEntries(Object.entries(rec.needs).map(([item, quantity]) => [item, Math.max(1, quantity - reduction)]));
+  for (const k in needs) if ((G.inv[k] || 0) < needs[k]) return 'Missing materials.';
   if (G.prof[rec.prof] < rec.skill) return `Need ${PROFS[rec.prof]} ${rec.skill}.`;
-  for (const k in rec.needs) for (let i = 0; i < rec.needs[k]; i++) takeItem(k);
-  addItem(rec.makes); G.stats.crafted++;
+  for (const k in needs) for (let i = 0; i < needs[k]; i++) takeItem(k);
+  const output = 1 + Math.floor(profTalentRank(rec.prof, 'yield') / 24);
+  addItem(rec.makes, output); G.stats.crafted++;
   const up = gainProf(rec.prof, rec.skill);
-  return `Made ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+  return `Made ${output} ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
 }
 
 // ================================================================ zone cache
