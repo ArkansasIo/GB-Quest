@@ -24,5 +24,6 @@ contextBridge.exposeInMainWorld('gbqLauncher', Object.freeze({
   checkRealm: url => ipcRenderer.invoke('gbq:realm-check', { url }),
   authenticate: credentials => ipcRenderer.invoke('gbq:realm-auth', credentials),
   getSession: () => ipcRenderer.invoke('gbq:realm-session'),
+  listCharacters: () => ipcRenderer.invoke('gbq:realm-saves'),
   logout: () => ipcRenderer.invoke('gbq:realm-logout'),
 }));
