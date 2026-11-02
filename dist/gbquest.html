@@ -1735,7 +1735,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false },
   store.get('gbq2_settings') || {});
 function applyFilter() { LCD.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
@@ -4150,7 +4150,17 @@ function chatLog(channel, who, msg, sim) {
 // ================================================================ NET: live multiplayer through the artifact room + db
 const NET = {
   room: null, db: null, user: null, myId: null, peers: [], hostOf: null, server: null, joined: {}, lastPres: '', seenSay: {}, remoteView: null,
+  offline: false,
+  // OFFLINE: nothing leaves this browser (no presence, chat, server or leaderboard). ONLINE: connect.
+  setMode(mode) {
+    S.netMode = mode; saveSettings();
+    if (mode === 'offline') { this.offline = true; this.stopServer(); this.hostOf = null; this.peers = []; this.status = 'OFFLINE (BY CHOICE)'; if (this.room) this.room.presence({}).catch(() => {}); this.lastPres = ''; }
+    else { this.offline = false; if (!this.room) this.init(); else { this.status = 'ONLINE'; this.lastPres = ''; this.publishHero(); } }
+  },
+  isOnline() { return !this.offline && !!this.room; },
   async init() {
+    if (S.netMode === 'offline') { this.offline = true; this.status = 'OFFLINE (BY CHOICE)'; return; }
+    this.offline = false;
     if (!window.claude || !window.claude.use) { this.status = 'OFFLINE'; return; }
     this.status = 'CONNECTING';
     try { this.user = await window.claude.use('user'); if (this.user && this.user.id) this.myId = await this.user.id(); } catch (e) {}
@@ -4158,7 +4168,7 @@ const NET = {
       this.room = await window.claude.use('room');
       if (this.room) {
         this.status = 'ONLINE';
-        this.room.onPeers(ch => { this.peers = ch.peers.filter(p => !p.sameTab && p.kind === 'viewer'); this.onPeers(ch); }, () => { this.status = 'OFFLINE'; this.room = null; });
+        this.room.onPeers(ch => { if (this.offline) { this.peers = []; return; } this.peers = ch.peers.filter(p => !p.sameTab && p.kind === 'viewer'); this.onPeers(ch); }, () => { this.status = 'OFFLINE'; this.room = null; });
         ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m), () => {}));
       } else this.status = 'OFFLINE';
     } catch (e) { this.status = 'OFFLINE'; }
@@ -4167,7 +4177,7 @@ const NET = {
   },
   tick() {
     realmTick();
-    if (!this.room || !G || frameN % 15) return;
+    if (this.offline || !this.room || !G || frameN % 15) return;
     const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0,
       s: this.say || null, st: this.sayT || 0, h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
     const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
@@ -4182,19 +4192,22 @@ const NET = {
   },
   sendChat(msg) {
     msg = clean(msg, 120); if (!msg) return;
+    if (this.offline) { chatLog('System', 'REALM', 'You are offline. Switch to ONLINE to talk to other players.'); return; }
     this.say = msg; this.sayT = Date.now(); chatLog('Say', G ? G.name : 'YOU', msg);
   },
   peersInZone(zid) { return this.peers.filter(p => p.presence && p.presence.z === zid && typeof p.presence.x === 'number'); },
   servers() { return this.peers.filter(p => p.presence && p.presence.h).map(p => ({ peer: p.peer, name: clean(p.presence.h, 20), host: clean(p.presence.n), lvl: p.presence.l, players: this.peers.filter(q => q.presence && q.presence.j === p.peer).length + 1 })); },
-  hostServer(name) { this.server = { name: name || `${G.name}'S REALM` }; this.hostOf = null; toast('SERVER ONLINE', this.server.name, 'px_tower', 'confirm'); },
+  hostServer(name) { if (!this.isOnline()) { say(this.offline ? 'You are playing OFFLINE. Switch to ONLINE first (title screen or SETTINGS).' : 'No connection to other players right now.'); return false; } this.server = { name: name || `${G.name}'S REALM` }; this.hostOf = null; toast('SERVER ONLINE', this.server.name, 'px_tower', 'confirm'); },
   stopServer() { this.server = null; this.joined = {}; },
   joinServer(peer) {
+    if (!this.isOnline()) { say('You are playing OFFLINE. Switch to ONLINE first.'); return; }
     this.hostOf = peer; this.server = null;
     if (this.room) this.room.emit('srv_char', { to: peer, ch: slimChar(G) }).catch(e => toast('SERVER', 'Joining needs Contributor access', 'px_tower', 'error'));
     toast('JOINED SERVER', 'You fight in the host party', 'px_tower', 'confirm');
   },
   partyChars() { return this.server ? Object.entries(this.joined).map(([peer, ch]) => ({ peer, ch })) : []; },
   onMsg(t, m) {
+    if (this.offline) return;
     const d = m.data || {};
     if (t === 'srv_char' && this.server && d.to === this.myPeer()) { const ch = unslimChar(d.ch); if (ch) { this.joined[m.peer] = ch; toast('PLAYER JOINED', ch.name, 'px_tower', 'lfg_ready'); } }
     if (t === 'srv_battle' && this.hostOf === m.peer) { this.remoteView = d; const v = scenes.find(s => s instanceof RemoteBattleView); if (!v && d.active) push(new RemoteBattleView()); }
@@ -4213,6 +4226,7 @@ const NET = {
   requestTurn(b, u) { if (this.room) this.room.emit('srv_turn', { to: u.ctrl.slice(7), foes: b.foes.filter(alive).map(f => [f.id, f.name.slice(0, 10)]) }).catch(() => {}); },
   sendAct(a) { if (this.room) this.room.emit('srv_act', a).catch(() => {}); this.myTurn = null; },
   async publishHero() {
+    if (this.offline) return;
     if (!this.db || !this.myId || !G) return;
     try { await this.db.doc('heroes/' + this.myId).set({ name: G.name.slice(0, 12), cls: G.cls, lvl: G.lvl, ach: achPoints(), tower: G.towerBest || 0, rating: G.rating || 1000, ch: G.chapter, ts: Date.now() }); } catch (e) {}
   },
@@ -4322,11 +4336,52 @@ class Boot {
 }
 
 // ================================================================ TITLE
+// ================================================================ ONLINE / OFFLINE + the built-in realm server
+class MultiplayerScene {
+  constructor() { this.opaque = true; this.i = 0; this.t = 0; }
+  heroReady() { if (G) return true; const l = lastSlot(); if (l >= 0) { loadSlot(l); return true; } return false; }
+  opts() {
+    const on = !NET.offline, o = [{ k: 'mode', label: `MODE: ${on ? 'ONLINE' : 'OFFLINE'}` }];
+    if (on) {
+      o.push({ k: 'host', label: NET.server ? `STOP HOSTING (${NET.partyChars().length} JOINED)` : 'HOST A REALM' });
+      for (const sv of NET.servers().slice(0, 4)) o.push({ k: 'join', sv, label: `JOIN ${sv.name} (${sv.players})`.slice(0, 24) });
+      if (NET.hostOf) o.push({ k: 'leave', label: 'LEAVE REALM' });
+    }
+    o.push({ k: 'play', label: G ? 'PLAY' : 'PLAY (LOAD HERO)' }, { k: 'back', label: 'BACK' });
+    return o;
+  }
+  update() {
+    this.t++; const o = this.opts();
+    if (nav('up')) { this.i = (this.i + o.length - 1) % o.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % o.length; SFX.cursor(); }
+    this.i = Math.min(this.i, o.length - 1);
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const c = o[this.i];
+    if (c.k === 'mode') { NET.setMode(NET.offline ? 'online' : 'offline'); SFX.toggle(); }
+    if (c.k === 'host') { if (NET.server) { NET.stopServer(); SFX.close(); } else if (!this.heroReady()) say('Create a hero first (NEW GAME).'); else NET.hostServer(`${G.name}'S REALM`); }
+    if (c.k === 'join') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); NET.joinServer(c.sv.peer); }
+    if (c.k === 'leave') { NET.hostOf = null; SFX.close(); }
+    if (c.k === 'play') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); fadeTo(() => { scenes.length = 0; enterWorld(); }); }
+    if (c.k === 'back') { SFX.back(); removeScene(this); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3); textC('MULTIPLAYER', 80, 1, 0);
+    const on = !NET.offline, live = NET.isOnline();
+    frame(4, 14, 152, 34);
+    fill(10, 20, 8, 8, live ? 'green' : on ? 'gold' : 'red');
+    text(live ? 'ONLINE' : on ? 'CONNECTING / NO LINK' : 'OFFLINE', 22, 20, live ? 'green' : on ? 'gold' : 'red');
+    text(live ? `${NET.peers.length} PLAYERS HERE  ${NET.servers().length} REALMS` : on ? (NET.status === 'SERVER: LOG IN' ? 'LOG IN: TITLE > ACCOUNT' : 'OPEN THE SHARED PAGE') : 'SOLO + NPC REALM ONLY', 10, 33, 2);
+    this.opts().forEach((c, j) => { const y = 54 + j * 11; if (j === this.i) fill(4, y - 1, 152, 11, 1); text(c.label, 8, y, c.k === 'mode' && j !== this.i ? 'gold' : 3); });
+    text(on ? 'HOST: friends join your fights.' : 'Nothing leaves your device.', 4, 134, 1);
+  }
+}
+
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'MULTIPLAYER', 'SETTINGS', 'CREDITS'); return o; }
+  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'ONLINE'); if (typeof LocalRealm !== 'undefined' && LocalRealm.available) o.push('ACCOUNT'); o.push('SETTINGS', 'CREDITS'); return o; }
   update() {
     this.t++;
     const o = this.opts();
@@ -4338,7 +4393,9 @@ class Title {
       if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
       if (c === 'NEW GAME') push(new SlotPicker('new'));
       if (c === 'LOAD GAME') push(new SlotPicker('load'));
-      if (c === 'MULTIPLAYER') say(['MULTIPLAYER: share this page with friends.', 'Load a hero, then visit the REALM STONE in ARDENHOLD (or open SOCIAL > SERVER) to host or join a server.', `Status: ${NET.status || 'OFFLINE'}. Live players: ${NET.peers.length}.`]);
+      if (c === 'ONLINE') { push(new MultiplayerScene()); return; }
+      if (c === 'ACCOUNT') { push(new AccountScene()); return; }
+      if (c === 'MULTIPLAYER_OLD') say(['MULTIPLAYER: share this page with friends.', 'Load a hero, then visit the REALM STONE in ARDENHOLD (or open SOCIAL > SERVER) to host or join a server.', `Status: ${NET.status || 'OFFLINE'}. Live players: ${NET.peers.length}.`]);
       if (c === 'SETTINGS') push(new SettingsScene());
       if (c === 'CREDITS') push(new Credits());
     }
@@ -4353,6 +4410,7 @@ class Title {
       blit(spr(`${b}_${ch}`, 16, 16), x * 16 - off, y * 16);
     }
     ctx.globalAlpha = 0.5; fill(0, 0, W, H, 0); ctx.globalAlpha = 1;
+    { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
     frame(8, 8, 144, 44);
     textC('GB QUEST', 81, 14, 2, 2); textC('GB QUEST', 80, 13, 3, 2);
     textC(BUILD.subtitle, 80, 36, 2);
@@ -5929,13 +5987,14 @@ class BankScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT']; }
+  items() { return ['NETWORK', 'PALETTE', 'VIDEO', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
     const o = this.items()[this.i], clamp = v => Math.max(0, Math.min(6, v));
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
+    if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
     if (o === 'AUDIO') { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; const c = Music.cur; Music.cur = null; Music.step = 0; if (c) Music.play(c); }
     if (o === 'VIDEO') { if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; } else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; } UI = PALS[S.palette]; clearCaches(); }
     if (o === 'ART') { S.art = S.art === 'classic' ? 'nes' : 'classic'; applyArt(); clearCaches(); }
@@ -5957,7 +6016,7 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>'];
+    const v = [NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
@@ -6626,6 +6685,167 @@ class TitleScene extends ListScene {
 }
 
 for (const k in ITEMS) if (!ITEMS[k].icon0) ITEMS[k].icon0 = ITEMS[k].icon;
+
+</script>
+<script>
+'use strict';
+// ================================================================ REALM SERVER CLIENT (accounts + live play)
+// When the game is served by server/server.cjs (http://localhost:8787), this connects to it:
+// accounts (register / login / logout), cloud saves, the leaderboard, and a "room" with the same
+// shape the game already uses (presence, onPeers, on(topic), emit), carried over Server-Sent Events.
+// When there is no realm server (e.g. a shared claude.ai page), the game falls back to the page's
+// own room/db capabilities, or plays offline.
+
+const LocalRealm = {
+  base: '', available: false, token: null, account: null, peer: null, es: null, info: null,
+  load() { try { this.token = localStorage.getItem('gbq_token'); this.account = JSON.parse(localStorage.getItem('gbq_account') || 'null'); } catch (e) {} },
+  store() { try { if (this.token) { localStorage.setItem('gbq_token', this.token); localStorage.setItem('gbq_account', JSON.stringify(this.account)); } else { localStorage.removeItem('gbq_token'); localStorage.removeItem('gbq_account'); } } catch (e) {} },
+  async api(path, opts = {}) {
+    const r = await fetch(this.base + path, { method: opts.method || 'GET', headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: 'Bearer ' + this.token } : {}) }, body: opts.body ? JSON.stringify(opts.body) : undefined });
+    let j = null; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) { const err = new Error((j && j.error) || `HTTP ${r.status}`); err.status = r.status; throw err; }
+    return j;
+  },
+  async detect() {
+    if (!/^https?:$/.test(location.protocol)) return false;
+    try { const c = new AbortController(); setTimeout(() => c.abort(), 1500); const r = await fetch('/api/health', { signal: c.signal }); if (!r.ok) return false; this.info = await r.json(); this.available = !!(this.info && this.info.ok); } catch (e) { this.available = false; }
+    return this.available;
+  },
+  async register(username, password) { const r = await this.api('/api/register', { method: 'POST', body: { username, password } }); this.token = r.token; this.account = r.account; this.store(); return r.account; },
+  async login(username, password) { const r = await this.api('/api/login', { method: 'POST', body: { username, password } }); this.token = r.token; this.account = r.account; this.store(); return r.account; },
+  async logout() { try { await this.api('/api/logout', { method: 'POST' }); } catch (e) {} this.disconnect(); this.token = null; this.account = null; this.store(); },
+  async me() { try { const r = await this.api('/api/me'); this.account = r.account; this.store(); return r; } catch (e) { if (e.status === 401) { this.token = null; this.account = null; this.store(); } return null; } },
+  // ---------------------------------------------------------------- room-shaped transport
+  room() {
+    const L = this, handlers = {}, peerSubs = [];
+    let peers = [];
+    L.disconnect();
+    L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
+    L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; });
+    L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
+    L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
+    L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+    const post = (path, body) => L.peer ? L.api(path, { method: 'POST', body: { peer: L.peer, ...body } }) : Promise.reject(new Error('connecting'));
+    return {
+      transport: 'server',
+      peers: () => peers,
+      presence: p => post('/api/presence', { presence: p }),
+      onPeers: (cb, err) => { peerSubs.push([cb, err]); },
+      on: (topic, cb) => { (handlers[topic] = handlers[topic] || []).push(cb); },
+      emit: (topic, data) => post('/api/emit', { topic, data }),
+    };
+  },
+  disconnect() { if (this.es) { this.es.close(); this.es = null; } this.peer = null; },
+  // ---------------------------------------------------------------- cloud saves
+  async listSaves() { return (await this.api('/api/saves')).slots; },
+  async upload(slot) { const st = store.get(SLOT_KEYS[slot]); if (!st) throw new Error('That slot is empty on this device.'); await this.api(`/api/saves/${slot}`, { method: 'PUT', body: { state: st } }); },
+  async download(slot) { const r = await this.api(`/api/saves/${slot}`); store.set(SLOT_KEYS[slot], r.state); return r.state; },
+};
+LocalRealm.load();
+
+// ---------------------------------------------------------------- hook NET: prefer the realm server when present
+{
+  const init0 = NET.init.bind(NET);
+  NET.init = async function () {
+    if (S.netMode === 'offline') return init0();
+    const ok = await LocalRealm.detect();
+    if (!ok) return init0();                                  // shared page / file: use the page's room or go offline
+    this.transport = 'server';
+    if (!LocalRealm.token || !(await LocalRealm.me())) { this.status = 'SERVER: LOG IN'; this.room = null; return; }
+    this.offline = false; this.status = 'ONLINE';
+    this.myId = LocalRealm.account.id;
+    this.room = LocalRealm.room();
+    this.room.onPeers(ch => { if (this.offline) { this.peers = []; return; } this.peers = ch.peers.filter(p => !p.sameTab); this.onPeers(ch); }, () => { this.status = 'SERVER LOST'; });
+    ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m)));
+    this.db = null; this.publishHero();
+  };
+  const pub0 = NET.publishHero.bind(NET);
+  NET.publishHero = async function () {
+    if (this.transport !== 'server') return pub0();
+    if (this.offline || !G || !LocalRealm.token) return;
+    try { await LocalRealm.api('/api/hero', { method: 'PUT', body: { name: G.name, cls: G.cls, lvl: G.lvl, ach: achPoints(), tower: G.towerBest || 0, rating: G.rating || 1000, ch: G.chapter } }); } catch (e) {}
+  };
+  const lb0 = NET.leaderboard.bind(NET);
+  NET.leaderboard = async function () {
+    if (this.transport !== 'server') return lb0();
+    try { return (await LocalRealm.api('/api/heroes')).heroes; } catch (e) { return null; }
+  };
+  const mode0 = NET.setMode.bind(NET);
+  NET.setMode = function (mode) { mode0(mode); if (this.transport === 'server') { if (mode === 'offline') LocalRealm.disconnect(); else this.init(); } };
+}
+
+// ---------------------------------------------------------------- account form (HTML overlay: real text fields for name + password)
+function accountForm(kind) {
+  return new Promise(resolve => {
+    const old = document.getElementById('acctForm'); if (old) old.remove();
+    const wrap = document.createElement('div'); wrap.id = 'acctForm';
+    wrap.style.cssText = 'position:fixed;inset:0;z-index:150;display:grid;place-items:center;background:#000a;padding:16px';
+    wrap.innerHTML = `<form style="width:min(320px,100%);background:#161816;border:2px solid #7fa52c;border-radius:10px;padding:16px;display:grid;gap:10px;font:12px Silkscreen,'Courier New',monospace;color:#c9d0b0">
+      <b style="font-size:14px;color:#d4e7bd">${kind === 'register' ? 'CREATE ACCOUNT' : 'LOG IN'}</b>
+      <label style="display:grid;gap:4px">NAME<input name="u" autocomplete="username" minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" required style="font:inherit;padding:8px;background:#0d100e;color:#e6f5d0;border:1px solid #39403a;border-radius:6px"></label>
+      <label style="display:grid;gap:4px">PASSWORD<input name="p" type="password" autocomplete="${kind === 'register' ? 'new-password' : 'current-password'}" minlength="8" maxlength="72" required style="font:inherit;padding:8px;background:#0d100e;color:#e6f5d0;border:1px solid #39403a;border-radius:6px"></label>
+      ${kind === 'register' ? `<label style="display:grid;gap:4px">CONFIRM<input name="p2" type="password" autocomplete="new-password" minlength="8" maxlength="72" required style="font:inherit;padding:8px;background:#0d100e;color:#e6f5d0;border:1px solid #39403a;border-radius:6px"></label>` : ''}
+      <small style="color:#7c8570">${kind === 'register' ? 'Name: 3-16 letters, digits or _. Password: 8+ characters.' : 'Your realm server keeps your account.'}</small>
+      <div id="acctErr" style="color:#ff8a7a;min-height:1em"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" data-x style="font:inherit;padding:8px 12px;background:#1d1f1c;color:#c9d0b0;border:1px solid #39403a;border-radius:6px;cursor:pointer">CANCEL</button><button style="font:inherit;padding:8px 12px;background:#2f4a1c;color:#e6f5d0;border:1px solid #7fa52c;border-radius:6px;cursor:pointer">${kind === 'register' ? 'REGISTER' : 'LOG IN'}</button></div></form>`;
+    document.body.appendChild(wrap);
+    const f = wrap.querySelector('form'), err = wrap.querySelector('#acctErr'); f.u.focus();
+    const done = v => { wrap.remove(); resolve(v); };
+    wrap.querySelector('[data-x]').onclick = () => done(null);
+    f.addEventListener('keydown', e => { if (e.key === 'Escape') done(null); e.stopPropagation(); });
+    f.addEventListener('submit', async e => {
+      e.preventDefault(); err.textContent = '';
+      if (kind === 'register' && f.p.value !== f.p2.value) { err.textContent = 'Passwords do not match.'; return; }
+      try { const a = kind === 'register' ? await LocalRealm.register(f.u.value, f.p.value) : await LocalRealm.login(f.u.value, f.p.value); done(a); }
+      catch (x) { err.textContent = x.message; }
+    });
+  });
+}
+
+// ---------------------------------------------------------------- ACCOUNT screen
+class AccountScene {
+  constructor() { this.opaque = true; this.i = 0; this.busy = false; this.msg = ''; this.cloud = null; if (LocalRealm.token) this.refresh(); }
+  async refresh() { try { this.cloud = await LocalRealm.listSaves(); } catch (e) { this.cloud = null; } }
+  opts() {
+    if (!LocalRealm.available) return ['BACK'];
+    if (!LocalRealm.account) return ['LOG IN', 'CREATE ACCOUNT', 'BACK'];
+    return ['UPLOAD SLOT 1', 'UPLOAD SLOT 2', 'UPLOAD SLOT 3', 'DOWNLOAD SLOT 1', 'DOWNLOAD SLOT 2', 'DOWNLOAD SLOT 3', 'LOG OUT', 'BACK'];
+  }
+  async run(o) {
+    this.busy = true;
+    try {
+      if (o === 'LOG IN' || o === 'CREATE ACCOUNT') { const a = await accountForm(o === 'LOG IN' ? 'login' : 'register'); if (a) { SFX.confirm(); this.msg = `WELCOME, ${a.name}!`; await NET.init(); await this.refresh(); } }
+      else if (o === 'LOG OUT') { await LocalRealm.logout(); NET.room = null; NET.peers = []; NET.status = 'SERVER: LOG IN'; this.cloud = null; SFX.close(); this.msg = 'LOGGED OUT'; }
+      else if (o.startsWith('UPLOAD')) { const s = +o.slice(-1) - 1; await LocalRealm.upload(s); await this.refresh(); SFX.confirm(); this.msg = `SLOT ${s + 1} SAVED TO SERVER`; }
+      else if (o.startsWith('DOWNLOAD')) { const s = +o.slice(-1) - 1; await LocalRealm.download(s); SFX.confirm(); this.msg = `SLOT ${s + 1} DOWNLOADED`; }
+    } catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 50); }
+    this.busy = false;
+  }
+  update() {
+    if (document.getElementById('acctForm')) return;
+    const o = this.opts();
+    if (nav('up')) { this.i = (this.i + o.length - 1) % o.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % o.length; SFX.cursor(); }
+    this.i = Math.min(this.i, o.length - 1);
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('a') && !this.busy) { const c = o[this.i]; if (c === 'BACK') { SFX.back(); removeScene(this); } else this.run(c); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3); textC('ACCOUNT', 80, 1, 0);
+    frame(4, 14, 152, 30);
+    if (!LocalRealm.available) { text('NO REALM SERVER', 10, 18, 'red'); text('RUN: node server/server.cjs', 10, 28, 2); text('THEN OPEN localhost:8787', 10, 37, 2); }
+    else if (!LocalRealm.account) { text(`${(LocalRealm.info.realm || 'REALM').slice(0, 20)}`, 10, 18, 'gold'); text(`${LocalRealm.info.players} ONLINE  ${LocalRealm.info.accounts} ACCOUNTS`, 10, 29, 2); }
+    else { text(`SIGNED IN: ${LocalRealm.account.name}`.slice(0, 24), 10, 18, 'green'); text(NET.isOnline() ? `ONLINE  ${NET.peers.length} PLAYERS` : NET.status || '', 10, 29, 2); }
+    this.opts().forEach((c, j) => {
+      const y = 49 + j * 10; if (j === this.i) fill(4, y - 1, 152, 10, 1);
+      let tag = '';
+      if (this.cloud && /SLOT/.test(c)) { const s = this.cloud[+c.slice(-1) - 1]; if (c.startsWith('DOWNLOAD')) tag = s ? `${s.name} L${s.lvl}` : 'EMPTY'; else { const l = slotInfo(+c.slice(-1) - 1); tag = l ? `${l.name} L${l.lvl}` : 'EMPTY'; } }
+      text(c, 8, y, 3); if (tag) textR(tag.slice(0, 11), 154, y, 2);
+    });
+    if (this.msg) text(this.msg.slice(0, 25), 4, 134, this.msg.includes('WRONG') || this.msg.includes('TAKEN') || this.msg.includes('ERROR') ? 'red' : 'gold');
+    else if (this.busy) text('WORKING...', 4, 134, 2);
+  }
+}
 
 </script>
 <script>

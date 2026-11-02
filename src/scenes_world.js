@@ -18,11 +18,52 @@ class Boot {
 }
 
 // ================================================================ TITLE
+// ================================================================ ONLINE / OFFLINE + the built-in realm server
+class MultiplayerScene {
+  constructor() { this.opaque = true; this.i = 0; this.t = 0; }
+  heroReady() { if (G) return true; const l = lastSlot(); if (l >= 0) { loadSlot(l); return true; } return false; }
+  opts() {
+    const on = !NET.offline, o = [{ k: 'mode', label: `MODE: ${on ? 'ONLINE' : 'OFFLINE'}` }];
+    if (on) {
+      o.push({ k: 'host', label: NET.server ? `STOP HOSTING (${NET.partyChars().length} JOINED)` : 'HOST A REALM' });
+      for (const sv of NET.servers().slice(0, 4)) o.push({ k: 'join', sv, label: `JOIN ${sv.name} (${sv.players})`.slice(0, 24) });
+      if (NET.hostOf) o.push({ k: 'leave', label: 'LEAVE REALM' });
+    }
+    o.push({ k: 'play', label: G ? 'PLAY' : 'PLAY (LOAD HERO)' }, { k: 'back', label: 'BACK' });
+    return o;
+  }
+  update() {
+    this.t++; const o = this.opts();
+    if (nav('up')) { this.i = (this.i + o.length - 1) % o.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % o.length; SFX.cursor(); }
+    this.i = Math.min(this.i, o.length - 1);
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const c = o[this.i];
+    if (c.k === 'mode') { NET.setMode(NET.offline ? 'online' : 'offline'); SFX.toggle(); }
+    if (c.k === 'host') { if (NET.server) { NET.stopServer(); SFX.close(); } else if (!this.heroReady()) say('Create a hero first (NEW GAME).'); else NET.hostServer(`${G.name}'S REALM`); }
+    if (c.k === 'join') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); NET.joinServer(c.sv.peer); }
+    if (c.k === 'leave') { NET.hostOf = null; SFX.close(); }
+    if (c.k === 'play') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); fadeTo(() => { scenes.length = 0; enterWorld(); }); }
+    if (c.k === 'back') { SFX.back(); removeScene(this); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3); textC('MULTIPLAYER', 80, 1, 0);
+    const on = !NET.offline, live = NET.isOnline();
+    frame(4, 14, 152, 34);
+    fill(10, 20, 8, 8, live ? 'green' : on ? 'gold' : 'red');
+    text(live ? 'ONLINE' : on ? 'CONNECTING / NO LINK' : 'OFFLINE', 22, 20, live ? 'green' : on ? 'gold' : 'red');
+    text(live ? `${NET.peers.length} PLAYERS HERE  ${NET.servers().length} REALMS` : on ? (NET.status === 'SERVER: LOG IN' ? 'LOG IN: TITLE > ACCOUNT' : 'OPEN THE SHARED PAGE') : 'SOLO + NPC REALM ONLY', 10, 33, 2);
+    this.opts().forEach((c, j) => { const y = 54 + j * 11; if (j === this.i) fill(4, y - 1, 152, 11, 1); text(c.label, 8, y, c.k === 'mode' && j !== this.i ? 'gold' : 3); });
+    text(on ? 'HOST: friends join your fights.' : 'Nothing leaves your device.', 4, 134, 1);
+  }
+}
+
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'MULTIPLAYER', 'SETTINGS', 'CREDITS'); return o; }
+  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'ONLINE'); if (typeof LocalRealm !== 'undefined' && LocalRealm.available) o.push('ACCOUNT'); o.push('SETTINGS', 'CREDITS'); return o; }
   update() {
     this.t++;
     const o = this.opts();
@@ -34,7 +75,9 @@ class Title {
       if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
       if (c === 'NEW GAME') push(new SlotPicker('new'));
       if (c === 'LOAD GAME') push(new SlotPicker('load'));
-      if (c === 'MULTIPLAYER') say(['MULTIPLAYER: share this page with friends.', 'Load a hero, then visit the REALM STONE in ARDENHOLD (or open SOCIAL > SERVER) to host or join a server.', `Status: ${NET.status || 'OFFLINE'}. Live players: ${NET.peers.length}.`]);
+      if (c === 'ONLINE') { push(new MultiplayerScene()); return; }
+      if (c === 'ACCOUNT') { push(new AccountScene()); return; }
+      if (c === 'MULTIPLAYER_OLD') say(['MULTIPLAYER: share this page with friends.', 'Load a hero, then visit the REALM STONE in ARDENHOLD (or open SOCIAL > SERVER) to host or join a server.', `Status: ${NET.status || 'OFFLINE'}. Live players: ${NET.peers.length}.`]);
       if (c === 'SETTINGS') push(new SettingsScene());
       if (c === 'CREDITS') push(new Credits());
     }
@@ -49,6 +92,7 @@ class Title {
       blit(spr(`${b}_${ch}`, 16, 16), x * 16 - off, y * 16);
     }
     ctx.globalAlpha = 0.5; fill(0, 0, W, H, 0); ctx.globalAlpha = 1;
+    { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
     frame(8, 8, 144, 44);
     textC('GB QUEST', 81, 14, 2, 2); textC('GB QUEST', 80, 13, 3, 2);
     textC(BUILD.subtitle, 80, 36, 2);

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "sweep": "python3 tests/sweep.py"
+    "sweep": "python3 tests/sweep.py",
+    "server": "node server/server.cjs"
   },
   "engines": {
     "node": ">=20"

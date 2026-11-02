@@ -258,7 +258,17 @@ function chatLog(channel, who, msg, sim) {
 // ================================================================ NET: live multiplayer through the artifact room + db
 const NET = {
   room: null, db: null, user: null, myId: null, peers: [], hostOf: null, server: null, joined: {}, lastPres: '', seenSay: {}, remoteView: null,
+  offline: false,
+  // OFFLINE: nothing leaves this browser (no presence, chat, server or leaderboard). ONLINE: connect.
+  setMode(mode) {
+    S.netMode = mode; saveSettings();
+    if (mode === 'offline') { this.offline = true; this.stopServer(); this.hostOf = null; this.peers = []; this.status = 'OFFLINE (BY CHOICE)'; if (this.room) this.room.presence({}).catch(() => {}); this.lastPres = ''; }
+    else { this.offline = false; if (!this.room) this.init(); else { this.status = 'ONLINE'; this.lastPres = ''; this.publishHero(); } }
+  },
+  isOnline() { return !this.offline && !!this.room; },
   async init() {
+    if (S.netMode === 'offline') { this.offline = true; this.status = 'OFFLINE (BY CHOICE)'; return; }
+    this.offline = false;
     if (!window.claude || !window.claude.use) { this.status = 'OFFLINE'; return; }
     this.status = 'CONNECTING';
     try { this.user = await window.claude.use('user'); if (this.user && this.user.id) this.myId = await this.user.id(); } catch (e) {}
@@ -266,7 +276,7 @@ const NET = {
       this.room = await window.claude.use('room');
       if (this.room) {
         this.status = 'ONLINE';
-        this.room.onPeers(ch => { this.peers = ch.peers.filter(p => !p.sameTab && p.kind === 'viewer'); this.onPeers(ch); }, () => { this.status = 'OFFLINE'; this.room = null; });
+        this.room.onPeers(ch => { if (this.offline) { this.peers = []; return; } this.peers = ch.peers.filter(p => !p.sameTab && p.kind === 'viewer'); this.onPeers(ch); }, () => { this.status = 'OFFLINE'; this.room = null; });
         ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m), () => {}));
       } else this.status = 'OFFLINE';
     } catch (e) { this.status = 'OFFLINE'; }
@@ -275,7 +285,7 @@ const NET = {
   },
   tick() {
     realmTick();
-    if (!this.room || !G || frameN % 15) return;
+    if (this.offline || !this.room || !G || frameN % 15) return;
     const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0,
       s: this.say || null, st: this.sayT || 0, h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
     const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
@@ -290,19 +300,22 @@ const NET = {
   },
   sendChat(msg) {
     msg = clean(msg, 120); if (!msg) return;
+    if (this.offline) { chatLog('System', 'REALM', 'You are offline. Switch to ONLINE to talk to other players.'); return; }
     this.say = msg; this.sayT = Date.now(); chatLog('Say', G ? G.name : 'YOU', msg);
   },
   peersInZone(zid) { return this.peers.filter(p => p.presence && p.presence.z === zid && typeof p.presence.x === 'number'); },
   servers() { return this.peers.filter(p => p.presence && p.presence.h).map(p => ({ peer: p.peer, name: clean(p.presence.h, 20), host: clean(p.presence.n), lvl: p.presence.l, players: this.peers.filter(q => q.presence && q.presence.j === p.peer).length + 1 })); },
-  hostServer(name) { this.server = { name: name || `${G.name}'S REALM` }; this.hostOf = null; toast('SERVER ONLINE', this.server.name, 'px_tower', 'confirm'); },
+  hostServer(name) { if (!this.isOnline()) { say(this.offline ? 'You are playing OFFLINE. Switch to ONLINE first (title screen or SETTINGS).' : 'No connection to other players right now.'); return false; } this.server = { name: name || `${G.name}'S REALM` }; this.hostOf = null; toast('SERVER ONLINE', this.server.name, 'px_tower', 'confirm'); },
   stopServer() { this.server = null; this.joined = {}; },
   joinServer(peer) {
+    if (!this.isOnline()) { say('You are playing OFFLINE. Switch to ONLINE first.'); return; }
     this.hostOf = peer; this.server = null;
     if (this.room) this.room.emit('srv_char', { to: peer, ch: slimChar(G) }).catch(e => toast('SERVER', 'Joining needs Contributor access', 'px_tower', 'error'));
     toast('JOINED SERVER', 'You fight in the host party', 'px_tower', 'confirm');
   },
   partyChars() { return this.server ? Object.entries(this.joined).map(([peer, ch]) => ({ peer, ch })) : []; },
   onMsg(t, m) {
+    if (this.offline) return;
     const d = m.data || {};
     if (t === 'srv_char' && this.server && d.to === this.myPeer()) { const ch = unslimChar(d.ch); if (ch) { this.joined[m.peer] = ch; toast('PLAYER JOINED', ch.name, 'px_tower', 'lfg_ready'); } }
     if (t === 'srv_battle' && this.hostOf === m.peer) { this.remoteView = d; const v = scenes.find(s => s instanceof RemoteBattleView); if (!v && d.active) push(new RemoteBattleView()); }
@@ -321,6 +334,7 @@ const NET = {
   requestTurn(b, u) { if (this.room) this.room.emit('srv_turn', { to: u.ctrl.slice(7), foes: b.foes.filter(alive).map(f => [f.id, f.name.slice(0, 10)]) }).catch(() => {}); },
   sendAct(a) { if (this.room) this.room.emit('srv_act', a).catch(() => {}); this.myTurn = null; },
   async publishHero() {
+    if (this.offline) return;
     if (!this.db || !this.myId || !G) return;
     try { await this.db.doc('heroes/' + this.myId).set({ name: G.name.slice(0, 12), cls: G.cls, lvl: G.lvl, ach: achPoints(), tower: G.towerBest || 0, rating: G.rating || 1000, ch: G.chapter, ts: Date.now() }); } catch (e) {}
   },
