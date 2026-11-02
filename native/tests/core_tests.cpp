@@ -182,6 +182,62 @@ void test_health_transitions() {
 }
 
 
+
+void test_inventory_transactions() {
+  const gbquest::ItemDefinition potion{
+      .id = "potion", .weight_grams = 100, .max_stack = 5};
+  gbquest::InventoryState inventory{
+      .slot_capacity = 4, .weight_capacity_grams = 2000};
+
+  const auto added = gbquest::add_item(inventory, potion, 7);
+  check(added.success && added.quantity_changed == 7
+            && inventory.items.size() == 2
+            && inventory.current_weight_grams == 700,
+        "add item splits quantity into bounded stacks");
+
+  const auto more = gbquest::add_item(inventory, potion, 2);
+  check(more.success && inventory.items[0].quantity == 5
+            && inventory.items[1].quantity == 4,
+        "add item fills existing partial stacks first");
+
+  const auto removed = gbquest::remove_item(inventory, "potion", 6, potion);
+  check(removed.success && removed.quantity_changed == 6
+            && inventory.items.size() == 1
+            && inventory.items[0].quantity == 3
+            && inventory.current_weight_grams == 300,
+        "remove item quantity across stacks");
+
+  const auto insufficient = gbquest::remove_item(inventory, "potion", 4, potion);
+  check(!insufficient.success && insufficient.reason == "insufficient_quantity"
+            && inventory.items[0].quantity == 3,
+        "failed removal leaves inventory unchanged");
+
+  const auto weight = gbquest::inventory_weight(
+      inventory, std::span<const gbquest::ItemDefinition>(&potion, 1));
+  check(weight == 300, "calculate inventory weight from definitions");
+
+  gbquest::InventoryState no_slots{
+      .slot_capacity = 1, .weight_capacity_grams = 10000};
+  const auto rejected_slots = gbquest::add_item(no_slots, potion, 6);
+  check(!rejected_slots.success && rejected_slots.reason == "slot_capacity_exceeded"
+            && no_slots.items.empty() && no_slots.current_weight_grams == 0,
+        "slot-capacity rejection is transactional");
+
+  gbquest::InventoryState no_weight{
+      .slot_capacity = 10, .weight_capacity_grams = 100};
+  const auto rejected_weight = gbquest::add_item(no_weight, potion, 2);
+  check(!rejected_weight.success && rejected_weight.reason == "weight_capacity_exceeded"
+            && no_weight.items.empty(),
+        "weight-capacity rejection is transactional");
+
+  check_throws([&] {
+    (void)gbquest::add_item(inventory, potion, 0);
+  }, "reject non-positive add quantity");
+  check_throws([&] {
+    (void)gbquest::inventory_weight(inventory, {});
+  }, "reject missing item definitions for weight calculation");
+}
+
 void test_ability_score_state() {
   const gbquest::AbilityScores scores{{15, 14, 13, 12, 10, 8}};
   check(gbquest::ability_score(scores, gbquest::Ability::strength) == 15,
@@ -221,6 +277,7 @@ int main() {
   test_dice_and_damage();
   test_health_transitions();
   test_ability_score_state();
+  test_inventory_transactions();
 
   if (failures != 0) {
     std::cerr << failures << " native test(s) failed\n";
