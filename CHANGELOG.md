@@ -2,6 +2,24 @@
 
 All notable changes to GB Quest. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## 2.1.1 — B2026.11.01
+
+### Added
+- **Debug panel** (F9, SETTINGS > DEBUG PANEL, or `#debug`), with:
+  - live state, pause and frame stepping, game speed
+  - god mode, levels, gold, loot, warp, reveal map, waypoints
+  - no encounters, collision view, time of day
+  - battle win/lose, mode toggles, state copy, self-check, error log
+- **Automated sweep** (`tests/sweep.py`, `npm run sweep`): plays every class, zone, menu, service, instance, render mode, save slot and audio engine, plus random-input monkey runs, with state and screen-text invariants. See [docs/DEBUGGING.md](docs/DEBUGGING.md).
+
+### Fixed
+- Holding a direction into a door or NPC kept re-opening its menu.
+- The standalone HTML files had no viewport meta, so on phones the full-screen build's touch pad sat off-screen.
+- Instances whose definition had no `lvl` spawned `NaN`-stat monsters.
+
+### Performance
+- 64-bit video frame time is down from about 13 ms to about 4 ms.
+
 ## 2.1.0 — B2026.11.01
 
 ### Added

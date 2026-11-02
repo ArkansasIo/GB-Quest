@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "sweep": "python3 tests/sweep.py"
   },
   "engines": {
     "node": ">=20"

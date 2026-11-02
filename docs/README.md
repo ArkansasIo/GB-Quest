@@ -10,6 +10,7 @@
 | [GRAPHICS.md](GRAPHICS.md) | Palettes, sprite pipeline, 64-bit video mode, HD asset atlases, map rendering |
 | [MULTIPLAYER.md](MULTIPLAYER.md) | Presence, chat, host-server protocol, leaderboard, play modes |
 | [BUILD.md](BUILD.md) | Build, run, full-screen build, tests, release checklist |
+| [DEBUGGING.md](DEBUGGING.md) | Debug panel, automated sweep, debug hooks, bugs fixed |
 | **Generated reference** (`node tools/gen_docs.cjs`) | |
 | [STORY.md](STORY.md) | Prologue, 12 acts, 50 chapters, side quest templates, expansions, factions |
 | [CHARACTERS.md](CHARACTERS.md) | Attributes, species, classes and features, backgrounds, spells, difficulty, level curve |

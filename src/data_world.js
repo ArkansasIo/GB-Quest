@@ -348,7 +348,7 @@ const CHAT_LINES = [
 const NAME_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 // ================================================================ build info & studio
-const BUILD = { game: 'GB QUEST', subtitle: 'LANTERNS OF AELMOOR', version: '2.1.0', build: 'B2026.11.01', studio: 'ArkansasIo', year: 2026 };
+const BUILD = { game: 'GB QUEST', subtitle: 'LANTERNS OF AELMOOR', version: '2.1.1', build: 'B2026.11.01', studio: 'ArkansasIo', year: 2026 };
 
 // ================================================================ expansions (endgame, levels 40-720)
 const EXPANSIONS = [

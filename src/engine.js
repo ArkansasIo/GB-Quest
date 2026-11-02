@@ -525,6 +525,7 @@ function render() {
   for (; i < scenes.length; i++) scenes[i].draw();
   ctx.restore();
   drawToasts();
+  if (window.DBG && DBG.overlay) DBG.overlay();
   present();
 }
 function present() {
@@ -537,6 +538,8 @@ function loop(t) {
   if (!lastT) lastT = t;
   acc += Math.min(100, t - lastT); lastT = t;
   let n = 0;
-  while (acc >= 1000 / 60 && n < 4) { acc -= 1000 / 60; tick(); n++; }
+  if (window.DBG && DBG.paused) { acc = 0; while (DBG.steps > 0) { DBG.steps--; tick(); } render(); return; }
+  const spd = window.DBG ? DBG.speed : 1;
+  while (acc >= 1000 / 60 / spd && n < 4 * spd) { acc -= 1000 / 60 / spd; tick(); n++; }
   render();
 }

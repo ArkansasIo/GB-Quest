@@ -331,7 +331,7 @@ class Field {
     this.discover();
     const zt = t && t[2];
     const rate = zt === 'wood' ? 0.1 : zt === 'open' ? 0.06 : 0;
-    if (rate && !G.ghost && this.since > 5 && R() < rate * (G.mounted ? 0.6 : 1)) {
+    if (rate && !G.ghost && !(window.DBG && DBG.noEnc) && this.since > 5 && R() < rate * (G.mounted ? 0.6 : 1)) {
       this.since = 0;
       const foes = rollEncounter(this.zone, { group: zt === 'wood' });
       const st = skillCheck(G, 'stealth', 10 + Math.floor(foes[0].lvl / 2));

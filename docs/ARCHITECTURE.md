@@ -19,6 +19,7 @@ GB Quest is plain JavaScript with no framework, no bundler and no runtime depend
 | 11 | `src/scenes_world.js` | Boot, Title, creation, `Field` (overworld), services, instances, loot rolls, fishing, `WorldMap`, level-up, remote battle view, credits |
 | 12 | `src/scenes_menu.js` | `ListScene` base and every menu: main menu, bag, equipment, sheet, spellbook, growth, quests, crafting, achievements, bestiary, reputation, social, auction, bank, settings, sound test |
 | 13 | `src/main.js` | boot, chat form, hot snapshot, `NET.init`, autosave, debug hooks `window.GBQ`, embedded Atlas overlay |
+| 14 | `src/debug.js` | debug panel (F9), error recorder, god mode, collision overlay, self-check |
 | — | `src/shell.html` | handheld device chrome, touch controls, chat panel, build strip |
 | — | `src/fullscreen.html` | full-screen window overrides and toolbar |
 | — | `atlas/atlas_template.html` | the interactive Atlas of Dunia (SVG) |

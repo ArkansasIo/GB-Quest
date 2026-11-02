@@ -296,7 +296,7 @@ function buildInstance(kind, def, floor = 0) {
   const entry = { x: start.x + 1, y: start.cy };
   // pulls
   const pulls = [];
-  const lvl = def.lvl + (kind === 'tower' ? floor * TOWER.perFloor : 0);
+  const lvl = (def.lvl ?? def.baseLvl ?? 1) + (kind === 'tower' ? floor * TOWER.perFloor : 0);
   const table = kind === 'tower' ? BESTIARY : spawnTable((REGIONS.find(z => z.id === def.zone) || { biome: 'dusk' }).biome);
   const bosses = kind === 'tower' ? BOSSES.filter(b => b.cat === 'tower' && b.floor === floor) : BOSSES.filter(b => b.where === def.id).sort((a, b) => a.order - b.order);
   const bossRooms = kind === 'tower' ? (bosses.length ? [rooms.length - 1] : []) : bosses.map((_, i) => Math.round((rooms.length - 1) * (i + 1) / bosses.length));

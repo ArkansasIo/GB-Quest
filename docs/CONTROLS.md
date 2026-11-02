@@ -16,6 +16,7 @@
 | F | full screen (full-screen build) |
 | C | chat overlay (full-screen build) |
 | F3 or ` | profiler overlay (64-bit video mode) |
+| F9 | debug panel |
 
 ## World map
 

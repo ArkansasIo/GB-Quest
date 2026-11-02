@@ -17,7 +17,7 @@ const Tween = {
 };
 const Cam = { zoom: 1, pulse(z = 1.06, f = 20) { this.zoom = z; Tween.to(this, { zoom: 1 }, f, 'out'); } };
 // game clock: one in-game day = 24 real minutes; hour 0..24
-const Clock = { get hour() { return ((Date.now() / 60000) % 24 + 24) % 24; }, get phase() { const h = this.hour; return h < 5 || h >= 21 ? 'NIGHT' : h < 8 ? 'DAWN' : h < 18 ? 'DAY' : 'DUSK'; } };
+const Clock = { override: null, get hour() { return this.override != null ? this.override : ((Date.now() / 60000) % 24 + 24) % 24; }, get phase() { const h = this.hour; return h < 5 || h >= 21 ? 'NIGHT' : h < 8 ? 'DAWN' : h < 18 ? 'DAY' : 'DUSK'; } };
 const Profiler = {
   on: false, last: performance.now(), fps: 60, ms: 0,
   frame(ms) { const n = performance.now(), dt = n - this.last; this.last = n; this.fps = this.fps * 0.95 + (1000 / Math.max(1, dt)) * 0.05; this.ms = this.ms * 0.9 + ms * 0.1; },
@@ -27,6 +27,25 @@ const Profiler = {
 addEventListener('keydown', e => { if (e.key === 'F3' || e.key === '`') { Profiler.on = !Profiler.on; e.preventDefault(); } });
 
 // ---------------------------------------------------------------- Scale2x on a Uint32 image
+// colour grade on the small frame (saturation 1.18, contrast 1.06) — far cheaper than a CSS filter at 640x576
+const GRADE = new Map();
+function grade(src) {
+  for (let i = 0; i < src.length; i++) {
+    const p = src[i]; let g = GRADE.get(p);
+    if (g === undefined) {
+      const r = p & 255, gg = (p >> 8) & 255, b = (p >> 16) & 255, a = p >>> 24, l = (r + gg + b) / 3;
+      const f = v => Math.max(0, Math.min(255, Math.round(((l + (v - l) * 1.18) - 128) * 1.06 + 128)));
+      g = ((a << 24) | (f(b) << 16) | (f(gg) << 8) | f(r)) >>> 0; if (GRADE.size < 65536) GRADE.set(p, g);
+    }
+    src[i] = g;
+  }
+  return src;
+}
+// bright-pass for bloom: keep only pixels brighter than the threshold
+function brightPass(src, out) {
+  for (let i = 0; i < src.length; i++) { const p = src[i], l = ((p & 255) * 54 + ((p >> 8) & 255) * 183 + ((p >> 16) & 255) * 19) >> 8; out[i] = l > 170 ? p : 0; }
+  return out;
+}
 function scale2x(src, w, h) {
   const out = new Uint32Array(w * h * 4), W2 = w * 2;
   for (let y = 0; y < h; y++) {
@@ -72,12 +91,13 @@ function present64(LCD, lctx) {
     V64.img = V64.bx.createImageData(BW, BH);
   }
   // 1. scale4x
-  const src = new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer);
+  const src = grade(new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer));
   const s4 = scale2x(scale2x(src, W, H), W * 2, H * 2);
-  new Uint32Array(V64.img.data.buffer).set(s4); V64.bx.putImageData(V64.img, 0, 0);
+  new Uint32Array(V64.img.data.buffer).set(s4);
   lctx.save(); lctx.imageSmoothingEnabled = false;
-  const z = Cam.zoom; if (z !== 1) { lctx.translate(BW / 2, BH / 2); lctx.scale(z, z); lctx.translate(-BW / 2, -BH / 2); }
-  lctx.filter = 'saturate(1.18) contrast(1.06)'; lctx.drawImage(V64.big, 0, 0); lctx.filter = 'none';
+  const z = Cam.zoom;
+  if (Math.abs(z - 1) < 0.001) lctx.putImageData(V64.img, 0, 0); // straight to the LCD: skips one full-size copy
+  else { V64.bx.putImageData(V64.img, 0, 0); lctx.translate(BW / 2, BH / 2); lctx.scale(z, z); lctx.translate(-BW / 2, -BH / 2); lctx.drawImage(V64.big, 0, 0); }
   // 2. lighting (field scenes only)
   const base = scenes.findLast ? scenes.findLast(s => s.opaque) : scenes.slice().reverse().find(s => s.opaque);
   if (base instanceof Field && Light64.dark > 0.01) {
@@ -91,12 +111,16 @@ function present64(LCD, lctx) {
   }
   Light64.list.length = 0;
   // 3. bloom
-  const bx = V64.blx; bx.clearRect(0, 0, W, H); bx.filter = 'brightness(0.55) contrast(3.2) saturate(1.6) blur(3px)'; bx.drawImage(ctx.canvas, 0, 0); bx.filter = 'none';
-  lctx.globalCompositeOperation = 'screen'; lctx.globalAlpha = 0.16; lctx.imageSmoothingEnabled = true; lctx.drawImage(V64.bloom, 0, 0, BW, BH);
+  // bloom: bright-pass at 80x72, then the browser's smoothing spreads it when drawn up to 640x576
+  if (!V64.bp) { V64.bp = mkCanvas(W, H); V64.bpx = V64.bp.getContext('2d'); V64.bpd = V64.bpx.createImageData(W, H); V64.half = mkCanvas(W / 2, H / 2); V64.hx = V64.half.getContext('2d'); }
+  brightPass(src, new Uint32Array(V64.bpd.data.buffer)); V64.bpx.putImageData(V64.bpd, 0, 0);
+  const bx = V64.hx; bx.imageSmoothingEnabled = true; bx.clearRect(0, 0, W / 2, H / 2); bx.drawImage(V64.bp, 0, 0, W / 2, H / 2);
+  V64.bloom = V64.half;
+  lctx.globalCompositeOperation = 'screen'; lctx.globalAlpha = 0.24; lctx.imageSmoothingEnabled = true; lctx.drawImage(V64.bloom, 0, 0, BW, BH);
   lctx.globalAlpha = 1; lctx.globalCompositeOperation = 'source-over';
   // 4. vignette
-  const vg = lctx.createRadialGradient(BW / 2, BH / 2, BH * 0.45, BW / 2, BH / 2, BH * 0.8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.38)');
-  lctx.fillStyle = vg; lctx.fillRect(0, 0, BW, BH);
+  if (!V64.vig) { V64.vig = mkCanvas(BW, BH); const vx = V64.vig.getContext('2d'), vg = vx.createRadialGradient(BW / 2, BH / 2, BH * 0.45, BW / 2, BH / 2, BH * 0.8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.38)'); vx.fillStyle = vg; vx.fillRect(0, 0, BW, BH); }
+  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.drawImage(V64.vig, 0, 0);
   lctx.restore();
   Profiler.frame(performance.now() - t0); Profiler.draw(lctx);
 }

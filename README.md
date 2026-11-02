@@ -1,7 +1,7 @@
 # GB Quest: Lanterns of Aelmoor
 
 **A Game Boy–style MMORPG with d20 rules — by ArkansasIo**
-Version 2.1.0 (build B2026.11.01) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
+Version 2.1.1 (build B2026.11.01) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
 
 A 160×144 handheld RPG running in the browser. You can play in DMG green, Game Boy Color, Pocket or full colour palettes.
 
