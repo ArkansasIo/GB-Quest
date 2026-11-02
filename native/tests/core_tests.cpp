@@ -181,6 +181,36 @@ void test_health_transitions() {
   }, "reject invalid health state without mutation");
 }
 
+
+void test_ability_score_state() {
+  const gbquest::AbilityScores scores{{15, 14, 13, 12, 10, 8}};
+  check(gbquest::ability_score(scores, gbquest::Ability::strength) == 15,
+        "read strength from ordered ability scores");
+  check(gbquest::ability_score(scores, gbquest::Ability::charisma) == 8,
+        "read charisma from ordered ability scores");
+  check(gbquest::ability_modifier(gbquest::ability_score(
+            scores, gbquest::Ability::dexterity)) == 2,
+        "derive modifier from stored ability score");
+
+  check_throws([&] {
+    (void)gbquest::ability_score(scores, static_cast<gbquest::Ability>(99));
+  }, "reject invalid ability enum");
+  check_throws([&] {
+    gbquest::validate_ability_scores(gbquest::AbilityScores{{10, 10, 0, 10, 10, 10}});
+  }, "reject ability score below one");
+  check_throws([&] {
+    (void)gbquest::passive_score({.ability_score = 31});
+  }, "reject passive score ability outside supported range");
+
+  const auto passive = gbquest::passive_score({
+      .ability_score = 16, .character_level = 5, .proficient = true});
+  check(passive == 16, "passive score includes ability modifier and proficiency");
+  check(gbquest::passive_score({
+            .ability_score = 8, .character_level = 1, .proficient = false,
+            .bonus = 2}) == 11,
+        "passive score supports non-proficient bonuses");
+}
+
 } // namespace
 
 int main() {
