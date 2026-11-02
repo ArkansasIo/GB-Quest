@@ -276,27 +276,29 @@ class CharacterMenu {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    const diablo = S.uiTheme === 'diablo';
+    if (diablo) { fill(1, 10, 158, 133, 0); frame(1, 10, 158, 133); fill(2, 11, 156, 10, 1); textC('CHARACTER', 80, 12, 'gold'); }
     this.tabs().forEach(([name, label], index) => {
       const x = 2 + index * 52, active = index === this.tab;
-      fill(x, 12, 50, 10, active ? 3 : 1); textC(label, x + 25, 13, active ? 0 : 3);
-      if (active) text(name, x + 2, 25, 'gold');
+      fill(x, 23, 50, 10, active ? (diablo ? 'gold' : 3) : 1); textC(label, x + 25, 24, active ? 0 : 3);
+      if (active) text(name, x + 2, 35, 'gold');
     });
     const D = derive(G), portrait = heroPortrait(G);
-    fill(2, 36, 52, 96, 1); fill(57, 36, 101, 96, 1);
-    blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 39);
-    text(G.name.slice(0, 9), 5, 84, 'gold');
-    text(`${SPECIES[G.species].name.slice(0, 7)} ${CLASSES[G.cls].name.slice(0, 7)}`.slice(0, 16), 5, 94, 2);
-    text(`LEVEL ${G.lvl}`, 5, 105, 3);
-    text('HP', 5, 115, 2); bar(18, 116, 31, 4, G.hp, D.hpMax, 'hp');
-    text(`AC ${D.ac}`, 5, 126, 3);
+    fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
+    blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
+    text(G.name.slice(0, 9), 5, 94, 'gold');
+    text(`${SPECIES[G.species].name.slice(0, 7)} ${CLASSES[G.cls].name.slice(0, 7)}`.slice(0, 16), 5, 104, 2);
+    text(`LEVEL ${G.lvl}`, 5, 115, 3);
+    text('HP', 5, 125, 2); bar(18, 126, 31, 4, G.hp, D.hpMax, 'hp');
+    text(`AC ${D.ac}`, 5, 136, 3);
     const gearSlots = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'offhand', 'waist', 'legs', 'feet', 'ring1', 'ring2'];
     gearSlots.forEach((slot, index) => {
-      const item = G.eq[slot], y = 39 + index * 7.5;
+      const item = G.eq[slot], y = 49 + index * 6.2;
       const label = SLOT_NAME[slot].replace('MAIN HAND', 'WEAPON').replace('OFF HAND', 'OFFHAND');
       text(`${label.slice(0, 7).padEnd(7)} ${item ? item.name : '--'}`.slice(0, 16), 61, y, item ? rarityCol(item.rarity) : 2);
     });
-    text(`BAG ${G.bag.length}/${BAG_MAX}  GOLD ${fmt(G.gold)}`.slice(0, 23), 61, 128, 'gold');
-    text('LEFT/RIGHT: TAB  A: OPEN  B: BACK', 4, 139, 1);
+    text(`BAG ${G.bag.length}/${BAG_MAX}  GOLD ${fmt(G.gold)}`.slice(0, 23), 61, 130, 'gold');
+    fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }
 
@@ -951,7 +953,7 @@ class SettingsScene extends ListScene {
     if (o === 'HOVER TOOLTIPS') S.tooltipHover = S.tooltipHover !== false ? false : true;
     if (o === 'RIGHT-CLICK TOOLTIPS') S.tooltipRightClick = S.tooltipRightClick !== false ? false : true;
     if (o === 'BATTLE BG') { S.battleBg = S.battleBg === 'painted' ? 'clean' : 'painted'; }
-    if (o === 'UI THEME') { S.uiTheme = S.uiTheme === 'classic' ? 'sanctum' : 'classic'; clearCaches(); }
+    if (o === 'UI THEME') { const themes = ['classic', 'sanctum', 'diablo']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
     if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
     if (o === 'HD RESOLUTION') { const options = ['native', '4k', '8k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
@@ -978,7 +980,7 @@ class SettingsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
     textC('SETTINGS', 80, 13, 'gold');
-    const v = [S.uiTheme === 'classic' ? 'CLASSIC' : 'SANCTUM', S.battleBg === 'painted' ? 'PAINTED' : 'CLEAN', typeof adminAllowed === 'function' && adminAllowed() ? 'OPEN' : 'LOCKED', S.devMode ? 'ON' : 'OFF', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = [({ classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' })[S.uiTheme] || 'CLASSIC', S.battleBg === 'painted' ? 'PAINTED' : 'CLEAN', typeof adminAllowed === 'function' && adminAllowed() ? 'OPEN' : 'LOCKED', S.devMode ? 'ON' : 'OFF', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
