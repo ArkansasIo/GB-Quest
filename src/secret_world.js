@@ -29,8 +29,14 @@ function buildSecretWorldCatalog() {
     const noun = GBQ_SECRET_NOUNS[(i * 11 + 5) % GBQ_SECRET_NOUNS.length];
     const type = types[i % types.length], id = 'hidden_' + String(serial).padStart(3, '0');
     const level = Math.max(1, Number(zone.lvl && zone.lvl[0]) || 1);
+    const reward = type === 'boss'
+      ? { gold: 2000 + serial * 100, sigils: 3 + serial % 6, potions: 1 + serial % 3 }
+      : type === 'cache' ? { gold: 500 + serial * 45, sigils: 1 + serial % 3, potions: 1 + serial % 4 }
+      : type === 'npc' ? { gold: 350 + serial * 30, sigils: 0, potions: 1 + serial % 3 }
+      : { gold: 600 + serial * 35, sigils: 1 + serial % 2, potions: 1 };
     result.push({ id, zone: zone.id, name: 'THE ' + adjective.toUpperCase() + ' ' + noun.toUpperCase() + ' ' + String(serial).padStart(2, '0'),
-      type, minLvl: level, hint: GBQ_SECRET_HINTS[type], relic: type === 'boss' ? adjective.toUpperCase() + ' ' + noun.toUpperCase() + ' RELIC' : undefined });
+      type, minLvl: level, hint: GBQ_SECRET_HINTS[type], reward,
+      relic: type === 'boss' ? adjective.toUpperCase() + ' ' + noun.toUpperCase() + ' RELIC' : undefined });
   }
   return Object.freeze(result.map(d => Object.freeze(d)));
 }
@@ -94,23 +100,24 @@ function activateSecretWorld(def, state) {
     if (found[def.id] && found[def.id].claimed) return say('The lantern keeper has already shared the secret. “The mountain remembers every footstep.”');
     return choose(['LISTEN', 'LEAVE'], i => {
       if (i !== 0) return;
-      grantSecretWorldReward(state, def, { gold: 1200, potions: 2 });
+      grantSecretWorldReward(state, def, def.reward || { gold: 1200, potions: 2 });
       say(['A hooded keeper emerges from the reeds.', '“The old roads were built over older doors.”', 'You receive 1,200 gold and two potions.']);
       toast('SECRET NPC FOUND', def.name, 'px_crown', 'achievement');
     }, 'A faint lantern moves against the wind. Someone is waiting.');
   }
   if (def.type === 'cache') {
     if (found[def.id] && found[def.id].claimed) return say('The ice-sealed cache is empty.');
-    grantSecretWorldReward(state, def, { gold: 3200, sigils: 2, potions: 3 });
+    grantSecretWorldReward(state, def, def.reward || { gold: 3200, sigils: 2, potions: 3 });
     toast('INVISIBLE CACHE FOUND', '+3,200 GOLD  +2 SIGILS', 'item_chest', 'achievement');
     return say(['You uncover a chest beneath a sheet of ancient ice.', 'Inside: 3,200 gold, 2 boss sigils and 3 potions.']);
   }
   if (def.type === 'dungeon' || def.type === 'developer' || def.type === 'portal') {
     const repeat = !!(found[def.id] && found[def.id].entered);
+    if (!found[def.id] || !found[def.id].claimed) grantSecretWorldReward(state, def, def.reward || { gold: 800, sigils: 1, potions: 1 });
     found[def.id] = Object.assign({}, found[def.id], { entered: true, foundAt: found[def.id] && found[def.id].foundAt || Date.now() });
     if (typeof saveGame === 'function') saveGame();
     const level = Math.max(def.minLvl, Math.min(720, state.lvl + (def.type === 'developer' ? 0 : 4)));
-    const theme = def.type === 'developer' ? 'temple' : def.type === 'portal' ? 'lava' : 'crypt';
+    const theme = def.type === 'developer' ? 'temple' : def.type === 'portal' ? 'lava' : def.type === 'puzzle' ? 'crystal' : 'crypt';
     const dungeon = { id: 'secret_' + def.id, name: def.name, lvl: level, zone: def.zone, theme };
     if (typeof enterInstance === 'function') {
       if (repeat) toast('SECRET PASSAGE', 'The hidden route opens again.', 'item_key', 'stairs');
@@ -130,7 +137,7 @@ function activateSecretWorld(def, state) {
       startBattle([foe], { size: Math.max(1, Math.min(4, typeof fieldPartySize === 'function' ? fieldPartySize() : 1)), music: 'arcboss', title: 'THE HIDDEN VOID HERALD',
         onEnd: result => {
           if (result !== 'win') return;
-          if (grantSecretWorldReward(state, def, { gold: 12000, sigils: 8 })) {
+          if (grantSecretWorldReward(state, def, def.reward || { gold: 12000, sigils: 8 })) {
             const item = makeItem({ lvl: Math.max(level, 40), rarity: 8, boss: true, mf: derive(state).mf, loot: 2 });
             item.name = def.relic || (def.name + ' RELIC'); item.named = 'secret_' + def.id; item.legend = true; item.lore = 'A star that fell through the seam between worlds.';
             addGear(item); if (typeof saveGame === 'function') saveGame();
