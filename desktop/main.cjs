@@ -196,8 +196,10 @@ ipcMain.on('gbq:launch-game', (event, selection = {}) => {
     dialog.showErrorBox('Invalid realm selection', 'Choose a valid region, data center, and world.');
     return;
   }
+  const characterSlot = selection.characterSlot === null || selection.characterSlot === undefined || selection.characterSlot === '' ? '' : String(selection.characterSlot);
+  if (characterSlot && !/^[0-2]$/.test(characterSlot)) { dialog.showErrorBox('Invalid character selection', 'Choose one of the three cloud save slots.'); return; }
   gameWindow.setTitle(`Lost Kingdom of Shadowbane Chronicles — ${dataCenter} / World ${world}`);
-  gameWindow.loadFile(activeGameFile(), { query: { region, dataCenter, world } });
+  gameWindow.loadFile(activeGameFile(), { query: { region, dataCenter, world, characterSlot } });
 });
 ipcMain.on('gbq:check-updates', event => {
   if (gameWindow && event.sender === gameWindow.webContents) checkForGameUpdates();
@@ -244,6 +246,13 @@ ipcMain.handle('gbq:realm-session', async event => {
     if (/401|Log in first|HTTP 401/i.test(error.message)) clearRealmSession();
     return { authenticated: false, error: error.message };
   }
+});
+ipcMain.handle('gbq:realm-saves', async event => {
+  if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
+  if (!realmSession) throw new Error('Sign in to view cloud characters.');
+  const base = realmBaseUrl();
+  const result = await realmRequest(base, '/api/saves', { token: realmSession.token });
+  return Array.isArray(result.slots) ? result.slots : [];
 });
 ipcMain.handle('gbq:realm-logout', async event => {
   if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
