@@ -1,0 +1,2524 @@
+{
+  "pointsOfInterest": [
+    {
+      "id": "asia-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Jadewind Basin",
+      "type": "dungeon",
+      "level": 1,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-poi-2",
+      "name": "Ancient Watch of Jadewind Basin",
+      "type": "ruins",
+      "level": 3,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-poi-3",
+      "name": "Skyfall Monument of Jadewind Basin",
+      "type": "landmark",
+      "level": 5,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Jadewind Basin",
+      "type": "resource_site",
+      "level": 7,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-poi-5",
+      "name": "Apex Den of Jadewind Basin",
+      "type": "world_boss_lair",
+      "level": 9,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Dragonspine Range",
+      "type": "dungeon",
+      "level": 6,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-poi-2",
+      "name": "Ancient Watch of Dragonspine Range",
+      "type": "ruins",
+      "level": 8,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-poi-3",
+      "name": "Skyfall Monument of Dragonspine Range",
+      "type": "landmark",
+      "level": 10,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Dragonspine Range",
+      "type": "resource_site",
+      "level": 12,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-poi-5",
+      "name": "Apex Den of Dragonspine Range",
+      "type": "world_boss_lair",
+      "level": 14,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Saffron Coast",
+      "type": "dungeon",
+      "level": 11,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-poi-2",
+      "name": "Ancient Watch of Saffron Coast",
+      "type": "ruins",
+      "level": 13,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-poi-3",
+      "name": "Skyfall Monument of Saffron Coast",
+      "type": "landmark",
+      "level": 15,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Saffron Coast",
+      "type": "resource_site",
+      "level": 17,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-poi-5",
+      "name": "Apex Den of Saffron Coast",
+      "type": "world_boss_lair",
+      "level": 19,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Whispering Steppe",
+      "type": "dungeon",
+      "level": 16,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-poi-2",
+      "name": "Ancient Watch of Whispering Steppe",
+      "type": "ruins",
+      "level": 18,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-poi-3",
+      "name": "Skyfall Monument of Whispering Steppe",
+      "type": "landmark",
+      "level": 20,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Whispering Steppe",
+      "type": "resource_site",
+      "level": 22,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-poi-5",
+      "name": "Apex Den of Whispering Steppe",
+      "type": "world_boss_lair",
+      "level": 24,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-05-poi-1",
+      "name": "Forgotten Catacombs of Lotus Delta",
+      "type": "dungeon",
+      "level": 21,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-poi-2",
+      "name": "Ancient Watch of Lotus Delta",
+      "type": "ruins",
+      "level": 23,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-poi-3",
+      "name": "Skyfall Monument of Lotus Delta",
+      "type": "landmark",
+      "level": 25,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-poi-4",
+      "name": "Gatherer's Hollow of Lotus Delta",
+      "type": "resource_site",
+      "level": 27,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-poi-5",
+      "name": "Apex Den of Lotus Delta",
+      "type": "world_boss_lair",
+      "level": 29,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Obsidian Highlands",
+      "type": "dungeon",
+      "level": 26,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-poi-2",
+      "name": "Ancient Watch of Obsidian Highlands",
+      "type": "ruins",
+      "level": 28,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-poi-3",
+      "name": "Skyfall Monument of Obsidian Highlands",
+      "type": "landmark",
+      "level": 30,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Obsidian Highlands",
+      "type": "resource_site",
+      "level": 32,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-poi-5",
+      "name": "Apex Den of Obsidian Highlands",
+      "type": "world_boss_lair",
+      "level": 34,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Moonlit Archipelago",
+      "type": "dungeon",
+      "level": 31,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-poi-2",
+      "name": "Ancient Watch of Moonlit Archipelago",
+      "type": "ruins",
+      "level": 33,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-poi-3",
+      "name": "Skyfall Monument of Moonlit Archipelago",
+      "type": "landmark",
+      "level": 35,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Moonlit Archipelago",
+      "type": "resource_site",
+      "level": 37,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-poi-5",
+      "name": "Apex Den of Moonlit Archipelago",
+      "type": "world_boss_lair",
+      "level": 39,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Celestial Desert",
+      "type": "dungeon",
+      "level": 36,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-poi-2",
+      "name": "Ancient Watch of Celestial Desert",
+      "type": "ruins",
+      "level": 38,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-poi-3",
+      "name": "Skyfall Monument of Celestial Desert",
+      "type": "landmark",
+      "level": 40,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Celestial Desert",
+      "type": "resource_site",
+      "level": 42,
+      "repeatable": false,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-poi-5",
+      "name": "Apex Den of Celestial Desert",
+      "type": "world_boss_lair",
+      "level": 44,
+      "repeatable": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "africa-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Golden Dune Sea",
+      "type": "dungeon",
+      "level": 21,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-poi-2",
+      "name": "Ancient Watch of Golden Dune Sea",
+      "type": "ruins",
+      "level": 23,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-poi-3",
+      "name": "Skyfall Monument of Golden Dune Sea",
+      "type": "landmark",
+      "level": 25,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Golden Dune Sea",
+      "type": "resource_site",
+      "level": 27,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-poi-5",
+      "name": "Apex Den of Golden Dune Sea",
+      "type": "world_boss_lair",
+      "level": 29,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Emerald Rift",
+      "type": "dungeon",
+      "level": 26,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-poi-2",
+      "name": "Ancient Watch of Emerald Rift",
+      "type": "ruins",
+      "level": 28,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-poi-3",
+      "name": "Skyfall Monument of Emerald Rift",
+      "type": "landmark",
+      "level": 30,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Emerald Rift",
+      "type": "resource_site",
+      "level": 32,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-poi-5",
+      "name": "Apex Den of Emerald Rift",
+      "type": "world_boss_lair",
+      "level": 34,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Thunder Savannah",
+      "type": "dungeon",
+      "level": 31,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-poi-2",
+      "name": "Ancient Watch of Thunder Savannah",
+      "type": "ruins",
+      "level": 33,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-poi-3",
+      "name": "Skyfall Monument of Thunder Savannah",
+      "type": "landmark",
+      "level": 35,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Thunder Savannah",
+      "type": "resource_site",
+      "level": 37,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-poi-5",
+      "name": "Apex Den of Thunder Savannah",
+      "type": "world_boss_lair",
+      "level": 39,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Redstone Escarpment",
+      "type": "dungeon",
+      "level": 36,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-poi-2",
+      "name": "Ancient Watch of Redstone Escarpment",
+      "type": "ruins",
+      "level": 38,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-poi-3",
+      "name": "Skyfall Monument of Redstone Escarpment",
+      "type": "landmark",
+      "level": 40,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Redstone Escarpment",
+      "type": "resource_site",
+      "level": 42,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-poi-5",
+      "name": "Apex Den of Redstone Escarpment",
+      "type": "world_boss_lair",
+      "level": 44,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-05-poi-1",
+      "name": "Forgotten Catacombs of Crescent Oasis",
+      "type": "dungeon",
+      "level": 41,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-poi-2",
+      "name": "Ancient Watch of Crescent Oasis",
+      "type": "ruins",
+      "level": 43,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-poi-3",
+      "name": "Skyfall Monument of Crescent Oasis",
+      "type": "landmark",
+      "level": 45,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-poi-4",
+      "name": "Gatherer's Hollow of Crescent Oasis",
+      "type": "resource_site",
+      "level": 47,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-poi-5",
+      "name": "Apex Den of Crescent Oasis",
+      "type": "world_boss_lair",
+      "level": 49,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Baobab Wilds",
+      "type": "dungeon",
+      "level": 46,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-poi-2",
+      "name": "Ancient Watch of Baobab Wilds",
+      "type": "ruins",
+      "level": 48,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-poi-3",
+      "name": "Skyfall Monument of Baobab Wilds",
+      "type": "landmark",
+      "level": 50,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Baobab Wilds",
+      "type": "resource_site",
+      "level": 52,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-poi-5",
+      "name": "Apex Den of Baobab Wilds",
+      "type": "world_boss_lair",
+      "level": 54,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Ashen Caldera",
+      "type": "dungeon",
+      "level": 51,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-poi-2",
+      "name": "Ancient Watch of Ashen Caldera",
+      "type": "ruins",
+      "level": 53,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-poi-3",
+      "name": "Skyfall Monument of Ashen Caldera",
+      "type": "landmark",
+      "level": 55,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Ashen Caldera",
+      "type": "resource_site",
+      "level": 57,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-poi-5",
+      "name": "Apex Den of Ashen Caldera",
+      "type": "world_boss_lair",
+      "level": 59,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Ivory Coast",
+      "type": "dungeon",
+      "level": 56,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-poi-2",
+      "name": "Ancient Watch of Ivory Coast",
+      "type": "ruins",
+      "level": 58,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-poi-3",
+      "name": "Skyfall Monument of Ivory Coast",
+      "type": "landmark",
+      "level": 60,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Ivory Coast",
+      "type": "resource_site",
+      "level": 62,
+      "repeatable": false,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-poi-5",
+      "name": "Apex Den of Ivory Coast",
+      "type": "world_boss_lair",
+      "level": 64,
+      "repeatable": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "north-america-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Frostpine Frontier",
+      "type": "dungeon",
+      "level": 41,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-poi-2",
+      "name": "Ancient Watch of Frostpine Frontier",
+      "type": "ruins",
+      "level": 43,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-poi-3",
+      "name": "Skyfall Monument of Frostpine Frontier",
+      "type": "landmark",
+      "level": 45,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Frostpine Frontier",
+      "type": "resource_site",
+      "level": 47,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-poi-5",
+      "name": "Apex Den of Frostpine Frontier",
+      "type": "world_boss_lair",
+      "level": 49,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Thunderbird Prairie",
+      "type": "dungeon",
+      "level": 46,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-poi-2",
+      "name": "Ancient Watch of Thunderbird Prairie",
+      "type": "ruins",
+      "level": 48,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-poi-3",
+      "name": "Skyfall Monument of Thunderbird Prairie",
+      "type": "landmark",
+      "level": 50,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Thunderbird Prairie",
+      "type": "resource_site",
+      "level": 52,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-poi-5",
+      "name": "Apex Den of Thunderbird Prairie",
+      "type": "world_boss_lair",
+      "level": 54,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Red Canyonlands",
+      "type": "dungeon",
+      "level": 51,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-poi-2",
+      "name": "Ancient Watch of Red Canyonlands",
+      "type": "ruins",
+      "level": 53,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-poi-3",
+      "name": "Skyfall Monument of Red Canyonlands",
+      "type": "landmark",
+      "level": 55,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Red Canyonlands",
+      "type": "resource_site",
+      "level": 57,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-poi-5",
+      "name": "Apex Den of Red Canyonlands",
+      "type": "world_boss_lair",
+      "level": 59,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Silverlake Country",
+      "type": "dungeon",
+      "level": 56,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-poi-2",
+      "name": "Ancient Watch of Silverlake Country",
+      "type": "ruins",
+      "level": 58,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-poi-3",
+      "name": "Skyfall Monument of Silverlake Country",
+      "type": "landmark",
+      "level": 60,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Silverlake Country",
+      "type": "resource_site",
+      "level": 62,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-poi-5",
+      "name": "Apex Den of Silverlake Country",
+      "type": "world_boss_lair",
+      "level": 64,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-05-poi-1",
+      "name": "Forgotten Catacombs of Misty Redwood Coast",
+      "type": "dungeon",
+      "level": 61,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-poi-2",
+      "name": "Ancient Watch of Misty Redwood Coast",
+      "type": "ruins",
+      "level": 63,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-poi-3",
+      "name": "Skyfall Monument of Misty Redwood Coast",
+      "type": "landmark",
+      "level": 65,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-poi-4",
+      "name": "Gatherer's Hollow of Misty Redwood Coast",
+      "type": "resource_site",
+      "level": 67,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-poi-5",
+      "name": "Apex Den of Misty Redwood Coast",
+      "type": "world_boss_lair",
+      "level": 69,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Sunstone Mesa",
+      "type": "dungeon",
+      "level": 66,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-poi-2",
+      "name": "Ancient Watch of Sunstone Mesa",
+      "type": "ruins",
+      "level": 68,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-poi-3",
+      "name": "Skyfall Monument of Sunstone Mesa",
+      "type": "landmark",
+      "level": 70,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Sunstone Mesa",
+      "type": "resource_site",
+      "level": 72,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-poi-5",
+      "name": "Apex Den of Sunstone Mesa",
+      "type": "world_boss_lair",
+      "level": 74,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Great Bear Mountains",
+      "type": "dungeon",
+      "level": 71,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-poi-2",
+      "name": "Ancient Watch of Great Bear Mountains",
+      "type": "ruins",
+      "level": 73,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-poi-3",
+      "name": "Skyfall Monument of Great Bear Mountains",
+      "type": "landmark",
+      "level": 75,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Great Bear Mountains",
+      "type": "resource_site",
+      "level": 77,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-poi-5",
+      "name": "Apex Den of Great Bear Mountains",
+      "type": "world_boss_lair",
+      "level": 79,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Azure Gulf",
+      "type": "dungeon",
+      "level": 76,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-poi-2",
+      "name": "Ancient Watch of Azure Gulf",
+      "type": "ruins",
+      "level": 78,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-poi-3",
+      "name": "Skyfall Monument of Azure Gulf",
+      "type": "landmark",
+      "level": 80,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Azure Gulf",
+      "type": "resource_site",
+      "level": 82,
+      "repeatable": false,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-poi-5",
+      "name": "Apex Den of Azure Gulf",
+      "type": "world_boss_lair",
+      "level": 84,
+      "repeatable": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Emerald Canopy",
+      "type": "dungeon",
+      "level": 61,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-poi-2",
+      "name": "Ancient Watch of Emerald Canopy",
+      "type": "ruins",
+      "level": 63,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-poi-3",
+      "name": "Skyfall Monument of Emerald Canopy",
+      "type": "landmark",
+      "level": 65,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Emerald Canopy",
+      "type": "resource_site",
+      "level": 67,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-poi-5",
+      "name": "Apex Den of Emerald Canopy",
+      "type": "world_boss_lair",
+      "level": 69,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Skyfang Andes",
+      "type": "dungeon",
+      "level": 66,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-poi-2",
+      "name": "Ancient Watch of Skyfang Andes",
+      "type": "ruins",
+      "level": 68,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-poi-3",
+      "name": "Skyfall Monument of Skyfang Andes",
+      "type": "landmark",
+      "level": 70,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Skyfang Andes",
+      "type": "resource_site",
+      "level": 72,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-poi-5",
+      "name": "Apex Den of Skyfang Andes",
+      "type": "world_boss_lair",
+      "level": 74,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Serpent River Basin",
+      "type": "dungeon",
+      "level": 71,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-poi-2",
+      "name": "Ancient Watch of Serpent River Basin",
+      "type": "ruins",
+      "level": 73,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-poi-3",
+      "name": "Skyfall Monument of Serpent River Basin",
+      "type": "landmark",
+      "level": 75,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Serpent River Basin",
+      "type": "resource_site",
+      "level": 77,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-poi-5",
+      "name": "Apex Den of Serpent River Basin",
+      "type": "world_boss_lair",
+      "level": 79,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Glasssalt Desert",
+      "type": "dungeon",
+      "level": 76,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-poi-2",
+      "name": "Ancient Watch of Glasssalt Desert",
+      "type": "ruins",
+      "level": 78,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-poi-3",
+      "name": "Skyfall Monument of Glasssalt Desert",
+      "type": "landmark",
+      "level": 80,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Glasssalt Desert",
+      "type": "resource_site",
+      "level": 82,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-poi-5",
+      "name": "Apex Den of Glasssalt Desert",
+      "type": "world_boss_lair",
+      "level": 84,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-05-poi-1",
+      "name": "Forgotten Catacombs of Jaguar Marshes",
+      "type": "dungeon",
+      "level": 81,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-poi-2",
+      "name": "Ancient Watch of Jaguar Marshes",
+      "type": "ruins",
+      "level": 83,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-poi-3",
+      "name": "Skyfall Monument of Jaguar Marshes",
+      "type": "landmark",
+      "level": 85,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-poi-4",
+      "name": "Gatherer's Hollow of Jaguar Marshes",
+      "type": "resource_site",
+      "level": 87,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-poi-5",
+      "name": "Apex Den of Jaguar Marshes",
+      "type": "world_boss_lair",
+      "level": 89,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Cloudveil Highlands",
+      "type": "dungeon",
+      "level": 86,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-poi-2",
+      "name": "Ancient Watch of Cloudveil Highlands",
+      "type": "ruins",
+      "level": 88,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-poi-3",
+      "name": "Skyfall Monument of Cloudveil Highlands",
+      "type": "landmark",
+      "level": 90,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Cloudveil Highlands",
+      "type": "resource_site",
+      "level": 92,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-poi-5",
+      "name": "Apex Den of Cloudveil Highlands",
+      "type": "world_boss_lair",
+      "level": 94,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Parrot Isles",
+      "type": "dungeon",
+      "level": 91,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-poi-2",
+      "name": "Ancient Watch of Parrot Isles",
+      "type": "ruins",
+      "level": 93,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-poi-3",
+      "name": "Skyfall Monument of Parrot Isles",
+      "type": "landmark",
+      "level": 95,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Parrot Isles",
+      "type": "resource_site",
+      "level": 97,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-poi-5",
+      "name": "Apex Den of Parrot Isles",
+      "type": "world_boss_lair",
+      "level": 99,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Southern Fjordlands",
+      "type": "dungeon",
+      "level": 96,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-poi-2",
+      "name": "Ancient Watch of Southern Fjordlands",
+      "type": "ruins",
+      "level": 98,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-poi-3",
+      "name": "Skyfall Monument of Southern Fjordlands",
+      "type": "landmark",
+      "level": 100,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Southern Fjordlands",
+      "type": "resource_site",
+      "level": 102,
+      "repeatable": false,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-poi-5",
+      "name": "Apex Den of Southern Fjordlands",
+      "type": "world_boss_lair",
+      "level": 104,
+      "repeatable": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "antarctica-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Whiteout Plateau",
+      "type": "dungeon",
+      "level": 81,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-poi-2",
+      "name": "Ancient Watch of Whiteout Plateau",
+      "type": "ruins",
+      "level": 83,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-poi-3",
+      "name": "Skyfall Monument of Whiteout Plateau",
+      "type": "landmark",
+      "level": 85,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Whiteout Plateau",
+      "type": "resource_site",
+      "level": 87,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-poi-5",
+      "name": "Apex Den of Whiteout Plateau",
+      "type": "world_boss_lair",
+      "level": 89,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Blue Glacier Reach",
+      "type": "dungeon",
+      "level": 86,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-poi-2",
+      "name": "Ancient Watch of Blue Glacier Reach",
+      "type": "ruins",
+      "level": 88,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-poi-3",
+      "name": "Skyfall Monument of Blue Glacier Reach",
+      "type": "landmark",
+      "level": 90,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Blue Glacier Reach",
+      "type": "resource_site",
+      "level": 92,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-poi-5",
+      "name": "Apex Den of Blue Glacier Reach",
+      "type": "world_boss_lair",
+      "level": 94,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Aurora Shelf",
+      "type": "dungeon",
+      "level": 91,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-poi-2",
+      "name": "Ancient Watch of Aurora Shelf",
+      "type": "ruins",
+      "level": 93,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-poi-3",
+      "name": "Skyfall Monument of Aurora Shelf",
+      "type": "landmark",
+      "level": 95,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Aurora Shelf",
+      "type": "resource_site",
+      "level": 97,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-poi-5",
+      "name": "Apex Den of Aurora Shelf",
+      "type": "world_boss_lair",
+      "level": 99,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Black Ice Mountains",
+      "type": "dungeon",
+      "level": 96,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-poi-2",
+      "name": "Ancient Watch of Black Ice Mountains",
+      "type": "ruins",
+      "level": 98,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-poi-3",
+      "name": "Skyfall Monument of Black Ice Mountains",
+      "type": "landmark",
+      "level": 100,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Black Ice Mountains",
+      "type": "resource_site",
+      "level": 102,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-poi-5",
+      "name": "Apex Den of Black Ice Mountains",
+      "type": "world_boss_lair",
+      "level": 104,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-05-poi-1",
+      "name": "Forgotten Catacombs of The Buried Sea",
+      "type": "dungeon",
+      "level": 101,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-poi-2",
+      "name": "Ancient Watch of The Buried Sea",
+      "type": "ruins",
+      "level": 103,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-poi-3",
+      "name": "Skyfall Monument of The Buried Sea",
+      "type": "landmark",
+      "level": 105,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-poi-4",
+      "name": "Gatherer's Hollow of The Buried Sea",
+      "type": "resource_site",
+      "level": 107,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-poi-5",
+      "name": "Apex Den of The Buried Sea",
+      "type": "world_boss_lair",
+      "level": 109,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Crystal Crevasse",
+      "type": "dungeon",
+      "level": 106,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-poi-2",
+      "name": "Ancient Watch of Crystal Crevasse",
+      "type": "ruins",
+      "level": 108,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-poi-3",
+      "name": "Skyfall Monument of Crystal Crevasse",
+      "type": "landmark",
+      "level": 110,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Crystal Crevasse",
+      "type": "resource_site",
+      "level": 112,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-poi-5",
+      "name": "Apex Den of Crystal Crevasse",
+      "type": "world_boss_lair",
+      "level": 114,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Southern Lights Basin",
+      "type": "dungeon",
+      "level": 111,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-poi-2",
+      "name": "Ancient Watch of Southern Lights Basin",
+      "type": "ruins",
+      "level": 113,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-poi-3",
+      "name": "Skyfall Monument of Southern Lights Basin",
+      "type": "landmark",
+      "level": 115,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Southern Lights Basin",
+      "type": "resource_site",
+      "level": 117,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-poi-5",
+      "name": "Apex Den of Southern Lights Basin",
+      "type": "world_boss_lair",
+      "level": 119,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Hollow Earth Gate",
+      "type": "dungeon",
+      "level": 116,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-poi-2",
+      "name": "Ancient Watch of Hollow Earth Gate",
+      "type": "ruins",
+      "level": 118,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-poi-3",
+      "name": "Skyfall Monument of Hollow Earth Gate",
+      "type": "landmark",
+      "level": 120,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Hollow Earth Gate",
+      "type": "resource_site",
+      "level": 122,
+      "repeatable": false,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-poi-5",
+      "name": "Apex Den of Hollow Earth Gate",
+      "type": "world_boss_lair",
+      "level": 124,
+      "repeatable": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "europe-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Kingsroad Heartlands",
+      "type": "dungeon",
+      "level": 101,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-poi-2",
+      "name": "Ancient Watch of Kingsroad Heartlands",
+      "type": "ruins",
+      "level": 103,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-poi-3",
+      "name": "Skyfall Monument of Kingsroad Heartlands",
+      "type": "landmark",
+      "level": 105,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Kingsroad Heartlands",
+      "type": "resource_site",
+      "level": 107,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-poi-5",
+      "name": "Apex Den of Kingsroad Heartlands",
+      "type": "world_boss_lair",
+      "level": 109,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Silverpine Marches",
+      "type": "dungeon",
+      "level": 106,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-poi-2",
+      "name": "Ancient Watch of Silverpine Marches",
+      "type": "ruins",
+      "level": 108,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-poi-3",
+      "name": "Skyfall Monument of Silverpine Marches",
+      "type": "landmark",
+      "level": 110,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Silverpine Marches",
+      "type": "resource_site",
+      "level": 112,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-poi-5",
+      "name": "Apex Den of Silverpine Marches",
+      "type": "world_boss_lair",
+      "level": 114,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Crown of Peaks",
+      "type": "dungeon",
+      "level": 111,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-poi-2",
+      "name": "Ancient Watch of Crown of Peaks",
+      "type": "ruins",
+      "level": 113,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-poi-3",
+      "name": "Skyfall Monument of Crown of Peaks",
+      "type": "landmark",
+      "level": 115,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Crown of Peaks",
+      "type": "resource_site",
+      "level": 117,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-poi-5",
+      "name": "Apex Den of Crown of Peaks",
+      "type": "world_boss_lair",
+      "level": 119,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Violet Coast",
+      "type": "dungeon",
+      "level": 116,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-poi-2",
+      "name": "Ancient Watch of Violet Coast",
+      "type": "ruins",
+      "level": 118,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-poi-3",
+      "name": "Skyfall Monument of Violet Coast",
+      "type": "landmark",
+      "level": 120,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Violet Coast",
+      "type": "resource_site",
+      "level": 122,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-poi-5",
+      "name": "Apex Den of Violet Coast",
+      "type": "world_boss_lair",
+      "level": 124,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-05-poi-1",
+      "name": "Forgotten Catacombs of Old Empire Vale",
+      "type": "dungeon",
+      "level": 121,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-poi-2",
+      "name": "Ancient Watch of Old Empire Vale",
+      "type": "ruins",
+      "level": 123,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-poi-3",
+      "name": "Skyfall Monument of Old Empire Vale",
+      "type": "landmark",
+      "level": 125,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-poi-4",
+      "name": "Gatherer's Hollow of Old Empire Vale",
+      "type": "resource_site",
+      "level": 127,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-poi-5",
+      "name": "Apex Den of Old Empire Vale",
+      "type": "world_boss_lair",
+      "level": 129,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Misty Moorlands",
+      "type": "dungeon",
+      "level": 126,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-poi-2",
+      "name": "Ancient Watch of Misty Moorlands",
+      "type": "ruins",
+      "level": 128,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-poi-3",
+      "name": "Skyfall Monument of Misty Moorlands",
+      "type": "landmark",
+      "level": 130,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Misty Moorlands",
+      "type": "resource_site",
+      "level": 132,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-poi-5",
+      "name": "Apex Den of Misty Moorlands",
+      "type": "world_boss_lair",
+      "level": 134,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Amber Riverlands",
+      "type": "dungeon",
+      "level": 131,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-poi-2",
+      "name": "Ancient Watch of Amber Riverlands",
+      "type": "ruins",
+      "level": 133,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-poi-3",
+      "name": "Skyfall Monument of Amber Riverlands",
+      "type": "landmark",
+      "level": 135,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Amber Riverlands",
+      "type": "resource_site",
+      "level": 137,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-poi-5",
+      "name": "Apex Den of Amber Riverlands",
+      "type": "world_boss_lair",
+      "level": 139,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Stormwall Isles",
+      "type": "dungeon",
+      "level": 136,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-poi-2",
+      "name": "Ancient Watch of Stormwall Isles",
+      "type": "ruins",
+      "level": 138,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-poi-3",
+      "name": "Skyfall Monument of Stormwall Isles",
+      "type": "landmark",
+      "level": 140,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Stormwall Isles",
+      "type": "resource_site",
+      "level": 142,
+      "repeatable": false,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-poi-5",
+      "name": "Apex Den of Stormwall Isles",
+      "type": "world_boss_lair",
+      "level": 144,
+      "repeatable": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "australia-zone-01-poi-1",
+      "name": "Forgotten Catacombs of Redglass Outback",
+      "type": "dungeon",
+      "level": 121,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-poi-2",
+      "name": "Ancient Watch of Redglass Outback",
+      "type": "ruins",
+      "level": 123,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-poi-3",
+      "name": "Skyfall Monument of Redglass Outback",
+      "type": "landmark",
+      "level": 125,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-poi-4",
+      "name": "Gatherer's Hollow of Redglass Outback",
+      "type": "resource_site",
+      "level": 127,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-poi-5",
+      "name": "Apex Den of Redglass Outback",
+      "type": "world_boss_lair",
+      "level": 129,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-02-poi-1",
+      "name": "Forgotten Catacombs of Coral Crown Reef",
+      "type": "dungeon",
+      "level": 126,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-poi-2",
+      "name": "Ancient Watch of Coral Crown Reef",
+      "type": "ruins",
+      "level": 128,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-poi-3",
+      "name": "Skyfall Monument of Coral Crown Reef",
+      "type": "landmark",
+      "level": 130,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-poi-4",
+      "name": "Gatherer's Hollow of Coral Crown Reef",
+      "type": "resource_site",
+      "level": 132,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-poi-5",
+      "name": "Apex Den of Coral Crown Reef",
+      "type": "world_boss_lair",
+      "level": 134,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-03-poi-1",
+      "name": "Forgotten Catacombs of Eucalyptus Kingdom",
+      "type": "dungeon",
+      "level": 131,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-poi-2",
+      "name": "Ancient Watch of Eucalyptus Kingdom",
+      "type": "ruins",
+      "level": 133,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-poi-3",
+      "name": "Skyfall Monument of Eucalyptus Kingdom",
+      "type": "landmark",
+      "level": 135,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-poi-4",
+      "name": "Gatherer's Hollow of Eucalyptus Kingdom",
+      "type": "resource_site",
+      "level": 137,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-poi-5",
+      "name": "Apex Den of Eucalyptus Kingdom",
+      "type": "world_boss_lair",
+      "level": 139,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-04-poi-1",
+      "name": "Forgotten Catacombs of Whispering Monsoon",
+      "type": "dungeon",
+      "level": 136,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-poi-2",
+      "name": "Ancient Watch of Whispering Monsoon",
+      "type": "ruins",
+      "level": 138,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-poi-3",
+      "name": "Skyfall Monument of Whispering Monsoon",
+      "type": "landmark",
+      "level": 140,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-poi-4",
+      "name": "Gatherer's Hollow of Whispering Monsoon",
+      "type": "resource_site",
+      "level": 142,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-poi-5",
+      "name": "Apex Den of Whispering Monsoon",
+      "type": "world_boss_lair",
+      "level": 144,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-05-poi-1",
+      "name": "Forgotten Catacombs of Spiral Stone Desert",
+      "type": "dungeon",
+      "level": 141,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-poi-2",
+      "name": "Ancient Watch of Spiral Stone Desert",
+      "type": "ruins",
+      "level": 143,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-poi-3",
+      "name": "Skyfall Monument of Spiral Stone Desert",
+      "type": "landmark",
+      "level": 145,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-poi-4",
+      "name": "Gatherer's Hollow of Spiral Stone Desert",
+      "type": "resource_site",
+      "level": 147,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-poi-5",
+      "name": "Apex Den of Spiral Stone Desert",
+      "type": "world_boss_lair",
+      "level": 149,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-06-poi-1",
+      "name": "Forgotten Catacombs of Great Southern Forest",
+      "type": "dungeon",
+      "level": 146,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-poi-2",
+      "name": "Ancient Watch of Great Southern Forest",
+      "type": "ruins",
+      "level": 148,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-poi-3",
+      "name": "Skyfall Monument of Great Southern Forest",
+      "type": "landmark",
+      "level": 150,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-poi-4",
+      "name": "Gatherer's Hollow of Great Southern Forest",
+      "type": "resource_site",
+      "level": 152,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-poi-5",
+      "name": "Apex Den of Great Southern Forest",
+      "type": "world_boss_lair",
+      "level": 154,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-07-poi-1",
+      "name": "Forgotten Catacombs of Sunken Blue Trench",
+      "type": "dungeon",
+      "level": 151,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-poi-2",
+      "name": "Ancient Watch of Sunken Blue Trench",
+      "type": "ruins",
+      "level": 153,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-poi-3",
+      "name": "Skyfall Monument of Sunken Blue Trench",
+      "type": "landmark",
+      "level": 155,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-poi-4",
+      "name": "Gatherer's Hollow of Sunken Blue Trench",
+      "type": "resource_site",
+      "level": 157,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-poi-5",
+      "name": "Apex Den of Sunken Blue Trench",
+      "type": "world_boss_lair",
+      "level": 159,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-08-poi-1",
+      "name": "Forgotten Catacombs of Stormbird Archipelago",
+      "type": "dungeon",
+      "level": 156,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-poi-2",
+      "name": "Ancient Watch of Stormbird Archipelago",
+      "type": "ruins",
+      "level": 158,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-poi-3",
+      "name": "Skyfall Monument of Stormbird Archipelago",
+      "type": "landmark",
+      "level": 160,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-poi-4",
+      "name": "Gatherer's Hollow of Stormbird Archipelago",
+      "type": "resource_site",
+      "level": 162,
+      "repeatable": false,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-poi-5",
+      "name": "Apex Den of Stormbird Archipelago",
+      "type": "world_boss_lair",
+      "level": 164,
+      "repeatable": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    }
+  ]
+}

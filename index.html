@@ -110,10 +110,13 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
 .chatform input { flex: 1; min-width: 0; background: #0d100e; border: 1px solid #2a302b; border-radius: 6px; color: var(--ink); font: 400 11px var(--pixel); padding: 7px 8px; }
 .chatform input:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
 .chatform button { background: #1d1f1c; color: var(--ink); border: 1px solid #39403a; border-radius: 6px; font: 700 10px var(--pixel); padding: 0 12px; cursor: pointer; }
+.build-info { width: min(100%, 380px); box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 6px 10px; border: 1px solid #39403a; border-radius: 5px; background: #101410; color: #a9b99a; font: 8px/1.5 var(--pixel); letter-spacing: .02em; }
+.build-info strong { color: #d4e7bd; font-weight: 700; }
 @media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
 @media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
 </style>
 
+<aside class="build-info" aria-label="Build information"><span><strong>GB QUEST</strong> v2.0.0</span><span>DEV: ArkansasIo</span><span>ID: GBQ-20261101-002</span></aside>
 </head><body>
 <main class="device" aria-label="GB Quest handheld">
   <div class="bezel">

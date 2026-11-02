@@ -107,10 +107,13 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
 .chatform input { flex: 1; min-width: 0; background: #0d100e; border: 1px solid #2a302b; border-radius: 6px; color: var(--ink); font: 400 11px var(--pixel); padding: 7px 8px; }
 .chatform input:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
 .chatform button { background: #1d1f1c; color: var(--ink); border: 1px solid #39403a; border-radius: 6px; font: 700 10px var(--pixel); padding: 0 12px; cursor: pointer; }
+.build-info { width: min(100%, 380px); box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 6px 10px; border: 1px solid #39403a; border-radius: 5px; background: #101410; color: #a9b99a; font: 8px/1.5 var(--pixel); letter-spacing: .02em; }
+.build-info strong { color: #d4e7bd; font-weight: 700; }
 @media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
 @media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
 </style>
 
+<aside class="build-info" aria-label="Build information"><span><strong>GB QUEST</strong> v2.0.0</span><span>DEV: ArkansasIo</span><span>ID: GBQ-20261101-002</span></aside>
 <main class="device" aria-label="GB Quest handheld">
   <div class="bezel">
     <div class="bezel-top"><i class="led"></i> BATTERY <span></span> DOT MATRIX</div>
@@ -1330,19 +1333,23 @@ const PALS = {
   gbc: { ui: [[248, 248, 232], [144, 184, 232], [48, 88, 168], [16, 24, 48]], name: 'GB COLOR' },
   full: { ui: [[236, 232, 214], [170, 164, 146], [86, 82, 96], [22, 20, 30]], name: 'FULL COLOR' },
   pocket: { ui: [[196, 207, 161], [139, 149, 109], [77, 83, 60], [31, 31, 31]], name: 'POCKET' },
+  sunset: { ui: [[255, 224, 174], [238, 160, 105], [150, 75, 90], [48, 38, 70]], name: 'SUNSET' },
+  amber: { ui: [[255, 239, 190], [224, 177, 90], [145, 95, 45], [55, 42, 28]], name: 'AMBER' },
+  ocean: { ui: [[205, 235, 245], [112, 183, 207], [48, 111, 151], [22, 45, 82]], name: 'OCEAN' },
 };
-const PAL_ORDER = ['gbc', 'dmg', 'pocket', 'full'];
+const PAL_ORDER = ['gbc', 'dmg', 'pocket', 'sunset', 'amber', 'ocean', 'full'];
+const MONO = m => m === 'dmg' || m === 'pocket' || m === 'sunset' || m === 'amber' || m === 'ocean';
 let UI = PALS[S.palette] || PALS.gbc;
 const css = c => `rgb(${c[0]},${c[1]},${c[2]})`;
 // extra colours (used in colour modes; DMG maps them to shades)
 const XCOL = { red: [216, 40, 40], green: [40, 168, 64], blue: [40, 96, 216], purple: [150, 60, 200], orange: [232, 128, 24], gold: [232, 192, 40], grey: [140, 140, 140], hp: [56, 184, 72], mp: [56, 120, 232], xp: [200, 160, 40] };
 function col(c) {
   if (typeof c === 'number') return css(UI.ui[c]);
-  if (S.palette === 'dmg' || S.palette === 'pocket') { const shade = { red: 2, green: 2, blue: 2, purple: 2, orange: 2, gold: 1, grey: 1, hp: 2, mp: 2, xp: 2 }[c]; return css(UI.ui[shade == null ? 3 : shade]); }
+  if (MONO(S.palette)) { const shade = { red: 2, green: 2, blue: 2, purple: 2, orange: 2, gold: 1, grey: 1, hp: 2, mp: 2, xp: 2 }[c]; return css(UI.ui[shade == null ? 3 : shade]); }
   if (XCOL[c]) return css(XCOL[c]);
   return c;
 }
-const rarityCol = r => (S.palette === 'dmg' || S.palette === 'pocket' || r <= 1) ? (r === 0 ? 1 : 3) : RARITY[r].color;
+const rarityCol = r => (MONO(S.palette) || r <= 1) ? (r === 0 ? 1 : 3) : RARITY[r].color;
 
 // ================================================================ assets
 const IMG = {};
@@ -1406,7 +1413,7 @@ function spr(name, w, h, opt) {
   c = scaled(img, w, h);
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   const mode = S.palette;
-  if (mode === 'dmg' || mode === 'pocket') {
+  if (MONO(mode)) {
     const g = tileGroup(name), th = g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
     const P = PALS[mode].ui;
     for (let i = 0; i < d.length; i += 4) {
@@ -4158,7 +4165,7 @@ class WorldMap {
     for (const z of ZONES) {
       const x = ox + z.fx * cell, y = oy + z.fy * cell; if (x < -cell || x > W) continue;
       const c = BCOL[z.biome] || [150, 150, 150];
-      ctx.fillStyle = (S.palette === 'dmg' || S.palette === 'pocket') ? col(z.town ? 3 : 1 + (z.fx + z.fy) % 2) : `rgb(${c})`; ctx.fillRect(x, y, cell, cell);
+      ctx.fillStyle = MONO(S.palette) ? col(z.town ? 3 : 1 + (z.fx + z.fy) % 2) : `rgb(${c})`; ctx.fillRect(x, y, cell, cell);
       // glyphs: mountains, trees, waves
       const glyph = { snow: '^', volcanic: '^', jungle: 'T', marsh: '~', crystal: '*', dusk: '+', badlands: '.', coast: '~', meadow: '"' }[z.biome];
       text(glyph, x + 3, y + 2, 3);

@@ -1,0 +1,19 @@
+{
+  "ruleset":"SRD-5.2.1",
+  "classes":[
+    {"id":"barbarian","name":"Barbarian","hitDie":12,"primaryAbilities":["str"],"subclass":{"level":3,"id":"berserker","name":"Path of the Berserker"}},
+    {"id":"bard","name":"Bard","hitDie":8,"primaryAbilities":["cha"],"subclass":{"level":3,"id":"lore","name":"College of Lore"},"spellcasting":"full"},
+    {"id":"cleric","name":"Cleric","hitDie":8,"primaryAbilities":["wis"],"subclass":{"level":3,"id":"life","name":"Life Domain"},"spellcasting":"full"},
+    {"id":"druid","name":"Druid","hitDie":8,"primaryAbilities":["wis"],"subclass":{"level":3,"id":"land","name":"Circle of the Land"},"spellcasting":"full"},
+    {"id":"fighter","name":"Fighter","hitDie":10,"primaryAbilities":["str","dex"],"subclass":{"level":3,"id":"champion","name":"Champion"}},
+    {"id":"monk","name":"Monk","hitDie":8,"primaryAbilities":["dex","wis"],"subclass":{"level":3,"id":"open-hand","name":"Warrior of the Open Hand"}},
+    {"id":"paladin","name":"Paladin","hitDie":10,"primaryAbilities":["str","cha"],"subclass":{"level":3,"id":"devotion","name":"Oath of Devotion"},"spellcasting":"half"},
+    {"id":"ranger","name":"Ranger","hitDie":10,"primaryAbilities":["dex","wis"],"subclass":{"level":3,"id":"hunter","name":"Hunter"},"spellcasting":"half"},
+    {"id":"rogue","name":"Rogue","hitDie":8,"primaryAbilities":["dex"],"subclass":{"level":3,"id":"thief","name":"Thief"}},
+    {"id":"sorcerer","name":"Sorcerer","hitDie":6,"primaryAbilities":["cha"],"subclass":{"level":3,"id":"draconic","name":"Draconic Sorcery"},"spellcasting":"full"},
+    {"id":"warlock","name":"Warlock","hitDie":8,"primaryAbilities":["cha"],"subclass":{"level":3,"id":"fiend","name":"Fiend Patron"},"spellcasting":"pact"},
+    {"id":"wizard","name":"Wizard","hitDie":6,"primaryAbilities":["int"],"subclass":{"level":3,"id":"evoker","name":"Evoker"},"spellcasting":"full"}
+  ],
+  "levelCap":20,
+  "note":"This catalog identifies SRD class chassis and one SRD subclass per class. Class feature tables, spell preparation rules and level-by-level resources must be added as structured records from SRD-5.2.1."
+}

@@ -1,0 +1,17 @@
+{
+  "assetStyle":"original-8bit-fantasy",
+  "pixelScale":1,
+  "logicalPalette":"four-shade-gameboy",
+  "nativeSpriteSizes":[8,16,24,32,48,64],
+  "atlasGroups":[
+    {"id":"terrain","tileSize":16,"sheets":["grass","dirt","sand","snow","stone","water","lava","roads","bridges","walls","doors","furniture","crops","ore_nodes"]},
+    {"id":"characters","frameSize":[16,24],"directions":["down","left","right","up"],"animations":["idle","walk","run","attack","cast","hurt","death","emote"]},
+    {"id":"creatures","frameSizes":[16,16,24,24,32,32,48,48],"animations":["idle","move","attack","cast","hurt","death"]},
+    {"id":"equipment","frameSize":[16,16],"categories":["swords","axes","maces","hammers","spears","polearms","daggers","bows","crossbows","staves","wands","shields","helmets","chest_armor","gloves","boots","cloaks","rings","amulets"]},
+    {"id":"items","frameSize":[16,16],"categories":["consumables","materials","food","potions","quest_items","crafting_tools","treasure","currency"]},
+    {"id":"effects","frameSizes":[16,16,32,32],"animations":["slash","impact","fire","frost","lightning","holy","shadow","poison","healing","buff","debuff","teleport"]},
+    {"id":"ui","frameSize":[8,8],"categories":["panels","borders","buttons","icons","bars","cursors","status_effects","minimap_markers"]},
+    {"id":"world_objects","frameSizes":[16,16,32,32,48,48],"categories":["trees","rocks","buildings","tents","shrines","portals","chests","signs","campfires","dungeon_props"]}
+  ],
+  "requirements":{"transparentBackground":true,"nearestNeighbor":true,"noSubpixelPlacement":true,"originalArtworkOnly":true}
+}

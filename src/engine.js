@@ -26,19 +26,23 @@ const PALS = {
   gbc: { ui: [[248, 248, 232], [144, 184, 232], [48, 88, 168], [16, 24, 48]], name: 'GB COLOR' },
   full: { ui: [[236, 232, 214], [170, 164, 146], [86, 82, 96], [22, 20, 30]], name: 'FULL COLOR' },
   pocket: { ui: [[196, 207, 161], [139, 149, 109], [77, 83, 60], [31, 31, 31]], name: 'POCKET' },
+  sunset: { ui: [[255, 224, 174], [238, 160, 105], [150, 75, 90], [48, 38, 70]], name: 'SUNSET' },
+  amber: { ui: [[255, 239, 190], [224, 177, 90], [145, 95, 45], [55, 42, 28]], name: 'AMBER' },
+  ocean: { ui: [[205, 235, 245], [112, 183, 207], [48, 111, 151], [22, 45, 82]], name: 'OCEAN' },
 };
-const PAL_ORDER = ['gbc', 'dmg', 'pocket', 'full'];
+const PAL_ORDER = ['gbc', 'dmg', 'pocket', 'sunset', 'amber', 'ocean', 'full'];
+const MONO = m => m === 'dmg' || m === 'pocket' || m === 'sunset' || m === 'amber' || m === 'ocean';
 let UI = PALS[S.palette] || PALS.gbc;
 const css = c => `rgb(${c[0]},${c[1]},${c[2]})`;
 // extra colours (used in colour modes; DMG maps them to shades)
 const XCOL = { red: [216, 40, 40], green: [40, 168, 64], blue: [40, 96, 216], purple: [150, 60, 200], orange: [232, 128, 24], gold: [232, 192, 40], grey: [140, 140, 140], hp: [56, 184, 72], mp: [56, 120, 232], xp: [200, 160, 40] };
 function col(c) {
   if (typeof c === 'number') return css(UI.ui[c]);
-  if (S.palette === 'dmg' || S.palette === 'pocket') { const shade = { red: 2, green: 2, blue: 2, purple: 2, orange: 2, gold: 1, grey: 1, hp: 2, mp: 2, xp: 2 }[c]; return css(UI.ui[shade == null ? 3 : shade]); }
+  if (MONO(S.palette)) { const shade = { red: 2, green: 2, blue: 2, purple: 2, orange: 2, gold: 1, grey: 1, hp: 2, mp: 2, xp: 2 }[c]; return css(UI.ui[shade == null ? 3 : shade]); }
   if (XCOL[c]) return css(XCOL[c]);
   return c;
 }
-const rarityCol = r => (S.palette === 'dmg' || S.palette === 'pocket' || r <= 1) ? (r === 0 ? 1 : 3) : RARITY[r].color;
+const rarityCol = r => (MONO(S.palette) || r <= 1) ? (r === 0 ? 1 : 3) : RARITY[r].color;
 
 // ================================================================ assets
 const IMG = {};
@@ -102,7 +106,7 @@ function spr(name, w, h, opt) {
   c = scaled(img, w, h);
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   const mode = S.palette;
-  if (mode === 'dmg' || mode === 'pocket') {
+  if (MONO(mode)) {
     const g = tileGroup(name), th = g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
     const P = PALS[mode].ui;
     for (let i = 0; i < d.length; i += 4) {

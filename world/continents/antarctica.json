@@ -1,0 +1,775 @@
+{
+  "id": "antarctica",
+  "name": "Antarctica",
+  "realm": "The Frostveil",
+  "capital": {
+    "id": "antarctica-capital",
+    "name": "Aurora Citadel",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "antarctica-zone-01",
+      "name": "Whiteout Plateau",
+      "continentId": "antarctica",
+      "levelRange": [
+        81,
+        95
+      ],
+      "biomeId": "polar_ice",
+      "subZones": [
+        {
+          "id": "antarctica-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "polar_ice",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "polar_ice",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "polar_ice",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "polar_ice",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-01-city",
+        "antarctica-zone-01-town-1",
+        "antarctica-zone-01-town-2",
+        "antarctica-zone-01-village-1",
+        "antarctica-zone-01-village-2",
+        "antarctica-zone-01-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-01-poi-1",
+          "name": "Forgotten Catacombs of Whiteout Plateau",
+          "type": "dungeon",
+          "level": 81,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-01-poi-2",
+          "name": "Ancient Watch of Whiteout Plateau",
+          "type": "ruins",
+          "level": 83,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-01-poi-3",
+          "name": "Skyfall Monument of Whiteout Plateau",
+          "type": "landmark",
+          "level": 85,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-01-poi-4",
+          "name": "Gatherer's Hollow of Whiteout Plateau",
+          "type": "resource_site",
+          "level": 87,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-01-poi-5",
+          "name": "Apex Den of Whiteout Plateau",
+          "type": "world_boss_lair",
+          "level": 89,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-01-road-gate",
+        "antarctica-zone-01-caravan-post",
+        "antarctica-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-02",
+      "name": "Blue Glacier Reach",
+      "continentId": "antarctica",
+      "levelRange": [
+        86,
+        100
+      ],
+      "biomeId": "glacier",
+      "subZones": [
+        {
+          "id": "antarctica-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "glacier",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "glacier",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "glacier",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "glacier",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-02-city",
+        "antarctica-zone-02-town-1",
+        "antarctica-zone-02-town-2",
+        "antarctica-zone-02-village-1",
+        "antarctica-zone-02-village-2",
+        "antarctica-zone-02-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-02-poi-1",
+          "name": "Forgotten Catacombs of Blue Glacier Reach",
+          "type": "dungeon",
+          "level": 86,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-02-poi-2",
+          "name": "Ancient Watch of Blue Glacier Reach",
+          "type": "ruins",
+          "level": 88,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-02-poi-3",
+          "name": "Skyfall Monument of Blue Glacier Reach",
+          "type": "landmark",
+          "level": 90,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-02-poi-4",
+          "name": "Gatherer's Hollow of Blue Glacier Reach",
+          "type": "resource_site",
+          "level": 92,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-02-poi-5",
+          "name": "Apex Den of Blue Glacier Reach",
+          "type": "world_boss_lair",
+          "level": 94,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-02-road-gate",
+        "antarctica-zone-02-caravan-post",
+        "antarctica-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-03",
+      "name": "Aurora Shelf",
+      "continentId": "antarctica",
+      "levelRange": [
+        91,
+        105
+      ],
+      "biomeId": "ice_shelf",
+      "subZones": [
+        {
+          "id": "antarctica-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "ice_shelf",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "ice_shelf",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "ice_shelf",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "ice_shelf",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-03-city",
+        "antarctica-zone-03-town-1",
+        "antarctica-zone-03-town-2",
+        "antarctica-zone-03-village-1",
+        "antarctica-zone-03-village-2",
+        "antarctica-zone-03-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-03-poi-1",
+          "name": "Forgotten Catacombs of Aurora Shelf",
+          "type": "dungeon",
+          "level": 91,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-03-poi-2",
+          "name": "Ancient Watch of Aurora Shelf",
+          "type": "ruins",
+          "level": 93,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-03-poi-3",
+          "name": "Skyfall Monument of Aurora Shelf",
+          "type": "landmark",
+          "level": 95,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-03-poi-4",
+          "name": "Gatherer's Hollow of Aurora Shelf",
+          "type": "resource_site",
+          "level": 97,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-03-poi-5",
+          "name": "Apex Den of Aurora Shelf",
+          "type": "world_boss_lair",
+          "level": 99,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-03-road-gate",
+        "antarctica-zone-03-caravan-post",
+        "antarctica-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-04",
+      "name": "Black Ice Mountains",
+      "continentId": "antarctica",
+      "levelRange": [
+        96,
+        110
+      ],
+      "biomeId": "polar_mountains",
+      "subZones": [
+        {
+          "id": "antarctica-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "polar_mountains",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "polar_mountains",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "polar_mountains",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "polar_mountains",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-04-city",
+        "antarctica-zone-04-town-1",
+        "antarctica-zone-04-town-2",
+        "antarctica-zone-04-village-1",
+        "antarctica-zone-04-village-2",
+        "antarctica-zone-04-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-04-poi-1",
+          "name": "Forgotten Catacombs of Black Ice Mountains",
+          "type": "dungeon",
+          "level": 96,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-04-poi-2",
+          "name": "Ancient Watch of Black Ice Mountains",
+          "type": "ruins",
+          "level": 98,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-04-poi-3",
+          "name": "Skyfall Monument of Black Ice Mountains",
+          "type": "landmark",
+          "level": 100,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-04-poi-4",
+          "name": "Gatherer's Hollow of Black Ice Mountains",
+          "type": "resource_site",
+          "level": 102,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-04-poi-5",
+          "name": "Apex Den of Black Ice Mountains",
+          "type": "world_boss_lair",
+          "level": 104,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-04-road-gate",
+        "antarctica-zone-04-caravan-post",
+        "antarctica-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-05",
+      "name": "The Buried Sea",
+      "continentId": "antarctica",
+      "levelRange": [
+        101,
+        115
+      ],
+      "biomeId": "subglacial_lake",
+      "subZones": [
+        {
+          "id": "antarctica-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "subglacial_lake",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-05-city",
+        "antarctica-zone-05-town-1",
+        "antarctica-zone-05-town-2",
+        "antarctica-zone-05-village-1",
+        "antarctica-zone-05-village-2",
+        "antarctica-zone-05-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-05-poi-1",
+          "name": "Forgotten Catacombs of The Buried Sea",
+          "type": "dungeon",
+          "level": 101,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-05-poi-2",
+          "name": "Ancient Watch of The Buried Sea",
+          "type": "ruins",
+          "level": 103,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-05-poi-3",
+          "name": "Skyfall Monument of The Buried Sea",
+          "type": "landmark",
+          "level": 105,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-05-poi-4",
+          "name": "Gatherer's Hollow of The Buried Sea",
+          "type": "resource_site",
+          "level": 107,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-05-poi-5",
+          "name": "Apex Den of The Buried Sea",
+          "type": "world_boss_lair",
+          "level": 109,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-05-road-gate",
+        "antarctica-zone-05-caravan-post",
+        "antarctica-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-06",
+      "name": "Crystal Crevasse",
+      "continentId": "antarctica",
+      "levelRange": [
+        106,
+        120
+      ],
+      "biomeId": "ice_caves",
+      "subZones": [
+        {
+          "id": "antarctica-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "ice_caves",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "ice_caves",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "ice_caves",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "ice_caves",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-06-city",
+        "antarctica-zone-06-town-1",
+        "antarctica-zone-06-town-2",
+        "antarctica-zone-06-village-1",
+        "antarctica-zone-06-village-2",
+        "antarctica-zone-06-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-06-poi-1",
+          "name": "Forgotten Catacombs of Crystal Crevasse",
+          "type": "dungeon",
+          "level": 106,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-06-poi-2",
+          "name": "Ancient Watch of Crystal Crevasse",
+          "type": "ruins",
+          "level": 108,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-06-poi-3",
+          "name": "Skyfall Monument of Crystal Crevasse",
+          "type": "landmark",
+          "level": 110,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-06-poi-4",
+          "name": "Gatherer's Hollow of Crystal Crevasse",
+          "type": "resource_site",
+          "level": 112,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-06-poi-5",
+          "name": "Apex Den of Crystal Crevasse",
+          "type": "world_boss_lair",
+          "level": 114,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-06-road-gate",
+        "antarctica-zone-06-caravan-post",
+        "antarctica-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-07",
+      "name": "Southern Lights Basin",
+      "continentId": "antarctica",
+      "levelRange": [
+        111,
+        125
+      ],
+      "biomeId": "polar_tundra",
+      "subZones": [
+        {
+          "id": "antarctica-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "polar_tundra",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "polar_tundra",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "polar_tundra",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "polar_tundra",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-07-city",
+        "antarctica-zone-07-town-1",
+        "antarctica-zone-07-town-2",
+        "antarctica-zone-07-village-1",
+        "antarctica-zone-07-village-2",
+        "antarctica-zone-07-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-07-poi-1",
+          "name": "Forgotten Catacombs of Southern Lights Basin",
+          "type": "dungeon",
+          "level": 111,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-07-poi-2",
+          "name": "Ancient Watch of Southern Lights Basin",
+          "type": "ruins",
+          "level": 113,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-07-poi-3",
+          "name": "Skyfall Monument of Southern Lights Basin",
+          "type": "landmark",
+          "level": 115,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-07-poi-4",
+          "name": "Gatherer's Hollow of Southern Lights Basin",
+          "type": "resource_site",
+          "level": 117,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-07-poi-5",
+          "name": "Apex Den of Southern Lights Basin",
+          "type": "world_boss_lair",
+          "level": 119,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-07-road-gate",
+        "antarctica-zone-07-caravan-post",
+        "antarctica-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "antarctica-zone-08",
+      "name": "Hollow Earth Gate",
+      "continentId": "antarctica",
+      "levelRange": [
+        116,
+        130
+      ],
+      "biomeId": "geothermal_icefield",
+      "subZones": [
+        {
+          "id": "antarctica-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 1
+        },
+        {
+          "id": "antarctica-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 2
+        },
+        {
+          "id": "antarctica-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 3
+        },
+        {
+          "id": "antarctica-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "geothermal_icefield",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "antarctica-zone-08-city",
+        "antarctica-zone-08-town-1",
+        "antarctica-zone-08-town-2",
+        "antarctica-zone-08-village-1",
+        "antarctica-zone-08-village-2",
+        "antarctica-zone-08-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "antarctica-zone-08-poi-1",
+          "name": "Forgotten Catacombs of Hollow Earth Gate",
+          "type": "dungeon",
+          "level": 116,
+          "repeatable": true
+        },
+        {
+          "id": "antarctica-zone-08-poi-2",
+          "name": "Ancient Watch of Hollow Earth Gate",
+          "type": "ruins",
+          "level": 118,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-08-poi-3",
+          "name": "Skyfall Monument of Hollow Earth Gate",
+          "type": "landmark",
+          "level": 120,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-08-poi-4",
+          "name": "Gatherer's Hollow of Hollow Earth Gate",
+          "type": "resource_site",
+          "level": 122,
+          "repeatable": false
+        },
+        {
+          "id": "antarctica-zone-08-poi-5",
+          "name": "Apex Den of Hollow Earth Gate",
+          "type": "world_boss_lair",
+          "level": 124,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "antarctica-zone-08-road-gate",
+        "antarctica-zone-08-caravan-post",
+        "antarctica-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "antarctica-faction-1",
+      "name": "Stormcallers' Conclave",
+      "type": "kingdom",
+      "alignment": "neutral",
+      "homeContinent": "antarctica"
+    },
+    {
+      "id": "antarctica-faction-2",
+      "name": "Old Kingdom Remnant",
+      "type": "guild",
+      "alignment": "chaotic",
+      "homeContinent": "antarctica"
+    },
+    {
+      "id": "antarctica-faction-3",
+      "name": "Silver Lantern Company",
+      "type": "order",
+      "alignment": "lawful",
+      "homeContinent": "antarctica"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "antarctica-raid-01",
+      "name": "The The Frostveil Citadel",
+      "type": "raid",
+      "partySize": 10,
+      "level": 150
+    },
+    {
+      "id": "antarctica-raid-02",
+      "name": "Vault of the Fallen Antarctica",
+      "type": "raid",
+      "partySize": 20,
+      "level": 210
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "antarctica-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "antarctica-isles-east",
+      "islands": 8
+    }
+  ]
+}

@@ -1,0 +1,775 @@
+{
+  "id": "asia",
+  "name": "Asia",
+  "realm": "The Eastern Crown",
+  "capital": {
+    "id": "asia-capital",
+    "name": "Aurelion",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "asia-zone-01",
+      "name": "Jadewind Basin",
+      "continentId": "asia",
+      "levelRange": [
+        1,
+        15
+      ],
+      "biomeId": "temperate_forest",
+      "subZones": [
+        {
+          "id": "asia-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "temperate_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "temperate_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "temperate_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "temperate_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-01-city",
+        "asia-zone-01-town-1",
+        "asia-zone-01-town-2",
+        "asia-zone-01-village-1",
+        "asia-zone-01-village-2",
+        "asia-zone-01-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-01-poi-1",
+          "name": "Forgotten Catacombs of Jadewind Basin",
+          "type": "dungeon",
+          "level": 1,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-01-poi-2",
+          "name": "Ancient Watch of Jadewind Basin",
+          "type": "ruins",
+          "level": 3,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-01-poi-3",
+          "name": "Skyfall Monument of Jadewind Basin",
+          "type": "landmark",
+          "level": 5,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-01-poi-4",
+          "name": "Gatherer's Hollow of Jadewind Basin",
+          "type": "resource_site",
+          "level": 7,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-01-poi-5",
+          "name": "Apex Den of Jadewind Basin",
+          "type": "world_boss_lair",
+          "level": 9,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-01-road-gate",
+        "asia-zone-01-caravan-post",
+        "asia-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-02",
+      "name": "Dragonspine Range",
+      "continentId": "asia",
+      "levelRange": [
+        6,
+        20
+      ],
+      "biomeId": "alpine",
+      "subZones": [
+        {
+          "id": "asia-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "alpine",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "alpine",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "alpine",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "alpine",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-02-city",
+        "asia-zone-02-town-1",
+        "asia-zone-02-town-2",
+        "asia-zone-02-village-1",
+        "asia-zone-02-village-2",
+        "asia-zone-02-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-02-poi-1",
+          "name": "Forgotten Catacombs of Dragonspine Range",
+          "type": "dungeon",
+          "level": 6,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-02-poi-2",
+          "name": "Ancient Watch of Dragonspine Range",
+          "type": "ruins",
+          "level": 8,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-02-poi-3",
+          "name": "Skyfall Monument of Dragonspine Range",
+          "type": "landmark",
+          "level": 10,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-02-poi-4",
+          "name": "Gatherer's Hollow of Dragonspine Range",
+          "type": "resource_site",
+          "level": 12,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-02-poi-5",
+          "name": "Apex Den of Dragonspine Range",
+          "type": "world_boss_lair",
+          "level": 14,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-02-road-gate",
+        "asia-zone-02-caravan-post",
+        "asia-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-03",
+      "name": "Saffron Coast",
+      "continentId": "asia",
+      "levelRange": [
+        11,
+        25
+      ],
+      "biomeId": "tropical_monsoon_forest",
+      "subZones": [
+        {
+          "id": "asia-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_monsoon_forest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-03-city",
+        "asia-zone-03-town-1",
+        "asia-zone-03-town-2",
+        "asia-zone-03-village-1",
+        "asia-zone-03-village-2",
+        "asia-zone-03-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-03-poi-1",
+          "name": "Forgotten Catacombs of Saffron Coast",
+          "type": "dungeon",
+          "level": 11,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-03-poi-2",
+          "name": "Ancient Watch of Saffron Coast",
+          "type": "ruins",
+          "level": 13,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-03-poi-3",
+          "name": "Skyfall Monument of Saffron Coast",
+          "type": "landmark",
+          "level": 15,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-03-poi-4",
+          "name": "Gatherer's Hollow of Saffron Coast",
+          "type": "resource_site",
+          "level": 17,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-03-poi-5",
+          "name": "Apex Den of Saffron Coast",
+          "type": "world_boss_lair",
+          "level": 19,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-03-road-gate",
+        "asia-zone-03-caravan-post",
+        "asia-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-04",
+      "name": "Whispering Steppe",
+      "continentId": "asia",
+      "levelRange": [
+        16,
+        30
+      ],
+      "biomeId": "grassland_steppe",
+      "subZones": [
+        {
+          "id": "asia-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "grassland_steppe",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-04-city",
+        "asia-zone-04-town-1",
+        "asia-zone-04-town-2",
+        "asia-zone-04-village-1",
+        "asia-zone-04-village-2",
+        "asia-zone-04-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-04-poi-1",
+          "name": "Forgotten Catacombs of Whispering Steppe",
+          "type": "dungeon",
+          "level": 16,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-04-poi-2",
+          "name": "Ancient Watch of Whispering Steppe",
+          "type": "ruins",
+          "level": 18,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-04-poi-3",
+          "name": "Skyfall Monument of Whispering Steppe",
+          "type": "landmark",
+          "level": 20,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-04-poi-4",
+          "name": "Gatherer's Hollow of Whispering Steppe",
+          "type": "resource_site",
+          "level": 22,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-04-poi-5",
+          "name": "Apex Den of Whispering Steppe",
+          "type": "world_boss_lair",
+          "level": 24,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-04-road-gate",
+        "asia-zone-04-caravan-post",
+        "asia-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-05",
+      "name": "Lotus Delta",
+      "continentId": "asia",
+      "levelRange": [
+        21,
+        35
+      ],
+      "biomeId": "river_wetland",
+      "subZones": [
+        {
+          "id": "asia-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "river_wetland",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "river_wetland",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "river_wetland",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "river_wetland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-05-city",
+        "asia-zone-05-town-1",
+        "asia-zone-05-town-2",
+        "asia-zone-05-village-1",
+        "asia-zone-05-village-2",
+        "asia-zone-05-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-05-poi-1",
+          "name": "Forgotten Catacombs of Lotus Delta",
+          "type": "dungeon",
+          "level": 21,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-05-poi-2",
+          "name": "Ancient Watch of Lotus Delta",
+          "type": "ruins",
+          "level": 23,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-05-poi-3",
+          "name": "Skyfall Monument of Lotus Delta",
+          "type": "landmark",
+          "level": 25,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-05-poi-4",
+          "name": "Gatherer's Hollow of Lotus Delta",
+          "type": "resource_site",
+          "level": 27,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-05-poi-5",
+          "name": "Apex Den of Lotus Delta",
+          "type": "world_boss_lair",
+          "level": 29,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-05-road-gate",
+        "asia-zone-05-caravan-post",
+        "asia-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-06",
+      "name": "Obsidian Highlands",
+      "continentId": "asia",
+      "levelRange": [
+        26,
+        40
+      ],
+      "biomeId": "highland",
+      "subZones": [
+        {
+          "id": "asia-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "highland",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "highland",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "highland",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "highland",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-06-city",
+        "asia-zone-06-town-1",
+        "asia-zone-06-town-2",
+        "asia-zone-06-village-1",
+        "asia-zone-06-village-2",
+        "asia-zone-06-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-06-poi-1",
+          "name": "Forgotten Catacombs of Obsidian Highlands",
+          "type": "dungeon",
+          "level": 26,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-06-poi-2",
+          "name": "Ancient Watch of Obsidian Highlands",
+          "type": "ruins",
+          "level": 28,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-06-poi-3",
+          "name": "Skyfall Monument of Obsidian Highlands",
+          "type": "landmark",
+          "level": 30,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-06-poi-4",
+          "name": "Gatherer's Hollow of Obsidian Highlands",
+          "type": "resource_site",
+          "level": 32,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-06-poi-5",
+          "name": "Apex Den of Obsidian Highlands",
+          "type": "world_boss_lair",
+          "level": 34,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-06-road-gate",
+        "asia-zone-06-caravan-post",
+        "asia-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-07",
+      "name": "Moonlit Archipelago",
+      "continentId": "asia",
+      "levelRange": [
+        31,
+        45
+      ],
+      "biomeId": "tropical_island",
+      "subZones": [
+        {
+          "id": "asia-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_island",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_island",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_island",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_island",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-07-city",
+        "asia-zone-07-town-1",
+        "asia-zone-07-town-2",
+        "asia-zone-07-village-1",
+        "asia-zone-07-village-2",
+        "asia-zone-07-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-07-poi-1",
+          "name": "Forgotten Catacombs of Moonlit Archipelago",
+          "type": "dungeon",
+          "level": 31,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-07-poi-2",
+          "name": "Ancient Watch of Moonlit Archipelago",
+          "type": "ruins",
+          "level": 33,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-07-poi-3",
+          "name": "Skyfall Monument of Moonlit Archipelago",
+          "type": "landmark",
+          "level": 35,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-07-poi-4",
+          "name": "Gatherer's Hollow of Moonlit Archipelago",
+          "type": "resource_site",
+          "level": 37,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-07-poi-5",
+          "name": "Apex Den of Moonlit Archipelago",
+          "type": "world_boss_lair",
+          "level": 39,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-07-road-gate",
+        "asia-zone-07-caravan-post",
+        "asia-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "asia-zone-08",
+      "name": "Celestial Desert",
+      "continentId": "asia",
+      "levelRange": [
+        36,
+        50
+      ],
+      "biomeId": "cold_desert",
+      "subZones": [
+        {
+          "id": "asia-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "cold_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "asia-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "cold_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "asia-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "cold_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "asia-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "cold_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "asia-zone-08-city",
+        "asia-zone-08-town-1",
+        "asia-zone-08-town-2",
+        "asia-zone-08-village-1",
+        "asia-zone-08-village-2",
+        "asia-zone-08-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "asia-zone-08-poi-1",
+          "name": "Forgotten Catacombs of Celestial Desert",
+          "type": "dungeon",
+          "level": 36,
+          "repeatable": true
+        },
+        {
+          "id": "asia-zone-08-poi-2",
+          "name": "Ancient Watch of Celestial Desert",
+          "type": "ruins",
+          "level": 38,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-08-poi-3",
+          "name": "Skyfall Monument of Celestial Desert",
+          "type": "landmark",
+          "level": 40,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-08-poi-4",
+          "name": "Gatherer's Hollow of Celestial Desert",
+          "type": "resource_site",
+          "level": 42,
+          "repeatable": false
+        },
+        {
+          "id": "asia-zone-08-poi-5",
+          "name": "Apex Den of Celestial Desert",
+          "type": "world_boss_lair",
+          "level": 44,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "asia-zone-08-road-gate",
+        "asia-zone-08-caravan-post",
+        "asia-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "asia-faction-1",
+      "name": "Crownward Alliance",
+      "type": "kingdom",
+      "alignment": "lawful",
+      "homeContinent": "asia"
+    },
+    {
+      "id": "asia-faction-2",
+      "name": "Wayfarer Compact",
+      "type": "guild",
+      "alignment": "neutral",
+      "homeContinent": "asia"
+    },
+    {
+      "id": "asia-faction-3",
+      "name": "Circle of the Verdant Moon",
+      "type": "order",
+      "alignment": "chaotic",
+      "homeContinent": "asia"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "asia-raid-01",
+      "name": "The The Eastern Crown Citadel",
+      "type": "raid",
+      "partySize": 10,
+      "level": 30
+    },
+    {
+      "id": "asia-raid-02",
+      "name": "Vault of the Fallen Asia",
+      "type": "raid",
+      "partySize": 20,
+      "level": 50
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "asia-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "asia-isles-east",
+      "islands": 8
+    }
+  ]
+}

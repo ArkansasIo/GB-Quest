@@ -1,0 +1,5191 @@
+{
+  "settlements": [
+    {
+      "id": "asia-capital",
+      "name": "Aurelion",
+      "type": "capital",
+      "population": 80000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": null
+    },
+    {
+      "id": "asia-zone-01-city",
+      "name": "Alderbridge",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-town-1",
+      "name": "Dawnrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-town-2",
+      "name": "Duskspire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-village-1",
+      "name": "Goldhold",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-village-2",
+      "name": "Greengate",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-01-village-3",
+      "name": "Highmarket",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-01"
+    },
+    {
+      "id": "asia-zone-02-city",
+      "name": "Brightkeep",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-town-1",
+      "name": "Duskwatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-town-2",
+      "name": "Elderwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-village-1",
+      "name": "Greengate",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-village-2",
+      "name": "Highmarket",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-02-village-3",
+      "name": "Ironcross",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-02"
+    },
+    {
+      "id": "asia-zone-03-city",
+      "name": "Dawnreach",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-town-1",
+      "name": "Elderford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-town-2",
+      "name": "Falconhold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-village-1",
+      "name": "Highmarket",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-village-2",
+      "name": "Ironcross",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-03-village-3",
+      "name": "Jadevale",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-03"
+    },
+    {
+      "id": "asia-zone-04-city",
+      "name": "Elderwatch",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-town-1",
+      "name": "Falcongate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-town-2",
+      "name": "Frostmarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-village-1",
+      "name": "Ironcross",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-village-2",
+      "name": "Jadevale",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-04-village-3",
+      "name": "Kingsfield",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-04"
+    },
+    {
+      "id": "asia-zone-05-city",
+      "name": "Frosthold",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-town-1",
+      "name": "Frostcross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-town-2",
+      "name": "Goldvale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-village-1",
+      "name": "Jadevale",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-village-2",
+      "name": "Kingsfield",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-05-village-3",
+      "name": "Moongrove",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-05"
+    },
+    {
+      "id": "asia-zone-06-city",
+      "name": "Greencross",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-town-1",
+      "name": "Goldfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-town-2",
+      "name": "Greengrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-village-1",
+      "name": "Kingsfield",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-village-2",
+      "name": "Moongrove",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-06-village-3",
+      "name": "Oakharbor",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-06"
+    },
+    {
+      "id": "asia-zone-07-city",
+      "name": "Irongrove",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-town-1",
+      "name": "Greenharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-town-2",
+      "name": "Highstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-village-1",
+      "name": "Moongrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-village-2",
+      "name": "Oakharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-07-village-3",
+      "name": "Ravenstead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-07"
+    },
+    {
+      "id": "asia-zone-08-city",
+      "name": "Kingscrest",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-town-1",
+      "name": "Highcrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-town-2",
+      "name": "Ironpoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-village-1",
+      "name": "Oakharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-village-2",
+      "name": "Ravenstead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "asia-zone-08-village-3",
+      "name": "Silvercrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "asia",
+      "zoneId": "asia-zone-08"
+    },
+    {
+      "id": "africa-capital",
+      "name": "Sunspire",
+      "type": "capital",
+      "population": 97000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": null
+    },
+    {
+      "id": "africa-zone-01-city",
+      "name": "Cinderfall",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-town-1",
+      "name": "Goldrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-town-2",
+      "name": "Greenspire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-village-1",
+      "name": "Oakgate",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-village-2",
+      "name": "Ravenmarket",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-01-village-3",
+      "name": "Silvercross",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-01"
+    },
+    {
+      "id": "africa-zone-02-city",
+      "name": "Duskmere",
+      "type": "city",
+      "population": 14400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-town-1",
+      "name": "Greenwatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-town-2",
+      "name": "Highwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-village-1",
+      "name": "Ravenmarket",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-village-2",
+      "name": "Silvercross",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-02-village-3",
+      "name": "Starvale",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-02"
+    },
+    {
+      "id": "africa-zone-03-city",
+      "name": "Falconrest",
+      "type": "city",
+      "population": 15600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-town-1",
+      "name": "Highford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-town-2",
+      "name": "Ironhold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-village-1",
+      "name": "Silvercross",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-village-2",
+      "name": "Starvale",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-03-village-3",
+      "name": "Stonefield",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-03"
+    },
+    {
+      "id": "africa-zone-04-city",
+      "name": "Goldwick",
+      "type": "city",
+      "population": 16800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-town-1",
+      "name": "Irongate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-town-2",
+      "name": "Jademarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-village-1",
+      "name": "Starvale",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-village-2",
+      "name": "Stonefield",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-04-village-3",
+      "name": "Sungrove",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-04"
+    },
+    {
+      "id": "africa-zone-05-city",
+      "name": "Highgate",
+      "type": "city",
+      "population": 18000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-town-1",
+      "name": "Jadecross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-town-2",
+      "name": "Kingsvale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-village-1",
+      "name": "Stonefield",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-village-2",
+      "name": "Sungrove",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-05-village-3",
+      "name": "Thornharbor",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-05"
+    },
+    {
+      "id": "africa-zone-06-city",
+      "name": "Jadevale",
+      "type": "city",
+      "population": 19200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-town-1",
+      "name": "Kingsfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-town-2",
+      "name": "Moongrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-village-1",
+      "name": "Sungrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-village-2",
+      "name": "Thornharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-06-village-3",
+      "name": "Whitestead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-06"
+    },
+    {
+      "id": "africa-zone-07-city",
+      "name": "Moonharbor",
+      "type": "city",
+      "population": 20400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-town-1",
+      "name": "Moonharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-town-2",
+      "name": "Oakstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-village-1",
+      "name": "Thornharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-village-2",
+      "name": "Whitestead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-07-village-3",
+      "name": "Aldercrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-07"
+    },
+    {
+      "id": "africa-zone-08-city",
+      "name": "Ravenpoint",
+      "type": "city",
+      "population": 21600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-town-1",
+      "name": "Oakcrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-town-2",
+      "name": "Ravenpoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-village-1",
+      "name": "Whitestead",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-village-2",
+      "name": "Aldercrest",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "africa-zone-08-village-3",
+      "name": "Ashpoint",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "africa",
+      "zoneId": "africa-zone-08"
+    },
+    {
+      "id": "north-america-capital",
+      "name": "Westhold",
+      "type": "capital",
+      "population": 114000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": null
+    },
+    {
+      "id": "north-america-zone-01-city",
+      "name": "Elderhaven",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-town-1",
+      "name": "Kingsrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-town-2",
+      "name": "Moonspire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-village-1",
+      "name": "Whitemarket",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-village-2",
+      "name": "Aldercross",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-01-village-3",
+      "name": "Ashvale",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01"
+    },
+    {
+      "id": "north-america-zone-02-city",
+      "name": "Frostport",
+      "type": "city",
+      "population": 15600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-town-1",
+      "name": "Moonwatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-town-2",
+      "name": "Oakwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-village-1",
+      "name": "Aldercross",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-village-2",
+      "name": "Ashvale",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-02-village-3",
+      "name": "Brightfield",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02"
+    },
+    {
+      "id": "north-america-zone-03-city",
+      "name": "Greenspire",
+      "type": "city",
+      "population": 18000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-town-1",
+      "name": "Oakford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-town-2",
+      "name": "Ravenhold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-village-1",
+      "name": "Ashvale",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-village-2",
+      "name": "Brightfield",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-03-village-3",
+      "name": "Cindergrove",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03"
+    },
+    {
+      "id": "north-america-zone-04-city",
+      "name": "Ironford",
+      "type": "city",
+      "population": 20400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-town-1",
+      "name": "Ravengate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-town-2",
+      "name": "Silvermarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-village-1",
+      "name": "Brightfield",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-village-2",
+      "name": "Cindergrove",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-04-village-3",
+      "name": "Dawnharbor",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04"
+    },
+    {
+      "id": "north-america-zone-05-city",
+      "name": "Kingsmarket",
+      "type": "city",
+      "population": 22800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-town-1",
+      "name": "Silvercross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-town-2",
+      "name": "Starvale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-village-1",
+      "name": "Cindergrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-village-2",
+      "name": "Dawnharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-05-village-3",
+      "name": "Duskstead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05"
+    },
+    {
+      "id": "north-america-zone-06-city",
+      "name": "Oakfield",
+      "type": "city",
+      "population": 25200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-town-1",
+      "name": "Starfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-town-2",
+      "name": "Stonegrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-village-1",
+      "name": "Dawnharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-village-2",
+      "name": "Duskstead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-06-village-3",
+      "name": "Eldercrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06"
+    },
+    {
+      "id": "north-america-zone-07-city",
+      "name": "Silverstead",
+      "type": "city",
+      "population": 27600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-town-1",
+      "name": "Stoneharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-town-2",
+      "name": "Sunstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-village-1",
+      "name": "Duskstead",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-village-2",
+      "name": "Eldercrest",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-07-village-3",
+      "name": "Falconpoint",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07"
+    },
+    {
+      "id": "north-america-zone-08-city",
+      "name": "Stoneridge",
+      "type": "city",
+      "population": 30000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-town-1",
+      "name": "Suncrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-town-2",
+      "name": "Thornpoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-village-1",
+      "name": "Eldercrest",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-village-2",
+      "name": "Falconpoint",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "north-america-zone-08-village-3",
+      "name": "Frostridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08"
+    },
+    {
+      "id": "south-america-capital",
+      "name": "Viridian Crown",
+      "type": "capital",
+      "population": 131000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": null
+    },
+    {
+      "id": "south-america-zone-01-city",
+      "name": "Goldkeep",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-town-1",
+      "name": "Starrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-town-2",
+      "name": "Stonespire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-village-1",
+      "name": "Eldercross",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-village-2",
+      "name": "Falconvale",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-01-village-3",
+      "name": "Frostfield",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01"
+    },
+    {
+      "id": "south-america-zone-02-city",
+      "name": "Highreach",
+      "type": "city",
+      "population": 16800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-town-1",
+      "name": "Stonewatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-town-2",
+      "name": "Sunwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-village-1",
+      "name": "Falconvale",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-village-2",
+      "name": "Frostfield",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-02-village-3",
+      "name": "Goldgrove",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02"
+    },
+    {
+      "id": "south-america-zone-03-city",
+      "name": "Jadewatch",
+      "type": "city",
+      "population": 20400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-town-1",
+      "name": "Sunford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-town-2",
+      "name": "Thornhold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-village-1",
+      "name": "Frostfield",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-village-2",
+      "name": "Goldgrove",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-03-village-3",
+      "name": "Greenharbor",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03"
+    },
+    {
+      "id": "south-america-zone-04-city",
+      "name": "Moonhold",
+      "type": "city",
+      "population": 24000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-town-1",
+      "name": "Thorngate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-town-2",
+      "name": "Whitemarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-village-1",
+      "name": "Goldgrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-village-2",
+      "name": "Greenharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-04-village-3",
+      "name": "Highstead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04"
+    },
+    {
+      "id": "south-america-zone-05-city",
+      "name": "Ravencross",
+      "type": "city",
+      "population": 27600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-town-1",
+      "name": "Whitecross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-town-2",
+      "name": "Aldervale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-village-1",
+      "name": "Greenharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-village-2",
+      "name": "Highstead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-05-village-3",
+      "name": "Ironcrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05"
+    },
+    {
+      "id": "south-america-zone-06-city",
+      "name": "Stargrove",
+      "type": "city",
+      "population": 31200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-town-1",
+      "name": "Alderfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-town-2",
+      "name": "Ashgrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-village-1",
+      "name": "Highstead",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-village-2",
+      "name": "Ironcrest",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-06-village-3",
+      "name": "Jadepoint",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06"
+    },
+    {
+      "id": "south-america-zone-07-city",
+      "name": "Suncrest",
+      "type": "city",
+      "population": 34800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-town-1",
+      "name": "Ashharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-town-2",
+      "name": "Brightstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-village-1",
+      "name": "Ironcrest",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-village-2",
+      "name": "Jadepoint",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-07-village-3",
+      "name": "Kingsridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07"
+    },
+    {
+      "id": "south-america-zone-08-city",
+      "name": "Whitebridge",
+      "type": "city",
+      "population": 38400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-town-1",
+      "name": "Brightcrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-town-2",
+      "name": "Cinderpoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-village-1",
+      "name": "Jadepoint",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-village-2",
+      "name": "Kingsridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "south-america-zone-08-village-3",
+      "name": "Moonbridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08"
+    },
+    {
+      "id": "antarctica-capital",
+      "name": "Aurora Citadel",
+      "type": "capital",
+      "population": 148000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": null
+    },
+    {
+      "id": "antarctica-zone-01-city",
+      "name": "Ironmere",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-town-1",
+      "name": "Alderrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-town-2",
+      "name": "Ashspire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-village-1",
+      "name": "Jadevale",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-village-2",
+      "name": "Kingsfield",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-01-village-3",
+      "name": "Moongrove",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01"
+    },
+    {
+      "id": "antarctica-zone-02-city",
+      "name": "Kingsrest",
+      "type": "city",
+      "population": 18000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-town-1",
+      "name": "Ashwatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-town-2",
+      "name": "Brightwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-village-1",
+      "name": "Kingsfield",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-village-2",
+      "name": "Moongrove",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-02-village-3",
+      "name": "Oakharbor",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02"
+    },
+    {
+      "id": "antarctica-zone-03-city",
+      "name": "Oakwick",
+      "type": "city",
+      "population": 22800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-town-1",
+      "name": "Brightford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-town-2",
+      "name": "Cinderhold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-village-1",
+      "name": "Moongrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-village-2",
+      "name": "Oakharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-03-village-3",
+      "name": "Ravenstead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03"
+    },
+    {
+      "id": "antarctica-zone-04-city",
+      "name": "Silvergate",
+      "type": "city",
+      "population": 27600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-town-1",
+      "name": "Cindergate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-town-2",
+      "name": "Dawnmarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-village-1",
+      "name": "Oakharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-village-2",
+      "name": "Ravenstead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-04-village-3",
+      "name": "Silvercrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04"
+    },
+    {
+      "id": "antarctica-zone-05-city",
+      "name": "Stonevale",
+      "type": "city",
+      "population": 32400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-town-1",
+      "name": "Dawncross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-town-2",
+      "name": "Duskvale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-village-1",
+      "name": "Ravenstead",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-village-2",
+      "name": "Silvercrest",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-05-village-3",
+      "name": "Starpoint",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05"
+    },
+    {
+      "id": "antarctica-zone-06-city",
+      "name": "Thornharbor",
+      "type": "city",
+      "population": 37200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-town-1",
+      "name": "Duskfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-town-2",
+      "name": "Eldergrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-village-1",
+      "name": "Silvercrest",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-village-2",
+      "name": "Starpoint",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-06-village-3",
+      "name": "Stoneridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06"
+    },
+    {
+      "id": "antarctica-zone-07-city",
+      "name": "Alderpoint",
+      "type": "city",
+      "population": 42000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-town-1",
+      "name": "Elderharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-town-2",
+      "name": "Falconstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-village-1",
+      "name": "Starpoint",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-village-2",
+      "name": "Stoneridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-07-village-3",
+      "name": "Sunbridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07"
+    },
+    {
+      "id": "antarctica-zone-08-city",
+      "name": "Brightfall",
+      "type": "city",
+      "population": 46800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-town-1",
+      "name": "Falconcrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-town-2",
+      "name": "Frostpoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-village-1",
+      "name": "Stoneridge",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-village-2",
+      "name": "Sunbridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "antarctica-zone-08-village-3",
+      "name": "Thornfall",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08"
+    },
+    {
+      "id": "europe-capital",
+      "name": "Highcrown",
+      "type": "capital",
+      "population": 165000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": null
+    },
+    {
+      "id": "europe-zone-01-city",
+      "name": "Moonport",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-town-1",
+      "name": "Duskrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-town-2",
+      "name": "Elderspire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-village-1",
+      "name": "Stonefield",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-village-2",
+      "name": "Sungrove",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-01-village-3",
+      "name": "Thornharbor",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-01"
+    },
+    {
+      "id": "europe-zone-02-city",
+      "name": "Ravenspire",
+      "type": "city",
+      "population": 19200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-town-1",
+      "name": "Elderwatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-town-2",
+      "name": "Falconwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-village-1",
+      "name": "Sungrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-village-2",
+      "name": "Thornharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-02-village-3",
+      "name": "Whitestead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-02"
+    },
+    {
+      "id": "europe-zone-03-city",
+      "name": "Starford",
+      "type": "city",
+      "population": 25200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-town-1",
+      "name": "Falconford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-town-2",
+      "name": "Frosthold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-village-1",
+      "name": "Thornharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-village-2",
+      "name": "Whitestead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-03-village-3",
+      "name": "Aldercrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-03"
+    },
+    {
+      "id": "europe-zone-04-city",
+      "name": "Sunmarket",
+      "type": "city",
+      "population": 31200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-town-1",
+      "name": "Frostgate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-town-2",
+      "name": "Goldmarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-village-1",
+      "name": "Whitestead",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-village-2",
+      "name": "Aldercrest",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-04-village-3",
+      "name": "Ashpoint",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-04"
+    },
+    {
+      "id": "europe-zone-05-city",
+      "name": "Whitefield",
+      "type": "city",
+      "population": 37200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-town-1",
+      "name": "Goldcross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-town-2",
+      "name": "Greenvale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-village-1",
+      "name": "Aldercrest",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-village-2",
+      "name": "Ashpoint",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-05-village-3",
+      "name": "Brightridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-05"
+    },
+    {
+      "id": "europe-zone-06-city",
+      "name": "Ashstead",
+      "type": "city",
+      "population": 43200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-town-1",
+      "name": "Greenfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-town-2",
+      "name": "Highgrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-village-1",
+      "name": "Ashpoint",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-village-2",
+      "name": "Brightridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-06-village-3",
+      "name": "Cinderbridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-06"
+    },
+    {
+      "id": "europe-zone-07-city",
+      "name": "Cinderridge",
+      "type": "city",
+      "population": 49200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-town-1",
+      "name": "Highharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-town-2",
+      "name": "Ironstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-village-1",
+      "name": "Brightridge",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-village-2",
+      "name": "Cinderbridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-07-village-3",
+      "name": "Dawnfall",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-07"
+    },
+    {
+      "id": "europe-zone-08-city",
+      "name": "Duskhaven",
+      "type": "city",
+      "population": 55200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-town-1",
+      "name": "Ironcrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-town-2",
+      "name": "Jadepoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-village-1",
+      "name": "Cinderbridge",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-village-2",
+      "name": "Dawnfall",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "europe-zone-08-village-3",
+      "name": "Duskhaven",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "europe",
+      "zoneId": "europe-zone-08"
+    },
+    {
+      "id": "australia-capital",
+      "name": "Coralheart",
+      "type": "capital",
+      "population": 182000,
+      "services": [
+        "bank",
+        "inn",
+        "auction_house",
+        "guild_hall",
+        "crafting",
+        "class_trainers",
+        "market",
+        "stable",
+        "portal_hub",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": null
+    },
+    {
+      "id": "australia-zone-01-city",
+      "name": "Silverreach",
+      "type": "city",
+      "population": 13200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-town-1",
+      "name": "Greenrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-town-2",
+      "name": "Highspire",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-village-1",
+      "name": "Cindergrove",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-village-2",
+      "name": "Dawnharbor",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-01-village-3",
+      "name": "Duskstead",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-01"
+    },
+    {
+      "id": "australia-zone-02-city",
+      "name": "Stonewatch",
+      "type": "city",
+      "population": 20400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-town-1",
+      "name": "Highwatch",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-town-2",
+      "name": "Ironwick",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-village-1",
+      "name": "Dawnharbor",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-village-2",
+      "name": "Duskstead",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-02-village-3",
+      "name": "Eldercrest",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-02"
+    },
+    {
+      "id": "australia-zone-03-city",
+      "name": "Thornhold",
+      "type": "city",
+      "population": 27600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-town-1",
+      "name": "Ironford",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-town-2",
+      "name": "Jadehold",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-village-1",
+      "name": "Duskstead",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-village-2",
+      "name": "Eldercrest",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-03-village-3",
+      "name": "Falconpoint",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-03"
+    },
+    {
+      "id": "australia-zone-04-city",
+      "name": "Aldercross",
+      "type": "city",
+      "population": 34800,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-town-1",
+      "name": "Jadegate",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-town-2",
+      "name": "Kingsmarket",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-village-1",
+      "name": "Eldercrest",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-village-2",
+      "name": "Falconpoint",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-04-village-3",
+      "name": "Frostridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-04"
+    },
+    {
+      "id": "australia-zone-05-city",
+      "name": "Brightgrove",
+      "type": "city",
+      "population": 42000,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-town-1",
+      "name": "Kingscross",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-town-2",
+      "name": "Moonvale",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-village-1",
+      "name": "Falconpoint",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-village-2",
+      "name": "Frostridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-05-village-3",
+      "name": "Goldbridge",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-05"
+    },
+    {
+      "id": "australia-zone-06-city",
+      "name": "Dawncrest",
+      "type": "city",
+      "population": 49200,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-town-1",
+      "name": "Moonfield",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-town-2",
+      "name": "Oakgrove",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-village-1",
+      "name": "Frostridge",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-village-2",
+      "name": "Goldbridge",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-06-village-3",
+      "name": "Greenfall",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-06"
+    },
+    {
+      "id": "australia-zone-07-city",
+      "name": "Elderbridge",
+      "type": "city",
+      "population": 56400,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-town-1",
+      "name": "Oakharbor",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-town-2",
+      "name": "Ravenstead",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-village-1",
+      "name": "Goldbridge",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-village-2",
+      "name": "Greenfall",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-07-village-3",
+      "name": "Highhaven",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-07"
+    },
+    {
+      "id": "australia-zone-08-city",
+      "name": "Frostkeep",
+      "type": "city",
+      "population": 63600,
+      "services": [
+        "inn",
+        "market",
+        "bank",
+        "crafting",
+        "quest_board",
+        "guild_hall",
+        "class_trainer"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-town-1",
+      "name": "Ravencrest",
+      "type": "town",
+      "population": 1800,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-town-2",
+      "name": "Silverpoint",
+      "type": "town",
+      "population": 2450,
+      "services": [
+        "inn",
+        "market",
+        "blacksmith",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-village-1",
+      "name": "Greenfall",
+      "type": "village",
+      "population": 120,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-village-2",
+      "name": "Highhaven",
+      "type": "village",
+      "population": 200,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    },
+    {
+      "id": "australia-zone-08-village-3",
+      "name": "Ironkeep",
+      "type": "village",
+      "population": 280,
+      "services": [
+        "inn",
+        "general_store",
+        "quest_board"
+      ],
+      "safeZone": true,
+      "continentId": "australia",
+      "zoneId": "australia-zone-08"
+    }
+  ]
+}

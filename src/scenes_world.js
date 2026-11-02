@@ -781,7 +781,7 @@ class WorldMap {
     for (const z of ZONES) {
       const x = ox + z.fx * cell, y = oy + z.fy * cell; if (x < -cell || x > W) continue;
       const c = BCOL[z.biome] || [150, 150, 150];
-      ctx.fillStyle = (S.palette === 'dmg' || S.palette === 'pocket') ? col(z.town ? 3 : 1 + (z.fx + z.fy) % 2) : `rgb(${c})`; ctx.fillRect(x, y, cell, cell);
+      ctx.fillStyle = MONO(S.palette) ? col(z.town ? 3 : 1 + (z.fx + z.fy) % 2) : `rgb(${c})`; ctx.fillRect(x, y, cell, cell);
       // glyphs: mountains, trees, waves
       const glyph = { snow: '^', volcanic: '^', jungle: 'T', marsh: '~', crystal: '*', dusk: '+', badlands: '.', coast: '~', meadow: '"' }[z.biome];
       text(glyph, x + 3, y + 2, 3);

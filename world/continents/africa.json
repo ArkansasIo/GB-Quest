@@ -1,0 +1,775 @@
+{
+  "id": "africa",
+  "name": "Africa",
+  "realm": "The Sunscar Expanse",
+  "capital": {
+    "id": "africa-capital",
+    "name": "Sunspire",
+    "type": "capital"
+  },
+  "zoneCount": 8,
+  "subZoneCount": 32,
+  "climate": [
+    "temperate",
+    "tropical",
+    "arid",
+    "alpine",
+    "polar",
+    "marine"
+  ],
+  "zones": [
+    {
+      "id": "africa-zone-01",
+      "name": "Golden Dune Sea",
+      "continentId": "africa",
+      "levelRange": [
+        21,
+        35
+      ],
+      "biomeId": "hot_desert",
+      "subZones": [
+        {
+          "id": "africa-zone-01-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "hot_desert",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-01-sub-2",
+          "name": "Heartlands",
+          "biomeId": "hot_desert",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-01-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "hot_desert",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-01-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "hot_desert",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-01-city",
+        "africa-zone-01-town-1",
+        "africa-zone-01-town-2",
+        "africa-zone-01-village-1",
+        "africa-zone-01-village-2",
+        "africa-zone-01-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-01-poi-1",
+          "name": "Forgotten Catacombs of Golden Dune Sea",
+          "type": "dungeon",
+          "level": 21,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-01-poi-2",
+          "name": "Ancient Watch of Golden Dune Sea",
+          "type": "ruins",
+          "level": 23,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-01-poi-3",
+          "name": "Skyfall Monument of Golden Dune Sea",
+          "type": "landmark",
+          "level": 25,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-01-poi-4",
+          "name": "Gatherer's Hollow of Golden Dune Sea",
+          "type": "resource_site",
+          "level": 27,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-01-poi-5",
+          "name": "Apex Den of Golden Dune Sea",
+          "type": "world_boss_lair",
+          "level": 29,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-01-road-gate",
+        "africa-zone-01-caravan-post",
+        "africa-zone-01-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-02",
+      "name": "Emerald Rift",
+      "continentId": "africa",
+      "levelRange": [
+        26,
+        40
+      ],
+      "biomeId": "tropical_rainforest",
+      "subZones": [
+        {
+          "id": "africa-zone-02-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-02-sub-2",
+          "name": "Heartlands",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-02-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-02-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "tropical_rainforest",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-02-city",
+        "africa-zone-02-town-1",
+        "africa-zone-02-town-2",
+        "africa-zone-02-village-1",
+        "africa-zone-02-village-2",
+        "africa-zone-02-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-02-poi-1",
+          "name": "Forgotten Catacombs of Emerald Rift",
+          "type": "dungeon",
+          "level": 26,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-02-poi-2",
+          "name": "Ancient Watch of Emerald Rift",
+          "type": "ruins",
+          "level": 28,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-02-poi-3",
+          "name": "Skyfall Monument of Emerald Rift",
+          "type": "landmark",
+          "level": 30,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-02-poi-4",
+          "name": "Gatherer's Hollow of Emerald Rift",
+          "type": "resource_site",
+          "level": 32,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-02-poi-5",
+          "name": "Apex Den of Emerald Rift",
+          "type": "world_boss_lair",
+          "level": 34,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-02-road-gate",
+        "africa-zone-02-caravan-post",
+        "africa-zone-02-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-03",
+      "name": "Thunder Savannah",
+      "continentId": "africa",
+      "levelRange": [
+        31,
+        45
+      ],
+      "biomeId": "savanna",
+      "subZones": [
+        {
+          "id": "africa-zone-03-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "savanna",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-03-sub-2",
+          "name": "Heartlands",
+          "biomeId": "savanna",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-03-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "savanna",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-03-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "savanna",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-03-city",
+        "africa-zone-03-town-1",
+        "africa-zone-03-town-2",
+        "africa-zone-03-village-1",
+        "africa-zone-03-village-2",
+        "africa-zone-03-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-03-poi-1",
+          "name": "Forgotten Catacombs of Thunder Savannah",
+          "type": "dungeon",
+          "level": 31,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-03-poi-2",
+          "name": "Ancient Watch of Thunder Savannah",
+          "type": "ruins",
+          "level": 33,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-03-poi-3",
+          "name": "Skyfall Monument of Thunder Savannah",
+          "type": "landmark",
+          "level": 35,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-03-poi-4",
+          "name": "Gatherer's Hollow of Thunder Savannah",
+          "type": "resource_site",
+          "level": 37,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-03-poi-5",
+          "name": "Apex Den of Thunder Savannah",
+          "type": "world_boss_lair",
+          "level": 39,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-03-road-gate",
+        "africa-zone-03-caravan-post",
+        "africa-zone-03-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-04",
+      "name": "Redstone Escarpment",
+      "continentId": "africa",
+      "levelRange": [
+        36,
+        50
+      ],
+      "biomeId": "rocky_badlands",
+      "subZones": [
+        {
+          "id": "africa-zone-04-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-04-sub-2",
+          "name": "Heartlands",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-04-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-04-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "rocky_badlands",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-04-city",
+        "africa-zone-04-town-1",
+        "africa-zone-04-town-2",
+        "africa-zone-04-village-1",
+        "africa-zone-04-village-2",
+        "africa-zone-04-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-04-poi-1",
+          "name": "Forgotten Catacombs of Redstone Escarpment",
+          "type": "dungeon",
+          "level": 36,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-04-poi-2",
+          "name": "Ancient Watch of Redstone Escarpment",
+          "type": "ruins",
+          "level": 38,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-04-poi-3",
+          "name": "Skyfall Monument of Redstone Escarpment",
+          "type": "landmark",
+          "level": 40,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-04-poi-4",
+          "name": "Gatherer's Hollow of Redstone Escarpment",
+          "type": "resource_site",
+          "level": 42,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-04-poi-5",
+          "name": "Apex Den of Redstone Escarpment",
+          "type": "world_boss_lair",
+          "level": 44,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-04-road-gate",
+        "africa-zone-04-caravan-post",
+        "africa-zone-04-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-05",
+      "name": "Crescent Oasis",
+      "continentId": "africa",
+      "levelRange": [
+        41,
+        55
+      ],
+      "biomeId": "oasis",
+      "subZones": [
+        {
+          "id": "africa-zone-05-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "oasis",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-05-sub-2",
+          "name": "Heartlands",
+          "biomeId": "oasis",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-05-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "oasis",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-05-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "oasis",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-05-city",
+        "africa-zone-05-town-1",
+        "africa-zone-05-town-2",
+        "africa-zone-05-village-1",
+        "africa-zone-05-village-2",
+        "africa-zone-05-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-05-poi-1",
+          "name": "Forgotten Catacombs of Crescent Oasis",
+          "type": "dungeon",
+          "level": 41,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-05-poi-2",
+          "name": "Ancient Watch of Crescent Oasis",
+          "type": "ruins",
+          "level": 43,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-05-poi-3",
+          "name": "Skyfall Monument of Crescent Oasis",
+          "type": "landmark",
+          "level": 45,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-05-poi-4",
+          "name": "Gatherer's Hollow of Crescent Oasis",
+          "type": "resource_site",
+          "level": 47,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-05-poi-5",
+          "name": "Apex Den of Crescent Oasis",
+          "type": "world_boss_lair",
+          "level": 49,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-05-road-gate",
+        "africa-zone-05-caravan-post",
+        "africa-zone-05-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-06",
+      "name": "Baobab Wilds",
+      "continentId": "africa",
+      "levelRange": [
+        46,
+        60
+      ],
+      "biomeId": "woodland_savanna",
+      "subZones": [
+        {
+          "id": "africa-zone-06-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-06-sub-2",
+          "name": "Heartlands",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-06-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-06-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "woodland_savanna",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-06-city",
+        "africa-zone-06-town-1",
+        "africa-zone-06-town-2",
+        "africa-zone-06-village-1",
+        "africa-zone-06-village-2",
+        "africa-zone-06-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-06-poi-1",
+          "name": "Forgotten Catacombs of Baobab Wilds",
+          "type": "dungeon",
+          "level": 46,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-06-poi-2",
+          "name": "Ancient Watch of Baobab Wilds",
+          "type": "ruins",
+          "level": 48,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-06-poi-3",
+          "name": "Skyfall Monument of Baobab Wilds",
+          "type": "landmark",
+          "level": 50,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-06-poi-4",
+          "name": "Gatherer's Hollow of Baobab Wilds",
+          "type": "resource_site",
+          "level": 52,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-06-poi-5",
+          "name": "Apex Den of Baobab Wilds",
+          "type": "world_boss_lair",
+          "level": 54,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-06-road-gate",
+        "africa-zone-06-caravan-post",
+        "africa-zone-06-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-07",
+      "name": "Ashen Caldera",
+      "continentId": "africa",
+      "levelRange": [
+        51,
+        65
+      ],
+      "biomeId": "volcanic",
+      "subZones": [
+        {
+          "id": "africa-zone-07-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "volcanic",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-07-sub-2",
+          "name": "Heartlands",
+          "biomeId": "volcanic",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-07-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "volcanic",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-07-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "volcanic",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-07-city",
+        "africa-zone-07-town-1",
+        "africa-zone-07-town-2",
+        "africa-zone-07-village-1",
+        "africa-zone-07-village-2",
+        "africa-zone-07-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-07-poi-1",
+          "name": "Forgotten Catacombs of Ashen Caldera",
+          "type": "dungeon",
+          "level": 51,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-07-poi-2",
+          "name": "Ancient Watch of Ashen Caldera",
+          "type": "ruins",
+          "level": 53,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-07-poi-3",
+          "name": "Skyfall Monument of Ashen Caldera",
+          "type": "landmark",
+          "level": 55,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-07-poi-4",
+          "name": "Gatherer's Hollow of Ashen Caldera",
+          "type": "resource_site",
+          "level": 57,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-07-poi-5",
+          "name": "Apex Den of Ashen Caldera",
+          "type": "world_boss_lair",
+          "level": 59,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-07-road-gate",
+        "africa-zone-07-caravan-post",
+        "africa-zone-07-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    },
+    {
+      "id": "africa-zone-08",
+      "name": "Ivory Coast",
+      "continentId": "africa",
+      "levelRange": [
+        56,
+        70
+      ],
+      "biomeId": "coastal_mangrove",
+      "subZones": [
+        {
+          "id": "africa-zone-08-sub-1",
+          "name": "Outer Reach",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 1
+        },
+        {
+          "id": "africa-zone-08-sub-2",
+          "name": "Heartlands",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 2
+        },
+        {
+          "id": "africa-zone-08-sub-3",
+          "name": "Wild Frontier",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 3
+        },
+        {
+          "id": "africa-zone-08-sub-4",
+          "name": "Ancient Depths",
+          "biomeId": "coastal_mangrove",
+          "encounterTier": 4
+        }
+      ],
+      "settlementIds": [
+        "africa-zone-08-city",
+        "africa-zone-08-town-1",
+        "africa-zone-08-town-2",
+        "africa-zone-08-village-1",
+        "africa-zone-08-village-2",
+        "africa-zone-08-village-3"
+      ],
+      "pointsOfInterest": [
+        {
+          "id": "africa-zone-08-poi-1",
+          "name": "Forgotten Catacombs of Ivory Coast",
+          "type": "dungeon",
+          "level": 56,
+          "repeatable": true
+        },
+        {
+          "id": "africa-zone-08-poi-2",
+          "name": "Ancient Watch of Ivory Coast",
+          "type": "ruins",
+          "level": 58,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-08-poi-3",
+          "name": "Skyfall Monument of Ivory Coast",
+          "type": "landmark",
+          "level": 60,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-08-poi-4",
+          "name": "Gatherer's Hollow of Ivory Coast",
+          "type": "resource_site",
+          "level": 62,
+          "repeatable": false
+        },
+        {
+          "id": "africa-zone-08-poi-5",
+          "name": "Apex Den of Ivory Coast",
+          "type": "world_boss_lair",
+          "level": 64,
+          "repeatable": true
+        }
+      ],
+      "travelNodes": [
+        "africa-zone-08-road-gate",
+        "africa-zone-08-caravan-post",
+        "africa-zone-08-flight-beacon"
+      ],
+      "chunkSize": 32,
+      "streaming": true
+    }
+  ],
+  "factions": [
+    {
+      "id": "africa-faction-1",
+      "name": "Circle of the Verdant Moon",
+      "type": "kingdom",
+      "alignment": "neutral",
+      "homeContinent": "africa"
+    },
+    {
+      "id": "africa-faction-2",
+      "name": "Order of the Dawn Shield",
+      "type": "guild",
+      "alignment": "chaotic",
+      "homeContinent": "africa"
+    },
+    {
+      "id": "africa-faction-3",
+      "name": "Free Cities League",
+      "type": "order",
+      "alignment": "lawful",
+      "homeContinent": "africa"
+    }
+  ],
+  "majorInstances": [
+    {
+      "id": "africa-raid-01",
+      "name": "The The Sunscar Expanse Citadel",
+      "type": "raid",
+      "partySize": 10,
+      "level": 60
+    },
+    {
+      "id": "africa-raid-02",
+      "name": "Vault of the Fallen Africa",
+      "type": "raid",
+      "partySize": 20,
+      "level": 90
+    }
+  ],
+  "islandChains": [
+    {
+      "id": "africa-isles-west",
+      "islands": 12
+    },
+    {
+      "id": "africa-isles-east",
+      "islands": 8
+    }
+  ]
+}

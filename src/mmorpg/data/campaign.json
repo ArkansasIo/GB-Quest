@@ -1,0 +1,307 @@
+{
+  "id": "the-shattered-crown",
+  "title": "The Shattered Crown",
+  "version": "1.0.0",
+  "acts": [
+    {
+      "id": "act-01",
+      "number": 1,
+      "title": "The Greenward Oath",
+      "levelRange": [
+        1,
+        30
+      ],
+      "continent": "Westreach",
+      "chapters": [
+        {
+          "id": "ch-01-01",
+          "title": "A Bell at Dawn",
+          "summary": "The village bell rings before sunrise; the old road has gone quiet.",
+          "mainQuestIds": [
+            "mq-001",
+            "mq-002"
+          ],
+          "sideQuestIds": [
+            "sq-001",
+            "sq-002"
+          ]
+        },
+        {
+          "id": "ch-01-02",
+          "title": "The Mossfall Road",
+          "summary": "Follow the missing caravan through the forest and into the cave.",
+          "mainQuestIds": [
+            "mq-003",
+            "mq-004"
+          ],
+          "sideQuestIds": [
+            "sq-003",
+            "sq-004"
+          ]
+        },
+        {
+          "id": "ch-01-03",
+          "title": "The Goblin Crown",
+          "summary": "Break the keep's warband and recover the relic.",
+          "mainQuestIds": [
+            "mq-005"
+          ],
+          "sideQuestIds": [
+            "sq-005",
+            "sq-006"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act-02",
+      "number": 2,
+      "title": "Ashes of the Highcrown",
+      "levelRange": [
+        31,
+        120
+      ],
+      "continent": "Highcrown",
+      "chapters": [
+        {
+          "id": "ch-02-01",
+          "title": "The Pass That Froze",
+          "summary": "Find why the mountain passes have sealed themselves.",
+          "mainQuestIds": [
+            "mq-006",
+            "mq-007"
+          ],
+          "sideQuestIds": [
+            "sq-007",
+            "sq-008"
+          ]
+        },
+        {
+          "id": "ch-02-02",
+          "title": "The Giant's Accord",
+          "summary": "Unite rival settlements against an ancient colossus.",
+          "mainQuestIds": [
+            "mq-008",
+            "mq-009"
+          ],
+          "sideQuestIds": [
+            "sq-009",
+            "sq-010"
+          ]
+        },
+        {
+          "id": "ch-02-03",
+          "title": "Crown of Rime",
+          "summary": "Confront the stormbound ruler beneath the glacier.",
+          "mainQuestIds": [
+            "mq-010"
+          ],
+          "sideQuestIds": [
+            "sq-011",
+            "sq-012"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act-03",
+      "number": 3,
+      "title": "The Sunscar Expanse",
+      "levelRange": [
+        121,
+        240
+      ],
+      "continent": "Sunscar",
+      "chapters": [
+        {
+          "id": "ch-03-01",
+          "title": "Mirage of Kings",
+          "summary": "Trace a vanished city through the shifting dunes.",
+          "mainQuestIds": [
+            "mq-011",
+            "mq-012"
+          ],
+          "sideQuestIds": [
+            "sq-013",
+            "sq-014"
+          ]
+        },
+        {
+          "id": "ch-03-02",
+          "title": "The Ember Treaty",
+          "summary": "Negotiate with rival caravan houses and volcanic clans.",
+          "mainQuestIds": [
+            "mq-013",
+            "mq-014"
+          ],
+          "sideQuestIds": [
+            "sq-015",
+            "sq-016"
+          ]
+        },
+        {
+          "id": "ch-03-03",
+          "title": "Heart of the Furnace",
+          "summary": "Descend into the living caldera and stop the awakening.",
+          "mainQuestIds": [
+            "mq-015"
+          ],
+          "sideQuestIds": [
+            "sq-017",
+            "sq-018"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act-04",
+      "number": 4,
+      "title": "Whispers of Umbraldeep",
+      "levelRange": [
+        241,
+        360
+      ],
+      "continent": "Umbraldeep",
+      "chapters": [
+        {
+          "id": "ch-04-01",
+          "title": "The Blackroot Pact",
+          "summary": "Investigate a spreading blight and the factions feeding it.",
+          "mainQuestIds": [
+            "mq-016",
+            "mq-017"
+          ],
+          "sideQuestIds": [
+            "sq-019",
+            "sq-020"
+          ]
+        },
+        {
+          "id": "ch-04-02",
+          "title": "Below the Veil",
+          "summary": "Open the buried roads and rescue the lost expedition.",
+          "mainQuestIds": [
+            "mq-018",
+            "mq-019"
+          ],
+          "sideQuestIds": [
+            "sq-021",
+            "sq-022"
+          ]
+        },
+        {
+          "id": "ch-04-03",
+          "title": "The Hollow Throne",
+          "summary": "Defeat the ruler behind the shadow war.",
+          "mainQuestIds": [
+            "mq-020"
+          ],
+          "sideQuestIds": [
+            "sq-023",
+            "sq-024"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act-05",
+      "number": 5,
+      "title": "War of the Four Banners",
+      "levelRange": [
+        361,
+        540
+      ],
+      "continent": "All continents",
+      "chapters": [
+        {
+          "id": "ch-05-01",
+          "title": "Banners at the Border",
+          "summary": "Defend the four continental alliances from coordinated invasions.",
+          "mainQuestIds": [
+            "mq-021",
+            "mq-022"
+          ],
+          "sideQuestIds": [
+            "sq-025",
+            "sq-026"
+          ]
+        },
+        {
+          "id": "ch-05-02",
+          "title": "The Broken Constellation",
+          "summary": "Recover the celestial keys from ancient dungeons and raids.",
+          "mainQuestIds": [
+            "mq-023",
+            "mq-024"
+          ],
+          "sideQuestIds": [
+            "sq-027",
+            "sq-028"
+          ]
+        },
+        {
+          "id": "ch-05-03",
+          "title": "A World in Flames",
+          "summary": "Lead the allied armies through the final siege.",
+          "mainQuestIds": [
+            "mq-025"
+          ],
+          "sideQuestIds": [
+            "sq-029",
+            "sq-030"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act-06",
+      "number": 6,
+      "title": "The Last Arc",
+      "levelRange": [
+        541,
+        720
+      ],
+      "continent": "The Rift",
+      "chapters": [
+        {
+          "id": "ch-06-01",
+          "title": "Beyond the Starless Gate",
+          "summary": "Cross the rift and discover what is consuming the world paths.",
+          "mainQuestIds": [
+            "mq-026",
+            "mq-027"
+          ],
+          "sideQuestIds": [
+            "sq-031",
+            "sq-032"
+          ]
+        },
+        {
+          "id": "ch-06-02",
+          "title": "The Seven Seals",
+          "summary": "Complete the trials of the arc bosses and bind the fractured realms.",
+          "mainQuestIds": [
+            "mq-028",
+            "mq-029"
+          ],
+          "sideQuestIds": [
+            "sq-033",
+            "sq-034"
+          ]
+        },
+        {
+          "id": "ch-06-03",
+          "title": "Crown of Worlds",
+          "summary": "Face the final world-ending threat and choose the fate of the realms.",
+          "mainQuestIds": [
+            "mq-030"
+          ],
+          "sideQuestIds": [
+            "sq-035",
+            "sq-036"
+          ]
+        }
+      ]
+    }
+  ]
+}
