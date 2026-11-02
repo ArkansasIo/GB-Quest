@@ -615,6 +615,11 @@ class Field {
       if (!this.ox && !this.oy) this.onStep();
       return;
     }
+    if (globalThis.GBQEasterEggs && G) {
+      for (const key of ['up', 'up', 'down', 'down', 'left', 'right', 'a', 'b', 'start']) {
+        if (P(key)) { const found = globalThis.GBQEasterEggs.feed(G, key); if (found && found.ok) return; }
+      }
+    }
     if (P('start')) { SFX.open(); push(new MainMenu()); return; }
     if (P('select')) { SFX.open(); push(new WorldMap()); return; }
     if (P('b') && G.hasMount && !G.inst && !G.ghost) { G.mounted = !G.mounted; SFX[G.mounted ? 'howl' : 'cursor'](); return; }
