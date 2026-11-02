@@ -2,18 +2,29 @@
 // (zones, instances, tower), NPC services, fishing, world map, trials, level up, credits.
 'use strict';
 
-// ================================================================ BOOT (studio logo, classic handheld style)
+// ================================================================ BOOT (Arkansas - Io engine identity and game build)
 class Boot {
   constructor(progress) { this.opaque = true; this.t = 0; this.prog = progress || (() => 1); }
   update() { this.t++; if (this.t === 72) { play(arp('q', [84, 96], 0.09, 0.08)); } if ((this.t > 150 && this.prog() >= 1) || (this.t > 30 && (P('a') || P('start')) && this.prog() >= 1)) { fadeTo(() => reset(new Title())); this.t = -9999; } }
   draw() {
-    fill(0, 0, W, H, 0);
-    const y = Math.min(56, -20 + this.t * 1.1);
-    text(BUILD.studio, 80 - BUILD.studio.length * 6, y, 3, 2);
-    fill(80 - BUILD.studio.length * 6, y + 20, BUILD.studio.length * 12, 1, 2);
-    if (this.t > 75) textC('PRESENTS', 80, 82, 2);
-    if (this.prog() < 1) { bar(40, 120, 80, 5, this.prog(), 1); textC('LOADING', 80, 128, 1); }
-    textC(`v${BUILD.version} ${BUILD.build}`, 80, 134, 1);
+    fill(0, 0, W, H, '#10172d');
+    const pulse = 0.7 + 0.3 * Math.sin(this.t / 12);
+    ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#68ddff'; ctx.shadowBlur = 8;
+    ctx.strokeStyle = '#68ddff'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(80, 7); ctx.lineTo(94, 15); ctx.lineTo(94, 29); ctx.lineTo(80, 37); ctx.lineTo(66, 29); ctx.lineTo(66, 15); ctx.closePath(); ctx.stroke();
+    ctx.shadowColor = '#ffd36b'; ctx.shadowBlur = 5; ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(73, 29); ctx.lineTo(80, 14); ctx.lineTo(87, 29); ctx.moveTo(76, 24); ctx.lineTo(84, 24); ctx.stroke();
+    ctx.fillStyle = '#fff1bd'; ctx.beginPath(); ctx.arc(86, 17, 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    textC(BUILD.engine, 80, 42, 'gold', 1);
+    textC('GAME ENGINE', 80, 53, 2);
+    textC(`VERSION ${BUILD.engineVersion}`, 80, 65, 3);
+    textC(`BUILD ${BUILD.engineBuildNumber}`, 80, 75, 2);
+    textC(`ID ${BUILD.engineBuildId}`, 80, 85, 1);
+    fill(27, 96, 106, 1, 2);
+    textC(BUILD.game, 80, 101, 3);
+    if (this.t > 45) textC('PRESENTS', 80, 111, 2);
+    if (this.prog() < 1) { bar(40, 120, 80, 4, this.prog(), 1); textC('LOADING', 80, 127, 1); }
+    textC(`GAME v${BUILD.version} ${BUILD.build}`, 80, 137, 1);
   }
 }
 

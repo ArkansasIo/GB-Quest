@@ -1,41 +1,49 @@
-# Shadowbane Chronicles C++23 Desktop Port
+# Windows and macOS desktop app
 
-This directory contains a starter architecture for a native desktop port of Shadowbane Chronicles.
-It is deliberately independent of the browser runtime: gameplay rules can be migrated
-incrementally without coupling the native executable to browser globals.
+The installable desktop app wraps the complete bundled browser game in Electron. The independent C++/SDL2 files in this folder are still a prototype and do not contain the full game yet.
 
 ## Requirements
 
-- CMake 3.25+
-- C++23 compiler (MSVC 19.36+, GCC 13+, or Clang 16+)
-- SDL2 development package
+- Node.js 22 or newer
+- npm
+- Windows to build Windows installers; macOS to build macOS installers
 
-SDL2 is discovered through CMake's config package. On Windows, install SDL2 with
-vcpkg and configure with `-DCMAKE_TOOLCHAIN_FILE=.../scripts/buildsystems/vcpkg.cmake`.
+## Run locally
 
-## Build
+From the repository root:
 
 ```sh
-cmake -S desktop -B desktop/build -DCMAKE_BUILD_TYPE=Release
-cmake --build desktop/build --config Release
+npm install
+node tools/build.cjs
+npm run desktop:dev
 ```
 
-The initial executable opens a 160x144 logical display scaled to the window. The game
-loop uses a fixed 60 Hz update step with a bounded catch-up accumulator and a variable
-render step. The placeholder scene is intentionally small; port systems one at a time.
+The app opens the bundled fullscreen game in a resizable desktop window. Keyboard, mouse, saved settings, and the game's display modes work inside the app.
 
-## Architecture
+## Package installers
 
-- `src/main.cpp`: SDL lifecycle, fixed-step loop, nearest-neighbour presentation.
-- `src/game.hpp`: portable game state and update/render boundary.
-- `src/game.cpp`: initial placeholder scene and deterministic input mapping.
+Build on the target operating system:
 
-## Porting sequence
+```sh
+# Windows: NSIS installer and portable .exe
+npm run desktop:dist -- --win
 
-1. Port input, palette and bitmap-font systems.
-2. Port scene stack and save-state model.
-3. Port world/combat rules behind deterministic interfaces.
-4. Add asset loading from the existing `assets/` directory.
-5. Add regression fixtures shared with the JavaScript rules module.
+# macOS: Intel and Apple Silicon DMG and ZIP packages
+npm run desktop:dist -- --mac
+```
 
-Do not copy browser code mechanically. Keep simulation deterministic and isolate SDL I/O.
+Artifacts are written to `release/`. The **Desktop packages** workflow builds both operating systems; start it from GitHub Actions or push a `desktop-v*` tag, then download the Windows and macOS workflow artifacts.
+
+Packages are unsigned unless signing credentials are configured. Windows may display a SmartScreen prompt. macOS users may need to approve the app in Privacy & Security or open it from Finder's context menu. Signing and notarization require developer certificates that are not included in this repository.
+
+## Window controls
+
+- Use **View > Toggle Full Screen** in the native app menu or choose a display mode in the game's Settings.
+- On macOS, the app uses the standard menu-bar and window-close behavior.
+- App data such as saves and key bindings remains in the Electron application's local storage.
+
+## Graphics API
+
+Choose **Graphics API** from the native menu. Automatic is the recommended default. Windows also offers DirectX 11, DirectX 11 on DirectX 12, Vulkan and OpenGL; macOS offers Metal and OpenGL. Changing the backend saves the choice and restarts the app. The DirectX 12 option uses ANGLE's D3D11-on-12 translation route; it is not a native Direct3D 12 game renderer.
+
+These options select Chromium/ANGLE's GPU backend where the installed driver and Electron build support it. The game itself currently draws 2D scenes with Canvas 2D. PBR, ray/path tracing, global illumination, Nanite-style geometry, SSAO, DLSS/FSR, HDR and volumetric rendering require a separate 3D renderer and suitable 3D assets; choosing a graphics API does not enable those effects.

@@ -112,6 +112,14 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
 .build-info { width: min(100%, 380px); box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 6px 10px; border: 1px solid #39403a; border-radius: 5px; background: #101410; color: #a9b99a; font: 8px/1.5 var(--pixel); letter-spacing: .02em; }
 .atlas-btn { background: #1d1f1c; color: #d4e7bd; border: 1px solid #7fa52c; border-radius: 4px; font: 700 9px var(--pixel); padding: 3px 8px; cursor: pointer; letter-spacing: .08em; }
 .build-info strong { color: #d4e7bd; font-weight: 700; }
+body.full-window-mode { height: 100%; overflow: hidden; padding: 0; display: block; background: #080a08; }
+body.full-window-mode .build-info, body.full-window-mode .keys, body.full-window-mode .speaker { display: none; }
+body.full-window-mode .device { position: fixed; inset: 0; width: auto; max-width: none; border-radius: 0; padding: 10px; display: flex; gap: 8px; box-shadow: none; }
+body.full-window-mode .bezel { flex: 1; min-height: 0; display: grid; place-items: center; padding: 8px; }
+body.full-window-mode #lcd { width: min(100%, 80vh); max-width: 100%; height: auto; }
+body.full-window-mode .brand { text-align: center; padding: 0; }
+body.full-window-mode .chat { position: fixed; z-index: 15; left: max(8px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); width: min(380px, calc(100vw - 16px)); background: #000c; padding: 6px; border-radius: 8px; }
+@media (hover: hover) and (pointer: fine) { body.full-window-mode .controls, body.full-window-mode .foot { display: none; } }
 body.fullscreen-mode { height: 100%; overflow: hidden; padding: 0; display: block; background: #000; }
 body.fullscreen-mode .build-info, body.fullscreen-mode .brand, body.fullscreen-mode .bezel-top,
 body.fullscreen-mode .keys, body.fullscreen-mode .speaker { display: none; }
@@ -136,7 +144,7 @@ body.fullscreen-mode .chat { position: fixed; z-index: 15; left: max(8px, env(sa
 @media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
 </style>
 
-<aside class="build-info" aria-label="Build information"><span><strong>SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>DEV: ArkansasIo</span><span>ID: GBQ-20261101-004</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button></aside>
+<aside class="build-info" aria-label="Build information"><span><strong>SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button></aside>
 <main class="device" aria-label="Shadowbane Chronicles handheld">
   <div class="bezel">
     <div class="bezel-top"><i class="led"></i> BATTERY <span></span> DOT MATRIX</div>

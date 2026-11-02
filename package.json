@@ -8,7 +8,46 @@
     "sweep": "python3 tests/sweep.py",
     "native:build": "cmake -S native -B build/native -DGBQ_ENABLE_X86_64_ASM=OFF && cmake --build build/native --config Release",
     "start": "node server.js",
-    "server": "node server/server.cjs"
+    "server": "node server/server.cjs",
+    "desktop:dev": "electron .",
+    "desktop:dist": "electron-builder"
+  },
+  "main": "desktop/main.cjs",
+  "devDependencies": {
+    "electron": "^45.2.1",
+    "electron-builder": "^26.18.1"
+  },
+  "build": {
+    "appId": "io.arkansasio.gbquest",
+    "productName": "Shadowbane Chronicles",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/main.cjs",
+      "dist/gbquest-fullscreen.html"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "category": "public.app-category.games",
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
   },
   "engines": {
     "node": ">=20"

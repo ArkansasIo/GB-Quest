@@ -14,9 +14,29 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, fullscreen: false },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
-document.body.classList.toggle('fullscreen-mode', !!S.fullscreen);
+S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'windowed');
+function syncDisplayMode() {
+  document.body.classList.toggle('full-window-mode', S.displayMode === 'full-window');
+  document.body.classList.toggle('fullscreen-mode', S.displayMode === 'borderless' || S.displayMode === 'fullscreen');
+  S.fullscreen = S.displayMode === 'fullscreen';
+}
+function applyDisplayMode(mode) {
+  S.displayMode = mode; syncDisplayMode(); saveSettings();
+  if (mode === 'fullscreen' && !document.fullscreenElement) {
+    const enter = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+    if (!enter) { S.displayMode = 'borderless'; syncDisplayMode(); saveSettings(); return; }
+    try { const result = enter.call(document.documentElement); if (result && result.catch) result.catch(() => { S.displayMode = 'borderless'; syncDisplayMode(); saveSettings(); }); }
+    catch (e) { S.displayMode = 'borderless'; syncDisplayMode(); saveSettings(); }
+  } else if (mode !== 'fullscreen' && (document.fullscreenElement || document.webkitFullscreenElement)) {
+    const leave = document.exitFullscreen || document.webkitExitFullscreen; if (leave) try { leave.call(document); } catch (e) {}
+  }
+}
+syncDisplayMode();
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && S.displayMode === 'fullscreen') { S.displayMode = 'borderless'; syncDisplayMode(); saveSettings(); }
+});
 function applyFilter() { LCD.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
 applyFilter();
@@ -524,7 +544,7 @@ function drawToasts() {
 }
 
 // ================================================================ main loop
-let lastT = 0, acc = 0;
+let lastT = 0, lastRenderT = 0, acc = 0;
 function tick() {
   frameN++;
   const s = topScene(); if (s) s.update();
@@ -546,17 +566,25 @@ function render() {
   present();
 }
 function present() {
-  if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx);
-  if (LCD.width !== W) { LCD.width = W; LCD.height = H; }
-  lctx.drawImage(cv, 0, 0);
+  const targetW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
+  const sourceW = S.video === 'hd64' ? W * 4 : W, sourceH = S.video === 'hd64' ? H * 4 : H;
+  const scale = targetW / sourceW, outW = targetW, outH = Math.round(sourceH * scale);
+  if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, outW, outH);
+  if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
+  lctx.imageSmoothingEnabled = false; lctx.drawImage(cv, 0, 0, outW, outH);
 }
 function loop(t) {
   requestAnimationFrame(loop);
   if (!lastT) lastT = t;
   acc += Math.min(100, t - lastT); lastT = t;
   let n = 0;
-  if (window.DBG && DBG.paused) { acc = 0; while (DBG.steps > 0) { DBG.steps--; tick(); } render(); return; }
+  if (window.DBG && DBG.paused) { acc = 0; while (DBG.steps > 0) { DBG.steps--; tick(); } if (shouldRender(t)) render(); return; }
   const spd = window.DBG ? DBG.speed : 1;
   while (acc >= 1000 / 60 / spd && n < 4 * spd) { acc -= 1000 / 60 / spd; tick(); n++; }
-  render();
+  if (shouldRender(t)) render();
+}
+function shouldRender(t) {
+  const cap = Math.max(1, Math.min(240, Number(S.fps) || 60));
+  if (lastRenderT && t - lastRenderT < 1000 / cap - 0.25) return false;
+  lastRenderT = t; return true;
 }

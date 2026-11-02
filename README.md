@@ -22,6 +22,12 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 - **Dev build:** run `python3 -m http.server` in this folder, then open `http://localhost:8000`.
   The dev build loads `src/*.js` and `assets/*.png` directly.
 
+### Windows and macOS desktop app
+
+The Electron desktop app runs the complete bundled game in its own window. To build locally, install Node.js 22+, then run `npm install`, `node tools/build.cjs`, and `npm run desktop:dev`. Create installers with `npm run desktop:dist -- --win` on Windows or `npm run desktop:dist -- --mac` on macOS. Windows creates an installer and portable executable; macOS creates Intel and Apple Silicon DMG/ZIP packages. Builds are also available from the **Desktop packages** GitHub Actions workflow.
+
+Desktop packages are currently unsigned. Windows may show a SmartScreen prompt, and macOS may require opening the app from Finder's context menu. See [desktop/README.md](desktop/README.md).
+
 **Controls**
 
 | Input | Keyboard | Action |
@@ -204,7 +210,7 @@ These are local PvE-driven simulations using the game's combat system and simula
 
 ## Roadmap
 
-- C++23 + SDL2 desktop port of the full game.
+- Expand the independent C++23 + SDL2 native port; the installable Windows/macOS desktop app currently runs the complete browser game in Electron.
 - Game Boy Color ROM (RGBDS assembly) of a core version that fits real hardware.
 
 ## Legal

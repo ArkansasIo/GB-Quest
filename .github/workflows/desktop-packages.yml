@@ -1,0 +1,43 @@
+name: Desktop packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "desktop-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install desktop build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build the game bundle
+        run: node tools/build.cjs
+      - name: Package Windows installer and portable app
+        if: matrix.platform == 'windows'
+        run: npm run desktop:dist -- --win
+      - name: Package macOS Intel and Apple Silicon apps
+        if: matrix.platform == 'macos'
+        run: npm run desktop:dist -- --mac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shadowbane-chronicles-${{ matrix.platform }}
+          path: release/*
+          if-no-files-found: error
+          retention-days: 30

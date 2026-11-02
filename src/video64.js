@@ -86,34 +86,35 @@ const Light64 = {
 };
 
 // ---------------------------------------------------------------- presentation
-const V64 = { big: null, bx: null, light: null, lx: null, bloom: null, blx: null, img: null };
-function present64(LCD, lctx) {
+const V64 = { big: null, bx: null, light: null, lx: null, bloom: null, blx: null, img: null, stage: null, sx: null };
+function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
   const t0 = performance.now(), SC = 4, BW = W * SC, BH = H * SC;
-  if (LCD.width !== BW) { LCD.width = BW; LCD.height = BH; }
   if (!V64.big) {
     V64.big = mkCanvas(BW, BH); V64.bx = V64.big.getContext('2d');
     V64.light = mkCanvas(BW, BH); V64.lx = V64.light.getContext('2d');
     V64.bloom = mkCanvas(W, H); V64.blx = V64.bloom.getContext('2d');
     V64.img = V64.bx.createImageData(BW, BH);
+    V64.stage = mkCanvas(BW, BH); V64.sx = V64.stage.getContext('2d');
   }
+  const screen = V64.sx;
   // 1. scale4x
   const src = grade(new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer));
   const s4 = scale2x(scale2x(src, W, H), W * 2, H * 2);
   new Uint32Array(V64.img.data.buffer).set(s4);
-  lctx.save(); lctx.imageSmoothingEnabled = false;
+  screen.save(); screen.imageSmoothingEnabled = false;
   const z = Cam.zoom;
-  if (Math.abs(z - 1) < 0.001) lctx.putImageData(V64.img, 0, 0); // straight to the LCD: skips one full-size copy
-  else { V64.bx.putImageData(V64.img, 0, 0); lctx.translate(BW / 2, BH / 2); lctx.scale(z, z); lctx.translate(-BW / 2, -BH / 2); lctx.drawImage(V64.big, 0, 0); }
+  if (Math.abs(z - 1) < 0.001) screen.putImageData(V64.img, 0, 0);
+  else { V64.bx.putImageData(V64.img, 0, 0); screen.translate(BW / 2, BH / 2); screen.scale(z, z); screen.translate(-BW / 2, -BH / 2); screen.drawImage(V64.big, 0, 0); }
   // 2. lighting (field scenes only)
   const base = scenes.findLast ? scenes.findLast(s => s.opaque) : scenes.slice().reverse().find(s => s.opaque);
   if (base instanceof Field && Light64.dark > 0.01) {
     const lx = V64.lx; lx.globalCompositeOperation = 'source-over'; lx.fillStyle = `rgba(${Light64.tint},${Light64.dark})`; lx.fillRect(0, 0, BW, BH);
     lx.globalCompositeOperation = 'destination-out';
     for (const L of Light64.list) { const g = lx.createRadialGradient(L.x * SC, L.y * SC, 0, L.x * SC, L.y * SC, L.r * SC); g.addColorStop(0, `rgba(0,0,0,${L.a})`); g.addColorStop(0.55, `rgba(0,0,0,${L.a * 0.6})`); g.addColorStop(1, 'rgba(0,0,0,0)'); lx.fillStyle = g; lx.fillRect(L.x * SC - L.r * SC, L.y * SC - L.r * SC, L.r * SC * 2, L.r * SC * 2); }
-    lctx.drawImage(V64.light, 0, 0);
-    lctx.globalCompositeOperation = 'lighter';
-    for (const L of Light64.list) { const g = lctx.createRadialGradient(L.x * SC, L.y * SC, 0, L.x * SC, L.y * SC, L.r * SC * 0.8); g.addColorStop(0, `rgba(${L.c},${0.16 * Light64.dark * L.a})`); g.addColorStop(1, `rgba(${L.c},0)`); lctx.fillStyle = g; lctx.fillRect(L.x * SC - L.r * SC, L.y * SC - L.r * SC, L.r * SC * 2, L.r * SC * 2); }
-    lctx.globalCompositeOperation = 'source-over';
+    screen.drawImage(V64.light, 0, 0);
+    screen.globalCompositeOperation = 'lighter';
+    for (const L of Light64.list) { const g = screen.createRadialGradient(L.x * SC, L.y * SC, 0, L.x * SC, L.y * SC, L.r * SC * 0.8); g.addColorStop(0, `rgba(${L.c},${0.16 * Light64.dark * L.a})`); g.addColorStop(1, `rgba(${L.c},0)`); screen.fillStyle = g; screen.fillRect(L.x * SC - L.r * SC, L.y * SC - L.r * SC, L.r * SC * 2, L.r * SC * 2); }
+    screen.globalCompositeOperation = 'source-over';
   }
   Light64.list.length = 0;
   // 3. bloom
@@ -122,12 +123,14 @@ function present64(LCD, lctx) {
   brightPass(src, new Uint32Array(V64.bpd.data.buffer)); V64.bpx.putImageData(V64.bpd, 0, 0);
   const bx = V64.hx; bx.imageSmoothingEnabled = true; bx.clearRect(0, 0, W / 2, H / 2); bx.drawImage(V64.bp, 0, 0, W / 2, H / 2);
   V64.bloom = V64.half;
-  lctx.globalCompositeOperation = 'screen'; lctx.globalAlpha = 0.24; lctx.imageSmoothingEnabled = true; lctx.drawImage(V64.bloom, 0, 0, BW, BH);
-  lctx.globalAlpha = 1; lctx.globalCompositeOperation = 'source-over';
+  screen.globalCompositeOperation = 'screen'; screen.globalAlpha = 0.24; screen.imageSmoothingEnabled = true; screen.drawImage(V64.bloom, 0, 0, BW, BH);
+  screen.globalAlpha = 1; screen.globalCompositeOperation = 'source-over';
   // 4. vignette
   if (!V64.vig) { V64.vig = mkCanvas(BW, BH); const vx = V64.vig.getContext('2d'), vg = vx.createRadialGradient(BW / 2, BH / 2, BH * 0.45, BW / 2, BH / 2, BH * 0.8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.38)'); vx.fillStyle = vg; vx.fillRect(0, 0, BW, BH); }
-  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.drawImage(V64.vig, 0, 0);
-  lctx.restore();
-  Profiler.frame(performance.now() - t0); Profiler.draw(lctx);
+  screen.setTransform(1, 0, 0, 1, 0, 0); screen.drawImage(V64.vig, 0, 0);
+  screen.restore();
+  Profiler.frame(performance.now() - t0); Profiler.draw(screen);
+  if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
+  lctx.save(); lctx.imageSmoothingEnabled = false; lctx.drawImage(V64.stage, 0, 0, outW, outH); lctx.restore();
 }
 Events.on('sfx', k => { if (S.video === 'hd64' && ['crit', 'nat20', 'levelup', 'boss_appear', 'storm_hit', 'boss_die', 'world_boss'].includes(k)) Cam.pulse(k === 'levelup' ? 1.04 : 1.07, 24); });

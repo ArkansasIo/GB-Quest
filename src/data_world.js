@@ -270,6 +270,10 @@ const BUILD = {
   version: '2.1.1',
   build: 'B2026.11.01',
   studio: 'ArkansasIo',
+  engine: 'ARKANSAS - IO',
+  engineVersion: '2.5.0',
+  engineBuildId: 'ARKIO-20261101-001',
+  engineBuildNumber: 1,
   year: 2026,
 };
 
