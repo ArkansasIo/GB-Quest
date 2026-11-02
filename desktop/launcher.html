@@ -42,7 +42,8 @@ region.addEventListener('change',()=>{fillCenters();save()});dc.addEventListener
 function save(){localStorage.setItem('gbq-launcher-selection',JSON.stringify({region:region.value,dc:dc.value,world:world.value}))}
 region.value=centers[saved.region]?saved.region:'na';fillCenters(saved.dc);if(saved.world)world.value=saved.world;
 const realmUrl=document.querySelector('#realmUrl'),username=document.querySelector('#username'),password=document.querySelector('#password');
-const characterSlot=document.querySelector('#characterSlot'),characterDetails=document.querySelector('#characterDetails');\nconst accountState=document.querySelector('#accountState'),realmTitle=document.querySelector('#realmTitle'),realmDetails=document.querySelector('#realmDetails'),realmDot=document.querySelector('#realmDot');
+const characterSlot=document.querySelector('#characterSlot'),characterDetails=document.querySelector('#characterDetails');
+const accountState=document.querySelector('#accountState'),realmTitle=document.querySelector('#realmTitle'),realmDetails=document.querySelector('#realmDetails'),realmDot=document.querySelector('#realmDot');
 const savedRealmUrl=localStorage.getItem('gbq-realm-url');if(savedRealmUrl)realmUrl.value=savedRealmUrl;
 function accountMessage(message,kind=''){accountState.textContent=message;accountState.className='account-state '+kind}
 function realmMessage(title,details,online=false){realmTitle.textContent=title;realmDetails.textContent=details;realmDot.style.background=online?'#65c995':'#d7a34d'}
