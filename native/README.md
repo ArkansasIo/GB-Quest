@@ -39,3 +39,7 @@ The native library does not generate random numbers or trust client-supplied ran
 ## Dice and damage
 
 The native API also parses bounded dice expressions (`NdS`, `dS`, optional signed modifier), resolves caller-supplied die faces, doubles the dice pool for critical hits, and applies a selected damage disposition (normal, resistance, vulnerability or immunity). Random values are deliberately supplied by the caller so the core remains deterministic and can be driven by an authoritative server RNG. Critical damage doubles the dice, not the flat modifier.
+
+## Character health transitions
+
+The native API includes mutable health-state transitions with validation: damage consumes temporary hit points before current hit points, lethal damage marks the character defeated, and healing restores hit points up to the configured maximum and clears the defeated flag when hit points become positive. Healing does not alter temporary hit points. Invalid state and negative damage/healing are rejected before mutation.
