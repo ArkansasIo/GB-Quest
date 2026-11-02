@@ -1,4 +1,4 @@
-# GB Quest documentation
+# Lost Kingdom of Shadowbane Chronicles documentation
 
 | Document | What's inside |
 |---|---|

@@ -1,4 +1,4 @@
-// GB QUEST — procedural generation: seeded RNG, the 400-creature bestiary,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES — procedural generation: seeded RNG, the 400-creature bestiary,
 // 350 bosses, zone maps, dungeons, raids, tower floors, side quests and loot.
 'use strict';
 

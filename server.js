@@ -182,7 +182,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   } else {
     const server = createGameServer();
     server.listen(port, "127.0.0.1", () => {
-      console.log(`GB Quest running at http://127.0.0.1:${port}`);
+      console.log(`Lost Kingdom of Shadowbane Chronicles running at http://127.0.0.1:${port}`);
       if (!nativeExecutable()) console.log("Native core is not built; run npm run native:build.");
     });
   }

@@ -1,4 +1,4 @@
-# GB Quest — Game Design Document
+# Lost Kingdom of Shadowbane Chronicles — Game Design Document
 
 | | |
 |---|---|

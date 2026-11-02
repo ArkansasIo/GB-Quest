@@ -2,7 +2,7 @@
 
 ## Two progression tracks, one character level display
 
-GB Quest uses a hybrid progression model:
+Lost Kingdom of Shadowbane Chronicles uses a hybrid progression model:
 
 - Levels 1-20: D&D 5e-compatible class progression, using the selected SRD version. Class features, proficiency, spell slots and class level stop at the ruleset's supported level cap.
 - Levels 21-720: MMORPG Paragon progression. This adds mastery choices, specialization customization, professions, collection, exploration, cosmetics, titles and world renown.
@@ -16,7 +16,7 @@ Do not simply extend D&D proficiency bonus, spell slots, ability scores or attac
 - Every 50: world-renown milestone.
 - Level 720: final prestige title, visual aura and account-wide legacy reward.
 
-These are original GB Quest systems and not official D&D progression.
+These are original Lost Kingdom of Shadowbane Chronicles systems and not official D&D progression.
 
 ## XP curve
 The JS progression module provides canonical SRD 5.2.1 level thresholds through level 20, then a tunable quadratic XP curve for ranks 21-720. XP values above level 20 are original game balance and should be playtested.

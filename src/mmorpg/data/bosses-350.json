@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "350 original GB Quest boss encounter definitions. Creature taxonomy follows the 14 classic D&D creature types; class/subclass roles and names are original game data, not official D&D stat blocks.",
+  "description": "350 original Lost Kingdom of Shadowbane Chronicles boss encounter definitions. Creature taxonomy follows the 14 classic D&D creature types; class/subclass roles and names are original game data, not official D&D stat blocks.",
   "counts": {
     "worldBosses": 300,
     "arcBosses": 50,

@@ -167,7 +167,7 @@ function installMenu() {
 
 function createWindow() {
   gameWindow = new BrowserWindow({
-    title: 'Shadowbane Chronicles',
+    title: 'Lost Kingdom of Shadowbane Chronicles',
     width: 1280,
     height: 900,
     minWidth: 640,

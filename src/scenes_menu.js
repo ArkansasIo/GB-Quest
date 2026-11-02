@@ -1,4 +1,4 @@
-// GB QUEST menus: main menu, bag, equipment, character sheet, spellbook, growth (ASI, subclass,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES menus: main menu, bag, equipment, character sheet, spellbook, growth (ASI, subclass,
 // feats, ascension, boons), quest log, crafting, achievements, bestiary, reputation, social,
 // rest, settings, sound test, auction house, bank.
 'use strict';

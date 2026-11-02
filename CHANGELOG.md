@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to GB Quest. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
+All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
 ## 2.1.1 — B2026.11.01
 

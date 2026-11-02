@@ -1,6 +1,6 @@
 # Audio
 
-GB Quest has two complete sound engines. Switch between them in **SETTINGS > AUDIO** (`CHIP 4CH` / `64-BIT`), or press START inside the **SOUND TEST**. Both play the same 24 tracks and the same SFX names, so game code never needs to know which engine is active.
+Lost Kingdom of Shadowbane Chronicles has two complete sound engines. Switch between them in **SETTINGS > AUDIO** (`CHIP 4CH` / `64-BIT`), or press START inside the **SOUND TEST**. Both play the same 24 tracks and the same SFX names, so game code never needs to know which engine is active.
 
 | | Chip 4CH (`engine.js`) | 64-bit (`audio64.js`) |
 |---|---|---|

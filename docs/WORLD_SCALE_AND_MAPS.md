@@ -1,6 +1,6 @@
 # Seven-Continent World Atlas
 
-GB Quest uses the seven-continent geography convention: Asia, Africa, North America, South America, Antarctica, Europe and Australia. National Geographic recognizes these seven continents; other traditions count continents differently. Sources: https://education.nationalgeographic.org/resource/Continent/ and https://www.nationalgeographic.org/national-geographic-map-policy/
+Lost Kingdom of Shadowbane Chronicles uses the seven-continent geography convention: Asia, Africa, North America, South America, Antarctica, Europe and Australia. National Geographic recognizes these seven continents; other traditions count continents differently. Sources: https://education.nationalgeographic.org/resource/Continent/ and https://www.nationalgeographic.org/national-geographic-map-policy/
 
 ## Hierarchy
 World > Continent > Zone/Region > Sub-zone > 32x32 tile chunk > tile.

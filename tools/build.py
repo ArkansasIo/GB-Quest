@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build GB Quest.
+"""Build Lost Kingdom of Shadowbane Chronicles.
   index.html          -> dev version: loads src/*.js and assets/*.png (serve the folder over http)
   dist/gbquest.html   -> single self-contained file, every asset inlined as a data: URI
   dist/gbquest-fullscreen.html -> same game, LCD fills the window (full-screen toggle, overlay pad + chat)
@@ -24,7 +24,7 @@ atlas = '<script>window.ATLAS_HTML=' + json.dumps(rd('dist/atlas.html')).replace
 single = shell + '\n<script>window.GB_ASSETS=' + json.dumps(assets) + ';</script>\n' + nes + atlas + ''.join(f'<script>\n{rd(f"src/{n}.js")}\n</script>\n' for n in ORDER)
 open(os.path.join(ROOT, 'dist', 'gbquest.html'), 'w').write(single)
 fs = rd('src/fullscreen.html')
-full = single.replace('<title>Shadowbane Chronicles</title>', '<title>Shadowbane Chronicles Full Screen</title>', 1).replace('</style>', '</style>\n' + fs.split('<div class="fsbar"')[0], 1)
+full = single.replace('<title>Lost Kingdom of Shadowbane Chronicles</title>', '<title>Lost Kingdom of Shadowbane Chronicles Full Screen</title>', 1).replace('</style>', '</style>\n' + fs.split('<div class="fsbar"')[0], 1)
 full = full.replace('<section class="chat"', '<div class="fsbar"' + fs.split('<div class="fsbar"')[1] + '\n<section class="chat"', 1)
 open(os.path.join(ROOT, 'dist', 'gbquest-fullscreen.html'), 'w').write(full)
 print('index.html + dist/gbquest.html (%d KB, %d assets)' % (len(single) // 1024, len(assets)))

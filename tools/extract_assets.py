@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Slice the GB Quest asset sheet (src_sheet/sheet.png) into individual PNG assets.
+Slice the Lost Kingdom of Shadowbane Chronicles asset sheet (src_sheet/sheet.png) into individual PNG assets.
 
 Usage:  python3 tools/extract_assets.py
 Output: assets/*.png  +  assets/manifest.json

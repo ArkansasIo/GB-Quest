@@ -283,6 +283,6 @@ int main() {
     std::cerr << failures << " native test(s) failed\n";
     return 1;
   }
-  std::cout << "All GB Quest native C++23 tests passed\n";
+  std::cout << "All Lost Kingdom of Shadowbane Chronicles native C++23 tests passed\n";
   return 0;
 }

@@ -1,5 +1,5 @@
 /**
- * GB Quest hybrid progression.
+ * Lost Kingdom of Shadowbane Chronicles hybrid progression.
  * D20 class/rules progression is capped at level 20; MMORPG Paragon ranks continue to 720.
  * Paragon ranks grant horizontal progression (mastery, collection, cosmetics, crafting),
  * not unlimited attack bonuses or ability-score inflation.

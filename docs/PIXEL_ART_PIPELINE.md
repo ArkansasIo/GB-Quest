@@ -4,7 +4,7 @@
 - Game Boy-inspired 4-shade mode remains the default.
 - Optional expanded 8-bit palette mode for richer environments and item rarity.
 - Integer scaling, nearest-neighbor filtering, transparent backgrounds and pixel-grid alignment.
-- Original GB Quest silhouettes, symbols, characters, monsters and environments.
+- Original Lost Kingdom of Shadowbane Chronicles silhouettes, symbols, characters, monsters and environments.
 
 ## Required asset families
 1. Terrain: grass, dirt, sand, snow, water, lava, cliffs, roads, bridges and dungeon floors.

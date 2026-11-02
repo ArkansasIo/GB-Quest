@@ -1,4 +1,4 @@
-name: GB Quest native core
+name: Lost Kingdom of Shadowbane Chronicles native core
 on:
   push:
     branches: ["main", "feature/**"]

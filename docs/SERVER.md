@@ -1,6 +1,6 @@
 # Realm server, accounts and online play
 
-GB Quest runs in three network modes:
+Lost Kingdom of Shadowbane Chronicles runs in three network modes:
 
 | Mode | How | What you get |
 |---|---|---|

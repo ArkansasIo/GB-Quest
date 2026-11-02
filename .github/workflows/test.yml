@@ -1,4 +1,4 @@
-name: GB Quest tests
+name: Lost Kingdom of Shadowbane Chronicles tests
 on:
   push:
     branches: ["main", "feature/**"]

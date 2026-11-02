@@ -1,4 +1,4 @@
-// GB QUEST scenes: boot logo, title, save slots, prologue, character creation, the field
+// LOST KINGDOM OF SHADOWBANE CHRONICLES scenes: boot logo, title, save slots, prologue, character creation, the field
 // (zones, instances, tower), NPC services, fishing, world map, trials, level up, credits.
 'use strict';
 
@@ -20,9 +20,9 @@ class Boot {
     textC(`VERSION ${BUILD.engineVersion}`, 80, 65, 3);
     textC(`BUILD ${BUILD.engineBuildNumber}`, 80, 75, 2);
     textC(`ID ${BUILD.engineBuildId}`, 80, 85, 1);
-    fill(27, 96, 106, 1, 2);
-    textC(BUILD.game, 80, 101, 3);
-    if (this.t > 45) textC('PRESENTS', 80, 111, 2);
+    fill(27, 94, 106, 1, 2);
+    textC(BUILD.gameLines[0], 80, 97, 2); textC(BUILD.gameLines[1], 80, 106, 0);
+    if (this.t > 45 && this.prog() >= 1) textC('PRESENTS', 80, 120, 2);
     if (this.prog() < 1) { bar(40, 120, 80, 4, this.prog(), 1); textC('LOADING', 80, 127, 1); }
     textC(`GAME v${BUILD.version} ${BUILD.build}`, 80, 137, 1);
   }
@@ -147,8 +147,8 @@ class Title {
     blit(sprH('c_warden_4', 36), 99, 93 + bob);
     blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
     frame(4, 5, 152, 43);
-    textC('SHADOWBANE', 80, 12, 2); textC('CHRONICLES', 80, 23, 3);
-    textC(BUILD.subtitle, 80, 36, 2);
+    textC('LOST KINGDOM OF', 80, 8, 1); textC('SHADOWBANE', 80, 17, 2); textC('CHRONICLES', 80, 26, 3);
+    textC(BUILD.subtitle, 80, 37, 2);
     const o = this.opts(), h = o.length * 9 + 6;
     frame(5, 60, 83, h);
     o.forEach((s, i) => {
@@ -201,7 +201,7 @@ class Prologue {
   constructor(cb, story = null) {
     this.opaque = true; this.cb = cb; this.i = 0; this.c = 0; this.t = 0;
     this.expansion = story !== null;
-    this.story = story || { name: BUILD.game, subtitle: 'THE LANTERN PACT', scenes: PROLOGUE.map((line, index) => ({
+    this.story = story || { name: BUILD.gameShort, subtitle: 'THE LANTERN PACT', scenes: PROLOGUE.map((line, index) => ({
       title: ['THE EMBER CODEX', 'A THOUSAND LIGHTS', 'THE LANTERN PACT', 'THE SUNLESS EVENING', 'THE SHADOW KING', 'TWELVE LOST PAGES', 'A LIGHT IN ELDERWOOD', 'THE ROAD BEGINS'][index],
       text: line,
       art: ['item_spellbook', 'px_waypoint', 'px_symbol', 'px_skull', 'enemy_goblinking', 'px_rune', 'c_warden_0', 'elder_0'][index],
@@ -1660,7 +1660,7 @@ class Credits {
   update() { this.t++; if (this.t > 60 && (P('a') || P('b') || P('start'))) { removeScene(this); if (this.ending) { const f = currentField(); if (f) f.resume(); } } }
   draw() {
     fill(0, 0, W, H, 3);
-    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.game, BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
-    lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 6 ? 'gold' : 0); });
+    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
+    lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 3 || i === 7 ? 'gold' : 0); });
   }
 }

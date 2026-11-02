@@ -1,7 +1,7 @@
-# GB Quest MMORPG Design
+# Lost Kingdom of Shadowbane Chronicles MMORPG Design
 
 ## Vision
-Expand GB Quest into an original 2D online RPG combining tabletop-inspired d20 rules with persistent-world MMORPG conventions. Preserve the existing 160x144 Game Boy presentation as a supported retro display profile.
+Expand Lost Kingdom of Shadowbane Chronicles into an original 2D online RPG combining tabletop-inspired d20 rules with persistent-world MMORPG conventions. Preserve the existing 160x144 Game Boy presentation as a supported retro display profile.
 
 ## Compatibility and content boundaries
 - Implement original code and original setting/content.

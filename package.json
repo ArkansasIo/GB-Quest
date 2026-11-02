@@ -19,7 +19,7 @@
   },
   "build": {
     "appId": "io.arkansasio.gbquest",
-    "productName": "Shadowbane Chronicles",
+    "productName": "Lost Kingdom of Shadowbane Chronicles",
     "directories": {
       "output": "release"
     },

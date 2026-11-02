@@ -1,6 +1,6 @@
 # Multiplayer
 
-Multiplayer runs on the hosting page's own real-time and storage capabilities, with no separate server process. When GB Quest is opened as a shared artifact, everyone with the page open is in the same **room**.
+Multiplayer runs on the hosting page's own real-time and storage capabilities, with no separate server process. When Lost Kingdom of Shadowbane Chronicles is opened as a shared artifact, everyone with the page open is in the same **room**.
 
 ## Layers
 

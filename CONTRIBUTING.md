@@ -1,4 +1,4 @@
-# Contributing to GB Quest
+# Contributing to Lost Kingdom of Shadowbane Chronicles
 
 1. **Read** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/UML.md](docs/UML.md) first.
 2. **Keep it dependency-free.** The game is plain JavaScript in one global scope, concatenated in `tools/build.py` `ORDER`. Do not add frameworks or bundlers to the runtime.

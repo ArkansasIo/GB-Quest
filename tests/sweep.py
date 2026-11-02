@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless bug sweep for GB Quest.
+"""Headless bug sweep for Lost Kingdom of Shadowbane Chronicles.
 
 Drives the real game (dist/gbquest.html) in Chromium and exercises:
   every class x levels in auto-battles, all 90 zones, the world map at all zooms,

@@ -1,4 +1,4 @@
-# GB Quest native core
+# Lost Kingdom of Shadowbane Chronicles native core
 
 This directory adds a C++23 rules library alongside the JavaScript game and MMORPG modules. A small native CLI is built with the library and is called by the loopback Node.js development server and the legacy demo.
 

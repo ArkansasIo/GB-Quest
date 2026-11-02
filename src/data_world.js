@@ -1,4 +1,4 @@
-// GB QUEST — world data for AELMOOR: attributes, buffs, difficulty, zones, story,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES — world data for AELMOOR: attributes, buffs, difficulty, zones, story,
 // creature families, boss naming, quests, factions, achievements, music.
 'use strict';
 
@@ -250,7 +250,9 @@ const PROLOGUE = [
 
 // ================================================================ build info & studio
 const BUILD = {
-  game: 'SHADOWBANE CHRONICLES',
+  game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES',
+  gameLines: ['LOST KINGDOM OF', 'SHADOWBANE CHRONICLES'],
+  gameShort: 'SHADOWBANE CHRONICLES',
   subtitle: 'LANTERNS OF AELMOOR',
   expansions: [
     'Eternal Odyssey',

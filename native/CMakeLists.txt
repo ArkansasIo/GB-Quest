@@ -26,9 +26,9 @@ if(GBQ_ENABLE_X86_64_ASM
   enable_language(ASM)
   target_sources(gbquest_core PRIVATE src/ability_modifier_x86_64.S)
   target_compile_definitions(gbquest_core PRIVATE GBQ_HAS_X86_64_ASM=1)
-  message(STATUS "GB Quest: enabling x86-64 System V assembly fast path")
+  message(STATUS "Lost Kingdom of Shadowbane Chronicles: enabling x86-64 System V assembly fast path")
 else()
-  message(STATUS "GB Quest: using portable C++23 implementation")
+  message(STATUS "Lost Kingdom of Shadowbane Chronicles: using portable C++23 implementation")
 endif()
 
 if(MSVC)

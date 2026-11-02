@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ================================================================ GB QUEST REALM SERVER
+// ================================================================ LOST KINGDOM OF SHADOWBANE CHRONICLES REALM SERVER
 // A small, dependency-free game server (Node 18+). It:
 //   - serves the game client (dist/gbquest.html, /fullscreen, /atlas) on the same origin
 //   - runs accounts: register / login / logout, scrypt-hashed passwords, session tokens
@@ -87,7 +87,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], 'text/html; charset=utf-8');
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
-    if (p === '/api/health') return json(res, 200, { ok: true, game: 'GB QUEST', realm: process.env.REALM || 'LOCAL REALM', players: clients.size, accounts: Object.keys(db.accounts).length });
+    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: process.env.REALM || 'LOCAL REALM', players: clients.size, accounts: Object.keys(db.accounts).length });
 
     if (p === '/api/register' && req.method === 'POST') {
       const { username, password } = await body(req);
@@ -141,7 +141,7 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'GET') return mine[slot] ? json(res, 200, { slot, state: mine[slot].state, saved: mine[slot].saved }) : json(res, 404, { error: 'Empty slot.' });
       if (req.method === 'PUT') {
         const { state } = await body(req, MAX_SAVE);
-        if (!state || typeof state !== 'object' || typeof state.name !== 'string' || !state.cls) return json(res, 400, { error: 'Not a GB Quest save.' });
+        if (!state || typeof state !== 'object' || typeof state.name !== 'string' || !state.cls) return json(res, 400, { error: 'Not a Lost Kingdom of Shadowbane Chronicles save.' });
         mine[slot] = { state, saved: Date.now(), meta: { name: String(state.name).slice(0, 12), lvl: +state.lvl || 1, cls: String(state.cls).slice(0, 16) } }; save();
         return json(res, 200, { ok: true, saved: mine[slot].saved });
       }
@@ -185,5 +185,5 @@ const server = http.createServer(async (req, res) => {
     return json(res, e.code === 413 ? 413 : e.code === 400 ? 400 : 500, { error: e.code === 413 ? 'Too large.' : e.code === 400 ? 'Bad request.' : 'Server error.' });
   }
 });
-server.listen(PORT, HOST, () => console.log(`GB QUEST realm server on http://${HOST}:${PORT}  (accounts: ${Object.keys(db.accounts).length})`));
+server.listen(PORT, HOST, () => console.log(`LOST KINGDOM OF SHADOWBANE CHRONICLES realm server on http://${HOST}:${PORT}  (accounts: ${Object.keys(db.accounts).length})`));
 module.exports = server;

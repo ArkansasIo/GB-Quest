@@ -65,5 +65,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --title "Shadowbane Chronicles $RELEASE_TAG" --generate-notes
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --title "Lost Kingdom of Shadowbane Chronicles $RELEASE_TAG" --generate-notes
           gh release upload "$RELEASE_TAG" release/gbquest-fullscreen.html release/game-update.json release/*.exe release/*.dmg release/*.zip --clobber

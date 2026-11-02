@@ -1,4 +1,4 @@
-// GB QUEST art pack: the NES-style sheets (monsters, equipment, class & species portraits)
+// LOST KINGDOM OF SHADOWBANE CHRONICLES art pack: the NES-style sheets (monsters, equipment, class & species portraits)
 // mapped onto creatures, bosses, items, spells, heroes and battle backgrounds.
 // Settings > ART switches between NES (these sheets) and CLASSIC (the original sheet).
 'use strict';

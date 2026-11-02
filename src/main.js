@@ -1,4 +1,4 @@
-// GB QUEST entry point: load assets behind the studio boot screen, wire chat, network, live updates.
+// LOST KINGDOM OF SHADOWBANE CHRONICLES entry point: load assets behind the studio boot screen, wire chat, network, live updates.
 'use strict';
 (function main() {
   let progress = 0;

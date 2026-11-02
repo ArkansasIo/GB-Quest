@@ -1,4 +1,4 @@
-// GB QUEST rules core: character derivation (9 attributes, proficiency, AC, saves, skills,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES rules core: character derivation (9 attributes, proficiency, AC, saves, skills,
 // substats), spells & slots, resources, checks, equipment/attunement, rests, levelling 1-720,
 // and monster stat blocks built from level.
 'use strict';

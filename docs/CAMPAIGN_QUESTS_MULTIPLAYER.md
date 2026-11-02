@@ -1,6 +1,6 @@
 # Story campaign and quest structure
 
-The Shattered Crown is an original six-act GB Quest campaign spanning levels 1-720. Each act contains three chapters, five main story quests and six side quests. The story is authored for the four original continents and a final rift region.
+The Shattered Crown is an original six-act Lost Kingdom of Shadowbane Chronicles campaign spanning levels 1-720. Each act contains three chapters, five main story quests and six side quests. The story is authored for the four original continents and a final rift region.
 
 Quest records define stable IDs, objective type/target/count, act, recommended level, repeatability and rewards. Side quests are optional and can be replayable where explicitly marked.
 

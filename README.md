@@ -1,9 +1,9 @@
-# Shadowbane Chronicles
+# Lost Kingdom of Shadowbane Chronicles
 
 **A Game Boy–style MMORPG with d20 rules — by ArkansasIo**
 Version 2.1.1 (build B2026.11.01) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
 
-A 160×144 handheld RPG running in the browser. **Shadowbane Chronicles** is the base game; its expansion lineup is **Eternal Odyssey**, **Dragonfire Realm**, **Emberfell Saga**, **Wizard’s Dominion**, **Plagueborn Legacy**, **Crystalized Realms**, **Frostsong Dynasty**, **Arcane Ascension**, **Bloodmoon Conspiracy**, **Dragonspire Odyssey**, **Whispers of Valhalla**, **Nightshade Chronicles**, and **Mythical Meadowlands**. You can play in DMG green, Game Boy Color, Pocket or full colour palettes.
+A 160×144 handheld RPG running in the browser. **Lost Kingdom of Shadowbane Chronicles** is the base game; its expansion lineup is **Eternal Odyssey**, **Dragonfire Realm**, **Emberfell Saga**, **Wizard’s Dominion**, **Plagueborn Legacy**, **Crystalized Realms**, **Frostsong Dynasty**, **Arcane Ascension**, **Bloodmoon Conspiracy**, **Dragonspire Odyssey**, **Whispers of Valhalla**, **Nightshade Chronicles**, and **Mythical Meadowlands**. You can play in DMG green, Game Boy Color, Pocket or full colour palettes.
 
 It combines:
 
@@ -173,7 +173,7 @@ This is a structured catalog foundation, not yet the complete character builder:
 - `docs/MMORPG_FEATURE_MATRIX.md` — character, world, social, economy, combat, UI and multiplayer feature scope.
 - `tests/mmorpg/progression.test.js` — level curve tests.
 
-The D20 class progression ends at level 20. Levels 21-720 are GB Quest Paragon ranks, focused on mastery, professions, exploration, collections, cosmetics and world renown. This preserves bounded accuracy while supporting long-term MMORPG progression.
+The D20 class progression ends at level 20. Levels 21-720 are Lost Kingdom of Shadowbane Chronicles Paragon ranks, focused on mastery, professions, exploration, collections, cosmetics and world renown. This preserves bounded accuracy while supporting long-term MMORPG progression.
 
 Run `npm test` with Node.js 20+. Run `python tools/generate_pixel_assets.py` to generate starter atlases. These are original procedural placeholders, not final production art.
 
@@ -185,7 +185,7 @@ Run `npm test` with Node.js 20+. Run `python tools/generate_pixel_assets.py` to 
 - `docs/BOSSES_MONSTERS_AND_WORLD_MAP.md` — encounter and world-map design.
 - `tests/mmorpg/bosses-world.test.js` — catalogue and map integrity tests.
 
-The map target is 2,048 x 5,120 logical tiles at 16 source pixels per tile, rendered through the existing 160 x 144 handheld viewport with nearest-neighbor integer zoom. All boss names and encounter concepts are original GB Quest content; D&D creature-type taxonomy is used as the rules classification.
+The map target is 2,048 x 5,120 logical tiles at 16 source pixels per tile, rendered through the existing 160 x 144 handheld viewport with nearest-neighbor integer zoom. All boss names and encounter concepts are original Lost Kingdom of Shadowbane Chronicles content; D&D creature-type taxonomy is used as the rules classification.
 
 - `src/mmorpg/world/chunk-generation.js` — deterministic seed-based 32x32 terrain chunk generation.
 - `tests/mmorpg/chunk-generation.test.js` — deterministic generation and map-boundary tests.
@@ -218,6 +218,6 @@ These are local PvE-driven simulations using the game's combat system and simula
 
 ## Legal
 
-All names, lore and story are original to GB Quest.
+All names, lore and story are original to Lost Kingdom of Shadowbane Chronicles.
 
 The rules engine models mechanics from the System Reference Document 5.1 by Wizards of the Coast LLC, which is available under the [Creative Commons Attribution 4.0 License](https://creativecommons.org/licenses/by/4.0/legalcode). No book text is reproduced.

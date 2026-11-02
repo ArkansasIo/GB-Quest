@@ -1,6 +1,6 @@
 # MMORPG feature matrix: D20 rules + persistent-world MMO
 
-This is an original GB Quest design using familiar MMORPG genre conventions. It does not reproduce World of Warcraft source code, assets, maps, quest text, named characters, faction names, UI art or other proprietary expression.
+This is an original Lost Kingdom of Shadowbane Chronicles design using familiar MMORPG genre conventions. It does not reproduce World of Warcraft source code, assets, maps, quest text, named characters, faction names, UI art or other proprietary expression.
 
 ## Character and rules
 - 9 SRD 5.2.1 species, 12 classes and supported SRD subclasses.

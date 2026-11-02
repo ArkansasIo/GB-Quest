@@ -1,4 +1,4 @@
-# Shadowbane Chronicles Game Boy ROM
+# Lost Kingdom of Shadowbane Chronicles Game Boy ROM
 
 This is a separate, deliberately constrained RGBDS implementation for the original
 Game Boy and Game Boy Color. It is not the C++23 desktop executable: those devices

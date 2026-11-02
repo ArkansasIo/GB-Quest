@@ -1,6 +1,6 @@
 # Architecture
 
-GB Quest is plain JavaScript with no framework, no bundler and no runtime dependencies. `tools/build.py` concatenates the modules in a fixed order into one HTML file that runs anywhere. Diagrams are in [UML.md](UML.md).
+Lost Kingdom of Shadowbane Chronicles is plain JavaScript with no framework, no bundler and no runtime dependencies. `tools/build.py` concatenates the modules in a fixed order into one HTML file that runs anywhere. Diagrams are in [UML.md](UML.md).
 
 ## Module map
 

@@ -1,4 +1,4 @@
-// GB QUEST — rules data. A d20 system modelled on the 5th-edition SRD mechanics,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES — rules data. A d20 system modelled on the 5th-edition SRD mechanics,
 // with original names and lore for the world of AELMOOR.
 'use strict';
 

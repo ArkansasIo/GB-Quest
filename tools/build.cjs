@@ -34,7 +34,7 @@ const single = shell + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + 
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);
 
 const fsHtml = rd('src/fullscreen.html');
-let full = single.replace('<title>Shadowbane Chronicles</title>', '<title>Shadowbane Chronicles Full Screen</title>')
+let full = single.replace('<title>Lost Kingdom of Shadowbane Chronicles</title>', '<title>Lost Kingdom of Shadowbane Chronicles Full Screen</title>')
   .replace('</style>', '</style>\n' + fsHtml.split('<div class="fsbar"')[0]);
 full = full.replace('<section class="chat"', '<div class="fsbar"' + fsHtml.split('<div class="fsbar"')[1] + '\n<section class="chat"');
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest-fullscreen.html'), full);

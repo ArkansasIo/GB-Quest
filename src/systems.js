@@ -1,4 +1,4 @@
-// GB QUEST systems: save slots, inventory, story chapters & side quests, achievements,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES systems: save slots, inventory, story chapters & side quests, achievements,
 // bestiary, reputation, professions, waypoints, party/LFG, difficulty, the simulated realm,
 // and NET (live multiplayer: presence, chat, host server, leaderboard).
 'use strict';

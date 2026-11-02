@@ -1,4 +1,4 @@
-// GB QUEST engine: 160x144 framebuffer, palettes (DMG / GBC / FULL), sprite pipeline,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES engine: 160x144 framebuffer, palettes (DMG / GBC / FULL), sprite pipeline,
 // bitmap text, UI kit, input, 4-channel audio (100+ SFX, procedural music),
 // scene stack, transitions, and a small physics + particle system.
 'use strict';

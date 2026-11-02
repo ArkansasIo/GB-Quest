@@ -1,4 +1,4 @@
-// GB QUEST combat: d20 initiative, attack rolls vs AC, saving throws vs DC, spells by slot,
+// LOST KINGDOM OF SHADOWBANE CHRONICLES combat: d20 initiative, attack rolls vs AC, saving throws vs DC, spells by slot,
 // class features, conditions & buffs, death saves, threat, legendary actions, boss mechanics,
 // companion & monster AI, loot and XP. Host-authoritative for multiplayer.
 'use strict';
