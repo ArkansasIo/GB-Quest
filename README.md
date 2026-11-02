@@ -25,7 +25,7 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 
 ### Windows and macOS desktop app
 
-The Electron desktop app runs the complete bundled game in its own window. To build locally, install Node.js 22+, then run `npm install`, `node tools/build.cjs`, and `npm run desktop:dev`. Create installers with `npm run desktop:dist -- --win` on Windows or `npm run desktop:dist -- --mac` on macOS. Windows creates an installer and portable executable; macOS creates Intel and Apple Silicon DMG/ZIP packages. Builds are also available from the **Desktop packages** GitHub Actions workflow.
+The Electron desktop app opens a regional launcher before the game. Choose North America, Europe, Japan or Oceania, then select a logical data center and world before launching. The current launcher is ready for local play; live login, real-time world status and online character services require the realm backend deployment. To build locally, install Node.js 22+, then run `npm install`, `node tools/build.cjs`, and `npm run desktop:dev`. Create installers with `npm run desktop:dist -- --win` on Windows or `npm run desktop:dist -- --mac` on macOS. Windows creates an installer and portable executable; macOS creates Intel and Apple Silicon DMG/ZIP packages. Builds are also available from the **Desktop packages** GitHub Actions workflow.
 
 Desktop packages are currently unsigned. Windows may show a SmartScreen prompt, and macOS may require opening the app from Finder's context menu. See [desktop/README.md](desktop/README.md).
 
