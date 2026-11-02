@@ -96,3 +96,31 @@ All 9 crafting professions have a blueprint for each of the 23 tiers (207 tiered
 Forged gear rolls rarity at the tier's level. The Masterwork perk and Mastery ranks can raise it one grade.
 
 In CRAFTING and BLUEPRINTS, LEFT and RIGHT filter by profession and SELECT opens the blueprint shop.
+
+## Settlement trainers
+
+`src/towns.js`. Every settlement has profession trainers placed by district.
+
+| Settlement | Trainers |
+|---|---|
+| **City (Ardenhold)** | FORGE QUARTER: craft master, miner, salvager, leatherworker, armorsmith, weaponsmith. MARKET QUARTER: jeweller, enchanter, tailor. TEMPLE QUARTER: alchemist, curator. GARDENS: herbalist, cultivator. TOWN EDGE: forester, hidecrafter, beastmaster |
+| **Harbor Ward (docks)** | fisher, cook, salvager |
+| **Towns** (every third region hub) | craft master, curator, two gatherers and two crafters suited to the biome |
+| **Villages** (other region hubs) | three trainers, mostly gatherers for the land around them, plus a traveling curator near ruins (badlands, volcanic, dusk and crystal) |
+
+**Every trainer** offers:
+
+- LEARN, or LESSONS at +3 skill for gold. Lessons can take you up to 10 × your level, capped at 720.
+- A **STARTER QUEST from level 10**: gather or catch 8 times, or craft 4 times. The reward is gold, XP, +15 skill, and materials (gatherers) or a free blueprint (crafters).
+- BLUEPRINTS (crafters) or a FIELD GUIDE (gatherers).
+- The profession PERK TREE.
+- WORK ORDERS.
+
+**Craft master:** teaches blacksmithing. At **level 20** you choose a smith path, WEAPONSMITH or ARMORSMITH. The new profession starts at a quarter of your blacksmithing skill. The armorsmith and weaponsmith trainers, and the tiered blueprints for those two professions, only work for the path you chose. Changing path costs 1000 G.
+
+**Curator** (relics and artifacts):
+
+- Trains Relic Survey and gives its starter quest.
+- **Appraises** relics and artifacts. Artifacts are named, legendary or better gear.
+- Buys relics at 150% of their value and artifacts at 120%.
+- Runs a **rare exchange**: 5 relics plus a fee for 1 relic of the next tier.

@@ -221,7 +221,7 @@ async () => {
     for (const p of Object.keys(CRAFT_PLAN)) { const rs = RECIPES.filter(r => r.prof === p && r.tier); if (rs.length !== 23) return 'tiers ' + p; if (rs[22].skill < 600) return 'top skill ' + p; }
     const top = gatherMaterial('mining', 720, 720); if (!top || top.tier !== 23) return 'top gather';
     if (gatherMaterial('mining', 720, 1).slot !== 0) return 'skill gate';
-    const r = RECIPES.find(r => r.id === 't_weaponsmith_10'); G.prof.weaponsmith = 720; G.lvl = 40; G.blueprints.push(r.id); for (const k in r.needs) addItem(k, 30);
+    const r = RECIPES.find(r => r.id === 't_weaponsmith_10'); G.prof.weaponsmith = 720; G.smithPath = 'weaponsmith'; G.lvl = 40; G.blueprints.push(r.id); for (const k in r.needs) addItem(k, 30);
     const n0 = G.bag.length; const msg = craft(r); if (!/^Forged/.test(msg)) return 'forge: ' + msg; if (G.bag.length !== n0 + 1) return 'no gear';
     const g = G.bag[G.bag.length - 1]; if (g.rank !== 10) return 'forged tier ' + g.rank;
     const a = RECIPES.find(r => r.id === 't_alch_5'); G.prof.alch = 720; G.blueprints.push(a.id); for (const k in a.needs) addItem(k, 30); if (!/^Made/.test(craft(a))) return 'alch';
@@ -265,6 +265,25 @@ async () => {
     if (!G.bag.some(x => x.base === theirs.base && x.ilvl === theirs.ilvl)) return 'received item missing';
     if (cleanItem({ kind: 'weapon', base: 'nope' })) return 'bad item accepted';
     NET.room = room0; NET.offline = wasOff; render();
+  });
+  step('settlement trainers', () => {
+    fresh('warden', 'hearthkin', 'soldier', 25); G.gold = 99999;
+    let total = 0, kinds = {};
+    for (const z of ZONES) { const st = settlementOf(z); if (!st) continue; G.map = z.id; G.x = 16; G.y = 12; reset(new Field()); run(1); const f = scenes.find(s => s instanceof Field); const tr = f.entities().filter(e => ['proftrainer', 'craftmaster', 'curator'].includes(e.svc)); kinds[st.kind] = (kinds[st.kind] || 0) + 1; total += tr.length;
+      for (const t of tr) { if (!f.tileAt(t.x, t.y)[1]) return 'trainer on wall ' + z.id; }
+      if (st.kind === 'CITY') { const ps = new Set(tr.map(t => t.prof)); for (const p of Object.keys(PROFS)) if (!['fish', 'cook'].includes(p) && !ps.has(p)) return 'city missing ' + p; }
+      for (const t of tr.slice(0, 3)) { npcService(t); for (let i = 0; i < 4; i++) { press('a'); render(); } press('b'); press('b'); } }
+    if (!kinds.CITY || !kinds.TOWN || !kinds.VILLAGE) return 'kinds ' + JSON.stringify(kinds);
+    if (total < 60) return 'only ' + total + ' trainers';
+    // smith path + starter quest
+    G.lvl = 25; G.prof.blacksmith = 40; G.smithPath = null;
+    const r = RECIPES.find(x => x.id === 't_armorsmith_2'); G.blueprints.push(r.id); for (const k in r.needs) addItem(k, 40); G.prof.armorsmith = 100;
+    if (!/smith path/i.test(craft(r))) return 'path gate missing';
+    G.smithPath = 'armorsmith'; if (!/^Forged/.test(craft(r))) return 'path craft failed';
+    G.smithPath = 'weaponsmith'; if (/^Forged/.test(craft(r))) return 'wrong path crafted';
+    const s = starterState('herb'); s.accepted = true; progressProfessionQuest('herb', 'gather', 8); if (s.progress !== 8) return 'starter progress ' + s.progress;
+    const g0 = G.gold; starterQuestTalk('herb'); if (!s.done || G.gold <= g0) return 'starter claim';
+    return null;
   });
   step('soundtest', () => { push(new SoundTest()); press('a'); press('select'); press('a'); press('start'); press('down', 5); render(); press('b'); });
 
