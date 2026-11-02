@@ -7,6 +7,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string_view>
+#include <vector>
 
 namespace {
 
@@ -95,6 +96,57 @@ void test_attack_resolution() {
   }, "reject negative proficiency");
 }
 
+
+void test_dice_and_damage() {
+  const auto expression = gbquest::parse_dice_expression("2d6+3");
+  check(expression.count == 2 && expression.sides == 6 && expression.modifier == 3,
+        "parse dice expression with positive modifier");
+
+  const auto single_die = gbquest::parse_dice_expression("d8-2");
+  check(single_die.count == 1 && single_die.sides == 8 && single_die.modifier == -2,
+        "parse implicit one die and negative modifier");
+
+  const std::array<std::int32_t, 2> faces{4, 5};
+  const auto dice = gbquest::resolve_dice(expression, faces);
+  check(dice.total == 12 && dice.rolls.size() == 2, "resolve supplied dice faces");
+
+  const std::array<std::int32_t, 4> critical_faces{4, 5, 2, 6};
+  const auto critical_dice = gbquest::resolve_dice(expression, critical_faces, true);
+  check(critical_dice.total == 20 && critical_dice.rolls.size() == 4,
+        "critical hit doubles dice while retaining flat modifier once");
+
+  const auto resistance = gbquest::resolve_damage(
+      dice, {.damage_type = "fire", .disposition = gbquest::DamageDisposition::resistance});
+  check(resistance.amount == 6 && resistance.damage_type == "fire",
+        "resistance halves damage");
+
+  const auto vulnerability = gbquest::resolve_damage(
+      dice, {.damage_type = "cold", .disposition = gbquest::DamageDisposition::vulnerability});
+  check(vulnerability.amount == 24, "vulnerability doubles damage");
+
+  const auto immunity = gbquest::resolve_damage(
+      dice, {.damage_type = "poison", .disposition = gbquest::DamageDisposition::immunity});
+  check(immunity.amount == 0, "immunity negates damage");
+
+  check_throws([] { (void)gbquest::parse_dice_expression("0d6"); },
+               "reject zero dice");
+  check_throws([] { (void)gbquest::parse_dice_expression("2d1"); },
+               "reject one-sided die");
+  check_throws([] { (void)gbquest::parse_dice_expression("2d6+"); },
+               "reject missing modifier digits");
+  check_throws([&] {
+    const std::array<std::int32_t, 1> wrong_count{3};
+    (void)gbquest::resolve_dice(expression, wrong_count);
+  }, "reject incorrect face count");
+  check_throws([&] {
+    const std::array<std::int32_t, 2> invalid_faces{3, 7};
+    (void)gbquest::resolve_dice(expression, invalid_faces);
+  }, "reject die face above sides");
+  check_throws([&] {
+    (void)gbquest::resolve_damage(dice, {.damage_type = ""});
+  }, "reject empty damage type");
+}
+
 } // namespace
 
 int main() {
@@ -102,6 +154,7 @@ int main() {
   test_proficiency();
   test_armor_class();
   test_attack_resolution();
+  test_dice_and_damage();
 
   if (failures != 0) {
     std::cerr << failures << " native test(s) failed\n";
