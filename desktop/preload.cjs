@@ -25,5 +25,19 @@ contextBridge.exposeInMainWorld('gbqLauncher', Object.freeze({
   authenticate: credentials => ipcRenderer.invoke('gbq:realm-auth', credentials),
   getSession: () => ipcRenderer.invoke('gbq:realm-session'),
   listCharacters: () => ipcRenderer.invoke('gbq:realm-saves'),
+  getGameSession: () => ipcRenderer.invoke('gbq:game-session'),
+  realmApi: (path, options = {}) => ipcRenderer.invoke('gbq:realm-api', { path, method: options.method, body: options.body }),
+  startRealmStream: (onEvent, onError) => {
+    const eventHandler = (_event, message) => onEvent?.(message);
+    const errorHandler = (_event, message) => onError?.(message);
+    ipcRenderer.on('gbq:realm-stream-event', eventHandler);
+    ipcRenderer.on('gbq:realm-stream-error', errorHandler);
+    ipcRenderer.send('gbq:realm-stream-start');
+    return () => {
+      ipcRenderer.removeListener('gbq:realm-stream-event', eventHandler);
+      ipcRenderer.removeListener('gbq:realm-stream-error', errorHandler);
+      ipcRenderer.send('gbq:realm-stream-stop');
+    };
+  },
   logout: () => ipcRenderer.invoke('gbq:realm-logout'),
 }));
