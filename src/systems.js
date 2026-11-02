@@ -13,7 +13,7 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profPerks: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0, tailoring: 1, leatherwork: 1, jewelcraft: 0, enchanting: 0 }, profTalents: {}, profPerks: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], homes: {}, hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
@@ -39,7 +39,7 @@ function fixupState() {
     home.decor = Array.isArray(home.decor) ? home.decor.filter(item => typeof item === 'string').slice(0, 8) : [];
     home.storage = Array.isArray(home.storage) ? home.storage : [];
   }
-  G.prof = Object.assign({ herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
+  G.prof = Object.assign({ herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0, tailoring: 1, leatherwork: 1, jewelcraft: 0, enchanting: 0 }, G.prof);
   for (const key of Object.keys(PROFS)) G.prof[key] = Math.max(0, Math.min(PROF_CAP, Math.floor(Number(G.prof[key]) || 0)));
   const starterBlueprints = RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id);
   G.blueprints = Array.isArray(G.blueprints) ? [...new Set(G.blueprints.filter(id => RECIPES.some(recipe => recipe.id === id))) ] : starterBlueprints;

@@ -4517,7 +4517,7 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profPerks: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    ach: {}, prof: { herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0, tailoring: 1, leatherwork: 1, jewelcraft: 0, enchanting: 0 }, profTalents: {}, profPerks: {}, profQuests: {}, blueprints: RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id), companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], homes: {}, hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
@@ -4543,7 +4543,7 @@ function fixupState() {
     home.decor = Array.isArray(home.decor) ? home.decor.filter(item => typeof item === 'string').slice(0, 8) : [];
     home.storage = Array.isArray(home.storage) ? home.storage : [];
   }
-  G.prof = Object.assign({ herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, G.prof);
+  G.prof = Object.assign({ herb: 1, mining: 0, forestry: 0, hidecraft: 0, alch: 1, fish: 1, salvaging: 0, relic: 0, cultivation: 0, beast_lore: 0, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0, tailoring: 1, leatherwork: 1, jewelcraft: 0, enchanting: 0 }, G.prof);
   for (const key of Object.keys(PROFS)) G.prof[key] = Math.max(0, Math.min(PROF_CAP, Math.floor(Number(G.prof[key]) || 0)));
   const starterBlueprints = RECIPES.filter(recipe => recipe.skill <= 1).map(recipe => recipe.id);
   G.blueprints = Array.isArray(G.blueprints) ? [...new Set(G.blueprints.filter(id => RECIPES.some(recipe => recipe.id === id))) ] : starterBlueprints;
@@ -7533,7 +7533,7 @@ class WorldMap {
       if (seen) {
         for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
         for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
-        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
+        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y, profession], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
         for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
@@ -8326,6 +8326,56 @@ const effectIcon = id => { const n = (BUFFS[id] && BUFFS[id].icon) || 'cd_' + id
 //   * All 60 points' worth of perks cannot be owned at once, so every build is a choice.
 //   * Perks are kept until a full reset (100 G per point spent) refunds them all.
 // Perks stack with the older yield / efficiency / mastery rank branches.
+
+// ================================================================ 18 PROFESSIONS
+// 9 gathering (herb, mining, forestry, hidecraft, fish, salvaging, relic, cultivation, beast_lore)
+// 9 crafting  (alch, cook, blacksmith, armorsmith, weaponsmith + tailoring, leatherwork, jewelcraft, enchanting)
+Object.assign(PROFS, { tailoring: 'TAILORING', leatherwork: 'LEATHERWORK', jewelcraft: 'JEWELCRAFTING', enchanting: 'ENCHANTING' });
+Object.assign(PROFESSION_TREES, {
+  tailoring: { yield: 'BOLT OUTPUT', efficiency: 'NEAT SEAMS', mastery: 'LOOM LORE' },
+  leatherwork: { yield: 'TANNERY RUNS', efficiency: 'CLEAN TRIM', mastery: 'TANNER LORE' },
+  jewelcraft: { yield: 'CUTTING BENCH', efficiency: 'STEADY LENS', mastery: 'GEM LORE' },
+  enchanting: { yield: 'RUNE BATCHES', efficiency: 'ESSENCE SAVER', mastery: 'ARCANE LORE' },
+});
+Object.assign(PROFESSION_QUESTS, {
+  tailoring: { sideName: 'BANDAGES FOR THE FRONT', sideText: 'Sew bandages for the road wardens.', action: 'craft', sideCount: 12, orderText: 'Stitch cloth goods for the clinic.', orderCount: 3, xp: 1400, gold: 210, skill: 3, item: 'linen' },
+  leatherwork: { sideName: 'STRAPS AND SADDLES', sideText: 'Work leather for the stablemaster.', action: 'craft', sideCount: 12, orderText: 'Make leather kits for the watch.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'leather_strap' },
+  jewelcraft: { sideName: 'THE JEWELLER\'S EYE', sideText: 'Cut stones for the crown jeweller.', action: 'craft', sideCount: 12, orderText: 'Polish gems for a noble patron.', orderCount: 3, xp: 1700, gold: 280, skill: 3, item: 'cut_gem' },
+  enchanting: { sideName: 'RUNES OF WARDING', sideText: 'Inscribe runes for the city wards.', action: 'craft', sideCount: 12, orderText: 'Bind scrolls for the academy.', orderCount: 3, xp: 1800, gold: 300, skill: 3, item: 'arcane_dust' },
+});
+Object.assign(ITEMS, {
+  linen: { name: 'LINEN BOLT', icon: 'ne_reagent_1', type: 'mat', price: 10, desc: 'Woven field fiber. Tailoring and enchanting.' },
+  bandage: { name: 'FIELD BANDAGE', icon: 'ne_misc_1', type: 'use', heal: '3d6', combat: true, price: 14, desc: 'Heal 3d6.' },
+  silk_bandage: { name: 'SILK BANDAGE', icon: 'ne_misc_2', type: 'use', heal: '6d6+6', combat: true, price: 60, desc: 'Heal 6d6+6.' },
+  ward_cloak: { name: 'WARDING SHAWL', icon: 'ne_lightarmor_2', type: 'use', buff: 'ac', combat: true, price: 70, desc: 'Worn over armour: WARDED.' },
+  leather_strap: { name: 'LEATHER STRAP', icon: 'ne_leather_1', type: 'mat', price: 10, desc: 'Cured hide. Leatherwork and smithing.' },
+  armor_kit: { name: 'ARMOR PATCH KIT', icon: 'ne_tool_1', type: 'use', buff: 'fortify', combat: true, price: 45, desc: 'Patch armour mid-fight: FORTIFIED.' },
+  hunter_wrap: { name: 'HUNTER WRAPS', icon: 'ne_glove_1', type: 'use', buff: 'focus', combat: true, price: 55, desc: 'Grip wraps: FOCUSED.' },
+  cut_gem: { name: 'CUT GEM', icon: 'ne_gem_2', type: 'mat', price: 60, desc: 'A faceted stone. Sells well; enchanting.' },
+  lucky_charm: { name: 'LUCKY CHARM', icon: 'ne_amulet_1', type: 'use', buff: 'foresight', combat: true, price: 90, desc: 'A lucky trinket: FORESIGHT.' },
+  arcane_dust: { name: 'ARCANE DUST', icon: 'ne_reagent_3', type: 'mat', price: 14, desc: 'Ground relic and bone. Enchanting.' },
+  rune_oil: { name: 'RUNE OIL', icon: 'ne_potion_5', type: 'use', buff: 'might', combat: true, price: 80, desc: 'Weapon oil: MIGHTY (+15% damage).' },
+  ward_rune: { name: 'WARD RUNE', icon: 'ne_scroll_3', type: 'use', buff: 'barrier', combat: true, price: 120, desc: 'A rune of shielding: BARRIER.' },
+});
+RECIPES.push(
+  { id: 'linen_bolt', prof: 'tailoring', name: 'LINEN BOLT', skill: 1, needs: { field_fiber: 3 }, makes: 'linen' },
+  { id: 'field_bandage', prof: 'tailoring', name: 'FIELD BANDAGE', skill: 1, needs: { linen: 1 }, makes: 'bandage' },
+  { id: 'silk_bandage', prof: 'tailoring', name: 'SILK BANDAGE', skill: 40, needs: { linen: 2, peacebloom: 2 }, makes: 'silk_bandage' },
+  { id: 'warding_shawl', prof: 'tailoring', name: 'WARDING SHAWL', skill: 80, needs: { linen: 3, arcane_dust: 1 }, makes: 'ward_cloak' },
+  { id: 'cure_strap', prof: 'leatherwork', name: 'LEATHER STRAP', skill: 1, needs: { hide: 2 }, makes: 'leather_strap' },
+  { id: 'patch_kit', prof: 'leatherwork', name: 'ARMOR PATCH KIT', skill: 15, needs: { leather_strap: 2, scrap: 2 }, makes: 'armor_kit' },
+  { id: 'hunter_wraps', prof: 'leatherwork', name: 'HUNTER WRAPS', skill: 50, needs: { leather_strap: 2, sap: 1 }, makes: 'hunter_wrap' },
+  { id: 'camp_kit', prof: 'leatherwork', name: 'CAMP KIT', skill: 25, needs: { leather_strap: 1, sap: 2, linen: 1 }, makes: 'campkit' },
+  { id: 'cut_stone', prof: 'jewelcraft', name: 'CUT GEM', skill: 1, needs: { iron_ore: 3, shard: 1 }, makes: 'cut_gem' },
+  { id: 'polish_dust', prof: 'jewelcraft', name: 'GLIMMER SHARD', skill: 20, needs: { scrap: 6 }, makes: 'shard' },
+  { id: 'lucky_charm', prof: 'jewelcraft', name: 'LUCKY CHARM', skill: 60, needs: { cut_gem: 1, leather_strap: 1 }, makes: 'lucky_charm' },
+  { id: 'arcane_dust', prof: 'enchanting', name: 'ARCANE DUST', skill: 1, needs: { relic_fragment: 1, bone_dust: 1 }, makes: 'arcane_dust' },
+  { id: 'rune_oil', prof: 'enchanting', name: 'RUNE OIL', skill: 20, needs: { arcane_dust: 2, sap: 1 }, makes: 'rune_oil' },
+  { id: 'scroll_mend', prof: 'enchanting', name: 'SCROLL: MENDING', skill: 35, needs: { arcane_dust: 2, linen: 1 }, makes: 'scroll_mend' },
+  { id: 'scroll_flame', prof: 'enchanting', name: 'SCROLL: FLAME FAN', skill: 55, needs: { arcane_dust: 3, linen: 1, ember: 1 }, makes: 'scroll_flame' },
+  { id: 'ward_rune', prof: 'enchanting', name: 'WARD RUNE', skill: 75, needs: { arcane_dust: 3, cut_gem: 1 }, makes: 'ward_rune' },
+  { id: 'scroll_dawn', prof: 'enchanting', name: 'SCROLL: DAWN', skill: 110, needs: { arcane_dust: 5, cut_gem: 2, ember: 2 }, makes: 'scroll_dawn' },
+);
 
 const PERK_MAX = 21;
 const PERK_TIER_COST = [1, 2, 3, 4];

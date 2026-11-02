@@ -1559,7 +1559,7 @@ class WorldMap {
       if (seen) {
         for (const a of m.areas) if (G.areas[a.id]) { const [ax, ay] = a.r; text(a.name.split(' ').pop().slice(0, 8), ox + ax * s + 2, oy + ay * s + 2, 3); }
         for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
-        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
+        const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y, profession], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
         for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }

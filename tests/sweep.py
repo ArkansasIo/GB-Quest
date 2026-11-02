@@ -157,7 +157,9 @@ async () => {
   step('settings', () => { reset(new Field()); push(new SettingsScene()); for (let i = 0; i < 20; i++) { press('down'); press('right'); press('left'); render(); } press('b'); });
   step('profession perks', () => {
     fresh('warden', 'hearthkin', 'soldier', 1);
-    for (const k of Object.keys(PROFS)) { if (PERK_TREES[k].length !== 4 || PERK_TREES[k].some(r => r.length !== 6)) return 'bad tree ' + k; }
+    if (Object.keys(PROFS).length !== 18) return 'profession count ' + Object.keys(PROFS).length;
+    for (const r of RECIPES) { if (!PROFS[r.prof] || !ITEMS[r.makes] || Object.keys(r.needs).some(k => !ITEMS[k])) return 'bad recipe ' + r.id; }
+    for (const k of Object.keys(PROFS)) { if (!PROFESSION_TREES[k] || !PROFESSION_QUESTS[k]) return 'missing data ' + k; if (PERK_TREES[k].length !== 4 || PERK_TREES[k].some(r => r.length !== 6)) return 'bad tree ' + k; }
     G.prof.herb = 1; if (perkPoints('herb') !== 1) return 'points at 1';
     if (!learnPerk('herb', 't1_0')) return 'tier gate missing';
     if (learnPerk('herb', 't0_0')) return 'tier 1 failed';
