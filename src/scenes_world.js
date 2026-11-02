@@ -672,6 +672,10 @@ class Field {
       if (e.kind === 'sim') return simPlayerMenu(e.p);
       if (e.kind === 'peer') return say([`${clean(e.p.presence.n)} - LV${e.p.presence.l} ${(CLASSES[e.p.presence.c] || { name: '' }).name}`, e.p.presence.h ? `Hosting server: ${clean(e.p.presence.h, 20)}` : 'A fellow adventurer (live player).']);
     }
+    if (!G.inst && this.zone && globalThis.GBQSecretWorld) {
+      const secret = globalThis.GBQSecretWorld.at(G, this.zone, this.m, x, y);
+      if (secret) return globalThis.GBQSecretWorld.activate(secret, G);
+    }
     const ch = this.chAt(x, y), t = this.tileAt(x, y);
     if (G.inst) {
       if (ch === 'L') return leaveInstance(); if (ch === 'U') return towerNext();
