@@ -272,6 +272,92 @@ const WONDROUS = [
   { id: 'ring', name: 'RING', slot: 'ring', icon: 'icon_0_5', bonus: 'save' },
   { id: 'charm', name: 'SIGNET', slot: 'ring', icon: 'icon_0_5', bonus: 'abil' },
   { id: 'band', name: 'BAND', slot: 'ring', icon: 'icon_0_5', bonus: 'hit' },
+  // 42 dedicated relic items.
+  { id: 'relic_01', name: 'ASHEN HEART', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 1 of 42.' },
+  { id: 'relic_02', name: 'VEILSTONE', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 2 of 42.' },
+  { id: 'relic_03', name: 'MOONFALL SEAL', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 3 of 42.' },
+  { id: 'relic_04', name: 'THORNBOUND IDOL', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 4 of 42.' },
+  { id: 'relic_05', name: 'EMBER VESSEL', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 5 of 42.' },
+  { id: 'relic_06', name: 'FROSTWORN SIGIL', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 6 of 42.' },
+  { id: 'relic_07', name: 'HOLLOW CROWN', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 7 of 42.' },
+  { id: 'relic_08', name: 'TIDEBORN EYE', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 8 of 42.' },
+  { id: 'relic_09', name: 'GRAVESONG TOKEN', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 9 of 42.' },
+  { id: 'relic_10', name: 'STORMGLASS CORE', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 10 of 42.' },
+  { id: 'relic_11', name: 'WOLF-KING TOTEM', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 11 of 42.' },
+  { id: 'relic_12', name: 'DAWN SHARD', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 12 of 42.' },
+  { id: 'relic_13', name: 'NIGHTWARDEN\\'S MARK', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 13 of 42.' },
+  { id: 'relic_14', name: 'ROOTS OF YSRA', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 14 of 42.' },
+  { id: 'relic_15', name: 'SHATTERED HOUR', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 15 of 42.' },
+  { id: 'relic_16', name: 'SABLE COMPASS', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 16 of 42.' },
+  { id: 'relic_17', name: 'WRAITHBONE CHARM', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 17 of 42.' },
+  { id: 'relic_18', name: 'SUNKEN STAR', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 18 of 42.' },
+  { id: 'relic_19', name: 'IRON OATH RELIC', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 19 of 42.' },
+  { id: 'relic_20', name: 'GLOAMING LENS', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 20 of 42.' },
+  { id: 'relic_21', name: 'SERPENT\\'S MEMORY', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 21 of 42.' },
+  { id: 'relic_22', name: 'SKYFIRE EMBER', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 22 of 42.' },
+  { id: 'relic_23', name: 'WINTER\\'S LAST BREATH', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 23 of 42.' },
+  { id: 'relic_24', name: 'DUSKWARDEN SEAL', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 24 of 42.' },
+  { id: 'relic_25', name: 'BLOODMOON IDOL', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 25 of 42.' },
+  { id: 'relic_26', name: 'WHISPERING FANG', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 26 of 42.' },
+  { id: 'relic_27', name: 'ANCIENT WAYSTONE', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 27 of 42.' },
+  { id: 'relic_28', name: 'RAVEN QUEEN\\'S EYE', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 28 of 42.' },
+  { id: 'relic_29', name: 'FALLEN SAINT\\'S VOW', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 29 of 42.' },
+  { id: 'relic_30', name: 'DEEPWATER PEARL', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 30 of 42.' },
+  { id: 'relic_31', name: 'CINDERHEART', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 31 of 42.' },
+  { id: 'relic_32', name: 'PALE ORACLE', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 32 of 42.' },
+  { id: 'relic_33', name: 'THUNDERBIRD FEATHER', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 33 of 42.' },
+  { id: 'relic_34', name: 'OBSIDIAN TEAR', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 34 of 42.' },
+  { id: 'relic_35', name: 'ETERNAL ASH', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 35 of 42.' },
+  { id: 'relic_36', name: 'WILDHUNT HORN', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 36 of 42.' },
+  { id: 'relic_37', name: 'SILENT BELL', slot: 'relic', icon: 'px_orb', bonus: 'hp', category: 'relic', desc: 'Ancient remnant 37 of 42.' },
+  { id: 'relic_38', name: 'STARLESS MIRROR', slot: 'relic', icon: 'px_orb', bonus: 'ac', category: 'relic', desc: 'Ancient remnant 38 of 42.' },
+  { id: 'relic_39', name: 'DRAGON\\'S REMNANT', slot: 'relic', icon: 'px_orb', bonus: 'save', category: 'relic', desc: 'Ancient remnant 39 of 42.' },
+  { id: 'relic_40', name: 'AETHER SEED', slot: 'relic', icon: 'px_orb', bonus: 'abil', category: 'relic', desc: 'Ancient remnant 40 of 42.' },
+  { id: 'relic_41', name: 'KINGDOM\\'S LAST LIGHT', slot: 'relic', icon: 'px_orb', bonus: 'hit', category: 'relic', desc: 'Ancient remnant 41 of 42.' },
+  { id: 'relic_42', name: 'WORLDROOT KNOT', slot: 'relic', icon: 'px_orb', bonus: 'init', category: 'relic', desc: 'Ancient remnant 42 of 42.' },
+  // 42 dedicated artifact items.
+  { id: 'artifact_01', name: 'AEGIS OF THE FIRST DAWN', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 1 of 42.' },
+  { id: 'artifact_02', name: 'CROWN OF ASHES', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 2 of 42.' },
+  { id: 'artifact_03', name: 'LANTERN OF LOST KINGS', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 3 of 42.' },
+  { id: 'artifact_04', name: 'CHRONICLE OF ECHOES', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 4 of 42.' },
+  { id: 'artifact_05', name: 'ASTRAL NAVIGATOR', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 5 of 42.' },
+  { id: 'artifact_06', name: 'HEART OF THE DEEP', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 6 of 42.' },
+  { id: 'artifact_07', name: 'SUNSPIRE DIADEM', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 7 of 42.' },
+  { id: 'artifact_08', name: 'NIGHTGLASS PRISM', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 8 of 42.' },
+  { id: 'artifact_09', name: 'TOME OF THE VEILED PATH', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 9 of 42.' },
+  { id: 'artifact_10', name: 'CITADEL ENGINE', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 10 of 42.' },
+  { id: 'artifact_11', name: 'PHOENIX VESSEL', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 11 of 42.' },
+  { id: 'artifact_12', name: 'ORRERY OF AGES', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 12 of 42.' },
+  { id: 'artifact_13', name: 'MANTLE OF THE FIRST WARDEN', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 13 of 42.' },
+  { id: 'artifact_14', name: 'SOULFORGE RELIQUARY', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 14 of 42.' },
+  { id: 'artifact_15', name: 'STARFALL SCEPTER', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 15 of 42.' },
+  { id: 'artifact_16', name: 'GATEKEEPER\\'S KEY', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 16 of 42.' },
+  { id: 'artifact_17', name: 'TEMPEST CATALYST', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 17 of 42.' },
+  { id: 'artifact_18', name: 'EVERFROST MIRROR', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 18 of 42.' },
+  { id: 'artifact_19', name: 'GARDEN OF WORLDS', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 19 of 42.' },
+  { id: 'artifact_20', name: 'OBELISK OF OATHS', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 20 of 42.' },
+  { id: 'artifact_21', name: 'DRAGONFIRE LENS', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 21 of 42.' },
+  { id: 'artifact_22', name: 'VOIDWALKER\\'S COMPASS', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 22 of 42.' },
+  { id: 'artifact_23', name: 'HALLOWED HOURGLASS', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 23 of 42.' },
+  { id: 'artifact_24', name: 'EMBERTHRONE SEAL', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 24 of 42.' },
+  { id: 'artifact_25', name: 'MOONWEAVER LOOM', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 25 of 42.' },
+  { id: 'artifact_26', name: 'THRONE OF TIDES', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 26 of 42.' },
+  { id: 'artifact_27', name: 'GRIMOIRE OF THE NINE', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 27 of 42.' },
+  { id: 'artifact_28', name: 'SKYBOUND STANDARD', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 28 of 42.' },
+  { id: 'artifact_29', name: 'DREAD EMPEROR\\'S MASK', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 29 of 42.' },
+  { id: 'artifact_30', name: 'LIFEBLOOM CHALICE', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 30 of 42.' },
+  { id: 'artifact_31', name: 'WORLD\\'S EDGE SHARD', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 31 of 42.' },
+  { id: 'artifact_32', name: 'PRISM OF MANY SUNS', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 32 of 42.' },
+  { id: 'artifact_33', name: 'SOUL ANCHOR', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 33 of 42.' },
+  { id: 'artifact_34', name: 'WINDCALLER\\'S HARP', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 34 of 42.' },
+  { id: 'artifact_35', name: 'INFINITE COFFER', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 35 of 42.' },
+  { id: 'artifact_36', name: 'ARCHON\\'S SIGIL', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 36 of 42.' },
+  { id: 'artifact_37', name: 'VEILBREAKER TORCH', slot: 'artifact', icon: 'icon_3_3', bonus: 'hp', category: 'artifact', desc: 'Masterwork artifact 37 of 42.' },
+  { id: 'artifact_38', name: 'FATE-SPINNER\\'S WHEEL', slot: 'artifact', icon: 'icon_3_3', bonus: 'ac', category: 'artifact', desc: 'Masterwork artifact 38 of 42.' },
+  { id: 'artifact_39', name: 'DAWNBRINGER RELIQUARY', slot: 'artifact', icon: 'icon_3_3', bonus: 'save', category: 'artifact', desc: 'Masterwork artifact 39 of 42.' },
+  { id: 'artifact_40', name: 'ECLIPSE ENGINE', slot: 'artifact', icon: 'icon_3_3', bonus: 'abil', category: 'artifact', desc: 'Masterwork artifact 40 of 42.' },
+  { id: 'artifact_41', name: 'CROWN OF THE LAST STAR', slot: 'artifact', icon: 'icon_3_3', bonus: 'hit', category: 'artifact', desc: 'Masterwork artifact 41 of 42.' },
+  { id: 'artifact_42', name: 'AETHERION CORE', slot: 'artifact', icon: 'icon_3_3', bonus: 'init', category: 'artifact', desc: 'Masterwork artifact 42 of 42.' }
 ];
 const RARITY = [
   { id: 'poor', name: 'POOR', plus: -1, tag: '.', color: '#9d9d9d', gbc: 1, value: 0.3 },
@@ -288,10 +374,10 @@ const LEGENDARY_WEAPON = [
 ];
 const MAX_ATTUNE = 3;
 // 12 equipment slots (paper doll: left column, right column)
-const SLOTS = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand'];
-const SLOT_NAME = { weapon: 'MAIN HAND', offhand: 'OFF HAND', armor: 'CHEST', head: 'HEAD', back: 'CLOAK', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', neck: 'NECK', ring1: 'RING 1', ring2: 'RING 2' };
-const SLOT_ICON = { weapon: 'icon_0_0', offhand: 'icon_0_1', armor: 'icon_0_2', head: 'icon_3_0', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', neck: 'px_orb', ring1: 'icon_0_5', ring2: 'icon_0_5' };
-const SLOT_COLS = [['head', 'neck', 'armor', 'back', 'hands', 'weapon'], ['waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand']];
+const SLOTS = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand', 'artifact', 'relic'];
+const SLOT_NAME = { weapon: 'MAIN HAND', offhand: 'OFF HAND', armor: 'CHEST', head: 'HEAD', back: 'CLOAK', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', neck: 'NECK', ring1: 'RING 1', ring2: 'RING 2', artifact: 'ARTIFACT', relic: 'RELIC' };
+const SLOT_ICON = { weapon: 'icon_0_0', offhand: 'icon_0_1', armor: 'icon_0_2', head: 'icon_3_0', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', neck: 'px_orb', ring1: 'icon_0_5', ring2: 'icon_0_5', artifact: 'icon_3_3', relic: 'px_orb' };
+const SLOT_COLS = [['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'artifact'], ['waist', 'legs', 'feet', 'ring1', 'ring2', 'offhand', 'relic']];
 
 // ---------------------------------------------------------------- spells
 // t: target enemy|enemies|ally|allies|self. eff: dmg|heal|cond|buff|summon|revive|kill|cleanse
