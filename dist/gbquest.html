@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>GB Quest Online</title>
+<title>GB Quest</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
@@ -122,7 +122,7 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
     <div class="bezel-top"><i class="led"></i> BATTERY <span></span> DOT MATRIX</div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
   </div>
-  <div class="brand">GB <em>QUEST</em> <small>ONLINE</small></div>
+  <div class="brand">GB <em>QUEST</em></div>
   <div class="controls">
     <div id="dpad" role="group" aria-label="Direction pad"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i></div>
     <div class="ab">
@@ -2734,7 +2734,7 @@ function derive(c) {
   // armour class
   const armor = c.eq.armor && ARMORS[c.eq.armor.base], shield = c.eq.offhand && ARMORS[c.eq.offhand.base];
   let ac;
-  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus);
+  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus) + Math.floor(((c.eq.armor.rank || 1) - 1) / 2);
   else if (hasFeature(c, 'unarmored_con')) ac = 10 + M.DEX + M.CON;
   else if (hasFeature(c, 'unarmored_wis')) ac = 10 + M.DEX + M.WIS;
   else if (subKey(c, 'draconic')) ac = 13 + M.DEX;
@@ -2760,11 +2760,11 @@ function derive(c) {
   let abil = props.includes('r') ? 'DEX' : props.includes('f') ? (M.DEX > M.STR ? 'DEX' : 'STR') : 'STR';
   if (hasFeature(c, 'martial') && (!wd || wd.cat === 'simple')) { const md = CL >= 17 ? 10 : CL >= 11 ? 8 : CL >= 5 ? 6 : 4; const cur = wd ? +dice.split('d')[1] : 1; if (md > cur) dice = `1d${md}`; abil = M.DEX > M.STR ? 'DEX' : 'STR'; }
   const profW = !wd || wd.cat === 'simple' || cls.weapons === 'martial' || (cls.weapons === 'finesse' && props.includes('f'));
-  const magic = wi ? Math.max(0, wi.plus) : 0;
+  const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (wi.rank || 1) - 1 : 0; // item rank adds flat damage
   let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit');
   if (props.includes('r') && hasFeature(c, 'style_arch')) hit += 2;
   if (props.includes('r') && c.feats.includes('sharpshot')) hit += 2;
-  const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
+  const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic + rankDmg, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
     extra: wi && wi.legend ? { dice: wi.legend.extra, type: wi.legend.etype } : null };
   let attacks = 1;
   if (hasFeature(c, 'extra3')) attacks = 4; else if (hasFeature(c, 'extra2')) attacks = 3; else if (hasFeature(c, 'extra1') || (subKey(c, 'valor') && CL >= 6)) attacks = 2;
@@ -3769,18 +3769,18 @@ class Battle {
     this.state = 'over';
     const player = this.party.find(u => u.ch === G);
     const D = derive(G);
-    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0), gold = Math.round(this.foes.reduce((a, f) => a + (f.gold || 0), 0) * (1 + D.gf / 100));
-    const drops = [];
+    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0);
     const lootMul = (DIFFICULTY[this.diff - 1] || DIFFICULTY[1]).loot;
+    const drops = [], mats = {}, cons = []; let gold = 0;
     for (const f of this.foes) {
-      if (f.boss || R() < (f.elite ? 0.6 : 0.18) * lootMul) drops.push(makeItem({ lvl: f.lvl, mf: D.mf, boss: f.boss, loot: lootMul }));
-      if (f.boss && R() < 0.5) drops.push(makeItem({ lvl: f.lvl, mf: D.mf, boss: true, loot: lootMul }));
-      const tpl = MONSTERS[f.uniqueKey]; const junk = tpl && tpl.drop ? tpl.drop : null; if (junk && ITEMS[junk] && R() < 0.5) addItem(junk);
-      if (R() < 0.12) addItem(pick(['potion', 'potion', 'ration', 'antitoxin', 'ether']));
+      const d = rollDrops(f, { loot: lootMul }); drops.push(...d.items); gold += d.gold; cons.push(...d.cons);
+      for (const k in d.mats) mats[k] = (mats[k] || 0) + d.mats[k];
     }
     const steps = [this.say(this.foes.length > 1 ? 'Victory!' : `${this.foes[0].name} is defeated!`, () => { Music.play('victory'); SFX.quest_done(); }, 20)];
     steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
-    for (const it of drops) steps.push(this.say(`Loot: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX.pickup(); if (it.rarity === 5) G.stats.legendaries++; }));
+    for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; } }));
+    const got = Object.entries(mats).map(([k, n]) => `${n} ${ITEMS[k].name}`).concat(cons.map(k => ITEMS[k].name));
+    if (got.length) steps.push(this.say(('Found: ' + got.join(', ')).slice(0, 70), () => { for (const k in mats) addItem(k, mats[k]); cons.forEach(k => addItem(k)); SFX.coin(); }));
     this.run(steps, () => {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }
@@ -5552,7 +5552,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
+  items() { return ['BAG', 'EQUIPMENT', 'CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts ? ' (!)' : ''), 'QUEST LOG', 'CRAFTING', 'REST', 'BESTIARY', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -5561,7 +5561,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { BAG: () => new InventoryScene('field'), EQUIPMENT: () => new PaperDoll(), CHARACTER: () => new CharSheet(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), BESTIARY: () => new BestiaryScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
@@ -6126,7 +6126,7 @@ class InventoryScene {
     else if (e && this.tab === 0) {
       text(e.name.slice(0, 17), 5, 117, rarityCol(e.rarity)); textR(`${SLOT_NAME[itemSlot(e)] === 'RING 1' ? 'RING' : SLOT_NAME[itemSlot(e)]}`, 156, 117, 2);
       const { cur, d } = compareDelta(G, e), sgn = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
-      let line = `${itemKeyStat(e)} IL${e.ilvl}`;
+      let line = `${itemKeyStat(e)} R${ROMAN[e.rank || 1]}`;
       if (d) { const bits = []; if (d.ac) bits.push(`AC${sgn(d.ac)}`); if (d.hp) bits.push(`HP${sgn(d.hp)}`); if (d.hit) bits.push(`HIT${sgn(d.hit)}`); if (Math.abs(d.dmg) >= 0.1) bits.push(`DMG${sgn(d.dmg)}`); if (d.init) bits.push(`INI${sgn(d.init)}`); line += ' ' + (bits.join(' ') || '= SAME'); }
       else line += ' NEW SLOT!';
       text(line.slice(0, 25), 5, 126, d && Object.values(d).some(v => v < 0) && !Object.values(d).some(v => v > 0) ? 'red' : 'green');
@@ -6150,7 +6150,7 @@ class CompareScene {
       text(wrap(e.name, 12).slice(0, 2).join('\n'), x, 54, rarityCol(e.rarity));
       text(itemKeyStat(e).slice(0, 12), x, 74);
       (e.affixes || []).slice(0, 4).forEach(([k, v], i) => text(`+${v}${SUBSTATS[k].unit} ${SUBSTATS[k].name}`.slice(0, 12), x, 84 + i * 9, 2));
-      if (e.attune) text('ATTUNE', x, 122, 'purple');
+      text(rankText(e).slice(0, 12), x, 113, 2); if (e.attune) text('ATTUNE', x, 122, 'purple'); if (e.lore) text(wrap(e.lore, 12)[0], x, 104, 1);
     };
     col(4, it, 'THIS ITEM'); col(84, cur, 'EQUIPPED');
     if (d) { const s = Object.entries(d).filter(([, v]) => Math.abs(v) >= 0.1).map(([k, v]) => `${k.toUpperCase()}${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' ') || 'NO CHANGE'; text(s.slice(0, 25), 4, 134, Object.values(d).some(v => v > 0) ? 'green' : 'red'); }
@@ -6240,6 +6240,392 @@ class PaperDoll {
     else { text('EMPTY SLOT', 5, 126, 1); text('A:EQUIP  SEL:INVENTORY', 5, 135, 1); }
   }
 }
+
+</script>
+<script>
+'use strict';
+// ================================================================ ITEMS: rarity 1-9, medieval arms & armour, item ranks,
+// named items, titles, and the loot / drop table system.
+// Loaded after gen.js. Old saves stay valid: rarity indices 0-5 keep their meaning, old weapon/armour keys remain.
+
+// ---------------------------------------------------------------- 9 rarity tiers (index 0-8 = tier 1-9)
+RARITY.length = 0;
+RARITY.push(
+  { id: 'poor', n: 1, name: 'POOR', plus: -1, tag: '.', color: '#9d9d9d', value: 0.3, affixes: 0, maxPlus: 0 },
+  { id: 'common', n: 2, name: 'COMMON', plus: 0, tag: ' ', color: '#ffffff', value: 1, affixes: 0, maxPlus: 1 },
+  { id: 'uncommon', n: 3, name: 'UNCOMMON', plus: 1, tag: '+', color: '#1eff00', value: 5, affixes: 1, maxPlus: 2 },
+  { id: 'rare', n: 4, name: 'RARE', plus: 2, tag: '*', color: '#0070dd', value: 20, affixes: 2, maxPlus: 3, attune: true },
+  { id: 'epic', n: 5, name: 'EPIC', plus: 3, tag: '#', color: '#a335ee', value: 80, affixes: 3, maxPlus: 4, attune: true },
+  { id: 'legendary', n: 6, name: 'LEGENDARY', plus: 3, tag: '!', color: '#ff8000', value: 300, affixes: 4, maxPlus: 5, attune: true },
+  { id: 'mythic', n: 7, name: 'MYTHIC', plus: 4, tag: '%', color: '#e6264d', value: 900, affixes: 5, maxPlus: 6, attune: true },
+  { id: 'ancestral', n: 8, name: 'ANCESTRAL', plus: 5, tag: '&', color: '#e6cc80', value: 2500, affixes: 6, maxPlus: 8, attune: true },
+  { id: 'divine', n: 9, name: 'DIVINE', plus: 6, tag: '@', color: '#7fffd4', value: 8000, affixes: 7, maxPlus: 10, attune: true },
+);
+MAX_PLUS.length = 0; RARITY.forEach(r => MAX_PLUS.push(r.maxPlus));
+const RARITY_GATE = [0, 0, 0, 0, 5, 8, 40, 100, 250]; // minimum item level for each tier to roll
+
+// ---------------------------------------------------------------- item ranks (by item level): base-stat steps
+const ITEM_RANKS = [
+  { n: 1, min: 1, name: 'CRUDE' }, { n: 2, min: 10, name: 'STURDY' }, { n: 3, min: 25, name: 'FINE' }, { n: 4, min: 50, name: 'MASTERWORK' },
+  { n: 5, min: 100, name: 'EXALTED' }, { n: 6, min: 200, name: 'ANCIENT' }, { n: 7, min: 400, name: 'PRIMORDIAL' },
+];
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const rankFor = ilvl => ITEM_RANKS.filter(r => ilvl >= r.min).pop() || ITEM_RANKS[0];
+
+// ---------------------------------------------------------------- the medieval armoury
+// props: l light, f finesse, t thrown, v versatile (vdmg), h heavy, 2 two-handed, r ranged. fam = art family.
+const WPN = (name, dmg, type, cat, props, fam, cost, extra = {}) => ({ name, dmg, type, cat, props, fam, icon: { sword: 'item_iron_sword', dagger: 'item_dagger', axe: 'px_axe', mace: 'px_mace', polearm: 'px_spear', bow: 'px_bow', crossbow: 'px_bow', staff: 'px_staff', wand: 'px_staff', thrown: 'item_dagger' }[fam] || 'item_iron_sword', cost, ...extra });
+Object.assign(WEAPONS, {
+  // swords
+  arming_sword: WPN('ARMING SWORD', '1d8', 'slashing', 'martial', 'v', 'sword', 15, { vdmg: '1d10' }),
+  longsword: WPN('LONGSWORD', '1d8', 'slashing', 'martial', 'v', 'sword', 15, { vdmg: '1d10' }),
+  bastard_sword: WPN('BASTARD SWORD', '1d10', 'slashing', 'martial', 'v', 'sword', 30, { vdmg: '1d12' }),
+  broadsword: WPN('BROADSWORD', '1d8', 'slashing', 'martial', '', 'sword', 20),
+  falchion: WPN('FALCHION', '1d8', 'slashing', 'martial', '', 'sword', 18),
+  messer: WPN('MESSER', '1d8', 'slashing', 'martial', '', 'sword', 16),
+  scimitar: WPN('SCIMITAR', '1d6', 'slashing', 'martial', 'fl', 'sword', 25),
+  sabre: WPN('SABRE', '1d8', 'slashing', 'martial', 'f', 'sword', 25),
+  rapier: WPN('RAPIER', '1d8', 'piercing', 'martial', 'f', 'sword', 25),
+  estoc: WPN('ESTOC', '1d10', 'piercing', 'martial', 'h2', 'sword', 40),
+  gladius: WPN('GLADIUS', '1d6', 'piercing', 'martial', 'l', 'sword', 10),
+  spatha: WPN('SPATHA', '1d8', 'slashing', 'martial', '', 'sword', 15),
+  shamshir: WPN('SHAMSHIR', '1d8', 'slashing', 'martial', 'f', 'sword', 30),
+  tulwar: WPN('TULWAR', '1d8', 'slashing', 'martial', '', 'sword', 20),
+  jian: WPN('JIAN', '1d8', 'slashing', 'martial', 'f', 'sword', 30),
+  dao: WPN('DAO', '1d8', 'slashing', 'martial', '', 'sword', 20),
+  katana: WPN('KATANA', '1d8', 'slashing', 'martial', 'fv', 'sword', 60, { vdmg: '1d10' }),
+  tachi: WPN('TACHI', '1d10', 'slashing', 'martial', 'v', 'sword', 60, { vdmg: '1d12' }),
+  wakizashi: WPN('WAKIZASHI', '1d6', 'slashing', 'martial', 'fl', 'sword', 30),
+  claymore: WPN('CLAYMORE', '2d6', 'slashing', 'martial', 'h2', 'sword', 50),
+  zweihander: WPN('ZWEIHANDER', '2d6', 'slashing', 'martial', 'h2', 'sword', 60),
+  flamberge: WPN('FLAMBERGE', '2d6', 'slashing', 'martial', 'h2', 'sword', 70),
+  khopesh: WPN('KHOPESH', '1d8', 'slashing', 'martial', '', 'sword', 25),
+  // daggers
+  dagger: WPN('DAGGER', '1d4', 'piercing', 'simple', 'flt', 'dagger', 2),
+  rondel: WPN('RONDEL DAGGER', '1d4', 'piercing', 'simple', 'fl', 'dagger', 4),
+  stiletto: WPN('STILETTO', '1d4', 'piercing', 'simple', 'fl', 'dagger', 5),
+  misericorde: WPN('MISERICORDE', '1d6', 'piercing', 'martial', 'fl', 'dagger', 8),
+  dirk: WPN('DIRK', '1d4', 'piercing', 'simple', 'flt', 'dagger', 3),
+  seax: WPN('SEAX', '1d6', 'slashing', 'simple', 'l', 'dagger', 5),
+  baselard: WPN('BASELARD', '1d6', 'piercing', 'martial', 'fl', 'dagger', 8),
+  kukri: WPN('KUKRI', '1d6', 'slashing', 'martial', 'l', 'dagger', 8),
+  tanto: WPN('TANTO', '1d4', 'piercing', 'simple', 'fl', 'dagger', 6),
+  katar: WPN('KATAR', '1d6', 'piercing', 'martial', 'fl', 'dagger', 10),
+  sai: WPN('SAI', '1d4', 'piercing', 'simple', 'fl', 'dagger', 4),
+  // axes
+  hand_axe: WPN('HAND AXE', '1d6', 'slashing', 'simple', 'lt', 'axe', 5),
+  bearded_axe: WPN('BEARDED AXE', '1d8', 'slashing', 'martial', 'v', 'axe', 12, { vdmg: '1d10' }),
+  battle_axe: WPN('BATTLE AXE', '1d8', 'slashing', 'martial', 'v', 'axe', 10, { vdmg: '1d10' }),
+  dane_axe: WPN('DANE AXE', '1d12', 'slashing', 'martial', 'h2', 'axe', 30),
+  broad_axe: WPN('BROAD AXE', '1d10', 'slashing', 'martial', 'h2', 'axe', 25),
+  francisca: WPN('FRANCISCA', '1d6', 'slashing', 'martial', 'lt', 'thrown', 8),
+  sagaris: WPN('SAGARIS', '1d8', 'slashing', 'martial', '', 'axe', 12),
+  // maces, hammers, flails, picks
+  club: WPN('CLUB', '1d4', 'bludgeoning', 'simple', 'l', 'mace', 1),
+  mace: WPN('MACE', '1d6', 'bludgeoning', 'simple', '', 'mace', 5),
+  flanged_mace: WPN('FLANGED MACE', '1d8', 'bludgeoning', 'martial', '', 'mace', 15),
+  morning_star: WPN('MORNING STAR', '1d8', 'piercing', 'martial', '', 'mace', 15),
+  flail: WPN('FLAIL', '1d8', 'bludgeoning', 'martial', '', 'mace', 10),
+  war_flail: WPN('WAR FLAIL', '2d6', 'bludgeoning', 'martial', 'h2', 'mace', 30),
+  war_hammer: WPN('WAR HAMMER', '1d8', 'bludgeoning', 'martial', 'v', 'mace', 15, { vdmg: '1d10' }),
+  maul: WPN('MAUL', '2d6', 'bludgeoning', 'martial', 'h2', 'mace', 10),
+  lucerne_hammer: WPN('LUCERNE HAMMER', '1d10', 'piercing', 'martial', 'h2', 'polearm', 35),
+  war_pick: WPN('WAR PICK', '1d8', 'piercing', 'martial', '', 'mace', 5),
+  horsemans_pick: WPN("HORSEMAN'S PICK", '1d8', 'piercing', 'martial', 'v', 'mace', 12, { vdmg: '1d10' }),
+  quarterstaff: WPN('QUARTERSTAFF', '1d6', 'bludgeoning', 'simple', 'v', 'staff', 1, { vdmg: '1d8' }),
+  // polearms
+  spear: WPN('SPEAR', '1d6', 'piercing', 'simple', 'tv', 'polearm', 1, { vdmg: '1d8' }),
+  pike: WPN('PIKE', '1d10', 'piercing', 'martial', 'h2', 'polearm', 5),
+  glaive: WPN('GLAIVE', '1d10', 'slashing', 'martial', 'h2', 'polearm', 20),
+  halberd: WPN('HALBERD', '1d10', 'slashing', 'martial', 'h2', 'polearm', 20),
+  bardiche: WPN('BARDICHE', '1d12', 'slashing', 'martial', 'h2', 'polearm', 25),
+  guisarme: WPN('GUISARME', '1d10', 'slashing', 'martial', 'h2', 'polearm', 18),
+  partisan: WPN('PARTISAN', '1d10', 'piercing', 'martial', 'h2', 'polearm', 20),
+  ranseur: WPN('RANSEUR', '2d4', 'piercing', 'martial', 'h2', 'polearm', 20),
+  voulge: WPN('VOULGE', '2d4', 'slashing', 'martial', 'h2', 'polearm', 15),
+  billhook: WPN('BILLHOOK', '1d10', 'slashing', 'martial', 'h2', 'polearm', 12),
+  lance: WPN('LANCE', '1d12', 'piercing', 'martial', 'h', 'polearm', 10),
+  trident: WPN('TRIDENT', '1d6', 'piercing', 'martial', 'tv', 'polearm', 5, { vdmg: '1d8' }),
+  naginata: WPN('NAGINATA', '1d10', 'slashing', 'martial', 'h2', 'polearm', 30),
+  guandao: WPN('GUANDAO', '1d12', 'slashing', 'martial', 'h2', 'polearm', 35),
+  war_scythe: WPN('WAR SCYTHE', '2d4', 'slashing', 'martial', 'h2', 'polearm', 18),
+  // bows, crossbows, slings, thrown
+  shortbow: WPN('SHORTBOW', '1d6', 'piercing', 'simple', 'r2', 'bow', 25),
+  longbow: WPN('LONGBOW', '1d8', 'piercing', 'martial', 'rh2', 'bow', 50),
+  composite_bow: WPN('COMPOSITE BOW', '1d8', 'piercing', 'martial', 'r2', 'bow', 75),
+  yumi: WPN('YUMI', '1d8', 'piercing', 'martial', 'rh2', 'bow', 60),
+  light_crossbow: WPN('LIGHT CROSSBOW', '1d8', 'piercing', 'simple', 'r2', 'crossbow', 25),
+  heavy_crossbow: WPN('HEAVY CROSSBOW', '1d10', 'piercing', 'martial', 'rh2', 'crossbow', 50),
+  arbalest: WPN('ARBALEST', '1d12', 'piercing', 'martial', 'rh2', 'crossbow', 90),
+  hand_crossbow: WPN('HAND CROSSBOW', '1d6', 'piercing', 'martial', 'rl', 'crossbow', 75),
+  sling: WPN('SLING', '1d4', 'bludgeoning', 'simple', 'r', 'thrown', 1),
+  javelin: WPN('JAVELIN', '1d6', 'piercing', 'simple', 't', 'thrown', 1),
+  throwing_knife: WPN('THROWING KNIVES', '1d4', 'piercing', 'simple', 'rfl', 'thrown', 3),
+  chakram: WPN('CHAKRAM', '1d6', 'slashing', 'martial', 'rfl', 'thrown', 10),
+  // caster foci
+  rod: WPN('ROD', '1d6', 'bludgeoning', 'simple', '', 'wand', 10, { focus: true }),
+  wand: WPN('WAND', '1d4', 'bludgeoning', 'simple', 'l', 'wand', 10, { focus: true }),
+  sceptre: WPN('SCEPTRE', '1d6', 'bludgeoning', 'simple', '', 'wand', 25, { focus: true }),
+  crozier: WPN('CROZIER', '1d6', 'bludgeoning', 'simple', 'v', 'staff', 20, { vdmg: '1d8', focus: true }),
+});
+// original fantasy weapons keep their families for art
+Object.assign(WEAPONS.cudgel, { fam: 'mace' }); Object.assign(WEAPONS.knife, { fam: 'dagger' }); Object.assign(WEAPONS.hatchet, { fam: 'axe' }); Object.assign(WEAPONS.shortspear, { fam: 'polearm' });
+Object.assign(WEAPONS.walkstaff, { fam: 'staff' }); Object.assign(WEAPONS.knobmace, { fam: 'mace' }); Object.assign(WEAPONS.huntbow, { fam: 'bow' }); Object.assign(WEAPONS.boltcaster, { fam: 'crossbow' });
+for (const k of ['longbrand', 'widesword', 'needleblade']) WEAPONS[k].fam = 'sword'; WEAPONS.crescent.fam = 'dagger'; WEAPONS.cleaver.fam = 'axe';
+for (const k of ['stonemaul', 'ironhammer']) WEAPONS[k].fam = 'mace'; WEAPONS.poleblade.fam = 'polearm'; WEAPONS.greatbow.fam = 'bow';
+
+const ARM = (name, ac, dexMax, type, cost, extra = {}) => ({ name, ac, dexMax, type, icon: type === 'light' ? 'item_leather_armor' : type === 'shield' ? 'icon_0_1' : 'icon_0_2', cost, ...extra });
+Object.assign(ARMORS, {
+  gambeson: ARM('GAMBESON', 11, null, 'light', 5), leather_jerkin: ARM('LEATHER JERKIN', 11, null, 'light', 10), cuir_bouilli: ARM('CUIR BOUILLI', 12, null, 'light', 40),
+  brigandine_vest: ARM('JACK OF PLATES', 12, null, 'light', 50), silk_robe: ARM('SILKEN ROBE', 11, null, 'light', 30),
+  hide_armor: ARM('HIDE ARMOUR', 12, 2, 'medium', 10), chain_shirt: ARM('CHAIN SHIRT', 13, 2, 'medium', 50), ring_mail: ARM('RING MAIL', 13, 2, 'medium', 30),
+  scale_mail: ARM('SCALE MAIL', 14, 2, 'medium', 50, { stealthDis: true }), lamellar: ARM('LAMELLAR', 14, 2, 'medium', 80), brigandine: ARM('BRIGANDINE', 14, 2, 'medium', 120),
+  breastplate: ARM('BREASTPLATE', 14, 2, 'medium', 400), coat_of_plates: ARM('COAT OF PLATES', 15, 2, 'medium', 600, { stealthDis: true }), do_maru: ARM('DO-MARU', 15, 2, 'medium', 700),
+  half_plate: ARM('HALF PLATE', 15, 2, 'medium', 750, { stealthDis: true }),
+  chainmail: ARM('CHAINMAIL HAUBERK', 16, 0, 'heavy', 75, { stealthDis: true, str: 13 }), banded_mail: ARM('BANDED MAIL', 17, 0, 'heavy', 200, { stealthDis: true, str: 15 }),
+  splint_mail: ARM('SPLINT MAIL', 17, 0, 'heavy', 200, { stealthDis: true, str: 15 }), o_yoroi: ARM('O-YOROI', 17, 0, 'heavy', 900, { stealthDis: true, str: 14 }),
+  plate_armor: ARM('PLATE ARMOUR', 18, 0, 'heavy', 1500, { stealthDis: true, str: 15 }), gothic_plate: ARM('GOTHIC PLATE', 18, 0, 'heavy', 2500, { stealthDis: true, str: 15 }),
+  milanese_plate: ARM('MILANESE PLATE', 18, 0, 'heavy', 2500, { stealthDis: true, str: 15 }), maximilian_plate: ARM('FLUTED PLATE', 19, 0, 'heavy', 6000, { stealthDis: true, str: 16 }),
+  round_shield: ARM('ROUND SHIELD', 2, null, 'shield', 10), heater_shield: ARM('HEATER SHIELD', 2, null, 'shield', 15), kite_shield: ARM('KITE SHIELD', 2, null, 'shield', 20),
+  targe: ARM('TARGE', 2, null, 'shield', 12), scutum: ARM('SCUTUM', 2, null, 'shield', 25), pavise: ARM('PAVISE', 3, null, 'shield', 40, { str: 15 }), tower_shield: ARM('TOWER SHIELD', 3, null, 'shield', 50, { str: 15 }),
+});
+// more wondrous pieces (head, neck, back, hands, waist, legs, feet)
+WONDROUS.push(
+  { id: 'great_helm', name: 'GREAT HELM', slot: 'head', bonus: 'ac' }, { id: 'bascinet', name: 'BASCINET', slot: 'head', bonus: 'ac' }, { id: 'sallet', name: 'SALLET', slot: 'head', bonus: 'init' },
+  { id: 'barbute', name: 'BARBUTE', slot: 'head', bonus: 'save' }, { id: 'armet', name: 'ARMET', slot: 'head', bonus: 'ac' }, { id: 'kettle_hat', name: 'KETTLE HAT', slot: 'head', bonus: 'hp' },
+  { id: 'nasal_helm', name: 'NASAL HELM', slot: 'head', bonus: 'hit' }, { id: 'coif', name: 'MAIL COIF', slot: 'head', bonus: 'save' }, { id: 'kabuto', name: 'KABUTO', slot: 'head', bonus: 'abil' },
+  { id: 'gorget', name: 'GORGET', slot: 'neck', bonus: 'ac' }, { id: 'torc', name: 'TORC', slot: 'neck', bonus: 'abil' },
+  { id: 'tabard', name: 'TABARD', slot: 'back', bonus: 'hp' }, { id: 'surcoat', name: 'SURCOAT', slot: 'back', bonus: 'save' }, { id: 'pauldrons', name: 'PAULDRONS', slot: 'back', bonus: 'ac' },
+  { id: 'mitten_gauntlets', name: 'MITTEN GAUNTLETS', slot: 'hands', bonus: 'ac' }, { id: 'vambraces', name: 'VAMBRACES', slot: 'hands', bonus: 'hit' }, { id: 'bracers', name: 'BRACERS', slot: 'hands', bonus: 'init' },
+  { id: 'baldric', name: 'BALDRIC', slot: 'waist', bonus: 'hit' }, { id: 'faulds', name: 'FAULDS', slot: 'waist', bonus: 'ac' },
+  { id: 'chausses', name: 'CHAUSSES', slot: 'legs', bonus: 'hp' }, { id: 'cuisses', name: 'CUISSES', slot: 'legs', bonus: 'ac' },
+  { id: 'poulaines', name: 'POULAINES', slot: 'feet', bonus: 'init' }, { id: 'riding_boots', name: 'RIDING BOOTS', slot: 'feet', bonus: 'save' },
+);
+WONDROUS.forEach(w => { if (!w.icon) w.icon = { head: 'item_iron_helm', neck: 'px_orb', back: 'icon_0_2', hands: 'icon_0_1', waist: 'icon_1_4', legs: 'icon_0_2', feet: 'item_boots', ring: 'icon_0_5' }[w.slot] || 'icon_0_5'; });
+Object.assign(WONDROUS_ART, { great_helm: 'heavyarmor', bascinet: 'heavyarmor', sallet: 'mediumarmor', barbute: 'heavyarmor', armet: 'heavyarmor', kettle_hat: 'mediumarmor', nasal_helm: 'mediumarmor', coif: 'mediumarmor', kabuto: 'heavyarmor',
+  gorget: 'amulet', torc: 'amulet', tabard: 'lightarmor', surcoat: 'lightarmor', pauldrons: 'heavyarmor', mitten_gauntlets: 'glove', vambraces: 'glove', bracers: 'glove', baldric: 'belt', faulds: 'belt', chausses: 'mediumarmor', cuisses: 'heavyarmor', poulaines: 'boots', riding_boots: 'boots' });
+
+// ---------------------------------------------------------------- named (unique) items
+// fixed name, base, rarity, affixes and a line of lore; each has drop sources (boss ids or categories)
+const NAMED_ITEMS = [
+  // act signatures (arc bosses)
+  { id: 'n_gruk_crown', name: "GRUK'S IRON CROWN", kind: 'wondrous', base: 'great_helm', rarity: 5, affixes: [['hp', 30], ['acb', 1]], lore: 'Too big for any goblin. He wore it anyway.', src: { act: 1 } },
+  { id: 'n_mirewarden', name: 'MIREWARDEN', kind: 'weapon', base: 'trident', rarity: 5, affixes: [['crit', 6], ['hit', 1]], lore: 'Still dripping with marsh water.', src: { act: 2 } },
+  { id: 'n_rimefang', name: 'RIMEFANG', kind: 'weapon', base: 'katana', rarity: 5, affixes: [['crit', 8], ['critdmg', 25]], lore: 'Frost forms on the blade even in summer.', src: { act: 3 } },
+  { id: 'n_sandking', name: "SANDKING'S SCIMITAR", kind: 'weapon', base: 'scimitar', rarity: 5, affixes: [['haste', 10], ['gf', 20]], lore: 'Every grain of the desert answers it.', src: { act: 4 } },
+  { id: 'n_emberheart', name: 'EMBERHEART PLATE', kind: 'armor', base: 'gothic_plate', rarity: 5, affixes: [['hp', 60], ['resist', 10]], lore: 'Forged in a volcano, cooled in dragon blood.', src: { act: 5 } },
+  { id: 'n_thornveil', name: 'THORNVEIL', kind: 'wondrous', base: 'cloak', rarity: 5, affixes: [['dodge', 6], ['thorns', 8]], lore: 'The forest lent it thorns.', src: { act: 6 } },
+  { id: 'n_skyshard', name: 'SKYSHARD BOW', kind: 'weapon', base: 'composite_bow', rarity: 5, affixes: [['hit', 2], ['crit', 6]], lore: 'Its arrows fall like stars.', src: { act: 7 } },
+  { id: 'n_rimequeen', name: "THE RIME QUEEN'S BAND", kind: 'wondrous', base: 'band', rarity: 5, affixes: [['dmg', 15], ['resist', 1]], lore: 'Cold as her heart, bright as her crown.', src: { act: 8 } },
+  { id: 'n_duskreaver', name: 'DUSKREAVER', kind: 'weapon', base: 'dane_axe', rarity: 6, affixes: [['critdmg', 40], ['leech', 4]], lore: 'It drinks the last light of evening.', src: { act: 9 } },
+  { id: 'n_voidplate', name: 'VOIDWOVEN MAIL', kind: 'armor', base: 'splint_mail', rarity: 6, affixes: [['hp', 90], ['acb', 2]], lore: 'Links of nothing, bound by will.', src: { act: 10 } },
+  { id: 'n_lanternkeeper', name: 'LANTERNKEEPER', kind: 'weapon', base: 'crozier', rarity: 6, affixes: [['dmg', 25], ['heal', 3]], lore: 'It holds a flame from the first lantern.', src: { act: 11 } },
+  { id: 'n_codexblade', name: 'BLADE OF THE CODEX', kind: 'weapon', base: 'zweihander', rarity: 7, affixes: [['critdmg', 60], ['hit', 3], ['leech', 5]], lore: 'Every school of magic, written in steel.', src: { act: 12 } },
+  // raids
+  { id: 'n_bonelord', name: "BONELORD'S MANTLE", kind: 'wondrous', base: 'pauldrons', rarity: 6, affixes: [['acb', 2], ['hp', 50]], lore: 'Stitched from the crypt kings.', src: { raid: 'rd_crypt' } },
+  { id: 'n_forgefire', name: 'FORGEFIRE MAUL', kind: 'weapon', base: 'maul', rarity: 6, affixes: [['critdmg', 45], ['dmg', 10]], lore: 'The heart of embers beats inside it.', src: { raid: 'rd_forge' } },
+  { id: 'n_glacier', name: 'GLACIER AEGIS', kind: 'armor', base: 'tower_shield', rarity: 6, affixes: [['acb', 3], ['resist', 15]], lore: 'A slab of the Rime Throne itself.', src: { raid: 'rd_palace' } },
+  { id: 'n_longnight', name: 'THE LONG NIGHT', kind: 'weapon', base: 'flamberge', rarity: 7, affixes: [['critdmg', 70], ['crit', 8], ['leech', 6]], lore: 'Dawn never came for its last owner.', src: { raid: 'rd_dusk' } },
+  { id: 'n_drowned', name: 'DROWNED CROWN', kind: 'wondrous', base: 'circlet', rarity: 7, affixes: [['dmg', 35], ['resist', 2]], lore: 'Pulled from the sea floor, still singing.', src: { raid: 'rd_x1' } },
+  { id: 'n_choir', name: 'ABYSSAL CHOIR', kind: 'wondrous', base: 'torc', rarity: 7, affixes: [['dmg', 40], ['heal', 4]], lore: 'You can hear them if you hold it close.', src: { raid: 'rd_x2' } },
+  { id: 'n_winds', name: 'THRONE OF WINDS', kind: 'weapon', base: 'yumi', rarity: 8, affixes: [['hit', 4], ['crit', 10], ['haste', 15]], lore: 'The wind itself draws the string.', src: { raid: 'rd_x3' } },
+  { id: 'n_starfall', name: 'STARFALL', kind: 'weapon', base: 'bastard_sword', rarity: 8, affixes: [['critdmg', 90], ['hit', 4], ['leech', 7]], lore: 'It fell burning from the sky.', src: { raid: 'rd_x4' } },
+  { id: 'n_ascendant', name: 'THE ASCENDANT', kind: 'armor', base: 'maximilian_plate', rarity: 8, affixes: [['hp', 200], ['acb', 4], ['resist', 20]], lore: 'Worn by the first who climbed to the top.', src: { raid: 'rd_x5' } },
+  // tower
+  { id: 'n_spirekey', name: 'KEY OF THE SPIRE', kind: 'wondrous', base: 'pendant', rarity: 6, affixes: [['gf', 30], ['mf', 30]], lore: 'Opens doors that are not there.', src: { tower: 50 } },
+  { id: 'n_hundred', name: 'CROWN OF A HUNDRED', kind: 'wondrous', base: 'kabuto', rarity: 8, affixes: [['hp', 250], ['resist', 3], ['acb', 3]], lore: 'For those who stood on the hundredth floor.', src: { tower: 100 } },
+  // world bosses (shared pool)
+  { id: 'n_wanderer', name: "WANDERER'S BOOTS", kind: 'wondrous', base: 'riding_boots', rarity: 5, affixes: [['haste', 12], ['dodge', 5]], lore: 'They know every road in Dunia.', src: { cat: 'world' } },
+  { id: 'n_bloodfang', name: 'BLOODFANG', kind: 'weapon', base: 'kukri', rarity: 5, affixes: [['leech', 5], ['crit', 6]], lore: 'Bitten into a hundred hides.', src: { cat: 'world' } },
+  { id: 'n_oathkeeper', name: 'OATHKEEPER', kind: 'weapon', base: 'longsword', rarity: 6, affixes: [['hit', 2], ['resist', 2], ['heal', 2]], lore: 'It will not be drawn for a lie.', src: { cat: 'world' } },
+  { id: 'n_gilded', name: 'GILDED GAUNTLETS', kind: 'wondrous', base: 'mitten_gauntlets', rarity: 5, affixes: [['gf', 40], ['acb', 1]], lore: 'Every punch pays.', src: { cat: 'world' } },
+  { id: 'n_hearthguard', name: 'HEARTHGUARD', kind: 'armor', base: 'kite_shield', rarity: 5, affixes: [['acb', 2], ['hp', 40]], lore: 'The shield of a village that never fell.', src: { cat: 'world' } },
+  { id: 'n_godslayer', name: 'GODSLAYER', kind: 'weapon', base: 'guandao', rarity: 8, affixes: [['critdmg', 120], ['dmg', 25], ['hit', 5]], lore: 'Nobody remembers which god.', src: { cat: 'world', minLvl: 200 } },
+  // dungeons / trials (shared pools)
+  { id: 'n_keepers', name: "KEEPER'S RONDEL", kind: 'weapon', base: 'rondel', rarity: 4, affixes: [['crit', 5], ['hit', 1]], lore: 'Every dungeon keeper carries one.', src: { cat: 'dungeon' } },
+  { id: 'n_delver', name: "DELVER'S LANTERN BELT", kind: 'wondrous', base: 'baldric', rarity: 4, affixes: [['mf', 15], ['hp', 20]], lore: 'A hook for a lantern, a pouch for loot.', src: { cat: 'dungeon' } },
+  { id: 'n_gauntlet', name: 'GAUNTLET OF STEEL', kind: 'wondrous', base: 'vambraces', rarity: 6, affixes: [['hit', 3], ['haste', 10]], lore: 'Won, not given.', src: { cat: 'trial' } },
+  { id: 'n_champion', name: "CHAMPION'S TABARD", kind: 'wondrous', base: 'tabard', rarity: 6, affixes: [['hp', 80], ['resist', 2]], lore: 'The arena crowd still chants the name.', src: { cat: 'trial' } },
+  // divine (very rare, endgame)
+  { id: 'n_ember_codex', name: 'THE EMBER CODEX', kind: 'weapon', base: 'sceptre', rarity: 8, affixes: [['dmg', 80], ['crit', 12], ['heal', 6], ['resist', 3]], lore: 'The book itself, bound into a sceptre.', src: { cat: 'arc', minLvl: 300 } },
+  { id: 'n_first_lantern', name: 'THE FIRST LANTERN', kind: 'wondrous', base: 'amulet', rarity: 8, affixes: [['hp', 400], ['heal', 8], ['resist', 25], ['mf', 50]], lore: 'Light before the Pact.', src: { tower: 100, minLvl: 500 } },
+];
+const NAMED_BY_ID = Object.fromEntries(NAMED_ITEMS.map(n => [n.id, n]));
+
+function makeNamed(id, lvl) {
+  const n = NAMED_BY_ID[id]; if (!n) return null;
+  const it = makeItem({ kind: n.kind, base: n.base, rarity: n.rarity, lvl: Math.max(lvl, n.src.minLvl || 1) });
+  it.name = n.name; it.named = n.id; it.lore = n.lore;
+  const scale = 1 + Math.max(0, it.ilvl - 20) / 60;
+  it.affixes = n.affixes.map(([k, v]) => [k, SUBSTATS[k] ? Math.min(SUBSTATS[k].max, Math.round(v * scale)) : v]).filter(([k]) => SUBSTATS[k]);
+  it.value = Math.round(it.value * 3);
+  return it;
+}
+
+// ---------------------------------------------------------------- rarity roll, item ranks and makeItem upgrades
+rollRarity = function (lvl, mfPct = 0, boss = false, diffLoot = 1, floor = 0) {
+  const luck = (1 + mfPct / 100) * diffLoot, x = R() / luck;
+  // cumulative chances, highest tier first; bosses shift everything up two tiers' worth
+  const CH = boss ? [0.0008, 0.004, 0.02, 0.08, 0.3, 1] : [0.00005, 0.0003, 0.0015, 0.006, 0.025, 0.08, 0.27, 0.76, 1];
+  const TIERS = boss ? [8, 7, 6, 5, 4, 3] : [8, 7, 6, 5, 4, 3, 2, 1, 0];
+  let t = 0; for (let i = 0; i < CH.length; i++) if (x < CH[i]) { t = TIERS[i]; break; }
+  while (t > 0 && lvl < RARITY_GATE[t]) t--;
+  return Math.max(t, floor);
+};
+{
+  const make0 = makeItem;
+  makeItem = function (opts = {}) {
+    const it = make0(opts);
+    it.rank = rankFor(it.ilvl).n;
+    // extra affixes for the new top tiers (mythic+)
+    const want = RARITY[it.rarity].affixes;
+    if ((it.affixes || []).length < want) {
+      const have = new Set(it.affixes.map(a => a[0])), pool = AFFIX_POOL.filter(a => !have.has(a));
+      while (it.affixes.length < want && pool.length) { const s = pool.splice(Math.floor(R() * pool.length), 1)[0], k = AFFIX_K[s] || 1; it.affixes.push([s, Math.min(SUBSTATS[s].max, Math.max(1, Math.round(k * (1 + it.ilvl / 12) * (0.6 + it.rarity * 0.25))))]); }
+    }
+    if (it.rarity >= 6 && !it.legend && !it.named) it.name = pick({ 6: ['MYTHIC', 'FABLED'], 7: ['ANCESTRAL', 'ELDER'], 8: ['DIVINE', 'GODFORGED'] }[it.rarity]) + ' ' + itemBaseName(it).replace(/^(WORN |FINE |MASTER )/, '');
+    return it;
+  };
+}
+// art: new weapons use their family; new armours their type
+{
+  const n0 = nesItemIcon;
+  nesItemIcon = function (it) {
+    if (!artOn()) return null;
+    if (it.kind === 'weapon' && WEAPONS[it.base] && WEAPONS[it.base].fam && !WEAPON_ART[it.base]) return tierPick(WEAPONS[it.base].fam, Math.min(5, it.rarity), it.base);
+    return n0(Object.assign({}, it, { rarity: Math.min(5, it.rarity) }));
+  };
+}
+const rankText = it => `RANK ${ROMAN[it.rank || rankFor(it.ilvl || 1).n]} ${rankFor(it.ilvl || 1).name}`;
+
+// ---------------------------------------------------------------- rarity for every item: consumables and materials too
+for (const k in ITEMS) { const it = ITEMS[k]; if (it.rarity == null) it.rarity = it.type === 'junk' ? 0 : it.price >= 500 ? 5 : it.price >= 150 ? 4 : it.price >= 50 ? 3 : it.price >= 10 ? 2 : 1; }
+Object.assign(ITEMS, {
+  hide: { name: 'THICK HIDE', icon: 'ne_leather_0', type: 'mat', price: 4, rarity: 1, desc: 'From beasts. Sells well.' },
+  bone_dust: { name: 'BONE DUST', icon: 'px_bone', type: 'mat', price: 5, rarity: 1, desc: 'From the undead.' },
+  essence: { name: 'ELEMENTAL ESSENCE', icon: 'ne_gem_0', type: 'mat', price: 12, rarity: 2, desc: 'From elementals.' },
+  sap: { name: 'LIVING SAP', icon: 'ne_wood_0', type: 'mat', price: 6, rarity: 1, desc: 'From plants.' },
+  ooze: { name: 'OOZE GEL', icon: 'ne_reagent_0', type: 'mat', price: 6, rarity: 1, desc: 'From slimes.' },
+  brimstone: { name: 'BRIMSTONE', icon: 'ne_ore_1', type: 'mat', price: 15, rarity: 2, desc: 'From fiends.' },
+  drake_scale: { name: 'DRAKE SCALE', icon: 'ne_leather_1', type: 'mat', price: 40, rarity: 3, desc: 'From dragons.' },
+  iron_ore: { name: 'IRON ORE', icon: 'ne_ore_0', type: 'mat', price: 5, rarity: 1, desc: 'From constructs and miners.' },
+  silk: { name: 'SPIDER SILK', icon: 'ne_reagent_1', type: 'mat', price: 8, rarity: 2, desc: 'From spiders and fey.' },
+  star_shard: { name: 'STAR SHARD', icon: 'ne_gem_2', type: 'mat', price: 200, rarity: 5, desc: 'Dropped by great bosses.' },
+  boss_sigil: { name: 'BOSS SIGIL', icon: 'ne_relic_2', type: 'key', price: 50, rarity: 4, desc: 'Proof of a boss kill. Collectors pay well.' },
+});
+
+// ---------------------------------------------------------------- LOOT TABLES
+// family -> materials; rank -> gear chance/count/rarity floor; boss category -> guaranteed drops + named pools
+const FAMILY_MATS = { beast: ['hide'], undead: ['bone_dust'], elemental: ['essence'], plant: ['sap', 'peacebloom'], slime: ['ooze'], fiend: ['brimstone'], demon: ['brimstone'], dragon: ['drake_scale', 'hide'],
+  construct: ['iron_ore', 'scrap'], humanoid: ['scrap', 'iron_ore'], fey: ['silk', 'sap'], aberration: ['ooze', 'essence'], giant: ['hide', 'iron_ore'], monstrosity: ['hide', 'silk'], celestial: ['essence', 'star_shard'] };
+const LOOT_TABLES = {
+  // per foe rank: chance of a gear drop, how many, minimum rarity, gold multiplier, material chance, consumable chance
+  normal: { gear: 0.16, count: 1, floor: 0, gold: 1, mats: 0.35, cons: 0.12 },
+  elite: { gear: 0.6, count: 1, floor: 2, gold: 2.5, mats: 0.8, cons: 0.3 },
+  champion: { gear: 1, count: 2, floor: 2, gold: 4, mats: 1, cons: 0.5 },
+  // per boss category: guaranteed gear, rarity floor, chance of a named item, bonus loot
+  world: { gear: 1, count: 2, floor: 3, named: 0.12, gold: 8, sigil: 1, star: 0.1 },
+  arc: { gear: 1, count: 3, floor: 4, named: 1, gold: 12, sigil: 1, star: 0.3 },
+  dungeon: { gear: 1, count: 1, floor: 3, named: 0.08, gold: 5, sigil: 0.5, star: 0.02 },
+  raid: { gear: 1, count: 2, floor: 4, named: 0.25, gold: 10, sigil: 1, star: 0.2 },
+  trial: { gear: 1, count: 1, floor: 4, named: 0.15, gold: 8, sigil: 1, star: 0.1 },
+  tower: { gear: 1, count: 2, floor: 3, named: 0.2, gold: 9, sigil: 1, star: 0.15 },
+};
+const CONSUMABLE_TABLE = [['potion', 40], ['ration', 20], ['antitoxin', 10], ['ether', 10], ['greater', 12], ['superior', 5], ['supreme', 1]];
+const weighted = tbl => { const tot = tbl.reduce((a, [, w]) => a + w, 0); let x = R() * tot; for (const [k, w] of tbl) { if ((x -= w) < 0) return k; } return tbl[0][0]; };
+function namedPoolFor(f) {
+  const B = f.bossId && BOSS_BY_ID[f.bossId]; if (!B) return [];
+  return NAMED_ITEMS.filter(n => {
+    const s = n.src; if (s.minLvl && f.lvl < s.minLvl) return false;
+    if (s.act && B.cat === 'arc') return B.act === s.act;
+    if (s.raid) return B.where === s.raid;
+    if (s.tower) return B.cat === 'tower' && B.floor === s.tower;
+    return s.cat === B.cat;
+  });
+}
+// smart loot: bias gear toward things this hero can use
+function smartKind(c) {
+  const cls = CLASSES[c.cls], r = R();
+  if (r < 0.35) return { kind: 'wondrous' };
+  if (r < 0.65) { const ok = Object.keys(WEAPONS).filter(k => { const w = WEAPONS[k]; return cls.weapons === 'martial' || w.cat === 'simple' || (cls.weapons === 'finesse' && w.props.includes('f')); }); return { kind: 'weapon', base: pick(ok) }; }
+  const ok = Object.keys(ARMORS).filter(k => cls.armor.includes(ARMORS[k].type)); return ok.length ? { kind: 'armor', base: pick(ok) } : { kind: 'wondrous' };
+}
+// resolve the drops of one defeated foe
+function rollDrops(f, ctx = {}) {
+  const c = ctx.hero || G, D = derive(c), diffLoot = ctx.loot || 1, out = { items: [], gold: 0, mats: {}, cons: [] };
+  const B = f.bossId && BOSS_BY_ID[f.bossId];
+  const T = B ? LOOT_TABLES[B.cat] || LOOT_TABLES.world : f.elite ? LOOT_TABLES.elite : f.champion ? LOOT_TABLES.champion : LOOT_TABLES.normal;
+  // gear
+  const gearRoll = T.gear * diffLoot * (1 + D.mf / 200);
+  if (R() < gearRoll) for (let i = 0; i < T.count + (B && R() < 0.5 * diffLoot ? 1 : 0); i++) {
+    const smart = R() < 0.7 ? smartKind(c) : {};
+    out.items.push(makeItem({ ...smart, lvl: f.lvl, mf: D.mf, boss: !!B, loot: diffLoot, rarity: rollRarity(f.lvl, D.mf, !!B, diffLoot, T.floor) }));
+  }
+  // named
+  if (B && T.named) { const pool = namedPoolFor(f); if (pool.length && R() < T.named * diffLoot) { const n = pick(pool); out.items.push(makeNamed(n.id, f.lvl)); } }
+  // gold
+  out.gold = Math.round((f.gold || 0) * (T.gold || 1) * (1 + D.gf / 100));
+  // materials by family
+  const fam = f.fam || 'beast', mats = FAMILY_MATS[fam] || ['scrap'];
+  if (R() < (T.mats ?? 1)) { const k = pick(mats); if (ITEMS[k]) out.mats[k] = (out.mats[k] || 0) + 1 + (f.elite || B ? 1 + Math.floor(R() * 2) : 0); }
+  if (B && T.sigil && R() < T.sigil) out.mats.boss_sigil = 1;
+  if (B && T.star && R() < T.star) out.mats.star_shard = 1;
+  // consumables
+  if (R() < (T.cons ?? 0.25)) out.cons.push(weighted(CONSUMABLE_TABLE));
+  // monster-specific junk drop (legacy uniques)
+  const tpl = MONSTERS[f.uniqueKey]; if (tpl && tpl.drop && ITEMS[tpl.drop] && R() < 0.5) out.mats[tpl.drop] = (out.mats[tpl.drop] || 0) + 1;
+  return out;
+}
+// what a foe can drop, for the bestiary / debug
+function dropTableFor(f) {
+  const B = f.bossId && BOSS_BY_ID[f.bossId], T = B ? LOOT_TABLES[B.cat] : f.elite ? LOOT_TABLES.elite : LOOT_TABLES.normal;
+  return { gearChance: T.gear, count: T.count, minRarity: RARITY[T.floor].name, named: B ? namedPoolFor(f).map(n => n.name) : [], mats: (FAMILY_MATS[f.fam] || ['scrap']).map(k => ITEMS[k] && ITEMS[k].name) };
+}
+
+// ---------------------------------------------------------------- TITLES (earned, pick one to wear)
+const TITLES = [
+  { id: 't_wanderer', name: 'THE WANDERER', how: 'Start your journey.', ok: g => true },
+  { id: 't_blooded', name: 'THE BLOODED', how: 'Win 25 battles.', ok: g => g.stats.kills >= 25 },
+  { id: 't_slayer', name: 'MONSTER SLAYER', how: 'Defeat 500 foes.', ok: g => g.stats.kills >= 500 },
+  { id: 't_kingslayer', name: 'KINGSLAYER', how: 'Defeat an arc boss.', ok: g => g.stats.arcBosses >= 1 },
+  { id: 't_hunter', name: 'BOSS HUNTER', how: 'Defeat 10 world bosses.', ok: g => g.stats.worldBosses >= 10 },
+  { id: 't_delver', name: 'THE DELVER', how: 'Clear 5 dungeons.', ok: g => g.stats.dungeons >= 5 },
+  { id: 't_raider', name: 'RAIDER', how: 'Clear a raid.', ok: g => g.stats.raids >= 1 },
+  { id: 't_champion', name: 'CHAMPION', how: 'Complete a trial.', ok: g => g.stats.trials >= 1 },
+  { id: 't_climber', name: 'SPIRE CLIMBER', how: 'Reach tower floor 25.', ok: g => g.towerBest >= 25 },
+  { id: 't_hundred', name: 'OF THE HUNDRED', how: 'Reach tower floor 100.', ok: g => g.towerBest >= 100 },
+  { id: 't_hero', name: 'HERO OF AELMOOR', how: 'Reach level 20.', ok: g => g.lvl >= 20 },
+  { id: 't_ascended', name: 'THE ASCENDED', how: 'Reach level 100.', ok: g => g.lvl >= 100 },
+  { id: 't_mythic', name: 'MYTHBORN', how: 'Reach level 360.', ok: g => g.lvl >= 360 },
+  { id: 't_eternal', name: 'THE ETERNAL', how: 'Reach level 720.', ok: g => g.lvl >= 720 },
+  { id: 't_lucky', name: 'FORTUNE\'S FAVOURITE', how: 'Roll 20 natural 20s.', ok: g => g.stats.nat20 >= 20 },
+  { id: 't_rich', name: 'THE GILDED', how: 'Earn 100,000 gold.', ok: g => g.stats.goldEarned >= 100000 },
+  { id: 't_legend', name: 'LEGEND-TOUCHED', how: 'Find a legendary item.', ok: g => g.stats.legendaries >= 1 },
+  { id: 't_collector', name: 'THE COLLECTOR', how: 'Find 5 named items.', ok: g => Object.keys(g.named || {}).length >= 5 },
+  { id: 't_angler', name: 'MASTER ANGLER', how: 'Catch 50 fish.', ok: g => g.stats.fish >= 50 },
+  { id: 't_survivor', name: 'DEATH-DEFIER', how: 'Stabilise 10 times.', ok: g => g.stats.stabilized >= 10 },
+  { id: 't_nightmare', name: 'NIGHTMARE WALKER', how: 'Win on difficulty 5+.', ok: g => g.stats.diff5 >= 1 },
+  { id: 't_apocalypse', name: 'END OF DAYS', how: 'Win on difficulty 9.', ok: g => g.stats.diff9 >= 1 },
+];
+const titlesEarned = g => TITLES.filter(t => { try { return t.ok(g); } catch (e) { return false; } });
+const titleOf = g => { const t = TITLES.find(x => x.id === g.title); return t ? t.name : null; };
+class TitleScene extends ListScene {
+  constructor() { super(9); }
+  items() { return TITLES; }
+  update() {
+    this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('a')) { const t = TITLES[this.i]; if (!titlesEarned(G).includes(t)) { SFX.error(); return; } G.title = G.title === t.id ? null : t.id; SFX.confirm(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); const got = new Set(titlesEarned(G).map(t => t.id));
+    textC(`TITLES ${got.size}/${TITLES.length}`, 80, 13, 3);
+    TITLES.slice(this.top, this.top + this.rows).forEach((t, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 152, 10, 1); text((G.title === t.id ? '> ' : '') + t.name, 5, y, got.has(t.id) ? 3 : 1); });
+    this.scrollbar(156, 23, 92); frame(1, 116, 158, 27); const t = TITLES[this.i];
+    text(t.how, 5, 120, 2); text(got.has(t.id) ? (G.title === t.id ? 'WORN. A: REMOVE' : 'A: WEAR THIS TITLE') : 'LOCKED', 5, 131, got.has(t.id) ? 'gold' : 1);
+  }
+}
+
+for (const k in ITEMS) if (!ITEMS[k].icon0) ITEMS[k].icon0 = ITEMS[k].icon;
 
 </script>
 <script>

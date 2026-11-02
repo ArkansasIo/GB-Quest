@@ -1,4 +1,4 @@
-# GB Quest: Lanterns of Aelmoor — Game Design Document
+# GB Quest — Game Design Document
 
 | | |
 |---|---|

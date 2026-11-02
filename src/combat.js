@@ -790,18 +790,18 @@ class Battle {
     this.state = 'over';
     const player = this.party.find(u => u.ch === G);
     const D = derive(G);
-    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0), gold = Math.round(this.foes.reduce((a, f) => a + (f.gold || 0), 0) * (1 + D.gf / 100));
-    const drops = [];
+    const xp = this.foes.reduce((a, f) => a + (f.xp || 0), 0);
     const lootMul = (DIFFICULTY[this.diff - 1] || DIFFICULTY[1]).loot;
+    const drops = [], mats = {}, cons = []; let gold = 0;
     for (const f of this.foes) {
-      if (f.boss || R() < (f.elite ? 0.6 : 0.18) * lootMul) drops.push(makeItem({ lvl: f.lvl, mf: D.mf, boss: f.boss, loot: lootMul }));
-      if (f.boss && R() < 0.5) drops.push(makeItem({ lvl: f.lvl, mf: D.mf, boss: true, loot: lootMul }));
-      const tpl = MONSTERS[f.uniqueKey]; const junk = tpl && tpl.drop ? tpl.drop : null; if (junk && ITEMS[junk] && R() < 0.5) addItem(junk);
-      if (R() < 0.12) addItem(pick(['potion', 'potion', 'ration', 'antitoxin', 'ether']));
+      const d = rollDrops(f, { loot: lootMul }); drops.push(...d.items); gold += d.gold; cons.push(...d.cons);
+      for (const k in d.mats) mats[k] = (mats[k] || 0) + d.mats[k];
     }
     const steps = [this.say(this.foes.length > 1 ? 'Victory!' : `${this.foes[0].name} is defeated!`, () => { Music.play('victory'); SFX.quest_done(); }, 20)];
     steps.push(this.say(`Got ${fmt(xp)} XP and ${fmt(gold)} G.`, () => { G.gold += gold; G.stats.goldEarned += gold; SFX.coin(); }));
-    for (const it of drops) steps.push(this.say(`Loot: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX.pickup(); if (it.rarity === 5) G.stats.legendaries++; }));
+    for (const it of drops) steps.push(this.say(`${it.named ? 'NAMED' : 'Loot'}: [${RARITY[it.rarity].name}]\n${it.name}`, () => { addGear(it); SFX[it.rarity >= 5 ? 'achievement' : 'pickup'](); if (it.rarity >= 5) G.stats.legendaries++; if (it.named) { G.named = G.named || {}; G.named[it.named] = (G.named[it.named] || 0) + 1; } }));
+    const got = Object.entries(mats).map(([k, n]) => `${n} ${ITEMS[k].name}`).concat(cons.map(k => ITEMS[k].name));
+    if (got.length) steps.push(this.say(('Found: ' + got.join(', ')).slice(0, 70), () => { for (const k in mats) addItem(k, mats[k]); cons.forEach(k => addItem(k)); SFX.coin(); }));
     this.run(steps, () => {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }

@@ -67,7 +67,7 @@ function derive(c) {
   // armour class
   const armor = c.eq.armor && ARMORS[c.eq.armor.base], shield = c.eq.offhand && ARMORS[c.eq.offhand.base];
   let ac;
-  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus);
+  if (armor) ac = armor.ac + (armor.dexMax == null ? M.DEX : Math.min(armor.dexMax, M.DEX)) + Math.max(0, c.eq.armor.plus) + Math.floor(((c.eq.armor.rank || 1) - 1) / 2);
   else if (hasFeature(c, 'unarmored_con')) ac = 10 + M.DEX + M.CON;
   else if (hasFeature(c, 'unarmored_wis')) ac = 10 + M.DEX + M.WIS;
   else if (subKey(c, 'draconic')) ac = 13 + M.DEX;
@@ -93,11 +93,11 @@ function derive(c) {
   let abil = props.includes('r') ? 'DEX' : props.includes('f') ? (M.DEX > M.STR ? 'DEX' : 'STR') : 'STR';
   if (hasFeature(c, 'martial') && (!wd || wd.cat === 'simple')) { const md = CL >= 17 ? 10 : CL >= 11 ? 8 : CL >= 5 ? 6 : 4; const cur = wd ? +dice.split('d')[1] : 1; if (md > cur) dice = `1d${md}`; abil = M.DEX > M.STR ? 'DEX' : 'STR'; }
   const profW = !wd || wd.cat === 'simple' || cls.weapons === 'martial' || (cls.weapons === 'finesse' && props.includes('f'));
-  const magic = wi ? Math.max(0, wi.plus) : 0;
+  const magic = wi ? Math.max(0, wi.plus) : 0, rankDmg = wi ? (wi.rank || 1) - 1 : 0; // item rank adds flat damage
   let hit = M[abil] + (profW ? pb : 0) + magic + (sub.hit || 0) + wondrousBonus(c, 'hit');
   if (props.includes('r') && hasFeature(c, 'style_arch')) hit += 2;
   if (props.includes('r') && c.feats.includes('sharpshot')) hit += 2;
-  const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
+  const weapon = { name: wd ? wd.name : 'FISTS', dice, type: wd ? wd.type : 'bludgeoning', abil, hit, dmg: M[abil] + magic + rankDmg, magic: magic > 0 || (wi && wi.legend), ranged: props.includes('r'), twoHand,
     extra: wi && wi.legend ? { dice: wi.legend.extra, type: wi.legend.etype } : null };
   let attacks = 1;
   if (hasFeature(c, 'extra3')) attacks = 4; else if (hasFeature(c, 'extra2')) attacks = 3; else if (hasFeature(c, 'extra1') || (subKey(c, 'valor') && CL >= 6)) attacks = 2;

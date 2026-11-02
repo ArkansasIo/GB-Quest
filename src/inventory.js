@@ -142,7 +142,7 @@ class InventoryScene {
     else if (e && this.tab === 0) {
       text(e.name.slice(0, 17), 5, 117, rarityCol(e.rarity)); textR(`${SLOT_NAME[itemSlot(e)] === 'RING 1' ? 'RING' : SLOT_NAME[itemSlot(e)]}`, 156, 117, 2);
       const { cur, d } = compareDelta(G, e), sgn = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
-      let line = `${itemKeyStat(e)} IL${e.ilvl}`;
+      let line = `${itemKeyStat(e)} R${ROMAN[e.rank || 1]}`;
       if (d) { const bits = []; if (d.ac) bits.push(`AC${sgn(d.ac)}`); if (d.hp) bits.push(`HP${sgn(d.hp)}`); if (d.hit) bits.push(`HIT${sgn(d.hit)}`); if (Math.abs(d.dmg) >= 0.1) bits.push(`DMG${sgn(d.dmg)}`); if (d.init) bits.push(`INI${sgn(d.init)}`); line += ' ' + (bits.join(' ') || '= SAME'); }
       else line += ' NEW SLOT!';
       text(line.slice(0, 25), 5, 126, d && Object.values(d).some(v => v < 0) && !Object.values(d).some(v => v > 0) ? 'red' : 'green');
@@ -166,7 +166,7 @@ class CompareScene {
       text(wrap(e.name, 12).slice(0, 2).join('\n'), x, 54, rarityCol(e.rarity));
       text(itemKeyStat(e).slice(0, 12), x, 74);
       (e.affixes || []).slice(0, 4).forEach(([k, v], i) => text(`+${v}${SUBSTATS[k].unit} ${SUBSTATS[k].name}`.slice(0, 12), x, 84 + i * 9, 2));
-      if (e.attune) text('ATTUNE', x, 122, 'purple');
+      text(rankText(e).slice(0, 12), x, 113, 2); if (e.attune) text('ATTUNE', x, 122, 'purple'); if (e.lore) text(wrap(e.lore, 12)[0], x, 104, 1);
     };
     col(4, it, 'THIS ITEM'); col(84, cur, 'EQUIPPED');
     if (d) { const s = Object.entries(d).filter(([, v]) => Math.abs(v) >= 0.1).map(([k, v]) => `${k.toUpperCase()}${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' ') || 'NO CHANGE'; text(s.slice(0, 25), 4, 134, Object.values(d).some(v => v > 0) ? 'green' : 'red'); }
