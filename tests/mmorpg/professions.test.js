@@ -31,9 +31,9 @@ test("learns professions and advances skill through rank tiers up to the cap", (
   assert.deepEqual(getProfessionProgress(state, "herbalism"), {
     professionId: "herbalism", skill: 1, rank: "apprentice", experience: 0, experienceToNext: 30
   });
-  const progress = gainProfessionSkill(state, "herbalism", 1000000);
+  const progress = gainProfessionSkill(state, "herbalism", 5000000);
   assert.equal(progress.skill, MAX_PROFESSION_SKILL);
-  assert.equal(progress.rank, "master");
+  assert.equal(progress.rank, "grandmaster");
   assert.equal(progress.experience, 0);
   assert.equal(progress.experienceToNext, 0);
   assert.throws(() => learnProfession(state, "not-a-profession"), /Unknown profession/);

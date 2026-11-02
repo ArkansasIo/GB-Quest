@@ -57,7 +57,7 @@ No proprietary World of Warcraft code, assets, quests or data are copied. D&D da
 - Appearance/mount/title collections and transmog unlocks.
 - Role-based dungeon finder queue for tank/healer/damage compositions.
 - Map registry for the 90-map atlas.
-- Eighteen original gathering and crafting professions with 300-point skill progression, rank bands, skill-gated recipes, station checks, transactional crafting, resource nodes and gathering cooldowns.
+- Eighteen original gathering and crafting professions with 1-720 skill progression, Apprentice through Grandmaster rank bands, and one specialization point per skill level (up to 720 per profession). Each gathering and crafting job has three talent branches that affect resource yield, cooldowns, ingredient use, output quantity or skill experience. Recipes remain skill-gated, use station checks, and craft transactionally.
 
 The MMO systems are original implementations inspired by common MMORPG design patterns. They do not use World of Warcraft source code, art, names, quest text or proprietary game data.
 

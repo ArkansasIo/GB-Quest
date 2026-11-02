@@ -956,7 +956,7 @@ function trainerMenu() {
     if (k === 0) push(new GrowthScene());
     if (k === 1) { if (classLevel(G) < 3) return say('Subclasses unlock at level 3.'); if (G.gold < 100) return say('Not enough gold.'); G.gold -= 100; G.sub = null; G.pending.sub = true; push(new GrowthScene()); }
     if (k === 2) { if (G.hasMount) return say('You already ride.'); if (G.lvl < 10 || G.gold < 300) return say('Need level 10 and 300 G.'); G.gold -= 300; G.hasMount = true; SFX.howl(); checkAchievements(); say('You learn to ride! Press B in the field to mount.'); }
-    if (k === 3) say(Object.entries(PROFS).map(([k2, n]) => `${n}: ${G.prof[k2]}/100`).concat(['Gather herbs (A on bushes), fish (A at water), craft from MENU > CRAFT.']));
+    if (k === 3) push(new ProfessionTreeScene());
   }, 'TRAINER: Knowledge is power.');
 }
 function mailMenu() {
@@ -1281,10 +1281,11 @@ class Fishing {
     removeScene(this);
     const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4;
     const k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
-    addItem(k); G.stats.fish++; SFX.reel();
+    const quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
+    addItem(k, quantity); G.stats.fish += quantity; SFX.reel();
     const up = gainProf('fish', G.prof.fish);
     questEvent('fish', k); checkAchievements();
-    toast(`CAUGHT ${ITEMS[k].name}`, up ? `FISHING ${G.prof.fish}` : (z ? z.sub : ''), ITEMS[k].icon, 'pickup');
+    toast(`${quantity > 1 ? `CAUGHT ${quantity} ` : 'CAUGHT '}${ITEMS[k].name}`, up ? `FISHING ${G.prof.fish}` : (z ? z.sub : ''), ITEMS[k].icon, 'pickup');
   }
   draw() {
     frame(30, 50, 100, 44);

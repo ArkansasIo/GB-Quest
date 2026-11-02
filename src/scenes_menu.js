@@ -469,11 +469,49 @@ class CraftScene extends ListScene {
   update() { this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(RECIPES[this.i]); SFX[r.startsWith('Made') ? 'craft' : 'error'](); this.msg = r; } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    text(`ALCH ${G.prof.alch}  COOK ${G.prof.cook}  HERB ${G.prof.herb}  FISH ${G.prof.fish}`, 2, 14, 2);
-    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10; const ok = G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= r.needs[k]); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text(r.name.slice(0, 18), 16, y, ok ? 3 : 1); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    text(`A${G.prof.alch} C${G.prof.cook} H${G.prof.herb} F${G.prof.fish}`, 2, 14, 2);
+    RECIPES.slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24); const ok = G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text(r.name.slice(0, 18), 16, y, ok ? 3 : 1); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
     const r = RECIPES[this.i]; frame(2, 108, 156, 34);
-    text(Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${n}`).join('\n'), 6, 111);
+    const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
+    text(Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n'), 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
+  }
+}
+
+class ProfessionTreeScene extends ListScene {
+  constructor() { super(4); this.professionIndex = 0; this.professionIds = Object.keys(PROFS); }
+  professionId() { return this.professionIds[this.professionIndex]; }
+  items() { return Object.entries(PROFESSION_TREES[this.professionId()]).map(([id, name]) => ({ id, name })); }
+  pointsAvailable() { return Math.max(0, G.prof[this.professionId()] - professionTalentSpend(this.professionId())); }
+  update() {
+    if (P('select')) { this.professionIndex = (this.professionIndex + 1) % this.professionIds.length; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const key = this.professionId(), branch = this.items()[this.i];
+    if ((key === 'armorsmith' || key === 'weaponsmith') && G.lvl < 20) return say(`${PROFS[key]} unlocks at player level 20.`);
+    const error = spendProfessionTalent(key, branch.id);
+    if (error) { SFX.error(); say(error); }
+    else { SFX.levelup(); }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const key = this.professionId(), skill = G.prof[key] || 0, spent = professionTalentSpend(key);
+    textC(`< ${PROFS[key]} >`, 80, 13, 'gold');
+    text(`SKILL ${skill}/${PROF_CAP}`, 5, 27, 2);
+    text(`TREE POINTS ${this.pointsAvailable()}`, 5, 37, 'gold');
+    const branches = this.items();
+    branches.forEach((branch, index) => {
+      const y = 52 + index * 12, rank = profTalentRank(key, branch.id);
+      if (index === this.i) fill(3, y - 1, 153, 11, 1);
+      text(branch.name.slice(0, 19), 6, y);
+      textR(`${rank}/240`, 151, y, rank >= 240 ? 'gold' : 2);
+    });
+    frame(2, 106, 156, 36);
+    const selected = branches[this.i];
+    const help = selected.id === 'yield' ? 'Every 24 ranks add one resource or crafted item.' : selected.id === 'efficiency' ? 'Every 24 ranks save one ingredient; blacksmiths also reduce tempering costs.' : 'Raises the chance to gain another profession skill level.';
+    text(wrap(help, 24).slice(0, 2).join('\n'), 6, 111, 3);
+    text('SELECT: JOB', 4, 143, 1);
   }
 }
 
