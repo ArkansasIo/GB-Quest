@@ -1,6 +1,6 @@
 # Windows and macOS desktop app
 
-The installable desktop app wraps the complete bundled browser game in Electron. The independent C++/SDL2 files in this folder are still a prototype and do not contain the full game yet.
+The installable desktop app wraps the complete bundled browser game in Electron. It opens the **Shadowbane Chronicles Launcher** first, then starts the local game after a realm destination is selected. The independent C++/SDL2 files in this folder are still a prototype and do not contain the full game yet.
 
 ## Requirements
 
@@ -18,7 +18,9 @@ node tools/build.cjs
 npm run desktop:dev
 ```
 
-The app opens the bundled fullscreen game in a resizable desktop window. Keyboard, mouse, saved settings, and the game's display modes work inside the app.
+The app opens `desktop/launcher.html` in a resizable desktop window. The launcher provides North America, Europe, Japan and Oceania region selection, logical data-center and world selection, a Play action, update checking, and project/documentation links. The selected destination is passed to the game as URL query parameters (`region`, `dataCenter`, `world`).
+
+The current launcher is a client shell, not a live MMO login service: account authentication, live server health, character lists, and world connections remain disabled until the authoritative online backend is deployed. The game can still be launched locally. Keyboard, mouse, saved settings, and the game's display modes work inside the app.
 
 ## Package installers
 
