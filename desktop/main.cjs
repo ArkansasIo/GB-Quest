@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, dialog, session, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, dialog, session, shell, ipcMain, safeStorage } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const https = require('node:https');
@@ -12,6 +12,8 @@ const USER_DATA = app.getPath('userData');
 const UPDATE_DIR = path.join(USER_DATA, 'game-updates');
 const UPDATE_STATE = path.join(UPDATE_DIR, 'current.json');
 const STORAGE_MIRROR = path.join(USER_DATA, 'game-storage-mirror.json');
+const REALM_SESSION_FILE = path.join(USER_DATA, 'realm-session.bin');
+let realmSession = null;
 const REPO = 'ArkansasIo/GB-Quest';
 const BACKEND_OPTIONS = process.platform === 'win32'
   ? [
@@ -24,11 +26,60 @@ const BACKEND_OPTIONS = process.platform === 'win32'
   : process.platform === 'darwin'
     ? [['auto', 'Automatic (recommended)'], ['metal', 'Apple Metal'], ['opengl', 'OpenGL']]
     : [['auto', 'Automatic (recommended)'], ['vulkan', 'Vulkan'], ['opengl', 'OpenGL']];
+function readSettings() {
+  try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')); }
+  catch { return {}; }
+}
+function writeSettings(patch) {
+  fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ ...readSettings(), ...patch }, null, 2), { mode: 0o600 });
+}
 function readBackend() {
+  const value = readSettings().graphicsBackend;
+  return BACKEND_OPTIONS.some(([key]) => key === value) ? value : 'auto';
+}
+function realmBaseUrl(input) {
+  const raw = String(input || readSettings().realmUrl || 'http://127.0.0.1:8787').trim();
+  let parsed;
+  try { parsed = new URL(raw); } catch { throw new Error('Enter a valid realm URL, such as https://realm.example.com'); }
+  const local = ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+  if (parsed.protocol !== 'https:' && !(local && parsed.protocol === 'http:')) throw new Error('Realm connections must use HTTPS. HTTP is allowed only for localhost testing.');
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error('Realm URL must not contain credentials, query parameters, or a fragment.');
+  if (parsed.pathname !== '/' && parsed.pathname !== '') throw new Error('Enter the realm server base URL without an API path.');
+  return parsed.origin;
+}
+function loadRealmSession() {
   try {
-    const value = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')).graphicsBackend;
-    return BACKEND_OPTIONS.some(([key]) => key === value) ? value : 'auto';
-  } catch { return 'auto'; }
+    if (!safeStorage.isEncryptionAvailable()) return;
+    const token = safeStorage.decryptString(fs.readFileSync(REALM_SESSION_FILE));
+    if (/^[0-9a-f]{64}$/.test(token)) realmSession = { token };
+  } catch {}
+}
+loadRealmSession();
+async function realmRequest(base, endpoint, { method = 'GET', body: payload, token } = {}) {
+  const headers = { Accept: 'application/json' };
+  if (payload !== undefined) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await fetch(base + endpoint, {
+    method, headers, body: payload === undefined ? undefined : JSON.stringify(payload),
+    signal: AbortSignal.timeout(10000),
+  });
+  let data = {};
+  try { data = await response.json(); } catch {}
+  if (!response.ok) throw new Error(data.error || `Realm server returned HTTP ${response.status}.`);
+  return data;
+}
+function persistRealmSession(token) {
+  realmSession = { token };
+  if (!safeStorage.isEncryptionAvailable()) return false;
+  fs.mkdirSync(USER_DATA, { recursive: true });
+  const encrypted = safeStorage.encryptString(token);
+  fs.writeFileSync(REALM_SESSION_FILE, encrypted, { mode: 0o600 });
+  return true;
+}
+function clearRealmSession() {
+  realmSession = null;
+  try { fs.unlinkSync(REALM_SESSION_FILE); } catch {}
 }
 const graphicsBackend = readBackend();
 const ANGLE_BACKENDS = { directx11: 'd3d11', directx12: 'd3d11on12', vulkan: 'vulkan', opengl: 'gl', metal: 'metal' };
@@ -153,6 +204,51 @@ ipcMain.on('gbq:open-docs', event => {
   if (gameWindow && event.sender === gameWindow.webContents) shell.openExternal('https://github.com/ArkansasIo/GB-Quest/tree/main/desktop');
 });
 
+ipcMain.handle('gbq:realm-check', async (event, input = {}) => {
+  if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
+  const base = realmBaseUrl(input.url);
+  writeSettings({ realmUrl: base });
+  const [health, directory] = await Promise.all([
+    realmRequest(base, '/api/health'),
+    realmRequest(base, '/api/realms'),
+  ]);
+  return { ok: !!health.ok, realm: health.realm || 'Realm', players: Number(health.players) || 0, accounts: Number(health.accounts) || 0, realms: Array.isArray(directory.realms) ? directory.realms : [], url: base };
+});
+ipcMain.handle('gbq:realm-auth', async (event, input = {}) => {
+  if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
+  const base = realmBaseUrl(input.url);
+  const mode = input.mode === 'register' ? 'register' : 'login';
+  const username = String(input.username || '').trim();
+  const password = String(input.password || '');
+  if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) throw new Error('Username must be 3–16 letters, digits, or underscores.');
+  if (password.length < 8 || password.length > 72) throw new Error('Password must be 8–72 characters.');
+  const result = await realmRequest(base, `/api/${mode}`, { method: 'POST', body: { username, password } });
+  if (!result.token || !result.account) throw new Error('Realm server returned an invalid session response.');
+  const encrypted = persistRealmSession(result.token);
+  writeSettings({ realmUrl: base });
+  return { account: { id: result.account.id, name: result.account.name, created: result.account.created }, persistentSession: encrypted };
+});
+ipcMain.handle('gbq:realm-session', async event => {
+  if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
+  if (!realmSession) return { authenticated: false };
+  try {
+    const base = realmBaseUrl();
+    const result = await realmRequest(base, '/api/me', { token: realmSession.token });
+    return { authenticated: true, account: result.account || null };
+  } catch (error) {
+    if (/401|Log in first|HTTP 401/i.test(error.message)) clearRealmSession();
+    return { authenticated: false, error: error.message };
+  }
+});
+ipcMain.handle('gbq:realm-logout', async event => {
+  if (!gameWindow || event.sender !== gameWindow.webContents) throw new Error('Unauthorized launcher request.');
+  if (realmSession) {
+    try { await realmRequest(realmBaseUrl(), '/api/logout', { method: 'POST', token: realmSession.token }); }
+    finally { clearRealmSession(); }
+  }
+  return { ok: true };
+});
+
 ipcMain.on('gbq:read-storage-mirror', event => {
   try { event.returnValue = JSON.parse(fs.readFileSync(STORAGE_MIRROR, 'utf8')); }
   catch { event.returnValue = null; }
@@ -165,7 +261,7 @@ function chooseGraphicsBackend(backend) {
   if (backend === graphicsBackend) return;
   try {
     fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ graphicsBackend: backend }, null, 2));
+    writeSettings({ graphicsBackend: backend });
   } catch (error) {
     dialog.showErrorBox('Graphics setting not saved', error.message);
     return;
