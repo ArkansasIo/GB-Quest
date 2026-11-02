@@ -55,6 +55,7 @@ flowchart LR
 - **Substats** come from gear affixes and ascension points: crit chance, crit damage, haste, lifesteal, armour pen, spell power, resist, gold find, magic find, thorns, dodge and regen.
 - **Levels 1–20** follow class progression: features, an ability score increase or feat at 4/8/12/16/19, and spell slots (full, half or pact casters).
 - **Ascension, levels 21–720:** +1 attribute and +2 substat points per level, and a mythic boon every 50 levels.
+- **Equipment:** 14 dedicated slots: the original 12 weapon/armour/accessory slots plus one Artifact slot and one Relic slot. Each of the new categories has 42 named equipable items (84 total), with item level, rank, rarity, affixes, enhancement and attunement handled by the shared gear pipeline.
 - **Companions:** every new hero starts with BRAM (warden) or ESME (chaplain). Hired adventurers fill the 4- and 12-player modes.
 
 ## 4. Combat
@@ -95,6 +96,7 @@ The battle engine is host-authoritative. In multiplayer, the host runs every rol
 | Tower | 100 floors |
 | Story | prologue, 12 acts, 50 chapters, 6 generated side quests per zone |
 | Spells | 59 across 8 schools |
+| Artifacts / relics | 42 / 42 (84 total) |
 | Sound | 103 chip SFX + 8 64-bit-only SFX, 24 music tracks in two arrangements |
 
 Full lists are in [CONTENT_CATALOG](CONTENT_CATALOG.md).
