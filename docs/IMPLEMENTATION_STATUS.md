@@ -28,6 +28,9 @@ The following items are roadmap work. They must not be represented as complete u
 
 ### Equipment enhancement
 
+- **Rune socket rules and player-facing Rune Forge implemented:** nine families with nine tiers each (81 variants), separate weapon/armour rune sockets, one to three sockets based on item level, validated insertion/extraction, inventory consumption/refund, derived-stat integration and three-to-one tier fusion. See [RUNES_AND_FORGE.md](RUNES_AND_FORGE.md).
+- Rune loot drops, boss-specific rewards, gathering/vendor sources, online server authority and rune combination/set effects remain outstanding.
+
 - **Gem socket system implemented:** nine gem families with nine tiers each (81 variants), weapon/armour socket capacity from one to four based on item level, validated insertion/extraction, character gem inventory consumption/refund, derived-stat integration, inventory entry point and player-facing socket forge UI. Three matching gems fuse into the next tier. See [GEMS_AND_SOCKETS.md](GEMS_AND_SOCKETS.md).
 - Gem loot tables, automatic monster/boss rewards, gathering/crafting sources and vendor stock.
 - Gem drop tables, gathering/crafting sources, upgrade recipes and vendor stock.
