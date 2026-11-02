@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>GB Quest Online</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4140,13 +4142,18 @@ class Field {
     if (P('select')) { SFX.open(); push(new WorldMap()); return; }
     if (P('b') && G.hasMount && !G.inst && !G.ghost) { G.mounted = !G.mounted; SFX[G.mounted ? 'howl' : 'cursor'](); return; }
     if (P('a')) { this.interact(); return; }
+    if (!['up', 'down', 'left', 'right'].some(d => held[d])) this.contact = null; // let go: next bump counts again
     for (const d of ['up', 'down', 'left', 'right']) {
       if (!held[d]) continue;
       G.dir = d;
       const [dx, dy] = DIRS[d], nx = G.x + dx, ny = G.y + dy;
       if (this.exitAt(nx, ny)) return;
-      if (this.blocked(nx, ny)) { if (P(d) || rep[d] % 20 === 0) { if (!this.bump(nx, ny)) SFX.cursor(); } }
-      else { this.trail.unshift([G.x, G.y, G.dir]); this.trail.length = 12; G.x = nx; G.y = ny; this.ox = -dx * T; this.oy = -dy * T; }
+      if (this.blocked(nx, ny)) {
+        // bump once per contact: holding a direction into a door or NPC must not re-open its menu after you close it
+        const key = nx + ',' + ny;
+        if (P(d) || this.contact !== key) { this.contact = key; if (!this.bump(nx, ny)) SFX.cursor(); }
+      }
+      else { this.contact = null; this.trail.unshift([G.x, G.y, G.dir]); this.trail.length = 12; G.x = nx; G.y = ny; this.ox = -dx * T; this.oy = -dy * T; }
       break;
     }
   }
