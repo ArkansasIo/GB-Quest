@@ -29,17 +29,17 @@ The following items are roadmap work. They must not be represented as complete u
 ### Equipment enhancement
 
 - **Rune socket rules and player-facing Rune Forge implemented:** nine families with nine tiers each (81 variants), separate weapon/armour rune sockets, one to three sockets based on item level, validated insertion/extraction, inventory consumption/refund, derived-stat integration and three-to-one tier fusion. See [RUNES_AND_FORGE.md](RUNES_AND_FORGE.md).
-- Rune loot drops, boss-specific rewards, gathering/vendor sources, online server authority and rune combination/set effects remain outstanding.
+- Rune gathering/vendor acquisition, per-boss pity counters, weekly raid chests, authoritative online reward rolls and set-specific item art remain outstanding.
 
 - **Gem socket system implemented:** nine gem families with nine tiers each (81 variants), weapon/armour socket capacity from one to four based on item level, validated insertion/extraction, character gem inventory consumption/refund, derived-stat integration, inventory entry point and player-facing socket forge UI. Three matching gems fuse into the next tier. See [GEMS_AND_SOCKETS.md](GEMS_AND_SOCKETS.md).
 - Gem loot tables, automatic monster/boss rewards, gathering/crafting sources and vendor stock.
 - Gem drop tables, gathering/crafting sources, upgrade recipes and vendor stock.
 - Online server-side validation and synchronization for socket operations.
 - Slot-specific gem compatibility rules and any socket unlock/upgrade costs.
-- Rune definitions and rune socket compatibility for weapons and gear.
-- Rune combinations/recipes, activation conditions and effect resolution.
-- A Rune Forge service with a dedicated NPC, interaction, UI, costs, recipes and validation.
-- Loot generation and boss-drop tables for socketed gear, gems and runes.
+- **Rune sockets and Rune Forge implemented:** nine families, nine tiers each, separate one-to-three weapon/armour rune sockets, validated insertion/extraction, inventory handling, modifier integration and fusion.
+- **Boss rune rewards implemented:** category-based rune drop chances, themed family pools and item-level-scaled rune tiers are connected to the battle victory reward flow.
+- **Legendary raid sets implemented:** Crypt Warden, Forgefire, Rime Throne and Long Night each have three named pieces, two-piece and full-set bonuses, and a collection view in the Armoury.
+- Rune gathering/vendor acquisition, per-boss pity counters, weekly raid chests, authoritative online reward rolls and unique item art remain outstanding.
 
 ### NPC and creature AI
 
@@ -172,5 +172,7 @@ A feature is complete only when all relevant layers are present:
 - **Documentation:** updated system reference and build instructions.
 
 ## 6. Current delivery statement
+
+The equipment progression layer now includes boss-category rune rewards and four three-piece legendary raid sets. Boss reward rolls award category-themed rune families with tiers derived from item level; battle victory applies the rune inventory rewards. Named raid drops can carry set IDs, and equipping two or three matching pieces activates the configured bonuses through the existing derived-stat pipeline. The Armoury includes a Legendary Sets tab showing owned equipped-piece counts and thresholds.
 
 As of 2026-11-02, the repository contains the JavaScript browser game, a local minimap implementation, the 42-item Artifact and 42-item Relic catalogs, and the gem socket rules and player-facing forge (nine gem families, nine tiers each, socket validation, inventory consumption/refund, derived-stat integration, socket insertion/extraction UI and three-to-one gem fusion). Automatic loot integration, gathering/vendor sources and multiplayer authority remain outstanding. The repository also has a partial C++23 native rules core and optional x86-64 assembly fast path; neither is a full game port. The Game Boy SM83/RGBDS ROM target remains a roadmap item.
