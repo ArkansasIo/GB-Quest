@@ -6,8 +6,9 @@
   // chat box under the handheld
   const input = document.getElementById('chatinput');
   const form = document.getElementById('chatform');
-  if (form) form.addEventListener('submit', e => { e.preventDefault(); const v = input.value.trim(); if (!v) return; if (G) NET.sendChat(v); else chatLog('Say', 'YOU', v); input.value = ''; input.blur(); focusGame(); });
+  if (form) form.addEventListener('submit', e => { e.preventDefault(); const v = input.value.trim(); if (!v) return; if (G) NET.sendChat(v); else chatLog('say', 'YOU', v); input.value = ''; input.blur(); focusGame(); });
   if (input) input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); input.blur(); focusGame(); } });
+  document.querySelectorAll('[data-chat-filter]').forEach(button => button.addEventListener('click', () => setChatFilter(button.dataset.chatFilter)));
   chatLog('System', BUILD.studio, `${BUILD.game} v${BUILD.version} - welcome to AELMOOR!`);
   // live page updates keep your run
   const hot = window.claude && window.claude.hot;
@@ -83,6 +84,10 @@ function closeAtlas() {
   if (atlasCleanup) { atlasCleanup(); atlasCleanup = null; }
   const ov = document.getElementById('atlasOverlay'); if (ov) { ov.remove(); try { SFX.close(); } catch (e) {} }
 }
+function toggleBrowserFullscreen() {
+  const active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  applyDisplayMode(active ? 'borderless' : 'fullscreen');
+}
 addEventListener('message', e => {
   const m = e.data; if (!m || !m.gbqAtlas) return;
   if (m.gbqAtlas === 'close') closeAtlas();
@@ -96,5 +101,7 @@ addEventListener('message', e => {
 });
 addEventListener('keydown', e => {
   if ((e.key === 'm' || e.key === 'M') && !e.repeat && !e.defaultPrevented && !typing() && !keyCaptureHandler) { e.preventDefault(); toggleAtlas(); }
+  if ((e.key === 'f' || e.key === 'F') && !e.repeat && !e.defaultPrevented && !typing() && !keyCaptureHandler && !document.getElementById('fsFull')) { e.preventDefault(); toggleBrowserFullscreen(); }
 });
 document.querySelectorAll('[data-atlas]').forEach(b => b.addEventListener('click', toggleAtlas));
+document.querySelectorAll('[data-fullscreen]').forEach(b => b.addEventListener('click', toggleBrowserFullscreen));

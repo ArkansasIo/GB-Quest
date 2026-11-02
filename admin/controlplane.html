@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GB-Quest Admin Control Plane</title>
+  <style>
+    :root { color-scheme: dark; font: 14px/1.45 system-ui, sans-serif; background: #10151b; color: #e6edf3; }
+    body { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    header, .cards, .panel { border: 1px solid #303b45; background: #171e26; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h1, h2 { margin: 0; } h1 { font-size: 20px; } h2 { font-size: 16px; margin-bottom: 12px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); gap: 12px; }
+    .card { padding: 12px; background: #10151b; border-radius: 6px; color: #aebbc6; }
+    .card strong { display: block; color: #f0d58e; font-size: 22px; }
+    button { border: 1px solid #536477; border-radius: 4px; padding: 7px 10px; color: inherit; background: #263440; cursor: pointer; }
+    button.danger { background: #522b2b; border-color: #9c4b4b; }
+    button:disabled { opacity: .55; cursor: wait; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #303b45; }
+    th { color: #f0d58e; } .status { color: #92d69a; } .banned { color: #ff8e86; }
+    #message { min-height: 1.5em; color: #f0d58e; } #message.error { color: #ff8e86; }
+    .muted { color: #9aa7b3; }
+    @media (max-width: 640px) { body { padding: 12px; } table { font-size: 12px; } th, td { padding: 6px 4px; } }
+  </style>
+</head>
+<body>
+  <header><div><h1>GB-Quest Admin Control Plane</h1><div class="muted">Restricted realm operations</div></div><button id="refresh">Refresh</button></header>
+  <div id="message" role="status">Checking admin access…</div>
+  <section id="overview" class="cards" aria-label="Realm overview"></section>
+  <section class="panel"><h2>Accounts</h2><div class="muted">Showing up to 200 accounts. Suspend revokes sessions and closes live connections.</div><div style="overflow:auto"><table><thead><tr><th>Account</th><th>Status</th><th>Last login</th><th>Action</th></tr></thead><tbody id="players"></tbody></table></div></section>
+  <section class="panel"><h2>Admin audit</h2><ol id="audit"></ol></section>
+  <script src="/admin/controlplane.js" defer></script>
+</body>
+</html>

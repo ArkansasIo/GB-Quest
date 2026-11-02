@@ -674,15 +674,45 @@ class RepScene {
 }
 
 // ================================================================ SOCIAL: party, leaderboard, server, guild, who
+class RealmStoreScene extends ListScene {
+  constructor() {
+    super(5);
+    this.products = [
+      { name: 'STARFALL WARDEN OUTFIT', category: 'cosmetic' },
+      { name: 'GLASSWING STAG MOUNT', category: 'cosmetic-mount' },
+      { name: 'MOONLIT FOX PET', category: 'cosmetic-pet' },
+      { name: 'VICTORY SALUTE EMOTE', category: 'cosmetic' },
+      { name: 'EXTRA CHARACTER SLOT', category: 'account-service' },
+    ];
+    if (typeof LocalRealm !== 'undefined' && LocalRealm.available) LocalRealm.api('/api/store/catalog').then(catalog => {
+      if (Array.isArray(catalog.products) && catalog.products.length) { this.products = catalog.products; this.i = Math.min(this.i, this.products.length - 1); }
+    }).catch(() => {});
+  }
+  items() { return this.products.map(product => `${product.name.toUpperCase()} · PREVIEW`); }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('a')) say(['REALM STORE', 'PAYMENT CHECKOUT IS DISABLED.', 'No real-money purchases are available.', 'This product is preview only.']);
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr(); text('REALM STORE', 4, 14, 'gold');
+    frame(2, 21, 156, 104); text('COSMETICS  /  ACCOUNT', 7, 25, 2);
+    this.items().forEach((name, i) => { const y = 39 + i * 15; if (i === this.i) fill(5, y - 2, 148, 13, 1); text(name, 8, y, i === this.i ? 3 : 2); });
+    frame(2, 128, 156, 16); textC('CHECKOUT DISABLED', 80, 132, 'red');
+  }
+}
 class SocialScene extends ListScene {
   constructor() { super(9); this.lb = null; this.loading = false; }
-  items() { return ['PARTY', 'TRADE', 'TRADING HUB', 'SERVER / MULTIPLAYER', 'LEADERBOARD', 'WHO (ONLINE)', 'GUILD', 'PET', 'CHAT HELP']; }
+  items() { return ['PARTY', 'FRIENDS', 'CREATE INVITE CODE', 'JOIN WITH CODE', 'TRADE', 'TRADING HUB', 'SERVER / MULTIPLAYER', 'LEADERBOARD', 'WHO (ONLINE)', 'GUILD', 'PET', 'REALM STORE', 'CHAT HELP']; }
   update() {
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
     const o = this.items()[this.i]; SFX.select();
     if (o === 'PARTY') push(new CompanionScene());
+    if (o === 'FRIENDS') this.openFriends();
+    if (o === 'CREATE INVITE CODE') this.createInvite();
+    if (o === 'JOIN WITH CODE') this.joinInvite();
     if (o === 'TRADE') tradeMenu();
     if (o === 'TRADING HUB') push(new MarketScene());
     if (o === 'SERVER / MULTIPLAYER') serverMenu();
@@ -690,11 +720,47 @@ class SocialScene extends ListScene {
     if (o === 'WHO (ONLINE)') say([`LIVE PLAYERS: ${NET.peers.length} (${NET.status || 'OFFLINE'})`].concat(NET.peers.slice(0, 8).map(p => `${clean((p.presence || {}).n || 'HERO')} LV${(p.presence || {}).l || '?'}`)).concat([`REALM NPC HEROES: ${realmPlayersIn(G.map).length} here`]));
     if (o === 'GUILD') guildMenu();
     if (o === 'PET') { if (!G.pets.length) return say('No pets yet. Earn one at 100 kills.'); choose(G.pets.map(p => p.toUpperCase()).concat(['NONE']), i => { G.pet = i < G.pets.length && i >= 0 ? G.pets[i] : null; }); }
-    if (o === 'CHAT HELP') say(['Type in the chat box under the handheld and press Enter. Live players in this page see it, and it shows above your hero.']);
+    if (o === 'REALM STORE') push(new RealmStoreScene());
+    if (o === 'CHAT HELP') say(['CHAT: /s /y /p /g /w name /r /1 /2 /4 /e', 'SAY / YELL / PARTY / GUILD / WHISPER', 'WORLD / TRADE / LFG / EMOTE', 'Type /help for command help.']);
+  }
+  async openFriends() {
+    if (!LocalRealm.available || !LocalRealm.account) return say('FRIEND LIST REQUIRES A REALM ACCOUNT. LOG IN AT TITLE > ACCOUNT.');
+    try {
+      const data = await LocalRealm.friends();
+      const entries = data.friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${f.name}`).concat(data.requests.map(f => `REQUEST  ${f.name}`));
+      choose(['ADD FRIEND', ...entries, ...(data.friends.length ? ['REMOVE FRIEND'] : [])], i => {
+        if (i === 0) {
+          const name = window.prompt('Realm account name to add:');
+          if (name) LocalRealm.requestFriend(name.trim()).then(r => say(r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.')).catch(e => say(e.message));
+          return;
+        }
+        const idx = i - 1;
+        if (idx >= data.friends.length && idx < data.friends.length + data.requests.length) {
+          const f = data.requests[idx - data.friends.length];
+          choose(['ACCEPT', 'DECLINE'], answer => {
+            if (answer === 0) LocalRealm.acceptFriend(f.id).then(() => say(`${f.name} ADDED TO FRIENDS.`)).catch(e => say(e.message));
+            else LocalRealm.removeFriend(f.id).catch(() => {});
+          }, `FRIEND REQUEST FROM ${f.name}`);
+        } else if (idx >= 0 && idx < data.friends.length) {
+          const f = data.friends[idx]; say(`${f.name} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
+        } else if (i === 1 + entries.length && data.friends.length) {
+          choose(data.friends.map(f => f.name), j => { if (j >= 0) LocalRealm.removeFriend(data.friends[j].id).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message)); }, 'REMOVE WHICH FRIEND?');
+        }
+      }, 'FRIENDS / REQUESTS');
+    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message}`); }
+  }
+  async createInvite() {
+    try { const invite = await LocalRealm.createInvite(); say([`INVITE CODE: ${invite.code}`, 'Share this code with a friend.', 'It expires in 15 minutes.']); }
+    catch (e) { say(`INVITE UNAVAILABLE: ${e.message}`); }
+  }
+  joinInvite() {
+    const code = window.prompt('Enter your friend’s 8-character invite code:'); if (!code) return;
+    LocalRealm.resolveInvite(code).then(invite => NET.joinServer(invite.peer)).catch(e => say(e.message));
   }
   draw() {
     fill(0, 0, W, H, 0); hdr(); textC('SOCIAL', 80, 13, 'gold');
-    this.items().forEach((s, i) => { const y = 26 + i * 12; if (i === this.i) { fill(4, y - 2, 152, 12, 3); text(s, 10, y, 0); } else text(s, 10, y); });
+    this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 26 + j * 12; if (i === this.i) { fill(4, y - 2, 152, 12, 3); text(s, 10, y, 0); } else text(s, 10, y); });
+    this.scrollbar(155, 26, 108);
     text(`MODE: ${modeOf().name}  NET: ${NET.status || 'OFFLINE'}`, 4, 124, 2);
     text(G.guild ? `<${G.guild}>` : 'NO GUILD', 4, 134, 2);
     if (this.loading) textC('LOADING...', 80, 110, 'blue');

@@ -8,7 +8,7 @@
     "sweep": "python3 tests/sweep.py",
     "native:build": "cmake -S native -B build/native -DGBQ_ENABLE_X86_64_ASM=OFF && cmake --build build/native --config Release",
     "start": "node server.js",
-    "server": "node server/server.cjs",
+    "server": "node backend/server.cjs",
     "desktop:dev": "electron .",
     "desktop:dist": "electron-builder"
   },

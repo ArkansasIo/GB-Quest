@@ -357,6 +357,7 @@ function buildZoneCached(id) { return ZONE_CACHE[id] || (ZONE_CACHE[id] = buildZ
 
 // ================================================================ simulated realm: fake players & chat
 const REALM = { players: [], log: [], tick: 0 };
+const CHAT_UI = { filter: 'all', entries: [], maxEntries: 120 };
 function realmTick() {
   REALM.tick++;
   if (REALM.tick % 600 === 0 || REALM.log.length === 0 && REALM.tick % 120 === 0) {
@@ -377,18 +378,36 @@ function realmPlayersIn(zid) {
   return REALM.players[zid];
 }
 function chatLog(channel, who, msg, sim) {
-  REALM.log.push({ channel, who, msg, t: Date.now() }); if (REALM.log.length > 60) REALM.log.shift();
+  const entry = { channel: String(channel || 'System').toLowerCase(), who: String(who || 'System').slice(0, 24), msg: String(msg || '').slice(0, 180), t: Date.now(), sim: !!sim };
+  REALM.log.push(entry); if (REALM.log.length > 60) REALM.log.shift();
+  CHAT_UI.entries.push(entry); if (CHAT_UI.entries.length > CHAT_UI.maxEntries) CHAT_UI.entries.shift();
+  renderChatLog();
+}
+function renderChatLog() {
   const el = document.getElementById('chatlog'); if (!el) return;
-  const line = document.createElement('div'); line.className = 'ch-' + channel.toLowerCase();
-  const tag = document.createElement('b'); tag.textContent = `[${channel}] ${who}: `; line.appendChild(tag);
-  line.appendChild(document.createTextNode(msg)); el.appendChild(line);
-  while (el.childNodes.length > 40) el.removeChild(el.firstChild);
+  const socialChannels = ['whisper', 'world', 'trade', 'lfg', 'emote'];
+  const visible = CHAT_UI.entries.filter(m => CHAT_UI.filter === 'all' || m.channel === CHAT_UI.filter || CHAT_UI.filter === 'social' && socialChannels.includes(m.channel));
+  el.replaceChildren();
+  for (const m of visible.slice(-60)) {
+    const line = document.createElement('div'); line.className = 'ch-' + m.channel;
+    const time = new Date(m.t), stamp = `${pad2(time.getHours())}:${pad2(time.getMinutes())}`;
+    const tag = document.createElement('b'); tag.textContent = `${stamp} [${m.channel.toUpperCase()}] ${m.who}: `; line.appendChild(tag);
+    line.appendChild(document.createTextNode(m.msg)); el.appendChild(line);
+  }
   el.scrollTop = el.scrollHeight;
+}
+function setChatFilter(filter) {
+  CHAT_UI.filter = ['all', 'say', 'party', 'guild', 'social'].includes(filter) ? filter : 'all';
+  document.querySelectorAll('[data-chat-filter]').forEach(button => {
+    const active = button.dataset.chatFilter === CHAT_UI.filter;
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  renderChatLog();
 }
 
 // ================================================================ NET: live multiplayer through the artifact room + db
 const NET = {
-  room: null, db: null, user: null, myId: null, peers: [], hostOf: null, server: null, joined: {}, lastPres: '', seenSay: {}, remoteView: null,
+  room: null, db: null, user: null, myId: null, peers: [], hostOf: null, server: null, joined: {}, lastPres: '', remoteView: null,
   offline: false,
   // OFFLINE: nothing leaves this browser (no presence, chat, server or leaderboard). ONLINE: connect.
   setMode(mode) {
@@ -409,6 +428,7 @@ const NET = {
         this.status = 'ONLINE';
         this.room.onPeers(ch => { if (this.offline) { this.peers = []; return; } this.peers = ch.peers.filter(p => !p.sameTab && p.kind === 'viewer'); this.onPeers(ch); }, () => { this.status = 'OFFLINE'; this.room = null; });
         ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m), () => {}));
+        this.room.on('chat', m => this.receiveChat(m), () => {});
       } else this.status = 'OFFLINE';
     } catch (e) { this.status = 'OFFLINE'; }
     try { this.db = await window.claude.use('db'); } catch (e) { this.db = null; }
@@ -418,21 +438,67 @@ const NET = {
     realmTick();
     if (this.offline || !this.room || !G || frameN % 15) return;
     const pres = { n: (G.name || '').slice(0, 10), c: G.cls, l: G.lvl, z: G.inst ? 'inst' : G.map, x: G.x, y: G.y, d: G.dir, g: G.guild || null, m: G.mounted ? 1 : 0, w: G.pvpEnabled ? 1 : 0,
-      s: this.say || null, st: this.sayT || 0, h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
+      h: this.server ? this.server.name : null, j: this.hostOf || null, uid: this.myId || null };
     const k = JSON.stringify(pres); if (k === this.lastPres) return; this.lastPres = k;
     this.room.presence(pres).catch(() => {});
   },
   onPeers(ch) {
-    for (const p of ch.peers) {
-      const pr = p.presence || {};
-      if (pr.s && pr.st && this.seenSay[p.peer] !== pr.st && !p.sameTab) { this.seenSay[p.peer] = pr.st; chatLog('Say', clean(pr.n || 'HERO'), clean(pr.s, 120)); SFX.whisper(); }
-    }
     for (const p of ch.left) { delete this.joined[p.peer]; if (this.hostOf === p.peer) { this.hostOf = null; toast('SERVER', 'Host left the server', 'px_tower', 'error'); } }
   },
   sendChat(msg) {
-    msg = clean(msg, 120); if (!msg) return;
-    if (this.offline) { chatLog('System', 'REALM', 'You are offline. Switch to ONLINE to talk to other players.'); return; }
-    this.say = msg; this.sayT = Date.now(); chatLog('Say', G ? G.name : 'YOU', msg);
+    const raw = String(msg || '').trim(); if (!raw) return;
+    const match = raw.match(/^\/(\S+)(?:\s+([\s\S]*))?$/);
+    let channel = 'say', text = raw, to = '';
+    if (match) {
+      const cmd = match[1].toLowerCase(), rest = match[2] || '';
+      const aliases = { s: 'say', say: 'say', y: 'yell', yell: 'yell', p: 'party', party: 'party', g: 'guild', guild: 'guild', '1': 'world', world: 'world', '2': 'trade', trade: 'trade', '4': 'lfg', lfg: 'lfg', e: 'emote', emote: 'emote' };
+      if (cmd === 'help' || cmd === '?') { chatLog('system', 'CHAT', '/s /y /p /g /w name /1 /2 /4 /e · /r replies to last whisper'); return; }
+      if (cmd === 'w' || cmd === 'whisper' || cmd === 'tell') {
+        const w = rest.match(/^(\S+)\s+([\s\S]+)$/); if (!w) { chatLog('system', 'CHAT', 'Use /w playername message'); return; }
+        channel = 'whisper'; to = w[1].slice(0, 24); text = w[2];
+      } else if (cmd === 'r' || cmd === 'reply') {
+        if (!this.lastWhisper) { chatLog('system', 'CHAT', 'There is nobody to reply to yet.'); return; }
+        channel = 'whisper'; to = this.lastWhisper; text = rest;
+      } else if (aliases[cmd]) { channel = aliases[cmd]; text = rest; }
+      else { chatLog('system', 'CHAT', `Unknown chat command /${cmd}. Type /help.`); return; }
+      if (!text.trim()) { chatLog('system', 'CHAT', 'Enter a message after the channel command.'); return; }
+    }
+    text = clean(text, 180); if (!text) return;
+    if (['party', 'guild', 'whisper'].includes(channel) && !this.isOnline()) { chatLog('system', 'CHAT', 'This channel needs an online realm connection.'); return; }
+    if (channel === 'party' && !this.server && !this.hostOf) { chatLog('system', 'CHAT', 'Join or host a party before using party chat.'); return; }
+    if (channel === 'guild' && !(G && G.guild)) { chatLog('system', 'CHAT', 'Join a guild before using guild chat.'); return; }
+    if (channel === 'whisper') {
+      const target = this.peers.find(p => { const pr = p.presence || {}; return String(pr.n || '').toLowerCase() === to.toLowerCase() || String(p.name || '').toLowerCase() === to.toLowerCase(); });
+      if (!target) { chatLog('system', 'CHAT', `${to} is not online in this realm.`); return; }
+      to = target.peer; this.lastWhisper = (target.presence || {}).n || target.name || to;
+    }
+    if (this.offline || !this.room) {
+      if (channel !== 'say' && channel !== 'yell' && channel !== 'emote') { chatLog('system', 'CHAT', 'You are offline. Switch to ONLINE to use this channel.'); return; }
+      chatLog(channel, G ? G.name : 'YOU', text); return;
+    }
+    if (channel === 'say') { this.say = text; this.sayT = Date.now(); }
+    const data = { channel, text, to, zone: G ? (G.inst ? 'inst' : G.map) : '', guild: G && G.guild || '' };
+    chatLog(channel, G ? G.name : 'YOU', text);
+    this.room.emit('chat', data).catch(() => chatLog('system', 'CHAT', 'Message could not be sent.'));
+  },
+  receiveChat(message) {
+    const d = message && message.data || {}, channel = String(d.channel || '').toLowerCase(), text = clean(d.text, 180);
+    const allowed = ['say', 'yell', 'party', 'guild', 'whisper', 'world', 'trade', 'lfg', 'emote'];
+    if (!allowed.includes(channel) || !text) return;
+    const peer = this.peers.find(p => p.peer === message.peer), presence = peer && peer.presence || {};
+    if (channel === 'say' || channel === 'yell') {
+      if (!peer || String(presence.z || '') !== String(G && (G.inst ? 'inst' : G.map) || '')) return;
+      if (channel === 'say' && Math.abs((+presence.x || 0) - (G.x || 0)) + Math.abs((+presence.y || 0) - (G.y || 0)) > 12) return;
+    }
+    if (channel === 'guild' && (!G.guild || presence.g !== G.guild)) return;
+    if (channel === 'party') {
+      const host = this.hostOf || (this.server ? this.myPeer() : null), theirHost = presence.j || (presence.h ? message.peer : null);
+      if (!host || host !== theirHost) return;
+    }
+    if (channel === 'whisper' && d.to !== this.myPeer()) return;
+    const who = clean(d.name || presence.n || (peer && peer.name) || 'PLAYER', 24);
+    if (channel === 'whisper') this.lastWhisper = who;
+    chatLog(channel, who, text); if (channel === 'whisper') SFX.whisper();
   },
   peersInZone(zid) { return this.peers.filter(p => p.presence && p.presence.z === zid && typeof p.presence.x === 'number'); },
   servers() { return this.peers.filter(p => p.presence && p.presence.h).map(p => ({ peer: p.peer, name: clean(p.presence.h, 20), host: clean(p.presence.n), lvl: p.presence.l, players: this.peers.filter(q => q.presence && q.presence.j === p.peer).length + 1 })); },

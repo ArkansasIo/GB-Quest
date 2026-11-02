@@ -16,14 +16,15 @@ const store = {
 };
 const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
-S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'windowed');
+S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
+if (S.displayMode === 'windowed' && !S.displayModeUserSet) S.displayMode = 'full-window';
 function syncDisplayMode() {
   document.body.classList.toggle('full-window-mode', S.displayMode === 'full-window');
   document.body.classList.toggle('fullscreen-mode', S.displayMode === 'borderless' || S.displayMode === 'fullscreen');
   S.fullscreen = S.displayMode === 'fullscreen';
 }
 function applyDisplayMode(mode) {
-  S.displayMode = mode; syncDisplayMode(); saveSettings();
+  S.displayMode = mode; S.displayModeUserSet = true; syncDisplayMode(); saveSettings();
   if (mode === 'fullscreen' && !document.fullscreenElement) {
     const enter = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
     if (!enter) { S.displayMode = 'borderless'; syncDisplayMode(); saveSettings(); return; }

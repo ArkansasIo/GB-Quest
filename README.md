@@ -16,6 +16,7 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 ## Play
 
 - **Single file:** open `dist/gbquest.html` in any browser. It opens in the desktop game window layout.
+- The game defaults to a full-window layout. Click **FULL SCREEN** or press **F** to enter the browser's native full-screen mode.
 - **Full-screen window:** open `dist/gbquest-fullscreen.html`. The screen fills the window, with a full-screen toggle, 1:1 pixel scaling, an overlay pad and overlay chat.
 - **Full-screen mode:** open **START → SETTINGS → FULL SCREEN** in either browser build to expand the game to the browser window; the setting is saved between sessions.
 - **World atlas:** open `dist/atlas.html` for the interactive map of Dunia, or press **M** in game.
@@ -92,8 +93,11 @@ src/combat.js              the battle engine
 src/systems.js             saves, quests, achievements, professions, realm, multiplayer
 src/scenes_world.js        boot, title, creation, field, services, instances, map
 src/scenes_menu.js         menus, sheets, bag, equipment, settings, sound test
-src/main.js                entry point, embedded Atlas overlay
-src/shell.html             handheld frame;  src/fullscreen.html  full-screen window layer
+client/main.js             front-end entry point, embedded Atlas overlay
+client/shell.html          desktop/mobile client shell; client/fullscreen.html full-screen layer
+backend/server.cjs         MMORPG realm/account/multiplayer backend
+store/catalog.cjs          server-owned store catalog and checkout contract
+admin/                     restricted admin control plane (`/admin`)
 atlas/atlas_template.html  interactive Atlas of Dunia (built into dist/atlas.html)
 tools/export_atlas.cjs      exports zones, roads, bosses and quests for the atlas
 tools/build_atlas.py       builds dist/atlas.html

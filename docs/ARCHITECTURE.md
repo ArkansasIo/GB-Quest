@@ -2,6 +2,8 @@
 
 Lost Kingdom of Shadowbane Chronicles is plain JavaScript with no framework, no bundler and no runtime dependencies. `tools/build.py` concatenates the modules in a fixed order into one HTML file that runs anywhere. Diagrams are in [UML.md](UML.md).
 
+Repository boundaries: `client/` owns the browser shell and boot entry, `src/` owns game runtime modules, `backend/` owns the MMORPG realm service, `store/` owns catalog and purchase policy, and `admin/` owns the restricted control-plane page. `server/server.cjs` remains a compatibility launcher; `server.js` is a separate local native-rules HTTP bridge.
+
 ## Module map
 
 | # | Module | Lines of responsibility |
@@ -18,10 +20,13 @@ Lost Kingdom of Shadowbane Chronicles is plain JavaScript with no framework, no 
 | 10 | `src/art.js` | NES-style art mapping for monsters, items, spells, portraits, battle backdrops |
 | 11 | `src/scenes_world.js` | Boot, Title, creation, `Field` (overworld), services, instances, loot rolls, fishing, `WorldMap`, level-up, remote battle view, credits |
 | 12 | `src/scenes_menu.js` | `ListScene` base and every menu: main menu, bag, equipment, sheet, spellbook, growth, quests, crafting, achievements, bestiary, reputation, social, auction, bank, settings, sound test |
-| 13 | `src/main.js` | boot, chat form, hot snapshot, `NET.init`, autosave, debug hooks `window.GBQ`, embedded Atlas overlay |
+| 13 | `client/main.js` | boot, chat form, hot snapshot, `NET.init`, autosave, debug hooks `window.GBQ`, embedded Atlas overlay |
 | 14 | `src/debug.js` | debug panel (F9), error recorder, god mode, collision overlay, self-check |
-| — | `src/shell.html` | handheld device chrome, touch controls, chat panel, build strip |
-| — | `src/fullscreen.html` | full-screen window overrides and toolbar |
+| â€” | `backend/server.cjs` | MMORPG account, realm, persistence, multiplayer and admin API |
+| â€” | `store/catalog.cjs` | server-owned store catalog and checkout policy |
+| â€” | `admin/controlplane.html` | restricted account and realm operations UI |
+| — | `client/shell.html` | handheld device chrome, touch controls, chat panel, build strip |
+| — | `client/fullscreen.html` | full-screen window overrides and toolbar |
 | — | `atlas/atlas_template.html` | the interactive Atlas of Dunia (SVG) |
 
 Load order matters because modules share one global scope. Data comes first, then generators, then the engine, then the 64-bit layers (which only hook into the engine at call time), then rules and scenes, and `main` last.

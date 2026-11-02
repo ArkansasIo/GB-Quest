@@ -25,6 +25,12 @@ const LocalRealm = {
   async login(username, password) { const r = await this.api('/api/login', { method: 'POST', body: { username, password } }); this.token = r.token; this.account = r.account; this.store(); return r.account; },
   async logout() { try { await this.api('/api/logout', { method: 'POST' }); } catch (e) {} this.disconnect(); this.token = null; this.account = null; this.store(); },
   async me() { try { const r = await this.api('/api/me'); this.account = r.account; this.store(); return r; } catch (e) { if (e.status === 401) { this.token = null; this.account = null; this.store(); } return null; } },
+  async friends() { return this.api('/api/friends'); },
+  async requestFriend(username) { return this.api('/api/friends/request', { method: 'POST', body: { username } }); },
+  async acceptFriend(accountId) { return this.api('/api/friends/accept', { method: 'POST', body: { accountId } }); },
+  async removeFriend(accountId) { return this.api('/api/friends/remove', { method: 'POST', body: { accountId } }); },
+  async createInvite() { if (!this.peer) throw new Error('Wait for the realm connection first.'); return this.api('/api/invites', { method: 'POST', body: { peer: this.peer } }); },
+  async resolveInvite(code) { return this.api('/api/invites/' + encodeURIComponent(String(code).trim().toUpperCase())); },
   // ---------------------------------------------------------------- room-shaped transport
   room() {
     const L = this, handlers = {}, peerSubs = [];
@@ -67,6 +73,7 @@ LocalRealm.load();
     this.room = LocalRealm.room();
     this.room.onPeers(ch => { if (this.offline) { this.peers = []; return; } this.peers = ch.peers.filter(p => !p.sameTab); this.onPeers(ch); }, () => { this.status = 'SERVER LOST'; });
     ['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end'].forEach(t => this.room.on(t, m => this.onMsg(t, m)));
+    this.room.on('chat', m => this.receiveChat(m));
     this.db = null; this.publishHero();
   };
   const pub0 = NET.publishHero.bind(NET);

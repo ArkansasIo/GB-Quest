@@ -39,11 +39,25 @@ It needs Node 18+ and has no dependencies. Data is kept in `server/data/realm.js
 | GET / PUT / DELETE | `/api/saves/0..2` | Bearer | `{ state }` |
 | GET | `/api/heroes` | Bearer | top 50 heroes |
 | PUT | `/api/hero` | Bearer | publish your hero to the leaderboard |
+| GET | `/api/realms` | — | nine-name realm directory (live play is currently one shared room) |
+| GET | `/api/friends` | Bearer | friends and incoming requests |
+| POST | `/api/friends/request` | Bearer | `{ username }` |
+| POST | `/api/friends/accept` | Bearer | `{ accountId }` |
+| POST | `/api/friends/remove` | Bearer | `{ accountId }` |
+| POST | `/api/invites` | Bearer | `{ peer }` creates a 12-character, 15-minute invite code |
+| GET | `/api/invites/{code}` | Bearer | resolves code to an online host peer |
 | GET | `/api/stream?token=` | token | Server-Sent Events: `hello {peer}`, `peers {peers, left}`, `msg {topic, peer, data}` |
 | POST | `/api/presence` | Bearer | `{ peer, presence }` |
 | POST | `/api/emit` | Bearer | `{ peer, topic, data }`. Topics: `srv_join srv_char srv_battle srv_turn srv_act srv_end chat` |
+| GET | `/api/store/catalog` | — | server-owned product catalog and checkout status |
+| POST | `/api/store/checkout` | Bearer | disabled with HTTP 503 until a verified payment provider is configured |
+| GET | `/api/admin/overview` | Admin Bearer | realm summary |
+| GET | `/api/admin/players` | Admin Bearer | account status list |
+| GET | `/api/admin/audit` | Admin Bearer | recent administrative actions |
+| POST | `/api/admin/players/{accountId}/ban` | Admin Bearer | revoke sessions and suspend an account |
+| POST | `/api/admin/players/{accountId}/unban` | Admin Bearer | restore account login |
 
-The client (`src/netlocal.js`) wraps this API in an object with the same shape as the shared page's room (`presence`, `onPeers`, `on`, `emit`, `peers`). The host-server battle code in `systems.js` therefore runs unchanged on either transport. See the protocol in [MULTIPLAYER.md](MULTIPLAYER.md).
+The client (`src/netlocal.js`) wraps this API in an object with the same shape as the shared page's room (`presence`, `onPeers`, `on`, `emit`, `peers`). The host-server battle code in `systems.js` therefore runs unchanged on either transport. See the protocol in [MULTIPLAYER.md](MULTIPLAYER.md), and the folder boundaries in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Trading hub (auction house) and direct trade
 
@@ -68,5 +82,7 @@ Server endpoints:
 | `GET` | `/api/market/claim` | collects gold from sales and returned items |
 
 **Direct trade** (`SOCIAL > TRADE`) runs over the `trade` room topic, on the page room or on the realm server. You invite a player who is online with you, and each of you puts up items, stacks and gold. Both sides LOCK, then both CONFIRM, and each client applies the swap. Received items are re-validated with `cleanItem`. Trades have no fees.
+
+Friends, invite codes, the nine-realm directory, and the disabled store frame are described in [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md). The store is a UI prototype only; checkout is disabled until a server-verified payment integration exists.
 
 Item ownership is not checked on the server yet. A realm or page you host trusts its players' clients, so a modified client could list or trade items it doesn't own.

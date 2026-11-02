@@ -14,7 +14,7 @@
 | Key | Action |
 |---|---|
 | M | open or close the **Atlas of Dunia** |
-| F | full screen (full-screen build) |
+| F | toggle browser full screen |
 | C | chat overlay (full-screen build) |
 | F3 or ` | profiler overlay (64-bit video mode) |
 | F9 | debug panel |

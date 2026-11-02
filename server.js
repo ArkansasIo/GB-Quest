@@ -73,7 +73,7 @@ function staticFile(requestPath) {
   const relative = decoded === "/" ? "index.html" : decoded.slice(1);
   if (!relative || relative.split(/[\\/]/).some(part => part.startsWith("."))) return null;
   const file = path.resolve(root, relative);
-  const allowedRoots = ["src", "assets", "dist", "legacy"].map(dir => path.join(root, dir) + path.sep);
+  const allowedRoots = ["src", "client", "assets", "dist", "legacy"].map(dir => path.join(root, dir) + path.sep);
   if (file !== path.join(root, "index.html") && !allowedRoots.some(dir => file.startsWith(dir))) return null;
   return file;
 }

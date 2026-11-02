@@ -11,6 +11,8 @@
 | [MULTIPLAYER.md](MULTIPLAYER.md) | Presence, chat, host-server protocol, leaderboard, play modes |
 | [BUILD.md](BUILD.md) | Build, run, full-screen build, tests, release checklist |
 | [SERVER.md](SERVER.md) | Realm server, accounts (register/login/logout), cloud saves, offline/online modes, API |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Code map and separation of client, MMORPG backend, store, and admin control plane |
+| [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md) | Nine-realm directory, friends, invite codes, and in-game store frame |
 | [DEBUGGING.md](DEBUGGING.md) | Debug panel, automated sweep, debug hooks, bugs fixed |
 | **Generated reference** (`node tools/gen_docs.cjs`) | |
 | [STORY.md](STORY.md) | Prologue, 12 acts, 50 chapters, side quest templates, expansions, factions |

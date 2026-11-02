@@ -7,7 +7,7 @@ Multiplayer runs on the hosting page's own real-time and storage capabilities, w
 | Layer | Transport | What |
 |---|---|---|
 | Presence | `room.presence()` / `onPeers()` | your hero's zone, tile position, look, name and level; whether you are hosting a server |
-| Chat | room topic | say, trade, LFG, guild, emote and system channels, shown in the chat panel |
+| Chat | room topic | nearby say/yell, party, guild, whisper, world, trade, LFG and emote channels, shown in the filtered chat panel |
 | Host server | room topics `srv_*` | host-authoritative battles that friends join with their own heroes |
 | Leaderboard | `db` collection `heroes` | one doc per player (`heroes/{self}`), readable by every viewer, writable only by its owner |
 | Simulated realm | local | NPC "players" (seeded per zone) who walk, fight and chat, so the world never feels empty |
@@ -42,6 +42,12 @@ See the sequence diagram in [UML.md §7](UML.md#7-sequence-multiplayer-host-batt
 | Party (dungeons) | 4 | joined guests, otherwise AI adventurers (`makeAdventurer`, role-balanced) |
 | Raid | 12 | joined guests, otherwise AI adventurers |
 
+## Chat channels
+
+The chat panel keeps timestamped messages and filters for **All**, **Say**, **Party**, **Guild**, and **Social**. Slash commands select the send channel: `/s` nearby say, `/y` yell in the zone, `/p` party, `/g` guild, `/w name message` whisper, `/r message` reply, `/1` world, `/2` trade, `/4` LFG, and `/e` emote. `/help` lists commands. Realm-server routing limits say to nearby players, yell to the same zone, party/guild to their members, and whispers to the target; world, trade and LFG reach the connected realm. Offline say/yell/emote remain local.
+
 ## Planned: dedicated realm server
 
 A Node service with the same `srv_*` message shapes over WebSocket, persistent world bosses, an auction house and mail, and server-side loot. It is designed so that the existing host code path becomes the server's battle worker.
+
+The current server now exposes a nine-name realm directory, account friend requests, and short-lived invite codes. Live play remains one shared server room; independent realm shards and cross-realm character rules are not implemented yet. See [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md) for the current contract and store-frame status.

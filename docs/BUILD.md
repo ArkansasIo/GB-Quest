@@ -37,7 +37,7 @@ python3 tools/make_worldmap.py && python3 tools/slice_sheets.py
 
 ## Full-screen window build
 
-`dist/gbquest-fullscreen.html` is the same game with `src/fullscreen.html` layered over the shell:
+`dist/gbquest-fullscreen.html` is the same game with `client/fullscreen.html` layered over `client/shell.html`:
 
 - The LCD fills the window with the aspect ratio locked. **1:1 PIXELS** switches to whole-number scaling.
 - **FULL SCREEN** (or the F key) uses the browser's full-screen API where it is allowed.
