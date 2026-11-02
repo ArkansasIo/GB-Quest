@@ -26,12 +26,17 @@
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(() => (G ? { G } : {}));
   const start = data => {
-    if (data && data.G) { loading.then(() => { G = data.G; fixupState(); enterWorld(); }); }
-    else push(new Boot(() => progress));
+    push(new Title()); render();
+    if (data && data.G) loading.then(() => { G = data.G; fixupState(); enterWorld(); });
     requestAnimationFrame(loop);
     NET.init();
   };
-  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+  let started = false;
+  const startOnce = data => { if (started) return; started = true; start(data); };
+  if (hot && hot.ready) {
+    hot.ready(startOnce);
+    setTimeout(() => startOnce((hot && hot.data) || {}), 1500);
+  } else startOnce((hot && hot.data) || {});
   // autosave every 2 minutes
   setInterval(() => { if (G && scenes.some(s => s instanceof Field)) { G.playtime += 120; saveGame(); } }, 120000);
   window.GBQ = { openAtlas, closeAtlas, get G() { return G; }, newGame(o) { G = newGameState(o); return G; }, scenes, push, reset, startBattle, rollEncounter, enterWorld, Battle, makeMonster, makeAdventurer, buildParty, bDown, bUp, tick, render, S, ZONES, BESTIARY, BOSSES, buildZoneCached, newGameState, saveGame, loadSlot, travelTo, enterInstance, DUNGEONS, RAIDS, gainXP, derive };

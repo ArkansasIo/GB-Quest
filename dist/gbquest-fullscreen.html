@@ -53,7 +53,7 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
 #lcd {
   width: 100%; max-width: 100%; aspect-ratio: 160 / 144;
   image-rendering: pixelated; image-rendering: crisp-edges;
-  background: #a0a868; border-radius: 3px; display: block;
+  background: #000; border-radius: 3px; display: block;
 }
 .brand { font-weight: 700; font-size: 15px; letter-spacing: .06em; color: var(--ink); padding-left: 4px; }
 .brand em { font-style: normal; color: var(--ring); }
@@ -190,6 +190,9 @@ body.full-window-mode .game-client, body.fullscreen-mode .game-client { position
 body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
 body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
 .game-viewport { position: relative; }
+.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
+.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
+body.game-rendered .game-start-fallback { display: none; }
 .game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
 .game-viewport > .chat { display: flex; }
 body:not(.chat-on) .game-viewport > .chat { display: none; }
@@ -230,6 +233,7 @@ body:not(.chat-on) .chat { display: none; }
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
   <div class="game-viewport">
+    <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
     <div class="fsbar" role="toolbar" aria-label="Window">
   <button id="fsPad" title="On-screen pad">PAD</button>
@@ -2185,11 +2189,14 @@ let ASSET_NAMES = [];
 async function loadAssets(onProgress) {
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
+  if (!ASSET_NAMES.length) { onProgress && onProgress(1); return; }
   let done = 0;
   await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
     const im = new Image();
-    im.onload = () => { IMG[n] = im; done++; onProgress && onProgress(done / ASSET_NAMES.length); res(); };
-    im.onerror = () => { done++; res(); };
+    let settled = false;
+    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(done / ASSET_NAMES.length); res(); };
+    im.onload = () => { IMG[n] = im; finish(); };
+    im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
   })));
 }
@@ -2694,11 +2701,15 @@ function render() {
   drawToasts();
   if (window.DBG && DBG.overlay) DBG.overlay();
   present();
+  document.body.classList.add('game-rendered');
 }
 function present() {
-  const targetW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
+  const requestedW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
   const sourceW = S.video === 'hd64' ? W * 4 : W, sourceH = S.video === 'hd64' ? H * 4 : H;
-  const scale = targetW / sourceW, outW = targetW, outH = Math.round(sourceH * scale);
+  // 4K/8K are display upscales; allocating those full backing stores every
+  // frame can exhaust browser canvas memory without adding source detail.
+  const outW = Math.min(requestedW, Math.max(sourceW, 1920));
+  const outH = Math.round(sourceH * outW / sourceW);
   if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, outW, outH);
   if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
   lctx.imageSmoothingEnabled = false; lctx.drawImage(cv, 0, 0, outW, outH);
@@ -6179,9 +6190,15 @@ class SoundTest extends ListScene {
 // ================================================================ BOOT (Arkansas - Io engine identity and game build)
 class Boot {
   constructor(progress) { this.opaque = true; this.t = 0; this.prog = progress || (() => 1); }
-  update() { this.t++; if (this.t === 72) { play(arp('q', [84, 96], 0.09, 0.08)); } if ((this.t > 150 && this.prog() >= 1) || (this.t > 30 && (P('a') || P('start')) && this.prog() >= 1)) { fadeTo(() => reset(new Title())); this.t = -9999; } }
+  update() {
+    this.t++;
+    if (this.t === 72) play(arp('q', [84, 96], 0.09, 0.08));
+    const ready = Number(this.prog()) >= 1;
+    const skip = this.t > 30 && (P('a') || P('start'));
+    if ((this.t > 150 && ready) || skip || this.t > 600) { fadeTo(() => reset(new Title())); this.t = -9999; }
+  }
   draw() {
-    fill(0, 0, W, H, '#10172d');
+    fill(0, 0, W, H, '#080a08');
     const pulse = 0.7 + 0.3 * Math.sin(this.t / 12);
     ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#68ddff'; ctx.shadowBlur = 8;
     ctx.strokeStyle = '#68ddff'; ctx.lineWidth = 2; ctx.beginPath();
@@ -6197,7 +6214,7 @@ class Boot {
     fill(27, 94, 106, 1, 2);
     textC(BUILD.gameLines[0], 80, 97, 2); textC(BUILD.gameLines[1], 80, 106, 0);
     if (this.t > 45 && this.prog() >= 1) textC('PRESENTS', 80, 120, 2);
-    if (this.prog() < 1) { bar(40, 120, 80, 4, this.prog(), 1); textC('LOADING', 80, 127, 1); }
+    if (this.prog() < 1) { bar(40, 120, 80, 4, this.prog(), 1); textC(this.t > 30 ? 'PRESS ENTER TO SKIP' : 'LOADING', 80, 127, 1); }
     textC(`GAME v${BUILD.version} ${BUILD.build}`, 80, 137, 1);
   }
 }
@@ -9986,12 +10003,17 @@ function tradeMenu() {
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(() => (G ? { G } : {}));
   const start = data => {
-    if (data && data.G) { loading.then(() => { G = data.G; fixupState(); enterWorld(); }); }
-    else push(new Boot(() => progress));
+    push(new Title()); render();
+    if (data && data.G) loading.then(() => { G = data.G; fixupState(); enterWorld(); });
     requestAnimationFrame(loop);
     NET.init();
   };
-  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+  let started = false;
+  const startOnce = data => { if (started) return; started = true; start(data); };
+  if (hot && hot.ready) {
+    hot.ready(startOnce);
+    setTimeout(() => startOnce((hot && hot.data) || {}), 1500);
+  } else startOnce((hot && hot.data) || {});
   // autosave every 2 minutes
   setInterval(() => { if (G && scenes.some(s => s instanceof Field)) { G.playtime += 120; saveGame(); } }, 120000);
   window.GBQ = { openAtlas, closeAtlas, get G() { return G; }, newGame(o) { G = newGameState(o); return G; }, scenes, push, reset, startBattle, rollEncounter, enterWorld, Battle, makeMonster, makeAdventurer, buildParty, bDown, bUp, tick, render, S, ZONES, BESTIARY, BOSSES, buildZoneCached, newGameState, saveGame, loadSlot, travelTo, enterInstance, DUNGEONS, RAIDS, gainXP, derive };

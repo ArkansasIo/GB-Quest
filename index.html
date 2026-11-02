@@ -56,7 +56,7 @@ body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
 #lcd {
   width: 100%; max-width: 100%; aspect-ratio: 160 / 144;
   image-rendering: pixelated; image-rendering: crisp-edges;
-  background: #a0a868; border-radius: 3px; display: block;
+  background: #000; border-radius: 3px; display: block;
 }
 .brand { font-weight: 700; font-size: 15px; letter-spacing: .06em; color: var(--ink); padding-left: 4px; }
 .brand em { font-style: normal; color: var(--ring); }
@@ -193,6 +193,9 @@ body.full-window-mode .game-client, body.fullscreen-mode .game-client { position
 body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
 body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
 .game-viewport { position: relative; }
+.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
+.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
+body.game-rendered .game-start-fallback { display: none; }
 .game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
 .game-viewport > .chat { display: flex; }
 body:not(.chat-on) .game-viewport > .chat { display: none; }
@@ -208,6 +211,7 @@ body:not(.chat-on) #chatShow { display: block; }
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
   <div class="game-viewport">
+    <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
     <section class="chat" aria-label="In-game chat">
       <div class="chat-titlebar"><span>REALM CHAT · C</span><button type="button" id="chatHide" aria-label="Hide chat">×</button></div>

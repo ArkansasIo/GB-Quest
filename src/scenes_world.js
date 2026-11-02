@@ -5,9 +5,15 @@
 // ================================================================ BOOT (Arkansas - Io engine identity and game build)
 class Boot {
   constructor(progress) { this.opaque = true; this.t = 0; this.prog = progress || (() => 1); }
-  update() { this.t++; if (this.t === 72) { play(arp('q', [84, 96], 0.09, 0.08)); } if ((this.t > 150 && this.prog() >= 1) || (this.t > 30 && (P('a') || P('start')) && this.prog() >= 1)) { fadeTo(() => reset(new Title())); this.t = -9999; } }
+  update() {
+    this.t++;
+    if (this.t === 72) play(arp('q', [84, 96], 0.09, 0.08));
+    const ready = Number(this.prog()) >= 1;
+    const skip = this.t > 30 && (P('a') || P('start'));
+    if ((this.t > 150 && ready) || skip || this.t > 600) { fadeTo(() => reset(new Title())); this.t = -9999; }
+  }
   draw() {
-    fill(0, 0, W, H, '#10172d');
+    fill(0, 0, W, H, '#080a08');
     const pulse = 0.7 + 0.3 * Math.sin(this.t / 12);
     ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#68ddff'; ctx.shadowBlur = 8;
     ctx.strokeStyle = '#68ddff'; ctx.lineWidth = 2; ctx.beginPath();
@@ -23,7 +29,7 @@ class Boot {
     fill(27, 94, 106, 1, 2);
     textC(BUILD.gameLines[0], 80, 97, 2); textC(BUILD.gameLines[1], 80, 106, 0);
     if (this.t > 45 && this.prog() >= 1) textC('PRESENTS', 80, 120, 2);
-    if (this.prog() < 1) { bar(40, 120, 80, 4, this.prog(), 1); textC('LOADING', 80, 127, 1); }
+    if (this.prog() < 1) { bar(40, 120, 80, 4, this.prog(), 1); textC(this.t > 30 ? 'PRESS ENTER TO SKIP' : 'LOADING', 80, 127, 1); }
     textC(`GAME v${BUILD.version} ${BUILD.build}`, 80, 137, 1);
   }
 }

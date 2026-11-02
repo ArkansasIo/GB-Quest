@@ -73,11 +73,14 @@ let ASSET_NAMES = [];
 async function loadAssets(onProgress) {
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
+  if (!ASSET_NAMES.length) { onProgress && onProgress(1); return; }
   let done = 0;
   await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
     const im = new Image();
-    im.onload = () => { IMG[n] = im; done++; onProgress && onProgress(done / ASSET_NAMES.length); res(); };
-    im.onerror = () => { done++; res(); };
+    let settled = false;
+    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(done / ASSET_NAMES.length); res(); };
+    im.onload = () => { IMG[n] = im; finish(); };
+    im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
   })));
 }
@@ -582,11 +585,15 @@ function render() {
   drawToasts();
   if (window.DBG && DBG.overlay) DBG.overlay();
   present();
+  document.body.classList.add('game-rendered');
 }
 function present() {
-  const targetW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
+  const requestedW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
   const sourceW = S.video === 'hd64' ? W * 4 : W, sourceH = S.video === 'hd64' ? H * 4 : H;
-  const scale = targetW / sourceW, outW = targetW, outH = Math.round(sourceH * scale);
+  // 4K/8K are display upscales; allocating those full backing stores every
+  // frame can exhaust browser canvas memory without adding source detail.
+  const outW = Math.min(requestedW, Math.max(sourceW, 1920));
+  const outH = Math.round(sourceH * outW / sourceW);
   if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, outW, outH);
   if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
   lctx.imageSmoothingEnabled = false; lctx.drawImage(cv, 0, 0, outW, outH);
