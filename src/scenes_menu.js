@@ -515,6 +515,54 @@ class ProfessionTreeScene extends ListScene {
   }
 }
 
+class ProfessionQuestScene extends ListScene {
+  constructor() { super(2); this.professionIndex = 0; this.professionIds = Object.keys(PROFS); this.message = ''; }
+  professionId() { return this.professionIds[this.professionIndex]; }
+  items() { return [{ id: 'side', name: 'PROFESSION SIDE QUEST' }, { id: 'order', name: 'REPEATABLE WORK ORDER' }]; }
+  update() {
+    if (P('select')) { this.professionIndex = (this.professionIndex + 1) % this.professionIds.length; this.i = this.top = 0; this.message = ''; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const professionId = this.professionId(), questId = this.items()[this.i].id;
+    if ((professionId === 'armorsmith' || professionId === 'weaponsmith') && G.lvl < 20) {
+      this.message = `${PROFS[professionId]} UNLOCK AT PLAYER LEVEL 20.`; SFX.error(); return;
+    }
+    const status = professionQuestStatus(professionId, questId);
+    if (status.done) { this.message = 'SIDE QUEST COMPLETE.'; SFX.cursor(); return; }
+    if (status.ready) {
+      const reward = claimProfessionQuest(professionId, questId);
+      this.message = reward.ok ? `REWARD +${fmt(reward.xp)} XP +${fmt(reward.gold)}G +${reward.skill} SKILL` : 'QUEST IS NOT READY.';
+      SFX[reward.ok ? 'quest_done' : 'error'](); return;
+    }
+    if (!status.accepted) {
+      acceptProfessionQuest(professionId, questId);
+      this.message = 'QUEST ACCEPTED. COMPLETE THE LISTED WORK.'; SFX.quest_accept(); return;
+    }
+    this.message = `PROGRESS ${status.progress}/${status.count}`; SFX.cursor();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const professionId = this.professionId();
+    textC(`< ${PROFS[professionId]} >`, 80, 13, 'gold');
+    const locked = (professionId === 'armorsmith' || professionId === 'weaponsmith') && G.lvl < 20;
+    text(`SKILL ${G.prof[professionId]}/${PROF_CAP}`, 5, 27, 2);
+    this.items().forEach((quest, index) => {
+      const status = professionQuestStatus(professionId, quest.id), y = 43 + index * 29;
+      if (index === this.i) fill(3, y - 1, 153, 25, 1);
+      const state = locked ? 'LOCKED' : status.done ? 'DONE' : status.ready ? 'READY' : status.accepted ? `${status.progress}/${status.count}` : 'NEW';
+      text(quest.name.slice(0, 22), 6, y);
+      textR(state, 151, y, status.ready ? 'gold' : status.done ? 2 : locked ? 1 : 3);
+      text(wrap(status.text, 24).slice(0, 1)[0], 6, y + 11, 2);
+    });
+    frame(2, 106, 156, 36);
+    const selected = this.items()[this.i], status = professionQuestStatus(professionId, selected.id);
+    text(this.message || (status.ready ? 'A: TURN IN' : status.accepted ? `${status.progress}/${status.count} COMPLETE` : 'A: ACCEPT'), 6, 110, status.ready ? 'gold' : 3);
+    text(`REWARD ${fmt(PROFESSION_QUESTS[professionId].xp * (selected.id === 'side' ? 3 : 1))} XP`, 6, 121, 2);
+    text('SELECT: JOB', 4, 143, 1);
+  }
+}
+
 // ================================================================ ACHIEVEMENTS / BESTIARY / REPUTATION
 class AchievementScene extends ListScene {
   constructor() { super(10); }

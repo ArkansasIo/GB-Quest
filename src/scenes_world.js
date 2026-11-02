@@ -723,7 +723,7 @@ function gatherHerb(e) {
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
   const chk = skillCheck(G, 'nature', 8 + Math.floor(G.prof.herb / 10));
   nodes[e.i] = G.stats.steps;
-  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); SFX.gather();
+  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); progressProfessionQuest('herb', 'gather', n); SFX.gather();
   const up = gainProf('herb', G.prof.herb);
   questEvent('gather', e.herb);
   toast(`+${n} ${ITEMS[e.herb].name}`, up ? `HERBALISM ${G.prof.herb}` : chk.text.slice(0, 22), ITEMS[e.herb].icon, 'pickup');
@@ -908,7 +908,7 @@ function smithBuyMenu(kind) {
     if (index < 0) return;
     const item = stock[index], price = item.value * 2;
     if (G.gold < price) return say('Not enough gold.');
-    G.gold -= price; addGear(item); gainProf(kind === 'armor' ? 'armorsmith' : 'weaponsmith'); SFX.buy(); say(`Purchased ${item.name}.`);
+    G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`);
   }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
 }
 function smithSellMenu(kind) {
@@ -918,7 +918,7 @@ function smithSellMenu(kind) {
     if (index < 0) return;
     const item = gear[index], bagIndex = G.bag.indexOf(item);
     if (bagIndex < 0) return;
-    G.bag.splice(bagIndex, 1); G.gold += item.value; gainProf(kind === 'armor' ? 'armorsmith' : 'weaponsmith'); SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
+    G.bag.splice(bagIndex, 1); G.gold += item.value; const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
   }, `GOLD ${fmt(G.gold)}. Selling ${kind === 'armor' ? 'armour' : 'weapons'}.`);
 }
 function smithUpgradeMenu(tier) {
@@ -937,7 +937,7 @@ function smithUpgradeMenu(tier) {
     choose(['TEMPER ITEM', 'CANCEL'], confirm => {
       if (confirm !== 0) return;
       for (const material of ['scrap', 'shard', 'ember']) for (let n = 0; n < cost[material]; n++) takeItem(material);
-      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3); gainProf('blacksmith');
+      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3); gainProf('blacksmith'); progressProfessionQuest('blacksmith', 'reinforce');
       SFX.levelup(); say(`${item.name} is now +${item.plus}.`);
     }, `REINFORCE ${item.name.slice(0, 16)}?\n${needs.join(', ')}`);
   }, `${tier.name} TIER: REINFORCES ${RARITY[tier.maxRarity].name.toLowerCase()} GEAR OR LOWER. Materials come from salvaging gear.`);
@@ -952,11 +952,12 @@ function innMenu() {
   }, 'INNKEEPER: A warm bed and good company.');
 }
 function trainerMenu() {
-  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSIONS', 'LEAVE'], k => {
+  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSION TREES', 'PROFESSION QUESTS', 'LEAVE'], k => {
     if (k === 0) push(new GrowthScene());
     if (k === 1) { if (classLevel(G) < 3) return say('Subclasses unlock at level 3.'); if (G.gold < 100) return say('Not enough gold.'); G.gold -= 100; G.sub = null; G.pending.sub = true; push(new GrowthScene()); }
     if (k === 2) { if (G.hasMount) return say('You already ride.'); if (G.lvl < 10 || G.gold < 300) return say('Need level 10 and 300 G.'); G.gold -= 300; G.hasMount = true; SFX.howl(); checkAchievements(); say('You learn to ride! Press B in the field to mount.'); }
     if (k === 3) push(new ProfessionTreeScene());
+    if (k === 4) push(new ProfessionQuestScene());
   }, 'TRAINER: Knowledge is power.');
 }
 function mailMenu() {
@@ -1282,7 +1283,7 @@ class Fishing {
     const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4;
     const k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
     const quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
-    addItem(k, quantity); G.stats.fish += quantity; SFX.reel();
+    addItem(k, quantity); G.stats.fish += quantity; progressProfessionQuest('fish', 'fish', quantity); SFX.reel();
     const up = gainProf('fish', G.prof.fish);
     questEvent('fish', k); checkAchievements();
     toast(`${quantity > 1 ? `CAUGHT ${quantity} ` : 'CAUGHT '}${ITEMS[k].name}`, up ? `FISHING ${G.prof.fish}` : (z ? z.sub : ''), ITEMS[k].icon, 'pickup');

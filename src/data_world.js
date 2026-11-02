@@ -351,6 +351,15 @@ const PROFESSION_TREES = {
   armorsmith: { yield: 'ARMOR BATCHES', efficiency: 'FIT ECONOMY', mastery: 'ARMOR MASTERY' },
   weaponsmith: { yield: 'WEAPON BATCHES', efficiency: 'STEEL ECONOMY', mastery: 'WEAPON MASTERY' },
 };
+const PROFESSION_QUESTS = {
+  herb: { sideName: 'THE FIELD GUIDE', sideText: 'Gather herbs for the town apothecary.', action: 'gather', sideCount: 20, orderText: 'Gather a bundle of herbs for local healers.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'peacebloom' },
+  alch: { sideName: 'A CLEARER MIXTURE', sideText: 'Brew draughts for the traveling medics.', action: 'craft', sideCount: 12, orderText: 'Complete alchemy work for the clinic.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'antitoxin' },
+  fish: { sideName: 'THE OLD FISHER', sideText: 'Bring a generous catch to the harbor.', action: 'fish', sideCount: 20, orderText: 'Catch fish for the harbor kitchen.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'ration' },
+  cook: { sideName: 'THE FEAST TABLE', sideText: 'Prepare meals for the road wardens.', action: 'craft', sideCount: 12, orderText: 'Cook provisions for a passing party.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'ration' },
+  blacksmith: { sideName: 'THE HEARTHGUARD OATH', sideText: 'Reinforce equipment for the town watch.', action: 'reinforce', sideCount: 10, orderText: 'Temper equipment brought in by adventurers.', orderCount: 2, xp: 2200, gold: 350, skill: 3, item: 'scrap' },
+  armorsmith: { sideName: 'A SAFE RETURN', sideText: 'Trade armor with the frontier patrol.', action: 'trade', sideCount: 15, orderText: 'Complete armor orders for local travelers.', orderCount: 3, xp: 2200, gold: 350, skill: 3, item: 'iron_ore' },
+  weaponsmith: { sideName: 'STEEL FOR THE ROAD', sideText: 'Trade weapons with the frontier patrol.', action: 'trade', sideCount: 15, orderText: 'Complete weapon orders for local travelers.', orderCount: 3, xp: 2200, gold: 350, skill: 3, item: 'iron_ore' },
+};
 const ITEMS = {
   potion: { name: 'HEALING DRAUGHT', icon: 'item_health_potion', type: 'use', heal: '2d4+2', combat: true, price: 25, desc: 'Heal 2d4+2.' },
   greater: { name: 'GREATER DRAUGHT', icon: 'item_elixir', type: 'use', heal: '4d4+4', combat: true, price: 75, desc: 'Heal 4d4+4.' },

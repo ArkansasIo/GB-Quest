@@ -977,6 +977,15 @@ const PROFESSION_TREES = {
   armorsmith: { yield: 'ARMOR BATCHES', efficiency: 'FIT ECONOMY', mastery: 'ARMOR MASTERY' },
   weaponsmith: { yield: 'WEAPON BATCHES', efficiency: 'STEEL ECONOMY', mastery: 'WEAPON MASTERY' },
 };
+const PROFESSION_QUESTS = {
+  herb: { sideName: 'THE FIELD GUIDE', sideText: 'Gather herbs for the town apothecary.', action: 'gather', sideCount: 20, orderText: 'Gather a bundle of herbs for local healers.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'peacebloom' },
+  alch: { sideName: 'A CLEARER MIXTURE', sideText: 'Brew draughts for the traveling medics.', action: 'craft', sideCount: 12, orderText: 'Complete alchemy work for the clinic.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'antitoxin' },
+  fish: { sideName: 'THE OLD FISHER', sideText: 'Bring a generous catch to the harbor.', action: 'fish', sideCount: 20, orderText: 'Catch fish for the harbor kitchen.', orderCount: 5, xp: 1200, gold: 180, skill: 3, item: 'ration' },
+  cook: { sideName: 'THE FEAST TABLE', sideText: 'Prepare meals for the road wardens.', action: 'craft', sideCount: 12, orderText: 'Cook provisions for a passing party.', orderCount: 3, xp: 1500, gold: 220, skill: 3, item: 'ration' },
+  blacksmith: { sideName: 'THE HEARTHGUARD OATH', sideText: 'Reinforce equipment for the town watch.', action: 'reinforce', sideCount: 10, orderText: 'Temper equipment brought in by adventurers.', orderCount: 2, xp: 2200, gold: 350, skill: 3, item: 'scrap' },
+  armorsmith: { sideName: 'A SAFE RETURN', sideText: 'Trade armor with the frontier patrol.', action: 'trade', sideCount: 15, orderText: 'Complete armor orders for local travelers.', orderCount: 3, xp: 2200, gold: 350, skill: 3, item: 'iron_ore' },
+  weaponsmith: { sideName: 'STEEL FOR THE ROAD', sideText: 'Trade weapons with the frontier patrol.', action: 'trade', sideCount: 15, orderText: 'Complete weapon orders for local travelers.', orderCount: 3, xp: 2200, gold: 350, skill: 3, item: 'iron_ore' },
+};
 const ITEMS = {
   potion: { name: 'HEALING DRAUGHT', icon: 'item_health_potion', type: 'use', heal: '2d4+2', combat: true, price: 25, desc: 'Heal 2d4+2.' },
   greater: { name: 'GREATER DRAUGHT', icon: 'item_elixir', type: 'use', heal: '4d4+4', combat: true, price: 75, desc: 'Heal 4d4+4.' },
@@ -4172,7 +4181,7 @@ function newGameState(o) {
     map: 'elderwood', x: 3, y: 7, dir: 'down', mounted: false, hasMount: false,
     chapter: 0, chProg: 0, sideq: {}, waypoints: { elderwood: true }, areas: {}, bestiary: {}, bossKills: {}, rep: { lantern: 0 }, honor: 0, rating: 1000,
     stats: { kills: 0, deaths: 0, nat20: 0, nat1: 0, stabilized: 0, elites: 0, worldBosses: 0, arcBosses: 0, dungeons: 0, raids: 0, trials: 0, fish: 0, crafted: 0, goldEarned: 0, legendaries: 0, spell9: 0, party4: 0, party12: 0, diff5: 0, diff9: 0, steps: 0, pvpWins: 0, pvpKills: 0, pvpDeaths: 0, battlegroundWins: 0, quests: 0 },
-    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
+    ach: {}, prof: { herb: 1, alch: 1, fish: 1, cook: 1, blacksmith: 0, armorsmith: 0, weaponsmith: 0 }, profTalents: {}, profQuests: {}, companions: [], difficulty: 2, playMode: o.mode || 'solo', guild: null, pets: [], pet: null,
     mail: [], ah: [], bank: [], hearth: { map: 'elderwood', x: 3, y: 7 }, visited: { elderwood: true }, nodes: {}, towerBest: 0, raidWeek: {}, daily: {}, renown: {}, inst: null, seenPrologue: true,
     pvpEnabled: false, pvpFaction: 'lantern', pvpDefeats: {}, eventDaily: {}, trackedEvent: null,
   });
@@ -4197,6 +4206,16 @@ function fixupState() {
     G.profTalents[key] = Object.fromEntries(['yield', 'efficiency', 'mastery'].map(branch => [branch, Math.max(0, Math.min(240, Math.floor(Number(saved[branch]) || 0)))]));
     let remaining = G.prof[key];
     for (const branch of ['yield', 'efficiency', 'mastery']) { const rank = Math.min(remaining, G.profTalents[key][branch]); G.profTalents[key][branch] = rank; remaining -= rank; }
+  }
+  G.profQuests = G.profQuests && typeof G.profQuests === 'object' && !Array.isArray(G.profQuests) ? G.profQuests : {};
+  for (const key of Object.keys(PROFS)) {
+    const saved = G.profQuests[key] && typeof G.profQuests[key] === 'object' && !Array.isArray(G.profQuests[key]) ? G.profQuests[key] : {};
+    G.profQuests[key] = {};
+    for (const id of ['side', 'order']) {
+      const raw = saved[id] && typeof saved[id] === 'object' && !Array.isArray(saved[id]) ? saved[id] : {};
+      const target = id === 'side' ? PROFESSION_QUESTS[key].sideCount : PROFESSION_QUESTS[key].orderCount;
+      G.profQuests[key][id] = { accepted: !!raw.accepted, progress: Math.max(0, Math.min(target, Math.floor(Number(raw.progress) || 0))), done: id === 'side' && !!raw.done };
+    }
   }
   G.talents = Array.isArray(G.talents) ? G.talents.filter(id => TALENT_TREES.some(tree => tree.nodes.some(node => node.id === id))) : [];
   const talentMilestones = [5, 10, 15, 20].filter(level => G.lvl >= level).length;
@@ -4415,7 +4434,59 @@ function craft(rec) {
   const output = 1 + Math.floor(profTalentRank(rec.prof, 'yield') / 24);
   addItem(rec.makes, output); G.stats.crafted++;
   const up = gainProf(rec.prof, rec.skill);
+  progressProfessionQuest(rec.prof, 'craft', 1);
   return `Made ${output} ${ITEMS[rec.makes].name}!${up ? ` ${PROFS[rec.prof]} ${G.prof[rec.prof]}` : ''}`;
+}
+
+function professionQuestRecord(professionId, questId) {
+  const definition = PROFESSION_QUESTS[professionId];
+  if (!definition || !['side', 'order'].includes(questId)) throw new RangeError('Unknown profession quest.');
+  G.profQuests ||= {};
+  G.profQuests[professionId] ||= {};
+  G.profQuests[professionId][questId] ||= { accepted: false, progress: 0, done: false };
+  return { definition, state: G.profQuests[professionId][questId] };
+}
+function professionQuestStatus(professionId, questId) {
+  const { definition, state } = professionQuestRecord(professionId, questId);
+  const count = questId === 'side' ? definition.sideCount : definition.orderCount;
+  return { ...state, count, ready: state.accepted && !state.done && state.progress >= count,
+    name: questId === 'side' ? definition.sideName : 'REPEATABLE WORK ORDER',
+    text: questId === 'side' ? definition.sideText : definition.orderText };
+}
+function acceptProfessionQuest(professionId, questId) {
+  const status = professionQuestStatus(professionId, questId);
+  if (status.done || status.accepted) return false;
+  const { state } = professionQuestRecord(professionId, questId);
+  state.accepted = true;
+  return true;
+}
+function progressProfessionQuest(professionId, action, amount = 1) {
+  const definition = PROFESSION_QUESTS[professionId];
+  if (!definition || definition.action !== action || !Number.isFinite(amount) || amount <= 0) return;
+  for (const questId of ['side', 'order']) {
+    const status = professionQuestStatus(professionId, questId);
+    if (status.accepted && !status.done) {
+      const { state } = professionQuestRecord(professionId, questId);
+      state.progress = Math.min(status.count, state.progress + Math.floor(amount));
+    }
+  }
+}
+function claimProfessionQuest(professionId, questId) {
+  const status = professionQuestStatus(professionId, questId);
+  if (!status.ready) return { ok: false, reason: 'quest_not_ready' };
+  const definition = status && PROFESSION_QUESTS[professionId];
+  const state = professionQuestRecord(professionId, questId).state;
+  const scale = questId === 'side' ? 3 : 1;
+  const xp = definition.xp * scale, gold = definition.gold * scale, skill = definition.skill * scale;
+  G.gold += gold;
+  const levelUps = gainXP(G, xp).ups;
+  G.prof[professionId] = Math.min(PROF_CAP, G.prof[professionId] + skill);
+  if (definition.item && ITEMS[definition.item]) addItem(definition.item, scale);
+  if (questId === 'side') state.done = true;
+  else { state.accepted = false; state.progress = 0; }
+  checkAchievements();
+  saveGame();
+  return { ok: true, xp, gold, skill, item: definition.item, levelUps };
 }
 
 // ================================================================ zone cache
@@ -5121,6 +5192,54 @@ class ProfessionTreeScene extends ListScene {
     const selected = branches[this.i];
     const help = selected.id === 'yield' ? 'Every 24 ranks add one resource or crafted item.' : selected.id === 'efficiency' ? 'Every 24 ranks save one ingredient; blacksmiths also reduce tempering costs.' : 'Raises the chance to gain another profession skill level.';
     text(wrap(help, 24).slice(0, 2).join('\n'), 6, 111, 3);
+    text('SELECT: JOB', 4, 143, 1);
+  }
+}
+
+class ProfessionQuestScene extends ListScene {
+  constructor() { super(2); this.professionIndex = 0; this.professionIds = Object.keys(PROFS); this.message = ''; }
+  professionId() { return this.professionIds[this.professionIndex]; }
+  items() { return [{ id: 'side', name: 'PROFESSION SIDE QUEST' }, { id: 'order', name: 'REPEATABLE WORK ORDER' }]; }
+  update() {
+    if (P('select')) { this.professionIndex = (this.professionIndex + 1) % this.professionIds.length; this.i = this.top = 0; this.message = ''; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const professionId = this.professionId(), questId = this.items()[this.i].id;
+    if ((professionId === 'armorsmith' || professionId === 'weaponsmith') && G.lvl < 20) {
+      this.message = `${PROFS[professionId]} UNLOCK AT PLAYER LEVEL 20.`; SFX.error(); return;
+    }
+    const status = professionQuestStatus(professionId, questId);
+    if (status.done) { this.message = 'SIDE QUEST COMPLETE.'; SFX.cursor(); return; }
+    if (status.ready) {
+      const reward = claimProfessionQuest(professionId, questId);
+      this.message = reward.ok ? `REWARD +${fmt(reward.xp)} XP +${fmt(reward.gold)}G +${reward.skill} SKILL` : 'QUEST IS NOT READY.';
+      SFX[reward.ok ? 'quest_done' : 'error'](); return;
+    }
+    if (!status.accepted) {
+      acceptProfessionQuest(professionId, questId);
+      this.message = 'QUEST ACCEPTED. COMPLETE THE LISTED WORK.'; SFX.quest_accept(); return;
+    }
+    this.message = `PROGRESS ${status.progress}/${status.count}`; SFX.cursor();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const professionId = this.professionId();
+    textC(`< ${PROFS[professionId]} >`, 80, 13, 'gold');
+    const locked = (professionId === 'armorsmith' || professionId === 'weaponsmith') && G.lvl < 20;
+    text(`SKILL ${G.prof[professionId]}/${PROF_CAP}`, 5, 27, 2);
+    this.items().forEach((quest, index) => {
+      const status = professionQuestStatus(professionId, quest.id), y = 43 + index * 29;
+      if (index === this.i) fill(3, y - 1, 153, 25, 1);
+      const state = locked ? 'LOCKED' : status.done ? 'DONE' : status.ready ? 'READY' : status.accepted ? `${status.progress}/${status.count}` : 'NEW';
+      text(quest.name.slice(0, 22), 6, y);
+      textR(state, 151, y, status.ready ? 'gold' : status.done ? 2 : locked ? 1 : 3);
+      text(wrap(status.text, 24).slice(0, 1)[0], 6, y + 11, 2);
+    });
+    frame(2, 106, 156, 36);
+    const selected = this.items()[this.i], status = professionQuestStatus(professionId, selected.id);
+    text(this.message || (status.ready ? 'A: TURN IN' : status.accepted ? `${status.progress}/${status.count} COMPLETE` : 'A: ACCEPT'), 6, 110, status.ready ? 'gold' : 3);
+    text(`REWARD ${fmt(PROFESSION_QUESTS[professionId].xp * (selected.id === 'side' ? 3 : 1))} XP`, 6, 121, 2);
     text('SELECT: JOB', 4, 143, 1);
   }
 }
@@ -6017,7 +6136,7 @@ function gatherHerb(e) {
   const nodes = G.nodes[G.map] || (G.nodes[G.map] = {});
   const chk = skillCheck(G, 'nature', 8 + Math.floor(G.prof.herb / 10));
   nodes[e.i] = G.stats.steps;
-  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); SFX.gather();
+  const n = (chk.ok ? 2 : 1) + Math.floor(profTalentRank('herb', 'yield') / 24); addItem(e.herb, n); progressProfessionQuest('herb', 'gather', n); SFX.gather();
   const up = gainProf('herb', G.prof.herb);
   questEvent('gather', e.herb);
   toast(`+${n} ${ITEMS[e.herb].name}`, up ? `HERBALISM ${G.prof.herb}` : chk.text.slice(0, 22), ITEMS[e.herb].icon, 'pickup');
@@ -6202,7 +6321,7 @@ function smithBuyMenu(kind) {
     if (index < 0) return;
     const item = stock[index], price = item.value * 2;
     if (G.gold < price) return say('Not enough gold.');
-    G.gold -= price; addGear(item); gainProf(kind === 'armor' ? 'armorsmith' : 'weaponsmith'); SFX.buy(); say(`Purchased ${item.name}.`);
+    G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`);
   }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
 }
 function smithSellMenu(kind) {
@@ -6212,7 +6331,7 @@ function smithSellMenu(kind) {
     if (index < 0) return;
     const item = gear[index], bagIndex = G.bag.indexOf(item);
     if (bagIndex < 0) return;
-    G.bag.splice(bagIndex, 1); G.gold += item.value; gainProf(kind === 'armor' ? 'armorsmith' : 'weaponsmith'); SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
+    G.bag.splice(bagIndex, 1); G.gold += item.value; const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.sell(); say(`Sold ${item.name} for ${fmt(item.value)} G.`);
   }, `GOLD ${fmt(G.gold)}. Selling ${kind === 'armor' ? 'armour' : 'weapons'}.`);
 }
 function smithUpgradeMenu(tier) {
@@ -6231,7 +6350,7 @@ function smithUpgradeMenu(tier) {
     choose(['TEMPER ITEM', 'CANCEL'], confirm => {
       if (confirm !== 0) return;
       for (const material of ['scrap', 'shard', 'ember']) for (let n = 0; n < cost[material]; n++) takeItem(material);
-      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3); gainProf('blacksmith');
+      G.gold -= cost.gold; item.plus++; item.value = Math.round(item.value * 1.3); gainProf('blacksmith'); progressProfessionQuest('blacksmith', 'reinforce');
       SFX.levelup(); say(`${item.name} is now +${item.plus}.`);
     }, `REINFORCE ${item.name.slice(0, 16)}?\n${needs.join(', ')}`);
   }, `${tier.name} TIER: REINFORCES ${RARITY[tier.maxRarity].name.toLowerCase()} GEAR OR LOWER. Materials come from salvaging gear.`);
@@ -6246,11 +6365,12 @@ function innMenu() {
   }, 'INNKEEPER: A warm bed and good company.');
 }
 function trainerMenu() {
-  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSIONS', 'LEAVE'], k => {
+  choose(['SPEND POINTS', 'CHANGE SUBCLASS (100G)', 'RIDING (LV10, 300G)', 'PROFESSION TREES', 'PROFESSION QUESTS', 'LEAVE'], k => {
     if (k === 0) push(new GrowthScene());
     if (k === 1) { if (classLevel(G) < 3) return say('Subclasses unlock at level 3.'); if (G.gold < 100) return say('Not enough gold.'); G.gold -= 100; G.sub = null; G.pending.sub = true; push(new GrowthScene()); }
     if (k === 2) { if (G.hasMount) return say('You already ride.'); if (G.lvl < 10 || G.gold < 300) return say('Need level 10 and 300 G.'); G.gold -= 300; G.hasMount = true; SFX.howl(); checkAchievements(); say('You learn to ride! Press B in the field to mount.'); }
     if (k === 3) push(new ProfessionTreeScene());
+    if (k === 4) push(new ProfessionQuestScene());
   }, 'TRAINER: Knowledge is power.');
 }
 function mailMenu() {
@@ -6576,7 +6696,7 @@ class Fishing {
     const z = ZONE_BY_ID[G.map], r = R() * 100 + G.prof.fish / 4;
     const k = r < 8 ? 'old_boot' : r > 90 ? 'eel' : r > 70 ? 'big_fish' : 'small_fish';
     const quantity = 1 + Math.floor(profTalentRank('fish', 'yield') / 24);
-    addItem(k, quantity); G.stats.fish += quantity; SFX.reel();
+    addItem(k, quantity); G.stats.fish += quantity; progressProfessionQuest('fish', 'fish', quantity); SFX.reel();
     const up = gainProf('fish', G.prof.fish);
     questEvent('fish', k); checkAchievements();
     toast(`${quantity > 1 ? `CAUGHT ${quantity} ` : 'CAUGHT '}${ITEMS[k].name}`, up ? `FISHING ${G.prof.fish}` : (z ? z.sub : ''), ITEMS[k].icon, 'pickup');
