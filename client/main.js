@@ -2,13 +2,25 @@
 'use strict';
 (function main() {
   let progress = 0;
+  const chatPreference = (() => { try { return localStorage.getItem('gbq.fs.chat'); } catch (e) { return null; } })();
+  document.body.classList.toggle('chat-on', chatPreference !== '0');
+  const setChatVisible = visible => {
+    document.body.classList.toggle('chat-on', visible);
+    try { localStorage.setItem('gbq.fs.chat', visible ? '1' : '0'); } catch (e) {}
+  };
   const loading = loadAssets(p => { progress = p; }).then(() => { progress = 1; document.body.classList.add('ready'); });
-  // chat box under the handheld
+  // In-game chat overlay inside the game viewport.
   const input = document.getElementById('chatinput');
   const form = document.getElementById('chatform');
+  const chatHide = document.getElementById('chatHide'), chatShow = document.getElementById('chatShow');
+  if (chatHide) chatHide.addEventListener('click', () => setChatVisible(false));
+  if (chatShow) chatShow.addEventListener('click', () => setChatVisible(true));
   if (form) form.addEventListener('submit', e => { e.preventDefault(); const v = input.value.trim(); if (!v) return; if (G) NET.sendChat(v); else chatLog('say', 'YOU', v); input.value = ''; input.blur(); focusGame(); });
   if (input) input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); input.blur(); focusGame(); } });
   document.querySelectorAll('[data-chat-filter]').forEach(button => button.addEventListener('click', () => setChatFilter(button.dataset.chatFilter)));
+  if (!document.getElementById('fsChat')) addEventListener('keydown', e => {
+    if (!e.repeat && (e.key === 'c' || e.key === 'C') && !typing()) { e.preventDefault(); setChatVisible(!document.body.classList.contains('chat-on')); }
+  });
   chatLog('System', BUILD.studio, `${BUILD.game} v${BUILD.version} - welcome to AELMOOR!`);
   // live page updates keep your run
   const hot = window.claude && window.claude.hot;

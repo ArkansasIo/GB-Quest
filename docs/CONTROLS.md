@@ -15,7 +15,7 @@
 |---|---|
 | M | open or close the **Atlas of Dunia** |
 | F | toggle browser full screen |
-| C | chat overlay (full-screen build) |
+| C | show or hide the in-game chat overlay |
 | F3 or ` | profiler overlay (64-bit video mode) |
 | F9 | debug panel |
 
