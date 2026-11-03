@@ -771,7 +771,7 @@ class Field {
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
-      else if (e.kind === 'npc') { if (PIX) blit(walker(npcLook(e.spr), 'down', (frameN >> 5) % 2 && e.svc !== 'server' ? 0 : 0), ex, ey - 3); else { const c = sprH(e.spr, 23); blit(c, ex + (T - c.width) / 2, ey + T - 24); } if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } } }
+      else if (e.kind === 'npc') { if (PIX) blit(typeof npcSprite === 'function' ? npcSprite(e) : walker(npcLook(e.spr), 'down', 0), ex, ey - 3); else { const c = sprH(e.spr, 23); blit(c, ex + (T - c.width) / 2, ey + T - 24); } if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } } }
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
         const portrait = worldPortrait({ cls: CLASSES[p.cls] ? p.cls : 'warden' }, p.dir || 'down');

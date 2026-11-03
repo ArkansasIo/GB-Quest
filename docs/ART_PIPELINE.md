@@ -15,6 +15,7 @@ node tools/build.cjs
 
 - `gen_gbtiles.py` generates biome terrain, all 16 cardinal road joins, two-frame shoreline animation, dungeon themes, map objects, and walking sprites.
 - `gen_newart.py` generates class/UI/equipment icons, rarity gems, named item art, and the nine redesigned adventurer rank badges. The rank badges are written as both `rk_1.png` … `rk_9.png` and named aliases `rk_f.png` … `rk_sss.png`.
+- `gen_npcs.py` draws a role-specific NPC sprite for 43 townsfolk roles, each with its own outfit, headwear, facial hair and held prop, plus the Realm Stone crystal. Every role gets walk frames in three directions and a blink frame: `gh_npc_<role>_{down,up,side}{0,1}`, `gh_npc_<role>_blink`. `src/npc_art.js` maps each service NPC and profession trainer to its role. Run `python3 tools/gen_npcs.py --sheet preview.png` for a contact sheet.
 - `gen_hd64.py` creates the 4× enhanced atlas pages and JSON sprite indexes from the generated native sprites.
 - `build.cjs` embeds all PNGs into the browser and desktop game builds.
 

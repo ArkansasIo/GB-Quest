@@ -46,6 +46,12 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **World quests:** 4 daily quests near your level, a daily rare elite per zone with epic loot, and 4-hour zone invasions with a chest for 15 invader kills.
 - **Loadouts:** dual specialization (level 10, 500 G), 5 saved equipment sets and pinned action-bar order per spec.
 
+- **New NPC art:** 43 role-specific townsfolk sprites (tools/gen_npcs.py).
+  - **Variety:** each role has its own outfit, headwear, facial hair and held prop: merchant, banker, innkeeper, guards, smiths, oracle, harbormaster, chef, miner, enchanter, every profession trainer, and townsfolk.
+  - **Animation:** walk frames in three directions and an idle blink.
+  - **Realm Stone:** now a glowing crystal.
+  - **Matching:** every service NPC and trainer uses its role sprite in the pixel field and in 64-bit mode.
+
 ### Fixed
 - Server errors were returned as "Server error." without being logged anywhere.
 - A request body of `null`, an array or a bare value crashed routes with a 500; it now returns 400.
