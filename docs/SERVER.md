@@ -98,3 +98,19 @@ Server endpoints:
 Friends, invite codes, the nine-realm directory, and the disabled store frame are described in [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md). The store is a UI prototype only; checkout is disabled until a server-verified payment integration exists.
 
 For the next production implementation, add a canonical server-owned character inventory and wallet, then implement atomic listing escrow, purchase settlement, cancellation, expiry returns, and direct trade against those records. Validate item definitions and quantities against server catalogs; never accept client-supplied item stats, seller identity, balance, or proceeds as authority.
+
+
+## Server-owned economy core (foundation)
+
+`backend/economy.cjs` contains the first server-side transaction primitives. It stores per-account wallets, server-issued item UIDs, escrowed listings, seller proceeds, expiry returns, and idempotency records under `db.economy`. It deliberately exposes no player-facing grant endpoint: only trusted server-side reward handlers may call `grantGold` or `grantItem`.
+
+The module is a tested foundation, not yet wired into the live HTTP marketplace routes. The realm marketplace and direct-trade relay remain disabled by default until character selection, server-authoritative rewards, inventory synchronization, and wallet persistence are integrated. Do not enable the legacy compatibility override on public servers.
+
+Current transaction invariants:
+
+- Listing requires an item UID already present in the seller's server-owned inventory; the item moves into escrow before the listing is created.
+- Buying debits the buyer and transfers the escrowed item in one synchronous transaction; seller proceeds are credited once with a 5% market fee.
+- Cancellation returns the escrowed item only to its seller; the listing deposit is not refunded.
+- Expiry returns escrowed items to the seller.
+- Repeated requests with the same idempotency key and payload return the original result; reusing a key with a different payload is rejected.
+- Item UIDs are globally unique across player inventories and active listings.
