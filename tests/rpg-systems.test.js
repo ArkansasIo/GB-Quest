@@ -251,3 +251,15 @@ test('HD runtime normalizes world directions into eight-way sprite directions', 
   assert.equal(HD.directionForInput('northwest'), 'NW');
   assert.equal(HD.directionForInput('unknown'), 'S');
 });
+
+test('HD runtime supplies visual families for unmapped legacy equipment IDs', () => {
+  const resolved = HD.resolveEquipment({ cls: 'warlock', eq: {
+    weapon: { kind: 'weapon', base: 'emberwand' },
+    armor: { kind: 'armor', base: 'travelrobe' },
+    offhand: { kind: 'armor', base: 'tower-shield' }
+  } }, { records: [] }, 'A');
+  assert.equal(resolved.archetype, 'summoner');
+  assert.deepEqual(plain(resolved.equipment), {
+    main_hand: 'oak_staff', chest: 'arcane_robe', off_hand: 'iron_shield'
+  });
+});
