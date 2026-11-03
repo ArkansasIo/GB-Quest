@@ -194,3 +194,19 @@ const canvas = await hdArt.render({
 ```
 
 Equipment keys and IDs must match the generated equipment manifest exactly (`head`, `chest`, `legs`, `hands`, `main_hand`, `off_hand`, `back`, `accessory`). The compositor loads only the requested frame and matching rank/direction layers, caches loaded images, respects manifest draw order/blend/offset, and returns a canvas. Invalid path dimensions are rejected. The current generated artwork is explicitly placeholder/prototype art. This API is opt-in and is not yet wired to replace the existing 160×144 in-game character rendering automatically.
+
+### Resolving live game equipment
+
+The runtime also exposes `resolveEquipment(character, visualMap, rank)` and `renderCharacter(character, spec)`. It translates the existing `character.eq` slots (`weapon`, `armor`, `offhand`) through `data/visuals/equipment-catalog-visual-map.json` into the generated overlay slots. A saved `item.tmog` appearance is used for visuals while the original equipped item object, item level and stats remain untouched. Unsupported wondrous-item slots are skipped until dedicated visual mappings exist.
+
+`renderCharacter` accepts `state` or `action` values such as `moving`, `sprinting`, `casting`, `blocking`, `hurt`, and `dying`, and maps them to the generated animation sequences. Cardinal and diagonal world directions are normalized to the eight-way sprite directions. The caller can override the animation with `spec.animation`.
+
+Example:
+
+```js
+const canvas = await hdArt.renderCharacter(G, {
+  state: 'moving', direction: G.dir, frame: 2, rank: 'F'
+});
+```
+
+This is a callable integration API, not yet an automatic replacement for the synchronous world renderer. A future integration must schedule async asset loads outside the draw loop and display cached canvases during rendering.
