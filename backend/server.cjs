@@ -31,6 +31,9 @@ const ROOT_ACCOUNT_ID = String(process.env.GBQ_ROOT_ID || '').toLowerCase();
 const ADMIN_ACCOUNT_ID = String(process.env.GBQ_ADMIN_ID || '').toLowerCase();
 const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3;
 const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end', 'chat', 'trade']);
+// Legacy economy messages are client-settled and do not prove inventory or currency ownership.
+// Keep them disabled on realm servers until server-owned character inventory/wallet transactions exist.
+const UNSAFE_LEGACY_ECONOMY_ENABLED = process.env.GBQ_ENABLE_UNSAFE_LEGACY_ECONOMY === '1';
 
 // ---------------------------------------------------------------- storage
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -485,6 +488,7 @@ const server = http.createServer(async (req, res) => {
     //   POST /api/market/cancel    { id } -> { listing } back to the seller
     //   GET /api/market/claim      -> { gold, returned:[listings] } proceeds and expired listings
     if (p.startsWith('/api/market')) {
+      if (!UNSAFE_LEGACY_ECONOMY_ENABLED) return json(res, 503, { error: 'Realm marketplace is temporarily disabled: server-side item ownership and wallet settlement are not implemented.' });
       if (!db.realmSettings.marketplaceEnabled) return json(res, 503, { error: 'The marketplace is disabled.' });
       const now = Date.now(); db.market = db.market || {}; db.proceeds = db.proceeds || {};
       for (const [id, l] of Object.entries(db.market)) if (l.expires < now) { (db.proceeds[l.seller] ||= { gold: 0, returned: [] }).returned.push(l); delete db.market[id]; }
@@ -554,6 +558,7 @@ const server = http.createServer(async (req, res) => {
       const { peer, topic, data } = await body(req); const c = clients.get(peer);
       if (!c || c.uid !== uid) return json(res, 403, { error: 'Not your connection.' });
       if (!TOPICS.has(topic)) return json(res, 400, { error: 'Unknown topic.' });
+      if (topic === 'trade' && !UNSAFE_LEGACY_ECONOMY_ENABLED) return json(res, 503, { error: 'Direct realm trade is temporarily disabled until item ownership and settlement are server-authoritative.' });
       if (topic === 'chat') {
         const channel = String(data && data.channel || '').toLowerCase();
         const channels = new Set(['say', 'yell', 'party', 'guild', 'whisper', 'world', 'trade', 'lfg', 'emote']);
