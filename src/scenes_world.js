@@ -815,7 +815,22 @@ function walker(look, dir, frame, ghost) {
 }
 function worldPortrait(character, dir = 'down', ghost = false) {
   const portrait = heroPortrait(character);
-  return portrait ? sprFit(portrait, 24, { flip: dir === 'left', ghost }) : null;
+  if (!portrait) return null;
+  const base = sprFit(portrait, 24, { flip: dir === 'left', ghost });
+  if (!base || !character || !character.eq || typeof worldGearVisuals !== 'function' || typeof itemIcon !== 'function') return base;
+  const visuals = worldGearVisuals(character.eq).filter(v => {
+    const name = itemIcon(v.item);
+    return name && IMG[name];
+  });
+  if (!visuals.length) return base;
+  const out = mkCanvas(24, 24), x = out.getContext('2d');
+  x.imageSmoothingEnabled = false;
+  x.drawImage(base, Math.round((24 - base.width) / 2), Math.round((24 - base.height) / 2));
+  for (const v of visuals) {
+    const name = itemIcon(v.item), icon = spr(name, v.size, v.size, { ghost });
+    if (icon) x.drawImage(icon, v.x, v.y);
+  }
+  return out;
 }
 const NPC_LOOK = { villager_0: 'villager0', villager_1: 'villager1', villager_2: 'villager2', villager_3: 'villager3', villager_4: 'guard', villager_5: 'merchant',
   elder_0: 'elder', elder_1: 'sage', elder_2: 'elder', elder_3: 'sage', elder_4: 'sage', elder_5: 'elder', hero_0: 'guard', hero_1: 'guard', hero_2: 'vanguard', hero_3: 'warden' };
