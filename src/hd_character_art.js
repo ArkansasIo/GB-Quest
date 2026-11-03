@@ -39,6 +39,20 @@
       cleric: 'cleric', priest: 'cleric', summoner: 'summoner', warlock: 'summoner', druid: 'summoner', necromancer: 'summoner' };
     return map[key] || 'warrior';
   };
+  const fallbackVisual = (slot, base) => {
+    const id = String(base || '').toLowerCase();
+    if (slot === 'weapon') {
+      if (/dagger|knife|shiv/.test(id)) return { slot: 'main_hand', visualItemId: 'paired_daggers' };
+      if (/bow|crossbow|blowgun|sling/.test(id)) return { slot: 'main_hand', visualItemId: 'short_bow' };
+      if (/staff|wand|grimoire|codex|tome/.test(id)) return { slot: 'main_hand', visualItemId: 'oak_staff' };
+      if (/mace|hammer|club|maul|flail/.test(id)) return { slot: 'main_hand', visualItemId: 'holy_mace' };
+      return { slot: 'main_hand', visualItemId: 'iron_sword' };
+    }
+    if (slot === 'offhand') return { slot: 'off_hand', visualItemId: 'iron_shield' };
+    if (/robe|vestment|mantle|silk/.test(id)) return { slot: 'chest', visualItemId: 'arcane_robe' };
+    if (/leather|hide|padded/.test(id)) return { slot: 'chest', visualItemId: 'shadow_leathers' };
+    return { slot: 'chest', visualItemId: 'iron_plate' };
+  };
   const resolveEquipment = (character, visualMap, rank = 'F') => {
     const records = Array.isArray(visualMap && visualMap.records) ? visualMap.records : [];
     const result = {};
@@ -49,7 +63,7 @@
       if (!equipped || !equipped.kind || !equipped.base) continue;
       const look = equipped.tmog && equipped.tmog.kind && equipped.tmog.base ? equipped.tmog : equipped;
       const catalogId = `${look.kind}:${look.base}`;
-      const record = records.find(entry => entry.catalogId === catalogId);
+      const record = records.find(entry => entry.catalogId === catalogId) || fallbackVisual(key, look.base);
       if (record && record.slot === slots[key] && record.visualItemId) result[record.slot] = record.visualItemId;
     }
     return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
@@ -122,7 +136,7 @@
     };
     return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size };
   };
-  const api = { createRuntime, framePath, directionForInput, animationForState, archetypeForClass, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  const api = { createRuntime, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.GBQHDCharacterArt = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
