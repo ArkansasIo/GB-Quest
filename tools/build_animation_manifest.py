@@ -7,7 +7,7 @@ sprites and can validate completed frame folders when --validate is supplied.
 import argparse, csv, json
 from pathlib import Path
 
-RANKS = ["F", "E", "D", "C", "B", "A", "S", "SSS"]
+RANKS = ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"]
 DIRECTIONS = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
 ARCHETYPES = ["warrior", "mage", "ranger", "rogue", "cleric", "summoner"]
 ANIMATIONS = {
