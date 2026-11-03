@@ -3698,6 +3698,28 @@ const ROLE_CLASSES = { tank: ['warden', 'vanguard', 'berserker'], healer: ['chap
 'use strict';
 
 let CB_ID = 1;
+let CB_HD_RUNTIME = null;
+const CB_HD_PRESENTERS = new WeakMap();
+function battleHDFrame(character, state = 'idle', frame = 0, direction = 'east') {
+  if (!character || !character.eq || typeof globalThis === 'undefined') return null;
+  const api = globalThis.GBQHDCharacterArt;
+  if (!api) return null;
+  try {
+    if (!CB_HD_RUNTIME) CB_HD_RUNTIME = api.createRuntime();
+    let presenter = CB_HD_PRESENTERS.get(character);
+    if (!presenter) {
+      presenter = api.createFramePresenter(CB_HD_RUNTIME, { maxEntries: 16 });
+      CB_HD_PRESENTERS.set(character, presenter);
+    }
+    return presenter.request(character, {
+      direction, state, frame: Math.max(0, Number(frame) || 0),
+      rank: character.rank || character.gearRank || 'F'
+    });
+  } catch (error) {
+    console.warn('HD battle frame unavailable; using classic portrait', error);
+    return null;
+  }
+}
 function partyMember(ch, ctrl = 'ai') { return { id: 'p' + (CB_ID++), side: 'party', ch, ctrl, name: ch.name, effects: [], threat: {}, acted: false, temp: 0 }; }
 function foeMember(m) { m.id = 'f' + (CB_ID++); return m; }
 const isChar = u => !!u.ch;
@@ -4014,7 +4036,7 @@ class Battle {
     const before = hpOf(tgt);
     setHp(tgt, before - a);
     const [px, py] = this.posOf(tgt);
-    if (a) { FX.number(px, py - 12, a, opt.crit ? 'orange' : 3); FX.burst(px, py - 4, opt.crit ? 14 : 6, opt.crit ? 'orange' : 2); this.anim.flash[tgt.id] = 16; }
+    if (a) { FX.number(px, py - 12, a, opt.crit ? 'orange' : 3); FX.burst(px, py - 4, opt.crit ? 14 : 6, opt.crit ? 'orange' : 2); this.anim.flash[tgt.id] = 16; if (isChar(tgt)) this.anim.pose = { id: tgt.id, state: 'hit', until: frameN + 16 }; }
     if (hasEff(tgt, 'asleep') && a > 0) removeEffect(tgt, 'asleep');
     // concentration
     if (a > 0 && isChar(tgt) && tgt.conc) { const sv = this.save(tgt, 'CON', Math.max(10, Math.floor(a / 2)), { adv: tgt.ch.feats.includes('warcaster') ? 1 : 0 }); if (!sv.ok) this.dropConc(tgt); }
@@ -4086,7 +4108,7 @@ class Battle {
     if (nat === 20 && !att.ch.ai) G.stats.nat20++; if (nat === 1 && !att.ch.ai) G.stats.nat1++;
     const line1 = `${att.name}: ${ws ? 'CLAWS' : w.name}${adv > 0 ? ' (ADV)' : adv < 0 ? ' (DIS)' : ''}`;
     const rollTxt = `d20 ${nat}${bonus >= 0 ? '+' : ''}${bonus}=${total} vs AC${ac}`;
-    if (!hit) return { text: `${line1}\n${rollTxt}\n${nat === 1 ? 'NATURAL 1! Miss.' : 'Miss!'}`, act: () => { this.anim.lunge = att.id; SFX[nat === 1 ? 'nat1' : 'miss'](); } };
+    if (!hit) return { text: `${line1}\n${rollTxt}\n${nat === 1 ? 'NATURAL 1! Miss.' : 'Miss!'}`, act: () => { this.anim.lunge = att.id; this.anim.pose = { id: att.id, state: 'attack', until: frameN + 12 }; SFX[nat === 1 ? 'nat1' : 'miss'](); } };
     // mirror images / dodge on monsters vs players handled in monster attack
     let dice = ws ? '2d6' : w.dice, dmg = roll(dice, crit).total + (ws ? Math.max(D.M.STR, D.M.WIS) : w.dmg);
     const parts = [];
@@ -4109,7 +4131,7 @@ class Battle {
     const type = ws ? 'slashing' : w.type, magic = w.magic || !!ws;
     return { text: `${line1}\n${rollTxt}\n${crit ? 'CRITICAL! ' : 'Hit! '}${dmg} ${type}${smiteTxt}`,
       act: () => {
-        this.anim.lunge = att.id; if (crit) { SFX.crit(); shake = 8; } if (nat === 20) SFX.nat20();
+        this.anim.lunge = att.id; this.anim.pose = { id: att.id, state: 'attack', until: frameN + 12 }; if (crit) { SFX.crit(); shake = 8; } if (nat === 20) SFX.nat20();
         this.applyDamage(att, tgt, dmg, type, { attack: true, crit, magic, ranged: w.ranged });
         if (opt.stun && alive(tgt)) { const sv = this.save(tgt, 'CON', 8 + D.pb + D.M.WIS); if (!sv.ok && !tgt.condImm.includes('stunned')) { addEffect(tgt, { id: 'stunned', rounds: 1 }); this.pushNote(`${tgt.name} is STUNNED!`); SFX.stun(); } else this.pushNote(`${tgt.name} resists the stun.`); }
         if (opt.rider && alive(tgt) && !(tgt.condImm || []).includes(opt.rider)) { addEffect(tgt, { id: opt.rider, rounds: 3, lvl: att.ch.lvl, src: att.id }); this.pushNote(`${tgt.name} is ${BUFFS[opt.rider].name}!`); }
@@ -4154,7 +4176,7 @@ class Battle {
     const dc = this.spellDC(u), atk = this.spellAtk(u);
     const powerScale = isChar(u) ? 1 + (D.dmgPct + (D.elem[sp.dt] || 0)) / 100 + Math.max(0, lvlOf - 20) / 40 : 1 + Math.max(0, lvlOf - 20) / 30;
     const schoolSfx = sp.school + '_cast';
-    steps.push(this.say(`${u.name} casts ${sp.name}!${slot ? ` (L${slot})` : ''}`, () => { SFX[schoolSfx](); this.anim.lunge = u.id; this.anim.fx = { name: spellArt(sp) || (sp.dt === 'fire' ? 'fx_burst' : 'fx_sparkle'), t: 20, on: targets.map(t => t.id) }; }, 6));
+    steps.push(this.say(`${u.name} casts ${sp.name}!${slot ? ` (L${slot})` : ''}`, () => { SFX[schoolSfx](); this.anim.lunge = u.id; this.anim.pose = { id: u.id, state: 'cast', until: frameN + 20 }; this.anim.fx = { name: spellArt(sp) || (sp.dt === 'fire' ? 'fx_burst' : 'fx_sparkle'), t: 20, on: targets.map(t => t.id) }; }, 6));
     const dmgRoll = (crit = false) => {
       let ex = sp.dice; const cnt = ex.match(/^(\d+)d(\d+)(.*)$/);
       if (cnt && sp.lvl === 0) ex = `${+cnt[1] * tier}d${cnt[2]}${cnt[3] || ''}`;
@@ -4674,8 +4696,19 @@ class Battle {
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
-      if (c.hp <= 0) { blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78); return; }
-      blit(s, px - s.width / 2 + lx, py - s.height + 14);
+      if (c.hp <= 0) {
+        const deadHd = battleHDFrame(c, 'death', (frameN >> 2) % 8, 'east');
+        if (deadHd) { const h = 30, w = Math.max(1, Math.round(deadHd.width * h / Math.max(1, deadHd.height))); ctx.drawImage(deadHd, Math.round(px - w / 2), 78, w, h); }
+        else blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78);
+        return;
+      }
+      const activePose = this.anim.pose && this.anim.pose.id === u.id && this.anim.pose.until > frameN ? this.anim.pose.state : 'idle';
+      const pose = this.anim.flash[u.id] ? 'hit' : activePose;
+      const hd = battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
+      if (hd) {
+        const h = s.height, w = Math.max(1, Math.round(hd.width * h / Math.max(1, hd.height)));
+        ctx.drawImage(hd, Math.round(px - w / 2 + lx), Math.round(py - h + 14), w, h);
+      } else blit(s, px - s.width / 2 + lx, py - s.height + 14);
       if (hasEff(u, 'invisible') || hasEff(u, 'hidden')) { ctx.globalAlpha = 0.4; fill(px - 8, py - 16, 16, 30, 0); ctx.globalAlpha = 1; }
     });
     this.foes.slice(0, 4).forEach(f => {
@@ -7370,12 +7403,18 @@ class Field {
         const f = LOOK_F[G.dir][(this.ox || this.oy) ? (this.walk >> 3) % 2 : 0];
         if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
-        const portrait = worldPortrait(G, G.dir, ghost);
+        const walkFrame = (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0;
+        const hdFrame = hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
+        const gearWalker = worldGearWalker(G, G.dir, walkFrame, ghost);
+        const portrait = hdFrame || gearWalker || worldPortrait(G, G.dir, ghost);
         if (portrait) blit(portrait, px - cx + (T - portrait.width) / 2, py - cy + T - portrait.height - 1 - (G.mounted ? 6 : 0) - moveBob);
         else if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
-        const portrait = worldPortrait(e.c, e.dir), bob = (this.walk >> 3) % 2;
+        const bob = (this.walk >> 3) % 2;
+        const hdFrame = hdWorldFrame(e.c, e.dir, bob, true, false);
+        const gearWalker = worldGearWalker(e.c, e.dir, bob);
+        const portrait = hdFrame || gearWalker || worldPortrait(e.c, e.dir);
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1 - bob);
         else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex, ey - 3);
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
@@ -7423,9 +7462,76 @@ function walker(look, dir, frame, ghost) {
   const name = `gh_${look}_${d}${frame}`;
   return spr(IMG[name] ? name : `gh_warden_${d}${frame}`, 16, 16, { flip: dir === 'left', ghost });
 }
+function worldGearWalker(character, dir = 'down', frame = 0, ghost = false) {
+  if (!character || !character.eq || typeof walkerGearVisuals !== 'function' || typeof itemIcon !== 'function') return null;
+  const visuals = walkerGearVisuals(character.eq).filter(v => {
+    const name = itemIcon(v.item);
+    return name && IMG[name];
+  });
+  if (!visuals.length) return null;
+  const base = walker(heroLook(character), dir, frame, ghost);
+  if (!base) return null;
+  const out = mkCanvas(24, 24), x = out.getContext('2d');
+  x.imageSmoothingEnabled = false;
+  x.drawImage(base, 0, 0, 24, 24);
+  for (const v of visuals) {
+    const name = itemIcon(v.item), size = Math.max(1, Math.round(v.size * 1.5)), icon = spr(name, size, size, { ghost });
+    if (icon) x.drawImage(icon, Math.round(v.x * 1.5), Math.round(v.y * 1.5));
+  }
+  return out;
+}
 function worldPortrait(character, dir = 'down', ghost = false) {
   const portrait = heroPortrait(character);
-  return portrait ? sprFit(portrait, 24, { flip: dir === 'left', ghost }) : null;
+  if (!portrait) return null;
+  const base = sprFit(portrait, 24, { flip: dir === 'left', ghost });
+  if (!base || !character || !character.eq || typeof worldGearVisuals !== 'function' || typeof itemIcon !== 'function') return base;
+  const visuals = worldGearVisuals(character.eq).filter(v => {
+    const name = itemIcon(v.item);
+    return name && IMG[name];
+  });
+  if (!visuals.length) return base;
+  const out = mkCanvas(24, 24), x = out.getContext('2d');
+  x.imageSmoothingEnabled = false;
+  x.drawImage(base, Math.round((24 - base.width) / 2), Math.round((24 - base.height) / 2));
+  for (const v of visuals) {
+    const name = itemIcon(v.item), icon = spr(name, v.size, v.size, { ghost });
+    if (icon) x.drawImage(icon, v.x, v.y);
+  }
+  return out;
+}
+// HD art is prepared asynchronously and only drawn after its canvas is ready.
+let HD_WORLD_RUNTIME = null;
+const HD_WORLD_PRESENTERS = new WeakMap(), HD_WORLD_SCALED = new WeakMap();
+function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost = false) {
+  if (ghost || !character || !character.eq || typeof globalThis === 'undefined') return null;
+  const api = globalThis.GBQHDCharacterArt;
+  if (!api) return null;
+  try {
+    if (!HD_WORLD_RUNTIME) HD_WORLD_RUNTIME = api.createRuntime();
+    let presenter = HD_WORLD_PRESENTERS.get(character);
+    if (!presenter) {
+      presenter = api.createFramePresenter(HD_WORLD_RUNTIME);
+      HD_WORLD_PRESENTERS.set(character, presenter);
+    }
+    const canvas = presenter.request(character, {
+      direction: dir, frame: Number(frame) || 0,
+      state: moving ? 'moving' : 'idle',
+      rank: character.rank || character.gearRank || 'F'
+    });
+    if (!canvas) return null;
+    const cached = HD_WORLD_SCALED.get(character);
+    if (!cached || cached.source !== canvas) {
+      const output = mkCanvas(24, 24), draw = output.getContext('2d');
+      draw.imageSmoothingEnabled = false;
+      draw.drawImage(canvas, 0, 0, 24, 24);
+      HD_WORLD_SCALED.set(character, { source: canvas, output });
+      return output;
+    }
+    return cached.output;
+  } catch (error) {
+    console.warn('HD character frame unavailable; using classic sprite', error);
+    return null;
+  }
 }
 const NPC_LOOK = { villager_0: 'villager0', villager_1: 'villager1', villager_2: 'villager2', villager_3: 'villager3', villager_4: 'guard', villager_5: 'merchant',
   elder_0: 'elder', elder_1: 'sage', elder_2: 'elder', elder_3: 'sage', elder_4: 'sage', elder_5: 'elder', hero_0: 'guard', hero_1: 'guard', hero_2: 'vanguard', hero_3: 'warden' };
@@ -12232,9 +12338,50 @@ const gearScore = eq => Object.values(eq || {}).reduce((a, it) => a + gearItemSc
 // appearances: one per kind + base; a look fits when the slot matches
 const appearanceKey = it => it && it.kind && it.base ? `${it.kind}:${it.base}` : null;
 const lookFits = (itemSlotName, lookSlotName, itemKind, lookKind) => itemKind === lookKind && itemSlotName === lookSlotName;
+const collectAppearances = (wardrobe, sources) => {
+  const out = wardrobe && typeof wardrobe === 'object' ? wardrobe : {};
+  let added = 0;
+  for (const source of sources || []) for (const it of source || []) {
+    const key = appearanceKey(it);
+    if (key && ['weapon', 'armor', 'wondrous'].includes(it.kind) && !out[key]) { out[key] = 1; added++; }
+  }
+  return { wardrobe: out, added };
+};
+const validAppearance = (item, look, wardrobe, slotOf) => {
+  if (!item || !look || !look.kind || !look.base || item.kind !== look.kind || item.base === look.base) return false;
+  const key = appearanceKey(look);
+  return !!(key && wardrobe && wardrobe[key] && lookFits(slotOf(item), slotOf(look), item.kind, look.kind));
+};
+const PAPERDOLL_VISUAL_SLOTS = Object.freeze({
+  head: { x: 76, y: 14 }, neck: { x: 87, y: 20 }, back: { x: 94, y: 27 },
+  armor: { x: 76, y: 29 }, hands: { x: 61, y: 35 }, weapon: { x: 57, y: 44 },
+  offhand: { x: 95, y: 44 }, waist: { x: 76, y: 42 }, legs: { x: 76, y: 49 },
+  feet: { x: 76, y: 55 }, artifact: { x: 94, y: 16 }, relic: { x: 57, y: 16 },
+});
+const paperDollVisuals = eq => Object.keys(PAPERDOLL_VISUAL_SLOTS)
+  .filter(slot => eq && eq[slot])
+  .map(slot => ({ slot, item: eq[slot], anchor: PAPERDOLL_VISUAL_SLOTS[slot] }));
+const WORLD_GEAR_ICON_SLOTS = Object.freeze([
+  { slot: 'head', x: 2, y: 1, size: 6 },
+  { slot: 'weapon', x: 0, y: 10, size: 6 },
+  { slot: 'armor', x: 9, y: 17, size: 6 },
+  { slot: 'offhand', x: 18, y: 10, size: 6 },
+]);
+const worldGearVisuals = eq => WORLD_GEAR_ICON_SLOTS
+  .filter(v => eq && eq[v.slot])
+  .map(v => ({ ...v, item: eq[v.slot] }));
+const WALKER_GEAR_ICON_SLOTS = Object.freeze([
+  { slot: 'head', x: 6, y: 0, size: 4 },
+  { slot: 'weapon', x: 0, y: 7, size: 4 },
+  { slot: 'armor', x: 6, y: 10, size: 4 },
+  { slot: 'offhand', x: 12, y: 7, size: 4 },
+]);
+const walkerGearVisuals = eq => WALKER_GEAR_ICON_SLOTS
+  .filter(v => eq && eq[v.slot])
+  .map(v => ({ ...v, item: eq[v.slot] }));
 const transmogCost = lvl => 5 * Math.max(1, Math.floor(Number(lvl) || 1));
 
-if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, transmogCost, REST_BONUS };
+if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, collectAppearances, validAppearance, paperDollVisuals, PAPERDOLL_VISUAL_SLOTS, worldGearVisuals, WORLD_GEAR_ICON_SLOTS, walkerGearVisuals, WALKER_GEAR_ICON_SLOTS, transmogCost, REST_BONUS };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof itemSlot === 'function') {
@@ -12264,12 +12411,14 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
   // wardrobe: collect every base the hero holds (polled by mmo_loop.js)
   window.polishPoll = function () {
     if (!G) return; G.wardrobe = G.wardrobe && typeof G.wardrobe === 'object' ? G.wardrobe : {};
-    const seen = it => { const k = appearanceKey(it); if (k && !G.wardrobe[k] && ['weapon', 'armor', 'wondrous'].includes(it.kind)) G.wardrobe[k] = 1; };
-    Object.values(G.eq || {}).forEach(seen); (G.bag || []).forEach(seen); (G.bank || []).forEach(seen);
+    const stashTabs = G.stash && Array.isArray(G.stash.tabs) ? G.stash.tabs : [];
+    const collected = collectAppearances(G.wardrobe, [Object.values(G.eq || {}), G.bag || [], G.bank || [], ...stashTabs]);
+    G.wardrobe = collected.wardrobe;
   };
   // a transmogged item shows its look's icon
-  { const ic0 = itemIcon; itemIcon = function (it) { if (it && it.tmog && it.tmog.base) { try { return ic0(Object.assign({}, it, { base: it.tmog.base })); } catch (e) { /* fall through */ } } return ic0(it); }; }
-  { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it); return it && it.tmog ? `LOOKS LIKE ${baseName(it.kind, it.tmog.base)}. ${s}` : s; }; }
+  const appearanceOf = it => it && validAppearance(it, it.tmog, G && G.wardrobe, lookSlot) ? it.tmog : null;
+  { const ic0 = itemIcon; itemIcon = function (it) { const look = appearanceOf(it); if (look) { try { return ic0(Object.assign({}, it, { base: look.base })); } catch (e) { /* fall through */ } } return ic0(it); }; }
+  { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it), look = appearanceOf(it); return look ? `LOOKS LIKE ${baseName(it.kind, look.base)}. ${s}` : s; }; }
 
   window.wardrobeMenu = function () {
     polishPoll();
@@ -12277,7 +12426,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
     if (!slots.length) return say('Equip something first.');
     choose(slots.map(s => `${SLOT_NAME[s].slice(0, 9)} ${(G.eq[s].tmog ? '*' : '') + baseName(G.eq[s].kind, G.eq[s].tmog ? G.eq[s].tmog.base : G.eq[s].base)}`.slice(0, 24)), k => {
       if (k < 0) return; const it = G.eq[slots[k]], mySlot = itemSlot(it);
-      const looks = Object.keys(G.wardrobe).map(key => key.split(':')).filter(([kind, base]) => base !== it.base && lookFits(mySlot, lookSlot(kind, base), it.kind, kind));
+      const looks = Object.keys(G.wardrobe).map(key => key.split(':')).filter(([kind, base]) => validAppearance(it, { kind, base }, G.wardrobe, lookSlot));
       const cost = transmogCost(G.lvl), opts = [...(it.tmog ? ['RESTORE ORIGINAL LOOK'] : []), ...looks.map(([kind, base]) => baseName(kind, base).slice(0, 20))];
       if (!opts.length) return say(['No other looks collected for this slot yet.', 'Every item you pick up adds its look to your wardrobe.'], window.wardrobeMenu);
       choose(opts, j => {
@@ -12292,10 +12441,224 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
   // gear score and rested pool on the paper doll
   if (typeof PaperDoll !== 'undefined') { const d0 = PaperDoll.prototype.draw; PaperDoll.prototype.draw = function () {
       d0.apply(this, arguments);
+      // Small equipment markers on the central portrait; the full slot list remains around it.
+      for (const visual of paperDollVisuals(G.eq)) {
+        const icon = itemIcon(visual.item);
+        if (icon && IMG[icon]) blit(sprFit(icon, 8), visual.anchor.x, visual.anchor.y);
+      }
       // one line under ATTUNED, above the info frame
       text(`GS ${fmt(gearScore(G.eq))}${G.rested > 0 ? `  RESTED ${Math.round(G.rested / span(G) * 100)}%` : ''}`, 24, 108, 'gold');
     }; }
 }
+
+</script>
+<script>
+// Optional HD character-art runtime. Generated packs are loaded on demand and never block boot.
+'use strict';
+
+(function (root) {
+  const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
+  const DIRECTIONS = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE'];
+  const ANIMATIONS = ['idle', 'walk', 'run', 'attack', 'cast', 'block', 'hit', 'death'];
+  const ARCHETYPES = ['warrior', 'mage', 'ranger', 'rogue', 'cleric', 'summoner'];
+  const safe = (value, allowed) => allowed.includes(String(value)) ? String(value) : null;
+  const framePath = (base, a, r, d, anim, frame) => {
+    const archetype = safe(a, ARCHETYPES), rank = safe(r, RANKS);
+    const direction = safe(d, DIRECTIONS), animation = safe(anim, ANIMATIONS);
+    const index = Number(frame);
+    if (!archetype || !rank || !direction || !animation || !Number.isInteger(index) || index < 0 || index > 99) return null;
+    return `${String(base).replace(/\/$/, '')}/${archetype}/${rank}/${direction}/${animation}/frame_${String(index).padStart(3, '0')}.png`;
+  };
+  const directionForInput = direction => {
+    const value = String(direction || 'down').toLowerCase();
+    const map = { down: 'S', south: 'S', up: 'N', north: 'N', left: 'W', west: 'W',
+      right: 'E', east: 'E', southwest: 'SW', southeast: 'SE', northwest: 'NW', northeast: 'NE' };
+    const normalized = map[value] || String(direction || '').toUpperCase();
+    return DIRECTIONS.includes(normalized) ? normalized : 'S';
+  };
+  const animationForState = state => {
+    const value = String(state || 'idle').toLowerCase();
+    if (['dead', 'death', 'dying'].includes(value)) return 'death';
+    if (['cast', 'casting', 'channel', 'channeling'].includes(value)) return 'cast';
+    if (['attack', 'attacking', 'melee', 'ranged'].includes(value)) return 'attack';
+    if (['block', 'blocking', 'guard'].includes(value)) return 'block';
+    if (['hit', 'hurt', 'stagger'].includes(value)) return 'hit';
+    if (['run', 'running', 'sprint', 'sprinting'].includes(value)) return 'run';
+    if (['walk', 'walking', 'move', 'moving'].includes(value)) return 'walk';
+    return 'idle';
+  };
+  const archetypeForClass = value => {
+    const key = String(value || '').toLowerCase();
+    const map = { warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
+      mage: 'mage', wizard: 'mage', sorcerer: 'mage', ranger: 'ranger', rogue: 'rogue',
+      cleric: 'cleric', priest: 'cleric', summoner: 'summoner', warlock: 'summoner', druid: 'summoner', necromancer: 'summoner' };
+    return map[key] || 'warrior';
+  };
+  const fallbackVisual = (slot, base) => {
+    const id = String(base || '').toLowerCase();
+    if (slot === 'weapon') {
+      if (/dagger|knife|shiv/.test(id)) return { slot: 'main_hand', visualItemId: 'paired_daggers' };
+      if (/bow|crossbow|blowgun|sling/.test(id)) return { slot: 'main_hand', visualItemId: 'short_bow' };
+      if (/staff|wand|grimoire|codex|tome/.test(id)) return { slot: 'main_hand', visualItemId: 'oak_staff' };
+      if (/mace|hammer|club|maul|flail/.test(id)) return { slot: 'main_hand', visualItemId: 'holy_mace' };
+      return { slot: 'main_hand', visualItemId: 'iron_sword' };
+    }
+    if (slot === 'offhand') return { slot: 'off_hand', visualItemId: 'iron_shield' };
+    if (/robe|vestment|mantle|silk/.test(id)) return { slot: 'chest', visualItemId: 'arcane_robe' };
+    if (/leather|hide|padded/.test(id)) return { slot: 'chest', visualItemId: 'shadow_leathers' };
+    return { slot: 'chest', visualItemId: 'iron_plate' };
+  };
+  const resolveEquipment = (character, visualMap, rank = 'F') => {
+    const records = Array.isArray(visualMap && visualMap.records) ? visualMap.records : [];
+    const result = {};
+    const slots = { weapon: 'main_hand', armor: 'chest', offhand: 'off_hand' };
+    const eq = character && character.eq || {};
+    for (const key of Object.keys(slots)) {
+      const equipped = eq[key];
+      if (!equipped || !equipped.kind || !equipped.base) continue;
+      const look = equipped.tmog && equipped.tmog.kind && equipped.tmog.base ? equipped.tmog : equipped;
+      const catalogId = `${look.kind}:${look.base}`;
+      const record = records.find(entry => entry.catalogId === catalogId) || fallbackVisual(key, look.base);
+      if (record && record.slot === slots[key] && record.visualItemId) result[record.slot] = record.visualItemId;
+    }
+    return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
+      rank: safe(rank, RANKS) || 'F', equipment: result };
+  };
+  const createFramePresenter = (runtime, options = {}) => {
+    if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
+    const maxEntries = Math.max(2, Math.min(128, Number(options.maxEntries) || 24));
+    const entries = new Map();
+    const failed = new Set();
+    const keyFor = (character, spec) => JSON.stringify([
+      character && (character.id || character.name || character.cls),
+      character && character.rank, character && character.eq,
+      spec.direction, spec.frame, spec.state, spec.action, spec.animation,
+      spec.rank, spec.archetype, spec.ghost
+    ]);
+    const touch = (key, entry) => {
+      entries.delete(key);
+      entries.set(key, entry);
+      while (entries.size > maxEntries) entries.delete(entries.keys().next().value);
+    };
+    const request = (character, spec = {}) => {
+      const key = keyFor(character, spec);
+      if (failed.has(key)) return null;
+      const cached = entries.get(key);
+      if (cached) {
+        touch(key, cached);
+        return cached.canvas || null;
+      }
+      const entry = { canvas: null, promise: null };
+      touch(key, entry);
+      let rendered;
+      try { rendered = runtime.renderCharacter(character, spec); }
+      catch (error) { rendered = Promise.reject(error); }
+      // Chain on the renderer's own thenable when it has one: wrapping a promise from another realm in
+      // Promise.resolve adds extra microtask hops, so a frame would not be ready on the next request.
+      const thenable = rendered && typeof rendered.then === 'function' ? rendered : Promise.resolve(rendered);
+      entry.promise = thenable.then(canvas => {
+        entry.canvas = canvas;
+        return canvas;
+      }, error => {
+        entries.delete(key);
+        failed.add(key);
+        throw error;
+      });
+      // The renderer consumes readiness through the next synchronous request.
+      entry.promise.catch(() => {});
+      return null;
+    };
+    const clear = () => { entries.clear(); failed.clear(); };
+    return {
+      request, clear,
+      getReady: () => {
+        for (const entry of Array.from(entries.values()).reverse()) if (entry.canvas) return entry.canvas;
+        return null;
+      },
+      cacheSize: () => entries.size
+    };
+  };
+  const createRuntime = (options = {}) => {
+    const frameRoot = options.frameRoot || 'assets_hd64/animations/frames';
+    const equipmentRoot = options.equipmentRoot || 'assets_hd64/equipment';
+    const manifestUrl = options.manifestUrl || `${equipmentRoot}/equipment_manifest.json`;
+    const visualMapUrl = options.visualMapUrl || 'data/visuals/equipment-catalog-visual-map.json';
+    const imageCache = new Map();
+    const compositeCache = new Map();
+    let manifestPromise = null;
+    let visualMapPromise = null;
+    const loadImage = url => {
+      if (!imageCache.has(url)) imageCache.set(url, new Promise((resolve, reject) => {
+        if (typeof Image === 'undefined') return reject(new Error('Image API unavailable'));
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Unable to load HD character asset: ${url}`));
+        img.src = url;
+      }));
+      return imageCache.get(url);
+    };
+    const getVisualMap = () => {
+      if (!visualMapPromise) {
+        visualMapPromise = typeof fetch === 'function'
+          ? fetch(visualMapUrl).then(r => { if (!r.ok) throw new Error(`Equipment visual map HTTP ${r.status}`); return r.json(); })
+          : Promise.reject(new Error('Fetch API unavailable'));
+      }
+      return visualMapPromise;
+    };
+    const getManifest = () => {
+      if (!manifestPromise) {
+        manifestPromise = typeof fetch === 'function'
+          ? fetch(manifestUrl).then(r => { if (!r.ok) throw new Error(`Equipment manifest HTTP ${r.status}`); return r.json(); })
+          : Promise.reject(new Error('Fetch API unavailable'));
+      }
+      return manifestPromise;
+    };
+    const renderCharacter = async (character, spec = {}) => {
+      const [visualMap] = await Promise.all([getVisualMap()]);
+      const resolved = resolveEquipment(character, visualMap, spec.rank || character && character.rank || 'F');
+      return render({
+        ...spec, archetype: spec.archetype || resolved.archetype,
+        direction: directionForInput(spec.direction), animation: spec.animation || animationForState(spec.state || spec.action),
+        rank: resolved.rank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
+      });
+    };
+    const render = spec => {
+      if (!spec) return Promise.reject(new TypeError('Character render specification is required'));
+      const frame = Number(spec.frame || 0);
+      const baseUrl = framePath(frameRoot, spec.archetype, spec.rank, spec.direction, spec.animation, frame);
+      if (!baseUrl) return Promise.reject(new TypeError('Invalid archetype, rank, direction, animation, or frame'));
+      const equipmentKey = Object.keys(spec.equipment || {}).sort().map(key => [key, spec.equipment[key]]);
+      const key = JSON.stringify([baseUrl, equipmentKey]);
+      if (compositeCache.has(key)) return compositeCache.get(key);
+      const pending = (async () => {
+        const [base, manifest] = await Promise.all([loadImage(baseUrl), getManifest()]);
+        const width = Number(manifest.canvas && manifest.canvas.width), height = Number(manifest.canvas && manifest.canvas.height);
+        if (!(width > 0 && height > 0)) throw new Error('Equipment manifest has invalid canvas dimensions');
+        const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.drawImage(base, 0, 0, width, height);
+        const loadout = spec.equipment || {};
+        const chosen = Object.entries(loadout).map(([slot, id]) => (manifest.items || []).find(item =>
+          item.id === id && item.slot === slot && item.rank === spec.rank && item.direction === spec.direction
+        )).filter(Boolean).sort((a, b) => ((manifest.slots[a.slot] || {}).draw_order || 0) - ((manifest.slots[b.slot] || {}).draw_order || 0));
+        const layers = await Promise.all(chosen.map(item => loadImage(`${equipmentRoot}/${item.path}`)));
+        chosen.forEach((item, i) => {
+          const offset = item.offset || [0, 0];
+          ctx.globalCompositeOperation = item.blend || 'source-over';
+          ctx.drawImage(layers[i], Number(offset[0]) || 0, Number(offset[1]) || 0);
+        });
+        ctx.globalCompositeOperation = 'source-over';
+        return canvas;
+      })();
+      compositeCache.set(key, pending);
+      pending.catch(() => { if (compositeCache.get(key) === pending) compositeCache.delete(key); });
+      return pending;
+    };
+    return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size, compositeCacheSize: () => compositeCache.size };
+  };
+  const api = { createRuntime, createFramePresenter, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  if (root) root.GBQHDCharacterArt = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
 
 </script>
 <script>

@@ -60,7 +60,8 @@ def main():
     meta=args.output/"metadata"; meta.mkdir(parents=True,exist_ok=True)
     (meta/"asset_manifest.json").write_text(json.dumps(out_rows,indent=2),encoding="utf-8")
     with (meta/"asset_manifest.csv").open("w",newline="",encoding="utf-8") as f:
-        w=csv.DictWriter(f,fieldnames=list(out_rows[0])); w.writeheader(); w.writerows(out_rows)
+        fields=list(dict.fromkeys(k for r in out_rows for k in r))  # rows may carry optional fields (e.g. monster `family`)
+        w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(out_rows)
     atlas_dir=args.output/"atlases"; atlas_dir.mkdir(parents=True,exist_ok=True)
     for category,images in previews.items():
         cell=128; sheet=Image.new("RGBA",(10*cell,10*cell),(17,22,34,255))

@@ -28,7 +28,7 @@
     if (['attack', 'attacking', 'melee', 'ranged'].includes(value)) return 'attack';
     if (['block', 'blocking', 'guard'].includes(value)) return 'block';
     if (['hit', 'hurt', 'stagger'].includes(value)) return 'hit';
-    if (['run', 'running', 'sprint'].includes(value)) return 'run';
+    if (['run', 'running', 'sprint', 'sprinting'].includes(value)) return 'run';
     if (['walk', 'walking', 'move', 'moving'].includes(value)) return 'walk';
     return 'idle';
   };
@@ -98,10 +98,13 @@
       let rendered;
       try { rendered = runtime.renderCharacter(character, spec); }
       catch (error) { rendered = Promise.reject(error); }
-      entry.promise = Promise.resolve(rendered).then(canvas => {
+      // Chain on the renderer's own thenable when it has one: wrapping a promise from another realm in
+      // Promise.resolve adds extra microtask hops, so a frame would not be ready on the next request.
+      const thenable = rendered && typeof rendered.then === 'function' ? rendered : Promise.resolve(rendered);
+      entry.promise = thenable.then(canvas => {
         entry.canvas = canvas;
         return canvas;
-      }).catch(error => {
+      }, error => {
         entries.delete(key);
         failed.add(key);
         throw error;
