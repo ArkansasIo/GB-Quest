@@ -829,8 +829,8 @@ function worldGearWalker(character, dir = 'down', frame = 0, ghost = false) {
   x.imageSmoothingEnabled = false;
   x.drawImage(base, 0, 0, 24, 24);
   for (const v of visuals) {
-    const name = itemIcon(v.item), icon = spr(name, v.size, v.size, { ghost });
-    if (icon) x.drawImage(icon, v.x, v.y);
+    const name = itemIcon(v.item), size = Math.max(1, Math.round(v.size * 1.5)), icon = spr(name, size, size, { ghost });
+    if (icon) x.drawImage(icon, Math.round(v.x * 1.5), Math.round(v.y * 1.5));
   }
   return out;
 }
