@@ -199,6 +199,140 @@ function getPlayerEconomy(db, accountId) {
   return { gold: player.gold, inventory: clone(Object.values(player.inventory)), proceedsGold: player.proceedsGold };
 }
 
+
+function tradeFor(db, tradeId) {
+  const id = textId(tradeId, 'trade id');
+  const trade = ensureEconomy(db).trades[id];
+  if (!trade) fail('TRADE_NOT_FOUND', 'That trade session does not exist.');
+  return trade;
+}
+
+function startTrade(db, { initiatorId, targetId, idempotencyKey, now = Date.now(), tradeId = crypto.randomBytes(12).toString('hex') }) {
+  const initiator = textId(initiatorId, 'initiator id');
+  const target = textId(targetId, 'target id');
+  const id = textId(tradeId, 'trade id');
+  const timestamp = integer(now, 0, Number.MAX_SAFE_INTEGER, 'timestamp');
+  if (initiator === target) fail('INVALID_TRADE_PARTICIPANTS', 'A player cannot trade with themselves.');
+  return idempotent(db, initiator, idempotencyKey, 'trade.start', { target, now: timestamp, tradeId: id }, () => {
+    const economy = ensureEconomy(db);
+    playerFor(db, initiator);
+    playerFor(db, target);
+    if (economy.trades[id]) fail('TRADE_ID_EXISTS', 'That trade ID already exists.');
+    const trade = {
+      id, participants: [initiator, target], status: 'open', createdAt: timestamp,
+      offers: {
+        [initiator]: { itemUids: [], gold: 0, locked: false, confirmed: false },
+        [target]: { itemUids: [], gold: 0, locked: false, confirmed: false },
+      },
+    };
+    economy.trades[id] = trade;
+    return { tradeId: id, status: trade.status, participants: trade.participants.slice() };
+  });
+}
+
+function setTradeOffer(db, { accountId, tradeId, itemUids, gold = 0, idempotencyKey }) {
+  const actor = textId(accountId, 'account id');
+  const id = textId(tradeId, 'trade id');
+  if (!Array.isArray(itemUids) || itemUids.length > 6) fail('INVALID_TRADE_ITEMS', 'A trade offer may contain up to six item UIDs.');
+  const uids = itemUids.map(uid => textId(uid, 'item uid'));
+  if (new Set(uids).size !== uids.length) fail('DUPLICATE_TRADE_ITEM', 'An item may only appear once in an offer.');
+  const amount = integer(gold, 0, MAX_GOLD, 'trade gold');
+  return idempotent(db, actor, idempotencyKey, 'trade.offer', { tradeId: id, itemUids: uids, gold: amount }, () => {
+    const trade = tradeFor(db, id);
+    if (!trade.participants.includes(actor)) fail('NOT_TRADE_PARTICIPANT', 'The account is not part of this trade.');
+    if (trade.status !== 'open') fail('TRADE_NOT_OPEN', 'The trade offer can no longer be changed.');
+    const player = playerFor(db, actor);
+    if (amount > player.gold) fail('INSUFFICIENT_GOLD', 'The offered gold is not in the wallet.');
+    for (const uid of uids) if (!player.inventory[uid]) fail('ITEM_NOT_OWNED', 'Every offered item must be in the account inventory.');
+    trade.offers[actor] = { itemUids: uids, gold: amount, locked: false, confirmed: false };
+    return { tradeId: id, offer: clone(trade.offers[actor]) };
+  });
+}
+
+function lockTradeOffer(db, { accountId, tradeId, idempotencyKey }) {
+  const actor = textId(accountId, 'account id');
+  const id = textId(tradeId, 'trade id');
+  return idempotent(db, actor, idempotencyKey, 'trade.lock', { tradeId: id }, () => {
+    const trade = tradeFor(db, id);
+    if (!trade.participants.includes(actor)) fail('NOT_TRADE_PARTICIPANT', 'The account is not part of this trade.');
+    if (trade.status !== 'open') fail('TRADE_NOT_OPEN', 'The trade is no longer accepting locks.');
+    const player = playerFor(db, actor);
+    const offer = trade.offers[actor];
+    if (player.gold < offer.gold || offer.itemUids.some(uid => !player.inventory[uid])) {
+      fail('TRADE_OFFER_CHANGED', 'The offered items or gold are no longer available.');
+    }
+    offer.locked = true;
+    if (trade.participants.every(pid => trade.offers[pid].locked)) trade.status = 'locked';
+    return { tradeId: id, status: trade.status, locked: true };
+  });
+}
+
+function confirmTrade(db, { accountId, tradeId, idempotencyKey, now = Date.now() }) {
+  const actor = textId(accountId, 'account id');
+  const id = textId(tradeId, 'trade id');
+  const timestamp = integer(now, 0, Number.MAX_SAFE_INTEGER, 'timestamp');
+  return idempotent(db, actor, idempotencyKey, 'trade.confirm', { tradeId: id, now: timestamp }, () => {
+    const trade = tradeFor(db, id);
+    if (!trade.participants.includes(actor)) fail('NOT_TRADE_PARTICIPANT', 'The account is not part of this trade.');
+    if (trade.status === 'completed') return clone(trade.result);
+    if (trade.status !== 'locked') fail('TRADE_NOT_LOCKED', 'Both players must lock their offers before confirming.');
+    trade.offers[actor].confirmed = true;
+    if (!trade.participants.every(pid => trade.offers[pid].confirmed)) {
+      return { tradeId: id, status: 'awaiting_confirmation' };
+    }
+
+    const [aId, bId] = trade.participants;
+    const a = playerFor(db, aId), b = playerFor(db, bId);
+    const offerA = trade.offers[aId], offerB = trade.offers[bId];
+    if (a.gold < offerA.gold || b.gold < offerB.gold ||
+        offerA.itemUids.some(uid => !a.inventory[uid]) ||
+        offerB.itemUids.some(uid => !b.inventory[uid])) {
+      trade.status = 'cancelled';
+      trade.cancelReason = 'offer_changed';
+      fail('TRADE_OFFER_CHANGED', 'An offer changed before settlement; the trade was cancelled.');
+    }
+    const aNext = a.gold - offerA.gold + offerB.gold;
+    const bNext = b.gold - offerB.gold + offerA.gold;
+    if (!Number.isSafeInteger(aNext) || !Number.isSafeInteger(bNext) || aNext < 0 || bNext < 0) {
+      fail('GOLD_OVERFLOW', 'The trade would exceed a wallet balance limit.');
+    }
+
+    // Validate the entire swap before mutating either inventory or wallet.
+    const itemsA = offerA.itemUids.map(uid => clone(a.inventory[uid]));
+    const itemsB = offerB.itemUids.map(uid => clone(b.inventory[uid]));
+    for (const uid of offerA.itemUids) delete a.inventory[uid];
+    for (const uid of offerB.itemUids) delete b.inventory[uid];
+    for (const item of itemsA) b.inventory[item.uid] = item;
+    for (const item of itemsB) a.inventory[item.uid] = item;
+    a.gold = aNext;
+    b.gold = bNext;
+    trade.status = 'completed';
+    trade.completedAt = timestamp;
+    trade.result = {
+      tradeId: id, status: 'completed',
+      transferred: {
+        [aId]: { itemsReceived: itemsB.length, goldReceived: offerB.gold },
+        [bId]: { itemsReceived: itemsA.length, goldReceived: offerA.gold },
+      },
+    };
+    return clone(trade.result);
+  });
+}
+
+function cancelTrade(db, { accountId, tradeId, idempotencyKey }) {
+  const actor = textId(accountId, 'account id');
+  const id = textId(tradeId, 'trade id');
+  return idempotent(db, actor, idempotencyKey, 'trade.cancel', { tradeId: id }, () => {
+    const trade = tradeFor(db, id);
+    if (!trade.participants.includes(actor)) fail('NOT_TRADE_PARTICIPANT', 'The account is not part of this trade.');
+    if (trade.status === 'completed') fail('TRADE_ALREADY_COMPLETED', 'A completed trade cannot be cancelled.');
+    if (trade.status === 'cancelled') return { tradeId: id, status: 'cancelled' };
+    trade.status = 'cancelled';
+    trade.cancelledBy = actor;
+    return { tradeId: id, status: 'cancelled' };
+  });
+}
+
 module.exports = {
   EconomyError,
   ensureEconomy,
@@ -210,4 +344,9 @@ module.exports = {
   claimProceeds,
   expireListings,
   getPlayerEconomy,
+  startTrade,
+  setTradeOffer,
+  lockTradeOffer,
+  confirmTrade,
+  cancelTrade,
 };
