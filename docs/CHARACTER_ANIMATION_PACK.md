@@ -164,3 +164,9 @@ The preview marker layout is defined by `PAPERDOLL_VISUAL_SLOTS` in `src/polish.
 ## World avatar equipment indicators
 
 The world-map character portrait now composites small equipped-item icons for head, main hand, chest and off-hand over the portrait. It uses the same `itemIcon` resolver as inventory and the paper doll, so a valid transmog changes the visible icon without changing the equipped item's gameplay data. Icons are drawn into a 24×24 canvas with smoothing disabled to preserve the pixel-art presentation. This is a compact equipment indicator, not a full-body layered sprite or animated armor system.
+
+## Animated world-walker equipment indicators
+
+The player and follower world sprites now prefer a composited animated walker when one of the supported visible equipment slots is occupied. The base uses the existing two-frame directional `walker()` sprite, retaining left/right mirroring and the current ghost palette behavior. Small equipment icons for head, main hand, chest and off-hand are layered onto the frame and scaled to the existing 24×24 world portrait footprint. The animation frame follows the existing world movement cadence. If no supported visible equipment is present, the existing portrait path remains in use.
+
+These are icon-based visual overlays on animated walk frames, not the HD64 full-body armor PNG pipeline. The generated HD64 animation and equipment assets remain a separate prototype pipeline and are not yet loaded by the browser game.
