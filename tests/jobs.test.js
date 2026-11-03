@@ -148,3 +148,20 @@ test('necromancer army: grows to 9 (6 warriors, 2 mages, golem), sacrifice trade
   assert.deepEqual(plain(A.sacrificeBonus({}, 30)), []);
   assert.equal(plain(A.armyFor(30, { golem: 'iron', mage: 'cold' }))[8].variant, 'iron');
 });
+
+test('npc AI: schedules, utility choices, steering and barks', () => {
+  const c = { Math, Object, String, Number, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('npc_ai.js'), c); const N = c.GBQNpcAI;
+  assert.equal(N.dayPhase(3), 'night'); assert.equal(N.dayPhase(7), 'dawn'); assert.equal(N.dayPhase(12), 'day'); assert.equal(N.dayPhase(20), 'evening');
+  const folk = { name: 'TOWNSMAN BOB' }, smith = { name: 'BLACKSMITH', svc: 'blacksmith' };
+  assert.equal(N.leashOf(smith), 1, 'service NPCs stay by their counter'); assert.ok(N.leashOf(folk) >= 3);
+  const base = { hour: 12, raining: false, heroDist: 9, greetedAgo: 99999, nearNpc: false, homeDist: 0 };
+  assert.equal(N.bestNpcAction(N.scoreNpcActions(folk, { ...base, heroDist: 1 })), 'greet', 'greets a nearby hero');
+  assert.equal(N.bestNpcAction(N.scoreNpcActions(folk, { ...base, homeDist: 9 })), 'return', 'comes back inside the leash');
+  assert.equal(N.bestNpcAction(N.scoreNpcActions(folk, { ...base, heroDist: 1, greetedAgo: 10 })) === 'greet', false, 'no greeting spam');
+  assert.ok(['sleep', 'shelter'].includes(N.bestNpcAction(N.scoreNpcActions(folk, { ...base, hour: 2 }))), 'townsfolk sleep at night');
+  assert.deepEqual(plain(N.stepToward([0, 0], [3, 1], () => false)), [1, 0, 'right']);
+  assert.deepEqual(plain(N.stepToward([0, 0], [3, 1], (x, y) => x === 1 && y === 0)), [0, 1, 'down'], 'steers around');
+  assert.equal(N.stepToward([0, 0], [1, 0], () => true), null);
+  assert.ok(N.npcBark({ action: 'greet', hour: 12, heroName: 'ZED', heroLvl: 5, talks: 9 }, 0.9).length > 0);
+  assert.ok(/Zzz|yawn|Shh/.test(N.npcBark({ action: 'sleep', hour: 2 }, 0.1)));
+});

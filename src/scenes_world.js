@@ -780,7 +780,7 @@ class Field {
         else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
         const nm = (p.name || '').slice(0, 8);
         const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
-        fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0);
+        if (S.nameTags !== false || hostile || Math.abs(e.x - G.x) + Math.abs(e.y - G.y) <= 1) { fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0); }
       }
       else if (e.kind === 'gather' || e.kind === 'herb') { const icon = sprH(ITEMS[e.item || e.herb]?.icon || 'item_herb', 12); if (icon) blit(icon, ex + (T - icon.width) / 2, ey + 2 - ((frameN >> 5) % 4 === 0 ? 1 : 0)); }
       else if (e.kind === 'waypoint') { if (PIX) blit(spr(`go_wp${(frameN >> 4) % 2}`, 16, 16), ex, ey); else blit(sprH('px_waypoint', 14), ex + 2, ey + 1 - Math.round(Math.sin(frameN / 15))); }

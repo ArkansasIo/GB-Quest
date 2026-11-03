@@ -5,10 +5,12 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 ## Unreleased
 
 ### Changed
+- **No floating text by default**: the on-screen chat lines, chat bubbles and other players' name tags start off (name tags still show for adjacent players and hostile PvP targets). Turn them back on in SETTINGS > CHAT SETTINGS (SCREEN CHAT, CHAT BUBBLES, NAME TAGS). With bubbles off, NPC greetings go to the chat log.
 - **Spell levels 1-9 now span levels 1-720**: a full caster first casts spell levels 2-9 at levels 12, 46, 102, 181, 282, 406, 552 and 720 (was 3-17); slots, half casters and pact magic follow the same curve. Heroes above level 20 may lose high spell levels until they reach the new unlock levels. See docs/LEVEL_1_TO_720.md.
 - The chat panel now starts closed. Press **C** or the **CHAT** button to open it; SETTINGS > CHAT SETTINGS turns chat off completely.
 
 ### Added
+- **NPC AI engine** (`src/npc_ai.js`): townsfolk and service NPCs now live in town. Each has a stable personality, a home tile and a leash (service NPCs stay within a tile of their counter; fixtures like boards never move). A utility AI picks WORK, WANDER, SOCIALIZE, GREET, SHELTER, SLEEP, RETURN or IDLE from the game clock (dawn, day, evening, night), rain and how near the hero is. NPCs turn to face you, greet you by name, remember how often you have talked (stranger, regular, old friend), react to high-level heroes and some classes, and walk with proper facing frames.
 - **Necromancer army of the dead** (up to 9): skeletal warriors, skeletal mages and a golem rise at the start of every battle (2 at level 1, 9 by level 28; a necromancer support job raises 3). MAIN MENU > BOOK OF DEAD picks a variant per type (warriors SKIRMISHER/DEFENDER/REAPER, mages SHADOW/COLD/BONE, golem BONE/BLOOD/IRON) or SACRIFICES the type for crit, damage or HP and resist. RAISE DEAD (once per battle) brings the fallen back. The army stands in ranks between your party and the foes.
 - **WoW-style windows** (8-BIT MMO theme): full-screen pages get a title bar with the page name, gold and a close button. The CHARACTER page is now a paper doll: 7 slot icons down each side and stats in the middle (the old slot list overlapped).
 - **Handheld-style menus** (8-BIT MMO theme): the START menu is now a right-hand list over the map with 7 roomy rows, a triangle cursor, a hero card (portrait, level, HP, gold) and a one-line help box; every pop-up choice list uses the same rows and cursor.

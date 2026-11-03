@@ -196,6 +196,7 @@ body #chatShow { left: 12px; right: auto; }
         ['NPC CHATTER', () => CFG.npc, () => { CFG.npc = !CFG.npc; }],
         ['CHAT BUBBLES', () => S.bubbles !== false, () => { S.bubbles = S.bubbles === false; saveSettings(); }],
         ['SCREEN CHAT', () => S.screenChat !== false, () => { S.screenChat = S.screenChat === false; saveSettings(); }],
+        ['NAME TAGS', () => S.nameTags !== false, () => { S.nameTags = S.nameTags === false; saveSettings(); }],
         ['COMBAT LOG', () => S.combatLog !== false, () => { S.combatLog = S.combatLog === false; saveSettings(); }],
         ['RESET TABS', null, () => { CFG.tabs = clone(DEFAULT_TABS); CFG.active = 'general'; }],
       ];
