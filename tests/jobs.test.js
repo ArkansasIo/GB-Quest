@@ -165,3 +165,17 @@ test('npc AI: schedules, utility choices, steering and barks', () => {
   assert.ok(N.npcBark({ action: 'greet', hour: 12, heroName: 'ZED', heroLvl: 5, talks: 9 }, 0.9).length > 0);
   assert.ok(/Zzz|yawn|Shh/.test(N.npcBark({ action: 'sleep', hour: 2 }, 0.1)));
 });
+
+test('throne-style systems: weapon mastery, amitoi expeditions, day and night', () => {
+  const c = { Math, Object, Array, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('tnl_systems.js'), c); const T = c.GBQTnl;
+  const m = { lvl: 1, xp: 0 }; assert.equal(T.masteryAdd(m, T.masteryXpFor(1)), 1); assert.equal(m.lvl, 2);
+  const big = { lvl: 1, xp: 0 }; T.masteryAdd(big, 1e9); assert.equal(big.lvl, 30, 'caps at 30'); assert.equal(big.xp, 0);
+  assert.equal(T.masteryRank(9), 'NOVICE'); assert.equal(T.masteryRank(10), 'ADEPT'); assert.equal(T.masteryRank(30), 'MASTER');
+  assert.deepEqual(plain(T.masteryBonus('sword', 1)), []); assert.ok(T.masteryBonus('dagger', 10)[0][1] > T.masteryBonus('dagger', 9)[0][1] + 1, 'specialization rank is a bigger step');
+  for (const f of T.MASTERY_FAMS) assert.equal(T.masteryBonus(f, 30).length, 2);
+  const a = plain(T.expeditionReward('short', 1, 10, 42)), b = plain(T.expeditionReward('long', 1, 10, 42));
+  assert.deepEqual(a, plain(T.expeditionReward('short', 1, 10, 42)), 'same seed, same haul'); assert.ok(b.gold > a.gold * 5 && b.mats > a.mats, 'longer trips bring more');
+  assert.ok(T.expeditionReward('short', 10, 10, 42).gold > a.gold, 'pet level helps');
+  assert.equal(T.amitoiLevel(0), 1); assert.equal(T.amitoiLevel(1e9), 10);
+  assert.equal(T.isNight(23), true); assert.equal(T.isNight(3), true); assert.equal(T.isNight(12), false);
+});

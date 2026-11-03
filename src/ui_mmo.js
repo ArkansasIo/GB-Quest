@@ -143,7 +143,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       if (this.top > 0) text('^', x + w - 10, 3, 2); if (this.top + this.rows < items.length) text('v', x + w - 10, h - 7, 2);
       // help line
       const sel = (items[this.i] || '').replace(' (!)', '');
-      frame(2, H - 26, W - 4, 24); text((MENU_HELP[sel] || sel).slice(0, 24), 9, H - 18);
+      frame(2, H - 26, W - 4, 24); text((MENU_HELP[sel] || (window.MENU_HELP_EXTRA || {})[sel] || sel).slice(0, 24), 9, H - 18);
       textC(`${fmt(G.gold)}G`, 27, 60, 'gold');
     };
   }
