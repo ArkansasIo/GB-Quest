@@ -129,6 +129,8 @@ def render(direction, animation, frame, count, size=SIZE):
     # Rank badge accent on chest.
     polygon(d, [(cx,cy-4),(cx+4,cy),(cx,cy+4),(cx-4,cy)], C["gold"], outline=None)
     # Preserve crisp pixels; no resampling/antialiasing.
+    if size != SIZE:
+        im = im.resize((size, size), Image.Resampling.NEAREST)
     return im
 
 def main():
