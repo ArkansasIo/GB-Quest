@@ -159,3 +159,5 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 
 - **World HD frame presenter:** connected asynchronous HD idle/walk frame preparation to player and follower world rendering, with stale-result protection, request deduplication, pixel-crisp 24×24 output and classic-renderer fallback. Requires deployed `assets_hd64/` assets; ghost and combat-specific animation states remain on the classic path.
  Per-character async presenter caches prevent player/follower frame requests from invalidating one another.
+
+- **HD frame cache:** Added a bounded per-character LRU cache for prepared animation frames, reusing prior frames on animation loops and deduplicating in-flight work.
