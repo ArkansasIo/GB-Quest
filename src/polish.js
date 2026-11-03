@@ -56,9 +56,18 @@ const WORLD_GEAR_ICON_SLOTS = Object.freeze([
 const worldGearVisuals = eq => WORLD_GEAR_ICON_SLOTS
   .filter(v => eq && eq[v.slot])
   .map(v => ({ ...v, item: eq[v.slot] }));
+const WALKER_GEAR_ICON_SLOTS = Object.freeze([
+  { slot: 'head', x: 6, y: 0, size: 4 },
+  { slot: 'weapon', x: 0, y: 7, size: 4 },
+  { slot: 'armor', x: 6, y: 10, size: 4 },
+  { slot: 'offhand', x: 12, y: 7, size: 4 },
+]);
+const walkerGearVisuals = eq => WALKER_GEAR_ICON_SLOTS
+  .filter(v => eq && eq[v.slot])
+  .map(v => ({ ...v, item: eq[v.slot] }));
 const transmogCost = lvl => 5 * Math.max(1, Math.floor(Number(lvl) || 1));
 
-if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, collectAppearances, validAppearance, paperDollVisuals, PAPERDOLL_VISUAL_SLOTS, worldGearVisuals, WORLD_GEAR_ICON_SLOTS, transmogCost, REST_BONUS };
+if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, collectAppearances, validAppearance, paperDollVisuals, PAPERDOLL_VISUAL_SLOTS, worldGearVisuals, WORLD_GEAR_ICON_SLOTS, walkerGearVisuals, WALKER_GEAR_ICON_SLOTS, transmogCost, REST_BONUS };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof itemSlot === 'function') {
