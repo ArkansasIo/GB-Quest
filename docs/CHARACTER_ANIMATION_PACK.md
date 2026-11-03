@@ -94,3 +94,19 @@ Supported archetypes: `warrior`, `mage`, `ranger`, `rogue`, `cleric`, `summoner`
 
 The GitHub Actions workflow now exposes archetype and rank selectors and builds the matching atlas. Each class/rank currently uses a distinct palette and rank accent on a shared warrior-derived silhouette. This is a pipeline/integration prototype—not six finished class designs. Class-specific anatomy, weapons, armor silhouettes, spell effects, and rank-specific geometry still require dedicated art passes. The workflow remains manual and must be run from the repository's Actions tab to produce downloadable artifacts.
 
+## Equipment overlay layers
+
+Generate transparent, direction-specific equipment overlays on the same canvas as character frames:
+
+```bash
+python -m pip install Pillow
+python tools/generate_equipment_layers.py \
+  --output assets_hd64/equipment --size 128 --ranks F E D C B A S SSS
+```
+
+Slots included: head, chest, legs, hands, main hand, off hand, back, and accessory. The starter catalog includes helmets/hoods, armor/tunics/robes, greaves/trousers, gloves, swords/staves/bows/daggers/maces, shields/foci/quivers, cloaks/mantles, and pendants/medallions. Each item/rank/direction combination is exported as a transparent PNG under `layers/<slot>/<item>/<rank>/<direction>.png`.
+
+The accompanying `equipment_manifest.json` defines canvas dimensions, feet pivot, slot anchors, draw order, rank tint, layer path, blend mode, and offsets. Render a character by compositing its base frame and selected equipment layers in slot draw order. Use the manifest offsets/anchors as the initial alignment contract; validate alignment against every animation and facing direction before production use.
+
+The current layer art is intentionally schematic and uses shared slot anchors. It establishes the data and compositing contract, not final item-specific geometry. Weapon grip, hand position, occlusion, back-facing equipment, and class restrictions need dedicated art/anchor review. The workflow now generates the selected rank's equipment layers and includes them in its downloadable artifact.
+
