@@ -12,7 +12,7 @@
     const direction = safe(d, DIRECTIONS), animation = safe(anim, ANIMATIONS);
     const index = Number(frame);
     if (!archetype || !rank || !direction || !animation || !Number.isInteger(index) || index < 0 || index > 99) return null;
-    return `${String(base).replace(/\\/$/, '')}/${archetype}/${rank}/${direction}/${animation}/frame_${String(index).padStart(3, '0')}.png`;
+    return `${String(base).replace(/\/$/, '')}/${archetype}/${rank}/${direction}/${animation}/frame_${String(index).padStart(3, '0')}.png`;
   };
   const createRuntime = (options = {}) => {
     const frameRoot = options.frameRoot || 'assets_hd64/animations/frames';
