@@ -241,7 +241,7 @@ function setTradeOffer(db, { accountId, tradeId, itemUids, gold = 0, idempotency
   return idempotent(db, actor, idempotencyKey, 'trade.offer', { tradeId: id, itemUids: uids, gold: amount }, () => {
     const trade = tradeFor(db, id);
     if (!trade.participants.includes(actor)) fail('NOT_TRADE_PARTICIPANT', 'The account is not part of this trade.');
-    if (trade.status !== 'open') fail('TRADE_NOT_OPEN', 'The trade offer can no longer be changed.');
+    if (trade.status !== 'open' || trade.offers[actor].locked) fail('TRADE_NOT_OPEN', 'A locked trade offer can no longer be changed.');
     const player = playerFor(db, actor);
     if (amount > player.gold) fail('INSUFFICIENT_GOLD', 'The offered gold is not in the wallet.');
     for (const uid of uids) if (!player.inventory[uid]) fail('ITEM_NOT_OWNED', 'Every offered item must be in the account inventory.');
