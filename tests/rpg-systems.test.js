@@ -315,3 +315,22 @@ test('HD frame presenter suppresses repeated failed asset requests until cleared
   assert.equal(presenter.request(character, spec), null);
   assert.equal(calls, 2);
 });
+
+test('HD frame presenter retains recent animation frames for instant reuse', async () => {
+  const calls = [];
+  const presenter = HD.createFramePresenter({ renderCharacter: (_character, spec) => {
+    calls.push(spec.frame);
+    return Promise.resolve({ frame: spec.frame });
+  }}, { maxEntries: 3 });
+  const character = { id: 'hero-cache', cls: 'ranger', eq: {} };
+  const frame = n => ({ state: 'moving', direction: 'down', frame: n });
+  assert.equal(presenter.request(character, frame(0)), null);
+  await Promise.resolve(); await Promise.resolve();
+  assert.deepEqual(presenter.request(character, frame(0)), { frame: 0 });
+  assert.equal(presenter.request(character, frame(1)), null);
+  await Promise.resolve(); await Promise.resolve();
+  assert.deepEqual(presenter.request(character, frame(1)), { frame: 1 });
+  assert.deepEqual(presenter.request(character, frame(0)), { frame: 0 }, 'previously prepared frame is immediately reusable');
+  assert.deepEqual(calls, [0, 1]);
+  assert.equal(presenter.cacheSize(), 2);
+});
