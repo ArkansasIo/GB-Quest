@@ -263,3 +263,37 @@ test('HD runtime supplies visual families for unmapped legacy equipment IDs', ()
     main_hand: 'oak_staff', chest: 'arcane_robe', off_hand: 'iron_shield'
   });
 });
+
+test('HD frame presenter returns cached canvases without blocking the draw caller', async () => {
+  let resolveFrame;
+  let calls = 0;
+  const presenter = HD.createFramePresenter({ renderCharacter: () => {
+    calls++;
+    return new Promise(resolve => { resolveFrame = resolve; });
+  }});
+  const character = { id: 'hero-1', cls: 'fighter', eq: {} };
+  const spec = { state: 'moving', direction: 'down', frame: 0 };
+  assert.equal(presenter.request(character, spec), null);
+  assert.equal(presenter.request(character, spec), null);
+  assert.equal(calls, 1, 'same frame should only start one async composition');
+  const canvas = { width: 64, height: 64 };
+  resolveFrame(canvas);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(presenter.request(character, spec), canvas);
+  assert.equal(presenter.getReady(), canvas);
+});
+
+test('HD frame presenter discards stale results after a newer frame is requested', async () => {
+  const pending = [];
+  const presenter = HD.createFramePresenter({ renderCharacter: () => new Promise(resolve => pending.push(resolve)) });
+  const character = { id: 'hero-2', cls: 'mage', eq: {} };
+  presenter.request(character, { state: 'idle', direction: 'down', frame: 0 });
+  presenter.request(character, { state: 'moving', direction: 'right', frame: 1 });
+  const oldCanvas = { id: 'old' }, newCanvas = { id: 'new' };
+  pending[0](oldCanvas);
+  pending[1](newCanvas);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(presenter.getReady(), newCanvas);
+});
