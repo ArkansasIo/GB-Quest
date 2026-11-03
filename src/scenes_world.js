@@ -760,12 +760,15 @@ class Field {
         const f = LOOK_F[G.dir][(this.ox || this.oy) ? (this.walk >> 3) % 2 : 0];
         if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
-        const portrait = worldPortrait(G, G.dir, ghost);
+        const gearWalker = worldGearWalker(G, G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost);
+        const portrait = gearWalker || worldPortrait(G, G.dir, ghost);
         if (portrait) blit(portrait, px - cx + (T - portrait.width) / 2, py - cy + T - portrait.height - 1 - (G.mounted ? 6 : 0) - moveBob);
         else if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
-        const portrait = worldPortrait(e.c, e.dir), bob = (this.walk >> 3) % 2;
+        const bob = (this.walk >> 3) % 2;
+        const gearWalker = worldGearWalker(e.c, e.dir, bob);
+        const portrait = gearWalker || worldPortrait(e.c, e.dir);
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1 - bob);
         else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex, ey - 3);
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
@@ -812,6 +815,24 @@ function walker(look, dir, frame, ghost) {
   const d = dir === 'up' ? 'up' : dir === 'down' ? 'down' : 'side';
   const name = `gh_${look}_${d}${frame}`;
   return spr(IMG[name] ? name : `gh_warden_${d}${frame}`, 16, 16, { flip: dir === 'left', ghost });
+}
+function worldGearWalker(character, dir = 'down', frame = 0, ghost = false) {
+  if (!character || !character.eq || typeof walkerGearVisuals !== 'function' || typeof itemIcon !== 'function') return null;
+  const visuals = walkerGearVisuals(character.eq).filter(v => {
+    const name = itemIcon(v.item);
+    return name && IMG[name];
+  });
+  if (!visuals.length) return null;
+  const base = walker(heroLook(character), dir, frame, ghost);
+  if (!base) return null;
+  const out = mkCanvas(24, 24), x = out.getContext('2d');
+  x.imageSmoothingEnabled = false;
+  x.drawImage(base, 0, 0, 24, 24);
+  for (const v of visuals) {
+    const name = itemIcon(v.item), icon = spr(name, v.size, v.size, { ghost });
+    if (icon) x.drawImage(icon, v.x, v.y);
+  }
+  return out;
 }
 function worldPortrait(character, dir = 'down', ghost = false) {
   const portrait = heroPortrait(character);
