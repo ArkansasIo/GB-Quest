@@ -294,6 +294,7 @@ func save() -> bool:
 	var z := zone_id if dun.is_empty() else str(dun["ret_zone"])
 	var p: Vector2i = pos if dun.is_empty() else dun["ret_pos"]
 	f.store_string(JSON.stringify({"hero": hero, "zone": z, "x": p.x, "y": p.y, "facing": facing}))
+	Online.publish_hero()
 	return true
 
 func has_save() -> bool:

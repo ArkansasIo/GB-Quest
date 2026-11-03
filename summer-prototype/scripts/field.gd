@@ -380,6 +380,9 @@ func _talk(n: Dictionary) -> void:
 	elif svc == "tower": Social.open_tower(main)
 	elif svc == "difficulty": Social.open_oracle(main)
 	elif svc == "portal": Social.open_travel(main, self)
+	elif svc == "auction":
+		if not Online.signed_in(): main.say(["%s: The trading hub lives on the realm server." % talking, "Sign in from START > REALM first."])
+		else: main.push(load("res://scripts/market.gd").new())
 	elif svc == "trials":
 		_trials_menu()
 	elif svc == "trainer":
@@ -635,7 +638,7 @@ func _buy(k: int) -> void:
 	Game.bag().append(it)
 	main.say(["Bought %s. Equip it from GEAR & BAG." % Game.item_name(it)])
 
-const MENU := ["CHARACTER", "GEAR & BAG", "ITEMS", "POTION", "QUEST", "MOUNT", "TRAVEL", "COMPANION", "BOUNTIES", "SAVE", "SAVE & QUIT", "BACK"]
+const MENU := ["CHARACTER", "GEAR & BAG", "ITEMS", "POTION", "QUEST", "MOUNT", "TRAVEL", "COMPANION", "BOUNTIES", "REALM", "SAVE", "SAVE & QUIT", "BACK"]
 var menu_opts: Array = []
 
 var item_ids: Array = []
@@ -676,6 +679,7 @@ func _menu_pick(k: int) -> void:
 		"TRAVEL": Social.open_travel(main, self)
 		"COMPANION": Social.open_companions(main)
 		"BOUNTIES": Social.open_bounties(main)
+		"REALM": main.push(load("res://scripts/realm.gd").new())
 		"POTION":
 			if int(Game.hero["potions"]) <= 0:
 				main.say(["No potions."])
@@ -728,6 +732,15 @@ func _draw() -> void:
 		var big: bool = m.get("boss", false)
 		var bob := sin(Time.get_ticks_msec() / 300.0 + int(m["x"])) * 3
 		Data.blit_fit(self, str(m["def"].get("art", "")), Rect2(mp + Vector2(-8 if big else 4, (-24 if big else -4) + bob), Vector2(80, 80) if big else Vector2(56, 56)), true)
+	# other players on the realm, in this zone (browser or Godot)
+	for op in Online.players_here():
+		var opp := Vector2(int(op["x"]), int(op["y"])) * T - cam
+		if opp.x < -T or opp.x > 640 or opp.y < -T or opp.y > 576: continue
+		var od := "side" if op["d"] in ["left", "right"] else str(op["d"])
+		Data.blit_fit(self, "gh_%s_%s0" % [op["cls"], od], Rect2(opp + Vector2(0, -12), Vector2(T, T)), op["d"] == "left")
+		var nm2 := str(op["name"]).substr(0, 10)
+		draw_rect(Rect2(opp.x + 32 - nm2.length() * 6 - 4, opp.y - 34, nm2.length() * 12 + 8, 20), Color(0.06, 0.07, 0.12, 0.75))
+		Data.text_c(self, nm2, opp.x + 32, opp.y - 32, Color8(140, 220, 255), 0.5)
 	var riding: bool = Game.hero.get("mounted", false) and not mount().is_empty() and not zone.has("dungeon")
 	if riding:
 		Data.blit_fit(self, "ap_mounts_%03d" % ((int(mount().get("no", 1)) - 1) % 22), Rect2(hp - cam + Vector2(-12, -6), Vector2(88, 80)), Game.facing == "left")
@@ -749,6 +762,14 @@ func _hud() -> void:
 	Data.panel(self, Rect2(640 - 8 - (tag.length() * 24 + 48), 4, tag.length() * 24 + 48, 56))
 	Data.text_r(self, tag, 640 - 32, 14, Data.EDGE)
 	Data.text_r(self, "%dG" % int(h["gold"]), 632, 68, Data.GOLD, 0.75)
+	# realm chat: the last few lines for 10 seconds each
+	var now := Time.get_ticks_msec()
+	var recent: Array = Online.chat.filter(func(c): return now - int(c["t"]) < 10000).slice(-3)
+	for ci in range(recent.size()):
+		var c: Dictionary = recent[ci]
+		var line := ("[%s] %s: %s" % [str(c["channel"]).to_upper().substr(0, 1), str(c["name"]).substr(0, 10), str(c["text"])]).substr(0, 52)
+		draw_rect(Rect2(4, 470 - (recent.size() - ci) * 22, 632, 22), Color(0.06, 0.07, 0.12, 0.6))
+		Data.text(self, line, Vector2(10, 472 - (recent.size() - ci) * 22), Color8(255, 240, 160) if c["channel"] == "world" else Color.WHITE, 0.5)
 	# quest tracker: the current chapter goal along the bottom
 	var lines: Array = Loot.wrap(Quest.goal(), 50)
 	var hh := 14 + lines.size() * 22

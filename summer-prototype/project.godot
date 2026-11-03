@@ -14,6 +14,7 @@ Game="*res://scripts/game.gd"
 Craft="*res://scripts/craft.gd"
 Quest="*res://scripts/quest.gd"
 Social="*res://scripts/social.gd"
+Online="*res://scripts/online.gd"
 
 [display]
 window/size/viewport_width=640

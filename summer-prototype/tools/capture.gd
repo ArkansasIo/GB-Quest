@@ -12,6 +12,10 @@ func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(out)
 	main = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
+	if args.size() > 1 and args[1] == "online":
+		await _online(args[2] if args.size() > 2 else "http://127.0.0.1:8787")
+		get_tree().quit()
+		return
 	await _wait(0.6); await _shot("1_title")
 	main.clear(); main.push(load("res://scripts/create.gd").new()); await _wait(0.4); await _shot("2_race")
 	main.top().step_i = 1; main.top().cls_i = 19; await _wait(0.3); await _shot("3_class")
@@ -421,3 +425,46 @@ func _stage7() -> void:
 	var cp = main.push(load("res://scripts/charpage.gd").new()); cp.tab = 5; await _wait(0.2); await _shot("27_talents"); main.pop(cp)
 	print("CHECK counters=%s" % [Game.hero.get("stats")])
 	print("CHECK save=%s load=%s guild=%s comp=%s talents=%d" % [Game.save(), Game.load_save(), Game.hero.get("guild"), Game.hero.get("comp"), Social.talents().size()])
+
+## the realm client against a running backend/server.cjs (a second, browser-format client is driven by the shell)
+func _online(url: String) -> void:
+	Online.server = url
+	Online.token = ""
+	var h := await Online.health()
+	print("CHECK realm health code=%d realm=%s" % [h["code"], h["data"].get("realm")])
+	var e := await Online.auth(true, "godotroam", "lanternpass1")
+	print("CHECK register: %s account=%s" % [e if e != "" else "ok", Online.account])
+	Game.new_hero("ROAM", "warden", "hearthkin"); Game.zone_id = "ardenhold"; Game.pos = Vector2i(16, 12); Game.hero["gold"] = 5000
+	main.clear(); var f = main.push(load("res://scripts/field.gd").new())
+	for k in range(100):
+		if Online.status == "ONLINE" and Online.peers.size(): break
+		await _wait(0.1)
+	print("CHECK stream status=%s peer=%s peers=%s" % [Online.status, Online.peer != "", Online.peers.values().map(func(p): return p["presence"].get("n", "?"))])
+	print("CHECK players here: %s" % [Online.players_here()])
+	await _wait(2.5)
+	print("CHECK chat received: %s" % [Online.chat.map(func(c): return "%s/%s: %s" % [c["channel"], c["name"], c["text"]]).slice(-2)])
+	var se: String = await Online.say("hello from godot", "world")
+	print("CHECK say: %s" % ("ok" if se == "" else se))
+	await _wait(0.3); await _shot("28_online_field")
+	# market: buy the browser player's listing, then list one of ours
+	var mk = main.push(load("res://scripts/market.gd").new())
+	for k in range(50):
+		if not mk.busy: break
+		await _wait(0.1)
+	var rows: Array = mk._rows()
+	print("CHECK market listings=%d browse=%s" % [mk.listings.size(), rows.map(func(l): return "%s %dG" % [mk._name(l), l["price"]])])
+	await _shot("29_market")
+	var g0 := int(Game.hero["gold"]); var b0 := Game.bag().size()
+	if rows.size(): await mk._act(rows[0])
+	print("CHECK bought: %s gold %d -> %d bag %d -> %d item=%s" % [mk.note, g0, Game.hero["gold"], b0, Game.bag().size(), Game.bag().back() if Game.bag().size() else {}])
+	Game.bag().append(Game.make_item("longbrand", 5, 30))
+	mk.selling = Game.bag().back(); await mk._list("777")
+	print("CHECK listed: %s mine=%d" % [mk.note, mk.listings.filter(func(l): return l.get("sellerName") == Online.account).size()])
+	main.pop(mk)
+	Game.save()
+	await _wait(1.0)
+	var lb := await Online.call_api(HTTPClient.METHOD_GET, "/api/heroes")
+	print("CHECK leaderboard: %s" % [lb["data"].get("heroes", []).map(func(x): return "%s L%d" % [x["name"], x["lvl"]])])
+	var rp = main.push(load("res://scripts/realm.gd").new()); await _wait(1.0); await _shot("30_realm"); main.pop(rp)
+	Game.pos = Vector2i(18, 12); await _wait(1.5)
+	print("CHECK done peer=%s" % Online.peer)

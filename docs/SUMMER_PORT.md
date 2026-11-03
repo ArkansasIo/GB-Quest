@@ -66,6 +66,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Waypoints: step on a zone's waypoint to attune it; travel from START > TRAVEL or a harbormaster.
 - The Spire: climb floor by floor against the 20 tower bosses, with a chest every 5 floors.
 - Difficulty 1-9 (DIFFICULTY) at the oracle: foe HP and damage up, XP and loot up, with level gates.
+- Online realm play (scripts/online.gd, realm.gd, market.gd): the port is a client of the game's own realm server (`npm run server`, backend/server.cjs) using the same endpoints as the browser client, so Godot and browser players share one realm. TITLE or START > REALM: set the server address, register or log in (the session token is kept in `user://online.cfg` on that machine only), see who is online, the leaderboard, and send say or world chat. Other players in your zone walk on the map with name tags and chat lines appear over the field; your presence uses the browser's format so browser players see you too. The town AUCTIONEER opens the trading hub: browse and buy listings from any player, list bag items at your price, cancel, and claim sale gold and expired items (items convert between the browser and port formats). Saving publishes your hero to the realm leaderboard. The server is unchanged.
 - Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
@@ -73,7 +74,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 ## Not ported yet (planned stages)
 
-Live PvP and online play (the port is single player; the arena uses AI rivals), the auction house, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Joint battles with other players (srv_* host-server battles) and PvP between real players; cloud saves (the server's save slots hold the browser's save format), necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -146,5 +147,23 @@ CHECK spire fights=1 best=1
 CHECK difficulty VETERAN: dmg x1.30
 CHECK save=true load=true guild=DOT MATRIX comp=esme talents=12
 ```
+
+Online, against `GBQ_DATA=<temp dir> node backend/server.cjs` with a second client driven by curl in the browser's formats
+(`godot ... res://tools/capture.tscn -- <out> online http://127.0.0.1:8787`):
+
+```
+CHECK realm health code=200 realm=LOCAL REALM
+CHECK register: ok account=godotroam
+CHECK stream status=ONLINE peer=true peers=["BEE"]
+CHECK players here: [{ "name": "BEE", "cls": "strider", "x": 18, "y": 12, "d": "left", "lvl": 14 }]
+CHECK chat received: ["world/BEE: buzz 3 from the browser", "world/BEE: buzz 4 from the browser"]
+CHECK say: ok
+CHECK market listings=1 browse=["KNIFE +3 250G"]
+CHECK bought: Bought KNIFE +3. gold 5000 -> 4750 bag 0 -> 1 item={ ..., "af": [["crit", 5, false], ["dmg", 12, true]], "asp": { "id": "executioner", "v": 40 } }
+CHECK listed: Listed for 777 G (24 h). mine=1
+CHECK leaderboard: ["ROAM L1"]
+```
+
+The second client's event stream received the Godot hero's presence (`"n":"ROAM" ... "z":"ardenhold"`) and its world chat line.
 
 Rolls are random, so item names and values differ from run to run.
