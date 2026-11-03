@@ -14,7 +14,7 @@ Output:
 - assets_hd64/gbq_6000/metadata/ — CSV and JSON manifests
 - GB-Quest-6000-Full-Assets.zip — distributable archive
 
-The assets are deterministic procedural pixel-art starter images. They are not
+For a non-destructive high-resolution remaster of all 6,000 assets, see [HD 6,000 Asset Remaster](HD_6000_ASSET_REMASTER.md) and run the **Build 6,000 Asset HD Remaster** GitHub Actions workflow. The assets are deterministic procedural pixel-art starter images. They are not
 individually hand-painted final art, full animation sequences, or automatically wired
 into gameplay. Review and curate before production use. Existing atlas loaders remain
 unchanged.
