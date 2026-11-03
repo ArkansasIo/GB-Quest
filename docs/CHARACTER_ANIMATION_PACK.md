@@ -64,3 +64,17 @@ python tools/generate_warrior_f_sprite.py --output assets_hd64/animations/frames
 The generator writes frames under `warrior/F/<direction>/<animation>/frame_000.png` and a `warrior_f_generation_report.json`. Supported output canvases are 64, 128, 256, and 512 pixels; larger canvases use nearest-neighbour scaling to preserve the pixel-art look. These frames are deliberately labeled prototype placeholder art and should be reviewed/redrawn before release.
 
 The GitHub Actions workflow generates the manifest and this F-rank warrior prototype, then checks that all 408 frames exist before uploading the artifact. It does not run the full 6,000-image remaster job.
+
+## Sprite atlas export
+
+Pack completed directional frames into eight transparent RGBA sprite sheets (one per animation), with matching JSON frame-coordinate metadata:
+
+```bash
+python -m pip install Pillow
+python tools/pack_animation_atlases.py \
+  --frames assets_hd64/animations/frames \
+  --output assets_hd64/animations/atlases \
+  --archetype warrior --rank F --frame-size 128
+```
+
+Each sheet uses directions as rows and frame indices as columns. The JSON sidecar records each frame's source filename and rectangle (`x`, `y`, `width`, `height`). The packer fails if any direction is missing or a frame has the wrong dimensions. The GitHub Actions workflow now runs this packer and validates all eight sheets before uploading the artifact.
