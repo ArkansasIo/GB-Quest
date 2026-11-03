@@ -11,7 +11,7 @@ from pathlib import Path
 import generate_warrior_f_sprite as renderer
 
 ARCHETYPES = ["warrior", "mage", "ranger", "rogue", "cleric", "summoner"]
-RANKS = ["F", "E", "D", "C", "B", "A", "S", "SSS"]
+RANKS = ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"]
 DIRECTIONS = renderer.DIRECTIONS
 ANIMATIONS = list(renderer.ANIMS)
 
@@ -28,7 +28,7 @@ RANK_GOLD = {
     "F": (150, 150, 150, 255), "E": (125, 165, 190, 255),
     "D": (80, 155, 205, 255), "C": (105, 130, 220, 255),
     "B": (160, 105, 210, 255), "A": (220, 165, 70, 255),
-    "S": (225, 105, 85, 255), "SSS": (245, 220, 130, 255),
+    "S": (225, 105, 85, 255), "SS": (235, 165, 95, 255), "SSS": (245, 220, 130, 255),
 }
 
 def render_variant(archetype, rank, direction, animation, frame, count, size):
