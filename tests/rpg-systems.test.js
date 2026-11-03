@@ -122,3 +122,29 @@ test('transmog looks fit only the same kind and slot; cost scales with level', (
   assert.equal(P.lookFits('weapon', 'weapon', 'weapon', 'armor'), false);
   assert.equal(P.transmogCost(40), 200);
 });
+
+test('wardrobe collection includes every held source and does not duplicate appearances', () => {
+  const wardrobe = { 'weapon:shortsword': 1 };
+  const sources = [
+    [{ kind: 'weapon', base: 'shortsword' }, { kind: 'armor', base: 'leather' }],
+    [{ kind: 'wondrous', base: 'ring_of_warding' }],
+    [{ kind: 'weapon', base: 'longbow' }]
+  ];
+  const result = P.collectAppearances(wardrobe, sources);
+  assert.equal(result.added, 3);
+  assert.deepEqual(plain(result.wardrobe), {
+    'weapon:shortsword': 1, 'armor:leather': 1,
+    'wondrous:ring_of_warding': 1, 'weapon:longbow': 1
+  });
+  assert.equal(P.collectAppearances(result.wardrobe, sources).added, 0);
+});
+
+test('transmog appearance must be unlocked, same-kind, same-slot and distinct from the base item', () => {
+  const item = { kind: 'weapon', base: 'iron_sword' };
+  const wardrobe = { 'weapon:steel_sword': 1, 'armor:steel_helm': 1 };
+  const slotOf = x => x.kind === 'weapon' ? 'weapon' : x.base.includes('helm') ? 'head' : 'chest';
+  assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'steel_sword' }, wardrobe, slotOf), true);
+  assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'unknown_sword' }, wardrobe, slotOf), false);
+  assert.equal(P.validAppearance(item, { kind: 'armor', base: 'steel_helm' }, wardrobe, slotOf), false);
+  assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'iron_sword' }, wardrobe, slotOf), false);
+});
