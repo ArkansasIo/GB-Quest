@@ -146,5 +146,6 @@ test('transmog appearance must be unlocked, same-kind, same-slot and distinct fr
   assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'steel_sword' }, wardrobe, slotOf), true);
   assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'unknown_sword' }, wardrobe, slotOf), false);
   assert.equal(P.validAppearance(item, { kind: 'armor', base: 'steel_helm' }, wardrobe, slotOf), false);
+  assert.equal(P.validAppearance({ kind: 'armor', base: 'iron_chest' }, { kind: 'armor', base: 'steel_helm' }, wardrobe, slotOf), false, 'same kind but different slot is rejected');
   assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'iron_sword' }, wardrobe, slotOf), false);
 });
