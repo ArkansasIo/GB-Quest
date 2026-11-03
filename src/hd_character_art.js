@@ -71,7 +71,7 @@
   };
   const createFramePresenter = runtime => {
     if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
-    let requestedKey = null, readyKey = null, readyCanvas = null, generation = 0;
+    let requestedKey = null, readyKey = null, readyCanvas = null, failedKey = null, generation = 0;
     const request = (character, spec = {}) => {
       const key = JSON.stringify([
         character && (character.id || character.name || character.cls),
@@ -79,6 +79,7 @@
         spec.direction, spec.frame, spec.state, spec.action, spec.animation,
         spec.rank, spec.archetype, spec.ghost
       ]);
+      if (key === failedKey) return null;
       if (key !== requestedKey) {
         requestedKey = key;
         const token = ++generation;
@@ -87,12 +88,12 @@
           readyKey = key;
           readyCanvas = canvas;
         }).catch(() => {
-          if (token === generation) requestedKey = null;
+          if (token === generation) { requestedKey = null; failedKey = key; }
         });
       }
       return readyKey === key ? readyCanvas : null;
     };
-    const clear = () => { generation++; requestedKey = null; readyKey = null; readyCanvas = null; };
+    const clear = () => { generation++; requestedKey = null; readyKey = null; readyCanvas = null; failedKey = null; };
     return { request, clear, getReady: () => readyCanvas };
   };
   const createRuntime = (options = {}) => {
