@@ -1,0 +1,42 @@
+name: Generate 6,000 Pixel Art Assets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check Pillow
+      - name: Generate 6,000 PNG assets and ZIP
+        run: python tools/generate_6000_asset_pack.py
+      - name: Verify output
+        run: |
+          python - <<'PY'
+          import csv, zipfile
+          from pathlib import Path
+          root = Path("assets_hd64/gbq_6000")
+          rows = list(csv.DictReader((root / "metadata/asset_manifest.csv").open()))
+          pngs = list((root / "assets").rglob("*.png"))
+          assert len(rows) == 6000, len(rows)
+          assert len({r["asset_id"] for r in rows}) == 6000
+          assert len(pngs) == 6000, len(pngs)
+          with zipfile.ZipFile("GB-Quest-6000-Full-Assets.zip") as z:
+              assert z.testzip() is None
+          print(f"Verified {len(pngs)} PNGs and {len(rows)} unique manifest records.")
+          PY
+      - name: Upload asset pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: GB-Quest-6000-Full-Assets
+          path: GB-Quest-6000-Full-Assets.zip
+          if-no-files-found: error
+          retention-days: 30
