@@ -100,6 +100,9 @@ static func build(def: Dictionary, floor: int) -> Dictionary:
 	var bpos := down + Vector2i(-1, 0) if g[down.y][down.x - 1] in [".", ","] else down + Vector2i(0, -1)
 	g[bpos.y][bpos.x] = "."
 	var bdef := boss_for(def, floor)
+	if floor == FLOORS - 1:
+		var arc: Dictionary = Quest.arc_boss_for(str(def["id"]))   # the story boss guards the last floor in its chapter
+		if not arc.is_empty(): bdef = arc
 	mobs.append({"x": bpos.x, "y": bpos.y, "def": bdef, "lvl": maxi(lvl + 1, int(bdef.get("lvl", lvl))), "boss": true})
 	# tiles: wall faces where floor is below, wall tops elsewhere, torches on some faces
 	var gfx := []

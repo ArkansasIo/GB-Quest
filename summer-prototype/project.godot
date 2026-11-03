@@ -11,6 +11,8 @@ config/features=PackedStringArray("4.3")
 [autoload]
 Data="*res://scripts/data.gd"
 Game="*res://scripts/game.gd"
+Craft="*res://scripts/craft.gd"
+Quest="*res://scripts/quest.gd"
 
 [display]
 window/size/viewport_width=640

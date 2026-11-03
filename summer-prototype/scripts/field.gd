@@ -4,8 +4,11 @@ extends Node2D
 const Battle = preload("res://scripts/battle.gd")
 const Bag = preload("res://scripts/bag.gd")
 const Dungeon = preload("res://scripts/dungeon.gd")
+const CharPage = preload("res://scripts/charpage.gd")
+const Loot = preload("res://scripts/loot.gd")
 const T := 64
-const STEP_TIME := 0.14
+const BASE_STEP := 0.14
+var STEP_TIME := 0.14
 var main: Node2D
 var zone: Dictionary = {}
 var moving := false
@@ -17,6 +20,21 @@ var steps_since := 0
 
 func _ready() -> void:
 	_load_zone(Game.zone_id)
+
+## lines from quest / crafting events, shown as one dialog
+func _show(lines: Array) -> void:
+	if lines.size(): main.say(lines)
+
+## a ridden mount makes each step quicker (speed 4 = about 1.6x)
+func _step_time() -> float:
+	var m := mount()
+	return BASE_STEP / (1.0 + 0.15 * float(m.get("speed", 0))) if Game.hero.get("mounted", false) and not m.is_empty() and not zone.has("dungeon") else BASE_STEP
+
+func mount() -> Dictionary:
+	var id := str(Game.hero.get("mount", ""))
+	for m in Data.game.get("MOUNTS", []):
+		if m["id"] == id: return m
+	return {}
 
 func _load_zone(id: String) -> void:
 	if not Game.dun.is_empty() and id == str(Game.dun["map"]["id"]):
@@ -32,6 +50,8 @@ func _load_zone(id: String) -> void:
 	if not _walkable(Game.pos.x, Game.pos.y):
 		var hub: Array = zone.get("hub", [3, 8])
 		Game.pos = Vector2i(int(hub[0]), int(hub[1]))
+	if main and Game.hero.size():
+		_show(Quest.on_enter_zone(id))
 
 func _walkable(x: int, y: int) -> bool:
 	var w: Array = zone.get("walk", [])
@@ -94,6 +114,7 @@ func step(delta: float) -> void:
 				_offer_dungeon(_dungeon_at(nxt.x, nxt.y))
 				return
 			if _walkable(nxt.x, nxt.y):
+				STEP_TIME = _step_time()
 				from = Vector2(Game.pos)
 				Game.pos = nxt
 				moving = true
@@ -205,6 +226,7 @@ func _finish_dungeon() -> void:
 	var lines := ["%s CLEARED!" % d["name"], "+%d XP for the clear%s." % [bonus, " (first time)" if first else ""]]
 	if ups: lines.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
 	leave_dungeon()
+	lines.append_array(Quest.on_dungeon_clear(str(d["id"])))
 	main.say(lines)
 
 func _fight_mob(k: int) -> void:
@@ -230,15 +252,85 @@ func _talk(n: Dictionary) -> void:
 	elif svc == "vendor":
 		main.choose(["POTION (25 G)", "ARMS", "SELL", "LEAVE"], Callable(self, "_shop"), "%s: What will it be?" % talking)
 	elif svc in ["blacksmith", "armorsmith", "weaponsmith"]:
-		main.choose(["ARMS", "SELL", "LEAVE"], Callable(self, "_smith"), "%s: Steel for the road?" % talking)
+		craft_prof = svc
+		main.choose(["ARMS", "SELL", "CRAFT", "LEAVE"], Callable(self, "_smith"), "%s: Steel for the road?" % talking)
 	elif svc == "warden":
-		main.say(["%s: Stay on the road, %s. The deep places bite." % [talking, Game.hero["name"]]])
+		var q := Quest.on_talk("warden")
+		main.say(["%s: Stay on the road, %s. The deep places bite." % [talking, Game.hero["name"]]] + q)
 	elif svc == "elder":
-		main.say(["%s: You carry the last lantern. I knew it would choose someone." % talking, "The EMBER CODEX was torn into twelve pages. Find them, and the dawn returns."])
+		var q := Quest.on_talk("elder")
+		main.say(["%s: You carry the last lantern. I knew it would choose someone." % talking, "The EMBER CODEX was torn into twelve pages. Find them, and the dawn returns."] + q)
+	elif svc == "craftmaster":
+		main.choose(Craft.PROFS.values(), Callable(self, "_pick_prof"), "%s: Which craft?" % talking)
+	elif svc == "proftrainer" and ROLE_PROF.has(str(n.get("role", ""))):
+		craft_prof = ROLE_PROF[str(n["role"])]
+		_craft_menu()
+	elif svc == "stable":
+		_stable()
+	elif svc == "trainer":
+		var cp = CharPage.new(); cp.tab = 4; main.push(cp)
 	else:
 		main.say(["%s: Welcome, %s." % [talking, Game.hero["name"]], "(This service is fully playable in the browser game; the Summer port adds it in a later stage.)"])
 
 var talking := ""
+var craft_prof := "alch"
+const ROLE_PROF := {"alchemist": "alch", "weaponsmith": "weaponsmith", "armorer": "armorsmith", "blacksmith": "blacksmith"}
+
+# ------------------------------------------------------------------ crafting
+func _pick_prof(k: int) -> void:
+	if k < 0: return
+	craft_prof = Craft.PROFS.keys()[k]
+	_craft_menu()
+
+var craft_list: Array = []
+
+func _craft_menu() -> void:
+	craft_list = Craft.recipes(craft_prof)
+	if craft_list.is_empty():
+		main.say(["%s: Come back with more skill." % talking]); return
+	var names := []
+	for r in craft_list:
+		names.append(("" if Craft.can_make(r) else "-") + str(r["name"]).substr(0, 17))
+	main.choose(names, Callable(self, "_craft_pick"), "%s skill %d. '-' = missing materials." % [Craft.PROFS[craft_prof], Craft.skill(craft_prof)])
+
+func _craft_pick(k: int) -> void:
+	if k < 0: return
+	var r: Dictionary = craft_list[k]
+	if not Craft.can_make(r):
+		main.say(["%s needs:" % r["name"]] + Loot.wrap(Craft.needs_text(r), 24))
+		return
+	main.say(Craft.make(r))
+
+# ------------------------------------------------------------------ the stable: mounts
+var stable_list: Array = []
+
+func _stable() -> void:
+	stable_list = []
+	for m in Data.game.get("MOUNTS", []):
+		if m.get("source") == "stable" and int(m.get("lvl", 1)) <= int(Game.hero["lvl"]) + 10:
+			stable_list.append(m)
+	stable_list = stable_list.slice(0, 7)
+	if stable_list.is_empty():
+		main.say(["%s: Come back at level 15 for your first mount." % talking]); return
+	var names := []
+	for m in stable_list:
+		names.append("%s %dG" % [str(m["name"]).substr(0, 12), int(m["price"])])
+	main.choose(names, Callable(self, "_buy_mount"), "%s: Ride from START > MOUNT." % talking)
+
+func _buy_mount(k: int) -> void:
+	if k < 0: return
+	var m: Dictionary = stable_list[k]
+	var own: Array = Game.hero.get("mounts", [])
+	if own.has(m["id"]):
+		Game.hero["mount"] = m["id"]; main.say(["You saddle your %s." % m["name"]]); return
+	if int(Game.hero["lvl"]) < int(m["lvl"]):
+		main.say(["%s: Come back at level %d." % [talking, int(m["lvl"])]]); return
+	if int(Game.hero["gold"]) < int(m["price"]):
+		main.say(["%s: That's %d G." % [talking, int(m["price"])]]); return
+	Game.hero["gold"] = int(Game.hero["gold"]) - int(m["price"])
+	own.append(m["id"]); Game.hero["mounts"] = own
+	Game.hero["mount"] = m["id"]; Game.hero["mounted"] = true
+	main.say(["You bought the %s! (Speed %d)" % [m["name"], int(m["speed"])], str(m.get("desc", ""))])
 
 func _inn(k: int) -> void:
 	if k != 0:
@@ -255,6 +347,7 @@ var stock: Array = []
 
 func _smith(k: int) -> void:
 	if k >= 0 and k < 2: _shop(k + 1)
+	elif k == 2: _craft_menu()
 
 func _shop(k: int) -> void:
 	if k == 1:
@@ -283,7 +376,7 @@ func _stock() -> Array:
 	var all := []
 	for tbl in ["WEAPONS", "ARMORS"]:
 		for id in Data.game.get(tbl, {}):
-			var it := Game.make_item(id, 1 if Game.rng.randf() < 0.8 else 2)
+			var it := Game.make_item(id, 1 if Game.rng.randf() < 0.8 else 2, int(Game.hero["lvl"]))
 			if Game.can_use(it):
 				all.append(it)
 	all.sort_custom(func(a, b): return Game.price(a) < Game.price(b))
@@ -301,23 +394,40 @@ func _buy(k: int) -> void:
 	Game.bag().append(it)
 	main.say(["Bought %s. Equip it from GEAR & BAG." % Game.item_name(it)])
 
+const MENU := ["CHARACTER", "GEAR & BAG", "QUEST", "POTION", "MOUNT", "SAVE", "SAVE & QUIT", "BACK"]
+
 func _menu() -> void:
-	main.choose(["STATUS", "GEAR & BAG", "POTION (%d)" % int(Game.hero["potions"]), "SAVE", "SAVE & QUIT", "BACK"], Callable(self, "_menu_pick"))
+	var o := MENU.duplicate()
+	o[3] = "POTION (%d)" % int(Game.hero["potions"])
+	o[4] = ("DISMOUNT" if Game.hero.get("mounted", false) else "MOUNT") if Game.hero.get("mount", "") != "" else "MOUNT (NONE)"
+	main.choose(o, Callable(self, "_menu_pick"))
 
 func _menu_pick(k: int) -> void:
+	if k == 0:
+		main.push(CharPage.new())
+		return
 	if k == 1:
 		main.push(Bag.new())
 		return
-	if k > 1:
-		k -= 1
-	if k == 0:
-		main.say(_status())
-	elif k == 1:
+	if k == 2:
+		var cp = CharPage.new(); cp.tab = 3; main.push(cp)
+		return
+	if k == 4:
+		if Game.hero.get("mount", "") == "":
+			main.say(["You have no mount. Stablemasters in towns sell them from level 15."])
+		elif zone.has("dungeon"):
+			main.say(["No riding in dungeons."])
+		else:
+			Game.hero["mounted"] = not Game.hero.get("mounted", false)
+			main.say(["You ride your %s." % mount().get("name", "mount") if Game.hero["mounted"] else "You dismount."])
+		return
+	k = {3: 1, 5: 2, 6: 3}.get(k, 9)
+	if k == 1:
 		if int(Game.hero["potions"]) <= 0:
 			main.say(["No potions."])
 			return
 		Game.hero["potions"] = int(Game.hero["potions"]) - 1
-		var h := Game.roll("2d4+2")
+		var h := (Game.roll("2d4+2") + int(Game.hero["lvl"]) / 5) * (100 + Game.stat("heal")) / 100
 		Game.hero["hp"] = mini(Game.hp_max(), int(Game.hero["hp"]) + h)
 		main.say(["+%d HP." % h])
 	elif k == 2:
@@ -326,18 +436,6 @@ func _menu_pick(k: int) -> void:
 		Game.save()
 		main.clear()
 		main.push(load("res://scripts/title.gd").new())
-
-func _status() -> Array:
-	var h := Game.hero
-	var c := Data.cls(h["cls"])
-	var a := []
-	for k in Game.ATTRS: a.append("%s %d" % [k, int(h["base"].get(k, 10))])
-	return ["%s  LV %d %s %s" % [h["name"], int(h["lvl"]), Data.species(h["species"]).get("name", ""), c.get("name", "")],
-		"HP %d/%d  AC %d  HIT +%d" % [int(h["hp"]), Game.hp_max(), Game.ac(), Game.attack_bonus()],
-		" ".join(a.slice(0, 3)), " ".join(a.slice(3, 6)),
-		"XP %d/%d  GOLD %d  SPELL LV %d" % [int(h["xp"]), Data.xp_for(int(h["lvl"]) + 1), int(h["gold"]), Game.spell_level()],
-		"WEAPON %s (%s)" % [Game.item_name(Game.gear().get("weapon", {})) if Game.gear().has("weapon") else "FISTS", Game.weapon_dice()],
-		"ARMOR %s" % (Game.item_name(Game.gear().get("armor", {})) if Game.gear().has("armor") else "NONE")]
 
 # ------------------------------------------------------------------ drawing
 func _hero_px() -> Vector2:
@@ -370,7 +468,10 @@ func _draw() -> void:
 		var big: bool = m.get("boss", false)
 		var bob := sin(Time.get_ticks_msec() / 300.0 + int(m["x"])) * 3
 		Data.blit_fit(self, str(m["def"].get("art", "")), Rect2(mp + Vector2(-8 if big else 4, (-24 if big else -4) + bob), Vector2(80, 80) if big else Vector2(56, 56)), true)
-	Data.blit_fit(self, "gh_%s_%s%d" % [Game.hero["cls"], dir, f], Rect2(hp - cam + Vector2(0, -12), Vector2(T, T)), Game.facing == "left")
+	var riding: bool = Game.hero.get("mounted", false) and not mount().is_empty() and not zone.has("dungeon")
+	if riding:
+		Data.blit_fit(self, "ap_mounts_%03d" % ((int(mount().get("no", 1)) - 1) % 22), Rect2(hp - cam + Vector2(-12, -6), Vector2(88, 80)), Game.facing == "left")
+	Data.blit_fit(self, "gh_%s_%s%d" % [Game.hero["cls"], dir, f], Rect2(hp - cam + Vector2(0, -28 if riding else -12), Vector2(T, T)), Game.facing == "left")
 	_hud()
 
 func _hud() -> void:
@@ -388,6 +489,12 @@ func _hud() -> void:
 	Data.panel(self, Rect2(640 - 8 - (tag.length() * 24 + 48), 4, tag.length() * 24 + 48, 56))
 	Data.text_r(self, tag, 640 - 32, 14, Data.EDGE)
 	Data.text_r(self, "%dG" % int(h["gold"]), 632, 68, Data.GOLD, 0.75)
+	# quest tracker: the current chapter goal along the bottom
+	var lines: Array = Loot.wrap(Quest.goal(), 50)
+	var hh := 14 + lines.size() * 22
+	draw_rect(Rect2(4, 576 - hh - 4, 632, hh), Color(0.06, 0.07, 0.12, 0.82))
+	for i in range(lines.size()):
+		Data.text(self, str(lines[i]), Vector2(14, 576 - hh + 4 + i * 22), Data.GOLD, 0.5)
 	if banner > 0:
 		var nm := str(zone.get("name", ""))
 		Data.panel(self, Rect2(320 - nm.length() * 12 - 32, 300, nm.length() * 24 + 64, 64))

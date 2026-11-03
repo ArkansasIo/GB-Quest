@@ -1,6 +1,7 @@
 extends Node
 ## The hero, the world position and the 5e-style rules the port needs (mirrors src/rules.js for levels 1-720).
 
+const Loot = preload("res://scripts/loot.gd")
 const SAVE_PATH := "user://gbquest_save.json"
 const ATTRS := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 const STANDARD_ARRAY := [15, 14, 13, 12, 10, 8]
@@ -52,7 +53,7 @@ func hp_max() -> int:
 	var L := int(hero.get("lvl", 1))
 	var CL := class_level()
 	var hp := hd + (CL - 1) * (hd / 2 + 1) + mod("CON") * CL
-	return maxi(1, hp + maxi(0, L - CL) * 2)   # ascension levels add a little health each
+	return maxi(1, hp + maxi(0, L - CL) * 2 + (stat("hp") if hero.has("gear") else 0))   # ascension levels add a little health each
 
 ## AC from the equipped armour and shield (5e: light adds DEX, medium up to +2, heavy none), plus item pluses
 func ac() -> int:
@@ -65,7 +66,7 @@ func ac() -> int:
 	var s := def_of(g.get("shield", {}))
 	if not s.is_empty():
 		v += int(s["ac"]) + int(g["shield"].get("plus", 0))
-	return v
+	return v + stat("acb")
 
 ## the ability that drives weapon attacks: DEX for finesse and ranged weapons when it is higher
 func weapon_mod() -> int:
@@ -76,7 +77,7 @@ func weapon_mod() -> int:
 	return mod("STR") if not w.is_empty() else mod(Data.cls(hero.get("cls", "warden")).get("primary", "STR"))
 
 func attack_bonus() -> int:
-	return prof() + weapon_mod() + int(gear().get("weapon", {}).get("plus", 0))
+	return prof() + weapon_mod() + int(gear().get("weapon", {}).get("plus", 0)) + stat("hit")
 
 func weapon_dice() -> String:
 	var w := def_of(gear().get("weapon", {}))
@@ -108,10 +109,37 @@ func bag() -> Array:
 		hero["bag"] = []
 	return hero["bag"]
 
-func make_item(id: String, r: int = 1) -> Dictionary:
+func make_item(id: String, r: int = 1, lvl: int = 1) -> Dictionary:
 	var k := "w" if Data.game.get("WEAPONS", {}).has(id) else "a"
 	var rr: Dictionary = Data.game.get("RARITY", [])[clampi(r, 0, 8)]
-	return {"k": k, "id": id, "r": clampi(r, 0, 8), "plus": maxi(0, int(rr.get("plus", 0)))}
+	var it := {"k": k, "id": id, "r": clampi(r, 0, 8), "plus": maxi(0, int(rr.get("plus", 0)))}
+	Loot.roll(it, maxi(1, lvl), rng)
+	return it
+
+# ------------------------------------------------------------------ substats (affixes, aspects, support job)
+## total of one substat (crit, dmg, hp, acb, hit, leech, fire...) from equipped affixes, stat aspects and the support job, capped
+func stat(k: String) -> int:
+	var v := 0
+	for s in gear():
+		var it: Dictionary = gear()[s]
+		for a in it.get("af", []):
+			if a[0] == k: v += int(a[1])
+		if it.has("asp"):
+			for sv in Loot.aspect_stats(it["asp"]):
+				if sv[0] == k: v += int(sv[1])
+	if str(hero.get("job", "")) != "" and int(hero.get("lvl", 1)) >= int(Data.game.get("SUPPORT_UNLOCK", 18)):
+		for sv in Loot.support_bonus(str(hero["job"]), int(hero.get("lvl", 1))):
+			if sv[0] == k: v += int(sv[1])
+	return mini(v, int(Data.game.get("SUBSTATS", {}).get(k, {}).get("max", 99999)))
+
+## the legendary aspects on equipped gear: [{"id", "v", "e"}]
+func aspects() -> Array:
+	var out := []
+	for s in gear():
+		var a = gear()[s].get("asp")
+		if a is Dictionary:
+			out.append({"id": a["id"], "v": int(a["v"]), "e": Data.game.get("ASPECT_SPECS", {}).get(a["id"], {}).get("e", {})})
+	return out
 
 func item_name(it: Dictionary) -> String:
 	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
@@ -131,7 +159,7 @@ func item_stat(it: Dictionary) -> String:
 
 func price(it: Dictionary) -> int:
 	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
-	return maxi(5, int(float(def_of(it).get("cost", 1)) * 4 * float(rr.get("value", 1))) + 10)
+	return maxi(5, int(float(def_of(it).get("cost", 1)) * 4 * float(rr.get("value", 1))) + 10 + 5 * int(it.get("ilvl", 1)) * it.get("af", []).size())
 
 ## whether this class may use the item (armour type list; weapon category, finesse classes take finesse/ranged martial weapons)
 func can_use(it: Dictionary) -> bool:
@@ -180,11 +208,11 @@ func random_drop(lvl: int) -> Dictionary:
 		pool.append(k)
 	var id: String = pool[rng.randi_range(0, pool.size() - 1)]
 	var r := 1
-	var roll_r := rng.randf() + minf(0.5, lvl / 200.0)
+	var roll_r := rng.randf() + minf(0.5, lvl / 200.0) + stat("mf") / 1000.0
 	for cut in [0.55, 0.8, 0.93, 0.985, 1.2, 1.35, 1.45]:
 		if roll_r > cut:
 			r += 1
-	return make_item(id, mini(r, 8))
+	return make_item(id, mini(r, 8), lvl)
 
 func is_caster() -> bool:
 	return Data.cls(hero.get("cls", "warden")).get("caster") != null

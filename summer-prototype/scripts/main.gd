@@ -18,8 +18,8 @@ func _ready() -> void:
 
 func push(s: Node2D) -> Node2D:
 	s.set("main", self)
+	stack.append(s)   # before add_child, so a dialog opened from the screen's _ready lands on top of it
 	add_child(s)
-	stack.append(s)
 	return s
 
 func pop(s: Node2D = null) -> void:

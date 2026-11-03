@@ -91,6 +91,58 @@ func _ready() -> void:
 		await get_tree().process_frame
 		while main.top() != df: main.pop(main.top())
 	print("CHECK after clear zone=%s cleared=%s lvl=%d bag=%d" % [Game.zone_id, Game.hero.get("cleared"), Game.hero["lvl"], Game.bag().size()])
+	# story: talk to the elder, then the kill chapter in Elderwood
+	Game.new_hero("IVY", "ronin", "felinar"); Game.zone_id = "elderwood"; Game.pos = Vector2i(3, 8)
+	print("CHECK quest start goal=%s" % Quest.goal())
+	var ql := Quest.on_talk("elder")
+	print("CHECK quest after elder: %s | chapter=%d goal=%s" % [ql.slice(0, 2), Game.hero["chapter"], Quest.goal()])
+	var kills := 0
+	while int(Game.hero["chapter"]) == 1 and kills < 20:
+		Quest.on_kill({"fam": "beast", "id": "x"}, false); kills += 1
+	print("CHECK kill chapter done after %d kills -> chapter=%d goal=%s mats=%s" % [kills, Game.hero["chapter"], Quest.goal(), Craft.mats()])
+	# loot: a legendary weapon rolls affixes and an aspect
+	var leg := Game.make_item("longbrand", 6, 40)
+	var Lt = load("res://scripts/loot.gd")
+	var aft := []
+	for af in leg["af"]: aft.append(Lt.affix_text(af))
+	print("CHECK legendary %s af=%s aspect=%s: %s" % [Game.item_name(leg), aft, Lt.aspect_name(leg["asp"]), Lt.aspect_text(leg["asp"])])
+	Game.bag().append(leg); Game.equip(Game.bag().size() - 1)
+	print("CHECK equipped legendary: aspects=%d hit=+%d ac=%d hpmax=%d" % [Game.aspects().size(), Game.attack_bonus(), Game.ac(), Game.hp_max()])
+	# crafting: brew a draught from peacebloom
+	Craft.mats()["peacebloom"] = 4
+	var pot0 := int(Game.hero["potions"])
+	var rec: Dictionary = Data.game["RECIPES"][0]
+	print("CHECK craft %s -> %s potions %d -> %d skill=%d" % [rec["name"], Craft.make(rec), pot0, Game.hero["potions"], Craft.skill("alch")])
+	Craft.mats()["iron_ore"] = 3; Craft.mats()["sap"] = 2
+	var wr := {}
+	for r in Data.game["RECIPES"]: if r["id"] == "crude_weapon" or (r["prof"] == "weaponsmith" and int(r["skill"]) == 1): wr = r
+	print("CHECK craft weapon %s -> %s" % [wr.get("name"), Craft.make(wr) if not wr.is_empty() else "none"])
+	# support job and mount
+	Game.hero["lvl"] = 30; Game.hero["xp"] = Data.xp_for(30); Game.hero["job"] = "warden"
+	print("CHECK support job warden at 30: hp stat=%d block=%d" % [Game.stat("hp"), Game.stat("block")])
+	Game.hero["gold"] = 5000
+	main.clear(); var mf = main.push(load("res://scripts/field.gd").new()); await _wait(0.3)
+	mf.talking = "STABLEMASTER"; mf._stable(); main.pop(main.top()); mf._buy_mount(0); main.pop(main.top())
+	print("CHECK mount=%s mounted=%s step=%.3f" % [Game.hero.get("mount"), Game.hero.get("mounted"), mf._step_time()])
+	while main.top() != mf: main.pop(main.top())
+	await _wait(0.4); await _shot("14_field_quest_mount")
+	for t in range(5):
+		var cpg = main.push(load("res://scripts/charpage.gd").new()); cpg.tab = t; await _wait(0.2); await _shot("15_char_%d" % t); main.pop(cpg)
+	var bgm = main.push(load("res://scripts/bag.gd").new()); bgm.tab = 2; await _wait(0.2); await _shot("16_mats"); main.pop(bgm)
+	# a battle with the legendary: run it to the end
+	mf._encounter(); await _wait(1.6); var lb = main.top(); lb.state = "menu"; await _wait(0.2); await _shot("17_battle_skill")
+	var tt2 := 0
+	while main.stack.has(lb) and tt2 < 300:
+		if lb.state == "msg":
+			lb.msgs = []; lb.state = "menu"
+			if lb.then.is_valid():
+				var c2 = lb.then; lb.then = Callable(); c2.call()
+		elif lb.state == "menu":
+			Game.hero["hp"] = Game.hp_max(); lb._act("ATTACK")
+		tt2 += 1
+		await get_tree().process_frame
+	print("CHECK legendary battle finished=%s" % [not main.stack.has(lb)])
+	print("CHECK save=%s load=%s chapter=%d mount=%s" % [Game.save(), Game.load_save(), Game.hero["chapter"], Game.hero.get("mount")])
 	get_tree().quit()
 
 func _wait(s: float) -> void:

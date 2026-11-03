@@ -36,6 +36,12 @@ const { chromium } = require('playwright');
       BOSSES: BOSSES.map(b => ({ id: b.id, name: b.name, cat: b.cat, fam: b.fam, lvl: b.lvl, zone: b.zone, art: monsterArt(b) })),
       HEROES: Object.fromEntries(CLASS_ORDER.map(c => [c, { walk: ['down', 'up', 'side'].flatMap(d => [0, 1].map(f => `gh_${c}_${d}${f}`)), battle: `c_${c}_4`, portrait: `np_class_${c}` }])),
       RACE_PORTRAITS: Object.fromEntries(Object.keys(SPECIES).map(s => [s, `np_race_${s}_0`])),
+      // story, loot rolls, support jobs and crafting (stage 4 of the port)
+      CHAPTERS, ACTS, CHAPTER_REWARDS: CHAPTERS.map((c, i) => { const reg = REGIONS.find(r => r.id === ACTS[c[0] - 1].zone); return { xp: Math.round(xpForMonster(reg.lvl[1]) * 6), gold: 20 + reg.lvl[1] * 10 }; }),
+      ARC_BOSSES: BOSSES.filter(b => b.cat === 'arc').map(b => ({ id: b.id, name: b.name, act: b.act, lvl: b.lvl, fam: b.fam, art: monsterArt(b) })),
+      AFFIX_POOL, AFFIX_K, GREATER_CHANCE, GREATER_MULT,
+      ASPECT_TEXT: Object.fromEntries(Object.entries(ASPECT_SPECS).map(([id, A]) => [id, A.e.t === 'stat' ? null : aspectText(A.e, '{v}')])),
+      ASP_STAT, SUPPORT_TRAITS, SUPPORT_CAPS, SUPPORT_UNLOCK, RECIPES, HERB_BY_BIOME,
     };
     const zones = {};
     const f = new Field();
