@@ -34,6 +34,12 @@ jobs:
           python tools/generate_warrior_f_sprite.py \
             --output assets_hd64/animations/frames \
             --size "${{ inputs.frame_size }}"
+      - name: Pack directional sprite atlases
+        run: |
+          python tools/pack_animation_atlases.py \
+            --frames assets_hd64/animations/frames \
+            --output assets_hd64/animations/atlases \
+            --archetype warrior --rank F --frame-size "${{ inputs.frame_size }}"
       - name: Validate manifest totals
         run: |
           python - <<'PY'
@@ -48,6 +54,10 @@ jobs:
           frames = list(Path('assets_hd64/animations/frames/warrior/F').rglob('frame_*.png'))
           assert len(frames) == 408, f'Expected 408 warrior frames, found {len(frames)}'
           print(f'Validated {len(frames)} F-rank warrior prototype frames')
+          atlas = json.loads(Path('assets_hd64/animations/atlases/atlas_build_report.json').read_text())
+          assert atlas['valid'], atlas
+          assert len(atlas['sheets']) == 8, atlas
+          print(f"Validated {len(atlas['sheets'])} directional animation atlases")
           PY
       - name: Upload manifest artifact
         uses: actions/upload-artifact@v4
