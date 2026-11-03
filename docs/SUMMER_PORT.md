@@ -42,7 +42,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Crafting: monsters drop materials by family and level (MATS tab in the bag); alchemists, weaponsmiths, armorers, blacksmiths and craft masters brew potions and forge gear from RECIPES; skill rises with each craft.
 - Mounts: stablemasters sell the stable mounts (level 15+); START > MOUNT rides (faster steps, not in dungeons).
 - CHARACTER page: STATS, SUBSTATS, ASPECTS, QUEST and JOB tabs. Bag item INFO (START) lists affixes and the aspect.
-- Accessories: 94 wondrous items (head, neck, ear, back, hands, waist, legs, feet, two rings, two trinkets) drop beside weapons and armour and add AC, resistance, haste, damage, accuracy or HP by their plus, plus their own affixes and aspects. The GEAR tab lists all 15 slots.
+- Accessories: 52 wondrous items (head, neck, ear, back, hands, waist, legs, feet, two rings, two trinkets) drop beside weapons and armour and add AC, resistance, haste, damage, accuracy or HP by their plus, plus their own affixes and aspects. The GEAR tab lists all 15 slots.
 - Gems and sockets (src/gems.js): weapons and armour have one socket per 180 item levels (max 4); nine gem types in tiers 1-9 drop from monsters (bosses most often) and add their stat. Bag > START opens the item menu: INFO, SOCKET GEM, REMOVE GEMS, TEMPER, MASTERWORK.
 - Tempering and masterwork (src/d4_gear.js) in towns for gold and scrap: up to 2 tempered affixes from the offensive, defensive and utility pools; 12 masterwork ranks at +5% affixes each, with a 25% critical boost to one affix at ranks 4, 8 and 12.
 - World bosses: the 89 world bosses stand in their zones (5x HP, sure drop) and return 400 steps after they fall.
