@@ -186,3 +186,5 @@ As of 2026-11-02, the repository contains the JavaScript browser game, a local m
  Per-character presenter caches keep player and follower async requests independent.
 
 - HD animation presenter now retains a bounded per-character LRU of prepared frames (24 by default, configurable 2–128), reusing frames when the animation cycles back and deduplicating in-flight compositions. Attack/cast/block/hit/death animation state is still not connected to live combat actions.
+
+- Battle party sprites now use the optional HD compositor when available: attack, cast, hit and death states are selected from battle events; temporary action poses return to idle; classic portraits remain the fallback. Enemy creature art is unchanged.
