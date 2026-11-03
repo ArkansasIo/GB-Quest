@@ -466,5 +466,63 @@ func _online(url: String) -> void:
 	var lb := await Online.call_api(HTTPClient.METHOD_GET, "/api/heroes")
 	print("CHECK leaderboard: %s" % [lb["data"].get("heroes", []).map(func(x): return "%s L%d" % [x["name"], x["lvl"]])])
 	var rp = main.push(load("res://scripts/realm.gd").new()); await _wait(1.0); await _shot("30_realm"); main.pop(rp)
-	Game.pos = Vector2i(18, 12); await _wait(1.5)
+	# a realm party hosted here: the browser-format client joins and fights in our battle
+	Online.host_party(true)
+	for k in range(100):
+		if Online.joined.size(): break
+		await _wait(0.1)
+	print("CHECK hosting: joined=%s" % [Online.joined.values().map(func(c): return "%s %s L%d" % [c["name"], c["cls"], c["lvl"]])])
+	f._encounter(); await _wait(0.2)
+	var hb = main.top(); var said := []
+	var tt := 0
+	while main.stack.has(hb) and tt < 600:
+		if hb.state == "msg":
+			said.append_array(hb.msgs); hb.msgs = []; hb.state = "menu"
+			if hb.then.is_valid():
+				var c = hb.then; hb.then = Callable(); c.call()
+		elif hb.state == "menu":
+			Game.hero["hp"] = 1000000; await _wait(0.4); hb._act("ATTACK")
+		tt += 1
+		await get_tree().process_frame
+	Game.hero["hp"] = Game.hp_max()
+	print("CHECK party battle: ally lines=%s shared=%s" % [said.filter(func(l): return str(l).begins_with("BEE")).slice(0, 3), said.has("Your party shares the spoils.")])
+	await _clear_dialogs(f)
+	Online.host_party(false)
+	# a party hosted by the browser-format client: join, take our turn in its battle, receive the shared reward
+	for k in range(100):
+		if Online.servers().size(): break
+		await _wait(0.1)
+	print("CHECK hosts on realm: %s" % [Online.servers()])
+	var xp0 := int(Game.hero["xp"])
+	if Online.servers().size(): Online.join(str(Online.servers()[0]["peer"]))
+	for k in range(100):
+		if main.top() != f and main.top().has_method("_options") and not Online.my_turn.is_empty(): break
+		await _wait(0.1)
+	var rb = main.top()
+	print("CHECK remote view: turn=%s options=%s" % [Online.my_turn.get("foes"), rb._options().map(func(o): return o[2]) if rb.has_method("_options") else "none"])
+	await _shot("31_party_join")
+	if rb.has_method("_options"):
+		var o: Array = rb._options()[0]
+		Online.emit_topic("srv_act", {"kind": o[0], "target": o[1]}); Online.my_turn = {}
+	for k in range(100):
+		if int(Game.hero["xp"]) > xp0: break
+		await _wait(0.1)
+	await _wait(1.0); await _clear_dialogs(f)
+	print("CHECK party reward: xp %d -> %d" % [xp0, int(Game.hero["xp"])])
+	Online.leave_party()
+	# war mode duel against the flagged browser player in the wilds
+	Online.war = true; Online._last_pres = ""
+	Game.zone_id = "elderwood_s1"; Game.pos = Vector2i(12, 12); Game.facing = "right"
+	main.clear(); f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	var foe_p := {}
+	for k in range(100):
+		for op in Online.players_here():
+			if op["war"]: foe_p = op
+		if not foe_p.is_empty(): break
+		await _wait(0.1)
+	print("CHECK war mode: flagged player here=%s" % [foe_p])
+	var h0 := int(Game.hero.get("honor", 0))
+	if not foe_p.is_empty():
+		f._duel(foe_p); await _autobattle(main.top()); await _clear_dialogs(f)
+	print("CHECK duel honor %d -> %d" % [h0, int(Game.hero.get("honor", 0))])
 	print("CHECK done peer=%s" % Online.peer)

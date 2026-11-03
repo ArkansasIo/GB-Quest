@@ -170,6 +170,8 @@ func _event(ev: String, d) -> void:
 			if d.get("topic") == "chat":
 				var m: Dictionary = d.get("data", {})
 				_push_chat(str(m.get("name", "?")), str(m.get("text", "")), str(m.get("channel", "say")))
+			elif str(d.get("topic", "")).begins_with("srv_"):
+				_party_msg(str(d["topic"]), str(d.get("peer", "")), d.get("data", {}) if d.get("data") is Dictionary else {})
 
 func _push_chat(name: String, text: String, channel: String) -> void:
 	chat.append({"name": name, "text": text, "channel": channel, "t": Time.get_ticks_msec()})
@@ -180,7 +182,7 @@ func presence() -> Dictionary:
 	var h: Dictionary = Game.hero
 	if h.is_empty(): return {}
 	return {"n": str(h.get("name", "")).substr(0, 10), "c": h.get("cls", ""), "l": int(h.get("lvl", 1)), "z": "inst" if not Game.dun.is_empty() else Game.zone_id,
-		"x": Game.pos.x, "y": Game.pos.y, "d": Game.facing, "g": h.get("guild", null), "m": 1 if h.get("mounted", false) else 0, "w": 0, "h": null, "j": null, "uid": null}
+		"x": Game.pos.x, "y": Game.pos.y, "d": Game.facing, "g": h.get("guild", null), "m": 1 if h.get("mounted", false) else 0, "w": 1 if war else 0, "h": host_name if hosting else null, "j": host_of if host_of != "" else null, "uid": null}
 
 func publish_presence() -> void:
 	var p := presence()
@@ -195,7 +197,7 @@ func players_here() -> Array:
 	for id in peers:
 		var p: Dictionary = peers[id].get("presence", {})
 		if str(p.get("z", "")) == Game.zone_id and Game.dun.is_empty():
-			out.append({"name": str(p.get("n", peers[id]["name"])), "cls": str(p.get("c", "warden")), "x": int(p.get("x", 0)), "y": int(p.get("y", 0)), "d": str(p.get("d", "down")), "lvl": int(p.get("l", 1))})
+			out.append({"name": str(p.get("n", peers[id]["name"])), "cls": str(p.get("c", "warden")), "x": int(p.get("x", 0)), "y": int(p.get("y", 0)), "d": str(p.get("d", "down")), "lvl": int(p.get("l", 1)), "war": int(p.get("w", 0)) == 1, "peer": id})
 	return out
 
 func say(text: String, channel: String = "say") -> String:
@@ -204,6 +206,89 @@ func say(text: String, channel: String = "say") -> String:
 	if int(r["code"]) != 200: return err_text(r)
 	_push_chat(str(Game.hero.get("name", account)), text, channel)
 	return ""
+
+# ------------------------------------------------------------------ parties: the browser's host-server battles (srv_* topics)
+## A host runs the battle; joined players send their character (srv_char), get snapshots (srv_battle), are asked for a
+## move (srv_turn), answer (srv_act) and share the rewards (srv_end). Same messages as src/systems.js, so a Godot hero can
+## join a browser host and a browser hero can join a Godot host.
+var hosting := false
+var host_name := ""
+var joined: Dictionary = {}        # host: peer -> slim character (browser format)
+var pending_acts: Dictionary = {}  # host: peer -> {kind, target|id}
+var host_of := ""                  # joiner: the host's peer id
+var my_turn: Dictionary = {}       # joiner: {foes: [[id, name]]}
+var remote_view: Dictionary = {}   # joiner: last srv_battle snapshot
+var want_view := false
+var party_log: Array = []          # lines to show the player (joins, rewards)
+var war := false                   # war mode: open to duels in the wilds
+
+func emit_topic(topic: String, data: Dictionary) -> void:
+	if peer == "": return
+	call_api(HTTPClient.METHOD_POST, "/api/emit", {"peer": peer, "topic": topic, "data": data})
+
+func _party_msg(t: String, from: String, d: Dictionary) -> void:
+	match t:
+		"srv_char":
+			if hosting and str(d.get("to", "")) == peer and d.get("ch") is Dictionary:
+				joined[from] = d["ch"]
+				party_log.append("%s joined your party." % str(d["ch"].get("name", "A player")))
+		"srv_battle":
+			if from == host_of:
+				remote_view = d
+				if d.get("active", false): want_view = true
+		"srv_turn":
+			if from == host_of and str(d.get("to", "")) == peer: my_turn = d
+		"srv_act":
+			if hosting and joined.has(from): pending_acts[from] = d
+		"srv_end":
+			if from == host_of and (str(d.get("to", "")) == peer or not d.has("to")):
+				var xp := int(d.get("xp", 0))
+				var gold := int(d.get("gold", 0))
+				if xp or gold:
+					var ups := Game.gain_xp(xp)
+					Game.hero["gold"] = int(Game.hero["gold"]) + gold
+					party_log.append("Party victory! +%d XP, +%d G." % [xp, gold])
+					if ups: party_log.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
+
+## the character a host needs, in the browser's slimChar shape (equipment converted to browser items and slots)
+func slim_char() -> Dictionary:
+	var h: Dictionary = Game.hero
+	var eq := {}
+	for s in Game.gear():
+		var w := to_wire(Game.gear()[s])
+		if w["kind"] == "wondrous": w["slot"] = str(Game.def_of(Game.gear()[s]).get("slot", ""))
+		eq["offhand" if s == "shield" else s] = w
+	return {"name": str(h.get("name", "")), "species": h.get("species", "hearthkin"), "cls": h.get("cls", "warden"), "bg": "wanderer", "sub": null,
+		"lvl": int(h.get("lvl", 1)), "base": h.get("base", {}), "feats": [], "ascAttr": {}, "ascSub": {}, "boons": [], "eq": eq}
+
+## hosts on the realm (anyone with a party server open)
+func servers() -> Array:
+	var out := []
+	for id in peers:
+		var p: Dictionary = peers[id].get("presence", {})
+		if p.get("h") != null and str(p.get("h", "")) != "":
+			out.append({"peer": id, "name": str(p["h"]), "host": str(p.get("n", "")), "lvl": int(p.get("l", 1))})
+	return out
+
+func host_party(on: bool) -> void:
+	hosting = on
+	host_of = ""
+	joined = {}
+	host_name = "%s'S PARTY" % str(Game.hero.get("name", "HERO")) if on else ""
+	_last_pres = ""
+
+func join(host_peer: String) -> void:
+	hosting = false
+	joined = {}
+	host_of = host_peer
+	_last_pres = ""
+	emit_topic("srv_char", {"to": host_peer, "ch": slim_char()})
+
+func leave_party() -> void:
+	host_of = ""
+	my_turn = {}
+	remote_view = {}
+	_last_pres = ""
 
 # ------------------------------------------------------------------ items: port <-> browser format
 func to_wire(it: Dictionary) -> Dictionary:

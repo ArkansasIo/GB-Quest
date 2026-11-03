@@ -12,7 +12,10 @@ var _register := false
 
 func opts() -> Array:
 	if Online.signed_in():
-		return ["PLAYERS ONLINE", "LEADERBOARD", "SAY", "WORLD CHAT", "SERVER ADDRESS", "LOG OUT", "BACK"]
+		var party := "STOP HOSTING" if Online.hosting else ("LEAVE PARTY" if Online.host_of != "" else "HOST PARTY")
+		var o := ["PLAYERS ONLINE", party]
+		if not Online.hosting and Online.host_of == "": o.append("JOIN PARTY")
+		return o + ["WAR MODE: %s" % ("ON" if Online.war else "OFF"), "SAY", "WORLD CHAT", "LEADERBOARD", "SERVER ADDRESS", "LOG OUT", "BACK"]
 	return ["LOG IN", "REGISTER", "SERVER ADDRESS", "CHECK REALM", "BACK"]
 
 func _ready() -> void:
@@ -75,7 +78,28 @@ func _pick(o: String) -> void:
 		"SAY", "WORLD CHAT":
 			var ch := "say" if o == "SAY" else "world"
 			_entry("Message to %s:" % ("players near you" if ch == "say" else "the whole realm"), "", false, Callable(self, "_send").bind(ch))
+		"HOST PARTY":
+			Online.host_party(true); info = ["HOSTING %s" % Online.host_name, "Others can join from REALM > JOIN PARTY."]
+		"STOP HOSTING":
+			Online.host_party(false); info = ["Party closed."]
+		"LEAVE PARTY":
+			Online.leave_party(); info = ["You left the party."]
+		"JOIN PARTY":
+			_hosts = Online.servers()
+			if _hosts.is_empty(): main.say(["Nobody is hosting a party right now."]); return
+			main.choose(_hosts.map(func(h2): return "%s (%s L%d)" % [str(h2["name"]).substr(0, 12), str(h2["host"]).substr(0, 8), int(h2["lvl"])]), Callable(self, "_join"), "Join whose party?")
 		"BACK": main.pop(self)
+		_:
+			if o.begins_with("WAR MODE"):
+				Online.war = not Online.war; Online._last_pres = ""
+				info = ["WAR MODE %s." % ("ON: flagged players may duel you in the wilds" if Online.war else "OFF")]
+
+var _hosts: Array = []
+
+func _join(k: int) -> void:
+	if k < 0: return
+	Online.join(str(_hosts[k]["peer"]))
+	info = ["JOINED %s" % _hosts[k]["name"], "You fight in their battles; rewards are shared."]
 
 func _got_server(s: String) -> void:
 	if s == "": return
@@ -103,19 +127,19 @@ func _send(text: String, ch: String) -> void:
 
 func _draw() -> void:
 	draw_rect(Rect2(0, 0, 640, 576), Color8(16, 20, 36))
-	Data.panel(self, Rect2(8, 8, 624, 180))
+	Data.panel(self, Rect2(8, 8, 624, 142))
 	Data.text(self, "REALM", Vector2(32, 26), Data.EDGE)
 	Data.text_r(self, Online.status, 608, 26, Data.GOLD if Online.status == "ONLINE" else Data.GREY, 0.75)
 	Data.text(self, Online.server.substr(0, 40), Vector2(32, 72), Data.GREY, 0.6)
-	var y := 100.0
+	var y := 92.0
 	for l in (["PLEASE WAIT..."] if busy else info):
-		Data.text(self, str(l).substr(0, 36), Vector2(32, y), Data.INK, 0.6); y += 26
+		Data.text(self, str(l).substr(0, 36), Vector2(32, y), Data.INK, 0.55); y += 22
 	if Online.signed_in():
-		Data.text(self, "ACCOUNT %s" % Online.account, Vector2(32, 152), Data.EDGE, 0.6)
+		Data.text(self, "ACCOUNT %s" % Online.account, Vector2(32, 124), Data.EDGE, 0.5)
 	var o := opts()
-	Data.panel(self, Rect2(8, 196, 624, 40 + o.size() * 44))
+	Data.panel(self, Rect2(8, 156, 624, 32 + o.size() * 34))
 	for k in range(o.size()):
-		var ty := 216 + k * 44
-		Data.text(self, str(o[k]), Vector2(72, ty), Data.INK, 0.85)
-		if k == i: draw_colored_polygon(PackedVector2Array([Vector2(36, ty + 4), Vector2(52, ty + 16), Vector2(36, ty + 28)]), Data.INK)
+		var ty := 172 + k * 34
+		Data.text(self, str(o[k]), Vector2(72, ty), Data.INK, 0.7)
+		if k == i: draw_colored_polygon(PackedVector2Array([Vector2(36, ty + 2), Vector2(52, ty + 13), Vector2(36, ty + 24)]), Data.INK)
 	Data.text(self, "Play beside browser players on your realm server.", Vector2(16, 548), Data.GREY, 0.45)

@@ -144,12 +144,18 @@ func step(delta: float) -> void:
 			moving = false
 			_arrived()
 		return
+	if Online.want_view:
+		main.push(load("res://scripts/remotebattle.gd").new()); return
+	if Online.party_log.size():
+		main.say(Online.party_log.duplicate()); Online.party_log.clear(); return
 	if main.pressed("ui_start"):
 		_menu(); return
 	if main.pressed("ui_a"):
 		var f: Vector2i = Game.pos + DIRS[Game.facing]
 		var n := _npc_at(f.x, f.y)
 		if not n.is_empty(): _talk(n)
+		for op in Online.players_here():
+			if int(op["x"]) == f.x and int(op["y"]) == f.y: _duel(op)
 		var dg := _dungeon_at(f.x, f.y)
 		if dg != "": _offer_dungeon(dg)
 		elif n.is_empty() and _is_water(f.x, f.y) and not flying():
@@ -393,6 +399,36 @@ func _talk(n: Dictionary) -> void:
 var talking := ""
 var craft_prof := "alch"
 const ROLE_PROF := {"alchemist": "alch", "weaponsmith": "weaponsmith", "armorer": "armorsmith", "blacksmith": "blacksmith"}
+
+# ------------------------------------------------------------------ war mode: duel a flagged player in the wilds (as fightWorldPvp)
+func _duel(op: Dictionary) -> void:
+	if not Online.war or not op.get("war", false):
+		main.say(["%s L%d" % [op["name"], int(op["lvl"])], "Both of you need WAR MODE on (START > REALM) to duel."]); return
+	if zone.get("town", false):
+		main.say(["Towns are safe zones. Duel in the wilds."]); return
+	var b := Battle.new()
+	b.foe_def = {"name": str(op["name"]), "art": "c_%s_4" % op["cls"], "fam": "humanoid", "id": "pvp_" + str(op["name"])}
+	b.foe_lvl = clampi(int(op["lvl"]), 1, 720)
+	b.biome = zone.get("biome", "meadow")
+	b.hp_scale = 2.0
+	b.no_escape = true
+	b.loot = false
+	b.on_win = Callable(self, "_duel_won").bind(op)
+	b.on_lose = Callable(self, "_duel_lost").bind(op)
+	main.push(b)
+
+func _duel_won(op: Dictionary) -> void:
+	var dfs: Dictionary = Game.hero.get("pvpdef", {})
+	var n := int(dfs.get(op["name"], 0))
+	dfs[op["name"]] = n + 1; Game.hero["pvpdef"] = dfs
+	var honor := maxi(1, roundi((20 + int(Game.hero["lvl"]) / 2 + (int(op["lvl"]) - int(Game.hero["lvl"]))) * maxf(0.2, 1.0 - n * 0.2)))
+	Game.hero["honor"] = int(Game.hero.get("honor", 0)) + honor
+	Social.count("pvpKills")
+	main.say(["Victory over %s! +%d honor." % [op["name"], honor]])
+
+func _duel_lost(op: Dictionary) -> void:
+	Game.hero["hp"] = 1
+	main.say(["%s wins the duel." % op["name"]])
 
 # ------------------------------------------------------------------ wardens: side quests
 var offer: Dictionary = {}

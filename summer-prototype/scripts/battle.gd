@@ -98,6 +98,51 @@ func _abilities() -> Array:
 func _say(lines: Array, cb: Callable = Callable()) -> void:
 	msgs = lines.duplicate(); shown = 0; state = "msg"; then = cb
 	if msgs.is_empty(): msgs = ["..."]
+	_sync(state != "over", str(msgs[0]))
+
+# ------------------------------------------------------------------ hosting a realm party (srv_* topics, as src/systems.js battleSync)
+var _turn_sent := -1
+
+func _party() -> Array:
+	return Online.joined.keys() if Online.hosting else []
+
+func _sync(active: bool, text: String) -> void:
+	if _party().is_empty(): return
+	var party := [[str(Game.hero["name"]).substr(0, 8), maxi(0, int(Game.hero["hp"])), Game.hp_max()]]
+	for pid in _party():
+		var ch: Dictionary = Online.joined[pid]
+		party.append([str(ch.get("name", "?")).substr(0, 8), 1, 1])
+	Online.emit_topic("srv_battle", {"active": active and state != "over", "text": text.substr(0, 120), "party": party,
+		"foes": [[str(foe["name"]).substr(0, 10), maxi(0, int(foe["hp"])), int(foe["max"]), "f1", str(foe["art"])]]})
+	if active and state != "over" and _turn_sent != round_no:
+		_turn_sent = round_no
+		for pid in _party():
+			Online.emit_topic("srv_turn", {"to": pid, "foes": [["f1", str(foe["name"]).substr(0, 10)]]})
+
+## each joined player acts once a round: their chosen move (srv_act) or an attack if they haven't answered
+func _remote_round(out: Array) -> void:
+	for pid in _party():
+		if int(foe["hp"]) <= 0: return
+		var ch: Dictionary = Online.joined[pid]
+		var act: Dictionary = Online.pending_acts.get(pid, {"kind": "attack"})
+		Online.pending_acts.erase(pid)
+		var L := clampi(int(ch.get("lvl", 1)), 1, 720)
+		var nm := str(ch.get("name", "ALLY")).substr(0, 10)
+		var c := Data.cls(str(ch.get("cls", "warden")))
+		var mod := (int(ch.get("base", {}).get(str(c.get("primary", "STR")), 12)) - 10) / 2
+		var dice := "1d8"
+		if act.get("kind") == "spell":
+			for sp in Data.game.get("SPELLS", []):
+				if sp.get("id") == act.get("id"): dice = str(sp.get("dice", "1d8"))
+		else:
+			var wb = ch.get("eq", {}).get("weapon", {}).get("base") if ch.get("eq", {}).get("weapon") is Dictionary else null
+			if wb != null: dice = str(Data.game.get("WEAPONS", {}).get(str(wb), {}).get("dmg", "1d8"))
+		if Game.d20() + 2 + L / 4 + mod < int(foe["ac"]) and act.get("kind") != "spell":
+			out.append("%s misses." % nm)
+			continue
+		var dmg := maxi(1, Game.roll(dice) + mod + L / 10)
+		foe["hp"] = int(foe["hp"]) - dmg
+		out.append("%s %s for %d." % [nm, "casts" if act.get("kind") == "spell" else "hits", dmg])
 
 func step(delta: float) -> void:
 	if shake > 0: shake -= delta
@@ -343,7 +388,12 @@ func _after(out: Array) -> void:
 	if int(foe["hp"]) <= 0:
 		_victory(out)
 		return
-	# the companion's turn
+	# joined realm players, then the companion
+	if _party().size():
+		_remote_round(out)
+		if int(foe["hp"]) <= 0:
+			_victory(out)
+			return
 	if not Social.companion().is_empty():
 		out.append_array(Social.companion_turn(foe))
 		if int(foe["hp"]) <= 0:
@@ -458,6 +508,9 @@ func _victory(out: Array) -> void:
 		Game.bag().append(it)
 		out.append("Found %s!" % Game.item_name(it))
 	out.append_array(Quest.on_kill(foe_def, boss))
+	for pid in _party():
+		Online.emit_topic("srv_end", {"to": pid, "xp": xp, "gold": gold / 2})
+	if _party().size(): out.append("Your party shares the spoils.")
 	state = "over"
 	_say(out, Callable(self, "_won"))
 

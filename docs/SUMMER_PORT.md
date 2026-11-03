@@ -67,6 +67,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - The Spire: climb floor by floor against the 20 tower bosses, with a chest every 5 floors.
 - Difficulty 1-9 (DIFFICULTY) at the oracle: foe HP and damage up, XP and loot up, with level gates.
 - Online realm play (scripts/online.gd, realm.gd, market.gd): the port is a client of the game's own realm server (`npm run server`, backend/server.cjs) using the same endpoints as the browser client, so Godot and browser players share one realm. TITLE or START > REALM: set the server address, register or log in (the session token is kept in `user://online.cfg` on that machine only), see who is online, the leaderboard, and send say or world chat. Other players in your zone walk on the map with name tags and chat lines appear over the field; your presence uses the browser's format so browser players see you too. The town AUCTIONEER opens the trading hub: browse and buy listings from any player, list bag items at your price, cancel, and claim sale gold and expired items (items convert between the browser and port formats). Saving publishes your hero to the realm leaderboard. The server is unchanged.
+- Realm parties and war mode (the browser's host-server battle messages, srv_char / srv_battle / srv_turn / srv_act / srv_end): REALM > HOST PARTY opens your battles to other players; joined players (browser or Godot) are asked for a move each round, act beside you (or attack on their own if they don't answer) and share the XP and half the gold. REALM > JOIN PARTY joins any host on the realm: their battle is shown as a party battle view, and on your turn you pick a target or your best spell; the host's reward arrives when it ends. WAR MODE flags you (presence `w`), and pressing A on a flagged player in the wilds starts a duel (as the browser's fightWorldPvp: a fight against their class and level, honor with a repeat penalty).
 - Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
@@ -74,7 +75,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 ## Not ported yet (planned stages)
 
-Joint battles with other players (srv_* host-server battles) and PvP between real players; cloud saves (the server's save slots hold the browser's save format), necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Cloud saves (the server's save slots hold the browser's save format, so the port keeps its own local save), necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -163,6 +164,20 @@ CHECK bought: Bought KNIFE +3. gold 5000 -> 4750 bag 0 -> 1 item={ ..., "af": [[
 CHECK listed: Listed for 777 G (24 h). mine=1
 CHECK leaderboard: ["ROAM L1"]
 ```
+
+Parties and duels (same run, `tools/realm_peer.py` as the second client):
+
+```
+CHECK hosting: joined=["BEE strider L14"]
+CHECK party battle: ally lines=["BEE hits for 11."] shared=true
+CHECK hosts on realm: [{ "peer": "...", "name": "BEE'S REALM", "host": "BEE", "lvl": 14 }]
+CHECK remote view: turn=[["x1", "GOBLIN"], ["x2", "GOBLIN"]] options=["ATTACK GOBLIN", "ATTACK GOBLIN"]
+CHECK party reward: xp 100 -> 600
+CHECK war mode: flagged player here={ "name": "BEE", ..., "war": true }
+CHECK duel honor 0 -> 32
+```
+
+and the second client logged `GOT srv_turn`, `GOT srv_end xp=100 gold=1`, `GOT srv_char from godot: name=ROAM cls=warden lvl=1 eq=['armor', 'offhand', 'weapon']` and `GOT srv_act from godot: {'kind': 'attack', 'target': 'x1'}`.
 
 The second client's event stream received the Godot hero's presence (`"n":"ROAM" ... "z":"ardenhold"`) and its world chat line.
 
