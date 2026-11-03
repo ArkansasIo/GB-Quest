@@ -111,7 +111,7 @@
     return {
       request, clear,
       getReady: () => {
-        for (const entry of entries.values()) if (entry.canvas) return entry.canvas;
+        for (const entry of Array.from(entries.values()).reverse()) if (entry.canvas) return entry.canvas;
         return null;
       },
       cacheSize: () => entries.size
