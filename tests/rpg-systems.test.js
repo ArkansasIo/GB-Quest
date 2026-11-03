@@ -297,3 +297,21 @@ test('HD frame presenter discards stale results after a newer frame is requested
   await Promise.resolve();
   assert.equal(presenter.getReady(), newCanvas);
 });
+
+test('HD frame presenter suppresses repeated failed asset requests until cleared', async () => {
+  let calls = 0;
+  const presenter = HD.createFramePresenter({ renderCharacter: () => {
+    calls++;
+    return Promise.reject(new Error('missing generated assets'));
+  }});
+  const character = { id: 'hero-3', cls: 'fighter', eq: {} };
+  const spec = { state: 'idle', direction: 'down', frame: 0 };
+  assert.equal(presenter.request(character, spec), null);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(presenter.request(character, spec), null);
+  assert.equal(calls, 1);
+  presenter.clear();
+  assert.equal(presenter.request(character, spec), null);
+  assert.equal(calls, 2);
+});
