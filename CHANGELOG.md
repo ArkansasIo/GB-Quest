@@ -12,6 +12,10 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - The chat panel now starts closed. Press **C** or the **CHAT** button to open it; SETTINGS > CHAT SETTINGS turns chat off completely.
 
 ### Added
+- **Action-RPG gear effects** (`src/d4_gear.js`, in the style of Diablo IV):
+  - **Legendary aspects**: legendary, mythic, ancestral and divine items roll one of 16 aspects with its own value: EXECUTIONER, FIRST STRIKE, ELITE SLAYER, STORMSHARD (lucky-hit chain lightning), GLACIAL (frostbite), BLOODLETTER (bleed), VAMPIRIC (lucky-hit heal), CORPSEBURST (kills explode), BLOODLUST, BULWARK (opening barrier), UNBROKEN, BRAMBLES (reflect), WINDSTRIKE (opening haste), FORTUNE, SAGE and WARLORD. They fire in battle and show in the item text.
+  - **Greater affixes**: each affix has a 6% chance to roll 1.5x (ancestral and divine items always get one).
+  - **OCCULTIST** (MAIN MENU): EXTRACT an aspect into your CODEX OF POWER (the best value is kept), IMPRINT a codex aspect onto any rare-or-better item, TEMPER up to 2 extra affix lines (OFFENSIVE, DEFENSIVE or UTILITY recipes), and MASTERWORK items through 12 ranks (+5% affixes per rank; ranks 4, 8 and 12 also boost one affix by 25%).
 - **CRIMSON UI theme** (MU-style; SETTINGS > UI THEME): black stone panels with blood-red frames, gold trim and corner studs, red window title bars, bigger HP and MP orbs, and your map coordinates under the minimap. Uses the 8-BIT MMO layout (unit frame, party frames, START menu over the map).
 - **Gem loot and the GEM CUTTER**: battles drop socket gems (2% per foe, 10% elites, 35% bosses; tier from the foe's level). MERCHANT > GEM CUTTER sells tier 1-3 gems of every type and cuts three of a tier into one of the next.
 - **Minimap**: click it to switch between a close and a wide view; double-click opens the world map.

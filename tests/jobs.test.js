@@ -197,3 +197,16 @@ test('extras: gem drop odds and tiers, gem shop prices', () => {
   assert.equal(X.gemTierFor(1), 1); assert.equal(X.gemTierFor(100), 5); assert.equal(X.gemTierFor(720), 9);
   assert.ok(X.gemPrice(3) > X.gemPrice(2) && X.gemPrice(2) > X.gemPrice(1));
 });
+
+test('action-RPG gear: aspects, greater affixes, tempering and masterwork', () => {
+  const c = { Math, Object, Array, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('d4_gear.js'), c); const A = c.GBQAspects;
+  assert.equal(A.ASPECT_IDS.length, 16);
+  for (const kind of ['weapon', 'armor', 'wondrous']) { const a = A.rollAspect(kind, 5, 0.5, 0); assert.ok(A.fitsKind(a.id, kind)); assert.equal(a.val, A.ASPECTS[a.id].lo + Math.round(0) || a.val); }
+  const lo = A.rollAspect('weapon', 5, 0, 0), hi = A.rollAspect('weapon', 8, 0, 1); assert.equal(lo.id, hi.id); assert.ok(hi.val > lo.val, 'better rarity and roll, better aspect');
+  assert.deepEqual(plain(A.rollGreater(3, 5, [0.9, 0.01, 0.9, 0])), [1]);
+  assert.deepEqual(plain(A.rollGreater(3, 7, [0.9, 0.9, 0.9, 0.5])), [1], 'ancestral items always get one');
+  assert.ok(A.temperValue('hp', 600) > A.temperValue('hp', 1));
+  assert.deepEqual(plain(A.masterworkAffixes([['dmg', 20], ['hp', 100]], 4, [1])), [['dmg', 24], ['hp', 150]]);
+  assert.ok(A.masterworkCost(11, 100).gold > A.masterworkCost(0, 100).gold * 10);
+  assert.equal(A.TEMPER_MAX, 2); assert.equal(A.MW_MAX, 12);
+});
