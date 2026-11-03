@@ -77,7 +77,7 @@ The current character state already contains PvP-related fields such as `pvpEnab
 - A privacy control to hide or show the character's equipment to other players.
 - **Basic wardrobe/transmog is implemented in the browser client:** acquired weapon, armour and wondrous-item bases are collected; the Wardrobe menu applies a same-kind, same-slot appearance override to an equipped item without changing its stats; restoring the original look is supported. The override is stored separately as `item.tmog` and persists with the character save.
 - **Wardrobe collection now includes the multi-tab stash** as well as equipped gear, bag items and the legacy bank. Saved appearance selections are validated against unlocked appearances and slot compatibility before their icon/description override is used.
-- The paper-doll screen now displays equipment icon markers over the central portrait using the existing icon/transmog resolver. Full animated character-sprite compositing from HD equipment PNG overlays, character-inspect privacy controls, server-authoritative cosmetic ownership/synchronization, and boss/vendor cosmetic acquisition remain outstanding.
+- The paper-doll screen now displays equipment icon markers over the central portrait using the existing icon/transmog resolver. World-map character portraits now composite small head, weapon, chest and off-hand equipment icons using the transmog-aware item icon resolver. Full animated character-sprite compositing from HD equipment PNG overlays, character-inspect privacy controls, server-authoritative cosmetic ownership/synchronization, and boss/vendor cosmetic acquisition remain outstanding.
 
 ### HUD and interface integration
 
