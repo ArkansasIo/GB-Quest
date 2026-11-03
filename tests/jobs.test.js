@@ -136,3 +136,15 @@ test('spell levels 1-9 spread across character levels 1-720', () => {
   assert.equal(W.spellCasterLevel(720), 17); assert.equal(W.spellCasterLevel(9999), 17); assert.equal(W.spellCasterLevel(0), 1);
   let last = 0; for (let L = 1; L <= 720; L++) { const s = W.spellCasterLevel(L); assert.ok(s >= last); last = s; }
 });
+
+test('necromancer army: grows to 9 (6 warriors, 2 mages, golem), sacrifice trades minions for stats', () => {
+  const c = { Math, Object, Array, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('necro_army.js'), c); const A = c.GBQArmy;
+  assert.equal(A.armySize(1), 2); assert.equal(A.armySize(28), 9); assert.equal(A.armySize(720), 9);
+  const full = plain(A.armyFor(30));
+  assert.equal(full.length, 9); assert.equal(full.filter(m => m.kind === 'warrior').length, 6); assert.equal(full.filter(m => m.kind === 'mage').length, 2); assert.equal(full[8].kind, 'golem');
+  assert.equal(A.armyFor(30, {}, 3).length, 3, 'support job raises up to 3');
+  const noW = plain(A.armyFor(30, { warrior: 'sacrifice' })); assert.equal(noW.length, 3); assert.ok(noW.every(m => m.kind !== 'warrior'));
+  assert.deepEqual(plain(A.sacrificeBonus({ warrior: 'sacrifice' }, 30)), [['crit', 8], ['critdmg', 20]]);
+  assert.deepEqual(plain(A.sacrificeBonus({}, 30)), []);
+  assert.equal(plain(A.armyFor(30, { golem: 'iron', mage: 'cold' }))[8].variant, 'iron');
+});

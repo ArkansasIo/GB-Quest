@@ -5743,18 +5743,21 @@ class CharacterMenu {
     const D = derive(G), portrait = heroPortrait(G);
     fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
-    text(G.name.slice(0, 9), 5, 94, 'gold');
-    text(`${SPECIES[G.species].name.slice(0, 7)} ${CLASSES[G.cls].name.slice(0, 7)}`.slice(0, 16), 5, 104, 2);
-    text(`LEVEL ${G.lvl}`, 5, 115, 3);
-    text('HP', 5, 125, 2); bar(18, 126, 31, 4, G.hp, D.hpMax, 'hp');
-    text(`AC ${D.ac}`, 5, 136, 3);
-    const gearSlots = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'offhand', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'artifact', 'relic'];
+    text(G.name.slice(0, 8), 5, 93, 'gold');
+    text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
+    text(`LV ${G.lvl}`, 5, 111, 3);
+    text('HP', 5, 120, 2); bar(18, 121, 33, 4, G.hp, D.hpMax, 'hp');
+    // paper doll: 7 slot icons down each side, stats in the middle (no more overlapping slot names)
+    const gearSlots = ['head', 'neck', 'back', 'armor', 'hands', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'weapon', 'offhand', 'artifact', 'relic'];
     gearSlots.forEach((slot, index) => {
-      const item = G.eq[slot], y = 49 + index * 5.7;
-      const label = SLOT_NAME[slot].replace('MAIN HAND', 'WEAPON').replace('OFF HAND', 'OFFHAND');
-      text(`${label.slice(0, 7).padEnd(7)} ${item ? item.name.slice(0, 8) : '--'}`.slice(0, 16), 61, y, item ? rarityCol(item.rarity) : 2);
+      const item = G.eq[slot], x = index < 7 ? 59 : 146, y = 48 + (index % 7) * 11;
+      fill(x, y, 11, 11, item ? rarityCol(item.rarity === undefined ? 1 : item.rarity) : 2); fill(x + 1, y + 1, 9, 9, 0);
+      if (item) { const ic = itemIcon(item); if (ic && IMG[ic]) blit(sprFit(ic, 8), x + 2, y + 2); }
     });
-    text(`BAG ${G.bag.length}/${BAG_MAX}  GOLD ${fmt(G.gold)}`.slice(0, 23), 61, 130, 'gold');
+    const prim = CLASSES[G.cls].primary, ilv = (() => { const L = gearSlots.map(s => G.eq[s]).filter(Boolean); return L.length ? Math.round(L.reduce((a, it) => a + (it.ilvl || 1), 0) / L.length) : 0; })();
+    [[`HP`, `${D.hpMax}`], ['AC', `${D.ac}`], [prim, `${D.A[prim]}`], ['ILVL', `${ilv}`], ['GEAR', `${gearSlots.filter(s => G.eq[s]).length}/14`], ['BAG', `${G.bag.length}/${BAG_MAX}`]].forEach(([k, v], i) => {
+      text(k, 73, 50 + i * 12, 2); textR(String(v).slice(0, 6), 143, 50 + i * 12, 3);
+    });
     fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }
@@ -12971,6 +12974,133 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof der
 
 </script>
 <script>
+'use strict';
+// ================================================================ NECROMANCER: ARMY OF THE DEAD (up to 9)
+// Inspired by the action-RPG "book of the dead": a necromancer fights with a standing army that rises at the start of
+// every battle.
+//   * ARMY SIZE: 2 at level 1, +1 every 4 levels, 9 at level 28: six SKELETAL WARRIORS, two SKELETAL MAGES and a GOLEM
+//     (raised in that order: W W M W W M W W G). A necromancer support job raises up to 3.
+//   * BOOK OF THE DEAD (MAIN MENU, necromancers only): pick a variant for each minion type, or SACRIFICE the type
+//     for a permanent bonus instead:
+//       warriors  SKIRMISHER (+30% damage, -20% HP) / DEFENDER (+40% HP, +2 AC) / REAPER (+60% damage)   sacrifice: +8% crit, +20% crit damage
+//       mages     SHADOW (necrotic, fear) / COLD (cold bolts) / BONE (+40% damage, -20% HP)              sacrifice: +15% damage, +20% shadow damage
+//       golem     BONE (x2.5 HP, draws attacks) / BLOOD (x2 HP, regenerates) / IRON (x3 HP, +3 AC)        sacrifice: +HP, +10% resist all
+//   * RAISE DEAD (once per battle): every fallen minion rises again.
+// The army shares the 12-member party limit, so companions keep their places. Pure rules are exported as GBQArmy.
+
+const ARMY_ORDER = ['warrior', 'warrior', 'mage', 'warrior', 'warrior', 'mage', 'warrior', 'warrior', 'golem'];
+const ARMY_MAX = 9;
+const armySize = lvl => Math.min(ARMY_MAX, 2 + Math.floor(Math.max(1, lvl || 1) / 4));
+const ARMY_VARIANTS = {
+  warrior: { skirmisher: { name: 'SKIRMISHER', hp: 0.8, dmg: 1.3, ac: 0 }, defender: { name: 'DEFENDER', hp: 1.4, dmg: 1, ac: 2 }, reaper: { name: 'REAPER', hp: 1, dmg: 1.6, ac: 0 } },
+  mage: { shadow: { name: 'SHADOW', hp: 1, dmg: 1, ac: 0, spells: ['gravechill', 'dread'] }, cold: { name: 'COLD', hp: 1, dmg: 1, ac: 0, spells: ['frostcone'] }, bone: { name: 'BONE', hp: 0.8, dmg: 1.4, ac: 0, spells: ['gravechill'] } },
+  golem: { bone: { name: 'BONE', hp: 2.5, dmg: 1, ac: 1, taunt: true }, blood: { name: 'BLOOD', hp: 2, dmg: 1, ac: 0, regen: true }, iron: { name: 'IRON', hp: 3, dmg: 0.9, ac: 3 } },
+};
+const DEFAULT_BOOK = { warrior: 'skirmisher', mage: 'shadow', golem: 'bone' };
+const SACRIFICE = { warrior: lvl => [['crit', 8], ['critdmg', 20]], mage: lvl => [['dmg', 15], ['necrotic', 20]], golem: lvl => [['hp', Math.min(200, 10 + lvl)], ['resist', 10]] };
+const bookOf = c => Object.assign({}, DEFAULT_BOOK, (c && c.book) || {});
+// the minions a hero raises: [{ kind, variant }], sacrificed types left out, capped by size
+function armyFor(lvl, book, cap) {
+  const b = Object.assign({}, DEFAULT_BOOK, book || {}), n = Math.min(armySize(lvl), cap == null ? ARMY_MAX : cap);
+  return ARMY_ORDER.slice(0, n).filter(k => b[k] !== 'sacrifice').map(kind => ({ kind, variant: ARMY_VARIANTS[kind][b[kind]] ? b[kind] : DEFAULT_BOOK[kind] }));
+}
+const sacrificeBonus = (book, lvl) => Object.entries(Object.assign({}, DEFAULT_BOOK, book || {})).filter(([, v]) => v === 'sacrifice').flatMap(([k]) => SACRIFICE[k](lvl || 1));
+
+if (typeof globalThis !== 'undefined') globalThis.GBQArmy = { ARMY_ORDER, ARMY_MAX, armySize, ARMY_VARIANTS, DEFAULT_BOOK, armyFor, sacrificeBonus };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof Battle !== 'undefined') {
+  const BASE = { warrior: 'undead_skeleton_base', mage: 'undead_wraith_base', golem: 'undead_bonehulk_base' };
+  const ART = { warrior: ['pk_mon_skeleton', 'pk_mon_skeleton_soldier'], mage: ['pk_mon_skelguard', 'pk_mon_necromancer'], golem: ['pk_mon_skelknight', 'pk_mon_mummy'] };
+  const LABEL = { warrior: 'SKEL', mage: 'SMAG', golem: 'GOLM' };
+  // who raises an army, and how big
+  function armyOf(c) {
+    if (!c) return [];
+    if (c.cls === 'necromancer') return armyFor(c.lvl, c.book);
+    const s = typeof supportJobOf === 'function' ? supportJobOf(c) : null;
+    if (s && s.cls === 'necromancer') return armyFor(s.lvl, c.book, 3);
+    return [];
+  }
+  window.armyOf = armyOf;
+  // sacrificed types become the necromancer's own stats
+  { const sb0 = armorSetBonus; armorSetBonus = function (c) { const out = sb0.apply(this, arguments); if (c && (c.cls === 'necromancer' || c.supJob === 'necromancer')) out.push(...sacrificeBonus(c.book, c.lvl)); return out; }; }
+
+  function raise(b, owner, m0) {
+    const c = owner.ch, V = ARMY_VARIANTS[m0.kind][m0.variant], base = BEAST_BY_ID[BASE[m0.kind]] || BESTIARY.find(x => x.fam === 'undead') || BESTIARY[0];
+    const m = makeMonster(base, Math.max(1, c.lvl - 1), 2, { side: 'party', ally: owner.id });
+    m.side = 'party'; m.id = 'p' + (CB_ID++); m.ctrl = 'ai'; m.effects = []; m.threat = {}; m.minion = m0.kind; m.owner = owner.id;
+    m.maxhp = Math.max(1, Math.round(m.maxhp * V.hp * (m0.kind === 'warrior' ? 0.6 : 0.5))); m.hp = m.maxhp; m.ac += V.ac;
+    m.attacks.forEach(a => { a.dice = dmgDice(diceAvg(a.dice) * V.dmg * 0.7); });
+    if (V.spells) m.spells = V.spells.slice(); else if (m0.kind !== 'mage') m.spells = [];
+    m.name = `${LABEL[m0.kind]} ${V.name}`.slice(0, 12); m.xp = 0; m.gold = 0;
+    const art = ART[m0.kind].find(n => IMG[n]); if (art) m.spr = art;
+    if (V.taunt) m.taunt = true;
+    if (V.regen) addEffect(m, { id: 'regen', rounds: 99 });
+    b.party.push(m); b.all.push(m);
+    return m;
+  }
+  { const se0 = Battle.prototype.setupEffects; Battle.prototype.setupEffects = function () {
+      se0.apply(this, arguments);
+      for (const u of this.party.slice()) if (isChar(u)) for (const m0 of armyOf(u.ch)) { if (this.party.length >= 12) break; raise(this, u, m0); }
+      const n = this.party.filter(m => m.minion).length;
+      if (n && typeof chatLog === 'function') chatLog('combat', 'ARMY', `The dead rise: ${n} minion${n === 1 ? '' : 's'} answer the call.`);
+    }; }
+  // golems draw the foes' attention
+  { const pt0 = Battle.prototype.pickTarget; Battle.prototype.pickTarget = function (m) {
+      if (m && m.side === 'foe') { const g = this.party.find(x => x.taunt && x.hp > 0); if (g && R() < 0.5) return g; }
+      return pt0.apply(this, arguments);
+    }; }
+  // RAISE DEAD: once per battle, the fallen minions stand again
+  { const a0 = Battle.prototype.abilities; Battle.prototype.abilities = function (u) {
+      const list = a0.apply(this, arguments);
+      try {
+        if (!u || !u.ch || !armyOf(u.ch).length || !this.party) return list;
+        const fallen = this.party.filter(m => m.minion && m.owner === u.id && m.hp <= 0), used = (this.raiseUsed || (this.raiseUsed = new Set())).has(u.id);
+        list.splice(Math.max(0, list.length - 1), 0, { id: 'raise_dead', name: 'RAISE DEAD', cost: used ? 'USED' : `${fallen.length} DOWN`, ok: !used && fallen.length > 0, bonus: false, fn: () => {
+          this.raiseUsed.add(u.id);
+          return [this.say(`${u.ch.name} raises the fallen! ${fallen.length} minion${fallen.length === 1 ? '' : 's'} rise.`, () => { fallen.forEach(m => { m.hp = m.maxhp; m.effects = []; }); SFX.grave_cast ? SFX.grave_cast() : SFX.buff(); })];
+        } });
+      } catch (e) { console.warn('raise dead', e); }
+      return list;
+    }; }
+  // the army stands in ranks between the heroes and the foes
+  const rankPos = (b, m) => { const mine = b.party.filter(x => x.minion), k = mine.indexOf(m); return [53 + (k % 3) * 12 + Math.floor(k / 3) * 3, 58 + Math.floor(k / 3) * 12]; };
+  { const p0 = Battle.prototype.posOf; Battle.prototype.posOf = function (u) { return u && u.minion ? rankPos(this, u) : p0.apply(this, arguments); }; }
+  { const d0 = Battle.prototype.draw; Battle.prototype.draw = function () {
+      d0.apply(this, arguments);
+      try {
+        for (const m of this.party.filter(x => x.minion)) {
+          const [x, y] = rankPos(this, m), base = IMG[m.spr] ? m.spr : 'enemy_skeleton'; if (!IMG[base]) continue;
+          if (m.hp <= 0) { ctx.globalAlpha = 0.3; }
+          if (!(this.anim.flash[m.id] && (this.anim.flash[m.id] >> 1) % 2)) { const s = sprH(base, m.minion === 'golem' ? 18 : 14, { clean: S.battleBg !== 'painted' }); blit(s, x - (s.width >> 1) + (this.anim.lunge === m.id ? 3 : 0), y - s.height + 6); }
+          ctx.globalAlpha = 1;
+        }
+      } catch (e) { /* drawing only */ }
+    }; }
+
+  // ---------------------------------------------------------------- BOOK OF THE DEAD
+  const bookName = (k, v) => v === 'sacrifice' ? 'SACRIFICE' : ARMY_VARIANTS[k][v].name;
+  function bookMenu() {
+    const bk = bookOf(G), army = armyOf(G), kinds = ['warrior', 'mage', 'golem'];
+    const rows = kinds.map(k => `${{ warrior: 'WARRIORS', mage: 'MAGES', golem: 'GOLEM' }[k]}: ${bookName(k, bk[k])}`);
+    choose([...rows, 'BACK'], i => {
+      if (i < 0 || i >= kinds.length) return;
+      const k = kinds[i], opts = [...Object.keys(ARMY_VARIANTS[k]), 'sacrifice'];
+      choose(opts.map(v => bookName(k, v)), j => {
+        if (j >= 0) { G.book = Object.assign({}, bookOf(G), { [k]: opts[j] }); SFX.toggle(); saveGame(); }
+        bookMenu();
+      }, k === 'warrior' ? 'Warriors: SKIRMISHER hits harder, DEFENDER is tougher, REAPER hits hardest. SACRIFICE: +crit.' : k === 'mage' ? 'Mages: SHADOW curses and frightens, COLD casts frost, BONE hits harder. SACRIFICE: +damage.' : 'Golem: BONE draws attacks, BLOOD regenerates, IRON is armoured. SACRIFICE: +HP and resist.');
+    }, `BOOK OF THE DEAD. ARMY ${army.length}/${ARMY_MAX} (LV${G.lvl}).`);
+  }
+  window.bookOfTheDeadMenu = bookMenu;
+  if (typeof MainMenu !== 'undefined') {
+    const i0 = MainMenu.prototype.items; MainMenu.prototype.items = function () { const L = i0.apply(this, arguments); if (G && (G.cls === 'necromancer' || G.supJob === 'necromancer')) L.splice(Math.max(0, L.indexOf('COMBAT ARTS') + 1), 0, 'BOOK OF DEAD'); return L; };
+    const u0 = MainMenu.prototype.update; MainMenu.prototype.update = function () { if (P('a') && this.items()[this.i] === 'BOOK OF DEAD') { SFX.select(); return bookMenu(); } return u0.apply(this, arguments); };
+  }
+}
+
+</script>
+<script>
 // ================================================================ SETTLEMENT TRAINERS: city, towns and villages
 // Every settlement has profession trainers and a curator, placed by district:
 //   CITY (Ardenhold): all 18 profession trainers + the craft master + the curator, by quarter:
@@ -13381,6 +13511,7 @@ function drawSanctumHud(field) {
 //   * banners and toasts sit in the middle band so nothing covers the frames
 //   * START menu: a right-hand list over the map (15 px rows, triangle cursor), a small hero card and a help line;
 //     every pop-up choice list uses the same roomy rows and cursor
+//   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
 const MMO_THEMES = ['mmo', 'classic', 'sanctum', 'diablo'];
@@ -13489,7 +13620,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
   // START menu: a narrow list on the right over the map, a trainer card on the left and a help line at the bottom
   const MENU_HELP = { CHARACTER: 'Stats, gear and skills.', SPELLBOOK: 'Spells and slots.', GROWTH: 'Spend level-up points.', 'COMBAT ARTS': 'Equip four arts.', ARMOURY: 'Armour sets.', HEIRLOOMS: 'Account-wide gear.',
-    WARDROBE: 'Change your look.', LOADOUTS: 'Specs and gear sets.', JOBS: 'Change job, support job.', CHALLENGES: 'Bounties, keys, quests.', MOUNTS: 'Ride a mount.', 'QUEST LOG': 'Your quests.',
+    'BOOK OF DEAD': 'Shape your undead army.', WARDROBE: 'Change your look.', LOADOUTS: 'Specs and gear sets.', JOBS: 'Change job, support job.', CHALLENGES: 'Bounties, keys, quests.', MOUNTS: 'Ride a mount.', 'QUEST LOG': 'Your quests.',
     CRAFTING: 'Make gear and goods.', REST: 'Short or long rest.', 'ACTIVITY FINDER': 'Dungeons and raids.', BESTIARY: 'Foes you have met.', 'BOSS JOURNAL': 'Boss loot and kills.',
     ACHIEVEMENTS: 'Feats of the realm.', REPUTATION: 'Faction standing.', SOCIAL: 'Friends, guild, party.', TITLES: 'Wear a title.', 'WORLD MAP': 'Where you are.', 'EXPANSION MAPS': 'Other lands.',
     HEARTHSTONE: 'Return to your inn.', SETTINGS: 'Game options.', SAVE: 'Save your game.', 'SAVE & QUIT': 'Save, back to title.', 'SECRET ARCHIVE': 'Secrets found.', 'HIDDEN WORLD': 'The hidden realm.' };
@@ -13514,6 +13645,28 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       const sel = (items[this.i] || '').replace(' (!)', '');
       frame(2, H - 26, W - 4, 24); text((MENU_HELP[sel] || sel).slice(0, 24), 9, H - 18);
       textC(`${fmt(G.gold)}G`, 27, 60, 'gold');
+    };
+  }
+
+  // ---------------------------------------------------------------- WoW-style window title bars on full-screen pages
+  const WIN_TITLE = { CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', PaperDoll: 'EQUIPMENT', EquipScene: 'EQUIPMENT', InventoryScene: 'BAGS', BagScene: 'BAGS', BankScene: 'BANK', StashScene: 'STASH',
+    Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
+    RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
+    ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
+    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS' };
+  const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; if (WIN_TITLE[n]) return WIN_TITLE[n]; } return null; };
+  window.mmoPageTitle = pageTitle;
+  if (typeof hdr === 'function') {
+    const h0 = hdr;
+    hdr = function () {
+      const t = hudMmo() && G ? pageTitle() : null; if (!t) return h0.apply(this, arguments);
+      const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2);
+      fill(0, 0, W, 12, ink); fill(0, 11, W, 1, edge); fill(1, 1, W - 2, 1, rgb([60, 70, 110], 1));
+      fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1));            // window icon
+      text(t.slice(0, 15), 12, 2, 'gold');
+      const g = fmt(G.gold); textR(g, W - 13, 2, 'white');
+      fill(W - 11, 1, 10, 9, rgb([150, 30, 26], 2)); fill(W - 10, 2, 8, 7, rgb([200, 50, 40], 2));  // close button (B)
+      for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, 'white'); fill(W - 5 - k, 3 + k, 1, 1, 'white'); }
     };
   }
   { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); hotbar(); } catch (e) { console.warn('mmo hud', e); } } }; }

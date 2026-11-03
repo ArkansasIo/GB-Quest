@@ -290,18 +290,21 @@ class CharacterMenu {
     const D = derive(G), portrait = heroPortrait(G);
     fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
-    text(G.name.slice(0, 9), 5, 94, 'gold');
-    text(`${SPECIES[G.species].name.slice(0, 7)} ${CLASSES[G.cls].name.slice(0, 7)}`.slice(0, 16), 5, 104, 2);
-    text(`LEVEL ${G.lvl}`, 5, 115, 3);
-    text('HP', 5, 125, 2); bar(18, 126, 31, 4, G.hp, D.hpMax, 'hp');
-    text(`AC ${D.ac}`, 5, 136, 3);
-    const gearSlots = ['head', 'neck', 'armor', 'back', 'hands', 'weapon', 'offhand', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'artifact', 'relic'];
+    text(G.name.slice(0, 8), 5, 93, 'gold');
+    text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
+    text(`LV ${G.lvl}`, 5, 111, 3);
+    text('HP', 5, 120, 2); bar(18, 121, 33, 4, G.hp, D.hpMax, 'hp');
+    // paper doll: 7 slot icons down each side, stats in the middle (no more overlapping slot names)
+    const gearSlots = ['head', 'neck', 'back', 'armor', 'hands', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'weapon', 'offhand', 'artifact', 'relic'];
     gearSlots.forEach((slot, index) => {
-      const item = G.eq[slot], y = 49 + index * 5.7;
-      const label = SLOT_NAME[slot].replace('MAIN HAND', 'WEAPON').replace('OFF HAND', 'OFFHAND');
-      text(`${label.slice(0, 7).padEnd(7)} ${item ? item.name.slice(0, 8) : '--'}`.slice(0, 16), 61, y, item ? rarityCol(item.rarity) : 2);
+      const item = G.eq[slot], x = index < 7 ? 59 : 146, y = 48 + (index % 7) * 11;
+      fill(x, y, 11, 11, item ? rarityCol(item.rarity === undefined ? 1 : item.rarity) : 2); fill(x + 1, y + 1, 9, 9, 0);
+      if (item) { const ic = itemIcon(item); if (ic && IMG[ic]) blit(sprFit(ic, 8), x + 2, y + 2); }
     });
-    text(`BAG ${G.bag.length}/${BAG_MAX}  GOLD ${fmt(G.gold)}`.slice(0, 23), 61, 130, 'gold');
+    const prim = CLASSES[G.cls].primary, ilv = (() => { const L = gearSlots.map(s => G.eq[s]).filter(Boolean); return L.length ? Math.round(L.reduce((a, it) => a + (it.ilvl || 1), 0) / L.length) : 0; })();
+    [[`HP`, `${D.hpMax}`], ['AC', `${D.ac}`], [prim, `${D.A[prim]}`], ['ILVL', `${ilv}`], ['GEAR', `${gearSlots.filter(s => G.eq[s]).length}/14`], ['BAG', `${G.bag.length}/${BAG_MAX}`]].forEach(([k, v], i) => {
+      text(k, 73, 50 + i * 12, 2); textR(String(v).slice(0, 6), 143, 50 + i * 12, 3);
+    });
     fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }

@@ -9,6 +9,7 @@
 //   * banners and toasts sit in the middle band so nothing covers the frames
 //   * START menu: a right-hand list over the map (15 px rows, triangle cursor), a small hero card and a help line;
 //     every pop-up choice list uses the same roomy rows and cursor
+//   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
 const MMO_THEMES = ['mmo', 'classic', 'sanctum', 'diablo'];
@@ -117,7 +118,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
   // START menu: a narrow list on the right over the map, a trainer card on the left and a help line at the bottom
   const MENU_HELP = { CHARACTER: 'Stats, gear and skills.', SPELLBOOK: 'Spells and slots.', GROWTH: 'Spend level-up points.', 'COMBAT ARTS': 'Equip four arts.', ARMOURY: 'Armour sets.', HEIRLOOMS: 'Account-wide gear.',
-    WARDROBE: 'Change your look.', LOADOUTS: 'Specs and gear sets.', JOBS: 'Change job, support job.', CHALLENGES: 'Bounties, keys, quests.', MOUNTS: 'Ride a mount.', 'QUEST LOG': 'Your quests.',
+    'BOOK OF DEAD': 'Shape your undead army.', WARDROBE: 'Change your look.', LOADOUTS: 'Specs and gear sets.', JOBS: 'Change job, support job.', CHALLENGES: 'Bounties, keys, quests.', MOUNTS: 'Ride a mount.', 'QUEST LOG': 'Your quests.',
     CRAFTING: 'Make gear and goods.', REST: 'Short or long rest.', 'ACTIVITY FINDER': 'Dungeons and raids.', BESTIARY: 'Foes you have met.', 'BOSS JOURNAL': 'Boss loot and kills.',
     ACHIEVEMENTS: 'Feats of the realm.', REPUTATION: 'Faction standing.', SOCIAL: 'Friends, guild, party.', TITLES: 'Wear a title.', 'WORLD MAP': 'Where you are.', 'EXPANSION MAPS': 'Other lands.',
     HEARTHSTONE: 'Return to your inn.', SETTINGS: 'Game options.', SAVE: 'Save your game.', 'SAVE & QUIT': 'Save, back to title.', 'SECRET ARCHIVE': 'Secrets found.', 'HIDDEN WORLD': 'The hidden realm.' };
@@ -142,6 +143,28 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       const sel = (items[this.i] || '').replace(' (!)', '');
       frame(2, H - 26, W - 4, 24); text((MENU_HELP[sel] || sel).slice(0, 24), 9, H - 18);
       textC(`${fmt(G.gold)}G`, 27, 60, 'gold');
+    };
+  }
+
+  // ---------------------------------------------------------------- WoW-style window title bars on full-screen pages
+  const WIN_TITLE = { CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', PaperDoll: 'EQUIPMENT', EquipScene: 'EQUIPMENT', InventoryScene: 'BAGS', BagScene: 'BAGS', BankScene: 'BANK', StashScene: 'STASH',
+    Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
+    RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
+    ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
+    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS' };
+  const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; if (WIN_TITLE[n]) return WIN_TITLE[n]; } return null; };
+  window.mmoPageTitle = pageTitle;
+  if (typeof hdr === 'function') {
+    const h0 = hdr;
+    hdr = function () {
+      const t = hudMmo() && G ? pageTitle() : null; if (!t) return h0.apply(this, arguments);
+      const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2);
+      fill(0, 0, W, 12, ink); fill(0, 11, W, 1, edge); fill(1, 1, W - 2, 1, rgb([60, 70, 110], 1));
+      fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1));            // window icon
+      text(t.slice(0, 15), 12, 2, 'gold');
+      const g = fmt(G.gold); textR(g, W - 13, 2, 'white');
+      fill(W - 11, 1, 10, 9, rgb([150, 30, 26], 2)); fill(W - 10, 2, 8, 7, rgb([200, 50, 40], 2));  // close button (B)
+      for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, 'white'); fill(W - 5 - k, 3 + k, 1, 1, 'white'); }
     };
   }
   { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); hotbar(); } catch (e) { console.warn('mmo hud', e); } } }; }
