@@ -75,10 +75,9 @@ The current character state already contains PvP-related fields such as `pvpEnab
 
 - A character inspect panel that displays equipped gear and equipment details.
 - A privacy control to hide or show the character's equipment to other players.
-- A cosmetic/appearance layer that can visually override an item's appearance without changing its gameplay stats.
-- Per-slot cosmetic appearance selection, preview, equip/unequip and persistence.
-- Clear separation between the actual equipped item and the transmog/cosmetic appearance.
-- Boss-drop and vendor/store acquisition sources for gear and cosmetics.
+- **Basic wardrobe/transmog is implemented in the browser client:** acquired weapon, armour and wondrous-item bases are collected; the Wardrobe menu applies a same-kind, same-slot appearance override to an equipped item without changing its stats; restoring the original look is supported. The override is stored separately as `item.tmog` and persists with the character save.
+- **Wardrobe collection now includes the multi-tab stash** as well as equipped gear, bag items and the legacy bank. Saved appearance selections are validated against unlocked appearances and slot compatibility before their icon/description override is used.
+- Full layered character-sprite rendering from the HD equipment PNG overlays, character-inspect privacy controls, server-authoritative cosmetic ownership/synchronization, and boss/vendor cosmetic acquisition remain outstanding.
 
 ### HUD and interface integration
 
@@ -159,7 +158,7 @@ The existing `native/src/ability_modifier_x86_64.S` is a desktop x86-64 System V
 5. Implement NPC disposition, faction reputation and the behavior-tree runtime.
 6. Implement the 12 factions and their vendor/service relationships.
 7. Implement PvP/PvE UI and authoritative gameplay rules.
-8. Implement inspect/privacy and cosmetic appearance layers.
+8. Complete layered character-sprite rendering, inspect/privacy and server-authoritative cosmetic synchronization; the basic local Wardrobe/transmog system already exists.
 9. Complete the HUD, minimap interactions, spell bar, status effects and quest tracker.
 10. Build the C++ native target and the RGBDS assembly target as separately tested deliverables.
 
