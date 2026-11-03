@@ -14,6 +14,13 @@
     if (!archetype || !rank || !direction || !animation || !Number.isInteger(index) || index < 0 || index > 99) return null;
     return `${String(base).replace(/\/$/, '')}/${archetype}/${rank}/${direction}/${animation}/frame_${String(index).padStart(3, '0')}.png`;
   };
+  const directionForInput = direction => {
+    const value = String(direction || 'down').toLowerCase();
+    const map = { down: 'S', south: 'S', up: 'N', north: 'N', left: 'W', west: 'W',
+      right: 'E', east: 'E', southwest: 'SW', southeast: 'SE', northwest: 'NW', northeast: 'NE' };
+    const normalized = map[value] || String(direction || '').toUpperCase();
+    return DIRECTIONS.includes(normalized) ? normalized : 'S';
+  };
   const animationForState = state => {
     const value = String(state || 'idle').toLowerCase();
     if (['dead', 'death', 'dying'].includes(value)) return 'death';
@@ -87,6 +94,7 @@
       const resolved = resolveEquipment(character, visualMap, spec.rank || character && character.rank || 'F');
       return render({
         ...spec, archetype: spec.archetype || resolved.archetype,
+        direction: directionForInput(spec.direction), animation: spec.animation || animationForState(spec.state || spec.action),
         rank: resolved.rank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
       });
     };
@@ -114,7 +122,7 @@
     };
     return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size };
   };
-  const api = { createRuntime, framePath, animationForState, archetypeForClass, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  const api = { createRuntime, framePath, directionForInput, animationForState, archetypeForClass, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.GBQHDCharacterArt = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
