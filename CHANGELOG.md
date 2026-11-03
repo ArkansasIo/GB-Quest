@@ -156,3 +156,5 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **World avatar equipment indicators:** world-map character portraits composite small head, main-hand, chest and off-hand icons through the existing transmog-aware item icon resolver. This is a compact visual indicator, not full-body animated equipment rendering.
 
 - **Animated world equipment overlays:** player and follower walkers composite head, main-hand, chest and off-hand item icons over directional two-frame walking sprites, following the current movement animation frame and retaining left/right mirroring and ghost palette handling. HD64 full-body PNG layer loading remains separate and not yet integrated.
+
+- **World HD frame presenter:** connected asynchronous HD idle/walk frame preparation to player and follower world rendering, with stale-result protection, request deduplication, pixel-crisp 24×24 output and classic-renderer fallback. Requires deployed `assets_hd64/` assets; ghost and combat-specific animation states remain on the classic path.
