@@ -1,0 +1,48 @@
+name: Build Character Animation Manifest
+
+on:
+  workflow_dispatch:
+    inputs:
+      frame_size:
+        description: "Animation frame canvas size"
+        required: true
+        type: choice
+        options: ["64", "128", "256", "512"]
+        default: "128"
+
+permissions:
+  contents: read
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate animation manifest
+        run: |
+          python tools/build_animation_manifest.py \
+            --output assets_hd64/animations \
+            --frame-size "${{ inputs.frame_size }}"
+      - name: Validate manifest totals
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("assets_hd64/animations/animation_pack_report.json")
+          report = json.loads(p.read_text())
+          assert report["sequence_count"] == 3072, report
+          assert report["frame_count_target"] == 19584, report
+          assert report["artwork_generated"] is False, report
+          print(report)
+          PY
+      - name: Upload manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gb-quest-character-animation-manifest
+          path: assets_hd64/animations/
+          if-no-files-found: error
