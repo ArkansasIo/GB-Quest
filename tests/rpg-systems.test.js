@@ -334,3 +334,14 @@ test('HD frame presenter retains recent animation frames for instant reuse', asy
   assert.deepEqual(calls, [0, 1]);
   assert.equal(presenter.cacheSize(), 2);
 });
+
+test('battle renderer connects combat events to HD character animation clips', () => {
+  const source = fs.readFileSync(new URL('../src/combat.js', import.meta.url), 'utf8');
+  assert.match(source, /function battleHDFrame\(/);
+  assert.match(source, /state: 'attack', until: frameN \+ 12/);
+  assert.match(source, /state: 'cast', until: frameN \+ 20/);
+  assert.match(source, /state: 'hit', until: frameN \+ 16/);
+  assert.match(source, /battleHDFrame\(c, 'death'/);
+  assert.match(source, /battleHDFrame\(c, pose/);
+  assert.match(source, /else blit\(s, px - s\.width \/ 2 \+ lx/);
+});
