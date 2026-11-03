@@ -4,6 +4,9 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 
 ## Unreleased
 
+### Changed
+- The chat panel now starts closed. Press **C** or the **CHAT** button to open it; SETTINGS > CHAT SETTINGS turns chat off completely.
+
 ### Added
 - **Asset packs**: two reference sheets are sliced into 686 sprites (`assets_pack/`, `tools/slice_assetpack.py`), installed as `assets/ap_*` and `assets/au_*` and in the 64-bit atlases. In game: **SETTINGS > BATTLE BG** now cycles CLEAN, PAINTED and **SCENES** (painted city, wilderness, dungeon and boss-fight backdrops); potions, food, scrolls, books, keys and coins use the new item icons; the gem socket forge shows gem icons.
 - **More pack art in game**: item cells have an ornate border tinted by rarity; about half of each beast, humanoid, undead, dragon, fiend, ooze and golem subtype (172 of 700 bestiary entries, plus some dragon and fiend bosses) use the pack's monster art; talking to a townsperson shows a face portrait beside the dialogue box (stable per NPC).

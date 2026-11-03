@@ -2,11 +2,11 @@
 'use strict';
 (function main() {
   let progress = 0;
-  const chatPreference = (() => { try { return localStorage.getItem('gbq.fs.chat'); } catch (e) { return null; } })();
-  document.body.classList.toggle('chat-on', chatPreference !== '0');
+  const chatPreference = (() => { try { return localStorage.getItem('gbq.fs.chatpanel'); } catch (e) { return null; } })();
+  document.body.classList.toggle('chat-on', chatPreference === '1'); // the chat panel starts closed; C or the CHAT button opens it
   const setChatVisible = visible => {
     document.body.classList.toggle('chat-on', visible);
-    try { localStorage.setItem('gbq.fs.chat', visible ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('gbq.fs.chatpanel', visible ? '1' : '0'); } catch (e) {}
   };
   const loading = loadAssets(p => { progress = p; }).then(() => { progress = 1; document.body.classList.add('ready'); });
   // In-game chat overlay inside the game viewport.

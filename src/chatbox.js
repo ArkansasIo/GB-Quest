@@ -137,7 +137,7 @@ addEventListener('pointerdown', e => { const m = document.getElementById('cbmenu
 
 function cbFocus(prefill) {
   const inp = document.getElementById('chatinput'); if (!inp) return;
-  if (!document.body.classList.contains('chat-on')) { document.body.classList.add('chat-on'); try { localStorage.setItem('gbq.fs.chat', '1'); } catch (e) {} }
+  if (!document.body.classList.contains('chat-on')) { document.body.classList.add('chat-on'); try { localStorage.setItem('gbq.fs.chatpanel', '1'); } catch (e) {} }
   if (prefill != null) inp.value = prefill;
   inp.focus({ preventScroll: true }); inp.setSelectionRange(inp.value.length, inp.value.length);
   cbWake();

@@ -14301,7 +14301,7 @@ addEventListener('pointerdown', e => { const m = document.getElementById('cbmenu
 
 function cbFocus(prefill) {
   const inp = document.getElementById('chatinput'); if (!inp) return;
-  if (!document.body.classList.contains('chat-on')) { document.body.classList.add('chat-on'); try { localStorage.setItem('gbq.fs.chat', '1'); } catch (e) {} }
+  if (!document.body.classList.contains('chat-on')) { document.body.classList.add('chat-on'); try { localStorage.setItem('gbq.fs.chatpanel', '1'); } catch (e) {} }
   if (prefill != null) inp.value = prefill;
   inp.focus({ preventScroll: true }); inp.setSelectionRange(inp.value.length, inp.value.length);
   cbWake();
@@ -14737,7 +14737,7 @@ body #chatShow { left: 12px; right: auto; }
     opts() {
       return [
         ['CHAT', () => CFG.master, () => { CFG.master = !CFG.master; }],
-        ['CHAT PANEL', () => document.body.classList.contains('chat-on'), () => { const on = !document.body.classList.contains('chat-on'); document.body.classList.toggle('chat-on', on); try { localStorage.setItem('gbq.fs.chat', on ? '1' : '0'); } catch (e) {} }],
+        ['CHAT PANEL', () => document.body.classList.contains('chat-on'), () => { const on = !document.body.classList.contains('chat-on'); document.body.classList.toggle('chat-on', on); try { localStorage.setItem('gbq.fs.chatpanel', on ? '1' : '0'); } catch (e) {} }],
         ...Object.entries(MUTABLE).map(([k, label]) => [label.replace('GENERAL (WORLD)', 'WORLD CHAT'), () => !CFG.muted[k], () => { CFG = setChannel(CFG, k, !!CFG.muted[k]).cfg; }]),
         ['NPC CHATTER', () => CFG.npc, () => { CFG.npc = !CFG.npc; }],
         ['CHAT BUBBLES', () => S.bubbles !== false, () => { S.bubbles = S.bubbles === false; saveSettings(); }],
@@ -14921,11 +14921,11 @@ if (typeof CB_COMMANDS !== 'undefined') CB_COMMANDS.push('id', 'whoami');
 'use strict';
 (function main() {
   let progress = 0;
-  const chatPreference = (() => { try { return localStorage.getItem('gbq.fs.chat'); } catch (e) { return null; } })();
-  document.body.classList.toggle('chat-on', chatPreference !== '0');
+  const chatPreference = (() => { try { return localStorage.getItem('gbq.fs.chatpanel'); } catch (e) { return null; } })();
+  document.body.classList.toggle('chat-on', chatPreference === '1'); // the chat panel starts closed; C or the CHAT button opens it
   const setChatVisible = visible => {
     document.body.classList.toggle('chat-on', visible);
-    try { localStorage.setItem('gbq.fs.chat', visible ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('gbq.fs.chatpanel', visible ? '1' : '0'); } catch (e) {}
   };
   const loading = loadAssets(p => { progress = p; }).then(() => { progress = 1; document.body.classList.add('ready'); });
   // In-game chat overlay inside the game viewport.

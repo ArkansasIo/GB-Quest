@@ -191,7 +191,7 @@ body #chatShow { left: 12px; right: auto; }
     opts() {
       return [
         ['CHAT', () => CFG.master, () => { CFG.master = !CFG.master; }],
-        ['CHAT PANEL', () => document.body.classList.contains('chat-on'), () => { const on = !document.body.classList.contains('chat-on'); document.body.classList.toggle('chat-on', on); try { localStorage.setItem('gbq.fs.chat', on ? '1' : '0'); } catch (e) {} }],
+        ['CHAT PANEL', () => document.body.classList.contains('chat-on'), () => { const on = !document.body.classList.contains('chat-on'); document.body.classList.toggle('chat-on', on); try { localStorage.setItem('gbq.fs.chatpanel', on ? '1' : '0'); } catch (e) {} }],
         ...Object.entries(MUTABLE).map(([k, label]) => [label.replace('GENERAL (WORLD)', 'WORLD CHAT'), () => !CFG.muted[k], () => { CFG = setChannel(CFG, k, !!CFG.muted[k]).cfg; }]),
         ['NPC CHATTER', () => CFG.npc, () => { CFG.npc = !CFG.npc; }],
         ['CHAT BUBBLES', () => S.bubbles !== false, () => { S.bubbles = S.bubbles === false; saveSettings(); }],
