@@ -82,3 +82,13 @@ test('monster jobs: only ordinary humanoid-type foes, each with its effect', () 
   assert.equal(J.applyMonsterJob(foe(), 'mender').mender, true);
   for (const s of J.applyMonsterJob(foe(), 'hexer').spells) assert.ok(R.SPELLS.find(x => x.id === s), `monster spell ${s} exists`);
 });
+
+test('asset pack: scene choice, battle bg cycle and art names exist', () => {
+  const c = { Math, Object, Array, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('asset_pack.js'), c); const A = c.GBQAssetPack;
+  assert.equal(A.apSceneFor('field', [{ boss: true }], false, false), 'ap_scene_boss_fight');
+  assert.equal(A.apSceneFor('dungeon', [{}], false, false), 'ap_scene_dungeon'); assert.equal(A.apSceneFor('field', [{}], true, false), 'ap_scene_dungeon');
+  assert.equal(A.apSceneFor('field', [{}], false, true), 'ap_scene_city'); assert.equal(A.apSceneFor('field', [{}], false, false), 'ap_scene_wilderness');
+  assert.equal(A.nextBattleBg('clean'), 'painted'); assert.equal(A.nextBattleBg('painted'), 'scenes'); assert.equal(A.nextBattleBg('scenes'), 'clean');
+  const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
+  for (const n of [...Object.values(A.AP_ITEM_ART), ...Object.values(A.AP_GEM_ART), 'ap_scene_boss_fight', 'ap_scene_dungeon', 'ap_scene_city', 'ap_scene_wilderness']) assert.ok(has(n), n);
+});

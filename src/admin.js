@@ -78,7 +78,7 @@ function adminTree() {
       { label: 'SCREEN CHAT', value: () => S.screenChat === false ? 'OFF' : 'ON', run: () => { S.screenChat = S.screenChat === false; saveSettings(); A_ok(`Screen chat ${S.screenChat ? 'on' : 'off'}`); } },
       { label: 'COMBAT LOG', value: () => S.combatLog === false ? 'OFF' : 'ON', run: () => { S.combatLog = S.combatLog === false; saveSettings(); A_ok(`Combat log ${S.combatLog ? 'on' : 'off'}`); } },
       { label: 'UI THEME', value: () => (S.uiTheme || 'sanctum').toUpperCase(), run: () => { S.uiTheme = S.uiTheme === 'classic' ? 'sanctum' : 'classic'; clearCaches(); saveSettings(); A_ok(`Theme ${S.uiTheme}`); } },
-      { label: 'BATTLE BG', value: () => (S.battleBg || 'clean').toUpperCase(), run: () => { S.battleBg = S.battleBg === 'painted' ? 'clean' : 'painted'; saveSettings(); A_ok(`Battle bg ${S.battleBg}`); } },
+      { label: 'BATTLE BG', value: () => (S.battleBg || 'clean').toUpperCase(), run: () => { S.battleBg = typeof nextBattleBg === 'function' ? nextBattleBg(S.battleBg || 'clean') : S.battleBg === 'painted' ? 'clean' : 'painted'; saveSettings(); A_ok(`Battle bg ${S.battleBg}`); } },
     ] },
     { label: 'DEBUG', kids: () => [
       { label: 'DEBUG PANEL (F9)', run: () => { removeAdmin(); if (DBG.toggle) DBG.toggle(); } },

@@ -67,7 +67,8 @@ class GemSocketScene {
       const id = sockets[i], d = id && api.gemDefinition(id);
       if (d) {
         const colour = { ruby: 'red', sapphire: 'blue', emerald: 'green', amethyst: 'purple', topaz: 'gold', diamond: 'white', onyx: 'grey', opal: 'cyan', garnet: 'red' }[d.type] || 3;
-        fill(x + 10, y + 9, 12, 12, colour);
+        const art = typeof gemArt === 'function' ? gemArt(d.type) : null;
+        if (art) blit(sprFit(art, 18), x + 7, y + 4); else fill(x + 10, y + 9, 12, 12, colour);
         textC('T' + d.tier, x + 16, y + 23, 3);
       } else textC('EMPTY', x + 16, y + 12, 2);
       if (i === this.socket) textC('^', x + 16, y + 1, 'gold');
@@ -76,7 +77,7 @@ class GemSocketScene {
     text('GEM INVENTORY', 5, y, 'gold'); y += 10;
     const owned = Object.keys(G.gems || {}).filter(id => G.gems[id] > 0).slice(0, 5);
     if (!owned.length) { text('NO GEMS CARRIED', 5, y, 2); y += 9; }
-    else for (const id of owned) { const d = api.gemDefinition(id); text((d ? d.name : id).slice(0, 16), 5, y, 3); textR('x' + G.gems[id], W - 5, y, 2); y += 8; }
+    else for (const id of owned) { const d = api.gemDefinition(id), art = d && typeof gemArt === 'function' ? gemArt(d.type) : null; if (art) blit(sprFit(art, 7), 5, y); text((d ? d.name : id).slice(0, 15), art ? 14 : 5, y, 3); textR('x' + G.gems[id], W - 5, y, 2); y += 8; }
     const affixes = api.gemAffixes(this.item), stats = Object.entries(affixes);
     text('BONUSES', 5, 133, 'gold');
     if (stats.length) textC(stats.map(([k, v]) => k.toUpperCase() + ' +' + v).join('  ').slice(0, 25), W / 2, 140, 3);

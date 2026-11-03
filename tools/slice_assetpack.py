@@ -7,6 +7,7 @@ For every panel of the sheet it cuts out each sprite on a transparent background
   assets_pack/scenes/*.png                 the four scene paintings (full and 160x144 pixel backdrops)
   assets_pack/manifest.json                every asset: panel, file, size, source box
   assets_pack/preview.png                  contact sheet of the pixel versions
+  assets/ap_<panel>_NNN.png, assets/ap_scene_<name>.png   the pixel versions installed for the game (au_ for the UI kit)
 Run: python3 tools/slice_assetpack.py [--sheet ui] [--debug]
   --sheet ui slices art_source/ui_pack_sheet.png (UI icons, gems, potions, frames, buttons, banners) into assets_pack/ui/;
   its logo and named class line-up are left out on purpose.   (--debug writes assets_pack/_boxes.png with the panel boxes)
@@ -172,6 +173,14 @@ def main():
         bd.save(os.path.join(OUT, 'scenes', f'{k}_px.png'))
         manifest.append({'panel': 'scenes', 'name': k, 'file': f'scenes/{k}.png', 'px': f'scenes/{k}_px.png', 'w': im.width, 'h': im.height, 'box': list(b)})
     json.dump(manifest, open(os.path.join(OUT, 'manifest.json'), 'w'), indent=1)
+    # install the 8-bit versions into the game's assets (ap_ = asset pack, au_ = UI kit), loaded by name like all game art
+    prefix = 'au_' if OUT.endswith('ui') else 'ap_'; game = os.path.join(ROOT, 'assets')
+    for f in os.listdir(game):
+        if f.startswith(prefix): os.remove(os.path.join(game, f))
+    for e in manifest:
+        dst = f"{prefix}scene_{e['name']}.png" if e['panel'] == 'scenes' else f"{prefix}{e['name']}.png"
+        Image.open(os.path.join(OUT, e['px'])).save(os.path.join(game, dst))
+    print(f'installed {len(manifest)} images as assets/{prefix}*.png')
     # contact sheet of the pixel versions, one band per panel
     bands = []
     for panel in PANELS:
