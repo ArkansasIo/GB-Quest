@@ -149,3 +149,16 @@ test('transmog appearance must be unlocked, same-kind, same-slot and distinct fr
   assert.equal(P.validAppearance({ kind: 'armor', base: 'iron_chest' }, { kind: 'armor', base: 'steel_helm' }, wardrobe, slotOf), false, 'same kind but different slot is rejected');
   assert.equal(P.validAppearance(item, { kind: 'weapon', base: 'iron_sword' }, wardrobe, slotOf), false);
 });
+
+test('paper doll visual markers are derived from equipped slots only', () => {
+  const eq = {
+    head: { kind: 'armor', base: 'iron_helm' },
+    weapon: { kind: 'weapon', base: 'longsword' },
+    ring1: { kind: 'wondrous', base: 'silver_ring' },
+    offhand: { kind: 'armor', base: 'shield' }
+  };
+  const visuals = P.paperDollVisuals(eq);
+  assert.deepEqual(visuals.map(x => x.slot), ['head', 'weapon', 'offhand']);
+  assert.ok(visuals.every(x => Number.isInteger(x.anchor.x) && Number.isInteger(x.anchor.y)));
+  assert.deepEqual(P.paperDollVisuals({}), []);
+});
