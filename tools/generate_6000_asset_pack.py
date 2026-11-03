@@ -112,7 +112,7 @@ def main():
         w=csv.DictWriter(f,fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
     (meta/"asset_manifest.json").write_text(json.dumps(rows,indent=2),encoding="utf-8")
     (meta/"category_summary.json").write_text(json.dumps([{"category":c,"count":n} for c,n in CATEGORIES],indent=2),encoding="utf-8")
-    (out/"README.md").write_text("# GB-Quest 6,000 Asset Pack\\n\\n6,000 individual 64x64 RGBA procedural pixel-art starter PNGs in 18 categories. Includes 18 preview atlases and CSV/JSON manifests. These are generated base assets, not hand-painted final art or complete animation sets.\\n",encoding="utf-8")
+    (out/"README.md").write_text("# GB-Quest 6,000 Asset Pack\n\n6,000 individual 64x64 RGBA procedural pixel-art starter PNGs in 18 categories. Includes 18 preview atlases and CSV/JSON manifests. These are generated base assets, not hand-painted final art or complete animation sets.\n",encoding="utf-8")
     zpath=Path(args.zip); zpath.parent.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(zpath,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for p in out.rglob("*"):
