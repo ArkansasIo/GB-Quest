@@ -183,3 +183,4 @@ As of 2026-11-02, the repository contains the JavaScript browser game, a local m
 - Optional HD character runtime API added in `src/hd_character_art.js`: lazy-loads a selected archetype/rank/direction/animation/frame, composites matching equipment layers from the generated manifest, caches loaded images, and returns a canvas. It is included in browser bundles. Requires the workflow artifact to be deployed under static `assets_hd64/`; it is opt-in and is not yet the default in-game renderer.
 
 - World-scene integration now requests HD idle/walk frames asynchronously for players and followers. It draws prepared 24×24 canvases only after load; classic equipment walkers/portraits remain the fallback. Ghost rendering intentionally remains classic. Generated `assets_hd64/` files must be deployed separately; attack/cast/death states are not yet connected to live combat state.
+ Per-character presenter caches keep player and follower async requests independent.
