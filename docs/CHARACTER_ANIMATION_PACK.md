@@ -212,3 +212,5 @@ const canvas = await hdArt.renderCharacter(G, {
 This is a callable integration API, not yet an automatic replacement for the synchronous world renderer. A future integration must schedule async asset loads outside the draw loop and display cached canvases during rendering.
 
 Unmapped legacy weapon IDs receive a conservative family fallback (dagger, ranged, focus, blunt, or generic melee); unmapped chest armor uses a name-based robe/leather/plate fallback, and off-hand armor uses the shield prototype. These are visual placeholders, not authoritative item taxonomy. The explicit catalog visual map always takes precedence.
+
+Repeated requests for the same base frame, rank/direction and equipment loadout share an in-flight/completed composition promise. Failed compositions are evicted so a later request can retry. Keep the resolved canvas in the caller's draw-state cache and draw it synchronously; do not call `renderCharacter` from inside the frame draw loop.
