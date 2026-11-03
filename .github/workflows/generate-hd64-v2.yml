@@ -1,0 +1,51 @@
+name: Generate HD64 v2 Original Art Library
+
+on:
+  workflow_dispatch:
+    inputs:
+      size:
+        description: Render size for each source image
+        required: true
+        type: choice
+        default: '256'
+        options: ['128', '256', '512', '1024']
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image pipeline
+        run: python -m pip install --disable-pip-version-check Pillow numpy
+      - name: Generate original HD64 v2 assets
+        run: python tools/gen_hd64_v2.py --size '${{ inputs.size }}'
+      - name: Verify manifest and image dimensions
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root = Path('assets_hd64_v2')
+          manifest = json.loads((root / 'manifest.json').read_text())
+          assert manifest['legacy_preserved'] is True
+          assert manifest['asset_count'] == len(manifest['assets'])
+          for item in manifest['assets']:
+              path = Path(item['png'])
+              assert path.is_file(), path
+              with Image.open(path) as image:
+                  assert image.mode == 'RGBA'
+                  assert image.size == (manifest['size'], manifest['size'])
+          print(f"Verified {manifest['asset_count']} HD64 v2 images")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GB-Quest-HD64-v2-${{ inputs.size }}px
+          path: assets_hd64_v2/
+          if-no-files-found: error
+          retention-days: 30
