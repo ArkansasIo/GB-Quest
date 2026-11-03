@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This defines a consistent, importable animation library for the six core character archetypes. It creates manifests and a folder scaffold; it does **not** claim to generate finished animation artwork.
+This defines a consistent, importable animation library for the six core character archetypes across all nine adventurer ranks. It creates manifests and a folder scaffold; it does **not** claim to generate finished animation artwork.
 
 ## Coverage
 
@@ -11,7 +11,7 @@ This defines a consistent, importable animation library for the six core charact
 - Directions: S, SW, W, NW, N, NE, E, SE
 - States: idle, walk, run, attack, cast, block, hit, death
 
-This produces **3,072 animation sequences** and a target of **19,584 frames** at the default frame counts.
+This produces **3,456 animation sequences** and a target of **22,032 frames** at the default frame counts.
 
 ## Frame contract
 
