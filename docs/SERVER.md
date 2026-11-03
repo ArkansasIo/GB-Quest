@@ -114,3 +114,5 @@ Current transaction invariants:
 - Expiry returns escrowed items to the seller.
 - Repeated requests with the same idempotency key and payload return the original result; reusing a key with a different payload is rejected.
 - Item UIDs are globally unique across player inventories and active listings.
+
+The same module now provides server-side direct-trade primitives: a trade session has two authenticated account participants, each submits only item UIDs and a gold amount, offers become immutable when locked, and settlement occurs only after both participants confirm. Both inventories and wallets are validated before either side is mutated. The live relay remains disabled until authenticated HTTP handlers are connected to these primitives; the existing client-applied trade flow is not used as settlement authority.
