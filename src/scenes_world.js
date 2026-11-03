@@ -365,7 +365,7 @@ class CharCreate {
     const list = (n, i) => { const c = this.cur[i]; const v = up ? (c + n - 1) % n : dn ? (c + 1) % n : c; if (v !== c) SFX.cursor(); this.cur[i] = v; return v; };
     if (s === 0) { const L = Object.keys(SPECIES), i = list(L.length, 0); if (p.species !== L[i]) { p.species = L[i]; p.portrait = null; } if (a) this.next(); }
     if (s === 1) {
-      let i = this.cur[1]; if (lf) i = (i + CLASS_ORDER.length - 1) % CLASS_ORDER.length; if (rt) i = (i + 1) % CLASS_ORDER.length; if (up || dn) i = (i + 6) % CLASS_ORDER.length;
+      let i = this.cur[1]; if (lf) i = (i + CLASS_ORDER.length - 1) % CLASS_ORDER.length; if (rt) i = (i + 1) % CLASS_ORDER.length; if (up) i = (i + CLASS_ORDER.length - CLASS_COLS) % CLASS_ORDER.length; if (dn) i = (i + CLASS_COLS) % CLASS_ORDER.length;
       if (i !== this.cur[1]) { SFX.cursor(); this.cur[1] = i; p.cls = CLASS_ORDER[i]; p.look = null; p.portrait = null; this.setMethod(this.method === 2 ? 0 : this.method); }
       if (a) this.next();
     }
@@ -455,7 +455,7 @@ class CharCreate {
     const hint = h => text(h, 2, 135, 2);
     if (s === 0) {
       const L = Object.keys(SPECIES);
-      L.forEach((k, j) => { const y = 25 + j * 11; if (j === this.cur[0]) fill(2, y - 1, 66, 11, 1); text(SPECIES[k].name, 5, y); });
+      const top = Math.max(0, Math.min(L.length - 10, this.cur[0] - 5)); L.slice(top, top + 10).forEach((k, n) => { const j = top + n, y = 25 + n * 11; if (j === this.cur[0]) fill(2, y - 1, 66, 11, 1); text(SPECIES[k].name.slice(0, 10), 5, y); }); if (top > 0) text('^', 60, 18, 2); if (top + 10 < L.length) text('v', 60, 134, 2);
       const sp = SPECIES[p.species]; frame(70, 24, 88, 109);
       const r0 = racePortrait(p.species, 0), r1 = racePortrait(p.species, 1);
       if (r0) blit(sprFit(r0, 30), 76, 27); if (r1 && r1 !== r0) blit(sprFit(r1, 30), 116, 27);
@@ -464,7 +464,7 @@ class CharCreate {
       text(wrap(sp.desc, 13).slice(0, 6).join('\n'), 74, 80);
       hint('A/START:NEXT  SEL:RANDOM');
     } else if (s === 1) {
-      CLASS_ORDER.forEach((id, j) => { const x = 4 + (j % 6) * 26, y = 24 + Math.floor(j / 6) * 19; if (j === this.cur[1]) fill(x - 1, y - 1, 25, 18, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 16) : sprH(`c_${id}_0`, 16); blit(sp2, x + 12 - sp2.width / 2, y); });
+      CLASS_ORDER.forEach((id, j) => { const x = 3 + (j % CLASS_COLS) * 17, y = 24 + Math.floor(j / CLASS_COLS) * 19; if (j === this.cur[1]) fill(x - 1, y - 1, 18, 18, 1); const pr = classPortrait(id), sp2 = pr ? sprFit(pr, 16) : sprH(`c_${id}_0`, 16); blit(sp2, x + 8 - sp2.width / 2, y); });
       const c = CLASSES[p.cls]; frame(2, 85, 156, 48);
       text(c.name, 6, 87, 'gold'); textR(`${c.role.toUpperCase()} D${c.hd} ${c.primary}`, 154, 87, 2);
       text(wrap(c.desc, 25).slice(0, 2).join('\n'), 6, 96);
