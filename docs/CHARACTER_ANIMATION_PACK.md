@@ -7,7 +7,7 @@ This defines a consistent, importable animation library for the six core charact
 ## Coverage
 
 - Archetypes: warrior, mage, ranger, rogue, cleric, summoner
-- Ranks: F, E, D, C, B, A, S, SSS
+- Ranks: F, E, D, C, B, A, S, SS, SSS
 - Directions: S, SW, W, NW, N, NE, E, SE
 - States: idle, walk, run, attack, cast, block, hit, death
 
