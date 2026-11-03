@@ -24,9 +24,23 @@ const gearScore = eq => Object.values(eq || {}).reduce((a, it) => a + gearItemSc
 // appearances: one per kind + base; a look fits when the slot matches
 const appearanceKey = it => it && it.kind && it.base ? `${it.kind}:${it.base}` : null;
 const lookFits = (itemSlotName, lookSlotName, itemKind, lookKind) => itemKind === lookKind && itemSlotName === lookSlotName;
+const collectAppearances = (wardrobe, sources) => {
+  const out = wardrobe && typeof wardrobe === 'object' ? wardrobe : {};
+  let added = 0;
+  for (const source of sources || []) for (const it of source || []) {
+    const key = appearanceKey(it);
+    if (key && ['weapon', 'armor', 'wondrous'].includes(it.kind) && !out[key]) { out[key] = 1; added++; }
+  }
+  return { wardrobe: out, added };
+};
+const validAppearance = (item, look, wardrobe, slotOf) => {
+  if (!item || !look || !look.kind || !look.base || item.kind !== look.kind || item.base === look.base) return false;
+  const key = appearanceKey(look);
+  return !!(key && wardrobe && wardrobe[key] && lookFits(slotOf(item), slotOf(look), item.kind, look.kind));
+};
 const transmogCost = lvl => 5 * Math.max(1, Math.floor(Number(lvl) || 1));
 
-if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, transmogCost, REST_BONUS };
+if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, collectAppearances, validAppearance, transmogCost, REST_BONUS };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof itemSlot === 'function') {
@@ -56,12 +70,14 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
   // wardrobe: collect every base the hero holds (polled by mmo_loop.js)
   window.polishPoll = function () {
     if (!G) return; G.wardrobe = G.wardrobe && typeof G.wardrobe === 'object' ? G.wardrobe : {};
-    const seen = it => { const k = appearanceKey(it); if (k && !G.wardrobe[k] && ['weapon', 'armor', 'wondrous'].includes(it.kind)) G.wardrobe[k] = 1; };
-    Object.values(G.eq || {}).forEach(seen); (G.bag || []).forEach(seen); (G.bank || []).forEach(seen);
+    const stashTabs = G.stash && Array.isArray(G.stash.tabs) ? G.stash.tabs : [];
+    const collected = collectAppearances(G.wardrobe, [Object.values(G.eq || {}), G.bag || [], G.bank || [], ...stashTabs]);
+    G.wardrobe = collected.wardrobe;
   };
   // a transmogged item shows its look's icon
-  { const ic0 = itemIcon; itemIcon = function (it) { if (it && it.tmog && it.tmog.base) { try { return ic0(Object.assign({}, it, { base: it.tmog.base })); } catch (e) { /* fall through */ } } return ic0(it); }; }
-  { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it); return it && it.tmog ? `LOOKS LIKE ${baseName(it.kind, it.tmog.base)}. ${s}` : s; }; }
+  const appearanceOf = it => it && validAppearance(it, it.tmog, G && G.wardrobe, lookSlot) ? it.tmog : null;
+  { const ic0 = itemIcon; itemIcon = function (it) { const look = appearanceOf(it); if (look) { try { return ic0(Object.assign({}, it, { base: look.base })); } catch (e) { /* fall through */ } } return ic0(it); }; }
+  { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it), look = appearanceOf(it); return look ? `LOOKS LIKE ${baseName(it.kind, look.base)}. ${s}` : s; }; }
 
   window.wardrobeMenu = function () {
     polishPoll();
@@ -69,7 +85,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
     if (!slots.length) return say('Equip something first.');
     choose(slots.map(s => `${SLOT_NAME[s].slice(0, 9)} ${(G.eq[s].tmog ? '*' : '') + baseName(G.eq[s].kind, G.eq[s].tmog ? G.eq[s].tmog.base : G.eq[s].base)}`.slice(0, 24)), k => {
       if (k < 0) return; const it = G.eq[slots[k]], mySlot = itemSlot(it);
-      const looks = Object.keys(G.wardrobe).map(key => key.split(':')).filter(([kind, base]) => base !== it.base && lookFits(mySlot, lookSlot(kind, base), it.kind, kind));
+      const looks = Object.keys(G.wardrobe).map(key => key.split(':')).filter(([kind, base]) => validAppearance(it, { kind, base }, G.wardrobe, lookSlot));
       const cost = transmogCost(G.lvl), opts = [...(it.tmog ? ['RESTORE ORIGINAL LOOK'] : []), ...looks.map(([kind, base]) => baseName(kind, base).slice(0, 20))];
       if (!opts.length) return say(['No other looks collected for this slot yet.', 'Every item you pick up adds its look to your wardrobe.'], window.wardrobeMenu);
       choose(opts, j => {
