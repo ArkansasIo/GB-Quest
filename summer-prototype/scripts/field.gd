@@ -5,6 +5,8 @@ const Battle = preload("res://scripts/battle.gd")
 const Bag = preload("res://scripts/bag.gd")
 const Dungeon = preload("res://scripts/dungeon.gd")
 const CharPage = preload("res://scripts/charpage.gd")
+const Fishing = preload("res://scripts/fishing.gd")
+const GearX = preload("res://scripts/gearx.gd")
 const Loot = preload("res://scripts/loot.gd")
 const T := 64
 const BASE_STEP := 0.14
@@ -89,20 +91,28 @@ func _gather_here() -> bool:
 			var item := str(n[3])
 			var qty := 1 + (1 if Game.rng.randf() < 0.35 else 0)
 			Craft.add(item, qty)
-			main.say(["%s: gathered %d %s." % [str(n[2]).to_upper(), qty, Craft.mat_name(item)]])
+			main.say(["%s: gathered %d %s." % [str(n[2]).to_upper(), qty, Craft.mat_name(item)]] + Quest.on_gather(Game.zone_id))
 			return true
 	return false
+
+## riding a flying mount in the wilds lifts you over water, trees and rocks (not in towns or dungeons)
+func flying() -> bool:
+	return Game.hero.get("mounted", false) and mount().get("fly", false) and not zone.get("town", false) and not zone.has("dungeon")
 
 func _walkable(x: int, y: int) -> bool:
 	var w: Array = zone.get("walk", [])
 	if y < 0 or y >= w.size() or x < 0 or x >= str(w[y]).length():
 		return false
-	if str(w[y])[x] != "1":
+	if str(w[y])[x] != "1" and not flying():
 		return false
 	for n in zone.get("npcs", []):
 		if int(n["x"]) == x and int(n["y"]) == y:
 			return false
 	return true
+
+func _is_water(x: int, y: int) -> bool:
+	var rows: Array = zone.get("gfx", [])
+	return y >= 0 and y < rows.size() and x >= 0 and x < rows[y].size() and str(rows[y][x]).contains("water")
 
 func _npc_at(x: int, y: int) -> Dictionary:
 	for n in zone.get("npcs", []):
@@ -142,6 +152,8 @@ func step(delta: float) -> void:
 		if not n.is_empty(): _talk(n)
 		var dg := _dungeon_at(f.x, f.y)
 		if dg != "": _offer_dungeon(dg)
+		elif n.is_empty() and _is_water(f.x, f.y) and not flying():
+			main.push(Fishing.new())
 		return
 	for d in ["up", "down", "left", "right"]:
 		if Input.is_action_pressed("ui_" + d):
@@ -247,6 +259,8 @@ func _arrived_dungeon() -> void:
 			_finish_dungeon()
 		else:
 			enter_dungeon(str(Game.dun["id"]), int(zone["floor"]) + 1)
+	elif _trap_at(p):
+		pass
 	elif str(zone["gfx"][p.y][p.x]).ends_with("_gold"):
 		zone["gfx"][p.y][p.x] = str(zone["gfx"][p.y][p.x]).replace("_gold", "_floor")
 		var g := 15 + int(zone["lvl"][0]) * 4 + Game.rng.randi_range(0, 20)
@@ -254,6 +268,23 @@ func _arrived_dungeon() -> void:
 		var it := Game.random_drop(int(zone["lvl"][0]) + 10)
 		Game.bag().append(it)
 		main.say(["A hidden cache! %d G" % g, "and %s." % Game.item_name(it)])
+
+## hidden traps: a DEX save (d20 + DEX + proficiency) against the trap's DC, or take its damage; found traps show as spikes
+func _trap_at(p: Vector2i) -> bool:
+	for t in zone.get("traps", []):
+		if int(t["x"]) != p.x or int(t["y"]) != p.y or t.get("found", false): continue
+		t["found"] = true
+		zone["gfx"][p.y][p.x] = "gd_%s_spikes" % str(zone["gfx"][p.y][p.x]).split("_")[1]
+		var r := Game.d20()
+		var save := r + Game.mod("DEX") + Game.prof()
+		if save >= int(t["dc"]):
+			main.say(["A hidden trap! You leap clear. (DEX %d vs DC %d)" % [save, int(t["dc"])]])
+		else:
+			var dmg := maxi(1, Game.roll(str(t["dmg"])) * (100 - mini(60, Game.stat("resist"))) / 100)
+			Game.hero["hp"] = maxi(1, int(Game.hero["hp"]) - dmg)
+			main.say(["A hidden trap! Spikes for %d. (DEX %d vs DC %d)" % [dmg, save, int(t["dc"])]])
+		return true
+	return false
 
 func _up_pick(k: int) -> void:
 	if k == 0: leave_dungeon()
@@ -268,6 +299,9 @@ func _finish_dungeon() -> void:
 	var bonus := int(d["lvl"]) * (60 if first else 20) * (3 if Dungeon.is_raid(d) else 1)
 	var ups := Game.gain_xp(bonus)
 	var lines := ["%s CLEARED!" % d["name"], "+%d XP for the clear%s." % [bonus, " (first time)" if first else ""]]
+	if Dungeon.is_raid(d) or (first and Game.rng.randf() < 0.2):
+		var tr := _treasure("artifact" if Dungeon.is_raid(d) else "relic", int(d["lvl"]) + 10)
+		if not tr.is_empty(): lines.append("%s: %s!" % ["ARTIFACT" if Dungeon.is_raid(d) else "RELIC", Game.item_name(tr)])
 	if Dungeon.is_raid(d) and Game.rng.randf() < 0.25:
 		var pool: Array = Data.game.get("MOUNTS", []).filter(func(m): return m.get("source") == "raid" and not Game.hero.get("mounts", []).has(m["id"]))
 		if pool.size():
@@ -295,7 +329,11 @@ func _mob_down(m: Dictionary) -> void:
 	zone["mobs"].erase(m)
 	if m.get("world", false):
 		var wbk: Dictionary = Game.hero.get("wbk", {}); wbk[m["def"]["id"]] = _steps(); Game.hero["wbk"] = wbk
-		main.say(["%s falls! It will return in time." % m["def"]["name"]])
+		var lines := ["%s falls! It will return in time." % m["def"]["name"]]
+		if Game.rng.randf() < 0.3:
+			var rl := _treasure("relic", int(m["lvl"]))
+			if not rl.is_empty(): lines.append("RELIC: %s!" % Game.item_name(rl))
+		main.say(lines)
 		return
 	if m.get("boss", false):
 		main.say(["The seal on the stairs breaks."])
@@ -304,7 +342,7 @@ func _talk(n: Dictionary) -> void:
 	var svc := str(n.get("svc"))
 	talking = str(n.get("name", "NPC"))
 	if svc == "inn":
-		main.choose(["REST (20 G)", "LEAVE"], Callable(self, "_inn"), "%s: A warm bed for 20 G?" % talking)
+		main.choose(["REST (20 G)", "COOK", "LEAVE"], Callable(self, "_inn"), "%s: A warm bed for 20 G?" % talking)
 	elif svc == "vendor":
 		main.choose(["POTION (25 G)", "ARMS", "SELL", "LEAVE"], Callable(self, "_shop"), "%s: What will it be?" % talking)
 	elif svc in ["blacksmith", "armorsmith", "weaponsmith"]:
@@ -312,7 +350,12 @@ func _talk(n: Dictionary) -> void:
 		main.choose(["ARMS", "SELL", "CRAFT", "LEAVE"], Callable(self, "_smith"), "%s: Steel for the road?" % talking)
 	elif svc == "warden":
 		var q := Quest.on_talk("warden")
-		main.say(["%s: Stay on the road, %s. The deep places bite." % [talking, Game.hero["name"]]] + q)
+		if q.size():
+			main.say(["%s: Stay on the road, %s. The deep places bite." % [talking, Game.hero["name"]]] + q)
+		else:
+			main.choose(["TALK", "SIDE QUEST", "LEAVE"], Callable(self, "_warden"), "%s: Need something?" % talking)
+	elif svc == "curator":
+		_curator()
 	elif svc == "elder":
 		var q := Quest.on_talk("elder")
 		main.say(["%s: You carry the last lantern. I knew it would choose someone." % talking, "The EMBER CODEX was torn into twelve pages. Find them, and the dawn returns."] + q)
@@ -333,6 +376,55 @@ func _talk(n: Dictionary) -> void:
 var talking := ""
 var craft_prof := "alch"
 const ROLE_PROF := {"alchemist": "alch", "weaponsmith": "weaponsmith", "armorer": "armorsmith", "blacksmith": "blacksmith"}
+
+# ------------------------------------------------------------------ wardens: side quests
+var offer: Dictionary = {}
+
+func _warden(k: int) -> void:
+	if k == 0:
+		main.say(["%s: Stay on the road, %s. The deep places bite." % [talking, Game.hero["name"]]])
+	elif k == 1:
+		if Quest.side_has(Game.zone_id):
+			for q in Quest.side_list():
+				if q["zone"] == Game.zone_id: main.say(["%s: How goes it?" % talking, Quest.side_goal(q)])
+			return
+		offer = Quest.side_offer(Game.zone_id)
+		main.choose(["ACCEPT", "DECLINE"], Callable(self, "_side_pick"), "%s: %s Reward %d G." % [offer["title"], offer["line"], int(offer["gold"])])
+
+func _side_pick(k: int) -> void:
+	if k == 0: main.say([Quest.side_accept(offer), Quest.side_goal(offer)])
+
+# ------------------------------------------------------------------ curators: relics and artifacts
+func _curator() -> void:
+	var found: Dictionary = Game.hero.get("found", {})
+	var paid: Dictionary = Game.hero.get("paid", {})
+	var rel := 0
+	var art := 0
+	var fresh := 0
+	for id in found:
+		if str(id).begins_with("relic"): rel += 1
+		else: art += 1
+		if not paid.has(id): paid[id] = true; fresh += 1
+	Game.hero["paid"] = paid
+	var lines := ["%s: The collection grows." % talking, "RELICS %d/42  ARTIFACTS %d/42" % [rel, art]]
+	if fresh:
+		var g := fresh * (100 + int(Game.hero["lvl"]) * 10)
+		Game.hero["gold"] = int(Game.hero["gold"]) + g
+		lines.append("For %d new find%s: %d G." % [fresh, "" if fresh == 1 else "s", g])
+	else:
+		lines.append("World bosses carry relics; raids guard artifacts.")
+	main.say(lines)
+
+## a relic or artifact: epic relics, legendary+ artifacts; recorded for the curators
+func _treasure(slot: String, lvl: int) -> Dictionary:
+	var ids := []
+	for w in Data.game.get("WONDROUS", []):
+		if w.get("slot") == slot: ids.append(w["id"])
+	if ids.is_empty(): return {}
+	var it := Game.make_item(str(ids[Game.rng.randi_range(0, ids.size() - 1)]), 4 if slot == "relic" else 5 + Game.rng.randi_range(0, 2), lvl)
+	Game.bag().append(it)
+	var f: Dictionary = Game.hero.get("found", {}); f[it["id"]] = true; Game.hero["found"] = f
+	return it
 
 # ------------------------------------------------------------------ crafting
 func _pick_prof(k: int) -> void:
@@ -463,6 +555,8 @@ func _buy_mount(k: int) -> void:
 	main.say(["You bought the %s! (Speed %d)" % [m["name"], int(m["speed"])], str(m.get("desc", ""))])
 
 func _inn(k: int) -> void:
+	if k == 1:
+		craft_prof = "cook"; _craft_menu(); return
 	if k != 0:
 		return
 	if int(Game.hero["gold"]) < 20:
@@ -524,7 +618,13 @@ func _buy(k: int) -> void:
 	Game.bag().append(it)
 	main.say(["Bought %s. Equip it from GEAR & BAG." % Game.item_name(it)])
 
-const MENU := ["CHARACTER", "GEAR & BAG", "QUEST", "POTION", "MOUNT", "SAVE", "SAVE & QUIT", "BACK"]
+const MENU := ["CHARACTER", "GEAR & BAG", "QUEST", "POTION", "MOUNT", "SAVE", "SAVE & QUIT", "ITEMS", "BACK"]
+
+var item_ids: Array = []
+
+func _use_item(k: int) -> void:
+	if k < 0: return
+	main.say(Craft.use_item(str(item_ids[k]), false)[0])
 
 func _menu() -> void:
 	var o := MENU.duplicate()
@@ -541,6 +641,14 @@ func _menu_pick(k: int) -> void:
 		return
 	if k == 2:
 		var cp = CharPage.new(); cp.tab = 3; main.push(cp)
+		return
+	if k == 7:
+		var ids: Array = Craft.items().keys()
+		if ids.is_empty(): main.say(["No food or elixirs. Cook at an inn; brew at an alchemist."]); return
+		var names := []
+		for id in ids: names.append("%s x%d" % [Craft.item_name(id).substr(0, 14), int(Craft.items()[id])])
+		item_ids = ids
+		main.choose(names, Callable(self, "_use_item"), "Use which item?")
 		return
 	if k == 4:
 		if Game.hero.get("mount", "") == "":

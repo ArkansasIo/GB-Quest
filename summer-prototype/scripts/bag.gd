@@ -6,12 +6,12 @@ var main: Node2D
 var sell := false
 const Loot = preload("res://scripts/loot.gd")
 const GearX = preload("res://scripts/gearx.gd")
-const SLOT_TAG := {"weapon": "WE", "armor": "AR", "shield": "SH", "head": "HE", "neck": "NE", "ear": "EA", "back": "BA", "hands": "HA", "waist": "WA", "legs": "LE", "feet": "FE", "ring1": "R1", "ring2": "R2", "trinket1": "T1", "trinket2": "T2"}
+const SLOT_TAG := {"weapon": "WE", "armor": "AR", "shield": "SH", "head": "HE", "neck": "NE", "ear": "EA", "back": "BA", "hands": "HA", "waist": "WA", "legs": "LE", "feet": "FE", "ring1": "R1", "ring2": "R2", "trinket1": "T1", "trinket2": "T2", "relic": "RE", "artifact": "AF"}
 var tab := 1            # 0 GEAR, 1 BAG, 2 MATS
 var i := 0
 var top := 0
 var note := ""
-const SLOTS := ["weapon", "armor", "shield", "head", "neck", "ear", "back", "hands", "waist", "legs", "feet", "ring1", "ring2", "trinket1", "trinket2"]
+const SLOTS := ["weapon", "armor", "shield", "head", "neck", "ear", "back", "hands", "waist", "legs", "feet", "ring1", "ring2", "trinket1", "trinket2", "relic", "artifact"]
 const ROWS := 5
 const RH := 64
 
@@ -53,7 +53,7 @@ func step(_d: float) -> void:
 		_act(i)
 
 var acting: Dictionary = {}
-const ACTIONS := ["INFO", "SOCKET GEM", "REMOVE GEMS", "TEMPER", "MASTERWORK", "BACK"]
+const ACTIONS := ["INFO", "SOCKET GEM", "REMOVE GEMS", "TEMPER", "MASTERWORK", "EXTRACT ASPECT", "IMPRINT ASPECT", "BACK"]
 
 ## START on an item: details, gems, and the occultist's tempering and masterwork (in towns)
 func _actions(it: Dictionary) -> void:
@@ -107,6 +107,23 @@ func _action_pick(k: int) -> void:
 			var tm: Array = it.get("tm", [])
 			tm.append([st, GearX.temper_value(st, int(it.get("ilvl", 1)))]); it["tm"] = tm
 			main.say(["Tempered (%s): %s." % [cat, Loot.affix_text(tm.back())]])
+		5:
+			if not _in_town(): main.say(["The occultist extracts aspects in towns."]); return
+			if not it.has("asp"): main.say(["This item has no aspect to extract."]); return
+			main.choose(["EXTRACT (destroys item)", "KEEP"], Callable(self, "_extract"), "Save %s (%d) to your codex?" % [Loot.aspect_name(it["asp"]), int(it["asp"]["v"])])
+		6:
+			if not _in_town(): main.say(["The occultist imprints aspects in towns."]); return
+			if int(it.get("r", 1)) < 3: main.say(["Only rare or better gear takes an aspect."]); return
+			var kind: String = {"w": "weapon", "a": "armor"}.get(it.get("k"), "wondrous")
+			codex_ids = []
+			var names := []
+			var cx: Dictionary = Game.hero.get("codex", {})
+			for id in cx:
+				var sk2 := str(Data.game.get("ASPECT_SPECS", {}).get(id, {}).get("kind", "any"))
+				if sk2 == "any" or sk2 == kind:
+					codex_ids.append(id); names.append("%s %d" % [str(Data.game["ASPECT_SPECS"][id]["name"]).substr(0, 15), int(cx[id])])
+			if names.is_empty(): main.say(["Your codex has no aspect for a %s. Extract one first." % kind]); return
+			main.choose(names, Callable(self, "_imprint"), "Imprint for %d G (replaces any aspect)." % (150 + int(it.get("ilvl", 1)) * 8))
 		4:
 			if not _in_town(): main.say(["The occultist masterworks gear in towns."]); return
 			if int(it.get("mw", 0)) >= int(Data.game.get("MW_MAX", 12)): main.say(["Masterwork is at its peak."]); return
@@ -122,6 +139,30 @@ func _action_pick(k: int) -> void:
 				it["mwc"] = c
 				lines.append("CRITICAL! %s grows 25%%." % Data.game.get("SUBSTATS", {}).get(it["af"][ai][0], {}).get("name", it["af"][ai][0]))
 			main.say(lines)
+
+var codex_ids: Array = []
+
+## extract: the aspect goes to the codex (keeping the best value seen), the item is destroyed
+func _extract(k: int) -> void:
+	if k != 0: return
+	var a: Dictionary = acting["asp"]
+	var cx: Dictionary = Game.hero.get("codex", {})
+	cx[a["id"]] = maxi(int(cx.get(a["id"], 0)), int(a["v"])); Game.hero["codex"] = cx
+	var gi := Game.bag().find(acting)
+	if gi >= 0: Game.bag().remove_at(gi)
+	else:
+		for s2 in Game.gear().keys():
+			if Game.gear()[s2] == acting: Game.gear().erase(s2)
+	main.say(["%s saved to the codex (%d)." % [Loot.aspect_name(a), int(cx[a["id"]])]])
+
+func _imprint(k: int) -> void:
+	if k < 0: return
+	var cost := 150 + int(acting.get("ilvl", 1)) * 8
+	if int(Game.hero["gold"]) < cost: main.say(["Need %d G." % cost]); return
+	Game.hero["gold"] = int(Game.hero["gold"]) - cost
+	var id: String = codex_ids[k]
+	acting["asp"] = {"id": id, "v": int(Game.hero["codex"][id])}
+	main.say(["Imprinted %s." % Loot.aspect_name(acting["asp"]), Loot.aspect_text(acting["asp"])])
 
 func _socket(k: int) -> void:
 	if k < 0: return
@@ -218,7 +259,7 @@ func _draw() -> void:
 			continue
 		Data.blit_fit(self, str(Game.def_of(it).get("icon", "")), Rect2(x, y, 52, 52))
 		var col := Game.rarity_color(it) if Game.can_use(it) else Data.GREY
-		Data.text(self, Game.item_name(it).substr(0, 18 if x == 56 else 16), Vector2(x + 60, y + 10), col)
+		Data.text(self, Game.item_name(it).substr(0, 18 if x == 56 else 14), Vector2(x + 60, y + 10), col)
 	if rows.size() > ROWS:
 		Data.text_r(self, "%d/%d" % [i + 1, rows.size()], 616, 388, Data.GREY, 0.75)
 	# detail

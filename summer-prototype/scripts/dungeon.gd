@@ -11,8 +11,8 @@ const THEME_FAMS := {
 	"dungeon": ["humanoid", "beast", "monstrosity"], "temple": ["celestial", "construct", "fey"], "ice": ["elemental", "giant", "beast"],
 	"lava": ["fiend", "elemental", "dragon"], "void": ["aberration", "fiend", "ooze"], "crypt": ["undead", "ooze", "fiend"],
 }
-const WALK := ".,ULG"
-const KEY := {".": "floor", ",": "floor2", "U": "up", "L": "down", "G": "gold", "A": "altar", "s": "statue", "b": "barrel"}
+const WALK := ".,ULGd"
+const KEY := {".": "floor", ",": "floor2", "U": "up", "L": "down", "G": "gold", "A": "altar", "s": "statue", "b": "barrel", "d": "door"}
 
 static func def_by_id(id: String) -> Dictionary:
 	for d in Data.game.get("DUNGEONS", []) + Data.game.get("RAIDS", []):
@@ -85,6 +85,19 @@ static func build(def: Dictionary, floor: int) -> Dictionary:
 		var corner := Vector2i(b.x, a.y) if horiz_first else Vector2i(a.x, b.y)
 		_carve(g, a, corner)
 		_carve(g, corner, b)
+	# doorways: a corridor tile right outside a room, with walls on both sides of it
+	for r in rooms:
+		var spots := []
+		for x in range(r.position.x, r.end.x):
+			spots.append([Vector2i(x, r.position.y - 1), true]); spots.append([Vector2i(x, r.end.y), true])
+		for y in range(r.position.y, r.end.y):
+			spots.append([Vector2i(r.position.x - 1, y), false]); spots.append([Vector2i(r.end.x, y), false])
+		for sp in spots:
+			var q: Vector2i = sp[0]
+			if q.x < 1 or q.y < 1 or q.x >= W - 1 or q.y >= H - 1 or g[q.y][q.x] != ".": continue
+			var side_a: String = g[q.y][q.x - 1] if sp[1] else g[q.y - 1][q.x]
+			var side_b: String = g[q.y][q.x + 1] if sp[1] else g[q.y + 1][q.x]
+			if side_a == "#" and side_b == "#": g[q.y][q.x] = "d"
 	var first := rooms[0]
 	var last := rooms[rooms.size() - 1]
 	var up := first.get_center()
@@ -114,6 +127,13 @@ static func build(def: Dictionary, floor: int) -> Dictionary:
 		g[gp.y][gp.x] = "G"
 	var bpos := down + Vector2i(-1, 0) if g[down.y][down.x - 1] in [".", ","] else down + Vector2i(0, -1)
 	g[bpos.y][bpos.x] = "."
+	# hidden traps on plain floor away from the stairs and monsters
+	var traps := []
+	for t in range(60):
+		if traps.size() >= 3 + floor: break
+		var p := Vector2i(rng.randi_range(1, W - 2), rng.randi_range(1, H - 2))
+		if g[p.y][p.x] != "." or p.distance_to(up) < 3 or p.distance_to(down) < 2 or _has(mobs, p) or _has(traps, p): continue
+		traps.append({"x": p.x, "y": p.y, "dc": 10 + mini(10, lvl / 5) + floor, "dmg": "%dd10" % (1 + lvl / 4)})
 	var bdef := boss_for(def, floor)
 	if floor == floors(def) - 1 and not is_raid(def):
 		var arc: Dictionary = Quest.arc_boss_for(str(def["id"]))   # the story boss guards the last floor in its chapter
@@ -142,7 +162,7 @@ static func build(def: Dictionary, floor: int) -> Dictionary:
 	var biome: String = {"ice": "snow", "lava": "volcanic", "void": "dusk", "temple": "crystal", "crypt": "dusk"}.get(theme, "dusk")
 	return {"id": "%s:%d" % [def["id"], floor], "name": "%s %dF" % [def["name"], floor + 1], "dungeon": def["id"], "floor": floor,
 		"town": false, "biome": biome, "lvl": [lvl, lvl + 1], "gfx": gfx, "walk": walk, "exits": {}, "npcs": [], "poi": {},
-		"hub": [up.x, up.y], "up": [up.x, up.y], "down": [down.x, down.y], "mobs": mobs, "last": floor == floors(def) - 1, "raid": is_raid(def)}
+		"hub": [up.x, up.y], "up": [up.x, up.y], "down": [down.x, down.y], "mobs": mobs, "last": floor == floors(def) - 1, "raid": is_raid(def), "traps": traps}
 
 static func _carve(g: Array, a: Vector2i, b: Vector2i) -> void:
 	var p := a

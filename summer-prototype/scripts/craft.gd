@@ -13,7 +13,7 @@ const FAM_MATS := {
 ## the tier-1 material for each family (recipes below skill 10 use these)
 const BASE := {"hide": "hide", "beast": "bone_dust", "salvage": "scrap", "fiber": "field_fiber", "ore": "iron_ore", "herb": "peacebloom", "wood": "sap", "gem": "cut_gem"}
 ## professions the port can craft, and the town services that teach them
-const PROFS := {"alch": "ALCHEMY", "weaponsmith": "WEAPONSMITHING", "armorsmith": "ARMORSMITHING", "blacksmith": "FORGEWORK"}
+const PROFS := {"alch": "ALCHEMY", "cook": "COOKING", "weaponsmith": "WEAPONSMITHING", "armorsmith": "ARMORSMITHING", "blacksmith": "FORGEWORK"}
 
 func mats() -> Dictionary:
 	if not Game.hero.has("mats"):
@@ -67,6 +67,7 @@ func _makes_kind(r: Dictionary) -> String:
 	if m in ["potion", "greater", "superior"]: return "potion"
 	if m.begins_with("t_weaponsmith"): return "weapon"
 	if m.begins_with("t_armorsmith") or m.begins_with("t_blacksmith"): return "armor"
+	if Data.game.get("ITEMS", {}).get(m, {}).get("type") == "use": return "item"
 	return ""
 
 func can_make(r: Dictionary) -> bool:
@@ -111,5 +112,42 @@ func make(r: Dictionary) -> Array:
 			var it := Game.make_item(str(ids[Game.rng.randi_range(0, ids.size() - 1)]), rr, maxi(ilvl, int(Game.hero["lvl"])))
 			Game.bag().append(it)
 			out.append("Crafted %s!" % Game.item_name(it))
+		"item":
+			var its: Dictionary = Game.hero.get("items", {})
+			its[r["makes"]] = int(its.get(r["makes"], 0)) + 1
+			Game.hero["items"] = its
+			out.append("Made %s. (START > ITEMS)" % item_name(str(r["makes"])))
 	out.append("%s skill %d." % [PROFS.get(r["prof"], r["prof"]), skill(str(r["prof"]))])
 	return out
+
+# ------------------------------------------------------------------ consumables: food and elixirs (START > ITEMS, battle > ITEM)
+func item_name(id: String) -> String:
+	return str(Data.game.get("ITEMS", {}).get(id, {}).get("name", id.to_upper()))
+
+func items() -> Dictionary:
+	if not Game.hero.has("items"):
+		Game.hero["items"] = {}
+	return Game.hero["items"]
+
+## use one: heals roll their dice (+ healing %); WELL FED lasts 300 steps and opens battles with REGEN; MIGHT is a battle buff.
+## Returns [lines, battle buff or ""].
+func use_item(id: String, in_battle: bool) -> Array:
+	var it: Dictionary = Data.game.get("ITEMS", {}).get(id, {})
+	if int(items().get(id, 0)) <= 0: return [["You have none."], ""]
+	var buff := str(it.get("buff", ""))
+	if not in_battle and buff != "" and buff != "fed" and not it.has("heal"):
+		return [["Use %s in battle." % item_name(id)], ""]
+	items()[id] = int(items()[id]) - 1
+	if int(items()[id]) <= 0: items().erase(id)
+	var out := ["You use %s." % item_name(id)]
+	if it.has("heal"):
+		var h := Game.roll(str(it["heal"])) * (100 + Game.stat("heal")) / 100
+		Game.hero["hp"] = mini(Game.hp_max(), int(Game.hero["hp"]) + h)
+		out.append("+%d HP." % h)
+	if buff == "fed":
+		Game.hero["fed"] = int(Game.hero.get("steps", 0)) + 300
+		out.append("WELL FED: battles open with REGEN.")
+		buff = ""
+	elif buff != "":
+		out.append("%s!" % buff.to_upper())
+	return [out, buff]

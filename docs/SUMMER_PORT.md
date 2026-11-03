@@ -20,7 +20,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 | Output | Contents |
 |---|---|
-| `data/game.json` | 66 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
+| `data/game.json` | 68 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
 | `data/zones.json` | 154 zones/towns with 406 NPCs: tile rows (pack-aliased art), walk mask, exits, hub, level range |
 | `data/sprites.json` | 5,077 sprite names → `[file, x, y, w, h]` in the 4× art |
 | `art/` (gitignored) | `assets_hd64/` sheets plus 568 single 4× PNGs |
@@ -49,6 +49,13 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Gathering: every wild zone's herb, ore, wood, hide, salvage, relic, fiber and bone nodes show as icons; step on one to gather (respawn after 250 steps).
 - Raids: all 17 raids from their doors (one floor per raid boss, 4-6 bosses at 4x HP, 3x clear bonus, 25% chance of a raid mount).
 - Trials: the Trials Master runs all 6 trials (rush, timed, solo, frail, waves, mirror) with an epic+ reward the first time.
+- Side quests (SIDE_TEMPLATES): the warden in every wild zone offers one at a time (cull, gather, fish or the zone's world boss); carry up to 3, they pay out on completion and show on CHARACTER > QUEST.
+- Fishing: face water and press A, wait for the bite and press A again (skill widens the window); catches small fish, silverfin, sand eel or an old boot.
+- Cooking and consumables: inns cook RECIPES' food from fish and herbs, alchemists brew elixirs; START > ITEMS eats food (heal, WELL FED: battles open with REGEN), battle > ITEM uses healing food and buff elixirs (MIGHT).
+- Relics and artifacts: two more gear slots for the 42 relics (30% from world bosses, 20% on a first dungeon clear) and 42 artifacts (every raid clear); curators pay for each new find and show the collection.
+- Extract and imprint (src/d4_gear.js): in towns, extract an item's aspect into your codex (keeping the best value) and imprint codex aspects onto rare or better gear.
+- Dungeon doors and traps: doorways at room mouths; 3+ hidden traps per floor (DEX save against a DC that grows with level and floor, spikes stay visible once found).
+- Flight: riding a flying raid mount in the wilds crosses water, trees and rocks.
 - Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
@@ -56,7 +63,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 ## Not ported yet (planned stages)
 
-Dungeon traps/doors, side quests, relics and artifacts, cooking and fishing, aspect extraction and imprinting, flight over terrain, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Housing, guilds and conquest, the bounty board, talents, pets and companions, the arena, PvP, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -100,6 +107,20 @@ CHECK raid door at sandspire_s3 ahead=rd_crypt
 CHECK raid bosses=["OROM VOIDBORN(x4)", "SILAX VOIDBORN(x4)", "SKAUK OF THE PIT(x4)", "AZAX THE ELDER(x4)"] cleared=["rd_crypt"] zone=sandspire_s3
 CHECK trial fights=5 won={ "tr_gauntlet": true }
 CHECK save=true load=true gems={ ... } acc=["armor", "ring1", "shield", "weapon"]
+CHECK side done: ["SIDE QUEST DONE: CULL"] gold 100 -> 150 active=0
+CHECK water ahead in elderwood at (12, 8): true
+CHECK fishing: fish=6 skill=7
+CHECK cook: ["Made TRAIL RATION. (START > ITEMS)", "COOKING skill 2."] items={ "ration": 1 }
+CHECK eat: ["You use TRAIL RATION.", "WELL FED: battles open with REGEN."] fed_until=300 steps=0
+CHECK battle opens with buffs={ "regen": 3 } options=["ATTACK", "POTION x3", "ITEM", "RUN"]
+CHECK after ITEM might: buffs={ "regen": 2, "might": 2 }
+CHECK walk onto water: on foot=false flying=true
+CHECK equipped relic+artifact: ["weapon", "armor", "relic", "artifact"]
+CHECK curator: [..., "RELICS 1/42  ARTIFACTS 1/42", "For 2 new finds: 2600 G."] gold 155 -> 2755
+CHECK extract: codex={ "savage": 40 } leg in bag=false
+CHECK imprint: KNIFE +2 now has { "id": "savage", "v": 40 }
+CHECK dungeon doors=14 traps=3 first trap -> ["A hidden trap! You leap clear. (DEX 17 vs DC 11)"] tile=gd_dungeon_spikes
+CHECK save=true load=true codex=1 found=2
 ```
 
 Rolls are random, so item names and values differ from run to run.

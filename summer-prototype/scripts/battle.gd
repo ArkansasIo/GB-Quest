@@ -56,6 +56,8 @@ func _ready() -> void:
 		intro.append("%s blocks the way! (BOSS LV%d)" % [foe["name"], foe_lvl])
 	else:
 		intro.append("A wild %s appears! (LV%d)" % [foe["name"], foe_lvl])
+	if int(Game.hero.get("fed", 0)) > int(Game.hero.get("steps", 0)):
+		buffs["regen"] = 3
 	# battle-start aspects: barriers and opening buffs
 	for a in Game.aspects():
 		var e: Dictionary = a["e"]
@@ -73,7 +75,9 @@ func options() -> Array:
 	var o := ["ATTACK"]
 	if _abilities().size(): o.append("SKILL")
 	if Game.is_caster() and Game.known_spells().size(): o.append("SPELL")
-	o.append_array(["POTION x%d" % int(Game.hero["potions"]), "RUN"])
+	o.append("POTION x%d" % int(Game.hero["potions"]))
+	if _battle_items().size(): o.append("ITEM")
+	o.append("RUN")
 	return o
 
 func _abilities() -> Array:
@@ -128,6 +132,11 @@ func _act(o: String) -> void:
 		for ab in _abilities():
 			names.append(str(ab["name"]).substr(0, 16) + ("" if not used.has(ab["id"]) else " (USED)"))
 		main.choose(names, Callable(self, "_skill"), "Job abilities work once a battle.")
+		return
+	elif o == "ITEM":
+		var names := []
+		for id in _battle_items(): names.append("%s x%d" % [Craft.item_name(id).substr(0, 14), int(Craft.items()[id])])
+		main.choose(names, Callable(self, "_use_item"), "Use which item?")
 		return
 	elif o == "SPELL":
 		var names := []
@@ -226,6 +235,20 @@ func _deal(base: int, kind: String, dt: String, crit: bool, bonus_pct: int, out:
 		var h := maxi(1, dmg * leech / 100)
 		_heal(h); out.append("Lifesteal +%d HP." % h)
 	return dmg
+
+## consumables usable in battle: anything that heals or grants a buff
+func _battle_items() -> Array:
+	var out := []
+	for id in Craft.items():
+		var it: Dictionary = Data.game.get("ITEMS", {}).get(id, {})
+		if it.has("heal") or (it.has("buff") and it["buff"] != "fed"): out.append(id)
+	return out
+
+func _use_item(k: int) -> void:
+	if k < 0: return
+	var res: Array = Craft.use_item(str(_battle_items()[k]), true)
+	if str(res[1]) != "": buffs[str(res[1])] = 3
+	_after(res[0])
 
 func _heal(h: int) -> void:
 	Game.hero["hp"] = mini(Game.hp_max(), int(Game.hero["hp"]) + h)

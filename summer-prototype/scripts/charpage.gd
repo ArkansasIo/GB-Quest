@@ -125,6 +125,11 @@ func _quest() -> void:
 	_line("GOAL", y, Data.EDGE, 0.75); y += 34
 	for l in Loot.wrap(Quest.goal(), 32):
 		_line(str(l), y, Data.INK, 0.75); y += 32
+	y += 8
+	if Quest.side_list().size():
+		_line("SIDE QUESTS", y, Data.EDGE, 0.6); y += 26
+		for q in Quest.side_list():
+			_line(Quest.side_goal(q).substr(0, 48), y, Data.INK, 0.5); y += 22
 	_line("DUNGEONS CLEARED %d/%d" % [Game.hero.get("cleared", []).size(), Data.game.get("DUNGEONS", []).size()], 500, Data.GREY, 0.6)
 
 func _job() -> void:

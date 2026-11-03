@@ -43,6 +43,7 @@ const { chromium } = require('playwright');
       ASPECT_TEXT: Object.fromEntries(Object.entries(ASPECT_SPECS).map(([id, A]) => [id, A.e.t === 'stat' ? null : aspectText(A.e, '{v}')])),
       ASP_STAT, SUPPORT_TRAITS, SUPPORT_CAPS, SUPPORT_UNLOCK, RECIPES, HERB_BY_BIOME,
       // stage 5: accessories, gems, temper/masterwork, raids, trials, world bosses
+      SIDE_TEMPLATES, BOUNTY_TYPES: typeof BOUNTY_TYPES !== 'undefined' ? BOUNTY_TYPES : [],
       SLOTS, GEM_TYPES, GEM_DROP, GEM_TIER_MAX, GEM_SOCKET_LIMIT, GEM_ART: typeof AP_GEM_ART !== 'undefined' ? AP_GEM_ART : {},
       TEMPER_POOLS, TEMPER_BASE, TEMPER_MAX, MW_MAX, MW_STEP, MW_CRIT,
       RAID_BOSSES: BOSSES.filter(b => b.cat === 'raid').map(b => ({ id: b.id, name: b.name, lvl: b.lvl, fam: b.fam, art: monsterArt(b) })),

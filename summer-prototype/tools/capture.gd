@@ -144,6 +144,7 @@ func _ready() -> void:
 	print("CHECK legendary battle finished=%s" % [not main.stack.has(lb)])
 	print("CHECK save=%s load=%s chapter=%d mount=%s" % [Game.save(), Game.load_save(), Game.hero["chapter"], Game.hero.get("mount")])
 	await _stage5()
+	await _stage6()
 	get_tree().quit()
 
 ## run a pushed battle to the end with ATTACK, keeping the hero alive unless told not to
@@ -155,10 +156,11 @@ func _autobattle(b, heal := true) -> int:
 			if b.then.is_valid():
 				var c = b.then; b.then = Callable(); c.call()
 		elif b.state == "menu":
-			if heal: Game.hero["hp"] = Game.hp_max()
+			if heal: Game.hero["hp"] = 1000000   # the test hero can't fall; rules are checked elsewhere
 			b._act("ATTACK")
 		tt += 1
 		await get_tree().process_frame
+	Game.hero["hp"] = mini(int(Game.hero["hp"]), Game.hp_max())
 	return tt
 
 func _clear_dialogs(f) -> void:
@@ -255,3 +257,86 @@ func _wait(s: float) -> void:
 func _shot(name: String) -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(out + "/" + name + ".png")
+
+func _stage6() -> void:
+	Game.new_hero("SKY", "shade", "felinar"); Game.hero["lvl"] = 120; Game.hero["xp"] = Data.xp_for(120); Game.hero["hp"] = Game.hp_max()
+	# side quest from the warden of elderwood_s1, finished by kills there
+	Game.zone_id = "elderwood_s1"; Game.pos = Vector2i(16, 12)
+	main.clear(); var f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	var off: Dictionary = Quest.side_offer("elderwood_s1")
+	print("CHECK side offer: %s %s n=%d gold=%d | %s" % [off["title"], off["type"], int(off["n"]), int(off["gold"]), off["line"]])
+	var q := {"zone": "elderwood_s1", "type": "kill", "n": 3, "prog": 0, "title": "CULL", "line": "", "gold": 50, "xp": 100}
+	print("CHECK accept: %s" % Quest.side_accept(q))
+	var g0 := int(Game.hero["gold"]); var res := []
+	for i in range(3): res = Quest.on_kill({"fam": "beast", "id": "x"}, false)
+	print("CHECK side done: %s gold %d -> %d active=%d" % [res.filter(func(l): return str(l).begins_with("SIDE")), g0, Game.hero["gold"], Quest.side_list().size()])
+	# fishing: face water in a coast zone and land a catch
+	var wz := ""
+	var wp := Vector2i.ZERO
+	for zid in Data.zones:
+		if Data.zones[zid]["town"]: continue
+		var rows: Array = Data.zones[zid]["gfx"]
+		for y in range(1, rows.size() - 1):
+			for x in range(1, rows[y].size() - 1):
+				if wz == "" and str(rows[y][x]).contains("water") and str(Data.zones[zid]["walk"][y + 1])[x] == "1": wz = zid; wp = Vector2i(x, y + 1)
+		if wz != "": break
+	Game.zone_id = wz; Game.pos = wp; Game.facing = "up"
+	main.clear(); f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	print("CHECK water ahead in %s at %s: %s" % [wz, wp, f._is_water(wp.x, wp.y - 1)])
+	var caught := 0
+	for i in range(6):
+		var fs = main.push(load("res://scripts/fishing.gd").new()); fs.state = "bite"; fs.bite_at = 0
+		if i == 0: await _wait(0.1); fs.t = 0.1; fs.state = "bite"; await _shot("22_fishing")
+		fs._catch(); await _clear_dialogs(f)
+	var fish := 0
+	for k in ["small_fish", "big_fish", "eel"]: fish += int(Craft.mats().get(k, 0))
+	print("CHECK fishing: fish=%d skill=%d mats=%s" % [fish, int(Game.hero["craft"].get("fish", 1)), Craft.mats()])
+	# cooking a ration at the inn and eating it
+	Craft.mats()["small_fish"] = 5; Craft.mats()["peacebloom"] = 5
+	var rr := {}
+	for r in Data.game["RECIPES"]: if r["id"] == "trail_ration": rr = r
+	print("CHECK cook: %s items=%s" % [Craft.make(rr), Craft.items()])
+	print("CHECK eat: %s fed_until=%d steps=%d" % [Craft.use_item("ration", false)[0], int(Game.hero.get("fed", 0)), int(Game.hero.get("steps", 0))])
+	Craft.items()["grilled"] = 2; Craft.items()["might"] = 1
+	# a battle: WELL FED opens with REGEN; use MIGHT from ITEM
+	f._encounter(); await _wait(0.3); var b = main.top()
+	print("CHECK battle opens with buffs=%s options=%s" % [b.buffs, b.options()])
+	b.state = "menu"; b._use_item(b._battle_items().find("might")); await _wait(0.2)
+	print("CHECK after ITEM might: buffs=%s" % [b.buffs])
+	await _wait(0.6); b.state = "menu"; await _wait(0.1); await _shot("23_battle_items")
+	await _autobattle(b); await _clear_dialogs(f)
+	# flight: a flying raid mount crosses water
+	Game.hero["mounts"] = ["gryphon_brown"]; Game.hero["mount"] = "gryphon_brown"; Game.hero["mounted"] = false
+	print("CHECK walk onto water: on foot=%s flying=%s" % [f._walkable(wp.x, wp.y - 1), (func(): Game.hero["mounted"] = true; return f._walkable(wp.x, wp.y - 1)).call()])
+	Game.hero["mounted"] = false
+	# relics, artifacts and the curator
+	var rl: Dictionary = f._treasure("relic", 120); var ar: Dictionary = f._treasure("artifact", 120)
+	print("CHECK treasure: %s (%s) / %s (%s)" % [Game.item_name(rl), Game.slot_of(rl), Game.item_name(ar), Game.slot_of(ar)])
+	Game.equip(Game.bag().find(rl)); Game.equip(Game.bag().find(ar))
+	print("CHECK equipped relic+artifact: %s" % [Game.gear().keys()])
+	Game.zone_id = "ardenhold"; Game.pos = Vector2i(16, 12)
+	main.clear(); f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	var gb := int(Game.hero["gold"]); f.talking = "CURATOR"; f._curator()
+	print("CHECK curator: %s gold %d -> %d" % [main.top().lines, gb, Game.hero["gold"]]); await _clear_dialogs(f)
+	# extract an aspect into the codex and imprint it onto another item
+	var leg := Game.make_item("longbrand", 6, 120); var rare := Game.make_item("knife", 3, 120)
+	Game.bag().append(leg); Game.bag().append(rare); Game.hero["gold"] = 50000
+	var bg = main.push(load("res://scripts/bag.gd").new()); await _wait(0.1)
+	bg.acting = leg; bg._extract(0); main.pop(main.top())
+	print("CHECK extract: codex=%s leg in bag=%s" % [Game.hero.get("codex"), Game.bag().has(leg)])
+	bg.acting = rare; bg.codex_ids = Game.hero["codex"].keys(); bg._imprint(0); main.pop(main.top())
+	print("CHECK imprint: %s now has %s" % [Game.item_name(rare), rare.get("asp")])
+	bg.tab = 0; bg.i = 15; bg.top = 12; await _wait(0.2); await _shot("24_relic_slots"); main.pop(bg)
+	# dungeon doors and traps
+	Game.dun = {}; Game.zone_id = "elderwood_s3"; Game.pos = Vector2i(9, 15)
+	main.clear(); f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	f.enter_dungeon("dg_elderwood")
+	var doors := 0
+	for row in f.zone["gfx"]:
+		for t in row: if str(t).ends_with("_door"): doors += 1
+	var tr: Dictionary = f.zone["traps"][0]
+	var hp0 := int(Game.hero["hp"])
+	Game.pos = Vector2i(int(tr["x"]), int(tr["y"])); f._arrived()
+	print("CHECK dungeon doors=%d traps=%d first trap -> %s hp %d->%d tile=%s" % [doors, f.zone["traps"].size(), main.top().lines if main.top() != f else "-", hp0, Game.hero["hp"], f.zone["gfx"][tr["y"]][tr["x"]]])
+	await _clear_dialogs(f); await _wait(0.3); await _shot("25_dungeon_doors_trap")
+	print("CHECK save=%s load=%s codex=%d found=%d" % [Game.save(), Game.load_save(), Game.hero.get("codex", {}).size(), Game.hero.get("found", {}).size()])
