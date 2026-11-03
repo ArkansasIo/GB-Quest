@@ -168,7 +168,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
   Object.assign(window, { ensureLoop, claimBounty, claimSeasonTier, addSeasonXp, seasonXp });
 
   // poll twice a second while a hero is loaded (day/week rollover, login reward)
-  { let n = 0; const t0 = tick; window.tick = tick = function () { const r = t0(); if (G && ++n % 30 === 0) { try { ensureLoop(); if (typeof keystonePoll === 'function') keystonePoll(); if (typeof polishPoll === 'function') polishPoll(); } catch (e) { console.warn('loop poll', e); } } return r; }; }
+  { let n = 0; const t0 = tick; window.tick = tick = function () { const r = t0(); if (G && ++n % 30 === 0) { try { ensureLoop(); if (typeof keystonePoll === 'function') keystonePoll(); if (typeof polishPoll === 'function') polishPoll(); for (const h of window.LOOP_HOOKS || []) h(); } catch (e) { console.warn('loop poll', e); } } return r; }; }
 
   // ---------------------------------------------------------------- menus (MAIN MENU > CHALLENGES)
   function bountyLine(b) { const t = BOUNTY_BY_ID[b.id], p = bountyProgress(b, G.stats); return `${b.claimed ? '# ' : bountyDone(b, G.stats) ? '! ' : ''}${t.name} ${fmt(p)}/${fmt(b.target)}`.slice(0, 24); }
@@ -212,7 +212,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
   window.challengesMenu = function () {
     ensureLoop();
     const ready = [...G.loop.daily.list, ...G.loop.weekly.list].filter(b => !b.claimed && bountyDone(b, G.stats)).length, vault = G.loop.vault && !G.loop.vault.claimed;
-    const opts = [`BOUNTY BOARD${ready ? ` (${ready}!)` : ''}`, `WEEKLY VAULT${vault ? ' (!)' : ''}`, 'KEYSTONES', 'SEASON PASS', 'LOGIN STREAK', 'BACK'];
-    choose(opts, k => { const o = opts[k] || ''; if (o.startsWith('BOUNTY')) bountyBoard(); else if (o.startsWith('WEEKLY')) weeklyVault(); else if (o === 'KEYSTONES') keystoneMenu(); else if (o === 'SEASON PASS') seasonPass(); else if (o === 'LOGIN STREAK') loginStreak(); }, 'CHALLENGES');
+    const opts = [`BOUNTY BOARD${ready ? ` (${ready}!)` : ''}`, ...(typeof worldQuestsMenu === 'function' ? ['WORLD QUESTS'] : []), `WEEKLY VAULT${vault ? ' (!)' : ''}`, 'KEYSTONES', 'SEASON PASS', 'LOGIN STREAK', 'BACK'];
+    choose(opts, k => { const o = opts[k] || ''; if (o.startsWith('BOUNTY')) bountyBoard(); else if (o.startsWith('WEEKLY')) weeklyVault(); else if (o === 'KEYSTONES') keystoneMenu(); else if (o === 'WORLD QUESTS') worldQuestsMenu(); else if (o === 'SEASON PASS') seasonPass(); else if (o === 'LOGIN STREAK') loginStreak(); }, 'CHALLENGES');
   };
 }

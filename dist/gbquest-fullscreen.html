@@ -5452,7 +5452,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -5466,6 +5466,7 @@ class MainMenu extends ListScene {
     if (o === 'REST') return restMenu();
     if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
     if (o === 'WARDROBE' && typeof wardrobeMenu === 'function') return wardrobeMenu();
+    if (o === 'LOADOUTS' && typeof loadoutsMenu === 'function') return loadoutsMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
     if (o === 'SAVE') { const ok = saveGame(); SFX[ok ? 'confirm' : 'error'](); return say(ok ? `Saved to slot ${G.slot + 1}.` : 'Could not save (storage blocked).'); }
     if (o === 'SAVE & QUIT') { saveGame(); fadeTo(() => reset(new Title())); }
@@ -7529,13 +7530,14 @@ class SideQuestBoard {
   }
 }
 function vendorMenu() {
-  const stock = ['potion', 'greater', 'antitoxin', 'ration', 'campkit', 'ether', 'scroll_mend', 'scroll_flame'].concat(G.lvl >= 10 ? ['superior', 'might', 'scroll_dawn'] : []).concat(G.lvl >= 30 ? ['supreme'] : []);
+  const stock = ['potion', 'greater', 'antitoxin', 'ration', 'campkit', 'ether', 'scroll_mend', 'scroll_flame'].concat(ITEMS.repair_kit ? ['repair_kit'] : []).concat(G.lvl >= 10 ? ['superior', 'might', 'scroll_dawn'] : []).concat(G.lvl >= 30 ? ['supreme'] : []);
   const disc = G.daily.discount === new Date().toDateString() ? 0.9 : 1;
-  choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'LEAVE'], k => {
+  choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'LEAVE'], k => {
     if (k === 0) choose(stock.map(s => `${ITEMS[s].name.slice(0, 14)} ${Math.round(ITEMS[s].price * disc)}G`), i => { if (i < 0) return; const s = stock[i], p = Math.round(ITEMS[s].price * disc); if (G.gold < p) { SFX.error(); return say('Not enough gold.'); } G.gold -= p; addItem(s); SFX.buy(); vendorMenu(); }, `Gold: ${fmt(G.gold)}`);
     if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i]; if (G.gold < it.value * 2) return say('Not enough gold.'); G.gold -= it.value * 2; addGear(it); SFX.buy(); }, 'Fresh stock from the forge.'); }
     if (k === 2) push(new InventoryScene('sell'));
     if (k === 5 && typeof HeirloomScene === 'function') push(new HeirloomScene({ vendor: true }));
+    if (k === 6 && typeof repairMenu === 'function') repairMenu();
     if (k === 3) { let g = 0; for (const key of Object.keys(G.inv)) if (ITEMS[key] && ITEMS[key].type === 'junk') { g += ITEMS[key].price * G.inv[key]; delete G.inv[key]; } G.bag = G.bag.filter(it => { if (it.rarity === 0) { g += it.value; return false; } return true; }); G.gold += g; SFX.sell(); say(`Sold junk for ${g} G.`); }
     if (k === 4) { if (G.daily.haggle === new Date().toDateString()) return say('The merchant will not haggle again today.'); G.daily.haggle = new Date().toDateString(); const r = skillCheck(G, 'persuasion', 13); if (r.ok) G.daily.discount = new Date().toDateString(); say([r.text, r.ok ? '10% discount for today!' : 'The merchant shrugs. Prices stay.']); }
   }, 'MERCHANT: What will it be?');
@@ -11859,7 +11861,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
   Object.assign(window, { ensureLoop, claimBounty, claimSeasonTier, addSeasonXp, seasonXp });
 
   // poll twice a second while a hero is loaded (day/week rollover, login reward)
-  { let n = 0; const t0 = tick; window.tick = tick = function () { const r = t0(); if (G && ++n % 30 === 0) { try { ensureLoop(); if (typeof keystonePoll === 'function') keystonePoll(); if (typeof polishPoll === 'function') polishPoll(); } catch (e) { console.warn('loop poll', e); } } return r; }; }
+  { let n = 0; const t0 = tick; window.tick = tick = function () { const r = t0(); if (G && ++n % 30 === 0) { try { ensureLoop(); if (typeof keystonePoll === 'function') keystonePoll(); if (typeof polishPoll === 'function') polishPoll(); for (const h of window.LOOP_HOOKS || []) h(); } catch (e) { console.warn('loop poll', e); } } return r; }; }
 
   // ---------------------------------------------------------------- menus (MAIN MENU > CHALLENGES)
   function bountyLine(b) { const t = BOUNTY_BY_ID[b.id], p = bountyProgress(b, G.stats); return `${b.claimed ? '# ' : bountyDone(b, G.stats) ? '! ' : ''}${t.name} ${fmt(p)}/${fmt(b.target)}`.slice(0, 24); }
@@ -11903,8 +11905,8 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
   window.challengesMenu = function () {
     ensureLoop();
     const ready = [...G.loop.daily.list, ...G.loop.weekly.list].filter(b => !b.claimed && bountyDone(b, G.stats)).length, vault = G.loop.vault && !G.loop.vault.claimed;
-    const opts = [`BOUNTY BOARD${ready ? ` (${ready}!)` : ''}`, `WEEKLY VAULT${vault ? ' (!)' : ''}`, 'KEYSTONES', 'SEASON PASS', 'LOGIN STREAK', 'BACK'];
-    choose(opts, k => { const o = opts[k] || ''; if (o.startsWith('BOUNTY')) bountyBoard(); else if (o.startsWith('WEEKLY')) weeklyVault(); else if (o === 'KEYSTONES') keystoneMenu(); else if (o === 'SEASON PASS') seasonPass(); else if (o === 'LOGIN STREAK') loginStreak(); }, 'CHALLENGES');
+    const opts = [`BOUNTY BOARD${ready ? ` (${ready}!)` : ''}`, ...(typeof worldQuestsMenu === 'function' ? ['WORLD QUESTS'] : []), `WEEKLY VAULT${vault ? ' (!)' : ''}`, 'KEYSTONES', 'SEASON PASS', 'LOGIN STREAK', 'BACK'];
+    choose(opts, k => { const o = opts[k] || ''; if (o.startsWith('BOUNTY')) bountyBoard(); else if (o.startsWith('WEEKLY')) weeklyVault(); else if (o === 'KEYSTONES') keystoneMenu(); else if (o === 'WORLD QUESTS') worldQuestsMenu(); else if (o === 'SEASON PASS') seasonPass(); else if (o === 'LOGIN STREAK') loginStreak(); }, 'CHALLENGES');
   };
 }
 
@@ -12151,6 +12153,478 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
       // one line under ATTUNED, above the info frame
       text(`GS ${fmt(gearScore(G.eq))}${G.rested > 0 ? `  RESTED ${Math.round(G.rested / span(G) * 100)}%` : ''}`, 24, 108, 'gold');
     }; }
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ DURABILITY, REPAIR AND CRAFTING QUALITY
+//   * DURABILITY: weapons, armour and wondrous pieces have durability (60 + 10 per rarity tier for weapons and
+//     armour, 40 + 8 per tier for wondrous items). Winning a battle wears the weapon and one random piece by 1;
+//     dying costs every equipped item 10% of its maximum. At 0 an item is BROKEN and gives no stats until repaired.
+//   * REPAIR: MERCHANT > REPAIR ALL (cost by item level, rarity and damage; guild perks discount it), or use a
+//     REPAIR KIT (sold by merchants) anywhere to restore 50% to everything equipped.
+//   * CRAFTING QUALITY: crafted gear rolls STANDARD, FINE (+10%), SUPERIOR (+20%) or MASTERWORK (+35%) stats and
+//     durability. Better crafting skill raises the odds.
+// Pure rules are exported as GBQDurability for tests; the game wiring runs only inside the game.
+
+const DUR_KINDS = ['weapon', 'armor', 'wondrous'];
+const maxDurability = it => !it || !DUR_KINDS.includes(it.kind) ? 0 : Math.round((it.kind === 'wondrous' ? 40 + 8 * (it.rarity || 0) : 60 + 10 * (it.rarity || 0)) * (it.durMult || 1));
+const isBroken = it => !!it && it.maxDur > 0 && it.dur <= 0;
+// gold to fix one item: per missing point, scaled by item level and rarity
+const repairCostOf = it => !it || !(it.maxDur > 0) ? 0 : Math.ceil(Math.max(0, it.maxDur - Math.max(0, it.dur)) * (1 + Math.floor((it.ilvl || 1) / 10)) * (1 + 0.5 * (it.rarity || 0)) / 4);
+const lossOnDeath = it => Math.ceil((it.maxDur || 0) * 0.1);
+const QUALITY = [
+  { id: 'standard', name: '', mult: 1, dur: 1 },
+  { id: 'fine', name: 'FINE', mult: 1.1, dur: 1.1 },
+  { id: 'superior', name: 'SUPERIOR', mult: 1.2, dur: 1.2 },
+  { id: 'masterwork', name: 'MASTERWORK', mult: 1.35, dur: 1.35 },
+];
+// odds rise with crafting skill (0-720): masterwork 2% -> 15%, superior 8% -> 30%, fine 25% -> 40%
+function qualityOdds(skill) { const t = Math.max(0, Math.min(1, (Number(skill) || 0) / 720)); return { masterwork: 0.02 + 0.13 * t, superior: 0.08 + 0.22 * t, fine: 0.25 + 0.15 * t }; }
+function rollQuality(skill, r) {
+  const o = qualityOdds(skill), x = Number(r);
+  if (x < o.masterwork) return QUALITY[3];
+  if (x < o.masterwork + o.superior) return QUALITY[2];
+  if (x < o.masterwork + o.superior + o.fine) return QUALITY[1];
+  return QUALITY[0];
+}
+// scaled affix values for a quality (caps by stat maximum)
+const qualityAffixes = (affixes, q, caps) => (affixes || []).map(([k, v]) => [k, Math.min(caps && caps[k] ? caps[k] : Infinity, Math.max(1, Math.round(v * q.mult)))]);
+
+if (typeof globalThis !== 'undefined') globalThis.GBQDurability = { maxDurability, isBroken, repairCostOf, lossOnDeath, QUALITY, qualityOdds, rollQuality, qualityAffixes };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof derive === 'function' && typeof Battle !== 'undefined') {
+  ITEMS.repair_kit = ITEMS.repair_kit || { name: 'REPAIR KIT', icon: 'ne_tool_1', type: 'use', price: 120, rarity: 3, desc: 'Restores 50% durability to all equipped gear.' };
+  const CRAFT_PROFS = ['blacksmith', 'armorsmith', 'weaponsmith', 'tailoring', 'leatherwork', 'jewelcraft', 'enchanting'];
+  const caps = () => Object.fromEntries(Object.entries(SUBSTATS).map(([k, s]) => [k, s.max]));
+  function ensureDur(it) { if (it && DUR_KINDS.includes(it.kind) && !(it.maxDur > 0)) { it.maxDur = maxDurability(it); it.dur = it.maxDur; } return it; }
+  const holders = () => G ? [G, ...(G.companions || [])] : [];
+  const discount = () => typeof guildPerkValue === 'function' ? guildPerkValue('repair') : 0;
+  window.repairTotal = () => { let n = 0; for (const c of holders()) for (const it of Object.values(c.eq || {})) if (it) { ensureDur(it); n += repairCostOf(it); } return Math.ceil(n * (1 - discount())); };
+  function wear(it, n, who) {
+    ensureDur(it); if (!(it && it.maxDur > 0) || it.dur <= 0) return;
+    const before = it.dur; it.dur = Math.max(0, it.dur - n);
+    if (it.dur === 0) toast('ITEM BROKEN', `${it.name.slice(0, 20)}`, 'ne_tool_1', 'error');
+    else if (before > it.maxDur * 0.2 && it.dur <= it.maxDur * 0.2 && who === G) toast('LOW DURABILITY', it.name.slice(0, 20), 'ne_tool_1', 'error');
+  }
+  // broken items are left out while stats are worked out
+  { const d0 = derive; derive = function (c) {
+      const eq = c && c.eq, off = [];
+      if (eq) for (const s in eq) if (isBroken(eq[s])) { off.push([s, eq[s]]); delete eq[s]; }
+      try { return d0.apply(this, arguments); } finally { for (const [s, it] of off) eq[s] = it; }
+    }; }
+  // wear: a won battle costs the weapon and one random piece 1 point each
+  { const f0 = Battle.prototype.finish; Battle.prototype.finish = function (result) {
+      if (result === 'win') for (const u of this.party || []) {
+        const c = u && u.ch; if (!c || !c.eq) continue;
+        if (c.eq.weapon) wear(c.eq.weapon, 1, c);
+        const pieces = Object.entries(c.eq).filter(([s, it]) => it && s !== 'weapon' && DUR_KINDS.includes(it.kind));
+        if (pieces.length) wear(pieces[Math.floor(R() * pieces.length)][1], 1, c);
+      }
+      return f0.apply(this, arguments);
+    }; }
+  // death: 10% of maximum from everything equipped
+  { const w0 = onPartyWipe; onPartyWipe = function () { for (const c of holders()) for (const it of Object.values(c.eq || {})) if (it) { ensureDur(it); wear(it, lossOnDeath(it), c); } return w0.apply(this, arguments); }; }
+  // new gear starts at full durability; crafted gear rolls a quality
+  { const ag0 = addGear; addGear = function (it) {
+      ensureDur(it);
+      if (it && it.crafted && !it.quality && DUR_KINDS.includes(it.kind)) {
+        const skill = Math.max(0, ...CRAFT_PROFS.map(p => (G && G.prof && G.prof[p]) || 0)), q = rollQuality(skill, R());
+        it.quality = q.id;
+        if (q.mult > 1) { it.affixes = qualityAffixes(it.affixes, q, caps()); it.durMult = q.dur; it.maxDur = maxDurability(it); it.dur = it.maxDur; it.value = Math.round((it.value || 1) * q.mult); it.name = `${q.name} ${it.name}`.slice(0, 26); }
+        if (q.id === 'masterwork') toast('MASTERWORK!', it.name.slice(0, 22), 'item_chest', 'achievement');
+      }
+      return ag0.apply(this, arguments);
+    }; }
+  { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it); if (!it || !DUR_KINDS.includes(it.kind)) return s; ensureDur(it); return `${isBroken(it) ? 'BROKEN! ' : ''}DUR ${it.dur}/${it.maxDur}. ${s}`; }; }
+
+  function repairAll(fromKit) {
+    let fixed = 0;
+    for (const c of holders()) for (const it of Object.values(c.eq || {})) if (it && it.maxDur > 0 && it.dur < it.maxDur) { it.dur = fromKit ? Math.min(it.maxDur, it.dur + Math.ceil(it.maxDur / 2)) : it.maxDur; fixed++; }
+    return fixed;
+  }
+  window.repairMenu = function () {
+    const cost = repairTotal();
+    if (!cost) return say('Your gear is in perfect condition.');
+    choose([`REPAIR ALL ${fmt(cost)} G`, 'LEAVE'], k => {
+      if (k !== 0) return; if (G.gold < cost) { SFX.error(); return say(`Repairs cost ${fmt(cost)} G. You have ${fmt(G.gold)} G.`); }
+      G.gold -= cost; const n = repairAll(false); SFX.craft(); saveGame(); say(`Repaired ${n} item${n === 1 ? '' : 's'} for ${fmt(cost)} G.${discount() ? ` Guild discount ${Math.round(discount() * 100)}%.` : ''}`);
+    }, `${discount() ? `GUILD DISCOUNT ${Math.round(discount() * 100)}%. ` : ''}Equipped gear and companions.`);
+  };
+  // repair kits from the bag
+  if (typeof InventoryScene !== 'undefined') { const u0 = InventoryScene.prototype.useMenu; InventoryScene.prototype.useMenu = function (k) {
+      if (k !== 'repair_kit') return u0.call(this, k);
+      if (!(G.inv.repair_kit > 0)) return; if (!repairTotal()) return this.flash('NOTHING TO REPAIR');
+      takeItem('repair_kit'); const n = repairAll(true); SFX.craft(); this.flash(`REPAIRED ${n} ITEMS (+50%)`);
+    }; }
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ GUILD PROGRESSION: levels, perks, guild bank, guild quests
+// MAIN MENU > SOCIAL > GUILD (or a guild hall NPC). A guild is shared by every hero on this device who
+// belongs to it (stored per guild name, so alts in the same guild share its level, bank and gold).
+//   * GUILD XP: members' play earns guild XP (kills, dungeons, raids, quests, crafting, world bosses...).
+//     The guild's other members also chip in 200 XP a day (up to 7 days at a time). 25 levels.
+//   * PERKS unlock by level: XP, gold find, magic find, repair discounts and extra bank tabs.
+//   * GUILD BANK: up to 3 tabs of 20 items plus a gold vault. Soulbound items (heirlooms) cannot be stored.
+//   * GUILD QUESTS: 3 weekly guild objectives (from the bounty templates, triple size) for guild XP and gold.
+// Pure rules are exported as GBQGuild for tests; the game wiring runs only inside the game.
+
+const GUILD_MAX_LEVEL = 25;
+// total guild XP needed to reach a level (level 1 = 0)
+const guildXpFor = lvl => lvl <= 1 ? 0 : Math.round(1000 * Math.pow(lvl - 1, 1.6));
+const guildLevelOf = xp => { let l = 1; while (l < GUILD_MAX_LEVEL && xp >= guildXpFor(l + 1)) l++; return l; };
+const GUILD_PERKS = [
+  { lvl: 2, id: 'fast_track', name: 'FAST TRACK', desc: '+5% XP', stats: [['xp', 5]] },
+  { lvl: 3, id: 'cash_flow', name: 'CASH FLOW', desc: '+5% gold find', stats: [['gf', 5]] },
+  { lvl: 4, id: 'repair_1', name: 'DISCOUNTED REPAIRS', desc: '10% off repairs', repair: 0.1 },
+  { lvl: 5, id: 'bank_2', name: 'SECOND BANK TAB', desc: 'Guild bank tab 2', tabs: 1 },
+  { lvl: 7, id: 'fast_track_2', name: 'FAST TRACK II', desc: '+5% more XP', stats: [['xp', 5]] },
+  { lvl: 8, id: 'repair_2', name: 'MASS REPAIRS', desc: '25% off repairs', repair: 0.25 },
+  { lvl: 10, id: 'bank_3', name: 'THIRD BANK TAB', desc: 'Guild bank tab 3', tabs: 1 },
+  { lvl: 12, id: 'cash_flow_2', name: 'CASH FLOW II', desc: '+5% more gold find', stats: [['gf', 5]] },
+  { lvl: 15, id: 'treasure', name: 'TREASURE HUNTERS', desc: '+10% magic find', stats: [['mf', 10]] },
+  { lvl: 20, id: 'repair_3', name: 'GUILD ARMOURERS', desc: '50% off repairs', repair: 0.5 },
+  { lvl: 25, id: 'legends', name: 'LEGENDS OF VALENDRIA', desc: '+10% XP and +5% damage', stats: [['xp', 10], ['dmg', 5]] },
+];
+const perksAt = lvl => GUILD_PERKS.filter(p => lvl >= p.lvl);
+const perkStats = lvl => perksAt(lvl).flatMap(p => p.stats || []);
+const repairDiscount = lvl => Math.max(0, ...perksAt(lvl).map(p => p.repair || 0));
+const bankTabs = lvl => 1 + perksAt(lvl).reduce((a, p) => a + (p.tabs || 0), 0);
+const BANK_TAB_SIZE = 20;
+// guild XP from a member's activity
+const GUILD_WEIGHTS = { kills: 2, elites: 8, dungeons: 150, raids: 400, trials: 200, quests: 50, worldBosses: 200, crafted: 10, fish: 3, keystones: 250, bounties: 60 };
+function guildXpFrom(stats, base) { let xp = 0; for (const [k, w] of Object.entries(GUILD_WEIGHTS)) xp += Math.max(0, (Number(stats && stats[k]) || 0) - (Number(base && base[k]) || 0)) * w; return Math.floor(xp); }
+// the guild's other members: 200 XP a day missed, at most 7 days
+const memberDays = (lastDay, today) => { if (!lastDay) return 0; const d = Math.round((Date.parse(today) - Date.parse(lastDay)) / 864e5); return Math.max(0, Math.min(7, d)); };
+function normalizeGuild(raw, name) {
+  const g = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const xp = Math.max(0, Math.floor(Number(g.xp) || 0)), lvl = guildLevelOf(xp), tabs = bankTabs(lvl);
+  const bank = Array.from({ length: 3 }, (_, i) => (Array.isArray(g.bank && g.bank[i]) ? g.bank[i] : []).filter(it => it && typeof it === 'object').slice(0, BANK_TAB_SIZE));
+  return { v: 1, name: String(name || g.name || 'GUILD').slice(0, 20), xp, level: lvl, tabs, bank, gold: Math.max(0, Math.floor(Number(g.gold) || 0)), lastDay: g.lastDay || null,
+    log: (Array.isArray(g.log) ? g.log : []).filter(x => typeof x === 'string').slice(-30), quests: g.quests && typeof g.quests === 'object' ? g.quests : null };
+}
+function addGuildXp(guild, n, note) {
+  const g = normalizeGuild(guild), before = g.level; g.xp += Math.max(0, Math.floor(n) || 0); g.level = guildLevelOf(g.xp); g.tabs = bankTabs(g.level);
+  if (note) g.log.push(note);
+  const unlocked = GUILD_PERKS.filter(p => p.lvl > before && p.lvl <= g.level);
+  for (const p of unlocked) g.log.push(`PERK: ${p.name}`);
+  g.log = g.log.slice(-30);
+  return { guild: g, leveled: g.level > before, unlocked };
+}
+// bank: deposit / withdraw (pure on copies)
+function depositItem(guild, tab, item) {
+  const g = normalizeGuild(guild); if (tab < 0 || tab >= g.tabs) return { ok: false, error: 'That tab is locked.' };
+  if (!item || item.bound || item.heirloom) return { ok: false, error: 'Soulbound items cannot be stored.' };
+  if (g.bank[tab].length >= BANK_TAB_SIZE) return { ok: false, error: 'That tab is full.' };
+  g.bank[tab].push(item); return { ok: true, guild: g };
+}
+function withdrawItem(guild, tab, index) { const g = normalizeGuild(guild), list = g.bank[tab] || []; if (!list[index]) return { ok: false, error: 'Empty slot.' }; const [item] = list.splice(index, 1); return { ok: true, guild: g, item }; }
+
+if (typeof globalThis !== 'undefined') globalThis.GBQGuild = { GUILD_MAX_LEVEL, guildXpFor, guildLevelOf, GUILD_PERKS, perksAt, perkStats, repairDiscount, bankTabs, BANK_TAB_SIZE, guildXpFrom, memberDays, normalizeGuild, addGuildXp, depositItem, withdrawItem };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof guildMenu === 'function' && typeof store !== 'undefined') {
+  const KEYS = Object.keys(GUILD_WEIGHTS), snap = () => Object.fromEntries(KEYS.map(k => [k, Number(G.stats[k]) || 0]));
+  const keyFor = name => 'gbq2_guild_' + String(name).toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30);
+  const loadG = () => G && G.guild ? normalizeGuild(store.get(keyFor(G.guild)), G.guild) : null;
+  const saveG = g => { cached = { guild: g.name, level: g.level }; return store.set(keyFor(g.name), g); };
+  const today = () => (typeof dayKey === 'function' ? dayKey() : new Date().toISOString().slice(0, 10));
+  // guild level cached for the hot paths (derive runs every frame); refreshed by guildTick and on save
+  let cached = { guild: null, level: 0 };
+  const cachedLevel = () => G && G.guild && cached.guild === G.guild ? cached.level : 0;
+  window.guildPerkValue = kind => kind === 'repair' ? repairDiscount(cachedLevel()) : 0;
+  // perk stats ride on the set-bonus hook that derive() reads (only for the hero)
+  { const sb0 = armorSetBonus; armorSetBonus = function (c) { const out = sb0(c), lvl = G && c === G ? cachedLevel() : 0; return lvl > 1 ? out.concat(perkStats(lvl)) : out; }; }
+
+  // contribution: credit the hero's activity since the last check; members' daily share
+  function guildTick() {
+    if (!G || !G.guild) return;
+    let g = loadG(); const gp = G.guildProg = G.guildProg && G.guildProg.guild === G.guild ? G.guildProg : { guild: G.guild, base: snap() };
+    const gain = guildXpFrom(G.stats, gp.base), days = memberDays(g.lastDay, today());
+    let r = null;
+    if (gain > 0) { r = addGuildXp(g, gain); g = r.guild; gp.base = snap(); }
+    if (!g.lastDay || days > 0) { const m = addGuildXp(g, days * 200, days ? `MEMBERS EARNED ${days * 200} XP` : null); if (m.leveled) r = m; g = m.guild; g.lastDay = today(); }
+    // weekly guild quests from the bounty templates (x3 targets)
+    const week = typeof weekKeyOf === 'function' ? weekKeyOf() : today();
+    if (typeof rollBounties === 'function' && (!g.quests || g.quests.week !== week)) g.quests = { week, list: rollBounties('guild|' + g.name + week, 'week', G.lvl, G.stats).map(b => ({ ...b, target: b.target * 3, base: Number(G.stats[b.stat]) || 0, claimed: false })) };
+    saveG(g);
+    if (r && r.leveled) { toast('GUILD LEVEL UP', `<${g.name}> LEVEL ${g.level}`, 'px_crown', 'levelup'); for (const p of r.unlocked) chatLog('guild', 'GUILD', `Perk unlocked: ${p.name} (${p.desc}).`); }
+  }
+  (window.LOOP_HOOKS ||= []).push(guildTick);
+
+  function infoLines(g) { const next = g.level < GUILD_MAX_LEVEL ? guildXpFor(g.level + 1) : null; return [`<${g.name}> LEVEL ${g.level}`, next ? `GUILD XP ${fmt(g.xp)} / ${fmt(next)}` : `GUILD XP ${fmt(g.xp)} (MAX)`, `BANK ${g.tabs} TAB${g.tabs > 1 ? 'S' : ''}, ${fmt(g.gold)} G`, `PERKS: ${perksAt(g.level).map(p => p.name).join(', ') || 'none yet'}`]; }
+  function perksMenu(g) { say(GUILD_PERKS.map(p => `${g.level >= p.lvl ? '# ' : `L${p.lvl} `}${p.name}: ${p.desc}`), guildHub); }
+  function bankMenu(tab = 0) {
+    const g = loadG(); if (!g) return;
+    const items = g.bank[tab] || [], opts = [`< TAB ${tab + 1}/${g.tabs} >`, 'DEPOSIT ITEM', 'GOLD VAULT', ...items.map(it => `${it.name.slice(0, 18)} IL${it.ilvl || 1}`), 'BACK'];
+    choose(opts, k => {
+      if (k < 0 || opts[k] === 'BACK') return guildHub();
+      if (k === 0) return bankMenu((tab + 1) % g.tabs);
+      if (k === 1) {
+        const pool = G.bag.filter(it => !it.bound && !it.heirloom && !it.fav);
+        if (!pool.length) return say('Nothing in your bag can be stored.', () => bankMenu(tab));
+        return choose(pool.map(it => it.name.slice(0, 22)), j => { if (j < 0) return bankMenu(tab); const it = pool[j], r = depositItem(loadG(), tab, it); if (!r.ok) return say(r.error, () => bankMenu(tab)); G.bag.splice(G.bag.indexOf(it), 1); saveG(r.guild); saveGame(); SFX.confirm(); bankMenu(tab); }, `DEPOSIT TO TAB ${tab + 1}`);
+      }
+      if (k === 2) return choose(['DEPOSIT 100 G', 'DEPOSIT 1,000 G', 'WITHDRAW 100 G', 'WITHDRAW 1,000 G', 'BACK'], j => {
+        const amt = [100, 1000, 100, 1000][j]; if (amt == null) return bankMenu(tab); const g2 = loadG();
+        if (j < 2) { if (G.gold < amt) return say('Not enough gold.', () => bankMenu(tab)); G.gold -= amt; g2.gold += amt; } else { if (g2.gold < amt) return say('The vault does not hold that much.', () => bankMenu(tab)); g2.gold -= amt; G.gold += amt; }
+        saveG(g2); saveGame(); SFX.coin(); bankMenu(tab);
+      }, `VAULT ${fmt(g.gold)} G  YOU ${fmt(G.gold)} G`);
+      const r = withdrawItem(g, tab, k - 3); if (!r.ok) return bankMenu(tab);
+      if (G.bag.length >= BAG_MAX) return say('Your bag is full.', () => bankMenu(tab));
+      r.item.uid = ITEM_UID++; G.bag.push(r.item); saveG(r.guild); saveGame(); SFX.confirm(); bankMenu(tab);
+    }, `GUILD BANK TAB ${tab + 1}: ${items.length}/${BANK_TAB_SIZE}`);
+  }
+  function questsMenu() {
+    guildTick(); const g = loadG(), list = (g.quests && g.quests.list) || [];
+    choose(list.map(b => `${b.claimed ? '# ' : bountyDone(b, G.stats) ? '! ' : ''}${(BOUNTY_TYPES.find(t => t.id === b.id) || { name: b.id }).name} ${fmt(bountyProgress(b, G.stats))}/${fmt(b.target)}`.slice(0, 24)).concat(['BACK']), k => {
+      const b = list[k]; if (!b) return guildHub();
+      if (b.claimed || !bountyDone(b, G.stats)) return say(b.claimed ? 'Already turned in. New guild quests on Monday.' : 'Not finished yet.', questsMenu);
+      const g2 = loadG(), q = g2.quests.list.find(x => x.id === b.id); q.claimed = true;
+      const r = addGuildXp(g2, 2000, `${G.name} FINISHED A GUILD QUEST`), gold = 200 + G.lvl * 40; saveG(r.guild); G.gold += gold; saveGame(); SFX.levelup();
+      say([`Guild quest complete!`, `+2,000 guild XP, +${fmt(gold)} G.`], questsMenu);
+    }, 'WEEKLY GUILD QUESTS');
+  }
+  function guildHub() {
+    guildTick(); const g = loadG(); if (!g) return;
+    const opts = ['GUILD INFO', 'PERKS', 'GUILD BANK', 'GUILD QUESTS', 'GUILD LOG', 'ROSTER', 'LEAVE GUILD', 'BACK'];
+    choose(opts, k => {
+      const o = opts[k];
+      if (o === 'GUILD INFO') say(infoLines(g), guildHub); else if (o === 'PERKS') perksMenu(g); else if (o === 'GUILD BANK') bankMenu(0);
+      else if (o === 'GUILD QUESTS') questsMenu(); else if (o === 'GUILD LOG') say(g.log.slice(-6).reverse().concat(g.log.length ? [] : ['Nothing yet.']), guildHub);
+      else if (o === 'ROSTER') say([`<${g.name}>`, `Members: ${G.name}, ${SIM_NAMES.slice(0, 5).join(', ')}`], guildHub);
+      else if (o === 'LEAVE GUILD') choose(['LEAVE', 'STAY'], y => { if (y === 0) { G.guild = null; G.guildProg = null; SFX.back(); } }, 'The guild keeps its level and bank.');
+    }, `<${g.name}> LV ${g.level}`);
+  }
+  { const gm0 = guildMenu; guildMenu = function () { if (G && G.guild) return guildHub(); return gm0.apply(this, arguments); }; }
+  window.guildHub = guildHub;
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ WORLD QUESTS, RARE SPAWNS AND INVASIONS
+// MAIN MENU > CHALLENGES > WORLD QUESTS.
+//   * WORLD QUESTS: 4 a day in zones near your level: SLAY (defeat 12 foes there), ELITES (defeat 2 elites there)
+//     or HUNT (defeat that zone's rare). They complete and pay out on their own; they expire at midnight.
+//   * RARES: every outdoor zone has one named rare elite a day (6% of encounters there until it falls). Rares hit
+//     harder, give 5x XP and always drop an epic item.
+//   * INVASIONS: every 4 hours one zone near your level is invaded: half its encounters are tougher INVADERS.
+//     Defeat 15 for the invasion chest.
+// Pure rules are exported as GBQWorld for tests; the game wiring runs only inside the game.
+
+const WQ_TYPES = {
+  slay: { name: 'SLAY', target: 12, desc: z => `Defeat 12 foes in ${z}.` },
+  elites: { name: 'ELITES', target: 2, desc: z => `Defeat 2 elites in ${z}.` },
+  rare: { name: 'HUNT', target: 1, desc: z => `Defeat the rare in ${z}.` },
+};
+const RARE_ADJ = ['GNASHING', 'ASHEN', 'HOLLOW-EYED', 'IRONHIDE', 'SHRIEKING', 'GILDED', 'BLIGHTED', 'MOONLIT', 'RAVENOUS', 'ANCIENT', 'SPLINTERED', 'DREAD'];
+const RARE_TITLE = ['THE UNBOWED', 'THE HUNGRY', 'THE LOST', 'OF THE MARSH', 'THE PALE', 'THE RED', 'THE OLD', 'THE QUIET'];
+const INVASION_HOURS = 4, INVASION_GOAL = 15, RARE_CHANCE = 0.06;
+function wqHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+// outdoor zones a hero of this level should visit (nearest ones when nothing fits)
+function zonesNear(zones, lvl) {
+  const out = zones.filter(z => !z.town && z.lvl && z.lvl[0] <= lvl + 4 && z.lvl[1] >= lvl - 12);
+  return out.length ? out : zones.filter(z => !z.town && z.lvl).sort((a, b) => Math.abs(a.lvl[0] - lvl) - Math.abs(b.lvl[0] - lvl)).slice(0, 4);
+}
+function rollWorldQuests(day, zones, lvl) {
+  const pool = zonesNear(zones, lvl).slice(), out = [], types = Object.keys(WQ_TYPES);
+  let h = wqHash(day + '|' + lvl);
+  while (out.length < 4 && pool.length) { const z = pool.splice(h % pool.length, 1)[0]; h = wqHash(h + z.id); const type = types[h % types.length]; out.push({ id: `${day}:${z.id}`, zone: z.id, type, target: WQ_TYPES[type].target, progress: 0, done: false }); }
+  return out;
+}
+const rareName = (day, zoneId) => { const h = wqHash(day + '#' + zoneId); return { adj: RARE_ADJ[h % RARE_ADJ.length], title: RARE_TITLE[(h >>> 8) % RARE_TITLE.length] }; };
+// the invaded zone for a moment in time: { window, zone, endsAt }
+function invasionAt(date, zones, lvl) {
+  const t = date instanceof Date ? date.getTime() : Number(date), w = Math.floor(t / (INVASION_HOURS * 36e5)), pool = zonesNear(zones, lvl);
+  return pool.length ? { window: w, zone: pool[wqHash('inv' + w) % pool.length].id, endsAt: (w + 1) * INVASION_HOURS * 36e5 } : null;
+}
+// count what one won battle does for a quest
+function questProgress(q, zoneId, foes) {
+  if (q.done || q.zone !== zoneId) return 0;
+  if (q.type === 'slay') return foes.length;
+  if (q.type === 'elites') return foes.filter(f => f.elite || f.rare).length;
+  if (q.type === 'rare') return foes.filter(f => f.rare === zoneId).length;
+  return 0;
+}
+const wqReward = (type, lvl) => ({ gold: Math.round((30 + lvl * 12) * (type === 'rare' ? 2 : 1)), xpShare: type === 'rare' ? 0.25 : 0.15, rarity: type === 'slay' ? 2 : 3, seasonXp: 120 });
+
+if (typeof globalThis !== 'undefined') globalThis.GBQWorld = { WQ_TYPES, zonesNear, rollWorldQuests, rareName, invasionAt, questProgress, wqReward, INVASION_GOAL, RARE_CHANCE };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof rollEncounter === 'function' && typeof ZONES !== 'undefined') {
+  const day = () => (typeof dayKey === 'function' ? dayKey() : new Date().toISOString().slice(0, 10));
+  const zoneName = id => (ZONE_BY_ID[id] || { name: id }).name;
+  const span = () => Math.max(1, xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)) - xpForLevel(G.lvl));
+  function W() {
+    const d = day(), w = G.wq = G.wq && typeof G.wq === 'object' ? G.wq : {};
+    if (w.day !== d) { w.day = d; w.list = rollWorldQuests(d, ZONES, G.lvl); w.rares = {}; }
+    const inv = invasionAt(new Date(), ZONES, G.lvl);
+    if (inv && (!w.invasion || w.invasion.window !== inv.window)) w.invasion = { window: inv.window, zone: inv.zone, endsAt: inv.endsAt, kills: 0, claimed: false };
+    return w;
+  }
+  (window.LOOP_HOOKS ||= []).push(() => { if (G) W(); });
+
+  // rares and invaders appear in ordinary encounters
+  { const re0 = rollEncounter; rollEncounter = function (zoneDef, opts) {
+      const foes = re0.apply(this, arguments); if (!G || G.inst || !zoneDef || zoneDef.town) return foes;
+      const w = W();
+      if (!w.rares[zoneDef.id] && R() < RARE_CHANCE) {
+        const fam = BIOMES[zoneDef.biome] && BIOMES[zoneDef.biome].fam || [], pool = BESTIARY.filter(b => fam.includes(b.fam)), base = pool.length ? pool[wqHash(day() + zoneDef.id) % pool.length] : BESTIARY[0];
+        const f = makeMonster(base, zoneLevel(zoneDef) + 3, G.difficulty), n = rareName(day(), zoneDef.id);
+        f.rare = zoneDef.id; f.elite = true; f.maxhp = Math.round(f.maxhp * 2.5); f.hp = f.maxhp; f.xp = (f.xp || 1) * 5; f.gold = (f.gold || 1) * 4;
+        f.name = `${n.adj} ${f.name}`.slice(0, 16); f.rareTitle = `${n.adj} ${base.name} ${n.title}`;
+        toast('RARE SPOTTED', f.rareTitle.slice(0, 24), 'px_skull', 'boss_appear');
+        return [f];
+      }
+      if (w.invasion && w.invasion.zone === zoneDef.id && Date.now() < w.invasion.endsAt && R() < 0.5)
+        for (const f of foes) { f.invader = true; f.maxhp = Math.round(f.maxhp * 1.3); f.hp = f.maxhp; f.xp = Math.round((f.xp || 1) * 1.5); f.name = ('INVADER ' + f.name).slice(0, 16); }
+      return foes;
+    }; }
+
+  function pay(type, label) {
+    const r = wqReward(type, G.lvl); G.gold += r.gold; G.stats.goldEarned = (G.stats.goldEarned || 0) + r.gold;
+    gainXP(G, Math.round(span() * r.xpShare)); addGear(makeItem({ lvl: G.lvl + 1, rarity: r.rarity, ...(typeof smartKind === 'function' ? smartKind(G) : {}) }));
+    if (typeof addSeasonXp === 'function') addSeasonXp(r.seasonXp);
+    toast('WORLD QUEST DONE', label.slice(0, 24), 'item_chest', 'quest_done'); chatLog('quest', 'QUEST', `World quest complete: ${label}. +${fmt(r.gold)} G, XP and an item.`);
+  }
+  { const f0 = Battle.prototype.finish; Battle.prototype.finish = function (result) {
+      try {
+        if (result === 'win' && G && !G.inst && ZONE_BY_ID[G.map]) {
+          const w = W(), zone = G.map, foes = this.foes || [];
+          for (const q of w.list) { const n = questProgress(q, zone, foes); if (n) { q.progress = Math.min(q.target, q.progress + n); if (q.progress >= q.target && !q.done) { q.done = true; pay(q.type, `${WQ_TYPES[q.type].name}: ${zoneName(q.zone)}`); } } }
+          for (const f of foes) if (f.rare) { w.rares[f.rare] = true; addGear(makeItem({ lvl: (f.lvl || G.lvl) + 2, rarity: 4, boss: true })); chatLog('loot', 'LOOT', `${f.rareTitle || f.name} is slain! It drops an epic item.`); }
+          const inv = w.invasion, invaders = foes.filter(f => f.invader).length;
+          if (inv && invaders && !inv.claimed) { inv.kills += invaders; if (inv.kills >= INVASION_GOAL) { inv.claimed = true; for (let i = 0; i < 2; i++) addGear(makeItem({ lvl: G.lvl + 2, rarity: 3 })); G.gold += 100 + G.lvl * 25; toast('INVASION REPELLED', zoneName(inv.zone).slice(0, 22), 'px_crown', 'act_complete'); } }
+        }
+      } catch (e) { console.warn('world quests', e); }
+      return f0.apply(this, arguments);
+    }; }
+
+  window.worldQuestsMenu = function () {
+    const w = W(), inv = w.invasion, mins = inv ? Math.max(0, Math.round((inv.endsAt - Date.now()) / 6e4)) : 0;
+    const rows = w.list.map(q => `${q.done ? '# ' : ''}${WQ_TYPES[q.type].name} ${zoneName(q.zone).slice(0, 12)} ${q.progress}/${q.target}`.slice(0, 22));
+    const invRow = inv ? `INVADED ${zoneName(inv.zone).slice(0, 9)} ${inv.claimed ? 'DONE' : `${Math.min(inv.kills, INVASION_GOAL)}/${INVASION_GOAL}`}` : 'NO INVASION';
+    choose([...rows, invRow, 'RARES TODAY', 'BACK'], k => {
+      if (k < 0) return;
+      if (k < w.list.length) { const q = w.list[k], z = ZONE_BY_ID[q.zone]; return say([`${WQ_TYPES[q.type].name}: ${zoneName(q.zone)} (LV ${z.lvl[0]}-${z.lvl[1]})`, WQ_TYPES[q.type].desc(zoneName(q.zone)), q.done ? 'Complete.' : `${q.progress}/${q.target}. Ends at midnight.`, q.type === 'rare' ? `Today: ${rareName(day(), q.zone).adj} ... ${rareName(day(), q.zone).title}` : ''], window.worldQuestsMenu); }
+      if (k === w.list.length) return say(inv ? [`${zoneName(inv.zone)} is under attack!`, `Half its encounters are INVADERS. Defeat ${INVASION_GOAL} for the invasion chest.`, inv.claimed ? 'Repelled. Next invasion soon.' : `${Math.min(inv.kills, INVASION_GOAL)}/${INVASION_GOAL}. ${mins} min left.`] : 'All quiet.', window.worldQuestsMenu);
+      if (k === w.list.length + 1) { const near = zonesNear(ZONES, G.lvl).slice(0, 6); return say(near.map(z => `${w.rares[z.id] ? '# ' : ''}${zoneName(z.id).slice(0, 12)}: ${rareName(day(), z.id).adj}`), window.worldQuestsMenu); }
+    }, `WORLD QUESTS ${w.list.filter(q => q.done).length}/${w.list.length}`);
+  };
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ SPECS AND LOADOUTS
+// MAIN MENU > LOADOUTS.
+//   * DUAL SPEC (from level 10, 500 G once): a second set of talents, active and passive skills and combat arts.
+//     Switching saves the current spec and loads the other. The second spec starts with every point refunded.
+//   * EQUIPMENT SETS: save up to 5 named sets of equipped gear and put a whole set on in one step; pieces come
+//     from your bag or bank. Missing pieces are reported and skipped.
+//   * ACTION BAR: pin the combat actions you want first on the 1-9 hotbar; each spec keeps its own bar.
+// Pure rules are exported as GBQLoadouts for tests; the game wiring runs only inside the game.
+
+const DUAL_SPEC_LEVEL = 10, DUAL_SPEC_COST = 500, MAX_SETS = 5;
+const copyList = v => Array.isArray(v) ? v.slice() : [];
+// what a spec holds
+const specOf = c => ({ talents: copyList(c.talents), talentPts: Math.max(0, c.talentPts || 0), activeSkills: copyList(c.activeSkills), passiveSkills: copyList(c.passiveSkills), skillPts: Math.max(0, c.skillPts || 0), arts: copyList(c.arts), hotbar: copyList(c.hotbar) });
+// a fresh spec: every talent and skill point refunded, same combat arts
+const blankSpecFrom = s => ({ talents: [], talentPts: s.talents.length + s.talentPts, activeSkills: [], passiveSkills: [], skillPts: s.activeSkills.length + s.passiveSkills.length + s.skillPts, arts: copyList(s.arts), hotbar: [] });
+const applySpec = (c, s) => { c.talents = copyList(s.talents); c.talentPts = s.talentPts; c.activeSkills = copyList(s.activeSkills); c.passiveSkills = copyList(s.passiveSkills); c.skillPts = s.skillPts; c.arts = copyList(s.arts); c.hotbar = copyList(s.hotbar); return c; };
+// both specs must hold the same number of points (catches points earned on the other spec since it was saved)
+function topUp(s, earnedTalents, earnedSkills) {
+  const t = s.talents.length + s.talentPts, k = s.activeSkills.length + s.passiveSkills.length + s.skillPts;
+  return { ...s, talentPts: s.talentPts + Math.max(0, earnedTalents - t), skillPts: s.skillPts + Math.max(0, earnedSkills - k) };
+}
+const totals = s => ({ talents: s.talents.length + s.talentPts, skills: s.activeSkills.length + s.passiveSkills.length + s.skillPts });
+// equipment sets: slot -> item uid
+const setFromEq = eq => Object.fromEntries(Object.entries(eq || {}).filter(([, it]) => it && it.uid != null).map(([s, it]) => [s, it.uid]));
+// where each piece of a set is now: { slot: { uid, where: 'eq'|'bag'|'bank'|null } }
+function planSet(set, eq, bag, bank) {
+  const out = {};
+  for (const [slot, uid] of Object.entries(set || {})) {
+    const where = eq && eq[slot] && eq[slot].uid === uid ? 'worn' : Object.values(eq || {}).some(it => it && it.uid === uid) ? 'eq' : (bag || []).some(it => it && it.uid === uid) ? 'bag' : (bank || []).some(it => it && it.uid === uid) ? 'bank' : null;
+    out[slot] = { uid, where };
+  }
+  return out;
+}
+// hotbar: pinned ids first in their order, then the rest as the game built them
+function orderHotbar(entries, pinned) {
+  const first = (pinned || []).map(id => entries.find(e => e.id === id)).filter(Boolean);
+  return first.concat(entries.filter(e => !first.includes(e)));
+}
+
+if (typeof globalThis !== 'undefined') globalThis.GBQLoadouts = { DUAL_SPEC_LEVEL, DUAL_SPEC_COST, MAX_SETS, specOf, blankSpecFrom, applySpec, topUp, totals, setFromEq, planSet, orderHotbar };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equipItem === 'function') {
+  const inBattle = () => scenes.some(s => s instanceof Battle);
+  const L = () => { G.loadouts = G.loadouts && typeof G.loadouts === 'object' ? G.loadouts : { dual: false, active: 0, specs: [null, null], names: ['SPEC 1', 'SPEC 2'], sets: [] }; return G.loadouts; };
+
+  // combat hotbar follows the pinned order of the hero's current spec
+  { const h0 = Battle.prototype.hotbarEntries; Battle.prototype.hotbarEntries = function (u) { const e = h0.call(this, u); return u && u.ch === G && G.hotbar && G.hotbar.length ? orderHotbar(e, G.hotbar).slice(0, 10) : e; }; }
+
+  function switchSpec() {
+    const l = L(); if (!l.dual) return 'Learn dual specialization first.'; if (inBattle()) return 'Not during a battle.';
+    const cur = specOf(G); l.specs[l.active] = cur;
+    const other = 1 - l.active, t = totals(cur);
+    let next = l.specs[other] ? topUp(l.specs[other], t.talents, t.skills) : blankSpecFrom(cur);
+    applySpec(G, next); l.active = other; G.hp = Math.min(G.hp, derive(G).hpMax);
+    return null;
+  }
+  function setsMenu() {
+    const l = L(), opts = [...l.sets.map(s => `EQUIP: ${s.name}`), ...(l.sets.length < MAX_SETS ? ['SAVE CURRENT GEAR'] : []), ...(l.sets.length ? ['DELETE A SET'] : []), 'BACK'];
+    choose(opts, k => {
+      const o = opts[k] || 'BACK'; if (o === 'BACK') return loadoutsMenu();
+      if (o === 'SAVE CURRENT GEAR') { const n = l.sets.length + 1; l.sets.push({ name: `SET ${n}`, items: setFromEq(G.eq) }); SFX.confirm(); saveGame(); return say(`Saved SET ${n} (${Object.keys(l.sets[n - 1].items).length} pieces).`, setsMenu); }
+      if (o === 'DELETE A SET') return choose(l.sets.map(s => s.name), j => { if (j >= 0) { l.sets.splice(j, 1); saveGame(); } setsMenu(); }, 'Delete which set?');
+      if (inBattle()) return say('Not during a battle.');
+      const set = l.sets[k], plan = planSet(set.items, G.eq, G.bag, G.bank); let moved = 0; const missing = [];
+      for (const [slot, p] of Object.entries(plan)) {
+        if (p.where === 'worn') continue;
+        if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
+        if (p.where === 'eq') { const from = Object.keys(G.eq).find(s => G.eq[s] && G.eq[s].uid === p.uid), it = G.eq[from]; delete G.eq[from]; G.bag.push(it); }
+        const list = p.where === 'bank' ? G.bank : G.bag, it = list.find(x => x && x.uid === p.uid); if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
+        const why = equipItem(G, it, list, slot); if (why) missing.push(`${SLOT_NAME[slot] || slot} (${why})`); else moved++;
+      }
+      SFX.equip(); saveGame(); say([`${set.name}: ${moved} piece${moved === 1 ? '' : 's'} equipped.`, ...(missing.length ? [`Missing: ${missing.join(', ')}`.slice(0, 60)] : [])], setsMenu);
+    }, `EQUIPMENT SETS ${l.sets.length}/${MAX_SETS}`);
+  }
+  function barMenu() {
+    const fake = Object.create(Battle.prototype); fake.bonusUsed = false; fake.canCast = () => true; fake.combatMode = 'turn-based';
+    let entries = []; try { entries = Battle.prototype.hotbarEntries.call(Object.assign(fake, { abilities: u => { try { return Battle.prototype.abilities.call(fake, u); } catch (e) { return []; } } }), { ch: G }); } catch (e) { entries = []; }
+    const pinned = G.hotbar || [];
+    if (!entries.length) return say('Your action bar is built in battle: attack, abilities and spells.', loadoutsMenu);
+    choose(entries.map((e, i) => `${i + 1}: ${pinned.includes(e.id) ? '* ' : ''}${e.name}`.slice(0, 24)).concat(['CLEAR PINS', 'BACK']), k => {
+      if (k < 0 || k === entries.length + 1) return loadoutsMenu();
+      if (k === entries.length) { G.hotbar = []; saveGame(); return barMenu(); }
+      const id = entries[k].id; G.hotbar = pinned.includes(id) ? pinned.filter(x => x !== id) : [...pinned, id]; saveGame(); barMenu();
+    }, 'A: PIN/UNPIN. PINNED ACTIONS COME FIRST');
+  }
+  function loadoutsMenu() {
+    const l = L(), names = l.names;
+    const specRow = l.dual ? `SWITCH TO ${names[1 - l.active]}` : `LEARN DUAL SPEC ${fmt(DUAL_SPEC_COST)} G`;
+    choose([specRow, ...(l.dual ? ['RENAME SPEC'] : []), 'EQUIPMENT SETS', 'ACTION BAR', 'BACK'], k => {
+      const o = [specRow, ...(l.dual ? ['RENAME SPEC'] : []), 'EQUIPMENT SETS', 'ACTION BAR', 'BACK'][k];
+      if (o === specRow && !l.dual) {
+        if (G.lvl < DUAL_SPEC_LEVEL) { SFX.error(); return say(`Dual specialization opens at level ${DUAL_SPEC_LEVEL}.`, loadoutsMenu); }
+        if (G.gold < DUAL_SPEC_COST) { SFX.error(); return say(`It costs ${fmt(DUAL_SPEC_COST)} G.`, loadoutsMenu); }
+        G.gold -= DUAL_SPEC_COST; l.dual = true; l.specs[0] = specOf(G); SFX.levelup(); saveGame(); return say(['Dual specialization learned!', `Switch to ${names[1]} to set up a second build. Its points start refunded.`], loadoutsMenu);
+      }
+      if (o === specRow) { const why = switchSpec(); SFX[why ? 'error' : 'levelup'](); if (!why) saveGame(); return say(why || [`Now using ${names[l.active]}.`, `${G.talents.length} talents, ${G.activeSkills.length + G.passiveSkills.length} skills. Unspent: ${G.talentPts} talent, ${G.skillPts} skill points.`], loadoutsMenu); }
+      if (o === 'RENAME SPEC') return choose(['DAMAGE', 'TANK', 'HEALER', 'SOLO', 'PVP', 'SUPPORT'], j => { if (j >= 0) { names[l.active] = ['DAMAGE', 'TANK', 'HEALER', 'SOLO', 'PVP', 'SUPPORT'][j]; saveGame(); } loadoutsMenu(); }, `Name ${names[l.active]}`);
+      if (o === 'EQUIPMENT SETS') return setsMenu();
+      if (o === 'ACTION BAR') return barMenu();
+    }, l.dual ? `ACTIVE: ${names[l.active]}` : 'LOADOUTS');
+  }
+  window.loadoutsMenu = loadoutsMenu; window.switchSpec = switchSpec;
 }
 
 </script>

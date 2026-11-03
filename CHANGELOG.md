@@ -41,6 +41,11 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
   - **Command line:** `npm run admin -- create|promote|demote|list` manages staff accounts while the server is stopped.
   - **Developer mode:** root and admin accounts get it automatically. The account screen shows your role and an **ADMIN CONTROL** entry.
 
+- **Durability and repair:** gear wears in battle and on death, broken gear gives no stats, REPAIR ALL at merchants and repair kits. **Crafting quality** rolls Standard, Fine, Superior or Masterwork (up to +35%) by skill.
+- **Guild progression:** guild XP and 25 levels, 11 perks, a shared guild bank (3 tabs plus a gold vault), weekly guild quests and a guild log.
+- **World quests:** 4 daily quests near your level, a daily rare elite per zone with epic loot, and 4-hour zone invasions with a chest for 15 invader kills.
+- **Loadouts:** dual specialization (level 10, 500 G), 5 saved equipment sets and pinned action-bar order per spec.
+
 ### Fixed
 - Server errors were returned as "Server error." without being logged anywhere.
 - A request body of `null`, an array or a bare value crashed routes with a 500; it now returns 400.
