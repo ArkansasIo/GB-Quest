@@ -2,7 +2,24 @@
 
 Open `/admin` on the realm server and sign in with an account granted staff access. The control plane provides live realm metrics, player moderation, realm and game-system settings, staff roles, and an audit log.
 
-## Bootstrap root
+## Make yourself admin
+
+**Easiest (in game):** start the realm server (`npm.cmd run server` on Windows), open `http://127.0.0.1:8787`, and create or log in to your account (**ONLINE > ACCOUNT**). While the realm has no admin, the account screen shows **CLAIM REALM ADMIN**. Choose it and your account becomes **root**. This only works from the computer running the server, not over the network or through a reverse proxy, and only once: after that, admins promote other staff. The claim is written to the audit log.
+
+**Command line (server stopped):**
+
+```
+npm run admin -- create <name> <password> [root|admin|moderator]   # new staff account (default root)
+npm run admin -- promote <name> [role]                             # existing account (default root)
+npm run admin -- demote <name>
+npm run admin -- list
+```
+
+The tool refuses to run while the server is up, because the server would overwrite the change. Root accounts made this way or by claiming can only be changed with this tool.
+
+**Developer mode:** root and admin accounts get developer mode in the game automatically: the GM console (F10), the debug panel, and SETTINGS > DEVELOPER MODE shows **ACCOUNT**. Other players can still turn developer mode on themselves for offline play.
+
+## Bootstrap root with environment IDs
 
 1. Start the realm server and register a dedicated account.
 2. Read its immutable account ID from authenticated `GET /api/me`.

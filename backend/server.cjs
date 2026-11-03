@@ -84,7 +84,12 @@ const fail = key => { const f = fails.get(key); if (!f || Date.now() - f.t > 600
 const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created });
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
-const adminRoleFor = acct => isRoot(acct) ? 'root' : isAdmin(acct) ? 'admin' : (['admin', 'moderator'].includes(db.staffRoles[acct.id]) ? db.staffRoles[acct.id] : 'player');
+// staffRoles may hold 'root' only when set by a localhost claim or the admin CLI (backend/admin-cli.cjs)
+const adminRoleFor = acct => isRoot(acct) ? 'root' : isAdmin(acct) ? 'admin' : (['root', 'admin', 'moderator'].includes(db.staffRoles[acct.id]) ? db.staffRoles[acct.id] : 'player');
+// does the realm already have someone who can run it?
+const hasRealmAdmin = () => (!!ROOT_ACCOUNT_ID && !!accountById(ROOT_ACCOUNT_ID)) || (!!ADMIN_ACCOUNT_ID && !!accountById(ADMIN_ACCOUNT_ID)) || Object.values(db.staffRoles).some(r => r === 'root' || r === 'admin');
+// a request made on the server's own computer, not through a proxy (a proxy on the same machine would look local)
+const isLocalRequest = req => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress) && !req.headers['x-forwarded-for'] && !req.headers['forwarded'];
 const rolePermissions = {
   root: ['overview.view', 'players.view', 'players.moderate', 'settings.manage', 'staff.manage', 'accounts.create', 'audit.view', 'logs.view'],
   admin: ['overview.view', 'players.view', 'players.moderate', 'settings.manage', 'staff.manage', 'accounts.create', 'audit.view', 'logs.view'],
@@ -234,6 +239,15 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/store/checkout' && req.method === 'POST') return json(res, 503, { error: 'Checkout is disabled until a payment provider and server-side fulfillment are configured.' });
 
     if (p.startsWith('/api/admin/')) {
+      // first-run bootstrap: on a realm with no root/admin, an account signed in on the server's own computer
+      // can claim root. Never possible remotely, through a proxy, or once any admin exists.
+      if (p === '/api/admin/claim' && req.method === 'POST') {
+        if (!isLocalRequest(req)) { A({ ...actx, action: 'admin.claim', target: 'realm', outcome: 'denied', details: { reason: 'not_local' } }); return json(res, 403, { error: 'Claim admin from the computer running the realm server.' }); }
+        if (hasRealmAdmin()) { A({ ...actx, action: 'admin.claim', target: 'realm', outcome: 'denied', details: { reason: 'admin_exists' } }); return json(res, 409, { error: 'This realm already has an admin.' }); }
+        db.staffRoles[uid] = 'root'; addAdminAudit(actx, 'claim', sess.acct.name, { role: 'root', via: 'localhost' }); save();
+        log.info('realm admin claimed', { account: sess.acct.name, reqId });
+        return json(res, 200, { ok: true, role: 'root', permissions: rolePermissions.root });
+      }
       if (p === '/api/admin/me' && req.method === 'GET') {
         const role = adminRoleFor(sess.acct);
         // the game client probes this for every player to decide whether to show staff tools: not an audit event
@@ -313,6 +327,7 @@ const server = http.createServer(async (req, res) => {
         const target = accountById(roleMatch[1]);
         if (!target) return json(res, 404, { error: 'Account not found.' });
         if (isRoot(target) || isAdmin(target)) return json(res, 400, { error: 'Environment-configured root/admin accounts cannot be changed here.' });
+        if (adminRoleFor(target) === 'root') return json(res, 400, { error: 'Root accounts are changed with the admin CLI (npm run admin).' });
         if (adminRoleFor(target) === 'admin' && adminRoleFor(sess.acct) !== 'root') return json(res, 403, { error: 'Only root can change admin accounts.' });
         const input = await body(req), role = input.role;
         if (!['player', 'moderator', 'admin'].includes(role)) return json(res, 400, { error: 'Role must be player, moderator or admin.' });
@@ -376,7 +391,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (p === '/api/logout' && req.method === 'POST') { delete db.sessions[sess.token]; save(); A({ ...actx, action: 'auth.logout' }); return json(res, 200, { ok: true }); }
-    if (p === '/api/me') return json(res, 200, { account: publicAcct(sess.acct), slots: Object.keys(db.saves[uid] || {}) });
+    if (p === '/api/me') return json(res, 200, { account: publicAcct(sess.acct), slots: Object.keys(db.saves[uid] || {}), role: adminRoleFor(sess.acct), canClaimAdmin: !hasRealmAdmin() && isLocalRequest(req) });
     if (p.startsWith('/api/friends') && !db.realmSettings.socialEnabled) return json(res, 503, { error: 'Realm social features are disabled.' });
     if (p === '/api/friends' && req.method === 'GET') {
       const friends = friendIds(uid).map(publicFriend).filter(Boolean);

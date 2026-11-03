@@ -172,18 +172,25 @@ function accountForm(kind) {
 class AccountScene {
   constructor() { this.opaque = true; this.i = 0; this.busy = false; this.msg = ''; this.cloud = null; if (LocalRealm.token || this.page()) this.refresh(); }
   page() { return !LocalRealm.available && !NET.offline && !!(NET.db && NET.myId); }
-  async refresh() { try { this.cloud = this.page() ? await PageCloud.list() : await LocalRealm.listSaves(); } catch (e) { this.cloud = null; } }
+  async refresh() {
+    try { this.cloud = this.page() ? await PageCloud.list() : await LocalRealm.listSaves(); } catch (e) { this.cloud = null; }
+    // role and first-run admin claim (see backend/server.cjs /api/admin/claim)
+    try { this.me = LocalRealm.available && LocalRealm.account ? await LocalRealm.me() : null; } catch (e) { this.me = null; }
+  }
+  staff() { return !!(this.me && this.me.role && this.me.role !== 'player'); }
   opts() {
     if (this.page()) return ['UPLOAD SLOT 1', 'UPLOAD SLOT 2', 'UPLOAD SLOT 3', 'DOWNLOAD SLOT 1', 'DOWNLOAD SLOT 2', 'DOWNLOAD SLOT 3', 'BACK'];
     if (!LocalRealm.available) return [NET.offline ? 'GO ONLINE' : 'REFRESH', 'BACK'];
     if (!LocalRealm.account) return ['LOG IN', 'CREATE ACCOUNT', 'BACK'];
-    return ['UPLOAD SLOT 1', 'UPLOAD SLOT 2', 'UPLOAD SLOT 3', 'DOWNLOAD SLOT 1', 'DOWNLOAD SLOT 2', 'DOWNLOAD SLOT 3', 'LOG OUT', 'BACK'];
+    return ['UPLOAD SLOT 1', 'UPLOAD SLOT 2', 'UPLOAD SLOT 3', 'DOWNLOAD SLOT 1', 'DOWNLOAD SLOT 2', 'DOWNLOAD SLOT 3', ...(this.me && this.me.canClaimAdmin ? ['CLAIM REALM ADMIN'] : []), ...(this.staff() ? ['ADMIN CONTROL'] : []), 'LOG OUT', 'BACK'];
   }
   async run(o) {
     this.busy = true;
     try {
-      if (o === 'LOG IN' || o === 'CREATE ACCOUNT') { const a = await accountForm(o === 'LOG IN' ? 'login' : 'register'); if (a) { SFX.confirm(); this.msg = `WELCOME, ${a.name}!`; await NET.init(); await this.refresh(); } }
-      else if (o === 'LOG OUT') { await LocalRealm.logout(); NET.room = null; NET.peers = []; NET.status = 'SERVER: LOG IN'; this.cloud = null; SFX.close(); this.msg = 'LOGGED OUT'; }
+      if (o === 'LOG IN' || o === 'CREATE ACCOUNT') { const a = await accountForm(o === 'LOG IN' ? 'login' : 'register'); if (a) { SFX.confirm(); this.msg = `WELCOME, ${a.name}!`; await NET.init(); await this.refresh(); if (typeof ADMIN !== 'undefined') await ADMIN.check(); if (this.staff()) this.msg = `WELCOME, ${String(this.me.role).toUpperCase()} ${a.name}!`; } }
+      else if (o === 'CLAIM REALM ADMIN') { const r = await LocalRealm.api('/api/admin/claim', { method: 'POST' }); if (typeof ADMIN !== 'undefined') await ADMIN.check(); await this.refresh(); SFX.levelup(); this.msg = `REALM ${String(r.role).toUpperCase()}: DEV MODE ON`; }
+      else if (o === 'ADMIN CONTROL') { if (typeof openAdmin === 'function') openAdmin(); }
+      else if (o === 'LOG OUT') { await LocalRealm.logout(); this.me = null; if (typeof ADMIN !== 'undefined') ADMIN.role = null; NET.room = null; NET.peers = []; NET.status = 'SERVER: LOG IN'; this.cloud = null; SFX.close(); this.msg = 'LOGGED OUT'; }
       else if (o === 'GO ONLINE') { NET.setMode('online'); await NET.init(); this.msg = NET.db ? 'ONLINE: CLOUD SAVES READY' : 'NO ONLINE ACCOUNT HERE'; await this.refresh(); }
       else if (o === 'REFRESH') { await NET.init(); await this.refresh(); this.msg = this.page() ? 'SIGNED IN' : 'OFFLINE ON THIS PAGE'; }
       else if (this.page() && o.startsWith('UPLOAD')) { const s = +o.slice(-1) - 1; await PageCloud.upload(s); await this.refresh(); SFX.confirm(); this.msg = `SLOT ${s + 1} SAVED TO CLOUD`; }
@@ -208,9 +215,9 @@ class AccountScene {
     if (this.page()) { text('SIGNED IN WITH CLAUDE', 10, 18, 'green'); text(`PLAYER ${String(NET.myId).slice(0, 10)}`, 10, 28, 2); text('PRIVATE CLOUD SAVES', 10, 37, 2); }
     else if (!LocalRealm.available) { text(NET.offline ? 'OFFLINE MODE' : 'NOT SIGNED IN HERE', 10, 18, 'red'); text('SAVES STAY ON THIS DEVICE', 10, 28, 2); text('REALM: node backend/server.cjs', 10, 37, 2); }
     else if (!LocalRealm.account) { text(`${(LocalRealm.info.realm || 'REALM').slice(0, 20)}`, 10, 18, 'gold'); text(`${LocalRealm.info.players} ONLINE  ${LocalRealm.info.accounts} ACCOUNTS`, 10, 29, 2); }
-    else { text(`SIGNED IN: ${LocalRealm.account.name}`.slice(0, 24), 10, 18, 'green'); text(NET.isOnline() ? `ONLINE  ${NET.peers.length} PLAYERS` : NET.status || '', 10, 29, 2); }
+    else { text(`SIGNED IN: ${LocalRealm.account.name}`.slice(0, 24), 10, 18, 'green'); if (this.staff()) text(`${String(this.me.role).toUpperCase()} - DEV MODE ON`, 10, 29, 'gold'); else text(NET.isOnline() ? `ONLINE  ${NET.peers.length} PLAYERS${this.me && this.me.canClaimAdmin ? ' - NO ADMIN' : ''}` : NET.status || '', 10, 29, 2); }
     this.opts().forEach((c, j) => {
-      const y = 49 + j * 10; if (j === this.i) fill(4, y - 1, 152, 10, 1);
+      const y = 48 + j * 8; if (j === this.i) fill(4, y - 1, 152, 8, 1);
       let tag = '';
       if (this.cloud && /SLOT/.test(c)) { const s = this.cloud[+c.slice(-1) - 1]; if (c.startsWith('DOWNLOAD')) tag = s ? `${s.name} L${s.lvl}` : 'EMPTY'; else { const l = slotInfo(+c.slice(-1) - 1); tag = l ? `${l.name} L${l.lvl}` : 'EMPTY'; } }
       text(c, 8, y, 3); if (tag) textR(tag.slice(0, 11), 154, y, 2);

@@ -13,7 +13,10 @@ const ADMIN = { role: null, owner: false, checked: false, async check() {
   this.checked = true;
 } };
 if (/(^|#|&)admin\b/.test(location.hash)) S.devMode = true;
-const adminAllowed = () => !!(S.devMode || ADMIN.owner || ADMIN.role);
+// developer mode comes from the setting (or #admin) or from a root/admin realm account
+const accountDevMode = () => ['root', 'admin'].includes(ADMIN.role);
+const devModeOn = () => !!(S.devMode || accountDevMode());
+const adminAllowed = () => !!(devModeOn() || ADMIN.owner || ADMIN.role);
 const staffRole = () => ADMIN.role;
 setTimeout(() => ADMIN.check(), 2500);
 
@@ -82,7 +85,7 @@ function adminTree() {
       { label: 'COLLISION GRID', value: () => DBG.grid ? 'ON' : 'OFF', run: () => { DBG.grid = !DBG.grid; A_ok(`Grid ${DBG.grid ? 'on' : 'off'}`); } },
       { label: 'PROFILER (F3)', value: () => Profiler.on ? 'ON' : 'OFF', run: () => { Profiler.on = !Profiler.on; A_ok(`Profiler ${Profiler.on ? 'on' : 'off'}`); } },
       { label: 'GAME INFO', run: () => say([`${BUILD.game} ${BUILD.version}`, `Zones ${ZONES.length}  Creatures ${BESTIARY.length}`, `Recipes ${RECIPES.length}  Mounts ${MOUNTS.length}`, `Items ${Object.keys(ITEMS).length}  Weapons ${Object.keys(WEAPONS).length}`]) },
-      { label: 'DEVELOPER MODE', value: () => S.devMode ? 'ON' : 'OFF', run: () => { S.devMode = !S.devMode; saveSettings(); A_ok(`Developer mode ${S.devMode ? 'on' : 'off'}`); } },
+      { label: 'DEVELOPER MODE', value: () => S.devMode ? 'ON' : accountDevMode() ? 'ACCOUNT' : 'OFF', run: () => { S.devMode = !S.devMode; saveSettings(); A_ok(`Developer mode ${S.devMode ? 'on' : 'off'}`); } },
     ] },
   ];
   return tree;

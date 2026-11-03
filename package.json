@@ -10,7 +10,8 @@
     "start": "node server.js",
     "server": "node backend/server.cjs",
     "desktop:dev": "electron .",
-    "desktop:dist": "electron-builder"
+    "desktop:dist": "electron-builder",
+    "admin": "node backend/admin-cli.cjs"
   },
   "main": "desktop/main.cjs",
   "devDependencies": {
