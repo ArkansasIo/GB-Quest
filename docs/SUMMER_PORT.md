@@ -20,7 +20,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 | Output | Contents |
 |---|---|
-| `data/game.json` | 68 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
+| `data/game.json` | 82 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
 | `data/zones.json` | 154 zones/towns with 406 NPCs: tile rows (pack-aliased art), walk mask, exits, hub, level range |
 | `data/sprites.json` | 5,077 sprite names → `[file, x, y, w, h]` in the 4× art |
 | `art/` (gitignored) | `assets_hd64/` sheets plus 568 single 4× PNGs |
@@ -56,6 +56,16 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Extract and imprint (src/d4_gear.js): in towns, extract an item's aspect into your codex (keeping the best value) and imprint codex aspects onto rare or better gear.
 - Dungeon doors and traps: doorways at room mouths; 3+ hidden traps per floor (DEX save against a DC that grows with level and floor, spikes stay visible once found).
 - Flight: riding a flying raid mount in the wilds crosses water, trees and rocks.
+- Talents (TALENT_TREES): one point per 5 levels across the VANGUARD, RANGER and ARCANIST trees (CHARACTER > TALENT, reset for gold).
+- Companions (COMPANION_DEFS, BOND_TIERS): hire the 16 companions at inns or START > COMPANION; one fights beside you (DPS strikes, healers mend, tanks guard) and the bond grows with every win, adding its tier's bonuses.
+- Guilds (src/guild_prog.js): found one at a guildmaster; kills, dungeons, raids, trials, quests, crafting and fishing raise the guild level (GUILD_WEIGHTS) and unlock GUILD_PERKS.
+- Conquest (src/guild_war.js): challenge each wild region's boonstone held by an AI guild (waves of defenders and the STONE WARDEN) for +10% XP and gold there; with 3 stones besiege ARDENHOLD KEEP (gate, courtyard, castle lord) for CASTLE_BUFF and the CASTLE LORD title; collect daily tax.
+- Arena: ranked 1v1 and team 3v3 against AI rivals of every class (SIM_NAMES) for rating and honor; the quartermaster sells epic and legendary gear for honor.
+- Bounty board: three daily bounties from BOUNTY_TYPES, measured from your activity counters, claimed for gold, XP and scrap.
+- Homes and bank: buy a home in a town (rest, storage up to 100), and store gear at the bank.
+- Waypoints: step on a zone's waypoint to attune it; travel from START > TRAVEL or a harbormaster.
+- The Spire: climb floor by floor against the 20 tower bosses, with a chest every 5 floors.
+- Difficulty 1-9 (DIFFICULTY) at the oracle: foe HP and damage up, XP and loot up, with level gates.
 - Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
@@ -63,7 +73,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 ## Not ported yet (planned stages)
 
-Housing, guilds and conquest, the bounty board, talents, pets and companions, the arena, PvP, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Live PvP and online play (the port is single player; the arena uses AI rivals), the auction house, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -121,6 +131,20 @@ CHECK extract: codex={ "savage": 40 } leg in bag=false
 CHECK imprint: KNIFE +2 now has { "id": "savage", "v": 40 }
 CHECK dungeon doors=14 traps=3 first trap -> ["A hidden trap! You leap clear. (DEX 17 vs DC 11)"] tile=gd_dungeon_spikes
 CHECK save=true load=true codex=1 found=2
+CHECK talents points=0 learned=12 hp 202 -> 233 fire=10 crit=3
+CHECK companion=ESME role=healer
+CHECK bond=20 tier=ALLY stats=[["hp", 2]]
+CHECK guild=DOT MATRIX xp=950 level=1
+CHECK boonstone ELDERWOOD fights=7 owner=YOU   (and HOLLOWMERE, THORNWOOD)
+CHECK castle owned=true dmg+11 xp+15 title=CASTLE LORD
+CHECK arena 3v3 fights=3 rating=1054 honor=492
+CHECK honor shop bag 0 -> 1
+CHECK bounties=["CATCH FISH 5", "FINISH QUESTS 3", "TRAVEL 400"] claimed first: gold 57804 -> 60004
+CHECK home=["ardenhold"] store=1/20 bag 2 -> 1
+CHECK waypoints=["elderwood_s1"] travelled to elderwood_s1 at (22, 12)
+CHECK spire fights=1 best=1
+CHECK difficulty VETERAN: dmg x1.30
+CHECK save=true load=true guild=DOT MATRIX comp=esme talents=12
 ```
 
 Rolls are random, so item names and values differ from run to run.

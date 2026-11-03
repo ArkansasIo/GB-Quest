@@ -181,6 +181,10 @@ func _arrived() -> void:
 		_arrived_dungeon()
 		return
 	if _gather_here(): return
+	var wp = zone.get("waypoint")
+	if wp is Dictionary and int(wp["x"]) == Game.pos.x and int(wp["y"]) == Game.pos.y and Social.attune(Game.zone_id):
+		main.say(["WAYPOINT ATTUNED: %s." % zone.get("name", ""), "Travel here from START > TRAVEL."])
+		return
 	# exits to the next zone
 	for k in zone.get("exits", {}):
 		var e: Dictionary = zone["exits"][k]
@@ -297,6 +301,7 @@ func _finish_dungeon() -> void:
 		cl.append(d["id"])
 	Game.hero["cleared"] = cl
 	var bonus := int(d["lvl"]) * (60 if first else 20) * (3 if Dungeon.is_raid(d) else 1)
+	Social.count("raids" if Dungeon.is_raid(d) else "dungeons")
 	var ups := Game.gain_xp(bonus)
 	var lines := ["%s CLEARED!" % d["name"], "+%d XP for the clear%s." % [bonus, " (first time)" if first else ""]]
 	if Dungeon.is_raid(d) or (first and Game.rng.randf() < 0.2):
@@ -342,7 +347,7 @@ func _talk(n: Dictionary) -> void:
 	var svc := str(n.get("svc"))
 	talking = str(n.get("name", "NPC"))
 	if svc == "inn":
-		main.choose(["REST (20 G)", "COOK", "LEAVE"], Callable(self, "_inn"), "%s: A warm bed for 20 G?" % talking)
+		main.choose(["REST (20 G)", "COOK", "COMPANIONS", "LEAVE"], Callable(self, "_inn"), "%s: A warm bed for 20 G?" % talking)
 	elif svc == "vendor":
 		main.choose(["POTION (25 G)", "ARMS", "SELL", "LEAVE"], Callable(self, "_shop"), "%s: What will it be?" % talking)
 	elif svc in ["blacksmith", "armorsmith", "weaponsmith"]:
@@ -366,6 +371,15 @@ func _talk(n: Dictionary) -> void:
 		_craft_menu()
 	elif svc == "stable":
 		_stable()
+	elif svc == "guild": Social.open_guild(main)
+	elif svc == "housing": Social.open_home(main)
+	elif svc == "bank": Social.open_bank(main)
+	elif svc == "arena": Social.open_arena(main)
+	elif svc == "honor": Social.open_honor(main)
+	elif svc == "lfg": Social.open_bounties(main)
+	elif svc == "tower": Social.open_tower(main)
+	elif svc == "difficulty": Social.open_oracle(main)
+	elif svc == "portal": Social.open_travel(main, self)
 	elif svc == "trials":
 		_trials_menu()
 	elif svc == "trainer":
@@ -508,6 +522,7 @@ func _trial_won_fight() -> void:
 	var t: Dictionary = trial["t"]
 	var first: bool = not Game.hero.get("trials", {}).has(t["id"])
 	var tr: Dictionary = Game.hero.get("trials", {}); tr[t["id"]] = true; Game.hero["trials"] = tr
+	Social.count("trials")
 	var it := Game.random_drop(int(Game.hero["lvl"]) + 20)
 	it = Game.make_item(str(it["id"]), maxi(4 if first else 3, int(it["r"])), int(Game.hero["lvl"]) + 10)
 	Game.bag().append(it)
@@ -557,6 +572,8 @@ func _buy_mount(k: int) -> void:
 func _inn(k: int) -> void:
 	if k == 1:
 		craft_prof = "cook"; _craft_menu(); return
+	if k == 2:
+		Social.open_companions(main); return
 	if k != 0:
 		return
 	if int(Game.hero["gold"]) < 20:
@@ -618,7 +635,8 @@ func _buy(k: int) -> void:
 	Game.bag().append(it)
 	main.say(["Bought %s. Equip it from GEAR & BAG." % Game.item_name(it)])
 
-const MENU := ["CHARACTER", "GEAR & BAG", "QUEST", "POTION", "MOUNT", "SAVE", "SAVE & QUIT", "ITEMS", "BACK"]
+const MENU := ["CHARACTER", "GEAR & BAG", "ITEMS", "POTION", "QUEST", "MOUNT", "TRAVEL", "COMPANION", "BOUNTIES", "SAVE", "SAVE & QUIT", "BACK"]
+var menu_opts: Array = []
 
 var item_ids: Array = []
 
@@ -627,53 +645,50 @@ func _use_item(k: int) -> void:
 	main.say(Craft.use_item(str(item_ids[k]), false)[0])
 
 func _menu() -> void:
-	var o := MENU.duplicate()
-	o[3] = "POTION (%d)" % int(Game.hero["potions"])
-	o[4] = ("DISMOUNT" if Game.hero.get("mounted", false) else "MOUNT") if Game.hero.get("mount", "") != "" else "MOUNT (NONE)"
-	main.choose(o, Callable(self, "_menu_pick"))
+	menu_opts = MENU.duplicate()
+	menu_opts[3] = "POTION (%d)" % int(Game.hero["potions"])
+	menu_opts[5] = ("DISMOUNT" if Game.hero.get("mounted", false) else "MOUNT") if Game.hero.get("mount", "") != "" else "MOUNT (NONE)"
+	main.choose(menu_opts, Callable(self, "_menu_pick"))
 
 func _menu_pick(k: int) -> void:
-	if k == 0:
-		main.push(CharPage.new())
-		return
-	if k == 1:
-		main.push(Bag.new())
-		return
-	if k == 2:
-		var cp = CharPage.new(); cp.tab = 3; main.push(cp)
-		return
-	if k == 7:
-		var ids: Array = Craft.items().keys()
-		if ids.is_empty(): main.say(["No food or elixirs. Cook at an inn; brew at an alchemist."]); return
-		var names := []
-		for id in ids: names.append("%s x%d" % [Craft.item_name(id).substr(0, 14), int(Craft.items()[id])])
-		item_ids = ids
-		main.choose(names, Callable(self, "_use_item"), "Use which item?")
-		return
-	if k == 4:
-		if Game.hero.get("mount", "") == "":
-			main.say(["You have no mount. Stablemasters in towns sell them from level 15."])
-		elif zone.has("dungeon"):
-			main.say(["No riding in dungeons."])
-		else:
-			Game.hero["mounted"] = not Game.hero.get("mounted", false)
-			main.say(["You ride your %s." % mount().get("name", "mount") if Game.hero["mounted"] else "You dismount."])
-		return
-	k = {3: 1, 5: 2, 6: 3}.get(k, 9)
-	if k == 1:
-		if int(Game.hero["potions"]) <= 0:
-			main.say(["No potions."])
-			return
-		Game.hero["potions"] = int(Game.hero["potions"]) - 1
-		var h := (Game.roll("2d4+2") + int(Game.hero["lvl"]) / 5) * (100 + Game.stat("heal")) / 100
-		Game.hero["hp"] = mini(Game.hp_max(), int(Game.hero["hp"]) + h)
-		main.say(["+%d HP." % h])
-	elif k == 2:
-		main.say(["Saved." if Game.save() else "Could not save."])
-	elif k == 3:
-		Game.save()
-		main.clear()
-		main.push(load("res://scripts/title.gd").new())
+	if k < 0: return
+	var pick: String = MENU[k]
+	match pick:
+		"CHARACTER": main.push(CharPage.new())
+		"GEAR & BAG": main.push(Bag.new())
+		"QUEST":
+			var cp = CharPage.new(); cp.tab = 3; main.push(cp)
+		"ITEMS":
+			var ids: Array = Craft.items().keys()
+			if ids.is_empty(): main.say(["No food or elixirs. Cook at an inn; brew at an alchemist."]); return
+			var names := []
+			for id in ids: names.append("%s x%d" % [Craft.item_name(id).substr(0, 14), int(Craft.items()[id])])
+			item_ids = ids
+			main.choose(names, Callable(self, "_use_item"), "Use which item?")
+		"MOUNT":
+			if Game.hero.get("mount", "") == "":
+				main.say(["You have no mount. Stablemasters in towns sell them from level 15."])
+			elif zone.has("dungeon"):
+				main.say(["No riding in dungeons."])
+			else:
+				Game.hero["mounted"] = not Game.hero.get("mounted", false)
+				main.say(["You ride your %s." % mount().get("name", "mount") if Game.hero["mounted"] else "You dismount."])
+		"TRAVEL": Social.open_travel(main, self)
+		"COMPANION": Social.open_companions(main)
+		"BOUNTIES": Social.open_bounties(main)
+		"POTION":
+			if int(Game.hero["potions"]) <= 0:
+				main.say(["No potions."])
+				return
+			Game.hero["potions"] = int(Game.hero["potions"]) - 1
+			var h := (Game.roll("2d4+2") + int(Game.hero["lvl"]) / 5) * (100 + Game.stat("heal")) / 100
+			Game.hero["hp"] = mini(Game.hp_max(), int(Game.hero["hp"]) + h)
+			main.say(["+%d HP." % h])
+		"SAVE": main.say(["Saved." if Game.save() else "Could not save."])
+		"SAVE & QUIT":
+			Game.save()
+			main.clear()
+			main.push(load("res://scripts/title.gd").new())
 
 # ------------------------------------------------------------------ drawing
 func _hero_px() -> Vector2:

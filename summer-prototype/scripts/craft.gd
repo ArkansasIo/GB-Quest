@@ -90,6 +90,7 @@ func make(r: Dictionary) -> Array:
 		if int(mats()[k]) <= 0: mats().erase(k)
 	var cr: Dictionary = Game.hero.get("craft", {})
 	cr[r["prof"]] = skill(str(r["prof"])) + 1
+	Social.count("crafted")
 	Game.hero["craft"] = cr
 	var out := []
 	match _makes_kind(r):

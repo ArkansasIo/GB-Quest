@@ -145,6 +145,7 @@ func _ready() -> void:
 	print("CHECK save=%s load=%s chapter=%d mount=%s" % [Game.save(), Game.load_save(), Game.hero["chapter"], Game.hero.get("mount")])
 	await _stage5()
 	await _stage6()
+	await _stage7()
 	get_tree().quit()
 
 ## run a pushed battle to the end with ATTACK, keeping the hero alive unless told not to
@@ -340,3 +341,83 @@ func _stage6() -> void:
 	print("CHECK dungeon doors=%d traps=%d first trap -> %s hp %d->%d tile=%s" % [doors, f.zone["traps"].size(), main.top().lines if main.top() != f else "-", hp0, Game.hero["hp"], f.zone["gfx"][tr["y"]][tr["x"]]])
 	await _clear_dialogs(f); await _wait(0.3); await _shot("25_dungeon_doors_trap")
 	print("CHECK save=%s load=%s codex=%d found=%d" % [Game.save(), Game.load_save(), Game.hero.get("codex", {}).size(), Game.hero.get("found", {}).size()])
+
+## run every battle of a Social series (or a single pushed battle) and pop the dialogs in between
+func _run_series(f) -> int:
+	var fights := 0
+	for n in range(80):
+		var top = main.top()
+		if top == f: break
+		if top.has_method("_victory"):
+			fights += 1; await _autobattle(top)
+		else:
+			main.pop(top)
+			if top.get("done") is Callable and top.done.is_valid(): top.done.call()
+		await get_tree().process_frame
+	return fights
+
+func _stage7() -> void:
+	Game.new_hero("NOVA", "arcanist", "wispling"); Game.hero["lvl"] = 60; Game.hero["xp"] = Data.xp_for(60); Game.hero["hp"] = Game.hp_max(); Game.hero["gold"] = 50000
+	Game.zone_id = "ardenhold"; Game.pos = Vector2i(16, 12)
+	main.clear(); var f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	Social.main = main
+	# talents
+	var hp0 := Game.hp_max()
+	var learned := []
+	for t in Data.game["TALENT_TREES"]:
+		for n in t["nodes"]: learned.append(Social.learn(n).substr(0, 20))
+	print("CHECK talents points=%d learned=%d hp %d -> %d fire=%d crit=%d | %s" % [Social.talent_points(), Social.talents().size(), hp0, Game.hp_max(), Game.stat("fire"), Game.stat("crit"), learned.slice(0, 2)])
+	# companion
+	Social._comp_list = Data.game["COMPANION_DEFS"]; Social._comp_pick(1); await _clear_dialogs(f)
+	print("CHECK companion=%s role=%s gold=%d" % [Social.companion().get("name"), Social.companion().get("role"), Game.hero["gold"]])
+	for i in range(20): Social.bond_up()
+	print("CHECK bond=%d tier=%s stats=%s" % [Social.bond(), Social.bond_tier().get("name"), Social.bond_stats()])
+	f._encounter(); await _wait(1.2); main.top().state = "menu"; await _wait(0.2); await _shot("26_companion_battle")
+	await _autobattle(main.top()); await _clear_dialogs(f)
+	# guild and conquest
+	Social._found(0); await _clear_dialogs(f)
+	Social.count("dungeons", 3); Social.count("raids", 1); Social.count("kills", 50)
+	print("CHECK guild=%s xp=%d level=%d perks=%s" % [Game.hero.get("guild"), Social.guild_xp(), Social.guild_level(), Social.guild_perk_stats()])
+	var regs: Array = Social.regions()
+	for r in regs.slice(0, 3):
+		Social._cq_list = regs; Social._cq_pick(regs.find(r))
+		var nf: int = await _run_series(f)
+		print("CHECK boonstone %s fights=%d owner=%s" % [r["name"], nf, Social.stone_owner(r["id"])])
+	Social._cq_list = regs; Social._cq_pick(regs.size())
+	var cf: int = await _run_series(f)
+	print("CHECK castle fights=%d owned=%s dmg+%d xp+%d title=%s" % [cf, Social.castle_owned(), Game.stat("dmg"), Game.stat("xp"), Game.hero.get("title")])
+	print("CHECK tax now: %s" % Social.collect_tax())
+	# arena and honor
+	Social._arena_pick(1); var af: int = await _run_series(f)
+	print("CHECK arena 3v3 fights=%d rating=%d honor=%d" % [af, int(Game.hero.get("rating", 0)), int(Game.hero.get("honor", 0))])
+	Social.open_honor(main); main.pop(main.top()); Game.hero["honor"] = 10000; var nb := Game.bag().size(); Social._honor_buy(0); await _clear_dialogs(f)
+	print("CHECK honor shop bag %d -> %d" % [nb, Game.bag().size()])
+	# bounties
+	var bl: Array = Social.bounties()
+	for b in bl: Social.count(str(b["stat"]), int(b["target"]))
+	var g0 := int(Game.hero["gold"]); Social._bounty_pick(0); await _clear_dialogs(f)
+	print("CHECK bounties=%s claimed first: gold %d -> %d" % [bl.map(func(b): return "%s %d" % [b["name"], b["target"]]), g0, Game.hero["gold"]])
+	# home and bank
+	Social._buy_home(0); await _clear_dialogs(f)
+	Game.bag().append(Game.make_item("knife", 2, 10)); var bn := Game.bag().size()
+	Social._store(bn - 1); await _clear_dialogs(f)
+	print("CHECK home=%s store=%d/%d bag %d -> %d" % [Game.hero.get("homes", {}).keys(), Social.store().size(), Social.store_cap(), bn, Game.bag().size()])
+	# waypoint and travel
+	Game.zone_id = "elderwood_s1"; var wpd = Data.zones["elderwood_s1"].get("waypoint")
+	main.clear(); f = main.push(load("res://scripts/field.gd").new()); await _wait(0.1); await _clear_dialogs(f)
+	if wpd is Dictionary:
+		Game.pos = Vector2i(int(wpd["x"]), int(wpd["y"])); f._arrived(); await _clear_dialogs(f)
+	Game.zone_id = "ardenhold"; Game.pos = Vector2i(16, 12)
+	main.clear(); f = main.push(load("res://scripts/field.gd").new()); await _wait(0.1); await _clear_dialogs(f)
+	Social._wp_list = ["ardenhold"] + Game.hero.get("wps", {}).keys(); Social._travel(Social._wp_list.size() - 1, f); await _clear_dialogs(f)
+	print("CHECK waypoints=%s travelled to %s at %s" % [Game.hero.get("wps", {}).keys(), Game.zone_id, Game.pos])
+	# spire and difficulty
+	Social._tower_pick(0); var tf2: int = await _run_series(f)
+	print("CHECK spire fights=%d best=%d" % [tf2, int(Game.hero.get("spire", 0))])
+	Social._diff(3); await _clear_dialogs(f)
+	f._encounter(); await _wait(0.1); var db = main.top()
+	print("CHECK difficulty %s: foe hp %d dmg x%.2f" % [Social.difficulty().get("name"), int(db.foe["max"]), db.dmg_scale])
+	await _autobattle(db); await _clear_dialogs(f)
+	var cp = main.push(load("res://scripts/charpage.gd").new()); cp.tab = 5; await _wait(0.2); await _shot("27_talents"); main.pop(cp)
+	print("CHECK counters=%s" % [Game.hero.get("stats")])
+	print("CHECK save=%s load=%s guild=%s comp=%s talents=%d" % [Game.save(), Game.load_save(), Game.hero.get("guild"), Game.hero.get("comp"), Social.talents().size()])

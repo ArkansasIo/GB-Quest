@@ -45,6 +45,7 @@ func _catch() -> void:
 		out.append("An old boot. Lovely.")
 	else:
 		Craft.add(k)
+		Social.count("fish")
 		var cr: Dictionary = Game.hero.get("craft", {}); cr["fish"] = skill() + 1; Game.hero["craft"] = cr
 		out.append("CAUGHT %s! (fishing %d)" % [Craft.mat_name(k), skill()])
 		out.append_array(Quest.on_fish(Game.zone_id))

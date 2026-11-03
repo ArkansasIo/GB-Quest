@@ -43,6 +43,11 @@ const { chromium } = require('playwright');
       ASPECT_TEXT: Object.fromEntries(Object.entries(ASPECT_SPECS).map(([id, A]) => [id, A.e.t === 'stat' ? null : aspectText(A.e, '{v}')])),
       ASP_STAT, SUPPORT_TRAITS, SUPPORT_CAPS, SUPPORT_UNLOCK, RECIPES, HERB_BY_BIOME,
       // stage 5: accessories, gems, temper/masterwork, raids, trials, world bosses
+      // stage 7: talents, companions, guilds and conquest, arena, tower, difficulty
+      TALENT_TREES, COMPANION_DEFS, BOND_TIERS, GUILD_MAX_LEVEL, GUILD_PERKS, GUILD_WEIGHTS, GUILD_NAMES, SIM_NAMES, DIFFICULTY,
+      AI_GUILDS: typeof AI_GUILDS !== 'undefined' ? AI_GUILDS : [], CASTLE_BUFF: typeof CASTLE_BUFF !== 'undefined' ? CASTLE_BUFF : [], CASTLE_NEEDS: typeof CASTLE_NEEDS !== 'undefined' ? CASTLE_NEEDS : 3,
+      CHALLENGE_WAVES: typeof challengeWaves === 'function' ? Object.fromEntries(['stone', 'castle', 'defend', 'castle_defend'].map(k => [k, challengeWaves(k)])) : {},
+      TOWER_BOSSES: BOSSES.filter(b => b.cat === 'tower').map(b => ({ id: b.id, name: b.name, lvl: b.lvl, fam: b.fam, art: monsterArt(b) })),
       SIDE_TEMPLATES, BOUNTY_TYPES: typeof BOUNTY_TYPES !== 'undefined' ? BOUNTY_TYPES : [],
       SLOTS, GEM_TYPES, GEM_DROP, GEM_TIER_MAX, GEM_SOCKET_LIMIT, GEM_ART: typeof AP_GEM_ART !== 'undefined' ? AP_GEM_ART : {},
       TEMPER_POOLS, TEMPER_BASE, TEMPER_MAX, MW_MAX, MW_STEP, MW_CRIT,

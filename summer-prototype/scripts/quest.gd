@@ -62,6 +62,7 @@ func _advance() -> Array:
 	var ups := Game.gain_xp(int(rw["xp"]))
 	Game.hero["gold"] = int(Game.hero["gold"]) + int(rw["gold"])
 	Game.hero["chapter"] = int(ch["i"]) + 1
+	Social.count("quests")
 	Game.hero["chprog"] = 0
 	Game.hero["chseen"] = []
 	var out := ["CHAPTER COMPLETE: %s" % ch["title"], "+%d XP  +%d G" % [int(rw["xp"]), int(rw["gold"])]]
@@ -198,6 +199,7 @@ func _side_event(type: String, zone_id: String) -> Array:
 		q["prog"] = int(q["prog"]) + 1
 		if int(q["prog"]) >= int(q["n"]):
 			side_list().erase(q)
+			Social.count("quests")
 			var ups := Game.gain_xp(int(q["xp"]))
 			Game.hero["gold"] = int(Game.hero["gold"]) + int(q["gold"])
 			var dn: Dictionary = Game.hero.get("sqdone", {}); dn[zone_id] = int(dn.get(zone_id, 0)) + 1; Game.hero["sqdone"] = dn

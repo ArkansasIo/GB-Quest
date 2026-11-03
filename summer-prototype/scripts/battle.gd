@@ -32,6 +32,8 @@ var on_lose: Callable = Callable()   # trials: losing ends the trial instead of 
 var max_rounds := 0             # trials: TRIAL OF HOURS
 var no_escape := false
 var loot := true
+var hp_scale := 1.0             # conquest waves, arena and the Spire scale foe HP
+var dmg_scale := 1.0
 
 const SKY := {"meadow": [Color8(118, 188, 240), Color8(148, 204, 104)], "coast": [Color8(104, 180, 236), Color8(232, 214, 156)], "marsh": [Color8(146, 168, 160), Color8(118, 140, 96)],
 	"jungle": [Color8(128, 198, 168), Color8(96, 160, 76)], "snow": [Color8(176, 202, 236), Color8(236, 242, 248)], "badlands": [Color8(238, 180, 120), Color8(214, 160, 106)],
@@ -48,6 +50,12 @@ func _ready() -> void:
 	var blk := Data.monster_block(foe_lvl)
 	foe = {"name": str(foe_def.get("name", "FOE")).substr(0, 12), "art": foe_def.get("art", ""), "lvl": foe_lvl, "hp": int(blk.get("hp", 10)), "max": int(blk.get("hp", 10)),
 		"ac": int(blk.get("ac", 12)), "hit": int(blk.get("hit", 3)), "dice": str(blk.get("dice", "1d6")), "xp": int(blk.get("xp", 10)), "gold": int(blk.get("gold", 3)), "dt": foe_def.get("dt", "slashing")}
+	# difficulty (the oracle) and series scaling
+	var D: Dictionary = Social.difficulty()
+	foe["max"] = maxi(1, roundi(int(foe["max"]) * hp_scale * float(D.get("hp", 1))))
+	foe["hp"] = foe["max"]
+	dmg_scale = float(D.get("dmg", 1))
+	foe["xp"] = roundi(int(foe["xp"]) * float(D.get("xp", 1)))
 	var intro := []
 	if boss:
 		foe["max"] = int(foe["max"]) * hp_mult; foe["hp"] = foe["max"]; foe["xp"] = int(foe["xp"]) * 4; foe["gold"] = int(foe["gold"]) * 6 + 20
@@ -335,6 +343,12 @@ func _after(out: Array) -> void:
 	if int(foe["hp"]) <= 0:
 		_victory(out)
 		return
+	# the companion's turn
+	if not Social.companion().is_empty():
+		out.append_array(Social.companion_turn(foe))
+		if int(foe["hp"]) <= 0:
+			_victory(out)
+			return
 	# the foe's turn
 	if conds.has("stunned"):
 		out.append("%s is stunned!" % foe["name"])
@@ -381,8 +395,8 @@ func _foe_attack(out: Array) -> void:
 	if buffs.has("evade") or Game.rng.randi_range(1, 100) <= Game.stat("dodge"):
 		out.append("You dodge %s!" % foe["name"])
 		return
-	var dmg := maxi(1, Game.roll(str(foe["dice"])) * (2 if r == 20 else 1))
-	var red := Game.stat("resist") + (25 if conds.has("weakened") else 0) + (25 if buffs.has("fortify") else 0)
+	var dmg := maxi(1, roundi(Game.roll(str(foe["dice"])) * (2 if r == 20 else 1) * dmg_scale))
+	var red := Game.stat("resist") + Social.companion_guard() + (25 if conds.has("weakened") else 0) + (25 if buffs.has("fortify") else 0)
 	var hr := float(Game.hero["hp"]) / maxf(1, Game.hp_max())
 	var reflect := 0
 	for a in Game.aspects():
@@ -411,8 +425,13 @@ func _foe_attack(out: Array) -> void:
 		foe["hp"] = int(foe["hp"]) - back; out.append("%s takes %d back." % [foe["name"], back])
 
 func _victory(out: Array) -> void:
-	var xp := int(foe["xp"]) * (100 + Game.stat("xp")) / 100
-	var gold := int(foe["gold"]) * (100 + Game.stat("gf")) / 100
+	var rb := Social.region_bonus(Quest.here_region())
+	var xp := int(foe["xp"]) * (100 + Game.stat("xp") + rb) / 100
+	var gold := int(foe["gold"]) * (100 + Game.stat("gf") + rb) / 100
+	Social.count("kills")
+	if boss: Social.count("elites")
+	if foe_def.has("where"): Social.count("worldBosses")
+	Social.bond_up()
 	var ups := Game.gain_xp(xp)
 	Game.hero["gold"] = int(Game.hero["gold"]) + gold; Game.hero["kills"] = int(Game.hero.get("kills", 0)) + 1
 	out.append_array(["%s is defeated!" % foe["name"], "Got %d XP and %d G." % [xp, gold]])
@@ -431,7 +450,7 @@ func _victory(out: Array) -> void:
 		var gems: Dictionary = Game.hero.get("gems", {})
 		gems[g] = int(gems.get(g, 0)) + 1; Game.hero["gems"] = gems
 		out.append("Found a gem: %s!" % GearX.gem(g)["name"])
-	if loot and (boss or Game.rng.randf() < 0.2 + int(foe["lvl"]) / 400.0 + Game.stat("mf") / 1000.0):
+	if loot and (boss or Game.rng.randf() < (0.2 + int(foe["lvl"]) / 400.0 + Game.stat("mf") / 1000.0) * float(Social.difficulty().get("loot", 1))):
 		var it := Game.random_drop(int(foe["lvl"]))
 		if boss:
 			var nr := mini(8, int(it["r"]) + 2)
@@ -453,6 +472,9 @@ func _draw() -> void:
 	if int(foe["hp"]) > 0: Data.blit_fit(self, str(foe["art"]), Rect2(392, 170, 170, 170) if not boss else Rect2(372, 130, 210, 210), true)
 	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 	draw_circle(Vector2(140, 370), 110, c[1].darkened(0.1))
+	var cmp := Social.companion()
+	if not cmp.is_empty():
+		Data.blit_fit(self, "c_%s_4" % cmp["cls"], Rect2(196, 262, 90, 110))
 	var look := "c_%s_4" % Game.hero["cls"]
 	Data.blit_fit(self, look if Data.sprite(look) else "np_class_" + Game.hero["cls"], Rect2(80, 220, 130, 150))
 	# HP boxes, with the barrier as a white band and conditions / buffs as tags under them

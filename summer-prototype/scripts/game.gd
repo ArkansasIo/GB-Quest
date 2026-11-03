@@ -54,7 +54,7 @@ func hp_max() -> int:
 	var L := int(hero.get("lvl", 1))
 	var CL := class_level()
 	var hp := hd + (CL - 1) * (hd / 2 + 1) + mod("CON") * CL
-	return maxi(1, hp + maxi(0, L - CL) * 2 + (stat("hp") if hero.has("gear") else 0))   # ascension levels add a little health each
+	return maxi(1, (hp + maxi(0, L - CL) * 2 + (stat("hp") if hero.has("gear") else 0)) * (100 + Social.hp_pct()) / 100)   # ascension levels add a little health each
 
 ## AC from the equipped armour and shield (5e: light adds DEX, medium up to +2, heavy none), plus item pluses
 func ac() -> int:
@@ -141,6 +141,7 @@ func stat(k: String) -> int:
 	if str(hero.get("job", "")) != "" and int(hero.get("lvl", 1)) >= int(Data.game.get("SUPPORT_UNLOCK", 18)):
 		for sv in Loot.support_bonus(str(hero["job"]), int(hero.get("lvl", 1))):
 			if sv[0] == k: v += int(sv[1])
+	v += Social.stat(k)
 	return mini(v, int(Data.game.get("SUBSTATS", {}).get(k, {}).get("max", 99999)))
 
 ## the legendary aspects on equipped gear: [{"id", "v", "e"}]

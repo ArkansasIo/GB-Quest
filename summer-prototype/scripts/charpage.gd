@@ -3,7 +3,7 @@ extends Node2D
 ## LEFT/RIGHT switches tabs, B closes; on JOB, A picks a support job once the hero reaches SUPPORT_UNLOCK.
 
 const Loot = preload("res://scripts/loot.gd")
-const TABS := ["STATS", "SUBST", "ASPECT", "QUEST", "JOB"]
+const TABS := ["STATS", "SUBST", "ASPECT", "QUEST", "JOB", "TALENT"]
 
 var main: Node2D
 var tab := 0
@@ -16,6 +16,28 @@ func step(_d: float) -> void:
 		main.pop(self)
 	elif main.pressed("ui_a") and tab == 4:
 		_pick_job()
+	elif main.pressed("ui_a") and tab == 5:
+		_pick_talent()
+
+var t_nodes: Array = []
+
+func _pick_talent() -> void:
+	t_nodes = []
+	var names := []
+	for t in Data.game.get("TALENT_TREES", []):
+		for n in t["nodes"]:
+			t_nodes.append(n)
+			var st := "*" if Social.talents().has(n["id"]) else ("" if Social.can_learn(n) == "" else "-")
+			names.append("%s%s L%d" % [st, str(n["name"]).substr(0, 14), int(n["level"])])
+	t_nodes.append({})
+	names.append("RESET (%dG)" % (50 * int(Game.hero["lvl"])))
+	main.choose(names, Callable(self, "_learn"), "Points: %d. (* learned, - locked)" % Social.talent_points())
+
+func _learn(k: int) -> void:
+	if k < 0: return
+	if t_nodes[k].is_empty():
+		main.say([Social.reset_talents()]); return
+	main.say([Social.learn(t_nodes[k])])
 
 func _pick_job() -> void:
 	var need := int(Data.game.get("SUPPORT_UNLOCK", 18))
@@ -39,8 +61,8 @@ func _draw() -> void:
 	draw_rect(Rect2(0, 0, 640, 576), Color8(16, 20, 36))
 	for t in range(TABS.size()):
 		var on := t == tab
-		Data.panel(self, Rect2(4 + t * 127, 4, 123, 56), Data.PANEL if on else Data.PANEL2)
-		Data.text_c(self, TABS[t], 4 + t * 127 + 61, 18, Data.INK if on else Data.GREY, 0.75)
+		Data.panel(self, Rect2(4 + t * 106, 4, 102, 56), Data.PANEL if on else Data.PANEL2)
+		Data.text_c(self, TABS[t], 4 + t * 106 + 51, 20, Data.INK if on else Data.GREY, 0.6)
 	Data.panel(self, Rect2(4, 64, 632, 508))
 	match tab:
 		0: _stats()
@@ -48,7 +70,25 @@ func _draw() -> void:
 		2: _aspects()
 		3: _quest()
 		4: _job()
-	Data.text(self, "<> TAB   B BACK" + ("   A CHOOSE" if tab == 4 else ""), Vector2(24, 540), Data.GREY, 0.5)
+		5: _talents()
+	Data.text(self, "<> TAB   B BACK" + ("   A CHOOSE" if tab >= 4 else ""), Vector2(24, 540), Data.GREY, 0.5)
+
+func _talents() -> void:
+	_line("TALENT POINTS %d  (one per 5 levels)" % Social.talent_points(), 84, Data.EDGE, 0.6)
+	var y := 116
+	for t in Data.game.get("TALENT_TREES", []):
+		_line(str(t["name"]), y, Data.GREY, 0.6); y += 26
+		for n in t["nodes"]:
+			var have: bool = Social.talents().has(n["id"])
+			_line("%s %s L%d: %s" % ["*" if have else " ", n["name"], int(n["level"]), n["desc"]], y, Data.INK if have else Data.GREY, 0.45, 40)
+			y += 22
+		y += 8
+	var c := Social.companion()
+	if not c.is_empty():
+		_line("COMPANION %s (%s) BOND %d %s" % [c["name"], str(c["role"]).to_upper(), Social.bond(), Social.bond_tier().get("name", "")], 470, Data.EDGE, 0.5)
+	if Social.in_guild():
+		_line("GUILD %s LV %d%s" % [Game.hero["guild"], Social.guild_level(), "  CASTLE LORD" if Social.castle_owned() else ""], 494, Data.EDGE, 0.5)
+	_line("ARENA %d  HONOR %d  SPIRE %d  DIFF %s" % [int(Game.hero.get("rating", 1000)), int(Game.hero.get("honor", 0)), int(Game.hero.get("spire", 0)), Social.difficulty().get("name", "")], 518, Data.GREY, 0.45)
 
 func _line(s: String, y: float, col: Color = Data.INK, sc: float = 0.75, x: float = 28) -> void:
 	Data.text(self, s, Vector2(x, y), col, sc)
