@@ -90,7 +90,7 @@ python tools/generate_character_sprite_pack.py \
   --size 128 --archetypes mage --ranks A
 ```
 
-Supported archetypes: `warrior`, `mage`, `ranger`, `rogue`, `cleric`, `summoner`. Supported ranks: `F`, `E`, `D`, `C`, `B`, `A`, `S`, `SSS`. Multiple selections are accepted, for example `--archetypes warrior mage --ranks F E`; each combination adds 408 frames. The generator writes `character_variant_generation_report.json`.
+Supported archetypes: `warrior`, `mage`, `ranger`, `rogue`, `cleric`, `summoner`. Supported ranks: `F`, `E`, `D`, `C`, `B`, `A`, `S`, `SS`, `SSS`. Multiple selections are accepted, for example `--archetypes warrior mage --ranks F E`; each combination adds 408 frames. The generator writes `character_variant_generation_report.json`.
 
 The GitHub Actions workflow now exposes archetype and rank selectors and builds the matching atlas. Each class/rank currently uses a distinct palette and rank accent on a shared warrior-derived silhouette. This is a pipeline/integration prototype—not six finished class designs. Class-specific anatomy, weapons, armor silhouettes, spell effects, and rank-specific geometry still require dedicated art passes. The workflow remains manual and must be run from the repository's Actions tab to produce downloadable artifacts.
 
@@ -136,3 +136,21 @@ python tools/compose_equipment_preview.py \
 
 The compositor checks the base canvas, slot names, selected item/rank/direction variants, overlay file existence and overlay dimensions. It writes the composed transparent PNG plus a JSON report listing each applied layer. The workflow builds one sample equipped preview as a smoke-check of the data path. This checks file and compositing compatibility; it does not validate visual alignment across every animation frame or facing.
 
+
+## Existing item catalog appearance mapping
+
+The appearance-only bridge at `data/visuals/equipment-catalog-visual-map.json` maps the existing SRD equipment catalog IDs to the starter overlay families. It currently covers all **38 weapon** and **13 armor/shield** entries in `src/mmorpg/data/equipment.json`.
+
+The bridge deliberately changes no item stats, catalog IDs, rarity, item rank, stars, item level, gear level, or power level. Weapon families are aliased to the closest current prototype overlay (dagger, bow, staff/focus, blunt weapon, or generic sword); armor categories are aliased to leather, medium-cloth, plate, or shield overlays. These are temporary visual aliases—not unique finished art for every catalog entry.
+
+Validate the mapping after generating equipment layers for the requested rank:
+
+```bash
+python tools/validate_equipment_visual_map.py \
+  --catalog src/mmorpg/data/equipment.json \
+  --mapping data/visuals/equipment-catalog-visual-map.json \
+  --manifest assets_hd64/equipment/equipment_manifest.json \
+  --rank F
+```
+
+The manual animation workflow now runs this validation before composing its sample preview. All nine adventurer ranks are supported by the configurable character and equipment prototype generators, including the previously missing **SS** tier.
