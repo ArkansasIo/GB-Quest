@@ -13465,6 +13465,8 @@ function drawSanctumHud(field) {
 //   * top right square minimap with the zone's safety tag under it
 //   * bottom    hotbar of the four combat arts and potions, between a red HP orb and a blue MP orb (MU/Diablo)
 //   * banners and toasts sit in the middle band so nothing covers the frames
+//   * START menu: a right-hand list over the map (15 px rows, triangle cursor), a small hero card and a help line;
+//     every pop-up choice list uses the same roomy rows and cursor
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
 const MMO_THEMES = ['mmo', 'classic', 'sanctum', 'diablo'];
@@ -13549,6 +13551,56 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       if (i < 4) { const a = arts[i]; if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2); } }
       else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 3, y + 2); textR(String(Math.min(99, n)), x + 17, y + 6, n ? 3 : 2); }
     }
+  }
+
+  // ---------------------------------------------------------------- handheld-RPG menus
+  // a solid right-pointing cursor triangle
+  const tri = (x, y, c = 3) => { for (let i = 0; i < 4; i++) fill(x + i, y + i, 1, 7 - 2 * i, typeof c === 'number' ? col(c) : c); };
+  window.mmoCursor = tri;
+  // pop-up choice lists: roomier rows, triangle cursor, box hugs the right edge
+  if (typeof Choice !== 'undefined') {
+    const cd0 = Choice.prototype.draw;
+    Choice.prototype.draw = function () {
+      if (!hudMmo()) return cd0.apply(this, arguments);
+      let bottom = H - 2;
+      if (this.prompt) { frame(2, H - 46, W - 4, 44); text(wrap(this.prompt).slice(0, 3).join('\n'), 9, H - 39); bottom = H - 47; }
+      const roomy = Math.min(this.o.length, this.rows) * 15 + 10 <= bottom - 2, rh = roomy ? 15 : 11;
+      const vis = this.o.slice(this.top, this.top + this.rows);
+      const w = Math.min(156, Math.max(...this.o.map(s => String(s).length)) * 6 + 22), h = vis.length * rh + 10;
+      const x = this.x != null ? this.x : W - w - 2, y = Math.max(2, bottom - h);
+      frame(x, y, w, h);
+      vis.forEach((s, j) => { const i = this.top + j, ty = y + 6 + j * rh + (roomy ? 2 : 0); text(String(s).slice(0, 23), x + 14, ty); if (i === this.i) tri(x + 6, ty); });
+      if (this.o.length > this.rows) { if (this.top > 0) text('^', x + w - 10, y + 2, 2); if (this.top + this.rows < this.o.length) text('v', x + w - 10, y + h - 10, 2); }
+    };
+  }
+  // START menu: a narrow list on the right over the map, a trainer card on the left and a help line at the bottom
+  const MENU_HELP = { CHARACTER: 'Stats, gear and skills.', SPELLBOOK: 'Spells and slots.', GROWTH: 'Spend level-up points.', 'COMBAT ARTS': 'Equip four arts.', ARMOURY: 'Armour sets.', HEIRLOOMS: 'Account-wide gear.',
+    WARDROBE: 'Change your look.', LOADOUTS: 'Specs and gear sets.', JOBS: 'Change job, support job.', CHALLENGES: 'Bounties, keys, quests.', MOUNTS: 'Ride a mount.', 'QUEST LOG': 'Your quests.',
+    CRAFTING: 'Make gear and goods.', REST: 'Short or long rest.', 'ACTIVITY FINDER': 'Dungeons and raids.', BESTIARY: 'Foes you have met.', 'BOSS JOURNAL': 'Boss loot and kills.',
+    ACHIEVEMENTS: 'Feats of the realm.', REPUTATION: 'Faction standing.', SOCIAL: 'Friends, guild, party.', TITLES: 'Wear a title.', 'WORLD MAP': 'Where you are.', 'EXPANSION MAPS': 'Other lands.',
+    HEARTHSTONE: 'Return to your inn.', SETTINGS: 'Game options.', SAVE: 'Save your game.', 'SAVE & QUIT': 'Save, back to title.', 'SECRET ARCHIVE': 'Secrets found.', 'HIDDEN WORLD': 'The hidden realm.' };
+  if (typeof MainMenu !== 'undefined') {
+    const md0 = MainMenu.prototype.draw;
+    MainMenu.prototype.draw = function () {
+      const on = hudMmo(); this.opaque = !on;
+      if (!on) { this.rows = 11; return md0.apply(this, arguments); }
+      this.rows = 7;
+      const items = this.items(), D = derive(G);
+      // trainer card
+      frame(2, 2, 50, 72);
+      const por = heroPortrait(G); if (por) { const sp = sprFit(por, 24); blit(sp, 27 - (sp.width >> 1), 6); } else { const wk = typeof walker === 'function' ? walker(heroLook(G), 'down', (frameN >> 4) % 2) : null; if (wk) blit(wk, 19, 10); }
+      textC(G.name.slice(0, 7), 27, 32, 3); textC(`LV${G.lvl}`, 27, 41, 2);
+      text('HP', 6, 51, 2); bar(19, 52, 29, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
+      // menu list
+      const w = 104, x = W - w - 2, rh = 15, h = this.rows * rh + 10;
+      frame(x, 2, w, h);
+      items.slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, ty = 9 + j * rh; text(s.slice(0, 15), x + 14, ty, s.includes('(!)') ? 'gold' : 3); if (i === this.i) tri(x + 6, ty); });
+      if (this.top > 0) text('^', x + w - 10, 3, 2); if (this.top + this.rows < items.length) text('v', x + w - 10, h - 7, 2);
+      // help line
+      const sel = (items[this.i] || '').replace(' (!)', '');
+      frame(2, H - 26, W - 4, 24); text((MENU_HELP[sel] || sel).slice(0, 24), 9, H - 18);
+      textC(`${fmt(G.gold)}G`, 27, 60, 'gold');
+    };
   }
   { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); hotbar(); } catch (e) { console.warn('mmo hud', e); } } }; }
   // toasts in the middle band
