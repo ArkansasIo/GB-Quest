@@ -110,3 +110,29 @@ The accompanying `equipment_manifest.json` defines canvas dimensions, feet pivot
 
 The current layer art is intentionally schematic and uses shared slot anchors. It establishes the data and compositing contract, not final item-specific geometry. Weapon grip, hand position, occlusion, back-facing equipment, and class restrictions need dedicated art/anchor review. The workflow now generates the selected rank's equipment layers and includes them in its downloadable artifact.
 
+## Compose an equipped character preview
+
+The equipment layer compositor assembles a base animation frame with a selected loadout in manifest draw order:
+
+```json
+{
+  "head": "iron_helm",
+  "chest": "iron_plate",
+  "main_hand": "iron_sword",
+  "off_hand": "iron_shield",
+  "back": "short_cloak"
+}
+```
+
+Save that object as `loadout.json`, then run:
+
+```bash
+python tools/compose_equipment_preview.py \
+  --base assets_hd64/animations/frames/warrior/F/S/idle/frame_000.png \
+  --manifest assets_hd64/equipment/equipment_manifest.json \
+  --loadout loadout.json --rank F --direction S \
+  --output assets_hd64/equipment/previews/warrior_F_S_idle_equipped.png
+```
+
+The compositor checks the base canvas, slot names, selected item/rank/direction variants, overlay file existence and overlay dimensions. It writes the composed transparent PNG plus a JSON report listing each applied layer. The workflow builds one sample equipped preview as a smoke-check of the data path. This checks file and compositing compatibility; it does not validate visual alignment across every animation frame or facing.
+
