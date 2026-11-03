@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   EconomyError, ensureEconomy, grantGold, grantItem, createListing, buyListing,
   cancelListing, claimProceeds, expireListings, getPlayerEconomy,
+  startTrade, setTradeOffer, lockTradeOffer, confirmTrade, cancelTrade,
 } from "../backend/economy.cjs";
 
 const db = () => ({});
@@ -87,4 +88,58 @@ test("idempotency keys cannot be reused for a different payload and item UIDs ar
     idempotencyKey: "same-request-001", now: 1000,
   }));
   expectCode("ITEM_UID_EXISTS", () => grantItem(state, "seller-2", { uid: "item-006", templateId: "bronze-shield", quantity: 1 }));
+});
+
+test("player trade requires both server-owned offers to lock and confirm before atomic settlement", () => {
+  const state = db();
+  grantGold(state, "player-a", 2_000);
+  grantGold(state, "player-b", 3_000);
+  grantItem(state, "player-a", { uid: "trade-item-a", templateId: "flame-sword", quantity: 1 });
+  grantItem(state, "player-b", { uid: "trade-item-b", templateId: "frost-shield", quantity: 1 });
+  startTrade(state, { initiatorId: "player-a", targetId: "player-b", tradeId: "trade-0001", idempotencyKey: "trade-start-001", now: 1000 });
+  setTradeOffer(state, { accountId: "player-a", tradeId: "trade-0001", itemUids: ["trade-item-a"], gold: 250, idempotencyKey: "trade-offer-a01" });
+  setTradeOffer(state, { accountId: "player-b", tradeId: "trade-0001", itemUids: ["trade-item-b"], gold: 500, idempotencyKey: "trade-offer-b01" });
+  assert.equal(lockTradeOffer(state, { accountId: "player-a", tradeId: "trade-0001", idempotencyKey: "trade-lock-a01" }).status, "open");
+  assert.equal(lockTradeOffer(state, { accountId: "player-b", tradeId: "trade-0001", idempotencyKey: "trade-lock-b01" }).status, "locked");
+  assert.equal(confirmTrade(state, { accountId: "player-a", tradeId: "trade-0001", idempotencyKey: "trade-confirm-a1", now: 2000 }).status, "awaiting_confirmation");
+  const complete = confirmTrade(state, { accountId: "player-b", tradeId: "trade-0001", idempotencyKey: "trade-confirm-b1", now: 2001 });
+  assert.equal(complete.status, "completed");
+  assert.equal(getPlayerEconomy(state, "player-a").gold, 2_250);
+  assert.equal(getPlayerEconomy(state, "player-b").gold, 2_750);
+  assert.equal(getPlayerEconomy(state, "player-a").inventory[0].uid, "trade-item-b");
+  assert.equal(getPlayerEconomy(state, "player-b").inventory[0].uid, "trade-item-a");
+  assert.deepEqual(confirmTrade(state, { accountId: "player-b", tradeId: "trade-0001", idempotencyKey: "trade-confirm-b1", now: 2001 }), complete);
+});
+
+test("player trade rejects forged item UIDs, offer edits after lock, and non-participants", () => {
+  const state = db();
+  grantGold(state, "player-a", 1_000);
+  grantGold(state, "player-b", 1_000);
+  grantItem(state, "player-a", { uid: "owned-item-a", templateId: "silver-ring", quantity: 1 });
+  startTrade(state, { initiatorId: "player-a", targetId: "player-b", tradeId: "trade-0002", idempotencyKey: "trade-start-002", now: 1000 });
+  expectCode("ITEM_NOT_OWNED", () => setTradeOffer(state, {
+    accountId: "player-a", tradeId: "trade-0002", itemUids: ["forged-item"], gold: 0, idempotencyKey: "trade-forged-01",
+  }));
+  expectCode("NOT_TRADE_PARTICIPANT", () => setTradeOffer(state, {
+    accountId: "intruder", tradeId: "trade-0002", itemUids: [], gold: 0, idempotencyKey: "trade-intruder-1",
+  }));
+  setTradeOffer(state, { accountId: "player-a", tradeId: "trade-0002", itemUids: ["owned-item-a"], gold: 0, idempotencyKey: "trade-offer-a02" });
+  lockTradeOffer(state, { accountId: "player-a", tradeId: "trade-0002", idempotencyKey: "trade-lock-a02" });
+  expectCode("TRADE_NOT_OPEN", () => setTradeOffer(state, {
+    accountId: "player-a", tradeId: "trade-0002", itemUids: [], gold: 0, idempotencyKey: "trade-edit-a02",
+  }));
+  cancelTrade(state, { accountId: "player-b", tradeId: "trade-0002", idempotencyKey: "trade-cancel-b02" });
+  assert.equal(getPlayerEconomy(state, "player-a").inventory[0].uid, "owned-item-a");
+  assert.equal(getPlayerEconomy(state, "player-a").gold, 1_000);
+});
+
+test("a trade cannot be started by a player with no server economy record or with themselves", () => {
+  const state = db();
+  grantGold(state, "player-a", 1);
+  expectCode("PLAYER_NOT_FOUND", () => startTrade(state, {
+    initiatorId: "player-a", targetId: "unknown-player", tradeId: "trade-0003", idempotencyKey: "trade-start-003", now: 1000,
+  }));
+  expectCode("INVALID_TRADE_PARTICIPANTS", () => startTrade(state, {
+    initiatorId: "player-a", targetId: "player-a", tradeId: "trade-0004", idempotencyKey: "trade-start-004", now: 1000,
+  }));
 });
