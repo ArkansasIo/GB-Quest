@@ -9,6 +9,18 @@ on:
         type: choice
         options: ["64", "128", "256", "512"]
         default: "128"
+      archetype:
+        description: "Prototype archetype to generate"
+        required: true
+        type: choice
+        options: ["warrior", "mage", "ranger", "rogue", "cleric", "summoner"]
+        default: "warrior"
+      rank:
+        description: "Prototype rank to generate"
+        required: true
+        type: choice
+        options: ["F", "E", "D", "C", "B", "A", "S", "SSS"]
+        default: "F"
 
 permissions:
   contents: read
@@ -28,40 +40,46 @@ jobs:
           python tools/build_animation_manifest.py \
             --output assets_hd64/animations \
             --frame-size "${{ inputs.frame_size }}"
-      - name: Generate F-rank warrior prototype frames
+      - name: Generate selected archetype/rank prototype frames
         run: |
           python -m pip install Pillow
-          python tools/generate_warrior_f_sprite.py \
+          python tools/generate_character_sprite_pack.py \
             --output assets_hd64/animations/frames \
-            --size "${{ inputs.frame_size }}"
+            --size "${{ inputs.frame_size }}" \
+            --archetypes "${{ inputs.archetype }}" \
+            --ranks "${{ inputs.rank }}"
       - name: Pack directional sprite atlases
         run: |
           python tools/pack_animation_atlases.py \
             --frames assets_hd64/animations/frames \
             --output assets_hd64/animations/atlases \
-            --archetype warrior --rank F --frame-size "${{ inputs.frame_size }}"
-      - name: Validate manifest totals
+            --archetype "${{ inputs.archetype }}" \
+            --rank "${{ inputs.rank }}" \
+            --frame-size "${{ inputs.frame_size }}"
+      - name: Validate manifest, frames, and atlases
+        env:
+          ARCHETYPE: ${{ inputs.archetype }}
+          RANK: ${{ inputs.rank }}
         run: |
           python - <<'PY'
-          import json
+          import json, os
           from pathlib import Path
-          p = Path("assets_hd64/animations/animation_pack_report.json")
-          report = json.loads(p.read_text())
+          report = json.loads(Path("assets_hd64/animations/animation_pack_report.json").read_text())
           assert report["sequence_count"] == 3072, report
           assert report["frame_count_target"] == 19584, report
           assert report["artwork_generated"] is False, report
-          print(report)
-          frames = list(Path('assets_hd64/animations/frames/warrior/F').rglob('frame_*.png'))
-          assert len(frames) == 408, f'Expected 408 warrior frames, found {len(frames)}'
-          print(f'Validated {len(frames)} F-rank warrior prototype frames')
-          atlas = json.loads(Path('assets_hd64/animations/atlases/atlas_build_report.json').read_text())
-          assert atlas['valid'], atlas
-          assert len(atlas['sheets']) == 8, atlas
-          print(f"Validated {len(atlas['sheets'])} directional animation atlases")
+          archetype, rank = os.environ["ARCHETYPE"], os.environ["RANK"]
+          frames = list((Path("assets_hd64/animations/frames") / archetype / rank).rglob("frame_*.png"))
+          assert len(frames) == 408, f"Expected 408 frames, found {len(frames)}"
+          atlas = json.loads(Path("assets_hd64/animations/atlases/atlas_build_report.json").read_text())
+          assert atlas["valid"] and len(atlas["sheets"]) == 8, atlas
+          variants = json.loads(Path("assets_hd64/animations/character_variant_generation_report.json").read_text())
+          assert variants["total_frames"] == 408 and variants["sets"][0]["archetype"] == archetype
+          print(f"Validated {len(frames)} frames and {len(atlas['sheets'])} atlases for {archetype}/{rank}")
           PY
-      - name: Upload manifest artifact
+      - name: Upload animation artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gb-quest-character-animation-manifest
+          name: gb-quest-${{ inputs.archetype }}-${{ inputs.rank }}-animation-pack
           path: assets_hd64/animations/
           if-no-files-found: error
