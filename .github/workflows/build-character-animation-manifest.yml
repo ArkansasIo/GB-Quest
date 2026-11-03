@@ -114,4 +114,5 @@ jobs:
           path: |
             assets_hd64/animations/
             assets_hd64/equipment/
+            data/visuals/equipment-catalog-visual-map.json
           if-no-files-found: error
