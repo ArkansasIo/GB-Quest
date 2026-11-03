@@ -154,3 +154,9 @@ python tools/validate_equipment_visual_map.py \
 ```
 
 The manual animation workflow now runs this validation before composing its sample preview. All nine adventurer ranks are supported by the configurable character and equipment prototype generators, including the previously missing **SS** tier.
+
+## In-game paper-doll appearance preview
+
+The browser game's existing Wardrobe/transmog implementation remains the source of cosmetic ownership and saved appearance overrides. The paper-doll screen now adds small visual markers for equipped head, neck, cloak, chest, hands, main-hand, off-hand, waist, legs, feet, artifact and relic items over the central character portrait. Marker icons resolve through the existing `itemIcon` path, so unlocked transmog appearances are reflected while item stats and equipment-slot rows remain unchanged.
+
+The preview marker layout is defined by `PAPERDOLL_VISUAL_SLOTS` in `src/polish.js`; `paperDollVisuals(eq)` is a pure helper covered by `tests/rpg-systems.test.js`. These are UI icon markers, not yet full-body pixel-art compositing from the HD PNG layer atlases. The latter still requires a runtime sprite loader and a compatible animated character base.
