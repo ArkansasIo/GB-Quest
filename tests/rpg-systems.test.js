@@ -162,3 +162,17 @@ test('paper doll visual markers are derived from equipped slots only', () => {
   assert.ok(visuals.every(x => Number.isInteger(x.anchor.x) && Number.isInteger(x.anchor.y)));
   assert.deepEqual(plain(P.paperDollVisuals({})), []);
 });
+
+test('world avatar gear markers only include the supported visible slots', () => {
+  const eq = {
+    head: { kind: 'armor', base: 'iron_helm' },
+    weapon: { kind: 'weapon', base: 'longsword' },
+    armor: { kind: 'armor', base: 'iron_chest' },
+    offhand: { kind: 'armor', base: 'shield' },
+    ring1: { kind: 'wondrous', base: 'silver_ring' }
+  };
+  const visuals = P.worldGearVisuals(eq);
+  assert.deepEqual(plain(visuals.map(x => x.slot)), ['head', 'weapon', 'armor', 'offhand']);
+  assert.ok(visuals.every(x => x.size > 0 && x.x >= 0 && x.y >= 0));
+  assert.deepEqual(plain(P.worldGearVisuals({})), []);
+});
