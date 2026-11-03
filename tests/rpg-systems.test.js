@@ -176,3 +176,17 @@ test('world avatar gear markers only include the supported visible slots', () =>
   assert.ok(visuals.every(x => x.size > 0 && x.x >= 0 && x.y >= 0));
   assert.deepEqual(plain(P.worldGearVisuals({})), []);
 });
+
+test('animated walker gear layers resolve compact visible equipment slots', () => {
+  const eq = {
+    head: { kind: 'armor', base: 'iron_helm' },
+    weapon: { kind: 'weapon', base: 'longsword' },
+    armor: { kind: 'armor', base: 'iron_chest' },
+    offhand: { kind: 'armor', base: 'shield' },
+    ring1: { kind: 'wondrous', base: 'silver_ring' }
+  };
+  const visuals = P.walkerGearVisuals(eq);
+  assert.deepEqual(plain(visuals.map(x => x.slot)), ['head', 'weapon', 'armor', 'offhand']);
+  assert.ok(visuals.every(x => x.size === 4 && x.x >= 0 && x.y >= 0 && x.x + x.size <= 16 && x.y + x.size <= 16));
+  assert.deepEqual(plain(P.walkerGearVisuals({})), []);
+});
