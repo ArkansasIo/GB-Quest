@@ -242,3 +242,12 @@ test('HD animation state resolver maps combat and movement states', () => {
   assert.equal(HD.animationForState('dying'), 'death');
   assert.equal(HD.animationForState('unknown'), 'idle');
 });
+
+test('HD runtime normalizes world directions into eight-way sprite directions', () => {
+  assert.equal(HD.directionForInput('down'), 'S');
+  assert.equal(HD.directionForInput('up'), 'N');
+  assert.equal(HD.directionForInput('left'), 'W');
+  assert.equal(HD.directionForInput('right'), 'E');
+  assert.equal(HD.directionForInput('northwest'), 'NW');
+  assert.equal(HD.directionForInput('unknown'), 'S');
+});
