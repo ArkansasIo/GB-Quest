@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 DIRECTIONS = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-RANKS = ["F", "E", "D", "C", "B", "A", "S", "SSS"]
+RANKS = ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"]
 SLOTS = {
     "head": ["iron_helm", "mage_hood", "ranger_hood", "rogue_mask", "cleric_circlet"],
     "chest": ["iron_plate", "traveler_tunic", "arcane_robe", "shadow_leathers", "sanctified_mail"],
@@ -25,7 +25,7 @@ RANK_COLORS = {
     "F": (145, 151, 160, 255), "E": (105, 155, 180, 255),
     "D": (70, 145, 205, 255), "C": (105, 115, 210, 255),
     "B": (155, 95, 195, 255), "A": (210, 155, 65, 255),
-    "S": (210, 85, 75, 255), "SSS": (245, 215, 115, 255),
+    "S": (210, 85, 75, 255), "SS": (225, 170, 105, 255), "SSS": (245, 215, 115, 255),
 }
 SLOT_ANCHORS = {
     "head": (64, 29), "chest": (64, 61), "legs": (64, 91),
