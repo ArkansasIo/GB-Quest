@@ -75,6 +75,7 @@
     const manifestUrl = options.manifestUrl || `${equipmentRoot}/equipment_manifest.json`;
     const visualMapUrl = options.visualMapUrl || 'data/visuals/equipment-catalog-visual-map.json';
     const imageCache = new Map();
+    const compositeCache = new Map();
     let manifestPromise = null;
     let visualMapPromise = null;
     const loadImage = url => {
@@ -112,29 +113,38 @@
         rank: resolved.rank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
       });
     };
-    const render = async spec => {
-      if (!spec) throw new TypeError('Character render specification is required');
-      const baseUrl = framePath(frameRoot, spec.archetype, spec.rank, spec.direction, spec.animation, spec.frame || 0);
-      if (!baseUrl) throw new TypeError('Invalid archetype, rank, direction, animation, or frame');
-      const [base, manifest] = await Promise.all([loadImage(baseUrl), getManifest()]);
-      const width = Number(manifest.canvas && manifest.canvas.width), height = Number(manifest.canvas && manifest.canvas.height);
-      if (!(width > 0 && height > 0)) throw new Error('Equipment manifest has invalid canvas dimensions');
-      const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-      const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.drawImage(base, 0, 0, width, height);
-      const loadout = spec.equipment || {};
-      const chosen = Object.entries(loadout).map(([slot, id]) => (manifest.items || []).find(item =>
-        item.id === id && item.slot === slot && item.rank === spec.rank && item.direction === spec.direction
-      )).filter(Boolean).sort((a, b) => ((manifest.slots[a.slot] || {}).draw_order || 0) - ((manifest.slots[b.slot] || {}).draw_order || 0));
-      const layers = await Promise.all(chosen.map(item => loadImage(`${equipmentRoot}/${item.path}`)));
-      chosen.forEach((item, i) => {
-        const offset = item.offset || [0, 0];
-        ctx.globalCompositeOperation = item.blend || 'source-over';
-        ctx.drawImage(layers[i], Number(offset[0]) || 0, Number(offset[1]) || 0);
-      });
-      ctx.globalCompositeOperation = 'source-over';
-      return canvas;
+    const render = spec => {
+      if (!spec) return Promise.reject(new TypeError('Character render specification is required'));
+      const frame = Number(spec.frame || 0);
+      const baseUrl = framePath(frameRoot, spec.archetype, spec.rank, spec.direction, spec.animation, frame);
+      if (!baseUrl) return Promise.reject(new TypeError('Invalid archetype, rank, direction, animation, or frame'));
+      const equipmentKey = Object.keys(spec.equipment || {}).sort().map(key => [key, spec.equipment[key]]);
+      const key = JSON.stringify([baseUrl, equipmentKey]);
+      if (compositeCache.has(key)) return compositeCache.get(key);
+      const pending = (async () => {
+        const [base, manifest] = await Promise.all([loadImage(baseUrl), getManifest()]);
+        const width = Number(manifest.canvas && manifest.canvas.width), height = Number(manifest.canvas && manifest.canvas.height);
+        if (!(width > 0 && height > 0)) throw new Error('Equipment manifest has invalid canvas dimensions');
+        const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.drawImage(base, 0, 0, width, height);
+        const loadout = spec.equipment || {};
+        const chosen = Object.entries(loadout).map(([slot, id]) => (manifest.items || []).find(item =>
+          item.id === id && item.slot === slot && item.rank === spec.rank && item.direction === spec.direction
+        )).filter(Boolean).sort((a, b) => ((manifest.slots[a.slot] || {}).draw_order || 0) - ((manifest.slots[b.slot] || {}).draw_order || 0));
+        const layers = await Promise.all(chosen.map(item => loadImage(`${equipmentRoot}/${item.path}`)));
+        chosen.forEach((item, i) => {
+          const offset = item.offset || [0, 0];
+          ctx.globalCompositeOperation = item.blend || 'source-over';
+          ctx.drawImage(layers[i], Number(offset[0]) || 0, Number(offset[1]) || 0);
+        });
+        ctx.globalCompositeOperation = 'source-over';
+        return canvas;
+      })();
+      compositeCache.set(key, pending);
+      pending.catch(() => { if (compositeCache.get(key) === pending) compositeCache.delete(key); });
+      return pending;
     };
-    return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size };
+    return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size, compositeCacheSize: () => compositeCache.size };
   };
   const api = { createRuntime, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
