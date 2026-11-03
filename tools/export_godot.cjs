@@ -42,6 +42,12 @@ const { chromium } = require('playwright');
       AFFIX_POOL, AFFIX_K, GREATER_CHANCE, GREATER_MULT,
       ASPECT_TEXT: Object.fromEntries(Object.entries(ASPECT_SPECS).map(([id, A]) => [id, A.e.t === 'stat' ? null : aspectText(A.e, '{v}')])),
       ASP_STAT, SUPPORT_TRAITS, SUPPORT_CAPS, SUPPORT_UNLOCK, RECIPES, HERB_BY_BIOME,
+      // stage 5: accessories, gems, temper/masterwork, raids, trials, world bosses
+      SLOTS, GEM_TYPES, GEM_DROP, GEM_TIER_MAX, GEM_SOCKET_LIMIT, GEM_ART: typeof AP_GEM_ART !== 'undefined' ? AP_GEM_ART : {},
+      TEMPER_POOLS, TEMPER_BASE, TEMPER_MAX, MW_MAX, MW_STEP, MW_CRIT,
+      RAID_BOSSES: BOSSES.filter(b => b.cat === 'raid').map(b => ({ id: b.id, name: b.name, lvl: b.lvl, fam: b.fam, art: monsterArt(b) })),
+      TRIAL_BOSSES: BOSSES.filter(b => b.cat === 'trial').map(b => ({ id: b.id, name: b.name, lvl: b.lvl, fam: b.fam, art: monsterArt(b) })),
+      WORLD_BOSSES: BOSSES.filter(b => b.cat === 'world').map(b => ({ id: b.id, name: b.name, lvl: b.lvl, fam: b.fam, where: b.where, art: monsterArt(b) })),
     };
     const zones = {};
     const f = new Field();
@@ -51,7 +57,7 @@ const { chromium } = require('playwright');
       let ents = []; try { ents = f.entities(); } catch (e) { ents = []; }
       zones[z.id] = { id: z.id, name: z.name, region: z.region, town: !!z.town, biome: z.biome || m.biome, lvl: z.lvl, music: m.music, rows: m.rows,
         gfx: m.gfx ? m.gfx.map(r => r.map(n => art(String(n).replace('%f', '0')))) : null, walk: m.rows.map(r => [...r].map(ch => (m.tiles[ch] ? m.tiles[ch][1] : 0) ? 1 : 0).join('')),
-        exits: m.exits, poi: m.poi, hub: m.hub,
+        exits: m.exits, poi: m.poi, hub: m.hub, nodes: m.nodes || [], bosses: (m.bosses || []).filter(b => !b.arc),
         npcs: ents.filter(e => e.kind === 'npc').map(e => ({ x: e.x0 != null ? e.x0 : e.x, y: e.y0 != null ? e.y0 : e.y, name: e.name, svc: e.svc || null, role: typeof npcRole === 'function' ? npcRole(e) : null, sprite: typeof npcRole === 'function' && IMG[`gh_npc_${npcRole(e)}_down0`] ? `gh_npc_${npcRole(e)}` : null })),
         waypoint: m.poi && m.poi.waypoint || null };
     }

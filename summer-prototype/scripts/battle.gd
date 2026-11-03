@@ -6,6 +6,7 @@ extends Node2D
 ## buffs, barriers and the class job abilities (src/jobs_data.js JOB_ABILITIES).
 
 const Loot = preload("res://scripts/loot.gd")
+const GearX = preload("res://scripts/gearx.gd")
 
 var main: Node2D
 var foe_def: Dictionary = {}
@@ -26,6 +27,11 @@ var barrier := 0
 var first_hit := true
 var used := {}                  # job abilities used this battle
 var round_no := 1
+var hp_mult := 3                # boss HP multiplier (raid bosses use 4, world bosses 5)
+var on_lose: Callable = Callable()   # trials: losing ends the trial instead of sending you to the shrine
+var max_rounds := 0             # trials: TRIAL OF HOURS
+var no_escape := false
+var loot := true
 
 const SKY := {"meadow": [Color8(118, 188, 240), Color8(148, 204, 104)], "coast": [Color8(104, 180, 236), Color8(232, 214, 156)], "marsh": [Color8(146, 168, 160), Color8(118, 140, 96)],
 	"jungle": [Color8(128, 198, 168), Color8(96, 160, 76)], "snow": [Color8(176, 202, 236), Color8(236, 242, 248)], "badlands": [Color8(238, 180, 120), Color8(214, 160, 106)],
@@ -44,7 +50,7 @@ func _ready() -> void:
 		"ac": int(blk.get("ac", 12)), "hit": int(blk.get("hit", 3)), "dice": str(blk.get("dice", "1d6")), "xp": int(blk.get("xp", 10)), "gold": int(blk.get("gold", 3)), "dt": foe_def.get("dt", "slashing")}
 	var intro := []
 	if boss:
-		foe["max"] = int(foe["max"]) * 3; foe["hp"] = foe["max"]; foe["xp"] = int(foe["xp"]) * 4; foe["gold"] = int(foe["gold"]) * 6 + 20
+		foe["max"] = int(foe["max"]) * hp_mult; foe["hp"] = foe["max"]; foe["xp"] = int(foe["xp"]) * 4; foe["gold"] = int(foe["gold"]) * 6 + 20
 		foe["ac"] = int(foe["ac"]) + 1; foe["hit"] = int(foe["hit"]) + 1
 		foe["name"] = str(foe_def.get("name", "BOSS")).substr(0, 14)
 		intro.append("%s blocks the way! (BOSS LV%d)" % [foe["name"], foe_lvl])
@@ -135,7 +141,7 @@ func _act(o: String) -> void:
 		var h := (Game.roll("2d4+2") + int(Game.hero["lvl"]) / 5) * (100 + Game.stat("heal")) / 100
 		_heal(h); out.append("You drink a potion: +%d HP." % h)
 	elif o == "RUN":
-		if boss:
+		if boss or no_escape:
 			_say(["There is no escape from %s!" % foe["name"]])
 			return
 		if Game.d20() + Game.mod("DEX") >= 10:
@@ -277,6 +283,11 @@ func _cast(k: int) -> void:
 		out.append("%s resists %s." % [foe["name"], s["name"]])
 	_after(out)
 
+func _lost() -> void:
+	main.pop(self)
+	Game.hero["hp"] = maxi(1, int(Game.hero["hp"]))
+	if on_lose.is_valid(): on_lose.call()
+
 func _leave() -> void:
 	main.pop(self)
 
@@ -307,8 +318,12 @@ func _after(out: Array) -> void:
 	else:
 		_foe_attack(out)
 	if int(Game.hero["hp"]) <= 0:
-		out.append_array(["You have fallen...", "You wake at the village shrine with half your gold."])
 		state = "over"
+		if on_lose.is_valid():
+			out.append("You are beaten.")
+			_say(out, Callable(self, "_lost"))
+			return
+		out.append_array(["You have fallen...", "You wake at the village shrine with half your gold."])
 		_say(out, Callable(self, "_died"))
 		return
 	# end of round: damage over time, regeneration, durations
@@ -326,6 +341,11 @@ func _after(out: Array) -> void:
 	round_no += 1
 	if int(foe["hp"]) <= 0:
 		_victory(out)
+		return
+	if max_rounds and round_no > max_rounds:
+		out.append("Time is up! (%d rounds)" % max_rounds)
+		state = "over"
+		_say(out, Callable(self, "_lost"))
 		return
 	_say(out)
 
@@ -382,7 +402,13 @@ func _victory(out: Array) -> void:
 		elif act.has("explode"):
 			out.append("%s: the foe bursts in %s!" % [Loot.aspect_name(a), act["explode"]])
 	if ups: out.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
-	if boss or Game.rng.randf() < 0.2 + int(foe["lvl"]) / 400.0 + Game.stat("mf") / 1000.0:
+	var gd: Dictionary = Data.game.get("GEM_DROP", {})
+	if loot and Game.rng.randf() < float(gd.get("boss" if boss else "normal", 0.02)) * (1.0 + Game.stat("mf") / 100.0):
+		var g := GearX.random_gem(int(foe["lvl"]), Game.rng)
+		var gems: Dictionary = Game.hero.get("gems", {})
+		gems[g] = int(gems.get(g, 0)) + 1; Game.hero["gems"] = gems
+		out.append("Found a gem: %s!" % GearX.gem(g)["name"])
+	if loot and (boss or Game.rng.randf() < 0.2 + int(foe["lvl"]) / 400.0 + Game.stat("mf") / 1000.0):
 		var it := Game.random_drop(int(foe["lvl"]))
 		if boss:
 			var nr := mini(8, int(it["r"]) + 2)

@@ -15,13 +15,28 @@ const WALK := ".,ULG"
 const KEY := {".": "floor", ",": "floor2", "U": "up", "L": "down", "G": "gold", "A": "altar", "s": "statue", "b": "barrel"}
 
 static func def_by_id(id: String) -> Dictionary:
-	for d in Data.game.get("DUNGEONS", []):
+	for d in Data.game.get("DUNGEONS", []) + Data.game.get("RAIDS", []):
 		if d["id"] == id:
 			return d
 	return {}
 
+static func is_raid(def: Dictionary) -> bool:
+	return def.has("bosses")
+
+## dungeons have 3 floors; a raid has one floor per raid boss (4 to 6)
+static func floors(def: Dictionary) -> int:
+	return int(def["bosses"]) if is_raid(def) else FLOORS
+
 ## the boss for one floor: the browser game lists three dungeon bosses per dungeon, in dungeon order
 static func boss_for(def: Dictionary, floor: int) -> Dictionary:
+	if is_raid(def):
+		# RAID_BOSSES lists every raid's bosses in raid order
+		var off := 0
+		for r in Data.game.get("RAIDS", []):
+			if r["id"] == def["id"]: break
+			off += int(r["bosses"])
+		var rb: Array = Data.game.get("RAID_BOSSES", [])
+		if rb.size(): return rb[mini(off + floor, rb.size() - 1)]
 	var ds: Array = Data.game.get("DUNGEONS", [])
 	var idx := ds.find(def)
 	var bs := []
@@ -100,7 +115,7 @@ static func build(def: Dictionary, floor: int) -> Dictionary:
 	var bpos := down + Vector2i(-1, 0) if g[down.y][down.x - 1] in [".", ","] else down + Vector2i(0, -1)
 	g[bpos.y][bpos.x] = "."
 	var bdef := boss_for(def, floor)
-	if floor == FLOORS - 1:
+	if floor == floors(def) - 1 and not is_raid(def):
 		var arc: Dictionary = Quest.arc_boss_for(str(def["id"]))   # the story boss guards the last floor in its chapter
 		if not arc.is_empty(): bdef = arc
 	mobs.append({"x": bpos.x, "y": bpos.y, "def": bdef, "lvl": maxi(lvl + 1, int(bdef.get("lvl", lvl))), "boss": true})
@@ -127,7 +142,7 @@ static func build(def: Dictionary, floor: int) -> Dictionary:
 	var biome: String = {"ice": "snow", "lava": "volcanic", "void": "dusk", "temple": "crystal", "crypt": "dusk"}.get(theme, "dusk")
 	return {"id": "%s:%d" % [def["id"], floor], "name": "%s %dF" % [def["name"], floor + 1], "dungeon": def["id"], "floor": floor,
 		"town": false, "biome": biome, "lvl": [lvl, lvl + 1], "gfx": gfx, "walk": walk, "exits": {}, "npcs": [], "poi": {},
-		"hub": [up.x, up.y], "up": [up.x, up.y], "down": [down.x, down.y], "mobs": mobs, "last": floor == FLOORS - 1}
+		"hub": [up.x, up.y], "up": [up.x, up.y], "down": [down.x, down.y], "mobs": mobs, "last": floor == floors(def) - 1, "raid": is_raid(def)}
 
 static func _carve(g: Array, a: Vector2i, b: Vector2i) -> void:
 	var p := a

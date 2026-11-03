@@ -2,6 +2,7 @@ extends Node
 ## The hero, the world position and the 5e-style rules the port needs (mirrors src/rules.js for levels 1-720).
 
 const Loot = preload("res://scripts/loot.gd")
+const GearX = preload("res://scripts/gearx.gd")
 const SAVE_PATH := "user://gbquest_save.json"
 const ATTRS := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 const STANDARD_ARRAY := [15, 14, 13, 12, 10, 8]
@@ -92,11 +93,15 @@ func weapon_damage(crit: bool) -> int:
 func def_of(it: Dictionary) -> Dictionary:
 	if it.is_empty():
 		return {}
+	if it.get("k") == "o":
+		return GearX.wondrous(str(it.get("id", "")))
 	return Data.game.get("WEAPONS" if it.get("k") == "w" else "ARMORS", {}).get(it.get("id", ""), {})
 
 func slot_of(it: Dictionary) -> String:
 	if it.get("k") == "w":
 		return "weapon"
+	if it.get("k") == "o":
+		return GearX.acc_slot(it, gear())
 	return "shield" if def_of(it).get("type") == "shield" else "armor"
 
 func gear() -> Dictionary:
@@ -110,7 +115,8 @@ func bag() -> Array:
 	return hero["bag"]
 
 func make_item(id: String, r: int = 1, lvl: int = 1) -> Dictionary:
-	var k := "w" if Data.game.get("WEAPONS", {}).has(id) else "a"
+	var k := "w" if Data.game.get("WEAPONS", {}).has(id) else ("a" if Data.game.get("ARMORS", {}).has(id) else "o")
+	if k == "o": r = maxi(r, 2)   # accessories are at least uncommon, as in the browser game
 	var rr: Dictionary = Data.game.get("RARITY", [])[clampi(r, 0, 8)]
 	var it := {"k": k, "id": id, "r": clampi(r, 0, 8), "plus": maxi(0, int(rr.get("plus", 0)))}
 	Loot.roll(it, maxi(1, lvl), rng)
@@ -122,8 +128,13 @@ func stat(k: String) -> int:
 	var v := 0
 	for s in gear():
 		var it: Dictionary = gear()[s]
-		for a in it.get("af", []):
+		for a in GearX.effective_affixes(it):
 			if a[0] == k: v += int(a[1])
+		if it.get("k") == "o":
+			var b := GearX.acc_bonus(it)
+			if b.size() and b[0] == k: v += int(b[1])
+		for g in it.get("sk", []):
+			if g != "" and GearX.gem(g).get("stat") == k: v += int(GearX.gem(g)["value"])
 		if it.has("asp"):
 			for sv in Loot.aspect_stats(it["asp"]):
 				if sv[0] == k: v += int(sv[1])
@@ -153,18 +164,24 @@ func rarity_color(it: Dictionary) -> Color:
 
 func item_stat(it: Dictionary) -> String:
 	var d := def_of(it)
+	if it.get("k") == "o":
+		var b := GearX.acc_bonus(it)
+		var sub: Dictionary = Data.game.get("SUBSTATS", {}).get(b[0] if b.size() else "", {})
+		return "%s +%d%s %s" % [str(d.get("slot", "")).to_upper(), int(b[1]) if b.size() else 0, sub.get("unit", ""), str(Data.game.get("ASP_STAT", {}).get(b[0] if b.size() else "", "")).to_upper().substr(0, 11)]
 	if it.get("k") == "w":
 		return "%s %s" % [d.get("dmg", "?"), str(d.get("type", "")).to_upper()]
 	return ("AC +%d" if d.get("type") == "shield" else "AC %d") % int(d.get("ac", 10)) + " " + str(d.get("type", "")).to_upper()
 
 func price(it: Dictionary) -> int:
 	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
-	return maxi(5, int(float(def_of(it).get("cost", 1)) * 4 * float(rr.get("value", 1))) + 10 + 5 * int(it.get("ilvl", 1)) * it.get("af", []).size())
+	return maxi(5, int(float(def_of(it).get("cost", 40 if it.get("k") == "o" else 1)) * 4 * float(rr.get("value", 1))) + 10 + 5 * int(it.get("ilvl", 1)) * it.get("af", []).size())
 
 ## whether this class may use the item (armour type list; weapon category, finesse classes take finesse/ranged martial weapons)
 func can_use(it: Dictionary) -> bool:
 	var c := Data.cls(hero.get("cls", "warden"))
 	var d := def_of(it)
+	if it.get("k") == "o":
+		return true
 	if it.get("k") == "a":
 		return d.get("type") == "cloth" or c.get("armor", []).has(d.get("type"))
 	var wc := str(c.get("weapons", "simple"))
@@ -206,7 +223,9 @@ func random_drop(lvl: int) -> Dictionary:
 		pool.append(k)
 	for k in Data.game.get("ARMORS", {}):
 		pool.append(k)
-	var id: String = pool[rng.randi_range(0, pool.size() - 1)]
+	var acc := GearX.accessory_ids()
+	# weapons, armour and accessories in the browser game's 2:2:4 mix
+	var id: String = acc[rng.randi_range(0, acc.size() - 1)] if rng.randf() < 0.5 else pool[rng.randi_range(0, pool.size() - 1)]
 	var r := 1
 	var roll_r := rng.randf() + minf(0.5, lvl / 200.0) + stat("mf") / 1000.0
 	for cut in [0.55, 0.8, 0.93, 0.985, 1.2, 1.35, 1.45]:

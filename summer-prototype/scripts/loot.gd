@@ -34,7 +34,7 @@ static func roll(it: Dictionary, lvl: int, rng: RandomNumberGenerator) -> void:
 	it["af"] = af
 	it["ilvl"] = lvl
 	if r >= 5:   # legendary, mythic, ancestral, divine
-		it["asp"] = roll_aspect("weapon" if it.get("k") == "w" else "armor", r, rng)
+		it["asp"] = roll_aspect({"w": "weapon", "a": "armor"}.get(it.get("k"), "wondrous"), r, rng)
 
 static func roll_aspect(kind: String, r: int, rng: RandomNumberGenerator) -> Dictionary:
 	var specs: Dictionary = Data.game.get("ASPECT_SPECS", {})

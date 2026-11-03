@@ -20,7 +20,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 | Output | Contents |
 |---|---|
-| `data/game.json` | 51 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4): CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
+| `data/game.json` | 66 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
 | `data/zones.json` | 154 zones/towns with 406 NPCs: tile rows (pack-aliased art), walk mask, exits, hub, level range |
 | `data/sprites.json` | 5,077 sprite names → `[file, x, y, w, h]` in the 4× art |
 | `art/` (gitignored) | `assets_hd64/` sheets plus 568 single 4× PNGs |
@@ -42,6 +42,13 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Crafting: monsters drop materials by family and level (MATS tab in the bag); alchemists, weaponsmiths, armorers, blacksmiths and craft masters brew potions and forge gear from RECIPES; skill rises with each craft.
 - Mounts: stablemasters sell the stable mounts (level 15+); START > MOUNT rides (faster steps, not in dungeons).
 - CHARACTER page: STATS, SUBSTATS, ASPECTS, QUEST and JOB tabs. Bag item INFO (START) lists affixes and the aspect.
+- Accessories: 94 wondrous items (head, neck, ear, back, hands, waist, legs, feet, two rings, two trinkets) drop beside weapons and armour and add AC, resistance, haste, damage, accuracy or HP by their plus, plus their own affixes and aspects. The GEAR tab lists all 15 slots.
+- Gems and sockets (src/gems.js): weapons and armour have one socket per 180 item levels (max 4); nine gem types in tiers 1-9 drop from monsters (bosses most often) and add their stat. Bag > START opens the item menu: INFO, SOCKET GEM, REMOVE GEMS, TEMPER, MASTERWORK.
+- Tempering and masterwork (src/d4_gear.js) in towns for gold and scrap: up to 2 tempered affixes from the offensive, defensive and utility pools; 12 masterwork ranks at +5% affixes each, with a 25% critical boost to one affix at ranks 4, 8 and 12.
+- World bosses: the 89 world bosses stand in their zones (5x HP, sure drop) and return 400 steps after they fall.
+- Gathering: every wild zone's herb, ore, wood, hide, salvage, relic, fiber and bone nodes show as icons; step on one to gather (respawn after 250 steps).
+- Raids: all 17 raids from their doors (one floor per raid boss, 4-6 bosses at 4x HP, 3x clear bonus, 25% chance of a raid mount).
+- Trials: the Trials Master runs all 6 trials (rush, timed, solo, frail, waves, mirror) with an epic+ reward the first time.
 - Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
@@ -49,7 +56,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 ## Not ported yet (planned stages)
 
-Dungeon traps/doors, raids and trials, side quests, wondrous items and accessories, gems and sockets, cooking and gathering nodes, temper and masterwork, flying mounts, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Dungeon traps/doors, side quests, relics and artifacts, cooking and fishing, aspect extraction and imprinting, flight over terrain, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -81,6 +88,18 @@ CHECK support job warden at 30: hp stat=18 block=3
 CHECK mount=steed_brown mounted=true step=0.088
 CHECK legendary battle finished=true
 CHECK save=true load=true chapter=2 mount=steed_brown
+CHECK accessory RING +3 slot=["ring1"] stat=RING +6% RESIST ALL ac 18->18 hp 204->204
+CHECK sockets ilvl400=3 ilvl1=1
+CHECK socket ruby_t3 dmg 0 -> 3 sockets=["ruby_t3", "", ""]
+CHECK temper tm=[["xp", 31]] masterwork rank=4 crits=[1] affixes [["leech", 17], ["thorns", 82], ["gf", 227]] -> [["leech", 20], ["thorns", 123], ["gf", 272], ["xp", 31]]
+CHECK world bosses in elderwood_s1: ["ULAR BONEREAVER@13,9"]
+CHECK gather peacebloom at (10, 7): 0 -> 2, ready again=false
+CHECK world boss hp=65 (x5)
+CHECK world boss down: mobs=0 wbk={ "boss_262": 1 }
+CHECK raid door at sandspire_s3 ahead=rd_crypt
+CHECK raid bosses=["OROM VOIDBORN(x4)", "SILAX VOIDBORN(x4)", "SKAUK OF THE PIT(x4)", "AZAX THE ELDER(x4)"] cleared=["rd_crypt"] zone=sandspire_s3
+CHECK trial fights=5 won={ "tr_gauntlet": true }
+CHECK save=true load=true gems={ ... } acc=["armor", "ring1", "shield", "weapon"]
 ```
 
 Rolls are random, so item names and values differ from run to run.

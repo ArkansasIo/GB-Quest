@@ -51,7 +51,9 @@ func goal() -> String:
 ## the region the hero is in (a dungeon counts as its region)
 func here_region() -> String:
 	if not Game.dun.is_empty():
-		return str(Data.game.get("DUNGEONS", []).filter(func(d): return d["id"] == Game.dun["id"])[0]["zone"])
+		for d in Data.game.get("DUNGEONS", []) + Data.game.get("RAIDS", []):
+			if d["id"] == Game.dun["id"]: return str(d.get("zone", ""))
+		return ""
 	return str(Data.zones.get(Game.zone_id, {}).get("region", ""))
 
 func _advance() -> Array:

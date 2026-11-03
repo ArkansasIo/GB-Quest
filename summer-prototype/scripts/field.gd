@@ -50,8 +50,48 @@ func _load_zone(id: String) -> void:
 	if not _walkable(Game.pos.x, Game.pos.y):
 		var hub: Array = zone.get("hub", [3, 8])
 		Game.pos = Vector2i(int(hub[0]), int(hub[1]))
+	_spawn_world_bosses()
 	if main and Game.hero.size():
 		_show(Quest.on_enter_zone(id))
+
+# ------------------------------------------------------------------ world bosses and gathering nodes
+const BOSS_RESPAWN := 400   # steps
+const NODE_RESPAWN := 250
+
+func _steps() -> int:
+	return int(Game.hero.get("steps", 0))
+
+## the zone's world bosses stand in the open until beaten, then return after BOSS_RESPAWN steps
+func _spawn_world_bosses() -> void:
+	var mobs := []
+	var wbk: Dictionary = Game.hero.get("wbk", {})
+	for b in zone.get("bosses", []):
+		if wbk.has(b["id"]) and _steps() - int(wbk[b["id"]]) < BOSS_RESPAWN: continue
+		var def := {}
+		for w in Data.game.get("WORLD_BOSSES", []):
+			if w["id"] == b["id"]: def = w
+		if def.is_empty(): continue
+		mobs.append({"x": int(b["x"]), "y": int(b["y"]), "def": def, "lvl": maxi(int(def["lvl"]), int(zone.get("lvl", [1, 1])[1])), "boss": true, "world": true})
+	zone["mobs"] = mobs
+
+func _node_ready(i: int) -> bool:
+	var g: Dictionary = Game.hero.get("nodes", {}).get(Game.zone_id, {})
+	return not g.has(str(i)) or _steps() - int(g[str(i)]) >= NODE_RESPAWN
+
+func _gather_here() -> bool:
+	var ns: Array = zone.get("nodes", [])
+	for i in range(ns.size()):
+		var n: Array = ns[i]
+		if int(n[0]) == Game.pos.x and int(n[1]) == Game.pos.y and _node_ready(i):
+			var all: Dictionary = Game.hero.get("nodes", {})
+			var g: Dictionary = all.get(Game.zone_id, {})
+			g[str(i)] = _steps(); all[Game.zone_id] = g; Game.hero["nodes"] = all
+			var item := str(n[3])
+			var qty := 1 + (1 if Game.rng.randf() < 0.35 else 0)
+			Craft.add(item, qty)
+			main.say(["%s: gathered %d %s." % [str(n[2]).to_upper(), qty, Craft.mat_name(item)]])
+			return true
+	return false
 
 func _walkable(x: int, y: int) -> bool:
 	var w: Array = zone.get("walk", [])
@@ -78,9 +118,10 @@ func _mob_at(x: int, y: int) -> int:
 	return -1
 
 func _dungeon_at(x: int, y: int) -> String:
-	var d = zone.get("poi", {}).get("dungeon")
-	if d is Dictionary and int(d["x"]) == x and int(d["y"]) == y:
-		return str(d["id"])
+	for key in ["dungeon", "raid"]:
+		var d = zone.get("poi", {}).get(key)
+		if d is Dictionary and int(d["x"]) == x and int(d["y"]) == y:
+			return str(d["id"])
 	return ""
 
 const DIRS := {"up": Vector2i(0, -1), "down": Vector2i(0, 1), "left": Vector2i(-1, 0), "right": Vector2i(1, 0)}
@@ -123,9 +164,11 @@ func step(delta: float) -> void:
 			return
 
 func _arrived() -> void:
+	Game.hero["steps"] = _steps() + 1
 	if zone.has("dungeon"):
 		_arrived_dungeon()
 		return
+	if _gather_here(): return
 	# exits to the next zone
 	for k in zone.get("exits", {}):
 		var e: Dictionary = zone["exits"][k]
@@ -164,7 +207,8 @@ func _offer_dungeon(id: String) -> void:
 	var d := Dungeon.def_by_id(id)
 	if d.is_empty(): return
 	var cleared: bool = Game.hero.get("cleared", []).has(id)
-	main.choose(["ENTER", "LEAVE"], Callable(self, "_enter_pick").bind(id), "%s (LV %d)%s. %d floors. Enter?" % [d["name"], int(d["lvl"]), " CLEARED" if cleared else "", Dungeon.FLOORS])
+	var kind := "RAID" if Dungeon.is_raid(d) else "DUNGEON"
+	main.choose(["ENTER", "LEAVE"], Callable(self, "_enter_pick").bind(id), "%s %s (LV %d)%s. %d %s. Enter?" % [kind, d["name"], int(d["lvl"]), " CLEARED" if cleared else "", Dungeon.floors(d), "bosses" if kind == "RAID" else "floors"])
 
 func _enter_pick(k: int, id: String) -> void:
 	if k == 0: enter_dungeon(id)
@@ -221,9 +265,15 @@ func _finish_dungeon() -> void:
 	if first:
 		cl.append(d["id"])
 	Game.hero["cleared"] = cl
-	var bonus := int(d["lvl"]) * (60 if first else 20)
+	var bonus := int(d["lvl"]) * (60 if first else 20) * (3 if Dungeon.is_raid(d) else 1)
 	var ups := Game.gain_xp(bonus)
 	var lines := ["%s CLEARED!" % d["name"], "+%d XP for the clear%s." % [bonus, " (first time)" if first else ""]]
+	if Dungeon.is_raid(d) and Game.rng.randf() < 0.25:
+		var pool: Array = Data.game.get("MOUNTS", []).filter(func(m): return m.get("source") == "raid" and not Game.hero.get("mounts", []).has(m["id"]))
+		if pool.size():
+			var m: Dictionary = pool[Game.rng.randi_range(0, pool.size() - 1)]
+			var own: Array = Game.hero.get("mounts", []); own.append(m["id"]); Game.hero["mounts"] = own
+			lines.append("RAID MOUNT: %s%s! (START > MOUNT)" % [m["name"], " (flying)" if m.get("fly") else ""])
 	if ups: lines.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
 	leave_dungeon()
 	lines.append_array(Quest.on_dungeon_clear(str(d["id"])))
@@ -236,11 +286,17 @@ func _fight_mob(k: int) -> void:
 	b.foe_lvl = int(m["lvl"])
 	b.biome = zone.get("biome", "dusk")
 	b.boss = m.get("boss", false)
+	if b.boss and zone.get("raid", false): b.hp_mult = 4
+	if m.get("world", false): b.hp_mult = 5
 	b.on_win = Callable(self, "_mob_down").bind(m)
 	main.push(b)
 
 func _mob_down(m: Dictionary) -> void:
 	zone["mobs"].erase(m)
+	if m.get("world", false):
+		var wbk: Dictionary = Game.hero.get("wbk", {}); wbk[m["def"]["id"]] = _steps(); Game.hero["wbk"] = wbk
+		main.say(["%s falls! It will return in time." % m["def"]["name"]])
+		return
 	if m.get("boss", false):
 		main.say(["The seal on the stairs breaks."])
 
@@ -267,6 +323,8 @@ func _talk(n: Dictionary) -> void:
 		_craft_menu()
 	elif svc == "stable":
 		_stable()
+	elif svc == "trials":
+		_trials_menu()
 	elif svc == "trainer":
 		var cp = CharPage.new(); cp.tab = 4; main.push(cp)
 	else:
@@ -300,6 +358,78 @@ func _craft_pick(k: int) -> void:
 		main.say(["%s needs:" % r["name"]] + Loot.wrap(Craft.needs_text(r), 24))
 		return
 	main.say(Craft.make(r))
+
+# ------------------------------------------------------------------ trials (TRIALS: rush, timed, solo, frail, waves, mirror)
+var trial: Dictionary = {}
+
+func _trials_menu() -> void:
+	var names := []
+	for t in Data.game.get("TRIALS", []):
+		names.append(("*" if Game.hero.get("trials", {}).has(t["id"]) else "") + "%s L%d" % [str(t["name"]).replace("TRIAL OF ", "").substr(0, 14), int(t["lvl"])])
+	main.choose(names, Callable(self, "_trial_pick"), "%s: Prove yourself. (* = won)" % talking)
+
+func _trial_pick(k: int) -> void:
+	if k < 0: return
+	var t: Dictionary = Data.game["TRIALS"][k]
+	if int(Game.hero["lvl"]) < int(t["lvl"]):
+		main.say(["%s: Come back at level %d." % [talking, int(t["lvl"])]]); return
+	var total: int = {"rush": 5, "waves": 10, "mirror": 3}.get(str(t["rule"]), 3)
+	trial = {"t": t, "i": 0, "total": total}
+	Game.hero["hp"] = Game.hp_max()
+	if t["rule"] == "frail": Game.hero["hp"] = Game.hp_max() / 2
+	main.say(["%s" % t["name"], str(t.get("desc", "")), "%d fights. No running." % total], Callable(self, "_trial_next"))
+
+func _trial_next() -> void:
+	var t: Dictionary = trial["t"]
+	var b := Battle.new()
+	var lvl := maxi(int(t["lvl"]), int(Game.hero["lvl"]))
+	var i := int(trial["i"])
+	match str(t["rule"]):
+		"waves":
+			var pool: Array = Data.game.get("BESTIARY", [])
+			b.foe_def = pool[Game.rng.randi_range(0, pool.size() - 1)]
+		"mirror":
+			var cs: Array = Data.game.get("CLASS_ORDER", ["warden"])
+			var c: String = cs[Game.rng.randi_range(0, cs.size() - 1)]
+			b.foe_def = {"name": "MIRROR " + str(Data.cls(c).get("name", c)), "art": "c_%s_4" % c, "fam": "humanoid"}
+			b.boss = true; b.hp_mult = 2
+		_:
+			var tb: Array = Data.game.get("TRIAL_BOSSES", [])
+			b.foe_def = tb[(Data.game["TRIALS"].find(t) * 5 + i) % maxi(1, tb.size())] if tb.size() else {"name": "CHAMPION", "fam": "humanoid"}
+			b.boss = true; b.hp_mult = 2
+	b.foe_lvl = lvl
+	b.biome = "crystal"
+	b.no_escape = true
+	b.loot = false
+	if t["rule"] == "timed": b.max_rounds = 12
+	b.on_win = Callable(self, "_trial_won_fight")
+	b.on_lose = Callable(self, "_trial_failed")
+	main.push(b)
+
+func _trial_won_fight() -> void:
+	trial["i"] = int(trial["i"]) + 1
+	if int(trial["i"]) < int(trial["total"]):
+		if trial["t"]["rule"] != "rush":
+			Game.hero["hp"] = mini(Game.hp_max() / (2 if trial["t"]["rule"] == "frail" else 1), int(Game.hero["hp"]) + Game.hp_max() / 4)
+		main.say(["Fight %d of %d won." % [int(trial["i"]), int(trial["total"])]], Callable(self, "_trial_next"))
+		return
+	var t: Dictionary = trial["t"]
+	var first: bool = not Game.hero.get("trials", {}).has(t["id"])
+	var tr: Dictionary = Game.hero.get("trials", {}); tr[t["id"]] = true; Game.hero["trials"] = tr
+	var it := Game.random_drop(int(Game.hero["lvl"]) + 20)
+	it = Game.make_item(str(it["id"]), maxi(4 if first else 3, int(it["r"])), int(Game.hero["lvl"]) + 10)
+	Game.bag().append(it)
+	var gold := int(t["lvl"]) * (40 if first else 10)
+	Game.hero["gold"] = int(Game.hero["gold"]) + gold
+	Game.hero["hp"] = Game.hp_max()
+	trial = {}
+	main.say(["%s COMPLETE!" % t["name"], "+%d G and %s." % [gold, Game.item_name(it)]])
+
+func _trial_failed() -> void:
+	var t: Dictionary = trial.get("t", {})
+	trial = {}
+	Game.hero["hp"] = Game.hp_max()
+	main.say(["%s failed. Try again any time." % t.get("name", "The trial")])
 
 # ------------------------------------------------------------------ the stable: mounts
 var stable_list: Array = []
@@ -462,6 +592,13 @@ func _draw() -> void:
 		Data.blit_fit(self, spr, Rect2(p + Vector2(0, -12), Vector2(T, T)))
 	var dir := "side" if Game.facing in ["left", "right"] else Game.facing
 	var f := walk_frame if moving else 0
+	var ns: Array = zone.get("nodes", [])
+	for i in range(ns.size()):
+		if not _node_ready(i): continue
+		var np := Vector2(int(ns[i][0]), int(ns[i][1])) * T - cam
+		if np.x < -T or np.x > 640 or np.y < -T or np.y > 576: continue
+		var bob2 := 2.0 if (Time.get_ticks_msec() / 500) % 4 == 0 else 0.0
+		Data.blit_fit(self, Craft.mat_icon(str(ns[i][3])), Rect2(np + Vector2(12, 8 - bob2), Vector2(40, 40)))
 	for m in zone.get("mobs", []):
 		var mp := Vector2(int(m["x"]), int(m["y"])) * T - cam
 		if mp.x < -T or mp.x > 640 or mp.y < -T or mp.y > 576: continue

@@ -5,17 +5,21 @@ extends Node2D
 var main: Node2D
 var sell := false
 const Loot = preload("res://scripts/loot.gd")
+const GearX = preload("res://scripts/gearx.gd")
+const SLOT_TAG := {"weapon": "WE", "armor": "AR", "shield": "SH", "head": "HE", "neck": "NE", "ear": "EA", "back": "BA", "hands": "HA", "waist": "WA", "legs": "LE", "feet": "FE", "ring1": "R1", "ring2": "R2", "trinket1": "T1", "trinket2": "T2"}
 var tab := 1            # 0 GEAR, 1 BAG, 2 MATS
 var i := 0
 var top := 0
 var note := ""
-const SLOTS := ["weapon", "armor", "shield"]
+const SLOTS := ["weapon", "armor", "shield", "head", "neck", "ear", "back", "hands", "waist", "legs", "feet", "ring1", "ring2", "trinket1", "trinket2"]
 const ROWS := 5
 const RH := 64
 
 func _rows() -> Array:
 	if tab == 2 and not sell:
 		var out := []
+		for k in Game.hero.get("gems", {}):
+			out.append({"gem": k, "n": int(Game.hero["gems"][k])})
 		for k in Craft.mats():
 			out.append({"mat": k, "n": int(Craft.mats()[k])})
 		return out
@@ -43,10 +47,91 @@ func step(_d: float) -> void:
 		if i >= top + ROWS: top = i - ROWS + 1
 	if main.pressed("ui_b"):
 		main.pop(self)
-	elif main.pressed("ui_start") and n and tab != 2:
-		_info(rows[i])
+	elif main.pressed("ui_start") and n and tab != 2 and not rows[i].is_empty():
+		_actions(rows[i])
 	elif main.pressed("ui_a") and n and (tab != 2 or sell):
 		_act(i)
+
+var acting: Dictionary = {}
+const ACTIONS := ["INFO", "SOCKET GEM", "REMOVE GEMS", "TEMPER", "MASTERWORK", "BACK"]
+
+## START on an item: details, gems, and the occultist's tempering and masterwork (in towns)
+func _actions(it: Dictionary) -> void:
+	acting = it
+	var o := ACTIONS.duplicate()
+	o[1] = "SOCKET GEM (%d)" % GearX.socket_cap(it) if GearX.socket_cap(it) else "NO SOCKETS"
+	o[3] = "TEMPER %dG" % GearX.temper_cost(it)["gold"]
+	o[4] = "MASTERWORK %dG" % GearX.mw_cost(it)["gold"] if int(it.get("mw", 0)) < int(Data.game.get("MW_MAX", 12)) else "MASTERWORK MAX"
+	main.choose(o, Callable(self, "_action_pick"), Game.item_name(acting))
+
+func _in_town() -> bool:
+	return Game.dun.is_empty() and Data.zones.get(Game.zone_id, {}).get("town", false)
+
+func _pay(cost: Dictionary) -> String:
+	if int(Game.hero["gold"]) < int(cost["gold"]): return "Need %d G." % int(cost["gold"])
+	if int(Craft.mats().get("scrap", 0)) < int(cost["scrap"]): return "Need %d SCRAP (salvage from humanoids and constructs)." % int(cost["scrap"])
+	Game.hero["gold"] = int(Game.hero["gold"]) - int(cost["gold"])
+	Craft.mats()["scrap"] = int(Craft.mats()["scrap"]) - int(cost["scrap"])
+	if int(Craft.mats()["scrap"]) <= 0: Craft.mats().erase("scrap")
+	return ""
+
+var gem_list: Array = []
+
+func _action_pick(k: int) -> void:
+	var it := acting
+	match k:
+		0: _info(it)
+		1:
+			if GearX.socket_cap(it) == 0: main.say(["This item has no sockets. Weapons and armour get one per 180 item levels."]); return
+			if not GearX.sockets(it).has(""): main.say(["Every socket is full. REMOVE GEMS first."]); return
+			gem_list = Game.hero.get("gems", {}).keys()
+			if gem_list.is_empty(): main.say(["You have no gems. Monsters drop them, bosses most often."]); return
+			var names := []
+			for g in gem_list: names.append("%s x%d" % [GearX.gem(g)["name"], int(Game.hero["gems"][g])])
+			main.choose(names, Callable(self, "_socket"), "Socket which gem?")
+		2:
+			var got := 0
+			var sk := GearX.sockets(it)
+			for j in range(sk.size()):
+				if sk[j] != "":
+					Game.hero["gems"][sk[j]] = int(Game.hero.get("gems", {}).get(sk[j], 0)) + 1; sk[j] = ""; got += 1
+			main.say(["Removed %d gem%s." % [got, "" if got == 1 else "s"]])
+		3:
+			if not _in_town(): main.say(["The occultist tempers gear in towns."]); return
+			if it.get("tm", []).size() >= int(Data.game.get("TEMPER_MAX", 2)): main.say(["Tempered as far as it goes (%d)." % int(Data.game.get("TEMPER_MAX", 2))]); return
+			var err := _pay(GearX.temper_cost(it))
+			if err != "": main.say([err]); return
+			var pools: Dictionary = Data.game.get("TEMPER_POOLS", {})
+			var cat: String = pools.keys()[Game.rng.randi_range(0, pools.size() - 1)]
+			var st: String = pools[cat][Game.rng.randi_range(0, pools[cat].size() - 1)]
+			var tm: Array = it.get("tm", [])
+			tm.append([st, GearX.temper_value(st, int(it.get("ilvl", 1)))]); it["tm"] = tm
+			main.say(["Tempered (%s): %s." % [cat, Loot.affix_text(tm.back())]])
+		4:
+			if not _in_town(): main.say(["The occultist masterworks gear in towns."]); return
+			if int(it.get("mw", 0)) >= int(Data.game.get("MW_MAX", 12)): main.say(["Masterwork is at its peak."]); return
+			if it.get("af", []).is_empty(): main.say(["Only gear with affixes can be masterworked."]); return
+			var err := _pay(GearX.mw_cost(it))
+			if err != "": main.say([err]); return
+			it["mw"] = int(it.get("mw", 0)) + 1
+			var lines := ["Masterwork rank %d: affixes +%d%%." % [int(it["mw"]), roundi(float(Data.game.get("MW_STEP", 0.05)) * 100 * int(it["mw"]))]]
+			if int(it["mw"]) % 4 == 0:
+				var c: Array = it.get("mwc", [])
+				var ai := Game.rng.randi_range(0, it["af"].size() - 1)
+				c.append(ai)
+				it["mwc"] = c
+				lines.append("CRITICAL! %s grows 25%%." % Data.game.get("SUBSTATS", {}).get(it["af"][ai][0], {}).get("name", it["af"][ai][0]))
+			main.say(lines)
+
+func _socket(k: int) -> void:
+	if k < 0: return
+	var g: String = gem_list[k]
+	var sk := GearX.sockets(acting)
+	sk[sk.find("")] = g
+	Game.hero["gems"][g] = int(Game.hero["gems"][g]) - 1
+	if int(Game.hero["gems"][g]) <= 0: Game.hero["gems"].erase(g)
+	var d := GearX.gem(g)
+	main.say(["Socketed %s: +%d %s." % [d["name"], int(d["value"]), d["label"]]])
 
 ## every line about an item: rarity, base stats, affixes (* = greater) and its aspect
 func _info(it: Dictionary) -> void:
@@ -54,7 +139,16 @@ func _info(it: Dictionary) -> void:
 	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
 	var lines := ["%s (%s)" % [Game.item_name(it), rr.get("name", "")], "%s  ILVL %d" % [Game.item_stat(it), int(it.get("ilvl", 1))]]
 	var af := []
-	for a in it.get("af", []): af.append(Loot.affix_text(a))
+	var eff := GearX.effective_affixes(it)
+	for j in range(eff.size()): af.append(Loot.affix_text([eff[j][0], eff[j][1], j < it.get("af", []).size() and it["af"][j].size() > 2 and it["af"][j][2]]))
+	if it.get("k") == "o":
+		lines.append(str(Game.def_of(it).get("slot", "")).to_upper() + " ACCESSORY")
+	if int(it.get("mw", 0)): lines.append("MASTERWORK %d/%d" % [int(it["mw"]), int(Data.game.get("MW_MAX", 12))])
+	var sk := GearX.sockets(it)
+	if sk.size():
+		var gs := []
+		for g in sk: gs.append(GearX.gem(g)["name"] if g != "" else "( )")
+		lines.append("SOCKETS " + " ".join(gs))
 	for k in range(0, af.size(), 2): lines.append("  ".join(af.slice(k, k + 2)))
 	if it.has("asp"):
 		lines.append("ASPECT: " + Loot.aspect_name(it["asp"]))
@@ -100,6 +194,13 @@ func _draw() -> void:
 	for r in range(top, mini(rows.size(), top + ROWS)):
 		var y := 100 + (r - top) * RH
 		var it: Dictionary = rows[r]
+		if it.has("gem"):
+			if r == i:
+				draw_colored_polygon(PackedVector2Array([Vector2(28, y + 14), Vector2(44, y + 28), Vector2(28, y + 42)]), Data.INK)
+			Data.blit_fit(self, GearX.gem_icon(it["gem"]), Rect2(56, y, 52, 52))
+			Data.text(self, str(GearX.gem(it["gem"]).get("name", "?")).substr(0, 15), Vector2(116, y + 10), Color8(150, 40, 150))
+			Data.text_r(self, "x%d" % int(it["n"]), 612, y + 10, Data.EDGE)
+			continue
 		if it.has("mat"):
 			if r == i:
 				draw_colored_polygon(PackedVector2Array([Vector2(28, y + 14), Vector2(44, y + 28), Vector2(28, y + 42)]), Data.INK)
@@ -110,7 +211,7 @@ func _draw() -> void:
 		if r == i:
 			draw_colored_polygon(PackedVector2Array([Vector2(28, y + 14), Vector2(44, y + 28), Vector2(28, y + 42)]), Data.INK)
 		if tab == 0 and not sell:
-			Data.text(self, str(SLOTS[r]).substr(0, 2).to_upper(), Vector2(52, y + 10), Data.GREY)
+			Data.text(self, SLOT_TAG.get(SLOTS[r], "??"), Vector2(52, y + 10), Data.GREY)
 		var x := 112 if (tab == 0 and not sell) else 56
 		if it.is_empty():
 			Data.text(self, "- EMPTY -", Vector2(x + 60, y + 10), Data.GREY)
@@ -123,7 +224,11 @@ func _draw() -> void:
 	# detail
 	Data.panel(self, Rect2(8, 432, 624, 136))
 	var cur: Dictionary = rows[i] if i < rows.size() else {}
-	if cur.has("mat"):
+	if cur.has("gem"):
+		var gd := GearX.gem(cur["gem"])
+		Data.text(self, "GEM +%d %s" % [int(gd["value"]), str(gd["label"]).to_upper()], Vector2(32, 450), Color8(150, 40, 150), 0.75)
+		Data.text(self, "Socket from an item: START.", Vector2(32, 492), Data.INK, 0.75)
+	elif cur.has("mat"):
 		Data.text(self, "CRAFTING MATERIAL", Vector2(32, 450), Data.GREY)
 		Data.text(self, "Town crafters use these.", Vector2(32, 492), Data.INK, 0.75)
 	elif note != "":
@@ -138,4 +243,4 @@ func _draw() -> void:
 			Data.text_r(self, ("%d AFFIX%s" % [nf, "ES" if nf != 1 else ""]) + (" +ASPECT" if cur.has("asp") else ""), 608, 492, Color8(200, 100, 20), 0.6)
 	Data.text_r(self, "AC %d HIT +%d" % [Game.ac(), Game.attack_bonus()], 608, 520, Data.EDGE, 0.75)
 	if not sell:
-		Data.text(self, "<> TAB B BACK START INFO", Vector2(32, 532), Data.GREY, 0.5)
+		Data.text(self, "<> TAB  START: MENU", Vector2(32, 532), Data.GREY, 0.5)

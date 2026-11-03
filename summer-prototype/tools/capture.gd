@@ -143,7 +143,111 @@ func _ready() -> void:
 		await get_tree().process_frame
 	print("CHECK legendary battle finished=%s" % [not main.stack.has(lb)])
 	print("CHECK save=%s load=%s chapter=%d mount=%s" % [Game.save(), Game.load_save(), Game.hero["chapter"], Game.hero.get("mount")])
+	await _stage5()
 	get_tree().quit()
+
+## run a pushed battle to the end with ATTACK, keeping the hero alive unless told not to
+func _autobattle(b, heal := true) -> int:
+	var tt := 0
+	while is_instance_valid(b) and main.stack.has(b) and tt < 400:
+		if b.state == "msg":
+			b.msgs = []; b.state = "menu"
+			if b.then.is_valid():
+				var c = b.then; b.then = Callable(); c.call()
+		elif b.state == "menu":
+			if heal: Game.hero["hp"] = Game.hp_max()
+			b._act("ATTACK")
+		tt += 1
+		await get_tree().process_frame
+	return tt
+
+func _clear_dialogs(f) -> void:
+	var guard := 0
+	while main.top() != f and guard < 50:
+		var t = main.top()
+		if t.has_method("_finish"): main.pop(t)
+		elif t.get("done") is Callable and t.get("lines") != null:
+			main.pop(t); if t.done.is_valid(): t.done.call()
+		else: main.pop(t)
+		guard += 1
+		await get_tree().process_frame
+
+func _stage5() -> void:
+	var GX = load("res://scripts/gearx.gd")
+	Game.new_hero("REN", "warden", "hearthkin"); Game.hero["lvl"] = 40; Game.hero["xp"] = Data.xp_for(40); Game.hero["hp"] = Game.hp_max()
+	# accessories
+	var ring := Game.make_item("ring_prot" if GX.wondrous("ring_prot").size() else GX.accessory_ids().filter(func(i): return GX.wondrous(i)["slot"] == "ring")[0], 4, 40)
+	var ac0 := Game.ac(); var hp0 := Game.hp_max()
+	Game.bag().append(ring); Game.equip(Game.bag().size() - 1)
+	print("CHECK accessory %s slot=%s stat=%s ac %d->%d hp %d->%d" % [Game.item_name(ring), Game.slot_of(ring) if false else Game.gear().keys().filter(func(k): return Game.gear()[k] == ring), Game.item_stat(ring), ac0, Game.ac(), hp0, Game.hp_max()])
+	# gems: a high-level weapon has more sockets; socket a ruby
+	var w := Game.make_item("longbrand", 4, 400)
+	print("CHECK sockets ilvl400=%d ilvl1=%d" % [GX.socket_cap(w), GX.socket_cap(Game.make_item("longbrand", 1, 1))])
+	Game.bag().append(w); Game.equip(Game.bag().size() - 1)
+	var d0 := Game.stat("dmg")
+	Game.hero["gems"] = {"ruby_t3": 1}
+	main.clear(); var bg = main.push(load("res://scripts/bag.gd").new()); bg.tab = 0; await _wait(0.2)
+	bg.acting = Game.gear()["weapon"]; bg.gem_list = ["ruby_t3"]; bg._socket(0); main.pop(main.top())
+	print("CHECK socket ruby_t3 dmg %d -> %d sockets=%s" % [d0, Game.stat("dmg"), Game.gear()["weapon"]["sk"]])
+	# temper and masterwork need a town, gold and scrap
+	Game.zone_id = "ardenhold"; Game.hero["gold"] = 100000; Craft.mats()["scrap"] = 200
+	var af0: Array = GX.effective_affixes(Game.gear()["weapon"])
+	bg._action_pick(3); main.pop(main.top())
+	for r in range(4): bg._action_pick(4); main.pop(main.top())
+	var wpn: Dictionary = Game.gear()["weapon"]
+	print("CHECK temper tm=%s masterwork rank=%d crits=%s affixes %s -> %s" % [wpn.get("tm"), int(wpn.get("mw", 0)), wpn.get("mwc"), af0, GX.effective_affixes(wpn)])
+	await _wait(0.2); await _shot("18_gear_acc")
+	bg.tab = 2; Game.hero["gems"] = {"onyx_t2": 2, "opal_t1": 1}; await _wait(0.2); await _shot("19_gems_mats")
+	# world boss and gathering in elderwood_s1
+	Game.zone_id = "elderwood_s1"; Game.pos = Vector2i(16, 12); Game.hero["wbk"] = {}; Game.hero["nodes"] = {}
+	main.clear(); var wf = main.push(load("res://scripts/field.gd").new()); await _wait(0.3); await _clear_dialogs(wf)
+	var wb: Array = wf.zone.get("mobs", [])
+	print("CHECK world bosses in elderwood_s1: %s" % [wb.map(func(m): return "%s@%d,%d" % [m["def"]["name"], m["x"], m["y"]])])
+	var nd: Array = wf.zone["nodes"][0]
+	Game.pos = Vector2i(int(nd[0]), int(nd[1])); var m0 := int(Craft.mats().get(str(nd[3]), 0)); wf._arrived(); await _clear_dialogs(wf)
+	print("CHECK gather %s at %s: %d -> %d, ready again=%s" % [nd[3], Game.pos, m0, int(Craft.mats().get(str(nd[3]), 0)), wf._node_ready(0)])
+	if wb.size():
+		Game.pos = Vector2i(int(wb[0]["x"]), int(wb[0]["y"]) + 1)
+		await _wait(0.3); await _shot("20_world_boss")
+		wf._fight_mob(0); var wbb = main.top(); await _wait(0.2)
+		print("CHECK world boss hp=%d (x%d)" % [wbb.foe["max"], wbb.hp_mult])
+		await _autobattle(wbb); await _clear_dialogs(wf)
+		print("CHECK world boss down: mobs=%d wbk=%s" % [wf.zone["mobs"].size(), Game.hero.get("wbk")])
+	# a raid: the Bone Crypt in sandspire
+	var rz := ""
+	for zid in Data.zones:
+		if Data.zones[zid]["poi"].get("raid", {}).get("id", "") == "rd_crypt": rz = zid
+	var rp: Dictionary = Data.zones[rz]["poi"]["raid"]
+	Game.zone_id = rz; Game.pos = Vector2i(int(rp["x"]), int(rp["y"]) + 1)
+	main.clear(); var rf = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(rf)
+	print("CHECK raid door at %s ahead=%s" % [rz, rf._dungeon_at(int(rp["x"]), int(rp["y"]))])
+	rf.enter_dungeon("rd_crypt")
+	var bosses := []
+	for fl in range(8):
+		if Game.dun.is_empty(): break
+		while rf.zone["mobs"].size():
+			var mm: Dictionary = rf.zone["mobs"].back()
+			rf._fight_mob(rf.zone["mobs"].size() - 1)
+			if mm.get("boss"): bosses.append("%s(x%d)" % [mm["def"]["name"], main.top().hp_mult])
+			await _autobattle(main.top()); await _clear_dialogs(rf)
+		var dn: Array = rf.zone["down"]; Game.pos = Vector2i(int(dn[0]), int(dn[1])); rf._arrived(); await _clear_dialogs(rf)
+	print("CHECK raid bosses=%s cleared=%s zone=%s" % [bosses, Game.hero.get("cleared"), Game.zone_id])
+	# a trial: GAUNTLET OF STEEL (rush, 5 fights)
+	Game.zone_id = "ardenhold"; Game.pos = Vector2i(16, 12)
+	main.clear(); var tf = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(tf)
+	tf.talking = "TRIALS MASTER"; tf._trial_pick(0)
+	var fights := 0
+	for n in range(40):
+		var top = main.top()
+		if top == tf: break
+		if top.has_method("_victory"):
+			if fights == 0: await _wait(1.0); top.state = "menu"; await _wait(0.2); await _shot("21_trial")
+			fights += 1; await _autobattle(top)
+		else:
+			main.pop(top); if top.get("done") is Callable and top.done.is_valid(): top.done.call()
+		await get_tree().process_frame
+	print("CHECK trial fights=%d won=%s" % [fights, Game.hero.get("trials")])
+	print("CHECK save=%s load=%s gems=%s acc=%s" % [Game.save(), Game.load_save(), Game.hero.get("gems"), Game.gear().keys()])
 
 func _wait(s: float) -> void:
 	await get_tree().create_timer(s).timeout
