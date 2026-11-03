@@ -7,7 +7,9 @@ For every panel of the sheet it cuts out each sprite on a transparent background
   assets_pack/scenes/*.png                 the four scene paintings (full and 160x144 pixel backdrops)
   assets_pack/manifest.json                every asset: panel, file, size, source box
   assets_pack/preview.png                  contact sheet of the pixel versions
-Run: python3 tools/slice_assetpack.py [--debug]   (--debug writes assets_pack/_boxes.png with the panel boxes)
+Run: python3 tools/slice_assetpack.py [--sheet ui] [--debug]
+  --sheet ui slices art_source/ui_pack_sheet.png (UI icons, gems, potions, frames, buttons, banners) into assets_pack/ui/;
+  its logo and named class line-up are left out on purpose.   (--debug writes assets_pack/_boxes.png with the panel boxes)
 """
 import json, os, sys
 import numpy as np
@@ -103,7 +105,25 @@ def pixelize(img, size, opaque=False, colors=32):
     pad[oy:oy + h2, ox:ox + w2] = out[:size + 2, :size + 2]
     return Image.fromarray(pad, 'RGBA')
 
+# second sheet: a UI kit. Only generic pieces are cut (no logo, no named class line-up).
+UI_SHEET = {
+    'src': os.path.join(ROOT, 'art_source', 'ui_pack_sheet.png'), 'out': os.path.join(ROOT, 'assets_pack', 'ui'),
+    'panels': {
+        'rarity_frames': ((14, 792, 636, 866), 32, 60), 'socket_gems': ((660, 792, 842, 882), 16, 40), 'consumables': ((858, 790, 1106, 882), 16, 40),
+        'frames': ((1128, 786, 1345, 882), 48, 200), 'buttons': ((1350, 778, 1444, 884), 48, 200), 'checkboxes': ((1452, 778, 1530, 882), 16, 40),
+        'system_icons': ((8, 925, 700, 966), 16, 40), 'hotbar_skills': ((203, 670, 382, 724), 16, 60), 'hotbar_potions': ((410, 670, 562, 724), 16, 60),
+        'skill_icons': ((995, 92, 1256, 268), 16, 120), 'inventory_items': ((676, 46, 948, 282), 32, 60), 'storage_items': ((1336, 395, 1522, 568), 16, 40),
+        'shop_items': ((872, 395, 1076, 526), 16, 40), 'menu_icons': ((14, 176, 52, 568), 16, 40), 'banners': ((1060, 922, 1356, 1008), 64, 200),
+    },
+    'regions': {'banners': [(1060, 922, 1356, 1008, [1060, 1205, 1355], 1)], 'inventory_items': [(680, 200, 948, 280, 7, 2)], 'hotbar_potions': [(414, 672, 562, 724, 3, 1)]},  # third notice banner names another game's event, so it is skipped
+    'opaque': {'rarity_frames', 'frames', 'buttons', 'checkboxes', 'hotbar_skills', 'hotbar_potions', 'skill_icons', 'banners'},
+    'scenes': {'minimap': (750, 618, 892, 752), 'world_map': (918, 624, 1118, 740), 'guild_crest': (1160, 626, 1230, 706)},
+}
+
 def main():
+    global SRC, OUT, PANELS, REGIONS, OPAQUE, SCENES
+    if '--sheet' in sys.argv and sys.argv[sys.argv.index('--sheet') + 1] == 'ui':
+        U = UI_SHEET; SRC, OUT, PANELS, REGIONS, OPAQUE, SCENES = U['src'], U['out'], U['panels'], U['regions'], U['opaque'], U['scenes']
     sheet = Image.open(SRC).convert('RGB'); S = np.array(sheet)
     os.makedirs(OUT, exist_ok=True); manifest = []
     if '--debug' in sys.argv:
@@ -146,7 +166,9 @@ def main():
     os.makedirs(os.path.join(OUT, 'scenes'), exist_ok=True)
     for k, b in SCENES.items():
         im = sheet.crop(b); im.save(os.path.join(OUT, 'scenes', f'{k}.png'))
-        bd = im.resize((160, 144) if k != 'world_map' else (160, 96), Image.LANCZOS).quantize(48, method=Image.MEDIANCUT, dither=Image.NONE).convert('RGB')
+        size = (160, 144) if k != 'world_map' else (160, 96)
+        if OUT.endswith('ui'): f = 64 / max(im.size); size = (round(im.width * f), round(im.height * f))
+        bd = im.resize(size, Image.LANCZOS).quantize(48, method=Image.MEDIANCUT, dither=Image.NONE).convert('RGB')
         bd.save(os.path.join(OUT, 'scenes', f'{k}_px.png'))
         manifest.append({'panel': 'scenes', 'name': k, 'file': f'scenes/{k}.png', 'px': f'scenes/{k}_px.png', 'w': im.width, 'h': im.height, 'box': list(b)})
     json.dump(manifest, open(os.path.join(OUT, 'manifest.json'), 'w'), indent=1)

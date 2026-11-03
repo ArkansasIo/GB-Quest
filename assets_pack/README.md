@@ -15,3 +15,11 @@ Source: `art_source/asset_pack_sheet.png`, the asset sheet supplied for the proj
 Each folder has the full-detail cutout (`<panel>_NNN.png`, transparent background) and an 8-bit version in `px/` (32 colours, dark outline). `manifest.json` lists every asset with its source box on the sheet; `preview.png` shows all the pixel versions.
 
 These files are not loaded by the game yet. To use one, copy its `px/` version into `assets/` under the game's naming (for example `np_class_<cls>.png`) and rebuild.
+
+## UI kit (`ui/`)
+
+Source: `art_source/ui_pack_sheet.png`. Regenerate with `python3 tools/slice_assetpack.py --sheet ui`.
+
+151 pieces: rarity frames (normal to socket), socket gems, consumables, panel frames, buttons, checkboxes, system and menu icons, skill icons, hotbar skills and potions, inventory/storage/shop item icons, two notice banners (LEVEL UP, ENHANCE SUCCESS), and a minimap, world map and guild crest in `ui/scenes/`.
+
+Left out on purpose: the sheet's game logo, its named class line-up and the event-named banner, which belong to another game's brand.
