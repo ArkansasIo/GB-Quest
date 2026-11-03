@@ -875,7 +875,7 @@ function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost 
     if (!canvas) return null;
     if (HD_WORLD_SOURCE !== canvas) {
       HD_WORLD_SOURCE = canvas;
-      HD_WORLD_SCALED = typeof scaled === 'function' ? scaled(canvas, 24, 24) : canvas;
+      HD_WORLD_SCALED = mkCanvas(24, 24);\n      const draw = HD_WORLD_SCALED.getContext('2d');\n      draw.imageSmoothingEnabled = false;\n      draw.drawImage(canvas, 0, 0, 24, 24);
     }
     return HD_WORLD_SCALED;
   } catch (error) {
