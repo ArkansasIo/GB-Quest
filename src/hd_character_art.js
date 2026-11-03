@@ -69,6 +69,32 @@
     return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
       rank: safe(rank, RANKS) || 'F', equipment: result };
   };
+  const createFramePresenter = runtime => {
+    if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
+    let requestedKey = null, readyKey = null, readyCanvas = null, generation = 0;
+    const request = (character, spec = {}) => {
+      const key = JSON.stringify([
+        character && (character.id || character.name || character.cls),
+        character && character.rank, character && character.eq,
+        spec.direction, spec.frame, spec.state, spec.action, spec.animation,
+        spec.rank, spec.archetype, spec.ghost
+      ]);
+      if (key !== requestedKey) {
+        requestedKey = key;
+        const token = ++generation;
+        runtime.renderCharacter(character, spec).then(canvas => {
+          if (token !== generation) return;
+          readyKey = key;
+          readyCanvas = canvas;
+        }).catch(() => {
+          if (token === generation) requestedKey = null;
+        });
+      }
+      return readyKey === key ? readyCanvas : null;
+    };
+    const clear = () => { generation++; requestedKey = null; readyKey = null; readyCanvas = null; };
+    return { request, clear, getReady: () => readyCanvas };
+  };
   const createRuntime = (options = {}) => {
     const frameRoot = options.frameRoot || 'assets_hd64/animations/frames';
     const equipmentRoot = options.equipmentRoot || 'assets_hd64/equipment';
@@ -146,7 +172,7 @@
     };
     return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size, compositeCacheSize: () => compositeCache.size };
   };
-  const api = { createRuntime, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  const api = { createRuntime, createFramePresenter, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.GBQHDCharacterArt = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
