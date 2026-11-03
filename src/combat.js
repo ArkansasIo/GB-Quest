@@ -4,6 +4,28 @@
 'use strict';
 
 let CB_ID = 1;
+let CB_HD_RUNTIME = null;
+const CB_HD_PRESENTERS = new WeakMap();
+function battleHDFrame(character, state = 'idle', frame = 0, direction = 'east') {
+  if (!character || !character.eq || typeof globalThis === 'undefined') return null;
+  const api = globalThis.GBQHDCharacterArt;
+  if (!api) return null;
+  try {
+    if (!CB_HD_RUNTIME) CB_HD_RUNTIME = api.createRuntime();
+    let presenter = CB_HD_PRESENTERS.get(character);
+    if (!presenter) {
+      presenter = api.createFramePresenter(CB_HD_RUNTIME, { maxEntries: 16 });
+      CB_HD_PRESENTERS.set(character, presenter);
+    }
+    return presenter.request(character, {
+      direction, state, frame: Math.max(0, Number(frame) || 0),
+      rank: character.rank || character.gearRank || 'F'
+    });
+  } catch (error) {
+    console.warn('HD battle frame unavailable; using classic portrait', error);
+    return null;
+  }
+}
 function partyMember(ch, ctrl = 'ai') { return { id: 'p' + (CB_ID++), side: 'party', ch, ctrl, name: ch.name, effects: [], threat: {}, acted: false, temp: 0 }; }
 function foeMember(m) { m.id = 'f' + (CB_ID++); return m; }
 const isChar = u => !!u.ch;
@@ -981,7 +1003,14 @@ class Battle {
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
       if (c.hp <= 0) { blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78); return; }
-      blit(s, px - s.width / 2 + lx, py - s.height + 14);
+      const pose = this.anim.flash[u.id] ? 'hit' :
+        (this.anim.fx && this.anim.fx.on.includes(u.id) ? 'cast' :
+        (this.anim.lunge === u.id ? 'attack' : 'idle'));
+      const hd = battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
+      if (hd) {
+        const h = s.height, w = Math.max(1, Math.round(hd.width * h / Math.max(1, hd.height)));
+        ctx.drawImage(hd, Math.round(px - w / 2 + lx), Math.round(py - h + 14), w, h);
+      } else blit(s, px - s.width / 2 + lx, py - s.height + 14);
       if (hasEff(u, 'invisible') || hasEff(u, 'hidden')) { ctx.globalAlpha = 0.4; fill(px - 8, py - 16, 16, 30, 0); ctx.globalAlpha = 1; }
     });
     this.foes.slice(0, 4).forEach(f => {
