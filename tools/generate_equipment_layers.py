@@ -35,7 +35,15 @@ SLOT_ANCHORS = {
 
 def draw_item(draw, slot, item, color, facing):
     x, y = SLOT_ANCHORS[slot]
-    side = facing in ("W", "E", "NW", "NE")
+    # Small directional offsets keep overlays aligned to the prototype's facing.
+    if facing in ("W", "NW", "SW"):
+        x -= 3
+    elif facing in ("E", "NE", "SE"):
+        x += 3
+    if facing in ("N", "NW", "NE") and slot in ("head", "back", "main_hand"):
+        y -= 2
+    if facing in ("W", "E", "NW", "NE") and slot in ("main_hand", "off_hand"):
+        y += 1
     if slot == "head":
         if "hood" in item or "mask" in item:
             draw.polygon([(x-11,y-9),(x+11,y-9),(x+9,y+9),(x,y+14),(x-9,y+9)], fill=color, outline=(24,25,34,255))
