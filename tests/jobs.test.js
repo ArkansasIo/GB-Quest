@@ -171,7 +171,7 @@ test('throne-style systems: weapon mastery, amitoi expeditions, day and night', 
   const m = { lvl: 1, xp: 0 }; assert.equal(T.masteryAdd(m, T.masteryXpFor(1)), 1); assert.equal(m.lvl, 2);
   const big = { lvl: 1, xp: 0 }; T.masteryAdd(big, 1e9); assert.equal(big.lvl, 30, 'caps at 30'); assert.equal(big.xp, 0);
   assert.equal(T.masteryRank(9), 'NOVICE'); assert.equal(T.masteryRank(10), 'ADEPT'); assert.equal(T.masteryRank(30), 'MASTER');
-  assert.deepEqual(plain(T.masteryBonus('sword', 1)), []); assert.ok(T.masteryBonus('dagger', 10)[0][1] > T.masteryBonus('dagger', 9)[0][1] + 1, 'specialization rank is a bigger step');
+  assert.deepEqual(plain(T.masteryBonus('sword', 1)), []); { const d = l => T.masteryBonus('dagger', l)[1][1]; assert.ok(d(10) - d(9) > 2 * (d(9) - d(8)), 'specialization rank is a bigger step'); }
   for (const f of T.MASTERY_FAMS) assert.equal(T.masteryBonus(f, 30).length, 2);
   const a = plain(T.expeditionReward('short', 1, 10, 42)), b = plain(T.expeditionReward('long', 1, 10, 42));
   assert.deepEqual(a, plain(T.expeditionReward('short', 1, 10, 42)), 'same seed, same haul'); assert.ok(b.gold > a.gold * 5 && b.mats > a.mats, 'longer trips bring more');
