@@ -34,7 +34,7 @@ def polygon(d, points, fill, outline=C["outline"]):
     d.polygon([(int(x), int(y)) for x, y in points], fill=fill, outline=outline)
 
 def render(direction, animation, frame, count, size=SIZE):
-    im = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    im = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     t = frame / max(1, count - 1)
     # Eight-way facing changes the silhouette's lateral offset and sword hand.
@@ -134,7 +134,7 @@ def render(direction, animation, frame, count, size=SIZE):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--output", type=Path, default=Path("assets_hd64/animations/frames"))
-    p.add_argument("--size", type=int, choices=[64, 128, 256], default=128)
+    p.add_argument("--size", type=int, choices=[64, 128, 256, 512], default=128)
     p.add_argument("--directions", nargs="*", choices=DIRECTIONS, default=DIRECTIONS)
     p.add_argument("--animations", nargs="*", choices=list(ANIMS), default=list(ANIMS))
     args = p.parse_args()
