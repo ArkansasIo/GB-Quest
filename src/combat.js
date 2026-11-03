@@ -342,7 +342,7 @@ class Battle {
     const before = hpOf(tgt);
     setHp(tgt, before - a);
     const [px, py] = this.posOf(tgt);
-    if (a) { FX.number(px, py - 12, a, opt.crit ? 'orange' : 3); FX.burst(px, py - 4, opt.crit ? 14 : 6, opt.crit ? 'orange' : 2); this.anim.flash[tgt.id] = 16; }
+    if (a) { FX.number(px, py - 12, a, opt.crit ? 'orange' : 3); FX.burst(px, py - 4, opt.crit ? 14 : 6, opt.crit ? 'orange' : 2); this.anim.flash[tgt.id] = 16; if (isChar(tgt)) this.anim.pose = { id: tgt.id, state: 'hit', until: frameN + 16 }; }
     if (hasEff(tgt, 'asleep') && a > 0) removeEffect(tgt, 'asleep');
     // concentration
     if (a > 0 && isChar(tgt) && tgt.conc) { const sv = this.save(tgt, 'CON', Math.max(10, Math.floor(a / 2)), { adv: tgt.ch.feats.includes('warcaster') ? 1 : 0 }); if (!sv.ok) this.dropConc(tgt); }
@@ -414,7 +414,7 @@ class Battle {
     if (nat === 20 && !att.ch.ai) G.stats.nat20++; if (nat === 1 && !att.ch.ai) G.stats.nat1++;
     const line1 = `${att.name}: ${ws ? 'CLAWS' : w.name}${adv > 0 ? ' (ADV)' : adv < 0 ? ' (DIS)' : ''}`;
     const rollTxt = `d20 ${nat}${bonus >= 0 ? '+' : ''}${bonus}=${total} vs AC${ac}`;
-    if (!hit) return { text: `${line1}\n${rollTxt}\n${nat === 1 ? 'NATURAL 1! Miss.' : 'Miss!'}`, act: () => { this.anim.lunge = att.id; SFX[nat === 1 ? 'nat1' : 'miss'](); } };
+    if (!hit) return { text: `${line1}\n${rollTxt}\n${nat === 1 ? 'NATURAL 1! Miss.' : 'Miss!'}`, act: () => { this.anim.lunge = att.id; this.anim.pose = { id: att.id, state: 'attack', until: frameN + 12 }; SFX[nat === 1 ? 'nat1' : 'miss'](); } };
     // mirror images / dodge on monsters vs players handled in monster attack
     let dice = ws ? '2d6' : w.dice, dmg = roll(dice, crit).total + (ws ? Math.max(D.M.STR, D.M.WIS) : w.dmg);
     const parts = [];
@@ -437,7 +437,7 @@ class Battle {
     const type = ws ? 'slashing' : w.type, magic = w.magic || !!ws;
     return { text: `${line1}\n${rollTxt}\n${crit ? 'CRITICAL! ' : 'Hit! '}${dmg} ${type}${smiteTxt}`,
       act: () => {
-        this.anim.lunge = att.id; if (crit) { SFX.crit(); shake = 8; } if (nat === 20) SFX.nat20();
+        this.anim.lunge = att.id; this.anim.pose = { id: att.id, state: 'attack', until: frameN + 12 }; if (crit) { SFX.crit(); shake = 8; } if (nat === 20) SFX.nat20();
         this.applyDamage(att, tgt, dmg, type, { attack: true, crit, magic, ranged: w.ranged });
         if (opt.stun && alive(tgt)) { const sv = this.save(tgt, 'CON', 8 + D.pb + D.M.WIS); if (!sv.ok && !tgt.condImm.includes('stunned')) { addEffect(tgt, { id: 'stunned', rounds: 1 }); this.pushNote(`${tgt.name} is STUNNED!`); SFX.stun(); } else this.pushNote(`${tgt.name} resists the stun.`); }
         if (opt.rider && alive(tgt) && !(tgt.condImm || []).includes(opt.rider)) { addEffect(tgt, { id: opt.rider, rounds: 3, lvl: att.ch.lvl, src: att.id }); this.pushNote(`${tgt.name} is ${BUFFS[opt.rider].name}!`); }
@@ -482,7 +482,7 @@ class Battle {
     const dc = this.spellDC(u), atk = this.spellAtk(u);
     const powerScale = isChar(u) ? 1 + (D.dmgPct + (D.elem[sp.dt] || 0)) / 100 + Math.max(0, lvlOf - 20) / 40 : 1 + Math.max(0, lvlOf - 20) / 30;
     const schoolSfx = sp.school + '_cast';
-    steps.push(this.say(`${u.name} casts ${sp.name}!${slot ? ` (L${slot})` : ''}`, () => { SFX[schoolSfx](); this.anim.lunge = u.id; this.anim.fx = { name: spellArt(sp) || (sp.dt === 'fire' ? 'fx_burst' : 'fx_sparkle'), t: 20, on: targets.map(t => t.id) }; }, 6));
+    steps.push(this.say(`${u.name} casts ${sp.name}!${slot ? ` (L${slot})` : ''}`, () => { SFX[schoolSfx](); this.anim.lunge = u.id; this.anim.pose = { id: u.id, state: 'cast', until: frameN + 20 }; this.anim.fx = { name: spellArt(sp) || (sp.dt === 'fire' ? 'fx_burst' : 'fx_sparkle'), t: 20, on: targets.map(t => t.id) }; }, 6));
     const dmgRoll = (crit = false) => {
       let ex = sp.dice; const cnt = ex.match(/^(\d+)d(\d+)(.*)$/);
       if (cnt && sp.lvl === 0) ex = `${+cnt[1] * tier}d${cnt[2]}${cnt[3] || ''}`;
@@ -1003,9 +1003,8 @@ class Battle {
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
       if (c.hp <= 0) { blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78); return; }
-      const pose = this.anim.flash[u.id] ? 'hit' :
-        (this.anim.fx && this.anim.fx.on.includes(u.id) ? 'cast' :
-        (this.anim.lunge === u.id ? 'attack' : 'idle'));
+      const activePose = this.anim.pose && this.anim.pose.id === u.id && this.anim.pose.until > frameN ? this.anim.pose.state : 'idle';
+      const pose = c.hp <= 0 ? 'death' : this.anim.flash[u.id] ? 'hit' : activePose;
       const hd = battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
       if (hd) {
         const h = s.height, w = Math.max(1, Math.round(hd.width * h / Math.max(1, hd.height)));
