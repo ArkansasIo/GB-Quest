@@ -127,3 +127,12 @@ test('8-bit MMO UI: theme cycle and a layout that keeps frames apart', () => {
   assert.ok(L.toastY > L.map.y + L.map.s + 8 && L.bannerY > L.toastY + 25, 'toasts and banners sit below the frames');
   assert.ok(L.hotbar.x + L.hotbar.slots * L.hotbar.step < 160 - 2 * L.hud.orbR - 4, 'hotbar fits between the orbs');
 });
+
+test('spell levels 1-9 spread across character levels 1-720', () => {
+  const W = (() => { const c = { Math, Number, Object, Array, String, JSON, console, globalThis: null }; c.globalThis = c; vm.runInNewContext([src('data_rules.js'), src('data_world.js')].join('\n').replace(/^(const|let) /gm, 'var '), c); return c; })();
+  const maxSpell = L => { const S = W.spellCasterLevel(L); return W.FULL_SLOTS[S - 1].length; };
+  assert.deepEqual(plain(W.SPELL_UNLOCK.map(maxSpell)), [1, 2, 3, 4, 5, 6, 7, 8, 9], 'each unlock level opens its spell level');
+  for (let k = 1; k < 9; k++) assert.equal(maxSpell(W.SPELL_UNLOCK[k] - 1), k, `spell level ${k + 1} not before level ${W.SPELL_UNLOCK[k]}`);
+  assert.equal(W.spellCasterLevel(720), 17); assert.equal(W.spellCasterLevel(9999), 17); assert.equal(W.spellCasterLevel(0), 1);
+  let last = 0; for (let L = 1; L <= 720; L++) { const s = W.spellCasterLevel(L); assert.ok(s >= last); last = s; }
+});

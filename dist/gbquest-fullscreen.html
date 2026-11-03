@@ -1007,6 +1007,19 @@ const AFFIX_POOL = ['crit', 'critdmg', 'dodge', 'block', 'leech', 'haste', 'dmg'
 // ================================================================ level system 1-720
 const LEVEL_CAP = 720;
 const CLASS_LEVEL_CAP = 20; // class features stop at 20; levels 21+ are ASCENSION levels
+// SPELL LEVELS 1-9 ACROSS 1-720: the character level a full caster first casts each spell level (5e: 1,3,5..17).
+// The curve is quadratic, so early spell levels come quickly and 9th level spells arrive at 720.
+const SPELL_UNLOCK = [1, 12, 46, 102, 181, 282, 406, 552, 720];
+const SPELL_UNLOCK_5E = [1, 3, 5, 7, 9, 11, 13, 15, 17];
+// 5e caster level (1-17) a character level stands for in the slot tables: straight lines between the unlock points
+function spellCasterLevel(L) {
+  L = Math.max(1, Math.min(LEVEL_CAP, Math.floor(Number(L) || 1)));
+  for (let k = 1; k < SPELL_UNLOCK.length; k++) if (L < SPELL_UNLOCK[k]) {
+    const a = SPELL_UNLOCK[k - 1], b = SPELL_UNLOCK[k];
+    return SPELL_UNLOCK_5E[k - 1] + Math.floor((L - a) * (SPELL_UNLOCK_5E[k] - SPELL_UNLOCK_5E[k - 1]) / (b - a));
+  }
+  return SPELL_UNLOCK_5E[SPELL_UNLOCK_5E.length - 1];
+}
 function xpForLevel(l) { // total XP needed to reach level l
   if (l <= 20) return XP_TABLE[l - 1];
   const a = l - 20; return 355000 + Math.round(30000 * a + 900 * a * a + 2.2 * a * a * a);
@@ -3521,12 +3534,12 @@ function derive(c) {
   // spellcasting
   let spell = null;
   if (cls.caster) {
-    const cm = M[cls.cast]; let slots = [], pact = null, maxL = 0;
-    if (cls.caster === 'full') slots = FULL_SLOTS[CL - 1].slice();
-    else if (cls.caster === 'half') slots = CL >= 2 ? FULL_SLOTS[Math.ceil(CL / 2) - 1].slice(0, 5) : [];
-    else if (cls.caster === 'pact') { pact = { n: PACT_SLOTS[CL - 1], lvl: Math.min(5, Math.ceil(CL / 2)) }; }
+    const cm = M[cls.cast], SCL = spellCasterLevel(c.lvl); let slots = [], pact = null, maxL = 0; // spell levels follow SPELL_UNLOCK over 1-720
+    if (cls.caster === 'full') slots = FULL_SLOTS[SCL - 1].slice();
+    else if (cls.caster === 'half') slots = SCL >= 2 ? FULL_SLOTS[Math.ceil(SCL / 2) - 1].slice(0, 5) : [];
+    else if (cls.caster === 'pact') { pact = { n: PACT_SLOTS[SCL - 1], lvl: Math.min(5, Math.ceil(SCL / 2)) }; }
     maxL = pact ? pact.lvl : slots.length;
-    const arcanum = cls.caster === 'pact' ? [[11, 6], [13, 7], [15, 8], [17, 9]].filter(([l]) => CL >= l).map(([, s]) => s) : [];
+    const arcanum = cls.caster === 'pact' ? [[11, 6], [13, 7], [15, 8], [17, 9]].filter(([l]) => SCL >= l).map(([, s]) => s) : [];
     const known = SPELLS.filter(s => s.cls.includes(c.cls) && (s.lvl <= maxL || arcanum.includes(s.lvl)));
     if (c.species === 'emberborn' && !known.find(s => s.id === 'emberdart')) known.unshift(SPELLS.find(s => s.id === 'emberdart'));
     spell = { abil: cls.cast, mod: cm, dc: 8 + pb + cm + Math.floor((sub.hit || 0) / 2), atk: pb + cm + (sub.hit || 0) + passivePrecision, slots, pact, maxL, arcanum, known };
@@ -3649,6 +3662,7 @@ function gainXP(c, amount) {
       if (after.spell && before.spell && after.spell.maxL > before.spell.maxL) g.notes.push(`SPELL LEVEL ${after.spell.maxL} UNLOCKED`);
     } else {
       c.ascPts += ASCENSION.attrPerLevel; c.subPts += ASCENSION.subPerLevel; g.notes.push('+1 ATTRIBUTE, +2 SUBSTAT POINTS');
+      { const after = derive(c); if (after.spell && before.spell && after.spell.maxL > before.spell.maxL) g.notes.push(`SPELL LEVEL ${after.spell.maxL} UNLOCKED`); }
       if (c.lvl % ASCENSION.boonEvery === 0) { c.pending.boon++; g.notes.push('MYTHIC BOON AVAILABLE!'); }
     }
     if ([5, 10, 15, 20].includes(c.lvl)) {

@@ -115,12 +115,12 @@ function derive(c) {
   // spellcasting
   let spell = null;
   if (cls.caster) {
-    const cm = M[cls.cast]; let slots = [], pact = null, maxL = 0;
-    if (cls.caster === 'full') slots = FULL_SLOTS[CL - 1].slice();
-    else if (cls.caster === 'half') slots = CL >= 2 ? FULL_SLOTS[Math.ceil(CL / 2) - 1].slice(0, 5) : [];
-    else if (cls.caster === 'pact') { pact = { n: PACT_SLOTS[CL - 1], lvl: Math.min(5, Math.ceil(CL / 2)) }; }
+    const cm = M[cls.cast], SCL = spellCasterLevel(c.lvl); let slots = [], pact = null, maxL = 0; // spell levels follow SPELL_UNLOCK over 1-720
+    if (cls.caster === 'full') slots = FULL_SLOTS[SCL - 1].slice();
+    else if (cls.caster === 'half') slots = SCL >= 2 ? FULL_SLOTS[Math.ceil(SCL / 2) - 1].slice(0, 5) : [];
+    else if (cls.caster === 'pact') { pact = { n: PACT_SLOTS[SCL - 1], lvl: Math.min(5, Math.ceil(SCL / 2)) }; }
     maxL = pact ? pact.lvl : slots.length;
-    const arcanum = cls.caster === 'pact' ? [[11, 6], [13, 7], [15, 8], [17, 9]].filter(([l]) => CL >= l).map(([, s]) => s) : [];
+    const arcanum = cls.caster === 'pact' ? [[11, 6], [13, 7], [15, 8], [17, 9]].filter(([l]) => SCL >= l).map(([, s]) => s) : [];
     const known = SPELLS.filter(s => s.cls.includes(c.cls) && (s.lvl <= maxL || arcanum.includes(s.lvl)));
     if (c.species === 'emberborn' && !known.find(s => s.id === 'emberdart')) known.unshift(SPELLS.find(s => s.id === 'emberdart'));
     spell = { abil: cls.cast, mod: cm, dc: 8 + pb + cm + Math.floor((sub.hit || 0) / 2), atk: pb + cm + (sub.hit || 0) + passivePrecision, slots, pact, maxL, arcanum, known };
@@ -243,6 +243,7 @@ function gainXP(c, amount) {
       if (after.spell && before.spell && after.spell.maxL > before.spell.maxL) g.notes.push(`SPELL LEVEL ${after.spell.maxL} UNLOCKED`);
     } else {
       c.ascPts += ASCENSION.attrPerLevel; c.subPts += ASCENSION.subPerLevel; g.notes.push('+1 ATTRIBUTE, +2 SUBSTAT POINTS');
+      { const after = derive(c); if (after.spell && before.spell && after.spell.maxL > before.spell.maxL) g.notes.push(`SPELL LEVEL ${after.spell.maxL} UNLOCKED`); }
       if (c.lvl % ASCENSION.boonEvery === 0) { c.pending.boon++; g.notes.push('MYTHIC BOON AVAILABLE!'); }
     }
     if ([5, 10, 15, 20].includes(c.lvl)) {

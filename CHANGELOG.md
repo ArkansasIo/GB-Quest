@@ -5,6 +5,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 ## Unreleased
 
 ### Changed
+- **Spell levels 1-9 now span levels 1-720**: a full caster first casts spell levels 2-9 at levels 12, 46, 102, 181, 282, 406, 552 and 720 (was 3-17); slots, half casters and pact magic follow the same curve. Heroes above level 20 may lose high spell levels until they reach the new unlock levels. See docs/LEVEL_1_TO_720.md.
 - The chat panel now starts closed. Press **C** or the **CHAT** button to open it; SETTINGS > CHAT SETTINGS turns chat off completely.
 
 ### Added

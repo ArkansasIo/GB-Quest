@@ -29,6 +29,19 @@ const AFFIX_POOL = ['crit', 'critdmg', 'dodge', 'block', 'leech', 'haste', 'dmg'
 // ================================================================ level system 1-720
 const LEVEL_CAP = 720;
 const CLASS_LEVEL_CAP = 20; // class features stop at 20; levels 21+ are ASCENSION levels
+// SPELL LEVELS 1-9 ACROSS 1-720: the character level a full caster first casts each spell level (5e: 1,3,5..17).
+// The curve is quadratic, so early spell levels come quickly and 9th level spells arrive at 720.
+const SPELL_UNLOCK = [1, 12, 46, 102, 181, 282, 406, 552, 720];
+const SPELL_UNLOCK_5E = [1, 3, 5, 7, 9, 11, 13, 15, 17];
+// 5e caster level (1-17) a character level stands for in the slot tables: straight lines between the unlock points
+function spellCasterLevel(L) {
+  L = Math.max(1, Math.min(LEVEL_CAP, Math.floor(Number(L) || 1)));
+  for (let k = 1; k < SPELL_UNLOCK.length; k++) if (L < SPELL_UNLOCK[k]) {
+    const a = SPELL_UNLOCK[k - 1], b = SPELL_UNLOCK[k];
+    return SPELL_UNLOCK_5E[k - 1] + Math.floor((L - a) * (SPELL_UNLOCK_5E[k] - SPELL_UNLOCK_5E[k - 1]) / (b - a));
+  }
+  return SPELL_UNLOCK_5E[SPELL_UNLOCK_5E.length - 1];
+}
 function xpForLevel(l) { // total XP needed to reach level l
   if (l <= 20) return XP_TABLE[l - 1];
   const a = l - 20; return 355000 + Math.round(30000 * a + 900 * a * a + 2.2 * a * a * a);
