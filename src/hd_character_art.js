@@ -69,32 +69,53 @@
     return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
       rank: safe(rank, RANKS) || 'F', equipment: result };
   };
-  const createFramePresenter = runtime => {
+  const createFramePresenter = (runtime, options = {}) => {
     if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
-    let requestedKey = null, readyKey = null, readyCanvas = null, failedKey = null, generation = 0;
-    const request = (character, spec = {}) => {
-      const key = JSON.stringify([
-        character && (character.id || character.name || character.cls),
-        character && character.rank, character && character.eq,
-        spec.direction, spec.frame, spec.state, spec.action, spec.animation,
-        spec.rank, spec.archetype, spec.ghost
-      ]);
-      if (key === failedKey) return null;
-      if (key !== requestedKey) {
-        requestedKey = key;
-        const token = ++generation;
-        runtime.renderCharacter(character, spec).then(canvas => {
-          if (token !== generation) return;
-          readyKey = key;
-          readyCanvas = canvas;
-        }).catch(() => {
-          if (token === generation) { requestedKey = null; failedKey = key; }
-        });
-      }
-      return readyKey === key ? readyCanvas : null;
+    const maxEntries = Math.max(2, Math.min(128, Number(options.maxEntries) || 24));
+    const entries = new Map();
+    const failed = new Set();
+    const keyFor = (character, spec) => JSON.stringify([
+      character && (character.id || character.name || character.cls),
+      character && character.rank, character && character.eq,
+      spec.direction, spec.frame, spec.state, spec.action, spec.animation,
+      spec.rank, spec.archetype, spec.ghost
+    ]);
+    const touch = (key, entry) => {
+      entries.delete(key);
+      entries.set(key, entry);
+      while (entries.size > maxEntries) entries.delete(entries.keys().next().value);
     };
-    const clear = () => { generation++; requestedKey = null; readyKey = null; readyCanvas = null; failedKey = null; };
-    return { request, clear, getReady: () => readyCanvas };
+    const request = (character, spec = {}) => {
+      const key = keyFor(character, spec);
+      if (failed.has(key)) return null;
+      const cached = entries.get(key);
+      if (cached) {
+        touch(key, cached);
+        return cached.canvas || null;
+      }
+      const entry = { canvas: null, promise: null };
+      touch(key, entry);
+      entry.promise = Promise.resolve().then(() => runtime.renderCharacter(character, spec)).then(canvas => {
+        entry.canvas = canvas;
+        return canvas;
+      }).catch(error => {
+        entries.delete(key);
+        failed.add(key);
+        throw error;
+      });
+      // The renderer consumes readiness through the next synchronous request.
+      entry.promise.catch(() => {});
+      return null;
+    };
+    const clear = () => { entries.clear(); failed.clear(); };
+    return {
+      request, clear,
+      getReady: () => {
+        for (const entry of entries.values()) if (entry.canvas) return entry.canvas;
+        return null;
+      },
+      cacheSize: () => entries.size
+    };
   };
   const createRuntime = (options = {}) => {
     const frameRoot = options.frameRoot || 'assets_hd64/animations/frames';
