@@ -158,7 +158,7 @@ test('paper doll visual markers are derived from equipped slots only', () => {
     offhand: { kind: 'armor', base: 'shield' }
   };
   const visuals = P.paperDollVisuals(eq);
-  assert.deepEqual(visuals.map(x => x.slot), ['head', 'weapon', 'offhand']);
+  assert.deepEqual(plain(visuals.map(x => x.slot)), ['head', 'weapon', 'offhand']);
   assert.ok(visuals.every(x => Number.isInteger(x.anchor.x) && Number.isInteger(x.anchor.y)));
-  assert.deepEqual(P.paperDollVisuals({}), []);
+  assert.deepEqual(plain(P.paperDollVisuals({})), []);
 });
