@@ -6,6 +6,7 @@ import vm from 'node:vm';
 const load = (file, name) => { const c = { Math, Number, String, Object, Array, Set, Date, globalThis: null }; c.globalThis = c; vm.runInNewContext(fs.readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8'), c); return c[name]; };
 const plain = v => JSON.parse(JSON.stringify(v));
 const L = load('mmo_loop.js', 'GBQLoop'), K = load('keystones.js', 'GBQKeystones'), P = load('polish.js', 'GBQPolish');
+const HD = load('hd_character_art.js', 'GBQHDCharacterArt');
 
 // ---------------------------------------------------------------- calendar and bounties
 test('day and week keys use local dates; weeks start on Monday', () => {
@@ -189,4 +190,13 @@ test('animated walker gear layers resolve compact visible equipment slots', () =
   assert.deepEqual(plain(visuals.map(x => x.slot)), ['head', 'weapon', 'armor', 'offhand']);
   assert.ok(visuals.every(x => x.size === 4 && x.x >= 0 && x.y >= 0 && x.x + x.size <= 16 && x.y + x.size <= 16));
   assert.deepEqual(plain(P.walkerGearVisuals({})), []);
+});
+
+test('HD character frame paths validate all runtime dimensions', () => {
+  assert.equal(HD.framePath('assets_hd64/animations/frames', 'warrior', 'SSS', 'SE', 'attack', 5),
+    'assets_hd64/animations/frames/warrior/SSS/SE/attack/frame_005.png');
+  assert.equal(HD.framePath('frames', '../mage', 'F', 'S', 'idle', 0), null);
+  assert.equal(HD.framePath('frames', 'mage', 'F', 'S', 'teleport', 0), null);
+  assert.equal(HD.framePath('frames', 'mage', 'F', 'S', 'idle', -1), null);
+  assert.equal(HD.framePath('frames', 'mage', 'F', 'S', 'idle', 1.5), null);
 });
