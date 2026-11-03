@@ -121,7 +121,7 @@ test('pixel packs: index sprites exist, aliases point at real art, monster picks
 
 test('8-bit MMO UI: theme cycle and a layout that keeps frames apart', () => {
   const c = { Math, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('ui_mmo.js'), c); const U = c.GBQUiMmo;
-  assert.equal(U.nextUiTheme('mmo'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'diablo');
+  assert.equal(U.nextUiTheme('mmo'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'diablo');
   const L = U.MMO_LAYOUT;
   assert.ok(L.unit.x + L.unit.w < L.map.x, 'unit frame and minimap do not touch');
   assert.ok(L.toastY > L.map.y + L.map.s + 8 && L.bannerY > L.toastY + 25, 'toasts and banners sit below the frames');
@@ -189,4 +189,11 @@ test('guild conquest: stone owners, waves, taxes and counterattack timing', () =
   assert.ok(Q.castleTax(10, 1) > Q.stoneTax(10, 1) * 3);
   assert.equal(Q.counterDue(1000, 0, 500), true); assert.equal(Q.counterDue(1000, 900, 500), false);
   assert.equal(Q.CASTLE_NEEDS, 3);
+});
+
+test('extras: gem drop odds and tiers, gem shop prices', () => {
+  const c = { Math, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('extras.js'), c); const X = c.GBQExtras;
+  assert.ok(X.GEM_DROP.boss > X.GEM_DROP.elite && X.GEM_DROP.elite > X.GEM_DROP.normal);
+  assert.equal(X.gemTierFor(1), 1); assert.equal(X.gemTierFor(100), 5); assert.equal(X.gemTierFor(720), 9);
+  assert.ok(X.gemPrice(3) > X.gemPrice(2) && X.gemPrice(2) > X.gemPrice(1));
 });

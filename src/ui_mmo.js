@@ -12,8 +12,8 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'classic', 'sanctum', 'diablo'];
-const MMO_THEME_NAME = { mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' };
+const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo'];
+const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -24,9 +24,15 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
-  window.hudMmo = () => S.uiTheme === 'mmo';
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu';
+  const isMu = () => S.uiTheme === 'mu';
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
-  const C = { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30] };
+  // colours per theme: 8-BIT MMO (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
+  const PALETTE = {
+    mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
+    mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
+  };
+  const C = new Proxy({}, { get: (_, k) => (PALETTE[S.uiTheme] || PALETTE.mmo)[k] });
   const mono = () => typeof MONO === 'function' && MONO(S.palette);
   const rgb = (c, k) => mono() ? col(k) : css(c);
 
@@ -37,6 +43,11 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     fill(x + 2, y + 1, w - 4, h - 2, edge); fill(x + 1, y + 2, w - 2, h - 4, edge);
     fill(x + 2, y + 2, w - 4, h - 4, fillc);
     if (w > 8 && h > 8) { fill(x + 3, y + 3, w - 6, 1, rgb(C.panel2, 0)); }
+    if (isMu() && w > 10 && h > 10) { // gold inner trim and corner studs
+      const gd = rgb(C.gold, 2); fill(x + 2, y + 2, w - 4, 1, gd); fill(x + 2, y + h - 3, w - 4, 1, gd); fill(x + 2, y + 2, 1, h - 4, gd); fill(x + w - 3, y + 2, 1, h - 4, gd);
+      fill(x + 3, y + 3, w - 6, 1, rgb([120, 90, 40], 1));
+      for (const [sx, sy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) fill(sx, sy, 3, 3, gd);
+    }
   }
   { const f0 = frame; frame = function (x, y, w, h, bg = 0) { if (!hudMmo() || w < 6 || h < 6) return f0(x, y, w, h, bg); panel(x, y, w, h, bg); }; }
 
@@ -72,23 +83,27 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   function minimap(field) {
     const M = MMO_LAYOUT.map, cx = M.x + (M.s >> 1), cy = M.y + (M.s >> 1);
     panel(M.x, M.y, M.s, M.s);
-    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+    const Z = S.mapZoom === 2 ? 2 : 3, RR = Z === 2 ? 7 : 4;
+    for (let dy = -RR; dy <= RR; dy++) for (let dx = -RR; dx <= RR; dx++) {
       const t = field.tileAt(G.x + dx, G.y + dy); if (!t) continue;
-      fill(cx + dx * 3 - 1, cy + dy * 3 - 1, 3, 3, mono() ? col(t[1] ? 2 : 1) : css(t[1] ? [92, 112, 84] : [150, 196, 120]));
+      fill(cx + dx * Z - 1, cy + dy * Z - 1, Z, Z, mono() ? col(t[1] ? 2 : 1) : css(t[1] ? [92, 112, 84] : [150, 196, 120]));
     }
     for (const e of field.entities()) {
-      const dx = e.x - G.x, dy = e.y - G.y; if (Math.abs(dx) > 4 || Math.abs(dy) > 4) continue;
-      fill(cx + dx * 3 - 1, cy + dy * 3 - 1, 2, 2, e.kind === 'boss' || e.kind === 'pull' ? 'red' : e.kind === 'npc' ? 'gold' : e.kind === 'waypoint' ? 'blue' : col(3));
+      const dx = e.x - G.x, dy = e.y - G.y, Z = S.mapZoom === 2 ? 2 : 3, RR = Z === 2 ? 7 : 4; if (Math.abs(dx) > RR || Math.abs(dy) > RR) continue;
+      fill(cx + dx * Z - 1, cy + dy * Z - 1, 2, 2, e.kind === 'boss' || e.kind === 'pull' ? 'red' : e.kind === 'npc' ? 'gold' : e.kind === 'waypoint' ? 'blue' : col(3));
     }
     fill(cx - 1, cy - 1, 3, 3, (frameN >> 4) % 2 ? 'white' : rgb(C.ink, 3));
     const z = field.zone, tag = G.inst ? 'INST' : !z ? '' : z.town ? 'SAFE' : G.pvpEnabled ? 'PVP' : 'PVE';
     if (tag) { const w = tag.length * 6 + 4; fill(cx - (w >> 1), M.y + M.s, w, 8, z && z.town ? rgb([40, 120, 70], 2) : G.pvpEnabled ? 'red' : rgb(C.edge, 2)); textC(tag, cx, M.y + M.s, 0); }
+    if (isMu() && field.zone) { const lab = `(${G.x},${G.y})`; fill(M.x - 2, M.y + M.s + 9, M.s + 4, 8, rgb(C.ink, 3)); textC(lab.slice(0, 7), cx, M.y + M.s + 9, 'gold'); } // MU-style coordinates
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
     fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2));
-    orb(13, H - 11, Hd.orbR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
-    orb(W - 14, H - 11, Hd.orbR, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, [44, 92, 220]);
+    const OR = isMu() ? 11 : Hd.orbR;
+    if (isMu()) { fill(0, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); fill(W - 26, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); }
+    orb(13, H - 11, OR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
+    orb(W - 14, H - 11, OR, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, [44, 92, 220]);
     const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
     for (let i = 0; i < Hb.slots; i++) {
       const x = Hb.x + i * Hb.step, y = Hd.y + 6;
@@ -161,7 +176,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     hdr = function () {
       const t = hudMmo() && G ? pageTitle() : null; if (!t) return h0.apply(this, arguments);
       const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2);
-      fill(0, 0, W, 12, ink); fill(0, 11, W, 1, edge); fill(1, 1, W - 2, 1, rgb([60, 70, 110], 1));
+      fill(0, 0, W, 12, rgb(C.title, 3)); fill(0, 11, W, 1, isMu() ? rgb(C.gold, 2) : edge); fill(1, 1, W - 2, 1, isMu() ? rgb([150, 40, 30], 1) : rgb([60, 70, 110], 1));
       fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1));            // window icon
       text(t.slice(0, 15), 12, 2, 'gold');
       const g = fmt(G.gold); textR(g, W - 13, 2, 'white');
@@ -174,7 +189,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   { const t0 = drawToasts; drawToasts = function () {
       if (!hudMmo() || !(scenes[scenes.length - 1] instanceof Field)) return t0.apply(this, arguments);
       const t = toasts[0]; if (!t) return;
-      const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY - Math.round(6 * (1 - slide));
+      const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY + (isMu() ? 8 : 0) - Math.round(6 * (1 - slide));
       ctx.globalAlpha = Math.max(0.2, slide); panel(4, y, 152, 25);
       if (t.icon) blit(sprFit(t.icon, 14), 9, y + 6);
       text(String(t.title).slice(0, 21), 27, y + 4, 3); text(String(t.sub || '').slice(0, 21), 27, y + 14, 2); ctx.globalAlpha = 1;

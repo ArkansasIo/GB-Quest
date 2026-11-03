@@ -7694,7 +7694,8 @@ class SideQuestBoard {
 function vendorMenu() {
   const stock = ['potion', 'greater', 'antitoxin', 'ration', 'campkit', 'ether', 'scroll_mend', 'scroll_flame'].concat(ITEMS.repair_kit ? ['repair_kit'] : []).concat(G.lvl >= 10 ? ['superior', 'might', 'scroll_dawn'] : []).concat(G.lvl >= 30 ? ['supreme'] : []);
   const disc = G.daily.discount === new Date().toDateString() ? 0.9 : 1;
-  choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'LEAVE'], k => {
+  choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'GEM CUTTER', 'LEAVE'], k => {
+    if (k === 7 && typeof gemCutterMenu === 'function') return gemCutterMenu();
     if (k === 0) choose(stock.map(s => `${ITEMS[s].name.slice(0, 14)} ${Math.round(ITEMS[s].price * disc)}G`), i => { if (i < 0) return; const s = stock[i], p = Math.round(ITEMS[s].price * disc); if (G.gold < p) { SFX.error(); return say('Not enough gold.'); } G.gold -= p; addItem(s); SFX.buy(); vendorMenu(); }, `Gold: ${fmt(G.gold)}`);
     if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i]; if (G.gold < it.value * 2) return say('Not enough gold.'); G.gold -= it.value * 2; addGear(it); SFX.buy(); }, 'Fresh stock from the forge.'); }
     if (k === 2) push(new InventoryScene('sell'));
@@ -13703,7 +13704,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
 const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
 const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
 if (S.uiTheme == null) S.uiTheme = 'sanctum';
-const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo') && !MONO(S.palette);
+const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo' || S.uiTheme === 'mu') && !MONO(S.palette);
 {
   const col0 = col;
   col = function (c) { if (typeof c === 'number' && uiDark()) return css(SANCTUM[c] || SANCTUM[3]); return col0(c); };
@@ -13815,7 +13816,7 @@ function drawSanctumHud(field) {
   const draw0 = Field.prototype.draw;
   Field.prototype.draw = function () {
     draw0.call(this);
-    if (uiDark() && G) drawSanctumHud(this);
+    if (uiDark() && G && S.uiTheme !== 'mu') drawSanctumHud(this);
   };
 }
 
@@ -13835,8 +13836,8 @@ function drawSanctumHud(field) {
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'classic', 'sanctum', 'diablo'];
-const MMO_THEME_NAME = { mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' };
+const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo'];
+const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -13847,9 +13848,15 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
-  window.hudMmo = () => S.uiTheme === 'mmo';
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu';
+  const isMu = () => S.uiTheme === 'mu';
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
-  const C = { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30] };
+  // colours per theme: 8-BIT MMO (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
+  const PALETTE = {
+    mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
+    mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
+  };
+  const C = new Proxy({}, { get: (_, k) => (PALETTE[S.uiTheme] || PALETTE.mmo)[k] });
   const mono = () => typeof MONO === 'function' && MONO(S.palette);
   const rgb = (c, k) => mono() ? col(k) : css(c);
 
@@ -13860,6 +13867,11 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     fill(x + 2, y + 1, w - 4, h - 2, edge); fill(x + 1, y + 2, w - 2, h - 4, edge);
     fill(x + 2, y + 2, w - 4, h - 4, fillc);
     if (w > 8 && h > 8) { fill(x + 3, y + 3, w - 6, 1, rgb(C.panel2, 0)); }
+    if (isMu() && w > 10 && h > 10) { // gold inner trim and corner studs
+      const gd = rgb(C.gold, 2); fill(x + 2, y + 2, w - 4, 1, gd); fill(x + 2, y + h - 3, w - 4, 1, gd); fill(x + 2, y + 2, 1, h - 4, gd); fill(x + w - 3, y + 2, 1, h - 4, gd);
+      fill(x + 3, y + 3, w - 6, 1, rgb([120, 90, 40], 1));
+      for (const [sx, sy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) fill(sx, sy, 3, 3, gd);
+    }
   }
   { const f0 = frame; frame = function (x, y, w, h, bg = 0) { if (!hudMmo() || w < 6 || h < 6) return f0(x, y, w, h, bg); panel(x, y, w, h, bg); }; }
 
@@ -13895,23 +13907,27 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   function minimap(field) {
     const M = MMO_LAYOUT.map, cx = M.x + (M.s >> 1), cy = M.y + (M.s >> 1);
     panel(M.x, M.y, M.s, M.s);
-    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+    const Z = S.mapZoom === 2 ? 2 : 3, RR = Z === 2 ? 7 : 4;
+    for (let dy = -RR; dy <= RR; dy++) for (let dx = -RR; dx <= RR; dx++) {
       const t = field.tileAt(G.x + dx, G.y + dy); if (!t) continue;
-      fill(cx + dx * 3 - 1, cy + dy * 3 - 1, 3, 3, mono() ? col(t[1] ? 2 : 1) : css(t[1] ? [92, 112, 84] : [150, 196, 120]));
+      fill(cx + dx * Z - 1, cy + dy * Z - 1, Z, Z, mono() ? col(t[1] ? 2 : 1) : css(t[1] ? [92, 112, 84] : [150, 196, 120]));
     }
     for (const e of field.entities()) {
-      const dx = e.x - G.x, dy = e.y - G.y; if (Math.abs(dx) > 4 || Math.abs(dy) > 4) continue;
-      fill(cx + dx * 3 - 1, cy + dy * 3 - 1, 2, 2, e.kind === 'boss' || e.kind === 'pull' ? 'red' : e.kind === 'npc' ? 'gold' : e.kind === 'waypoint' ? 'blue' : col(3));
+      const dx = e.x - G.x, dy = e.y - G.y, Z = S.mapZoom === 2 ? 2 : 3, RR = Z === 2 ? 7 : 4; if (Math.abs(dx) > RR || Math.abs(dy) > RR) continue;
+      fill(cx + dx * Z - 1, cy + dy * Z - 1, 2, 2, e.kind === 'boss' || e.kind === 'pull' ? 'red' : e.kind === 'npc' ? 'gold' : e.kind === 'waypoint' ? 'blue' : col(3));
     }
     fill(cx - 1, cy - 1, 3, 3, (frameN >> 4) % 2 ? 'white' : rgb(C.ink, 3));
     const z = field.zone, tag = G.inst ? 'INST' : !z ? '' : z.town ? 'SAFE' : G.pvpEnabled ? 'PVP' : 'PVE';
     if (tag) { const w = tag.length * 6 + 4; fill(cx - (w >> 1), M.y + M.s, w, 8, z && z.town ? rgb([40, 120, 70], 2) : G.pvpEnabled ? 'red' : rgb(C.edge, 2)); textC(tag, cx, M.y + M.s, 0); }
+    if (isMu() && field.zone) { const lab = `(${G.x},${G.y})`; fill(M.x - 2, M.y + M.s + 9, M.s + 4, 8, rgb(C.ink, 3)); textC(lab.slice(0, 7), cx, M.y + M.s + 9, 'gold'); } // MU-style coordinates
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
     fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2));
-    orb(13, H - 11, Hd.orbR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
-    orb(W - 14, H - 11, Hd.orbR, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, [44, 92, 220]);
+    const OR = isMu() ? 11 : Hd.orbR;
+    if (isMu()) { fill(0, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); fill(W - 26, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); }
+    orb(13, H - 11, OR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
+    orb(W - 14, H - 11, OR, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, [44, 92, 220]);
     const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
     for (let i = 0; i < Hb.slots; i++) {
       const x = Hb.x + i * Hb.step, y = Hd.y + 6;
@@ -13984,7 +14000,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     hdr = function () {
       const t = hudMmo() && G ? pageTitle() : null; if (!t) return h0.apply(this, arguments);
       const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2);
-      fill(0, 0, W, 12, ink); fill(0, 11, W, 1, edge); fill(1, 1, W - 2, 1, rgb([60, 70, 110], 1));
+      fill(0, 0, W, 12, rgb(C.title, 3)); fill(0, 11, W, 1, isMu() ? rgb(C.gold, 2) : edge); fill(1, 1, W - 2, 1, isMu() ? rgb([150, 40, 30], 1) : rgb([60, 70, 110], 1));
       fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1));            // window icon
       text(t.slice(0, 15), 12, 2, 'gold');
       const g = fmt(G.gold); textR(g, W - 13, 2, 'white');
@@ -13997,7 +14013,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   { const t0 = drawToasts; drawToasts = function () {
       if (!hudMmo() || !(scenes[scenes.length - 1] instanceof Field)) return t0.apply(this, arguments);
       const t = toasts[0]; if (!t) return;
-      const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY - Math.round(6 * (1 - slide));
+      const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY + (isMu() ? 8 : 0) - Math.round(6 * (1 - slide));
       ctx.globalAlpha = Math.max(0.2, slide); panel(4, y, 152, 25);
       if (t.icon) blit(sprFit(t.icon, 14), 9, y + 6);
       text(String(t.title).slice(0, 21), 27, y + 4, 3); text(String(t.sub || '').slice(0, 21), 27, y + 14, 2); ctx.globalAlpha = 1;
@@ -14726,6 +14742,88 @@ if (typeof window !== 'undefined' && typeof startBattle === 'function' && typeof
   if (typeof MainMenu !== 'undefined') {
     const i0 = MainMenu.prototype.items; MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = Math.max(0, L.indexOf('CHALLENGES') + 1); L.splice(at, 0, G && G.conquest && G.conquest.threat ? 'CONQUEST (!)' : 'CONQUEST'); return L; };
     const u0 = MainMenu.prototype.update; MainMenu.prototype.update = function () { if (P('a') && (this.items()[this.i] || '').replace(' (!)', '') === 'CONQUEST') { SFX.select(); return conquestMenu(); } return u0.apply(this, arguments); };
+  }
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ MISSING PIECES
+//   * GEM LOOT: won battles drop socket gems (2% per foe, elites 10%, bosses 35%); the tier follows the foe's level.
+//   * GEM CUTTER (MERCHANT > GEM CUTTER): buy tier 1-3 gems of any type, or cut three of a tier into one of the next.
+//   * MINIMAP: click (or tap) the minimap to switch between a close view and a wide view; double-click opens the
+//     world map.
+//   * HIGH CONTRAST palette (SETTINGS > PALETTE): white, yellow, blue and black, safe for colour-blind players.
+// Pure rules are exported as GBQExtras for tests.
+
+const GEM_DROP = { normal: 0.02, elite: 0.1, boss: 0.35 };
+const gemTierFor = lvl => Math.max(1, Math.min(9, 1 + Math.floor(Math.max(1, lvl || 1) / 25)));
+const GEM_SHOP_TIERS = [1, 2, 3];
+const gemPrice = tier => [0, 60, 220, 700][tier] || 0;
+if (typeof globalThis !== 'undefined') globalThis.GBQExtras = { GEM_DROP, gemTierFor, GEM_SHOP_TIERS, gemPrice };
+
+if (typeof window !== 'undefined' && typeof Battle !== 'undefined') {
+  // ------------------------------------------------ high-contrast palette
+  if (typeof PALS !== 'undefined' && !PALS.contrast) { PALS.contrast = { ui: [[255, 255, 255], [255, 214, 0], [0, 90, 181], [0, 0, 0]], name: 'HIGH CONTRAST' }; PAL_ORDER.push('contrast'); }
+  // ------------------------------------------------ gem loot
+  const gems = () => (G.gems ||= {});
+  const gemTypes = () => Object.keys(GEM_TYPES);
+  { const f0 = Battle.prototype.finish; Battle.prototype.finish = function (result) {
+      try {
+        if (result === 'win' && G && !this.noRewards) {
+          const got = [];
+          for (const f of this.foes || []) {
+            const p = f.boss ? GEM_DROP.boss : f.elite ? GEM_DROP.elite : GEM_DROP.normal;
+            if (R() < p) { const id = `${pick(gemTypes())}_t${gemTierFor(f.lvl)}`; gems()[id] = (gems()[id] || 0) + 1; got.push(id); }
+          }
+          if (got.length && typeof chatLog === 'function') chatLog('loot', 'LOOT', `Found gem${got.length > 1 ? 's' : ''}: ${got.map(id => GBQGems.gemDefinition(id).name).join(', ')}.`);
+        }
+      } catch (e) { console.warn('gem loot', e); }
+      return f0.apply(this, arguments);
+    }; }
+  // ------------------------------------------------ gem cutter
+  window.gemCutterMenu = function () {
+    choose(['BUY GEMS', 'CUT 3 INTO 1', 'MY GEMS', 'LEAVE'], k => {
+      if (k === 0) {
+        const types = gemTypes();
+        return choose(types.map(t => GEM_TYPES[t].name), ti => {
+          if (ti < 0) return gemCutterMenu();
+          const t = types[ti];
+          choose(GEM_SHOP_TIERS.map(n => `T${n} ${GEM_TYPES[t].name} ${gemPrice(n)}G`), ni => {
+            if (ni < 0) return gemCutterMenu();
+            const n = GEM_SHOP_TIERS[ni], cost = gemPrice(n);
+            if (G.gold < cost) { SFX.error(); return say(`That costs ${cost} G.`, gemCutterMenu); }
+            G.gold -= cost; gems()[`${t}_t${n}`] = (gems()[`${t}_t${n}`] || 0) + 1; SFX.coin ? SFX.coin() : SFX.buff(); saveGame(); say(`Bought T${n} ${GEM_TYPES[t].name}. Socket it at a smith.`, gemCutterMenu);
+          }, `${GEM_TYPES[t].name}: ${GEM_TYPES[t].label}.`);
+        }, 'Which gem?');
+      }
+      if (k === 1) {
+        const ready = Object.entries(gems()).filter(([id, n]) => n >= 3 && GBQGems.gemDefinition(id) && GBQGems.gemDefinition(id).tier < 9);
+        if (!ready.length) return say('You need three gems of the same type and tier.', gemCutterMenu);
+        return choose(ready.map(([id, n]) => `${GBQGems.gemDefinition(id).name} x${n}`), i => {
+          if (i < 0) return gemCutterMenu();
+          const [id] = ready[i], d = GBQGems.gemDefinition(id), next = `${d.type}_t${d.tier + 1}`, fee = 25 * d.tier;
+          if (G.gold < fee) { SFX.error(); return say(`Cutting costs ${fee} G.`, gemCutterMenu); }
+          G.gold -= fee; gems()[id] -= 3; gems()[next] = (gems()[next] || 0) + 1; SFX.craft(); saveGame(); say(`Cut into a ${GBQGems.gemDefinition(next).name}!`, gemCutterMenu);
+        }, 'Three of a tier become one of the next (fee 25 G per tier).');
+      }
+      if (k === 2) { const L = Object.entries(gems()).filter(([, n]) => n > 0); return say(L.length ? L.slice(0, 8).map(([id, n]) => `${GBQGems.gemDefinition(id).name} x${n}`) : 'No gems yet. They drop in battle.', gemCutterMenu); }
+    }, 'GEM CUTTER: gems for your sockets.');
+  };
+  // ------------------------------------------------ minimap click: zoom; double-click: world map
+  if (typeof LCD !== 'undefined') {
+    let last = 0;
+    LCD.addEventListener('pointerdown', e => {
+      try {
+        if (!G || typeof hudMmo !== 'function' || !hudMmo() || !(scenes[scenes.length - 1] instanceof Field)) return;
+        const r = LCD.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height, M = MMO_LAYOUT.map;
+        if (x < M.x || x > M.x + M.s || y < M.y || y > M.y + M.s) return;
+        e.stopImmediatePropagation(); e.preventDefault();
+        const now = Date.now();
+        if (now - last < 350) { last = 0; if (typeof WorldMap === 'function') push(new WorldMap()); return; }
+        last = now; S.mapZoom = S.mapZoom === 2 ? 1 : 2; SFX.cursor(); try { saveSettings(); } catch (err) { /* settings only */ }
+      } catch (err) { /* input must never break */ }
+    }, true);
   }
 }
 

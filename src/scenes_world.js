@@ -998,7 +998,8 @@ class SideQuestBoard {
 function vendorMenu() {
   const stock = ['potion', 'greater', 'antitoxin', 'ration', 'campkit', 'ether', 'scroll_mend', 'scroll_flame'].concat(ITEMS.repair_kit ? ['repair_kit'] : []).concat(G.lvl >= 10 ? ['superior', 'might', 'scroll_dawn'] : []).concat(G.lvl >= 30 ? ['supreme'] : []);
   const disc = G.daily.discount === new Date().toDateString() ? 0.9 : 1;
-  choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'LEAVE'], k => {
+  choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'GEM CUTTER', 'LEAVE'], k => {
+    if (k === 7 && typeof gemCutterMenu === 'function') return gemCutterMenu();
     if (k === 0) choose(stock.map(s => `${ITEMS[s].name.slice(0, 14)} ${Math.round(ITEMS[s].price * disc)}G`), i => { if (i < 0) return; const s = stock[i], p = Math.round(ITEMS[s].price * disc); if (G.gold < p) { SFX.error(); return say('Not enough gold.'); } G.gold -= p; addItem(s); SFX.buy(); vendorMenu(); }, `Gold: ${fmt(G.gold)}`);
     if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i]; if (G.gold < it.value * 2) return say('Not enough gold.'); G.gold -= it.value * 2; addGear(it); SFX.buy(); }, 'Fresh stock from the forge.'); }
     if (k === 2) push(new InventoryScene('sell'));

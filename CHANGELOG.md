@@ -12,6 +12,10 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - The chat panel now starts closed. Press **C** or the **CHAT** button to open it; SETTINGS > CHAT SETTINGS turns chat off completely.
 
 ### Added
+- **CRIMSON UI theme** (MU-style; SETTINGS > UI THEME): black stone panels with blood-red frames, gold trim and corner studs, red window title bars, bigger HP and MP orbs, and your map coordinates under the minimap. Uses the 8-BIT MMO layout (unit frame, party frames, START menu over the map).
+- **Gem loot and the GEM CUTTER**: battles drop socket gems (2% per foe, 10% elites, 35% bosses; tier from the foe's level). MERCHANT > GEM CUTTER sells tier 1-3 gems of every type and cuts three of a tier into one of the next.
+- **Minimap**: click it to switch between a close and a wide view; double-click opens the world map.
+- **HIGH CONTRAST palette** (white, yellow, blue, black) for colour-blind players.
 - **Guild conquest** (MAIN MENU > CONQUEST, needs a guild): every wild region has a **boonstone** held by an AI guild. CHALLENGE it (two waves of defenders, then the STONE WARDEN) to claim it for your guild: +10% XP and gold from foes in that region and a daily tax. AI guilds counterattack your stones every 30 minutes; DEFEND within 20 minutes or lose them. With 3 stones your guild can **besiege ARDENHOLD KEEP** (GATE, COURTYARD, CASTLE LORD) for a realm-wide castle buff (+5% damage, +5% resist all, +10% XP), a bigger daily tax and the CASTLE LORD title; AI sieges come every 2 hours. Taxes build up for up to 7 days.
 - **Throne-style world systems** (`src/tnl_systems.js`), new MAIN MENU entries MASTERY, AMITOI and MORPH:
   - **Weapon mastery**: nine weapon families level 1-30 from battles won with them equipped; each level adds that family's bonuses while wielded, with bigger ADEPT, EXPERT and MASTER specialization steps at 10, 20 and 30.
