@@ -2,6 +2,7 @@ extends Node2D
 ## The overworld: every exported zone and town, walking, exits between zones, NPCs, random encounters and the HUD.
 
 const Battle = preload("res://scripts/battle.gd")
+const Bag = preload("res://scripts/bag.gd")
 const T := 64
 const STEP_TIME := 0.14
 var main: Node2D
@@ -112,7 +113,7 @@ func _talk(n: Dictionary) -> void:
 	if svc == "inn":
 		main.choose(["REST (20 G)", "LEAVE"], Callable(self, "_inn"), "%s: A warm bed for 20 G?" % talking)
 	elif svc == "vendor":
-		main.choose(["POTION (25 G)", "LEAVE"], Callable(self, "_shop"), "%s: What will it be?" % talking)
+		main.choose(["POTION (25 G)", "ARMS", "SELL", "LEAVE"], Callable(self, "_shop"), "%s: What will it be?" % talking)
 	elif svc == "elder":
 		main.say(["%s: You carry the last lantern. I knew it would choose someone." % talking, "The EMBER CODEX was torn into twelve pages. Find them, and the dawn returns."])
 	else:
@@ -131,7 +132,21 @@ func _inn(k: int) -> void:
 	Game.save()
 	main.say(["%s: Sleep well. HP restored. Game saved." % talking])
 
+var stock: Array = []
+
 func _shop(k: int) -> void:
+	if k == 1:
+		stock = _stock()
+		var names := []
+		for it in stock:
+			names.append("%s %dG" % [Game.item_name(it).substr(0, 12), Game.price(it)])
+		main.choose(names, Callable(self, "_buy"), "%s: Fine steel, fair prices." % talking)
+		return
+	if k == 2:
+		var b = Bag.new()
+		b.sell = true
+		main.push(b)
+		return
 	if k != 0:
 		return
 	if int(Game.hero["gold"]) < 25:
@@ -141,10 +156,38 @@ func _shop(k: int) -> void:
 	Game.hero["potions"] = int(Game.hero["potions"]) + 1
 	main.say(["Bought a potion. You have %d." % int(Game.hero["potions"])])
 
+## the vendor's arms list: gear this class can use, priced around the hero's level
+func _stock() -> Array:
+	var all := []
+	for tbl in ["WEAPONS", "ARMORS"]:
+		for id in Data.game.get(tbl, {}):
+			var it := Game.make_item(id, 1 if Game.rng.randf() < 0.8 else 2)
+			if Game.can_use(it):
+				all.append(it)
+	all.sort_custom(func(a, b): return Game.price(a) < Game.price(b))
+	var lo := clampi(int(Game.hero["lvl"]) * all.size() / 60, 0, maxi(0, all.size() - 7))
+	return all.slice(lo, lo + 7)
+
+func _buy(k: int) -> void:
+	if k < 0:
+		return
+	var it: Dictionary = stock[k]
+	if int(Game.hero["gold"]) < Game.price(it):
+		main.say(["%s: That's %d G." % [talking, Game.price(it)]])
+		return
+	Game.hero["gold"] = int(Game.hero["gold"]) - Game.price(it)
+	Game.bag().append(it)
+	main.say(["Bought %s. Equip it from GEAR & BAG." % Game.item_name(it)])
+
 func _menu() -> void:
-	main.choose(["STATUS", "POTION (%d)" % int(Game.hero["potions"]), "SAVE", "SAVE & QUIT", "BACK"], Callable(self, "_menu_pick"))
+	main.choose(["STATUS", "GEAR & BAG", "POTION (%d)" % int(Game.hero["potions"]), "SAVE", "SAVE & QUIT", "BACK"], Callable(self, "_menu_pick"))
 
 func _menu_pick(k: int) -> void:
+	if k == 1:
+		main.push(Bag.new())
+		return
+	if k > 1:
+		k -= 1
 	if k == 0:
 		main.say(_status())
 	elif k == 1:
@@ -170,7 +213,9 @@ func _status() -> Array:
 	return ["%s  LV %d %s %s" % [h["name"], int(h["lvl"]), Data.species(h["species"]).get("name", ""), c.get("name", "")],
 		"HP %d/%d  AC %d  HIT +%d" % [int(h["hp"]), Game.hp_max(), Game.ac(), Game.attack_bonus()],
 		" ".join(a.slice(0, 3)), " ".join(a.slice(3, 6)),
-		"XP %d/%d  GOLD %d  SPELL LV %d" % [int(h["xp"]), Data.xp_for(int(h["lvl"]) + 1), int(h["gold"]), Game.spell_level()]]
+		"XP %d/%d  GOLD %d  SPELL LV %d" % [int(h["xp"]), Data.xp_for(int(h["lvl"]) + 1), int(h["gold"]), Game.spell_level()],
+		"WEAPON %s (%s)" % [Game.item_name(Game.gear().get("weapon", {})) if Game.gear().has("weapon") else "FISTS", Game.weapon_dice()],
+		"ARMOR %s" % (Game.item_name(Game.gear().get("armor", {})) if Game.gear().has("armor") else "NONE")]
 
 # ------------------------------------------------------------------ drawing
 func _hero_px() -> Vector2:

@@ -60,9 +60,8 @@ func _act(o: String) -> void:
 	if o == "ATTACK":
 		var r := Game.d20()
 		var tot := r + Game.attack_bonus()
-		var hd := int(Data.cls(Game.hero["cls"]).get("hd", 8))
 		if r == 20 or (r != 1 and tot >= int(foe["ac"])):
-			var dmg := maxi(1, Game.roll("1d%d" % hd) + (Game.roll("1d%d" % hd) if r == 20 else 0) + Game.mod(Data.cls(Game.hero["cls"]).get("primary", "STR")) + int(Game.hero["lvl"]) / 10)
+			var dmg := Game.weapon_damage(r == 20)
 			foe["hp"] = int(foe["hp"]) - dmg; shake = 0.25
 			out.append(("CRITICAL! " if r == 20 else "") + "You hit for %d. (d20 %d+%d)" % [dmg, r, Game.attack_bonus()])
 		else:
@@ -121,6 +120,10 @@ func _after(out: Array) -> void:
 		Game.hero["gold"] = int(Game.hero["gold"]) + int(foe["gold"]); Game.hero["kills"] = int(Game.hero.get("kills", 0)) + 1
 		out.append_array(["%s is defeated!" % foe["name"], "Got %d XP and %d G." % [int(foe["xp"]), int(foe["gold"])]])
 		if ups: out.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
+		if Game.rng.randf() < 0.2 + int(foe["lvl"]) / 400.0:
+			var it := Game.random_drop(int(foe["lvl"]))
+			Game.bag().append(it)
+			out.append("Found %s!" % Game.item_name(it))
 		state = "over"
 		_say(out, Callable(self, "_won"))
 		return

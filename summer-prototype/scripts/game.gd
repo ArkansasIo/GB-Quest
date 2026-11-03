@@ -30,6 +30,7 @@ func new_hero(name: String, cls_id: String, sp_id: String) -> Dictionary:
 	for a in sp.get("asi", {}):
 		base[a] = int(base.get(a, 10)) + int(sp["asi"][a])
 	hero = {"name": name, "cls": cls_id, "species": sp_id, "lvl": 1, "xp": 0, "gold": 100, "base": base, "potions": 3, "hp": 1, "kills": 0}
+	give_start_gear()
 	hero["hp"] = hp_max()
 	zone_id = "elderwood"
 	pos = Vector2i(3, 8)
@@ -51,18 +52,137 @@ func hp_max() -> int:
 	var hp := hd + (CL - 1) * (hd / 2 + 1) + mod("CON") * CL
 	return maxi(1, hp + maxi(0, L - CL) * 2)   # ascension levels add a little health each
 
+## AC from the equipped armour and shield (5e: light adds DEX, medium up to +2, heavy none), plus item pluses
 func ac() -> int:
-	var armor: Array = Data.cls(hero.get("cls", "warden")).get("armor", [])
-	if armor.has("heavy"):
-		return 16 + (2 if armor.has("shield") else 0)
-	if armor.has("medium"):
-		return 13 + mini(2, mod("DEX")) + (2 if armor.has("shield") else 0)
-	if armor.has("light"):
-		return 11 + mod("DEX")
-	return 10 + mod("DEX")
+	var g: Dictionary = gear()
+	var a := def_of(g.get("armor", {}))
+	var v := 10 + mod("DEX")
+	if not a.is_empty():
+		var dm = a.get("dexMax")
+		v = int(a["ac"]) + (mod("DEX") if dm == null else mini(int(dm), mod("DEX"))) + int(g["armor"].get("plus", 0))
+	var s := def_of(g.get("shield", {}))
+	if not s.is_empty():
+		v += int(s["ac"]) + int(g["shield"].get("plus", 0))
+	return v
+
+## the ability that drives weapon attacks: DEX for finesse and ranged weapons when it is higher
+func weapon_mod() -> int:
+	var w := def_of(gear().get("weapon", {}))
+	var p := str(w.get("props", ""))
+	if p.contains("f") or p.contains("r"):
+		return maxi(mod("STR"), mod("DEX"))
+	return mod("STR") if not w.is_empty() else mod(Data.cls(hero.get("cls", "warden")).get("primary", "STR"))
 
 func attack_bonus() -> int:
-	return prof() + mod(Data.cls(hero.get("cls", "warden")).get("primary", "STR"))
+	return prof() + weapon_mod() + int(gear().get("weapon", {}).get("plus", 0))
+
+func weapon_dice() -> String:
+	var w := def_of(gear().get("weapon", {}))
+	return str(w.get("dmg", "1d4")) if not w.is_empty() else "1d4"
+
+func weapon_damage(crit: bool) -> int:
+	var d := weapon_dice()
+	return maxi(1, roll(d) + (roll(d) if crit else 0) + weapon_mod() + int(gear().get("weapon", {}).get("plus", 0)) + int(hero.get("lvl", 1)) / 10)
+
+# ------------------------------------------------------------------ gear and the bag
+## an owned item: {"k": "w"|"a", "id": WEAPONS/ARMORS key, "r": RARITY index, "plus": int}
+func def_of(it: Dictionary) -> Dictionary:
+	if it.is_empty():
+		return {}
+	return Data.game.get("WEAPONS" if it.get("k") == "w" else "ARMORS", {}).get(it.get("id", ""), {})
+
+func slot_of(it: Dictionary) -> String:
+	if it.get("k") == "w":
+		return "weapon"
+	return "shield" if def_of(it).get("type") == "shield" else "armor"
+
+func gear() -> Dictionary:
+	if not hero.has("gear"):
+		hero["gear"] = {}
+	return hero["gear"]
+
+func bag() -> Array:
+	if not hero.has("bag"):
+		hero["bag"] = []
+	return hero["bag"]
+
+func make_item(id: String, r: int = 1) -> Dictionary:
+	var k := "w" if Data.game.get("WEAPONS", {}).has(id) else "a"
+	var rr: Dictionary = Data.game.get("RARITY", [])[clampi(r, 0, 8)]
+	return {"k": k, "id": id, "r": clampi(r, 0, 8), "plus": maxi(0, int(rr.get("plus", 0)))}
+
+func item_name(it: Dictionary) -> String:
+	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
+	var n := str(def_of(it).get("name", "?"))
+	return n + (" +%d" % int(it["plus"]) if int(it.get("plus", 0)) > 0 else "")
+
+func rarity_color(it: Dictionary) -> Color:
+	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
+	var c := Color.html(str(rr.get("color", "#ffffff")))
+	return Data.INK if int(it.get("r", 1)) <= 1 else c.darkened(0.25)
+
+func item_stat(it: Dictionary) -> String:
+	var d := def_of(it)
+	if it.get("k") == "w":
+		return "%s %s" % [d.get("dmg", "?"), str(d.get("type", "")).to_upper()]
+	return ("AC +%d" if d.get("type") == "shield" else "AC %d") % int(d.get("ac", 10)) + " " + str(d.get("type", "")).to_upper()
+
+func price(it: Dictionary) -> int:
+	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
+	return maxi(5, int(float(def_of(it).get("cost", 1)) * 4 * float(rr.get("value", 1))) + 10)
+
+## whether this class may use the item (armour type list; weapon category, finesse classes take finesse/ranged martial weapons)
+func can_use(it: Dictionary) -> bool:
+	var c := Data.cls(hero.get("cls", "warden"))
+	var d := def_of(it)
+	if it.get("k") == "a":
+		return d.get("type") == "cloth" or c.get("armor", []).has(d.get("type"))
+	var wc := str(c.get("weapons", "simple"))
+	if wc == "martial" or d.get("cat") == "simple":
+		return true
+	return wc == "finesse" and (str(d.get("props", "")).contains("f") or str(d.get("props", "")).contains("r"))
+
+## equip from the bag (the old piece goes back in the bag); returns false if the class can't use it
+func equip(i: int) -> bool:
+	var it: Dictionary = bag()[i]
+	if not can_use(it):
+		return false
+	var s := slot_of(it)
+	if s == "shield" and str(def_of(gear().get("weapon", {})).get("props", "")).contains("2"):
+		unequip("weapon")
+	if s == "weapon" and str(def_of(it).get("props", "")).contains("2"):
+		unequip("shield")
+	bag().remove_at(i)
+	unequip(s)
+	gear()[s] = it
+	return true
+
+func unequip(s: String) -> void:
+	if gear().has(s):
+		bag().append(gear()[s])
+		gear().erase(s)
+
+func give_start_gear() -> void:
+	hero["gear"] = {}
+	hero["bag"] = []
+	for id in Data.cls(hero.get("cls", "warden")).get("gear", []):
+		var it := make_item(str(id), 1)
+		gear()[slot_of(it)] = it
+
+## a random weapon or armour drop scaled by monster level; rarity rolls up with level
+func random_drop(lvl: int) -> Dictionary:
+	var pool := []
+	for k in Data.game.get("WEAPONS", {}):
+		pool.append(k)
+	for k in Data.game.get("ARMORS", {}):
+		pool.append(k)
+	var id: String = pool[rng.randi_range(0, pool.size() - 1)]
+	var r := 1
+	var roll_r := rng.randf() + minf(0.5, lvl / 200.0)
+	for cut in [0.55, 0.8, 0.93, 0.985, 1.2, 1.35, 1.45]:
+		if roll_r > cut:
+			r += 1
+	return make_item(id, mini(r, 8))
 
 func is_caster() -> bool:
 	return Data.cls(hero.get("cls", "warden")).get("caster") != null
@@ -136,4 +256,6 @@ func load_save() -> bool:
 	zone_id = d["zone"]
 	pos = Vector2i(int(d["x"]), int(d["y"]))
 	facing = d.get("facing", "down")
+	if not hero.has("gear"):
+		give_start_gear()   # saves made before gear existed
 	return true

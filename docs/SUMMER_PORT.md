@@ -32,12 +32,14 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - NPCs: inn (rest + save), vendor (potions), elder dialogue; other services show a placeholder line.
 - Random encounters by biome monster family and zone level.
 - Turn-based battle in the handheld layout: d20 + bonus vs AC, natural-20 crits, class spells with saves and half damage, potions, run, XP, level-ups (1–720, spell levels on the 1–720 curve), gold, defeat respawn.
-- START menu: status, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
+- Gear: each class starts with its browser-game kit (weapon, armour, shield). Weapon dice, finesse/ranged DEX, armour AC with the 5e DEX caps, shields and rarity pluses (POOR to DIVINE) drive the battle maths. Monsters drop weapons and armour (better rarity at higher levels); the vendor sells class-usable ARMS around your level and buys gear back at half price.
+- GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
+- START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
 - Controls: arrows, Z/Space = A, X/Esc = B, Enter = START.
 
 ## Not ported yet (planned stages)
 
-Inventory and gear slots, item affixes and the 164 aspects, jobs and support jobs, dungeons and floors, quests and the campaign, crafting, gems, mounts, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Item affixes (beyond the rarity plus) and the 164 aspects, jobs and support jobs, dungeons and floors, quests and the campaign, crafting, gems, mounts, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -47,4 +49,9 @@ Run headless under xvfb with `tools/capture.tscn` (screenshots plus play checks)
 CHECK battle finished=true turns=3 lvl=1 xp=125 hp=12
 CHECK exit elderwood -> elderwood_s1 at (1, 12)
 CHECK save=true load=true
+CHECK start gear weapon=longbrand armor=chainhauberk shield=buckler ac=18 hit=+5 dice=1d8
+CHECK equip knife -> weapon=knife hit=+8 note=Equipped KNIFE +3.
+CHECK shield ac 18 -> 23
+CHECK sell gold 100 -> 205 bag 7 -> 6
+CHECK save=true load=true gear_kept=true
 ```
