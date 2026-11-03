@@ -38,9 +38,18 @@ const validAppearance = (item, look, wardrobe, slotOf) => {
   const key = appearanceKey(look);
   return !!(key && wardrobe && wardrobe[key] && lookFits(slotOf(item), slotOf(look), item.kind, look.kind));
 };
+const PAPERDOLL_VISUAL_SLOTS = Object.freeze({
+  head: { x: 76, y: 14 }, neck: { x: 87, y: 20 }, back: { x: 94, y: 27 },
+  armor: { x: 76, y: 29 }, hands: { x: 61, y: 35 }, weapon: { x: 57, y: 44 },
+  offhand: { x: 95, y: 44 }, waist: { x: 76, y: 42 }, legs: { x: 76, y: 49 },
+  feet: { x: 76, y: 55 }, artifact: { x: 94, y: 16 }, relic: { x: 57, y: 16 },
+});
+const paperDollVisuals = eq => Object.keys(PAPERDOLL_VISUAL_SLOTS)
+  .filter(slot => eq && eq[slot])
+  .map(slot => ({ slot, item: eq[slot], anchor: PAPERDOLL_VISUAL_SLOTS[slot] }));
 const transmogCost = lvl => 5 * Math.max(1, Math.floor(Number(lvl) || 1));
 
-if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, collectAppearances, validAppearance, transmogCost, REST_BONUS };
+if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, collectAppearances, validAppearance, paperDollVisuals, PAPERDOLL_VISUAL_SLOTS, transmogCost, REST_BONUS };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof itemSlot === 'function') {
@@ -100,6 +109,11 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
   // gear score and rested pool on the paper doll
   if (typeof PaperDoll !== 'undefined') { const d0 = PaperDoll.prototype.draw; PaperDoll.prototype.draw = function () {
       d0.apply(this, arguments);
+      // Small equipment markers on the central portrait; the full slot list remains around it.
+      for (const visual of paperDollVisuals(G.eq)) {
+        const icon = itemIcon(visual.item);
+        if (icon && IMG[icon]) blit(sprFit(icon, 8), visual.anchor.x, visual.anchor.y);
+      }
       // one line under ATTUNED, above the info frame
       text(`GS ${fmt(gearScore(G.eq))}${G.rested > 0 ? `  RESTED ${Math.round(G.rested / span(G) * 100)}%` : ''}`, 24, 108, 'gold');
     }; }
