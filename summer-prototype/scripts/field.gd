@@ -3,6 +3,7 @@ extends Node2D
 
 const Battle = preload("res://scripts/battle.gd")
 const Bag = preload("res://scripts/bag.gd")
+const Dungeon = preload("res://scripts/dungeon.gd")
 const T := 64
 const STEP_TIME := 0.14
 var main: Node2D
@@ -18,6 +19,11 @@ func _ready() -> void:
 	_load_zone(Game.zone_id)
 
 func _load_zone(id: String) -> void:
+	if not Game.dun.is_empty() and id == str(Game.dun["map"]["id"]):
+		Game.zone_id = id
+		zone = Game.dun["map"]
+		banner = 2.5
+		return
 	if not Data.zones.has(id):
 		id = "elderwood"
 	Game.zone_id = id
@@ -44,6 +50,19 @@ func _npc_at(x: int, y: int) -> Dictionary:
 			return n
 	return {}
 
+func _mob_at(x: int, y: int) -> int:
+	var ms: Array = zone.get("mobs", [])
+	for k in range(ms.size()):
+		if int(ms[k]["x"]) == x and int(ms[k]["y"]) == y:
+			return k
+	return -1
+
+func _dungeon_at(x: int, y: int) -> String:
+	var d = zone.get("poi", {}).get("dungeon")
+	if d is Dictionary and int(d["x"]) == x and int(d["y"]) == y:
+		return str(d["id"])
+	return ""
+
 const DIRS := {"up": Vector2i(0, -1), "down": Vector2i(0, 1), "left": Vector2i(-1, 0), "right": Vector2i(1, 0)}
 
 func step(delta: float) -> void:
@@ -60,11 +79,20 @@ func step(delta: float) -> void:
 		var f: Vector2i = Game.pos + DIRS[Game.facing]
 		var n := _npc_at(f.x, f.y)
 		if not n.is_empty(): _talk(n)
+		var dg := _dungeon_at(f.x, f.y)
+		if dg != "": _offer_dungeon(dg)
 		return
 	for d in ["up", "down", "left", "right"]:
 		if Input.is_action_pressed("ui_" + d):
 			Game.facing = d
 			var nxt: Vector2i = Game.pos + DIRS[d]
+			var mk := _mob_at(nxt.x, nxt.y)
+			if mk >= 0:
+				_fight_mob(mk)
+				return
+			if _dungeon_at(nxt.x, nxt.y) != "" and main.pressed("ui_" + d):
+				_offer_dungeon(_dungeon_at(nxt.x, nxt.y))
+				return
 			if _walkable(nxt.x, nxt.y):
 				from = Vector2(Game.pos)
 				Game.pos = nxt
@@ -74,6 +102,9 @@ func step(delta: float) -> void:
 			return
 
 func _arrived() -> void:
+	if zone.has("dungeon"):
+		_arrived_dungeon()
+		return
 	# exits to the next zone
 	for k in zone.get("exits", {}):
 		var e: Dictionary = zone["exits"][k]
@@ -107,6 +138,90 @@ func _encounter() -> void:
 	b.biome = zone.get("biome", "meadow")
 	main.push(b)
 
+# ------------------------------------------------------------------ dungeons
+func _offer_dungeon(id: String) -> void:
+	var d := Dungeon.def_by_id(id)
+	if d.is_empty(): return
+	var cleared: bool = Game.hero.get("cleared", []).has(id)
+	main.choose(["ENTER", "LEAVE"], Callable(self, "_enter_pick").bind(id), "%s (LV %d)%s. %d floors. Enter?" % [d["name"], int(d["lvl"]), " CLEARED" if cleared else "", Dungeon.FLOORS])
+
+func _enter_pick(k: int, id: String) -> void:
+	if k == 0: enter_dungeon(id)
+
+func enter_dungeon(id: String, floor: int = 0) -> void:
+	var d := Dungeon.def_by_id(id)
+	if Game.dun.is_empty():
+		Game.dun = {"id": id, "ret_zone": Game.zone_id, "ret_pos": Game.pos}
+	Game.dun["floor"] = floor
+	Game.dun["map"] = Dungeon.build(d, floor)
+	var up: Array = Game.dun["map"]["up"]
+	Game.pos = Vector2i(int(up[0]), int(up[1]))
+	Game.facing = "down"
+	_load_zone(str(Game.dun["map"]["id"]))
+
+func leave_dungeon() -> void:
+	var z := str(Game.dun["ret_zone"])
+	var p: Vector2i = Game.dun["ret_pos"]
+	Game.dun = {}
+	Game.pos = p
+	_load_zone(z)
+	Game.save()
+
+func _arrived_dungeon() -> void:
+	var p := Game.pos
+	var up: Array = zone["up"]
+	var dn: Array = zone["down"]
+	if p.x == int(up[0]) and p.y == int(up[1]):
+		main.choose(["LEAVE", "STAY"], Callable(self, "_up_pick"), "Climb back to the surface?" if int(zone["floor"]) == 0 else "Leave the dungeon? (Floors reset.)")
+	elif p.x == int(dn[0]) and p.y == int(dn[1]):
+		for m in zone["mobs"]:
+			if m.get("boss", false):
+				main.say(["A seal holds the way down.", "Defeat %s first." % m["def"]["name"]])
+				return
+		if zone.get("last", false):
+			_finish_dungeon()
+		else:
+			enter_dungeon(str(Game.dun["id"]), int(zone["floor"]) + 1)
+	elif str(zone["gfx"][p.y][p.x]).ends_with("_gold"):
+		zone["gfx"][p.y][p.x] = str(zone["gfx"][p.y][p.x]).replace("_gold", "_floor")
+		var g := 15 + int(zone["lvl"][0]) * 4 + Game.rng.randi_range(0, 20)
+		Game.hero["gold"] = int(Game.hero["gold"]) + g
+		var it := Game.random_drop(int(zone["lvl"][0]) + 10)
+		Game.bag().append(it)
+		main.say(["A hidden cache! %d G" % g, "and %s." % Game.item_name(it)])
+
+func _up_pick(k: int) -> void:
+	if k == 0: leave_dungeon()
+
+func _finish_dungeon() -> void:
+	var d := Dungeon.def_by_id(str(Game.dun["id"]))
+	var cl: Array = Game.hero.get("cleared", [])
+	var first := not cl.has(d["id"])
+	if first:
+		cl.append(d["id"])
+	Game.hero["cleared"] = cl
+	var bonus := int(d["lvl"]) * (60 if first else 20)
+	var ups := Game.gain_xp(bonus)
+	var lines := ["%s CLEARED!" % d["name"], "+%d XP for the clear%s." % [bonus, " (first time)" if first else ""]]
+	if ups: lines.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
+	leave_dungeon()
+	main.say(lines)
+
+func _fight_mob(k: int) -> void:
+	var m: Dictionary = zone["mobs"][k]
+	var b := Battle.new()
+	b.foe_def = m["def"]
+	b.foe_lvl = int(m["lvl"])
+	b.biome = zone.get("biome", "dusk")
+	b.boss = m.get("boss", false)
+	b.on_win = Callable(self, "_mob_down").bind(m)
+	main.push(b)
+
+func _mob_down(m: Dictionary) -> void:
+	zone["mobs"].erase(m)
+	if m.get("boss", false):
+		main.say(["The seal on the stairs breaks."])
+
 func _talk(n: Dictionary) -> void:
 	var svc := str(n.get("svc"))
 	talking = str(n.get("name", "NPC"))
@@ -114,6 +229,10 @@ func _talk(n: Dictionary) -> void:
 		main.choose(["REST (20 G)", "LEAVE"], Callable(self, "_inn"), "%s: A warm bed for 20 G?" % talking)
 	elif svc == "vendor":
 		main.choose(["POTION (25 G)", "ARMS", "SELL", "LEAVE"], Callable(self, "_shop"), "%s: What will it be?" % talking)
+	elif svc in ["blacksmith", "armorsmith", "weaponsmith"]:
+		main.choose(["ARMS", "SELL", "LEAVE"], Callable(self, "_smith"), "%s: Steel for the road?" % talking)
+	elif svc == "warden":
+		main.say(["%s: Stay on the road, %s. The deep places bite." % [talking, Game.hero["name"]]])
 	elif svc == "elder":
 		main.say(["%s: You carry the last lantern. I knew it would choose someone." % talking, "The EMBER CODEX was torn into twelve pages. Find them, and the dawn returns."])
 	else:
@@ -133,6 +252,9 @@ func _inn(k: int) -> void:
 	main.say(["%s: Sleep well. HP restored. Game saved." % talking])
 
 var stock: Array = []
+
+func _smith(k: int) -> void:
+	if k >= 0 and k < 2: _shop(k + 1)
 
 func _shop(k: int) -> void:
 	if k == 1:
@@ -242,6 +364,12 @@ func _draw() -> void:
 		Data.blit_fit(self, spr, Rect2(p + Vector2(0, -12), Vector2(T, T)))
 	var dir := "side" if Game.facing in ["left", "right"] else Game.facing
 	var f := walk_frame if moving else 0
+	for m in zone.get("mobs", []):
+		var mp := Vector2(int(m["x"]), int(m["y"])) * T - cam
+		if mp.x < -T or mp.x > 640 or mp.y < -T or mp.y > 576: continue
+		var big: bool = m.get("boss", false)
+		var bob := sin(Time.get_ticks_msec() / 300.0 + int(m["x"])) * 3
+		Data.blit_fit(self, str(m["def"].get("art", "")), Rect2(mp + Vector2(-8 if big else 4, (-24 if big else -4) + bob), Vector2(80, 80) if big else Vector2(56, 56)), true)
 	Data.blit_fit(self, "gh_%s_%s%d" % [Game.hero["cls"], dir, f], Rect2(hp - cam + Vector2(0, -12), Vector2(T, T)), Game.facing == "left")
 	_hud()
 
@@ -256,7 +384,7 @@ func _hud() -> void:
 	var x0 := Data.xp_for(int(h["lvl"]))
 	var x1 := Data.xp_for(int(h["lvl"]) + 1)
 	Data.bar(self, Rect2(8, 98, 256, 12), float(int(h["xp"]) - x0) / maxf(1, x1 - x0), Data.GOLD)
-	var tag := "SAFE" if zone.get("town", false) else "LV %d-%d" % [int(zone["lvl"][0]), int(zone["lvl"][1])]
+	var tag := ("B%dF" % (int(zone["floor"]) + 1)) if zone.has("dungeon") else "SAFE" if zone.get("town", false) else "LV %d-%d" % [int(zone["lvl"][0]), int(zone["lvl"][1])]
 	Data.panel(self, Rect2(640 - 8 - (tag.length() * 24 + 48), 4, tag.length() * 24 + 48, 56))
 	Data.text_r(self, tag, 640 - 32, 14, Data.EDGE)
 	Data.text_r(self, "%dG" % int(h["gold"]), 632, 68, Data.GOLD, 0.75)

@@ -9,6 +9,8 @@ var hero: Dictionary = {}
 var zone_id := "elderwood"
 var pos := Vector2i(3, 8)
 var facing := "down"
+## the dungeon run in progress: {"id", "floor", "map", "ret_zone", "ret_pos"}; empty in the overworld
+var dun: Dictionary = {}
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -240,7 +242,10 @@ func save() -> bool:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
 		return false
-	f.store_string(JSON.stringify({"hero": hero, "zone": zone_id, "x": pos.x, "y": pos.y, "facing": facing}))
+	# saving inside a dungeon saves you at its entrance (floors are rebuilt on each visit)
+	var z := zone_id if dun.is_empty() else str(dun["ret_zone"])
+	var p: Vector2i = pos if dun.is_empty() else dun["ret_pos"]
+	f.store_string(JSON.stringify({"hero": hero, "zone": z, "x": p.x, "y": p.y, "facing": facing}))
 	return true
 
 func has_save() -> bool:
@@ -252,6 +257,7 @@ func load_save() -> bool:
 	var d = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
 	if not d is Dictionary:
 		return false
+	dun = {}
 	hero = d["hero"]
 	zone_id = d["zone"]
 	pos = Vector2i(int(d["x"]), int(d["y"]))

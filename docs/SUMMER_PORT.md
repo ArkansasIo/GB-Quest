@@ -33,13 +33,15 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Random encounters by biome monster family and zone level.
 - Turn-based battle in the handheld layout: d20 + bonus vs AC, natural-20 crits, class spells with saves and half damage, potions, run, XP, level-ups (1–720, spell levels on the 1–720 curve), gold, defeat respawn.
 - Gear: each class starts with its browser-game kit (weapon, armour, shield). Weapon dice, finesse/ranged DEX, armour AC with the 5e DEX caps, shields and rarity pluses (POOR to DIVINE) drive the battle maths. Monsters drop weapons and armour (better rarity at higher levels); the vendor sells class-usable ARMS around your level and buys gear back at half price.
+- Dungeons: all 38 dungeons from DUNGEONS. Face the keep door in each region's far zone and press A. Each run is 3 floors built from rooms and corridors in the dungeon's tile theme (dungeon, temple, ice, lava, void, crypt) with torches, visible monster packs from the theme's families, a hidden cache (gold + gear) and a floor boss from the browser game's dungeon-boss list guarding the stairs down (3x HP, more XP and gold, a sure drop at +2 rarity, no running). Clearing floor 3 awards a clear bonus (bigger the first time) and returns you to the door. Saving inside a dungeon saves at its entrance.
+- Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
 - Controls: arrows, Z/Space = A, X/Esc = B, Enter = START.
 
 ## Not ported yet (planned stages)
 
-Item affixes (beyond the rarity plus) and the 164 aspects, jobs and support jobs, dungeons and floors, quests and the campaign, crafting, gems, mounts, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Item affixes (beyond the rarity plus) and the 164 aspects, jobs and support jobs, dungeon traps/doors/raids, quests and the campaign, crafting, gems, mounts, necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
 
 ## Verified
 
@@ -54,4 +56,10 @@ CHECK equip knife -> weapon=knife hit=+8 note=Equipped KNIFE +3.
 CHECK shield ac 18 -> 23
 CHECK sell gold 100 -> 205 bag 7 -> 6
 CHECK save=true load=true gear_kept=true
+CHECK dungeon door ahead=dg_elderwood
+CHECK dungeon GOBLIN KEEP 1F floor=0 mobs=9 boss=THOM THE PALE pos=(5, 5)
+CHECK floor 1 cleared -> now GOBLIN KEEP 2F
+CHECK floor 2 cleared -> now GOBLIN KEEP 3F
+CHECK floor 3 cleared -> now ELDERWOOD FAR REACH
+CHECK after clear zone=elderwood_s3 cleared=["dg_elderwood"] lvl=12 bag=9
 ```

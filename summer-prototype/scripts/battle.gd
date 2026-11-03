@@ -13,6 +13,8 @@ var shown := 0.0
 var sel := 0
 var shake := 0.0
 var then: Callable = Callable()
+var boss := false               # dungeon floor bosses: more HP, XP and gold, and a sure drop
+var on_win: Callable = Callable()
 const SKY := {"meadow": [Color8(118, 188, 240), Color8(148, 204, 104)], "coast": [Color8(104, 180, 236), Color8(232, 214, 156)], "marsh": [Color8(146, 168, 160), Color8(118, 140, 96)],
 	"jungle": [Color8(128, 198, 168), Color8(96, 160, 76)], "snow": [Color8(176, 202, 236), Color8(236, 242, 248)], "badlands": [Color8(238, 180, 120), Color8(214, 160, 106)],
 	"volcanic": [Color8(64, 36, 48), Color8(86, 64, 58)], "dusk": [Color8(54, 46, 88), Color8(86, 78, 104)], "crystal": [Color8(140, 196, 232), Color8(176, 206, 224)]}
@@ -21,6 +23,12 @@ func _ready() -> void:
 	var blk := Data.monster_block(foe_lvl)
 	foe = {"name": str(foe_def.get("name", "FOE")).substr(0, 12), "art": foe_def.get("art", ""), "lvl": foe_lvl, "hp": int(blk.get("hp", 10)), "max": int(blk.get("hp", 10)),
 		"ac": int(blk.get("ac", 12)), "hit": int(blk.get("hit", 3)), "dice": str(blk.get("dice", "1d6")), "xp": int(blk.get("xp", 10)), "gold": int(blk.get("gold", 3)), "dt": foe_def.get("dt", "slashing")}
+	if boss:
+		foe["max"] = int(foe["max"]) * 3; foe["hp"] = foe["max"]; foe["xp"] = int(foe["xp"]) * 4; foe["gold"] = int(foe["gold"]) * 6 + 20
+		foe["ac"] = int(foe["ac"]) + 1; foe["hit"] = int(foe["hit"]) + 1
+		foe["name"] = str(foe_def.get("name", "BOSS")).substr(0, 14)
+		_say(["%s blocks the way! (BOSS LV%d)" % [foe["name"], foe_lvl]])
+		return
 	_say(["A wild %s appears! (LV%d)" % [foe["name"], foe_lvl]])
 
 func options() -> Array:
@@ -78,6 +86,9 @@ func _act(o: String) -> void:
 		Game.hero["potions"] = int(Game.hero["potions"]) - 1; var h := Game.roll("2d4+2") + int(Game.hero["lvl"]) / 5
 		Game.hero["hp"] = mini(Game.hp_max(), int(Game.hero["hp"]) + h); out.append("You drink a potion: +%d HP." % h)
 	elif o == "RUN":
+		if boss:
+			_say(["There is no escape from %s!" % foe["name"]])
+			return
 		if Game.d20() + Game.mod("DEX") >= 10:
 			_say(["You got away safely."], Callable(self, "_leave"))
 			return
@@ -102,12 +113,15 @@ func _leave() -> void:
 	main.pop(self)
 
 func _won() -> void:
-	Game.save()
 	main.pop(self)
+	if on_win.is_valid():
+		on_win.call()
+	Game.save()
 
 func _died() -> void:
 	Game.hero["hp"] = Game.hp_max()
 	Game.hero["gold"] = int(Game.hero["gold"]) / 2
+	Game.dun = {}
 	Game.zone_id = "elderwood"
 	Game.pos = Vector2i(3, 8)
 	Game.save()
@@ -120,8 +134,9 @@ func _after(out: Array) -> void:
 		Game.hero["gold"] = int(Game.hero["gold"]) + int(foe["gold"]); Game.hero["kills"] = int(Game.hero.get("kills", 0)) + 1
 		out.append_array(["%s is defeated!" % foe["name"], "Got %d XP and %d G." % [int(foe["xp"]), int(foe["gold"])]])
 		if ups: out.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
-		if Game.rng.randf() < 0.2 + int(foe["lvl"]) / 400.0:
+		if boss or Game.rng.randf() < 0.2 + int(foe["lvl"]) / 400.0:
 			var it := Game.random_drop(int(foe["lvl"]))
+			if boss: it["r"] = mini(8, int(it["r"]) + 2); it["plus"] = maxi(0, int(Data.game["RARITY"][it["r"]].get("plus", 0)))
 			Game.bag().append(it)
 			out.append("Found %s!" % Game.item_name(it))
 		state = "over"
@@ -150,7 +165,7 @@ func _draw() -> void:
 	draw_rect(Rect2(0, 240, 640, 140), c[1])
 	draw_set_transform(Vector2(randf_range(-6, 6) if shake > 0 else 0.0, 0), 0, Vector2.ONE)
 	draw_circle(Vector2(472, 340), 110, c[1].darkened(0.15))
-	if int(foe["hp"]) > 0: Data.blit_fit(self, str(foe["art"]), Rect2(392, 170, 170, 170), true)
+	if int(foe["hp"]) > 0: Data.blit_fit(self, str(foe["art"]), Rect2(392, 170, 170, 170) if not boss else Rect2(372, 130, 210, 210), true)
 	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 	draw_circle(Vector2(140, 370), 110, c[1].darkened(0.1))
 	var look := "c_%s_4" % Game.hero["cls"]

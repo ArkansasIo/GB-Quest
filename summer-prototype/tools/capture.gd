@@ -57,6 +57,40 @@ func _ready() -> void:
 	var gold := int(Game.hero["gold"]); var nb := Game.bag().size(); sb._act(0)
 	print("CHECK sell gold %d -> %d bag %d -> %d" % [gold, Game.hero["gold"], nb, Game.bag().size()])
 	print("CHECK save=%s load=%s gear_kept=%s" % [Game.save(), Game.load_save(), Game.gear().has("shield")])
+	# dungeons: Goblin Keep's door in elderwood_s3, enter, fight every pack and each floor boss, descend, clear
+	Game.new_hero("BRAM", "warden", "hearthkin"); Game.hero["lvl"] = 12; Game.hero["hp"] = Game.hp_max()
+	Game.zone_id = "elderwood_s3"; Game.pos = Vector2i(9, 15); Game.facing = "up"
+	main.clear(); var df = main.push(load("res://scripts/field.gd").new()); await _wait(0.4)
+	print("CHECK dungeon door ahead=%s" % df._dungeon_at(9, 14))
+	df.enter_dungeon("dg_elderwood"); await _wait(2.8); await _shot("12_dungeon")
+	var mp: Dictionary = df.zone
+	print("CHECK dungeon %s floor=%d mobs=%d boss=%s pos=%s" % [mp["name"], mp["floor"], mp["mobs"].size(), mp["mobs"].back()["def"]["name"], Game.pos])
+	for fl in range(3):
+		var guard := 0
+		while df.zone["mobs"].size() and guard < 20:
+			guard += 1
+			var m: Dictionary = df.zone["mobs"].back()
+			df._fight_mob(df.zone["mobs"].size() - 1)
+			var bb = main.top()
+			if fl == 0 and m.get("boss", false):
+				await _wait(1.5); bb.state = "menu"; await _wait(0.2); await _shot("13_boss")
+			var tt := 0
+			while main.stack.has(bb) and tt < 400:
+				if bb.state == "msg":
+					bb.msgs = []; bb.state = "menu"
+					if bb.then.is_valid():
+						var cc = bb.then; bb.then = Callable(); cc.call()
+				elif bb.state == "menu":
+					Game.hero["hp"] = Game.hp_max(); bb._act("ATTACK")
+				tt += 1
+				await get_tree().process_frame
+			while main.top() != df: main.pop(main.top())
+		var dn: Array = df.zone["down"]
+		Game.pos = Vector2i(int(dn[0]), int(dn[1])); df._arrived()
+		print("CHECK floor %d cleared -> now %s" % [fl + 1, df.zone.get("name")])
+		await get_tree().process_frame
+		while main.top() != df: main.pop(main.top())
+	print("CHECK after clear zone=%s cleared=%s lvl=%d bag=%d" % [Game.zone_id, Game.hero.get("cleared"), Game.hero["lvl"], Game.bag().size()])
 	get_tree().quit()
 
 func _wait(s: float) -> void:

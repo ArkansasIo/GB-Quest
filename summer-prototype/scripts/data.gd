@@ -50,6 +50,7 @@ func sprite(name: String) -> Texture2D:
 	var at := AtlasTexture.new()
 	at.atlas = base
 	at.region = Rect2(e[1], e[2], e[3], e[4])
+	at.filter_clip = true   # no bleeding from neighbouring sprites in the sheet (seams between tiles)
 	_atlas_cache[name] = at
 	return at
 
