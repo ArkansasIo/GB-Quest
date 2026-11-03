@@ -160,3 +160,7 @@ The manual animation workflow now runs this validation before composing its samp
 The browser game's existing Wardrobe/transmog implementation remains the source of cosmetic ownership and saved appearance overrides. The paper-doll screen now adds small visual markers for equipped head, neck, cloak, chest, hands, main-hand, off-hand, waist, legs, feet, artifact and relic items over the central character portrait. Marker icons resolve through the existing `itemIcon` path, so unlocked transmog appearances are reflected while item stats and equipment-slot rows remain unchanged.
 
 The preview marker layout is defined by `PAPERDOLL_VISUAL_SLOTS` in `src/polish.js`; `paperDollVisuals(eq)` is a pure helper covered by `tests/rpg-systems.test.js`. These are UI icon markers, not yet full-body pixel-art compositing from the HD PNG layer atlases. The latter still requires a runtime sprite loader and a compatible animated character base.
+
+## World avatar equipment indicators
+
+The world-map character portrait now composites small equipped-item icons for head, main hand, chest and off-hand over the portrait. It uses the same `itemIcon` resolver as inventory and the paper doll, so a valid transmog changes the visible icon without changing the equipped item's gameplay data. Icons are drawn into a 24×24 canvas with smoothing disabled to preserve the pixel-art presentation. This is a compact equipment indicator, not a full-body layered sprite or animated armor system.
