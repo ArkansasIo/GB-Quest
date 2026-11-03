@@ -11,7 +11,7 @@ This defines a consistent, importable animation library for the six core charact
 - Directions: S, SW, W, NW, N, NE, E, SE
 - States: idle, walk, run, attack, cast, block, hit, death
 
-This produces **3,072 animation sequences** and a target of **20,480 frames** at the default frame counts.
+This produces **3,072 animation sequences** and a target of **19,584 frames** at the default frame counts.
 
 ## Frame contract
 
