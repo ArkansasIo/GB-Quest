@@ -95,7 +95,10 @@
       }
       const entry = { canvas: null, promise: null };
       touch(key, entry);
-      let rendered;\n      try { rendered = runtime.renderCharacter(character, spec); }\n      catch (error) { rendered = Promise.reject(error); }\n      entry.promise = Promise.resolve(rendered).then(canvas => {
+      let rendered;
+      try { rendered = runtime.renderCharacter(character, spec); }
+      catch (error) { rendered = Promise.reject(error); }
+      entry.promise = Promise.resolve(rendered).then(canvas => {
         entry.canvas = canvas;
         return canvas;
       }).catch(error => {
