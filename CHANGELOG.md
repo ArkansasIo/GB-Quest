@@ -152,3 +152,5 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - The original single-file Game Boy RPG (kept in `legacy/`).
 
 - **Paper-doll gear preview:** equipped head, neck, cloak, chest, hands, weapon, shield, waist, legs, feet, artifact and relic appearances now add small icon markers over the central portrait. Markers use the existing item-icon/transmog resolver; gameplay item stats and slot selection are unchanged. Pure slot-selection tests added.
+
+- **World avatar equipment indicators:** world-map character portraits composite small head, main-hand, chest and off-hand icons through the existing transmog-aware item icon resolver. This is a compact visual indicator, not full-body animated equipment rendering.
