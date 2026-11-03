@@ -857,27 +857,34 @@ function worldPortrait(character, dir = 'down', ghost = false) {
   return out;
 }
 // HD art is prepared asynchronously and only drawn after its canvas is ready.
-let HD_WORLD_RUNTIME = null;\nconst HD_WORLD_PRESENTERS = new WeakMap(), HD_WORLD_SCALED = new WeakMap();
+let HD_WORLD_RUNTIME = null;
+const HD_WORLD_PRESENTERS = new WeakMap(), HD_WORLD_SCALED = new WeakMap();
 function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost = false) {
   if (ghost || !character || !character.eq || typeof globalThis === 'undefined') return null;
   const api = globalThis.GBQHDCharacterArt;
   if (!api) return null;
   try {
-    if (!HD_WORLD_PRESENTER) {
-      const runtime = api.createRuntime();
-      HD_WORLD_PRESENTER = api.createFramePresenter(runtime);
+    if (!HD_WORLD_RUNTIME) HD_WORLD_RUNTIME = api.createRuntime();
+    let presenter = HD_WORLD_PRESENTERS.get(character);
+    if (!presenter) {
+      presenter = api.createFramePresenter(HD_WORLD_RUNTIME);
+      HD_WORLD_PRESENTERS.set(character, presenter);
     }
-    const canvas = HD_WORLD_PRESENTER.request(character, {
+    const canvas = presenter.request(character, {
       direction: dir, frame: Number(frame) || 0,
       state: moving ? 'moving' : 'idle',
       rank: character.rank || character.gearRank || 'F'
     });
     if (!canvas) return null;
-    if (HD_WORLD_SOURCE !== canvas) {
-      HD_WORLD_SOURCE = canvas;
-      HD_WORLD_SCALED = mkCanvas(24, 24);\n      const draw = HD_WORLD_SCALED.getContext('2d');\n      draw.imageSmoothingEnabled = false;\n      draw.drawImage(canvas, 0, 0, 24, 24);
+    const cached = HD_WORLD_SCALED.get(character);
+    if (!cached || cached.source !== canvas) {
+      const output = mkCanvas(24, 24), draw = output.getContext('2d');
+      draw.imageSmoothingEnabled = false;
+      draw.drawImage(canvas, 0, 0, 24, 24);
+      HD_WORLD_SCALED.set(character, { source: canvas, output });
+      return output;
     }
-    return HD_WORLD_SCALED;
+    return cached.output;
   } catch (error) {
     console.warn('HD character frame unavailable; using classic sprite', error);
     return null;
