@@ -10,6 +10,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - The chat panel now starts closed. Press **C** or the **CHAT** button to open it; SETTINGS > CHAT SETTINGS turns chat off completely.
 
 ### Added
+- **Guild conquest** (MAIN MENU > CONQUEST, needs a guild): every wild region has a **boonstone** held by an AI guild. CHALLENGE it (two waves of defenders, then the STONE WARDEN) to claim it for your guild: +10% XP and gold from foes in that region and a daily tax. AI guilds counterattack your stones every 30 minutes; DEFEND within 20 minutes or lose them. With 3 stones your guild can **besiege ARDENHOLD KEEP** (GATE, COURTYARD, CASTLE LORD) for a realm-wide castle buff (+5% damage, +5% resist all, +10% XP), a bigger daily tax and the CASTLE LORD title; AI sieges come every 2 hours. Taxes build up for up to 7 days.
 - **Throne-style world systems** (`src/tnl_systems.js`), new MAIN MENU entries MASTERY, AMITOI and MORPH:
   - **Weapon mastery**: nine weapon families level 1-30 from battles won with them equipped; each level adds that family's bonuses while wielded, with bigger ADEPT, EXPERT and MASTER specialization steps at 10, 20 and 30.
   - **Amitoi expeditions**: send small companion spirits on real-time trips (15 min, 1 h, 4 h) to zones you have visited for gold, materials and sometimes gear; they level 1-10, and you can adopt up to four. A toast tells you when one is back.

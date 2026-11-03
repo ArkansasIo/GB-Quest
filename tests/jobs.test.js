@@ -179,3 +179,14 @@ test('throne-style systems: weapon mastery, amitoi expeditions, day and night', 
   assert.equal(T.amitoiLevel(0), 1); assert.equal(T.amitoiLevel(1e9), 10);
   assert.equal(T.isNight(23), true); assert.equal(T.isNight(3), true); assert.equal(T.isNight(12), false);
 });
+
+test('guild conquest: stone owners, waves, taxes and counterattack timing', () => {
+  const c = { Math, Object, Array, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('guild_war.js'), c); const Q = c.GBQConquest;
+  assert.ok(Q.AI_GUILDS.includes(Q.startingOwner('hollowmere'))); assert.equal(Q.startingOwner('hollowmere'), Q.startingOwner('hollowmere'));
+  const stone = plain(Q.challengeWaves('stone')); assert.equal(stone.length, 3); assert.ok(stone[2].boss);
+  const castle = plain(Q.challengeWaves('castle')); assert.equal(castle[0].name, 'GATE'); assert.equal(castle[2].name, 'CASTLE LORD');
+  assert.equal(Q.stoneTax(10, 1), 150); assert.equal(Q.stoneTax(10, 30), 150 * 7, 'taxes build up to 7 days'); assert.equal(Q.stoneTax(10, 0), 0);
+  assert.ok(Q.castleTax(10, 1) > Q.stoneTax(10, 1) * 3);
+  assert.equal(Q.counterDue(1000, 0, 500), true); assert.equal(Q.counterDue(1000, 900, 500), false);
+  assert.equal(Q.CASTLE_NEEDS, 3);
+});
