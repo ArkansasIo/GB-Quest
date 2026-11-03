@@ -199,8 +199,10 @@ test('extras: gem drop odds and tiers, gem shop prices', () => {
 });
 
 test('action-RPG gear: aspects, greater affixes, tempering and masterwork', () => {
-  const c = { Math, Object, Array, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('d4_gear.js'), c); const A = c.GBQAspects;
-  assert.equal(A.ASPECT_IDS.length, 16);
+  const c = { Math, Object, Array, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('aspects_data.js') + '\n' + src('d4_gear.js'), c); const A = c.GBQAspects;
+  assert.ok(A.ASPECT_IDS.length >= 160, 'every family of aspect');
+  for (const id of A.ASPECT_IDS) { const t = A.ASPECTS[id].desc(A.ASPECTS[id].hi); assert.ok(t && !/undefined|NaN/.test(t), id); }
+  for (const id of ['executioner', 'stormshard', 'corpseburst', 'bulwark', 'fortune']) assert.ok(A.ASPECTS[id], `old aspect ${id} still exists`);
   for (const kind of ['weapon', 'armor', 'wondrous']) { const a = A.rollAspect(kind, 5, 0.5, 0); assert.ok(A.fitsKind(a.id, kind)); assert.equal(a.val, A.ASPECTS[a.id].lo + Math.round(0) || a.val); }
   const lo = A.rollAspect('weapon', 5, 0, 0), hi = A.rollAspect('weapon', 8, 0, 1); assert.equal(lo.id, hi.id); assert.ok(hi.val > lo.val, 'better rarity and roll, better aspect');
   assert.deepEqual(plain(A.rollGreater(3, 5, [0.9, 0.01, 0.9, 0])), [1]);

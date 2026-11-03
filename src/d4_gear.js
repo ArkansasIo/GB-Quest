@@ -1,9 +1,10 @@
 'use strict';
 // ================================================================ ACTION-RPG GEAR: ASPECTS, GREATER AFFIXES, TEMPERING, MASTERWORK
 // Gear effects in the style of modern action RPGs (Diablo IV and friends), on top of the existing affix system:
-//   * LEGENDARY ASPECTS: legendary, mythic, ancestral and divine items roll one ASPECT, a combat power with its own
-//     value (EXECUTIONER: +x% damage to foes under 35% HP, STORMSHARD: lucky hits arc lightning, CORPSEBURST: kills
-//     explode, BULWARK: battles start behind a barrier, and 12 more). Named items always carry the same aspect.
+//   * LEGENDARY ASPECTS: legendary, mythic, ancestral and divine items roll one of 160+ ASPECTS (src/aspects_data.js):
+//     every family of legendary power (conditional damage, elemental brands and fangs, chains, kill explosions,
+//     debuffs to inflict and exploit, buffs on kill or at battle start, barriers, damage reduction, reflection and
+//     passive stats), each with its own value range. Named items always carry the same aspect.
 //   * GREATER AFFIXES: every affix has a 6% chance (ancestral and divine: one guaranteed) to roll 1.5x, marked GREATER.
 //   * OCCULTIST (MAIN MENU > OCCULTIST):
 //       EXTRACT  destroy a legendary item to save its aspect in your CODEX OF POWER (the best value is kept)
@@ -12,24 +13,25 @@
 //       MASTERWORK raise an item 12 ranks: each rank +5% to its affixes, ranks 4/8/12 also boost one affix by 25%
 // Aspects fire in battle through the damage pipeline. Pure rules are exported as GBQAspects for tests.
 
-const ASPECTS = {
-  executioner: { name: 'EXECUTIONER', lo: 25, hi: 60, kind: 'weapon', desc: v => `+${v}% damage to foes under 35% HP.` },
-  firststrike: { name: 'FIRST STRIKE', lo: 30, hi: 80, kind: 'weapon', desc: v => `+${v}% damage to foes at full HP.` },
-  slayer: { name: 'ELITE SLAYER', lo: 15, hi: 40, kind: 'any', desc: v => `+${v}% damage to elites and bosses.` },
-  stormshard: { name: 'STORMSHARD', lo: 20, hi: 50, kind: 'weapon', desc: v => `Lucky hit (20%): lightning arcs to another foe for ${v}% of the hit.` },
-  glacial: { name: 'GLACIAL', lo: 15, hi: 35, kind: 'weapon', desc: v => `Hits have ${v}% to frostbite (slow) the target.` },
-  bloodletter: { name: 'BLOODLETTER', lo: 15, hi: 40, kind: 'weapon', desc: v => `Hits have ${v}% to make the target bleed.` },
-  vampiric: { name: 'VAMPIRIC', lo: 3, hi: 8, kind: 'any', desc: v => `Lucky hit (15%): heal ${v}% of your max HP.` },
-  corpseburst: { name: 'CORPSEBURST', lo: 15, hi: 40, kind: 'any', desc: v => `Kills explode for ${v}% of the foe's max HP to the others.` },
-  bloodlust: { name: 'BLOODLUST', lo: 2, hi: 4, kind: 'any', desc: v => `Kills make you MIGHTY for ${v} rounds.` },
-  bulwark: { name: 'BULWARK', lo: 10, hi: 25, kind: 'armor', desc: v => `Start battles with a barrier of ${v}% max HP.` },
-  unbroken: { name: 'UNBROKEN', lo: 10, hi: 25, kind: 'armor', desc: v => `Take ${v}% less damage below 50% HP.` },
-  brambles: { name: 'BRAMBLES', lo: 10, hi: 30, kind: 'armor', desc: v => `Reflect ${v}% of melee damage taken.` },
-  windstrike: { name: 'WINDSTRIKE', lo: 1, hi: 3, kind: 'wondrous', desc: v => `Start battles HASTED for ${v} rounds.` },
-  fortune: { name: 'FORTUNE', lo: 15, hi: 40, kind: 'wondrous', desc: v => `+${v}% gold find and magic find.` },
-  sage: { name: 'SAGE', lo: 10, hi: 25, kind: 'wondrous', desc: v => `+${v}% spell and healing power.` },
-  warlord: { name: 'WARLORD', lo: 1, hi: 3, kind: 'any', desc: v => `+${v} to hit and +${v * 2}% crit chance.` },
-};
+// ASPECTS come from ASPECT_SPECS (src/aspects_data.js): 160+ powers in every action-RPG family, with text built from the spec
+const ASPECT_EL_NAME = { slashing: 'physical', piercing: 'physical', bludgeoning: 'physical' };
+const aspNameOf = id => (typeof BUFFS !== 'undefined' && BUFFS[id] && BUFFS[id].name) || (typeof CONDITIONS !== 'undefined' && CONDITIONS[id] && CONDITIONS[id].name) || String(id).toUpperCase();
+const ASP_WHEN = { lowhp: 'to foes under 35% HP', fullhp: 'to foes at full HP', elite: 'to elites and bosses', crowd: 'while 3+ foes stand', crit: 'on critical hits', first: 'with your first hit each battle', selfhigh: 'while you are above 80% HP', selflow: 'while you are below 35% HP', phys: 'with physical hits', spell: 'with spells' };
+const ASP_STAT = { gf: 'gold find', mf: 'magic find', heal: 'healing', fire: 'fire dmg', lightning: 'shock dmg', cold: 'cold dmg', necrotic: 'shadow dmg', hit: 'accuracy', crit: 'crit chance', critdmg: 'crit damage', leech: 'lifesteal', haste: 'haste', block: 'block', dodge: 'dodge', hp: 'max HP', acb: 'armour', resist: 'resist all', thorns: 'thorns', xp: 'XP', dmg: 'damage' };
+const elName = el => (ASPECT_EL_NAME[el] || el);
+const aspStatVal = (v, m) => Math.max(1, Math.floor(v * m));
+function aspectText(e, v) {
+  const when = w => ASP_WHEN[w] || (w.startsWith('el:') ? `with ${elName(w.slice(3))} damage` : w.startsWith('cond:') ? `to ${aspNameOf(w.slice(5)).toLowerCase()} foes` : w.startsWith('buff:') ? `while ${aspNameOf(w.slice(5)).toLowerCase()}` : '');
+  const a = e.act || {}, ch = e.pv ? v : e.p;
+  if (e.t === 'dmg') return `+${v}% damage ${when(e.when)}.`;
+  if (e.t === 'stat') return e.stats.map(([k, m]) => `+${aspStatVal(v, m)}${['hp', 'acb', 'hit', 'thorns'].includes(k) ? '' : '%'} ${ASP_STAT[k] || k}`).join(', ') + '.';
+  if (e.t === 'proc') return a.cond ? `Hits have ${ch}% to inflict ${aspNameOf(a.cond)}.` : a.bonus ? `${ch}% of hits add ${v}% as ${elName(a.bonus)} damage.` : a.chain ? `Lucky hit (${ch}%): ${elName(a.chain)} arcs to another foe for ${v}% of the hit.` : a.heal ? `Lucky hit (${ch}%): heal ${v}% of max HP.` : a.barrier ? `Lucky hit (${ch}%): a barrier of ${v}% max HP.` : `Hits have ${ch}% to grant ${aspNameOf(a.buff)} for ${a.rounds || 2} rounds.`;
+  if (e.t === 'kill') return a.explode ? `Kills explode for ${v}% of the foe's max HP as ${elName(a.explode)}.` : a.buff ? `Kills grant ${aspNameOf(a.buff)} for ${v} rounds.` : a.heal ? `Kills heal ${v}% of max HP.` : `Kills grant a barrier of ${v}% max HP.`;
+  if (e.t === 'start') return a.buff ? `Start battles ${aspNameOf(a.buff)} for ${v} rounds.` : `Start battles behind a barrier of ${v}% max HP.`;
+  if (e.t === 'hit') return a.reflect ? `Reflect ${v}% of damage taken.` : a.curse ? `Attackers have ${v}% to become ${aspNameOf(a.curse)}.` : a.when === 'always' ? `Take ${v}% less damage.` : `Take ${v}% less damage ${a.when === 'lowhp' ? 'below 50% HP' : a.when === 'elite' ? 'from elites and bosses' : a.when === 'barrier' ? 'while you have a barrier' : `from ${elName(String(a.when).slice(3))}`}.`;
+  return '';
+}
+const ASPECTS = Object.fromEntries(Object.entries(typeof ASPECT_SPECS !== 'undefined' ? ASPECT_SPECS : {}).map(([id, A]) => [id, Object.assign({}, A, { desc: v => aspectText(A.e, v) })]));
 const ASPECT_IDS = Object.keys(ASPECTS);
 const GREATER_CHANCE = 0.06, GREATER_MULT = 1.5, TEMPER_MAX = 2, MW_MAX = 12, MW_STEP = 0.05, MW_CRIT = 1.25;
 const TEMPER_POOLS = { OFFENSIVE: ['dmg', 'crit', 'critdmg', 'hit', 'haste', 'fire', 'lightning', 'necrotic'], DEFENSIVE: ['hp', 'acb', 'resist', 'block', 'dodge'], UTILITY: ['mf', 'gf', 'xp', 'leech', 'heal'] };
@@ -79,51 +81,63 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
   // ------------------------------------------------ aspect lookup for a hero
   const aspectsOf = c => { const out = {}; for (const it of Object.values((c && c.eq) || {})) if (it && it.aspect && ASPECTS[it.aspect.id]) out[it.aspect.id] = Math.max(out[it.aspect.id] || 0, it.aspect.val); return out; };
   window.aspectsOf = aspectsOf;
+  const ASP = id => ASPECTS[id] && ASPECTS[id].e;
+  const each = (A, t, fn) => { for (const [id, v] of Object.entries(A)) { const e = ASP(id); if (e && e.t === t) fn(e, v, id); } };
   // passive aspects as stats
-  { const sb0 = armorSetBonus; armorSetBonus = function (c) {
-      const out = sb0.apply(this, arguments); const a = aspectsOf(c);
-      if (a.fortune) out.push(['gf', a.fortune], ['mf', a.fortune]);
-      if (a.sage) out.push(['heal', a.sage], ['fire', a.sage], ['lightning', a.sage], ['cold', a.sage], ['necrotic', a.sage]);
-      if (a.warlord) out.push(['hit', a.warlord], ['crit', a.warlord * 2]);
-      return out;
-    }; }
-  // battle start: barrier and haste
+  { const sb0 = armorSetBonus; armorSetBonus = function (c) { const out = sb0.apply(this, arguments); each(aspectsOf(c), 'stat', (e, v) => { for (const [k, m] of e.stats) out.push([k, aspStatVal(v, m)]); }); return out; }; }
+  // battle start: buffs and barriers
   { const se0 = Battle.prototype.setupEffects; Battle.prototype.setupEffects = function () {
       se0.apply(this, arguments);
-      for (const u of this.party) if (isChar(u)) { const a = aspectsOf(u.ch);
-        if (a.bulwark) addEffect(u, { id: 'barrier', rounds: 99, pool: Math.round(derive(u.ch).hpMax * a.bulwark / 100) });
-        if (a.windstrike) addEffect(u, { id: 'haste', rounds: a.windstrike });
-      }
+      for (const u of this.party) if (isChar(u)) each(aspectsOf(u.ch), 'start', (e, v) => {
+        if (e.act.barrier) { const pool = Math.round(derive(u.ch).hpMax * v / 100), cur = effOf(u, 'barrier'); addEffect(u, { id: 'barrier', rounds: 99, pool: Math.max(pool, (cur && cur.pool) || 0) }); }
+        else if (e.act.buff) addEffect(u, { id: e.act.buff, rounds: v });
+      });
     }; }
+  const condMet = (w, b, src, tgt, type, opt) => {
+    if (!w) return true;
+    const frac = tgt && tgt.maxhp ? tgt.hp / tgt.maxhp : (tgt ? hpOf(tgt) / Math.max(1, maxHpOf(tgt)) : 1), sf = src ? hpOf(src) / Math.max(1, maxHpOf(src)) : 1;
+    if (w === 'lowhp') return frac < 0.35; if (w === 'fullhp') return frac >= 1; if (w === 'elite') return !!(tgt && (tgt.elite || tgt.boss));
+    if (w === 'crowd') return b.foes.filter(f => f.hp > 0).length >= 3; if (w === 'crit') return !!opt.crit; if (w === 'first') return !(b.aspFirst && b.aspFirst.has(src.id));
+    if (w === 'selfhigh') return sf > 0.8; if (w === 'selflow') return sf < 0.35; if (w === 'phys') return ['slashing', 'piercing', 'bludgeoning'].includes(type) && !opt.magic; if (w === 'spell') return !!opt.magic;
+    if (w.startsWith('el:')) { const el = w.slice(3); return el === 'slashing' ? ['slashing', 'piercing', 'bludgeoning'].includes(type) : type === el; }
+    if (w.startsWith('cond:')) return !!(tgt && hasEff(tgt, w.slice(5))); if (w.startsWith('buff:')) return !!(src && hasEff(src, w.slice(5)));
+    return false;
+  };
   // damage: aspect multipliers going out and coming in, then procs
   { const ad0 = Battle.prototype.applyDamage; Battle.prototype.applyDamage = function (src, tgt, amt, type, opt = {}) {
       let a = amt;
-      const srcC = src && isChar(src) ? src.ch : null, A = srcC ? aspectsOf(srcC) : {};
+      const srcC = src && isChar(src) ? src.ch : null, A = srcC ? aspectsOf(srcC) : {}, T = tgt && isChar(tgt) ? aspectsOf(tgt.ch) : {};
       try {
-        if (srcC && tgt && tgt.side === 'foe' && !opt.proc) {
-          const frac = tgt.maxhp ? tgt.hp / tgt.maxhp : 1;
-          if (A.executioner && frac < 0.35) a = Math.round(a * (1 + A.executioner / 100));
-          if (A.firststrike && frac >= 1) a = Math.round(a * (1 + A.firststrike / 100));
-          if (A.slayer && (tgt.elite || tgt.boss)) a = Math.round(a * (1 + A.slayer / 100));
-        }
-        if (tgt && isChar(tgt)) { const T = aspectsOf(tgt.ch); if (T.unbroken && hpOf(tgt) < maxHpOf(tgt) * 0.5) a = Math.round(a * (1 - T.unbroken / 100)); }
+        if (srcC && tgt && tgt.side === 'foe' && !opt.proc) { let mult = 0; each(A, 'dmg', (e, v) => { if (condMet(e.when, this, src, tgt, type, opt)) mult += v; }); if (mult) a = Math.round(a * (1 + mult / 100)); (this.aspFirst ||= new Set()).add(src.id); }
+        if (tgt && isChar(tgt)) { let red = 0; each(T, 'hit', (e, v) => { const w = e.act.when; if (e.act.reduce && (w === 'always' || (w === 'lowhp' && hpOf(tgt) < maxHpOf(tgt) * 0.5) || (w === 'elite' && src && (src.elite || src.boss)) || (w === 'barrier' && hasEff(tgt, 'barrier')) || (String(w).startsWith('el:') && condMet(w, this, src, tgt, type, opt)))) red += v; }); if (red) a = Math.round(a * (1 - Math.min(75, red) / 100)); }
       } catch (e) { /* fall back to the plain hit */ }
       const wasAlive = tgt && hpOf(tgt) > 0;
       const dealt = ad0.call(this, src, tgt, a, type, opt);
       try {
         if (opt.proc || !dealt) return dealt;
         if (srcC && tgt && tgt.side === 'foe') {
-          const others = this.foes.filter(f => f !== tgt && f.hp > 0);
-          if (A.stormshard && others.length && R() < 0.2) { const o = pick(others), d = Math.max(1, Math.round(dealt * A.stormshard / 100)); this.applyDamage(src, o, d, 'lightning', { proc: true, magic: true }); }
-          if (A.glacial && tgt.hp > 0 && R() * 100 < A.glacial) addEffect(tgt, { id: 'frostbite', rounds: 2 });
-          if (A.bloodletter && tgt.hp > 0 && R() * 100 < A.bloodletter) addEffect(tgt, { id: 'bleeding', rounds: 3 });
-          if (A.vampiric && R() < 0.15) this.heal(src, Math.max(1, Math.round(maxHpOf(src) * A.vampiric / 100)));
-          if (wasAlive && tgt.hp <= 0) {
-            if (A.corpseburst) for (const o of others) this.applyDamage(src, o, Math.max(1, Math.round(tgt.maxhp * A.corpseburst / 100)), 'necrotic', { proc: true, magic: true });
-            if (A.bloodlust) addEffect(src, { id: 'might', rounds: A.bloodlust });
-          }
+          const others = () => this.foes.filter(f => f !== tgt && f.hp > 0), mhp = Math.max(1, maxHpOf(src));
+          each(A, 'proc', (e, v) => {
+            const chance = e.pv ? v : e.p, x = e.act; if (R() * 100 >= chance) return;
+            if (x.cond && tgt.hp > 0 && !(tgt.condImm || []).includes(x.cond)) addEffect(tgt, { id: x.cond, rounds: x.rounds || 2 });
+            else if (x.bonus && tgt.hp > 0) this.applyDamage(src, tgt, Math.max(1, Math.round(dealt * v / 100)), x.bonus, { proc: true, magic: true });
+            else if (x.chain) { const L = others(); if (L.length) this.applyDamage(src, pick(L), Math.max(1, Math.round(dealt * v / 100)), x.chain, { proc: true, magic: true }); }
+            else if (x.heal) this.heal(src, Math.max(1, Math.round(mhp * v / 100)));
+            else if (x.barrier) { const cur = effOf(src, 'barrier'), pool = Math.round(mhp * v / 100); addEffect(src, { id: 'barrier', rounds: 99, pool: ((cur && cur.pool) || 0) + pool }); }
+            else if (x.buff) addEffect(src, { id: x.buff, rounds: x.rounds || 2 });
+          });
+          if (wasAlive && tgt.hp <= 0) each(A, 'kill', (e, v) => {
+            const x = e.act;
+            if (x.explode) for (const o of others()) this.applyDamage(src, o, Math.max(1, Math.round(tgt.maxhp * v / 100)), x.explode, { proc: true, magic: true });
+            else if (x.buff) addEffect(src, { id: x.buff, rounds: v });
+            else if (x.heal) this.heal(src, Math.max(1, Math.round(mhp * v / 100)));
+            else if (x.barrier) { const cur = effOf(src, 'barrier'); addEffect(src, { id: 'barrier', rounds: 99, pool: ((cur && cur.pool) || 0) + Math.round(mhp * v / 100) }); }
+          });
         }
-        if (src && !isChar(src) && tgt && isChar(tgt) && opt.attack) { const T = aspectsOf(tgt.ch); if (T.brambles && src.hp > 0) this.applyDamage(tgt, src, Math.max(1, Math.round(dealt * T.brambles / 100)), 'piercing', { proc: true }); }
+        if (src && !isChar(src) && tgt && isChar(tgt) && src.hp > 0) each(T, 'hit', (e, v) => {
+          if (e.act.reflect && opt.attack) this.applyDamage(tgt, src, Math.max(1, Math.round(dealt * v / 100)), 'piercing', { proc: true });
+          if (e.act.curse && R() * 100 < v) addEffect(src, { id: e.act.curse, rounds: 2 });
+        });
       } catch (e) { console.warn('aspect proc', e); }
       return dealt;
     }; }
