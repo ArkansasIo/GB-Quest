@@ -118,3 +118,12 @@ test('pixel packs: index sprites exist, aliases point at real art, monster picks
   let n = 0; for (let i = 0; i < 300; i++) if (P.packMonsterFor('undead', 'z|' + i, idx.monsters)) n++;
   assert.ok(n > 60 && n < 140, 'about a third of a family');
 });
+
+test('8-bit MMO UI: theme cycle and a layout that keeps frames apart', () => {
+  const c = { Math, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('ui_mmo.js'), c); const U = c.GBQUiMmo;
+  assert.equal(U.nextUiTheme('mmo'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'diablo');
+  const L = U.MMO_LAYOUT;
+  assert.ok(L.unit.x + L.unit.w < L.map.x, 'unit frame and minimap do not touch');
+  assert.ok(L.toastY > L.map.y + L.map.s + 8 && L.bannerY > L.toastY + 25, 'toasts and banners sit below the frames');
+  assert.ok(L.hotbar.x + L.hotbar.slots * L.hotbar.step < 160 - 2 * L.hud.orbR - 4, 'hotbar fits between the orbs');
+});

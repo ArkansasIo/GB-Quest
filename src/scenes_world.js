@@ -793,15 +793,18 @@ class Field {
       else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
-    if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, 4, n.length * 6 + 12, 15); textC(n, 80, 7); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, 21, 'gold'); }
-    if (this.zone && !G.inst) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
+    const mmo = typeof hudMmo === 'function' && hudMmo(), by = mmo ? MMO_LAYOUT.bannerY : 4;
+    if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, by, n.length * 6 + 12, 15); textC(n, 80, by + 3); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, by + 17, 'gold'); }
+    if (this.zone && !G.inst && !mmo) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
     // HUD: hp/xp micro bars
     const D = derive(G);
+    if (!mmo) {
     if (!(typeof uiDark === 'function' && uiDark())) { const por = heroPortrait(G); if (por) { fill(1, H - 23, 18, 18, 3); fill(2, H - 22, 16, 16, 0); const s = sprFit(por, 16); blit(s, 2 + Math.round((16 - s.width) / 2), H - 22 + Math.round((16 - s.height) / 2)); } }
     bar(1, H - 5, 50, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
     const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1));
     bar(53, H - 4, 106, 3, G.xp - x0, Math.max(1, x1 - x0), 'xp');
-    if (ghost) textC('SPIRIT', 80, H - 14, 'blue');
+    }
+    if (ghost) textC('SPIRIT', 80, mmo ? H - 32 : H - 14, 'blue');
   }
 }
 // Game Boy walking sprites: 3 directions x 2 frames (left = mirrored side view)

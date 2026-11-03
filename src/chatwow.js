@@ -184,7 +184,7 @@ function drawFieldChat(field) {
   for (const p of NET.peersInZone(G.map)) at(p.presence.n || '', p.presence.x, p.presence.y);
   // in-screen chat lines when the chat panel is hidden
   if (!document.body.classList.contains('chat-on') && S.screenChat !== false) {
-    const lines = CHAT_UI.entries.filter(m => m.channel !== 'combat' && now - m.t < 12000).slice(-3);
+    const lines = CHAT_UI.entries.filter(m => m.channel !== 'combat' && now - m.t < 12000).slice(typeof hudMmo === 'function' && hudMmo() ? -2 : -3);
     lines.forEach((m, i) => {
       const y = H - 27 - (lines.length - 1 - i) * 9, s = `${m.channel === 'emote' ? m.who + ' ' + m.msg : (['system', 'loot', 'xp', 'money', 'achievement', 'quest', 'roll'].includes(m.channel) ? '' : m.who + ': ') + m.msg}`.slice(0, 26);
       ctx.globalAlpha = 0.7; fill(0, y - 1, s.length * 6 + 4, 9, '#0c0a0a'); ctx.globalAlpha = 1;
