@@ -200,3 +200,45 @@ test('HD character frame paths validate all runtime dimensions', () => {
   assert.equal(HD.framePath('frames', 'mage', 'F', 'S', 'idle', -1), null);
   assert.equal(HD.framePath('frames', 'mage', 'F', 'S', 'idle', 1.5), null);
 });
+
+test('HD runtime maps existing equipped catalog IDs to visual overlay slots', () => {
+  const visualMap = { records: [
+    { catalogId: 'weapon:longsword', slot: 'main_hand', visualItemId: 'iron_sword' },
+    { catalogId: 'armor:plate-armor', slot: 'chest', visualItemId: 'iron_plate' },
+    { catalogId: 'armor:shield', slot: 'off_hand', visualItemId: 'iron_shield' }
+  ] };
+  const resolved = HD.resolveEquipment({ cls: 'fighter', eq: {
+    weapon: { kind: 'weapon', base: 'longsword', itemLevel: 120 },
+    armor: { kind: 'armor', base: 'plate-armor' },
+    offhand: { kind: 'armor', base: 'shield' },
+    ring1: { kind: 'wondrous', base: 'silver_ring' }
+  } }, visualMap, 'SS');
+  assert.equal(resolved.archetype, 'warrior');
+  assert.equal(resolved.rank, 'SS');
+  assert.deepEqual(plain(resolved.equipment), {
+    main_hand: 'iron_sword', chest: 'iron_plate', off_hand: 'iron_shield'
+  });
+});
+
+test('HD runtime uses unlocked appearance base without changing equipped item data', () => {
+  const visualMap = { records: [
+    { catalogId: 'weapon:longsword', slot: 'main_hand', visualItemId: 'iron_sword' },
+    { catalogId: 'weapon:dagger', slot: 'main_hand', visualItemId: 'paired_daggers' }
+  ] };
+  const equipped = { kind: 'weapon', base: 'longsword', tmog: { kind: 'weapon', base: 'dagger' }, itemLevel: 720 };
+  const resolved = HD.resolveEquipment({ cls: 'wizard', eq: { weapon: equipped } }, visualMap, 'SSS');
+  assert.equal(resolved.archetype, 'mage');
+  assert.deepEqual(plain(resolved.equipment), { main_hand: 'paired_daggers' });
+  assert.equal(equipped.base, 'longsword');
+  assert.equal(equipped.itemLevel, 720);
+});
+
+test('HD animation state resolver maps combat and movement states', () => {
+  assert.equal(HD.animationForState('moving'), 'walk');
+  assert.equal(HD.animationForState('sprinting'), 'run');
+  assert.equal(HD.animationForState('casting'), 'cast');
+  assert.equal(HD.animationForState('blocking'), 'block');
+  assert.equal(HD.animationForState('hurt'), 'hit');
+  assert.equal(HD.animationForState('dying'), 'death');
+  assert.equal(HD.animationForState('unknown'), 'idle');
+});
