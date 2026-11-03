@@ -170,3 +170,27 @@ The world-map character portrait now composites small equipped-item icons for he
 The player and follower world sprites now prefer a composited animated walker when one of the supported visible equipment slots is occupied. The base uses the existing two-frame directional `walker()` sprite, retaining left/right mirroring and the current ghost palette behavior. Small equipment icons for head, main hand, chest and off-hand are layered onto the frame and scaled to the existing 24×24 world portrait footprint. The animation frame follows the existing world movement cadence. If no supported visible equipment is present, the existing portrait path remains in use.
 
 These are icon-based visual overlays on animated walk frames, not the HD64 full-body armor PNG pipeline. The generated HD64 animation and equipment assets remain a separate prototype pipeline and are not yet loaded by the browser game.
+
+## Optional browser HD character compositor
+
+`src/hd_character_art.js` is included in the generated browser bundles after the existing game modules. It exposes `window.GBQHDCharacterArt.createRuntime(options)` and does not start network requests or block game boot. The generated animation/equipment workflow artifact must be extracted into the site's static `assets_hd64/` directory before the HD runtime can load it.
+
+Example browser integration:
+
+```js
+const hdArt = GBQHDCharacterArt.createRuntime({
+  frameRoot: 'assets_hd64/animations/frames',
+  equipmentRoot: 'assets_hd64/equipment'
+});
+const canvas = await hdArt.render({
+  archetype: 'warrior', rank: 'F', direction: 'S',
+  animation: 'walk', frame: 0,
+  equipment: {
+    head: 'iron_helm', chest: 'iron_plate',
+    main_hand: 'iron_sword', off_hand: 'iron_shield',
+    back: 'short_cloak'
+  }
+});
+```
+
+Equipment keys and IDs must match the generated equipment manifest exactly (`head`, `chest`, `legs`, `hands`, `main_hand`, `off_hand`, `back`, `accessory`). The compositor loads only the requested frame and matching rank/direction layers, caches loaded images, respects manifest draw order/blend/offset, and returns a canvas. Invalid path dimensions are rejected. The current generated artwork is explicitly placeholder/prototype art. This API is opt-in and is not yet wired to replace the existing 160×144 in-game character rendering automatically.
