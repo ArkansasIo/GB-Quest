@@ -184,3 +184,5 @@ As of 2026-11-02, the repository contains the JavaScript browser game, a local m
 
 - World-scene integration now requests HD idle/walk frames asynchronously for players and followers. It draws prepared 24×24 canvases only after load; classic equipment walkers/portraits remain the fallback. Ghost rendering intentionally remains classic. Generated `assets_hd64/` files must be deployed separately; attack/cast/death states are not yet connected to live combat state.
  Per-character presenter caches keep player and follower async requests independent.
+
+- HD animation presenter now retains a bounded per-character LRU of prepared frames (24 by default, configurable 2–128), reusing frames when the animation cycles back and deduplicating in-flight compositions. Attack/cast/block/hit/death animation state is still not connected to live combat actions.
