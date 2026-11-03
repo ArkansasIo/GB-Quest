@@ -1002,9 +1002,14 @@ class Battle {
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
-      if (c.hp <= 0) { blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78); return; }
+      if (c.hp <= 0) {
+        const deadHd = battleHDFrame(c, 'death', (frameN >> 2) % 8, 'east');
+        if (deadHd) { const h = 30, w = Math.max(1, Math.round(deadHd.width * h / Math.max(1, deadHd.height))); ctx.drawImage(deadHd, Math.round(px - w / 2), 78, w, h); }
+        else blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78);
+        return;
+      }
       const activePose = this.anim.pose && this.anim.pose.id === u.id && this.anim.pose.until > frameN ? this.anim.pose.state : 'idle';
-      const pose = c.hp <= 0 ? 'death' : this.anim.flash[u.id] ? 'hit' : activePose;
+      const pose = this.anim.flash[u.id] ? 'hit' : activePose;
       const hd = battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
       if (hd) {
         const h = s.height, w = Math.max(1, Math.round(hd.width * h / Math.max(1, hd.height)));
