@@ -221,3 +221,7 @@ The world scene now lazily creates an HD runtime and a frame presenter when the 
 
 The presenter deduplicates repeated requests, discards stale asynchronous results when a newer frame is requested, and suppresses repeated retries for a failed asset key until cleared. Generated frame and equipment assets still must be deployed under `assets_hd64/`. HD output is scaled to the existing world-character footprint; this is an integration step, not a larger-resolution viewport change. Attack/cast/death animation selection still requires wiring to confirmed game action-state fields.
  Each character receives its own presenter and scaled-canvas cache, so player and followers can load independently without invalidating one another's in-flight frame requests.
+
+### Per-character frame cache
+
+The frame presenter now keeps a bounded least-recently-used cache (24 entries by default, configurable from 2 to 128). Previously prepared idle/walk frames can be reused immediately when animation cycles back to them, rather than recomposed on every direction/frame change. In-flight requests are deduplicated by character/loadout/animation key; failed keys are suppressed until the presenter is cleared. The runtime's own image and composite caches remain shared underneath these per-character presenter caches.
