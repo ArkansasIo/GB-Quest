@@ -25,6 +25,13 @@
     if (['walk', 'walking', 'move', 'moving'].includes(value)) return 'walk';
     return 'idle';
   };
+  const archetypeForClass = value => {
+    const key = String(value || '').toLowerCase();
+    const map = { warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
+      mage: 'mage', wizard: 'mage', sorcerer: 'mage', ranger: 'ranger', rogue: 'rogue',
+      cleric: 'cleric', priest: 'cleric', summoner: 'summoner', warlock: 'summoner', druid: 'summoner', necromancer: 'summoner' };
+    return map[key] || 'warrior';
+  };
   const resolveEquipment = (character, visualMap, rank = 'F') => {
     const records = Array.isArray(visualMap && visualMap.records) ? visualMap.records : [];
     const result = {};
@@ -38,7 +45,7 @@
       const record = records.find(entry => entry.catalogId === catalogId);
       if (record && record.slot === slots[key] && record.visualItemId) result[record.slot] = record.visualItemId;
     }
-    return { archetype: safe(character && character.archetype, ARCHETYPES) || safe(character && character.cls, ARCHETYPES) || 'warrior',
+    return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
       rank: safe(rank, RANKS) || 'F', equipment: result };
   };
   const createRuntime = (options = {}) => {
@@ -107,7 +114,7 @@
     };
     return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size };
   };
-  const api = { createRuntime, framePath, animationForState, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  const api = { createRuntime, framePath, animationForState, archetypeForClass, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.GBQHDCharacterArt = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
