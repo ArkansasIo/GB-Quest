@@ -48,6 +48,12 @@ jobs:
             --size "${{ inputs.frame_size }}" \
             --archetypes "${{ inputs.archetype }}" \
             --ranks "${{ inputs.rank }}"
+      - name: Generate equipment overlay layers
+        run: |
+          python tools/generate_equipment_layers.py \
+            --output assets_hd64/equipment \
+            --size "${{ inputs.frame_size }}" \
+            --ranks "${{ inputs.rank }}"
       - name: Pack directional sprite atlases
         run: |
           python tools/pack_animation_atlases.py \
@@ -81,5 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gb-quest-${{ inputs.archetype }}-${{ inputs.rank }}-animation-pack
-          path: assets_hd64/animations/
+          path: |
+            assets_hd64/animations/
+            assets_hd64/equipment/
           if-no-files-found: error
