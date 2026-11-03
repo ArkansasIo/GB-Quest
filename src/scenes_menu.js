@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -40,6 +40,8 @@ class MainMenu extends ListScene {
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
+    if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
+    if (o === 'WARDROBE' && typeof wardrobeMenu === 'function') return wardrobeMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
     if (o === 'SAVE') { const ok = saveGame(); SFX[ok ? 'confirm' : 'error'](); return say(ok ? `Saved to slot ${G.slot + 1}.` : 'Could not save (storage blocked).'); }
     if (o === 'SAVE & QUIT') { saveGame(); fadeTo(() => reset(new Title())); }

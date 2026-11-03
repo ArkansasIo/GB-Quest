@@ -5366,7 +5366,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -5378,6 +5378,8 @@ class MainMenu extends ListScene {
       SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
+    if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
+    if (o === 'WARDROBE' && typeof wardrobeMenu === 'function') return wardrobeMenu();
     if (o === 'HEARTHSTONE') { if (G.inst) return say('You cannot hearth from inside an instance.'); removeScene(this); return travelTo(G.hearth.map, G.hearth.x, G.hearth.y); }
     if (o === 'SAVE') { const ok = saveGame(); SFX[ok ? 'confirm' : 'error'](); return say(ok ? `Saved to slot ${G.slot + 1}.` : 'Could not save (storage blocked).'); }
     if (o === 'SAVE & QUIT') { saveGame(); fadeTo(() => reset(new Title())); }
@@ -11589,6 +11591,472 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
     }
   }
   window.HeirloomScene = HeirloomScene;
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ MMO LOOP: bounties, weekly vault, login streak, season pass
+// MAIN MENU > CHALLENGES. Everything here counts progress from the hero's existing G.stats counters
+// (kills, elites, dungeons, quests, crafted, fish, world bosses, steps, keystones), measured from a
+// baseline taken when a bounty, week or season starts. No battle or quest code needs to call in.
+//   * BOUNTY BOARD: 3 daily and 3 weekly bounties, picked per hero and per day/week. Claim for gold,
+//     XP, materials and season XP. New dailies at local midnight, weeklies on Monday.
+//   * WEEKLY VAULT: clear dungeons (keystone runs count) to unlock 1 / 2 / 3 vault slots (1, 4, 8 clears).
+//     Next week, choose ONE of that many items. Item level follows your level and best keystone.
+//   * LOGIN STREAK: the first visit of each day pays a reward on a 7-day cycle; missing a day restarts it.
+//   * SEASON PASS: quarterly seasons, 50 tiers of 1,000 season XP. Every tier has a free reward;
+//     tiers 25 and 50 add a title. Unclaimed rewards are kept until the season ends.
+// The pure rules are exported as GBQLoop for tests; the game wiring runs only inside the game.
+
+// ---------------------------------------------------------------- calendar (local time)
+const loopPad2 = n => String(n).padStart(2, '0');
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${loopPad2(d.getMonth() + 1)}-${loopPad2(d.getDate())}`;
+// weeks start on Monday; the key is that Monday's date
+function weekKeyOf(d = new Date()) { const m = new Date(d.getFullYear(), d.getMonth(), d.getDate()); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return dayKey(m); }
+const prevDayKey = (d = new Date()) => { const y = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1); return dayKey(y); };
+
+// ---------------------------------------------------------------- deterministic picks
+function loopHash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function seededRng(seed) { let a = typeof seed === 'number' ? seed >>> 0 : loopHash(String(seed)); return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+// ---------------------------------------------------------------- bounties
+// stat: the G.stats counter; day / week: targets; minLvl: hero level before it can roll
+const BOUNTY_TYPES = [
+  { id: 'kills', stat: 'kills', name: 'SLAY FOES', day: 20, week: 150 },
+  { id: 'elites', stat: 'elites', name: 'DEFEAT ELITES', day: 3, week: 20 },
+  { id: 'dungeons', stat: 'dungeons', name: 'CLEAR DUNGEONS', day: 1, week: 5 },
+  { id: 'quests', stat: 'quests', name: 'FINISH QUESTS', day: 3, week: 15 },
+  { id: 'crafted', stat: 'crafted', name: 'CRAFT ITEMS', day: 3, week: 20 },
+  { id: 'fish', stat: 'fish', name: 'CATCH FISH', day: 5, week: 30 },
+  { id: 'steps', stat: 'steps', name: 'TRAVEL', day: 400, week: 3000 },
+  { id: 'bosses', stat: 'worldBosses', name: 'SLAY WORLD BOSSES', day: 1, week: 3, minLvl: 5 },
+  { id: 'keys', stat: 'keystones', name: 'TIME KEYSTONES', day: 1, week: 3, minLvl: 8, weekOnly: true },
+];
+const BOUNTY_BY_ID = Object.fromEntries(BOUNTY_TYPES.map(b => [b.id, b]));
+// three distinct bounties for a hero, period and level; base = the hero's stats right now
+function rollBounties(seed, period, lvl, stats) {
+  const pool = BOUNTY_TYPES.filter(b => (lvl || 1) >= (b.minLvl || 1) && (period === 'week' || !b.weekOnly)), rng = seededRng(`${seed}|${period}`), out = [];
+  while (out.length < 3 && pool.length) { const b = pool.splice(Math.floor(rng() * pool.length), 1)[0]; out.push({ id: b.id, stat: b.stat, target: b[period], base: Math.max(0, Number(stats && stats[b.stat]) || 0), claimed: false }); }
+  return out;
+}
+const bountyProgress = (b, stats) => Math.max(0, Math.min(b.target, (Number(stats && stats[b.stat]) || 0) - b.base));
+const bountyDone = (b, stats) => bountyProgress(b, stats) >= b.target;
+// gold, XP share of a level, materials and season XP for a claimed bounty
+function bountyReward(period, lvl) {
+  const L = Math.max(1, Math.min(720, Math.floor(Number(lvl) || 1))), week = period === 'week';
+  return { gold: Math.round((40 + L * 15) * (week ? 6 : 1)), xpShare: week ? 0.5 : 0.12, mats: week ? { shard: 3, ember: 1 } : { scrap: 4 }, seasonXp: week ? 500 : 150 };
+}
+
+// ---------------------------------------------------------------- login streak
+const LOGIN_REWARDS = [
+  { day: 1, gold: 1, items: { potion: 2 } }, { day: 2, gold: 2, items: { scrap: 5 } }, { day: 3, gold: 2, items: { ration: 3 } },
+  { day: 4, gold: 3, items: { shard: 2 } }, { day: 5, gold: 3, items: { greater: 2 } }, { day: 6, gold: 4, items: { shard: 3 } },
+  { day: 7, gold: 6, items: { star_shard: 1, ember: 1 } },
+];
+// what today's visit does to a streak: { streak, reward } (reward null when already paid today)
+function loginStep(state, today, yesterday) {
+  const last = state && state.last, streak = Math.max(0, Math.floor(Number(state && state.streak) || 0));
+  if (last === today) return { streak, reward: null };
+  const next = last === yesterday ? streak + 1 : 1;
+  return { streak: next, reward: LOGIN_REWARDS[(next - 1) % LOGIN_REWARDS.length] };
+}
+const loginGold = (reward, lvl) => Math.round(reward.gold * (25 + Math.max(1, lvl || 1) * 6));
+
+// ---------------------------------------------------------------- weekly vault
+const vaultSlots = runs => runs >= 8 ? 3 : runs >= 4 ? 2 : runs >= 1 ? 1 : 0;
+const VAULT_STEPS = [1, 4, 8];
+// item level of vault choices: your level, +2 per best keystone level timed that week
+const vaultItemLevel = (lvl, bestKey) => Math.max(1, Math.min(720, Math.floor(Number(lvl) || 1) + 2 * Math.max(0, Math.floor(Number(bestKey) || 0))));
+// vault rarity: rare, epic from a +5 key, legendary from +10
+const vaultRarity = bestKey => bestKey >= 10 ? 5 : bestKey >= 5 ? 4 : 3;
+
+// ---------------------------------------------------------------- season pass
+const SEASON_NAMES = ['EMBERFALL', 'FROSTWAKE', 'GREENTIDE', 'SUNCROWN'];
+const SEASON_TIERS = 50, SEASON_XP_PER_TIER = 1000, SEASON_EPOCH = 2026;
+// seasons are calendar quarters: Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec
+function seasonFor(d = new Date()) {
+  const q = Math.floor(d.getMonth() / 3), n = (d.getFullYear() - SEASON_EPOCH) * 4 + q + 1;
+  const start = new Date(d.getFullYear(), q * 3, 1), end = new Date(d.getFullYear(), q * 3 + 3, 1);
+  return { id: `S${n}`, number: n, name: `SEASON ${n}: ${SEASON_NAMES[q]}`, start: dayKey(start), ends: dayKey(end), daysLeft: Math.max(0, Math.ceil((end - d) / 864e5)) };
+}
+// season XP from each counter (bounties and keystones add theirs as bonus XP)
+const SEASON_WEIGHTS = { kills: 2, elites: 10, dungeons: 120, raids: 300, trials: 150, quests: 40, worldBosses: 150, crafted: 8, fish: 4, steps: 0.05 };
+function seasonXpFrom(stats, base, bonus) {
+  let xp = Math.max(0, Math.floor(Number(bonus) || 0));
+  for (const [k, w] of Object.entries(SEASON_WEIGHTS)) xp += Math.max(0, (Number(stats && stats[k]) || 0) - (Number(base && base[k]) || 0)) * w;
+  return Math.floor(xp);
+}
+const seasonTier = xp => Math.min(SEASON_TIERS, Math.floor(Math.max(0, xp) / SEASON_XP_PER_TIER));
+// the free reward of a tier (1-50) for a hero level
+function seasonReward(tier, lvl) {
+  const L = Math.max(1, Math.min(720, Math.floor(Number(lvl) || 1))), t = Math.max(1, Math.min(SEASON_TIERS, Math.floor(tier)));
+  if (t === 50) return { gold: 200 * (10 + L), gear: { rarity: 5, kind: 'wondrous', base: 'saints_token' }, title: 'season_champion', label: 'LEGENDARY TRINKET + TITLE' };
+  if (t === 25) return { gold: 80 * (10 + L), items: { star_shard: 1 }, title: 'season_veteran', label: 'TITLE + STAR SHARD' };
+  if (t % 10 === 0) return { gold: 40 * (10 + L), gear: { rarity: 4 }, label: 'EPIC ITEM' };
+  if (t % 5 === 0) return { gold: 25 * (10 + L), items: { ember: 1, shard: 2 }, label: 'EMBER + SHARDS' };
+  if (t % 2 === 0) return { gold: 15 * (10 + L), items: { scrap: 6 }, label: 'GOLD + SCRAP' };
+  return { gold: 12 * (10 + L), items: { potion: 2 }, label: 'GOLD + POTIONS' };
+}
+const SEASON_TITLES = { season_veteran: { name: 'SEASON VETERAN', how: 'Reach season pass tier 25.' }, season_champion: { name: 'SEASON CHAMPION', how: 'Reach season pass tier 50.' } };
+
+if (typeof globalThis !== 'undefined') globalThis.GBQLoop = {
+  dayKey, weekKeyOf, prevDayKey, loopHash, seededRng, BOUNTY_TYPES, rollBounties, bountyProgress, bountyDone, bountyReward,
+  LOGIN_REWARDS, loginStep, loginGold, vaultSlots, VAULT_STEPS, vaultItemLevel, vaultRarity,
+  SEASON_TIERS, SEASON_XP_PER_TIER, seasonFor, SEASON_WEIGHTS, seasonXpFrom, seasonTier, seasonReward, SEASON_TITLES,
+};
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G !== 'undefined') {
+  const STAT_KEYS = ['kills', 'elites', 'dungeons', 'raids', 'trials', 'quests', 'worldBosses', 'crafted', 'fish', 'steps', 'keystones', 'bounties'];
+  const snap = () => Object.fromEntries(STAT_KEYS.map(k => [k, Number(G.stats[k]) || 0]));
+  const heroSeed = () => `${G.slot}|${G.name}|${G.created || 0}`;
+  const levelSpan = c => Math.max(1, xpForLevel(Math.min(LEVEL_CAP, c.lvl + 1)) - xpForLevel(c.lvl));
+  const giveItems = items => { for (const [k, n] of Object.entries(items || {})) if (ITEMS[k]) addItem(k, n); };
+  const itemsText = items => Object.entries(items || {}).filter(([k]) => ITEMS[k]).map(([k, n]) => `${n} ${ITEMS[k].name}`).join(', ');
+
+  // titles from the season pass join the title list
+  if (typeof TITLES !== 'undefined') for (const [id, t] of Object.entries(SEASON_TITLES)) if (!TITLES.some(x => x.id === 't_' + id)) TITLES.push({ id: 't_' + id, name: t.name, how: t.how, ok: g => !!(g.titlesWon && g.titlesWon[id]) });
+
+  // create or roll over the loop state; safe to call often
+  function ensureLoop() {
+    if (!G || !G.stats) return;
+    for (const k of STAT_KEYS) G.stats[k] = Number(G.stats[k]) || 0;
+    const now = new Date(), today = dayKey(now), week = weekKeyOf(now), L = G.loop = G.loop && typeof G.loop === 'object' ? G.loop : {};
+    if (!L.daily || L.daily.day !== today) L.daily = { day: today, list: rollBounties(heroSeed() + today, 'day', G.lvl, G.stats) };
+    if (!L.weekly || L.weekly.week !== week) {
+      // close the old week: unlock its vault for this week
+      if (L.weekly && L.week) {
+        const runs = Math.max(0, G.stats.dungeons - (L.week.base || 0)), slots = vaultSlots(runs);
+        if (slots) { const ilvl = vaultItemLevel(G.lvl, L.week.bestKey), rar = vaultRarity(L.week.bestKey || 0); L.vault = { week, from: L.weekly.week, ilvl, items: Array.from({ length: slots }, (_, i) => makeItem({ lvl: ilvl, rarity: rar, ...(i === 0 && typeof smartKind === 'function' ? smartKind(G) : {}) })), claimed: false }; }
+      }
+      L.weekly = { week, list: rollBounties(heroSeed() + week, 'week', G.lvl, G.stats) };
+      L.week = { key: week, base: G.stats.dungeons, bestKey: 0 };
+    }
+    L.week ||= { key: week, base: G.stats.dungeons, bestKey: 0 };
+    // season
+    const s = seasonFor(now);
+    if (!G.season || G.season.id !== s.id) G.season = { id: s.id, base: snap(), bonus: 0, claimed: [] };
+    G.titlesWon ||= {};
+    // login streak
+    const step = loginStep(L.login, today, prevDayKey(now));
+    if (step.reward) {
+      L.login = { last: today, streak: step.streak };
+      const gold = loginGold(step.reward, G.lvl); G.gold += gold; G.stats.goldEarned = (G.stats.goldEarned || 0) + gold; giveItems(step.reward.items); G.season.bonus += 50;
+      toast(`LOGIN DAY ${step.streak}`, `${fmt(gold)} G + ${itemsText(step.reward.items)}`.slice(0, 26), 'item_coin', 'coin');
+    }
+  }
+  const seasonXp = () => G.season ? seasonXpFrom(G.stats, G.season.base, G.season.bonus) : 0;
+  function addSeasonXp(n) { ensureLoop(); G.season.bonus += Math.max(0, Math.floor(n) || 0); }
+  function claimBounty(period, i) {
+    ensureLoop(); const list = (period === 'week' ? G.loop.weekly : G.loop.daily).list, b = list[i];
+    if (!b) return 'No such bounty.'; if (b.claimed) return 'Already claimed.'; if (!bountyDone(b, G.stats)) return 'Not finished yet.';
+    const r = bountyReward(period, G.lvl); b.claimed = true; G.gold += r.gold; G.stats.goldEarned = (G.stats.goldEarned || 0) + r.gold; giveItems(r.mats);
+    gainXP(G, Math.round(levelSpan(G) * r.xpShare)); G.stats.bounties++; addSeasonXp(r.seasonXp);
+    return null;
+  }
+  function claimSeasonTier(t) {
+    ensureLoop(); if (t > seasonTier(seasonXp())) return 'Tier not reached yet.'; if (G.season.claimed.includes(t)) return 'Already claimed.';
+    const r = seasonReward(t, G.lvl); G.season.claimed.push(t); G.gold += r.gold; giveItems(r.items);
+    if (r.gear) addGear(makeItem({ lvl: G.lvl, ...r.gear }));
+    if (r.title) G.titlesWon[r.title] = true;
+    return null;
+  }
+  Object.assign(window, { ensureLoop, claimBounty, claimSeasonTier, addSeasonXp, seasonXp });
+
+  // poll twice a second while a hero is loaded (day/week rollover, login reward)
+  { let n = 0; const t0 = tick; window.tick = tick = function () { const r = t0(); if (G && ++n % 30 === 0) { try { ensureLoop(); if (typeof keystonePoll === 'function') keystonePoll(); if (typeof polishPoll === 'function') polishPoll(); } catch (e) { console.warn('loop poll', e); } } return r; }; }
+
+  // ---------------------------------------------------------------- menus (MAIN MENU > CHALLENGES)
+  function bountyLine(b) { const t = BOUNTY_BY_ID[b.id], p = bountyProgress(b, G.stats); return `${b.claimed ? '# ' : bountyDone(b, G.stats) ? '! ' : ''}${t.name} ${fmt(p)}/${fmt(b.target)}`.slice(0, 24); }
+  function bountyBoard() {
+    ensureLoop(); const L = G.loop, rows = [...L.daily.list.map((b, i) => ['day', i, b]), ...L.weekly.list.map((b, i) => ['week', i, b])];
+    choose(rows.map(([p, , b]) => `${p === 'day' ? 'D' : 'W'} ${bountyLine(b)}`), k => {
+      if (k < 0) return; const [p, i, b] = rows[k], r = bountyReward(p, G.lvl);
+      if (b.claimed) { SFX.error(); return say('Already claimed. New bounties ' + (p === 'day' ? 'tomorrow.' : 'on Monday.'), bountyBoard); }
+      if (!bountyDone(b, G.stats)) return say([`${BOUNTY_BY_ID[b.id].name}: ${fmt(bountyProgress(b, G.stats))} of ${fmt(b.target)}.`, `Reward: ${fmt(r.gold)} G, XP, ${itemsText(r.mats)}, ${r.seasonXp} season XP.`], bountyBoard);
+      const why = claimBounty(p, i); SFX[why ? 'error' : 'confirm'](); saveGame();
+      say(why || [`Bounty complete!`, `${fmt(r.gold)} G, XP, ${itemsText(r.mats)}`, `+${r.seasonXp} season XP.`], bountyBoard);
+    }, 'D: DAILY  W: WEEKLY  !: CLAIM');
+  }
+  function weeklyVault() {
+    ensureLoop(); const L = G.loop, runs = Math.max(0, G.stats.dungeons - L.week.base), slots = vaultSlots(runs), next = VAULT_STEPS.find(s => s > runs);
+    const status = [`THIS WEEK: ${runs} DUNGEON CLEAR${runs === 1 ? '' : 'S'}`, `SLOTS UNLOCKED: ${slots}/3${next ? ` (NEXT AT ${next})` : ''}`, `BEST KEYSTONE: +${L.week.bestKey || 0}`, `ITEM LEVEL NEXT WEEK: ${vaultItemLevel(G.lvl, L.week.bestKey)}`];
+    if (L.vault && !L.vault.claimed) {
+      const its = L.vault.items;
+      return choose(its.map(it => `${it.name.slice(0, 16)} IL${it.ilvl}`).concat(['LATER']), k => {
+        if (k < 0 || k >= its.length) return;
+        choose(['TAKE THIS ONE', 'BACK'], y => { if (y !== 0) return weeklyVault(); addGear(its[k]); L.vault.claimed = true; SFX.chest(); saveGame(); say([`You took ${its[k].name}.`, 'The vault refills next week.']); }, itemDesc(its[k]).slice(0, 60));
+      }, `VAULT: CHOOSE 1 OF ${its.length}`);
+    }
+    say(['WEEKLY VAULT', ...status, 'Clear 1 / 4 / 8 dungeons for 1 / 2 / 3 choices. Open it next week.']);
+  }
+  function loginStreak() {
+    ensureLoop(); const l = G.loop.login || { streak: 0 };
+    say([`LOGIN STREAK: DAY ${l.streak}`, ...LOGIN_REWARDS.map(r => `${(l.streak - 1) % 7 + 1 === r.day ? '> ' : '  '}DAY ${r.day}: ${fmt(loginGold(r, G.lvl))} G, ${itemsText(r.items)}`), 'Come back tomorrow to keep the streak.']);
+  }
+  function seasonPass() {
+    ensureLoop(); const s = seasonFor(), xp = seasonXp(), tier = seasonTier(xp), open = [];
+    for (let t = 1; t <= tier; t++) if (!G.season.claimed.includes(t)) open.push(t);
+    const rows = Array.from({ length: SEASON_TIERS }, (_, i) => i + 1);
+    choose([open.length ? `CLAIM ALL (${open.length})` : 'NOTHING TO CLAIM', ...rows.map(t => `${G.season.claimed.includes(t) ? '#' : t <= tier ? '!' : ' '}T${t} ${seasonReward(t, G.lvl).label}`.slice(0, 24))], k => {
+      if (k < 0) return;
+      if (k === 0) { if (!open.length) return say(`${fmt(xp % SEASON_XP_PER_TIER)}/${SEASON_XP_PER_TIER} XP to tier ${Math.min(SEASON_TIERS, tier + 1)}.`, seasonPass); open.forEach(claimSeasonTier); SFX.levelup(); saveGame(); return say([`Claimed ${open.length} tier${open.length === 1 ? '' : 's'}.`, 'Gear is in your bag; titles are under TITLES.'], seasonPass); }
+      const t = rows[k - 1], why = claimSeasonTier(t); SFX[why ? 'error' : 'confirm'](); if (!why) saveGame();
+      say(why ? [`TIER ${t}: ${seasonReward(t, G.lvl).label}`, why] : `Claimed tier ${t}.`, seasonPass);
+    }, `${s.name.slice(0, 22)} T${tier} ${fmt(xp)}XP ${s.daysLeft}D`);
+  }
+  window.challengesMenu = function () {
+    ensureLoop();
+    const ready = [...G.loop.daily.list, ...G.loop.weekly.list].filter(b => !b.claimed && bountyDone(b, G.stats)).length, vault = G.loop.vault && !G.loop.vault.claimed;
+    const opts = [`BOUNTY BOARD${ready ? ` (${ready}!)` : ''}`, `WEEKLY VAULT${vault ? ' (!)' : ''}`, 'KEYSTONES', 'SEASON PASS', 'LOGIN STREAK', 'BACK'];
+    choose(opts, k => { const o = opts[k] || ''; if (o.startsWith('BOUNTY')) bountyBoard(); else if (o.startsWith('WEEKLY')) weeklyVault(); else if (o === 'KEYSTONES') keystoneMenu(); else if (o === 'SEASON PASS') seasonPass(); else if (o === 'LOGIN STREAK') loginStreak(); }, 'CHALLENGES');
+  };
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ KEYSTONES: timed, scaling dungeon runs (Mythic+ style)
+// MAIN MENU > CHALLENGES > KEYSTONES. A keystone names a dungeon and a level (+2 and up).
+//   * Foes get +8% HP and damage per level above +1, plus the week's affixes:
+//       +2  FORTIFIED (trash +20% HP, +10% dmg) or TYRANNICAL (bosses +30% HP, +15% dmg), alternating weekly
+//       +4  one rotating affix, +7 a second: RAGING, BRAMBLED, WARDED, SWIFT or BOLSTERED
+//   * The timer starts when you arrive. Clear the final boss in time to upgrade the key (+1, +2 under 80%
+//     of the timer, +3 under 60%) and earn a bonus chest; finish late and the key drops a level. Leaving
+//     or wiping fails the run and also drops the key a level (never below +2).
+//   * Every finished run moves the key to a new dungeon. Timed runs count for the weekly vault, keystone
+//     bounties and the season pass.
+// Pure rules are exported as GBQKeystones for tests; the game wiring runs only inside the game.
+
+const KEY_MIN = 2, KEY_MAX = 30;
+const KEY_AFFIXES = {
+  fortified: { name: 'FORTIFIED', desc: 'Trash +20% HP and +10% damage.', trash: { hp: 1.2, dmg: 1.1 } },
+  tyrannical: { name: 'TYRANNICAL', desc: 'Bosses +30% HP and +15% damage.', boss: { hp: 1.3, dmg: 1.15 } },
+  raging: { name: 'RAGING', desc: 'Foes start battles MIGHTY (+15% damage) for 3 rounds.', start: { buff: 'might', rounds: 3 } },
+  brambled: { name: 'BRAMBLED', desc: 'Foes have THORNSKIN all battle.', start: { buff: 'thornskin', rounds: 99 } },
+  warded: { name: 'WARDED', desc: 'Foes start FORTIFIED (+25% resist) for 2 rounds.', start: { buff: 'fortify', rounds: 2 } },
+  swift: { name: 'SWIFT', desc: 'Foes start HASTED for 1 round.', start: { buff: 'haste', rounds: 1 } },
+  bolstered: { name: 'BOLSTERED', desc: 'All foes +10% HP.', all: { hp: 1.1 } },
+};
+const ROTATING = ['raging', 'brambled', 'warded', 'swift', 'bolstered'];
+// a week number from a 'YYYY-MM-DD' Monday key (days since 2026-01-05, a Monday, / 7)
+const weekIndex = weekKey => Math.floor((Date.UTC(...String(weekKey).split('-').map((v, i) => i === 1 ? Number(v) - 1 : Number(v))) - Date.UTC(2026, 0, 5)) / 6048e5);
+function weeklyAffixes(weekKey, level) {
+  const w = weekIndex(weekKey), n = ((w % ROTATING.length) + ROTATING.length) % ROTATING.length, out = [];
+  if (level >= 2) out.push(((w % 2) + 2) % 2 === 0 ? 'fortified' : 'tyrannical');
+  if (level >= 4) out.push(ROTATING[n]);
+  if (level >= 7) out.push(ROTATING[(n + 2) % ROTATING.length]);
+  return out;
+}
+const keyScale = level => Math.round(Math.pow(1.08, Math.max(0, Math.min(KEY_MAX, level) - 1)) * 1000) / 1000;
+// HP and damage multipliers for one foe on a key
+function foeMultipliers(level, affixes, boss) {
+  let hp = keyScale(level), dmg = keyScale(level);
+  for (const id of affixes || []) {
+    const a = KEY_AFFIXES[id]; if (!a) continue;
+    const part = a.all || (boss ? a.boss : a.trash);
+    if (part) { hp *= part.hp || 1; dmg *= part.dmg || 1; }
+  }
+  return { hp: Math.round(hp * 1000) / 1000, dmg: Math.round(dmg * 1000) / 1000 };
+}
+const startEffects = affixes => (affixes || []).map(id => KEY_AFFIXES[id] && KEY_AFFIXES[id].start).filter(Boolean);
+// seconds on the timer: 2 minutes plus 75 seconds a room
+const timeLimit = rooms => 120 + 75 * Math.max(1, Math.floor(Number(rooms) || 1));
+// result of a finished run: timed?, how many levels up or down, the new key level
+function runResult(level, elapsed, limit) {
+  const timed = elapsed <= limit, up = !timed ? -1 : elapsed <= limit * 0.6 ? 3 : elapsed <= limit * 0.8 ? 2 : 1;
+  return { timed, change: up, level: Math.max(KEY_MIN, Math.min(KEY_MAX, level + up)) };
+}
+const failResult = level => ({ timed: false, change: -1, level: Math.max(KEY_MIN, level - 1), failed: true });
+// bonus chest: more and better items for higher keys; one item when late
+function keyLoot(level, dungeonLvl, timed) {
+  return { count: timed ? Math.min(3, 1 + Math.floor(level / 5)) : 1, ilvl: Math.max(1, Math.min(720, Math.floor(dungeonLvl) + 2 * level)), rarity: level >= 12 ? 5 : level >= 7 ? 4 : 3 };
+}
+// a dungeon near the hero's level (never the one just run)
+function pickKeyDungeon(dungeons, heroLvl, rnd, avoid) {
+  const near = dungeons.filter(d => d.lvl <= heroLvl + 3 && d.id !== avoid);
+  const pool = near.length ? near : dungeons.filter(d => d.id !== avoid).sort((a, b) => a.lvl - b.lvl).slice(0, 1);
+  return pool[Math.floor(rnd() * pool.length) % pool.length] || dungeons[0];
+}
+const fmtClock = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+
+if (typeof globalThis !== 'undefined') globalThis.GBQKeystones = { KEY_MIN, KEY_MAX, KEY_AFFIXES, weekIndex, weeklyAffixes, keyScale, foeMultipliers, startEffects, timeLimit, runResult, failResult, keyLoot, pickKeyDungeon, fmtClock };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof enterInstance === 'function' && typeof DUNGEONS !== 'undefined') {
+  const thisWeek = () => (typeof weekKeyOf === 'function' ? weekKeyOf() : '2026-01-05');
+  const dungeonDef = id => DUNGEONS.find(d => d.id === id);
+  const K = () => (G.keystone = G.keystone && typeof G.keystone === 'object' ? G.keystone : { dungeon: null, level: 0, best: {}, run: null });
+  const activeRun = () => { const k = G && G.keystone, r = k && k.run; return r && r.entered && !r.done && G.inst && G.inst.kind === 'dungeon' && G.inst.def.id === r.dungeon ? r : null; };
+  const scaleDice = (dice, m) => typeof diceAvg === 'function' && typeof dmgDice === 'function' ? dmgDice(diceAvg(dice) * m) : dice;
+
+  function grantKey(level, avoid) { const k = K(), d = pickKeyDungeon(DUNGEONS, G.lvl, R, avoid); k.dungeon = d.id; k.level = Math.max(KEY_MIN, level); return d; }
+
+  // foes in a keystone dungeon: level scaling and stat affixes
+  { const fm0 = applyFloorMod; applyFloorMod = function (foes, mod) {
+      const out = fm0(foes, mod), r = activeRun(); if (!r) return out;
+      for (const f of foes) {
+        const m = foeMultipliers(r.level, r.affixes, !!f.boss);
+        f.maxhp = Math.round(f.maxhp * m.hp); f.hp = f.maxhp;
+        (f.attacks || []).forEach(a => { if (a.dice) a.dice = scaleDice(a.dice, m.dmg); });
+        f.name = (`+${r.level} ` + f.name).slice(0, 16);
+      }
+      return out;
+    }; }
+  // battle-start affixes on foes
+  { const se0 = Battle.prototype.setupEffects; Battle.prototype.setupEffects = function () {
+      se0.call(this); const r = activeRun(); if (!r) return;
+      for (const e of startEffects(r.affixes)) if (BUFFS[e.buff]) for (const u of this.foes) addEffect(u, { id: e.buff, rounds: e.rounds });
+    }; }
+
+  function finishRun(r, result) {
+    const k = K(), def = dungeonDef(r.dungeon) || { name: 'DUNGEON', lvl: G.lvl }, elapsed = (Date.now() - r.start) / 1000;
+    r.done = true; k.run = null;
+    const lines = [];
+    if (result.timed) {
+      k.best[r.dungeon] = Math.max(k.best[r.dungeon] || 0, r.level); G.stats.keystones = (G.stats.keystones || 0) + 1;
+      if (G.loop && G.loop.week) G.loop.week.bestKey = Math.max(G.loop.week.bestKey || 0, r.level);
+      lines.push(`+${r.level} ${def.name} TIMED!`, `${fmtClock(elapsed)} of ${fmtClock(r.limit)}. Key +${result.change}.`);
+    } else lines.push(result.failed ? `+${r.level} ${def.name} FAILED.` : `+${r.level} ${def.name} OUT OF TIME.`, result.failed ? 'You left or fell. The key drops a level.' : `${fmtClock(elapsed)} of ${fmtClock(r.limit)}. The key drops a level.`);
+    if (!result.failed) {
+      const loot = keyLoot(r.level, def.lvl, result.timed);
+      for (let i = 0; i < loot.count; i++) addGear(makeItem({ lvl: loot.ilvl, rarity: loot.rarity, boss: true }));
+      lines.push(`Bonus chest: ${loot.count} item${loot.count > 1 ? 's' : ''}, item level ${loot.ilvl}.`);
+      if (typeof addSeasonXp === 'function') addSeasonXp(result.timed ? 100 + 20 * r.level : 40);
+    }
+    const next = grantKey(result.level, r.dungeon);
+    lines.push(`New key: +${k.level} ${next.name}.`);
+    saveGame(); toast(result.timed ? 'KEYSTONE TIMED' : 'KEYSTONE DEPLETED', `+${r.level} ${def.name}`.slice(0, 22), 'item_key', result.timed ? 'act_complete' : 'error');
+    say(lines);
+  }
+  // called by the loop poll (mmo_loop.js) twice a second
+  window.keystonePoll = function () {
+    const k = G && G.keystone, r = k && k.run; if (!r || r.done) return;
+    if (!r.entered) {
+      if (G.inst && G.inst.kind === 'dungeon' && G.inst.def.id === r.dungeon) { r.entered = true; r.start = Date.now(); r.base = G.stats.dungeons; r.limit = timeLimit(G.inst.map.roomCount || (G.inst.map.rooms || []).length); toast(`+${r.level} KEYSTONE`, `TIMER ${fmtClock(r.limit)}`, 'item_key', 'stairs'); }
+      else if (Date.now() - r.asked > 20000) k.run = null; // never arrived: the key is not spent
+      return;
+    }
+    if (G.stats.dungeons > r.base) return finishRun(r, runResult(r.level, (Date.now() - r.start) / 1000, r.limit));
+    if (!G.inst || G.inst.def.id !== r.dungeon) return finishRun(r, failResult(r.level));
+  };
+  // timer on the field
+  if (typeof Field !== 'undefined') { const d0 = Field.prototype.draw; Field.prototype.draw = function () {
+      d0.apply(this, arguments); const r = activeRun(); if (!r) return;
+      const left = r.limit - (Date.now() - r.start) / 1000;
+      // top-left: the minimap owns the top-right corner
+      fill(1, 12, 56, 9, 0); text(`+${r.level} ${left >= 0 ? fmtClock(left) : '-' + fmtClock(-left)}`, 3, 13, left >= 0 ? (left < 60 ? 'gold' : 3) : 'red');
+    }; }
+
+  window.keystoneMenu = function () {
+    const k = K();
+    if (!k.dungeon) return choose(['GET A +2 KEYSTONE', 'BACK'], i => { if (i !== 0) return; const d = grantKey(KEY_MIN); SFX.chest(); saveGame(); say([`You receive a +2 keystone: ${d.name}.`, 'Open KEYSTONES again to start it.']); }, 'KEYSTONES: timed, scaling dungeons');
+    const def = dungeonDef(k.dungeon), aff = weeklyAffixes(thisWeek(), k.level), m = foeMultipliers(k.level, [], false);
+    const info = [`+${k.level} ${def.name} (LV ${def.lvl})`, `FOES +${Math.round((m.hp - 1) * 100)}% HP AND DAMAGE`, `AFFIXES: ${aff.map(a => KEY_AFFIXES[a].name).join(', ') || 'NONE'}`, ...aff.map(a => KEY_AFFIXES[a].desc), `BEST HERE: +${k.best[k.dungeon] || 0}`];
+    choose(['START RUN', 'KEY DETAILS', 'BACK'], i => {
+      if (i === 1) return say(info, window.keystoneMenu);
+      if (i !== 0) return;
+      if (G.inst) { SFX.error(); return say('Leave your current instance first.'); }
+      if (G.ghost) { SFX.error(); return say('Recover your body first.'); }
+      k.run = { dungeon: k.dungeon, level: k.level, affixes: aff, asked: Date.now(), entered: false, done: false };
+      while (scenes.length > 1 && scenes[scenes.length - 1] !== currentField()) scenes.pop();
+      enterInstance('dungeon', def, 1, Math.max(1, Math.min(4, typeof fieldPartySize === 'function' ? fieldPartySize() : 1)));
+    }, `+${k.level} ${def.name.slice(0, 14)} ${aff.map(a => KEY_AFFIXES[a].name.slice(0, 4)).join(' ')}`);
+  };
+}
+
+</script>
+<script>
+'use strict';
+// ================================================================ CHARACTER POLISH: rested XP, transmog wardrobe, gear score
+//   * RESTED XP: time away builds a rested pool (5% of a level per 8 hours, up to 1.5 levels). While it
+//     lasts, XP you earn is doubled and the bonus is taken from the pool. A long rest also adds 4% of a level
+//     (at most once an hour).
+//   * WARDROBE (MAIN MENU > WARDROBE): every weapon, armour and wondrous base you have held is collected as an
+//     appearance. Give an equipped item the look of any collected appearance for the same slot; its stats
+//     stay. Restoring the original look is free.
+//   * GEAR SCORE: one number for your equipped gear (item level, rarity and +bonus), shown on the paper doll.
+// Pure rules are exported as GBQPolish for tests; the game wiring runs only inside the game.
+
+const RESTED_PER_HOUR = 0.05 / 8, RESTED_CAP = 1.5, REST_BONUS = 0.04;
+// rested XP gained over some hours away, for a level span (XP from this level to the next)
+const restedGain = (hours, span) => Math.max(0, Math.floor(Math.max(0, Number(hours) || 0) * RESTED_PER_HOUR * span));
+const restedCap = span => Math.floor(span * RESTED_CAP);
+const addRested = (pool, gain, span) => Math.min(restedCap(span), Math.max(0, Math.floor(pool || 0)) + Math.max(0, Math.floor(gain || 0)));
+// XP actually granted: the base amount plus a matching bonus drawn from the pool
+function spendRested(amount, pool) { const a = Math.max(0, Math.floor(amount || 0)), p = Math.max(0, Math.floor(pool || 0)), bonus = Math.min(a, p); return { total: a + bonus, bonus, pool: p - bonus }; }
+
+// gear score: per item, item level x (1 + 12% per rarity tier) + 4 per +bonus
+const gearItemScore = it => !it || !it.ilvl ? 0 : Math.round(it.ilvl * (1 + 0.12 * Math.max(0, it.rarity || 0)) + 4 * Math.max(0, it.plus || 0));
+const gearScore = eq => Object.values(eq || {}).reduce((a, it) => a + gearItemScore(it), 0);
+
+// appearances: one per kind + base; a look fits when the slot matches
+const appearanceKey = it => it && it.kind && it.base ? `${it.kind}:${it.base}` : null;
+const lookFits = (itemSlotName, lookSlotName, itemKind, lookKind) => itemKind === lookKind && itemSlotName === lookSlotName;
+const transmogCost = lvl => 5 * Math.max(1, Math.floor(Number(lvl) || 1));
+
+if (typeof globalThis !== 'undefined') globalThis.GBQPolish = { restedGain, restedCap, addRested, spendRested, gearItemScore, gearScore, appearanceKey, lookFits, transmogCost, REST_BONUS };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof itemSlot === 'function') {
+  const span = c => Math.max(1, xpForLevel(Math.min(LEVEL_CAP, c.lvl + 1)) - xpForLevel(c.lvl));
+  const baseName = (kind, base) => { try { return kind === 'weapon' ? WEAPONS[base].name : kind === 'armor' ? ARMORS[base].name : WONDROUS.find(w => w.id === base).name; } catch (e) { return base.toUpperCase(); } };
+  const lookSlot = (kind, base) => itemSlot({ kind, base });
+  window.gearScoreOf = c => gearScore(c && c.eq);
+
+  // rested pool from time away
+  { const ls0 = loadSlot; loadSlot = function (i) {
+      const ok = ls0(i); if (!ok) return ok;
+      const hours = G.saved ? (Date.now() - G.saved) / 36e5 : 0, before = G.rested || 0;
+      G.rested = addRested(before, restedGain(hours, span(G)), span(G));
+      if (G.rested > before + 0) toast('WELL RESTED', `+${fmt(G.rested - before)} BONUS XP`, 'item_coin', 'confirm');
+      return ok;
+    }; }
+  { const lr0 = longRest; longRest = function (c) {
+      const r = lr0.apply(this, arguments);
+      if (G && c === G && Date.now() - (G.restedAt || 0) > 36e5) { G.restedAt = Date.now(); G.rested = addRested(G.rested, Math.floor(span(G) * REST_BONUS), span(G)); }
+      return r;
+    }; }
+  { const gx0 = gainXP; gainXP = function (c, amount) {
+      if (G && c === G && G.rested > 0 && amount > 0) { const s = spendRested(amount, G.rested); G.rested = s.pool; amount = s.total; }
+      return gx0(c, amount);
+    }; }
+
+  // wardrobe: collect every base the hero holds (polled by mmo_loop.js)
+  window.polishPoll = function () {
+    if (!G) return; G.wardrobe = G.wardrobe && typeof G.wardrobe === 'object' ? G.wardrobe : {};
+    const seen = it => { const k = appearanceKey(it); if (k && !G.wardrobe[k] && ['weapon', 'armor', 'wondrous'].includes(it.kind)) G.wardrobe[k] = 1; };
+    Object.values(G.eq || {}).forEach(seen); (G.bag || []).forEach(seen); (G.bank || []).forEach(seen);
+  };
+  // a transmogged item shows its look's icon
+  { const ic0 = itemIcon; itemIcon = function (it) { if (it && it.tmog && it.tmog.base) { try { return ic0(Object.assign({}, it, { base: it.tmog.base })); } catch (e) { /* fall through */ } } return ic0(it); }; }
+  { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it); return it && it.tmog ? `LOOKS LIKE ${baseName(it.kind, it.tmog.base)}. ${s}` : s; }; }
+
+  window.wardrobeMenu = function () {
+    polishPoll();
+    const slots = SLOTS.filter(s => G.eq[s] && ['weapon', 'armor', 'wondrous'].includes(G.eq[s].kind));
+    if (!slots.length) return say('Equip something first.');
+    choose(slots.map(s => `${SLOT_NAME[s].slice(0, 9)} ${(G.eq[s].tmog ? '*' : '') + baseName(G.eq[s].kind, G.eq[s].tmog ? G.eq[s].tmog.base : G.eq[s].base)}`.slice(0, 24)), k => {
+      if (k < 0) return; const it = G.eq[slots[k]], mySlot = itemSlot(it);
+      const looks = Object.keys(G.wardrobe).map(key => key.split(':')).filter(([kind, base]) => base !== it.base && lookFits(mySlot, lookSlot(kind, base), it.kind, kind));
+      const cost = transmogCost(G.lvl), opts = [...(it.tmog ? ['RESTORE ORIGINAL LOOK'] : []), ...looks.map(([kind, base]) => baseName(kind, base).slice(0, 20))];
+      if (!opts.length) return say(['No other looks collected for this slot yet.', 'Every item you pick up adds its look to your wardrobe.'], window.wardrobeMenu);
+      choose(opts, j => {
+        if (j < 0) return window.wardrobeMenu();
+        if (it.tmog && j === 0) { delete it.tmog; SFX.equip(); saveGame(); return say(`${it.name} looks like itself again.`, window.wardrobeMenu); }
+        const [kind, base] = looks[j - (it.tmog ? 1 : 0)];
+        if (G.gold < cost) { SFX.error(); return say(`A new look costs ${fmt(cost)} G.`, window.wardrobeMenu); }
+        G.gold -= cost; it.tmog = { kind, base }; SFX.equip(); saveGame(); say(`${it.name} now looks like ${baseName(kind, base)}.`, window.wardrobeMenu);
+      }, `NEW LOOK ${fmt(cost)} G. ${Object.keys(G.wardrobe).length} LOOKS`);
+    }, `WARDROBE: ${Object.keys(G.wardrobe).length} LOOKS COLLECTED`);
+  };
+  // gear score and rested pool on the paper doll
+  if (typeof PaperDoll !== 'undefined') { const d0 = PaperDoll.prototype.draw; PaperDoll.prototype.draw = function () {
+      d0.apply(this, arguments);
+      // one line under ATTUNED, above the info frame
+      text(`GS ${fmt(gearScore(G.eq))}${G.rested > 0 ? `  RESTED ${Math.round(G.rested / span(G) * 100)}%` : ''}`, 24, 108, 'gold');
+    }; }
 }
 
 </script>

@@ -22,6 +22,14 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
   - **Existing collections:** the nine pieces unlocked by the first heirloom release stay unlocked.
   - **Bonus cap:** the built-in save, initiative and accuracy bonuses of all heirloom pieces combined are capped at +1 to +3, rising with level.
 
+- **Challenges** (MENU > CHALLENGES): daily and weekly **bounty board**, **weekly vault** (choose 1 of up to 3 items, unlocked by 1/4/8 dungeon clears), **login streak** (7-day reward cycle) and a quarterly **season pass** (50 tiers, season titles, legendary trinket at tier 50). Progress is counted from the hero's existing statistics.
+- **Keystones** (CHALLENGES > KEYSTONES): Mythic+-style timed dungeon runs.
+  - **Scaling and affixes:** foes gain +8% HP and damage per key level, plus the week's affixes.
+  - **Timer:** shown in the field's top-left corner.
+  - **Results:** a timed run upgrades the key by +1 to +3 and earns a bonus chest. A late, failed or abandoned run drops the key a level.
+  - **Rotation:** the key moves to a new dungeon after every run.
+- **Rested XP** from time away and long rests doubles XP until spent; a **wardrobe** (MENU > WARDROBE) collects appearances for transmog; **gear score** is shown on the paper doll.
+
 ### Fixed
 - Server errors were returned as "Server error." without being logged anywhere.
 - A request body of `null`, an array or a bare value crashed routes with a 500; it now returns 400.
