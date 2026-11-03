@@ -86,7 +86,7 @@ test("realm direct-trade relay fails closed while ordinary multiplayer topics re
       const { value, done } = await reader.read();
       if (done) break;
       buffer += new TextDecoder().decode(value);
-      const match = buffer.match(/event: hello\\ndata: (.+)\\n/);
+      const match = buffer.match(/event: hello\ndata: (.+)\n/);
       if (match) peer = JSON.parse(match[1]).peer;
     }
     assert.ok(peer, "realm stream must provide a peer id");
