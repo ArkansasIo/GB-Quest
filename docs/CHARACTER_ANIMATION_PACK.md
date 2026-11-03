@@ -78,3 +78,19 @@ python tools/pack_animation_atlases.py \
 ```
 
 Each sheet uses directions as rows and frame indices as columns. The JSON sidecar records each frame's source filename and rectangle (`x`, `y`, `width`, `height`). The packer fails if any direction is missing or a frame has the wrong dimensions. The GitHub Actions workflow now runs this packer and validates all eight sheets before uploading the artifact.
+
+## Configurable archetype and rank prototype variants
+
+Generate one selected class/rank set (408 frames for the full eight-direction/eight-state set):
+
+```bash
+python -m pip install Pillow
+python tools/generate_character_sprite_pack.py \
+  --output assets_hd64/animations/frames \
+  --size 128 --archetypes mage --ranks A
+```
+
+Supported archetypes: `warrior`, `mage`, `ranger`, `rogue`, `cleric`, `summoner`. Supported ranks: `F`, `E`, `D`, `C`, `B`, `A`, `S`, `SSS`. Multiple selections are accepted, for example `--archetypes warrior mage --ranks F E`; each combination adds 408 frames. The generator writes `character_variant_generation_report.json`.
+
+The GitHub Actions workflow now exposes archetype and rank selectors and builds the matching atlas. Each class/rank currently uses a distinct palette and rank accent on a shared warrior-derived silhouette. This is a pipeline/integration prototype—not six finished class designs. Class-specific anatomy, weapons, armor silhouettes, spell effects, and rank-specific geometry still require dedicated art passes. The workflow remains manual and must be run from the repository's Actions tab to produce downloadable artifacts.
+
