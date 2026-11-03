@@ -54,6 +54,23 @@ jobs:
             --output assets_hd64/equipment \
             --size "${{ inputs.frame_size }}" \
             --ranks "${{ inputs.rank }}"
+      - name: Build an equipped character preview
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          Path("assets_hd64/equipment/preview_loadout.json").write_text(json.dumps({
+              "head": "iron_helm", "chest": "iron_plate",
+              "main_hand": "iron_sword", "off_hand": "iron_shield",
+              "back": "short_cloak"
+          }, indent=2))
+          PY
+          python tools/compose_equipment_preview.py \
+            --base "assets_hd64/animations/frames/${{ inputs.archetype }}/${{ inputs.rank }}/S/idle/frame_000.png" \
+            --manifest assets_hd64/equipment/equipment_manifest.json \
+            --loadout assets_hd64/equipment/preview_loadout.json \
+            --rank "${{ inputs.rank }}" --direction S \
+            --output assets_hd64/equipment/previews/${{ inputs.archetype }}_${{ inputs.rank }}_S_idle_equipped.png
       - name: Pack directional sprite atlases
         run: |
           python tools/pack_animation_atlases.py \
