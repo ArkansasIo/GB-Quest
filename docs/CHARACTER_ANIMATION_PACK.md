@@ -214,3 +214,9 @@ This is a callable integration API, not yet an automatic replacement for the syn
 Unmapped legacy weapon IDs receive a conservative family fallback (dagger, ranged, focus, blunt, or generic melee); unmapped chest armor uses a name-based robe/leather/plate fallback, and off-hand armor uses the shield prototype. These are visual placeholders, not authoritative item taxonomy. The explicit catalog visual map always takes precedence.
 
 Repeated requests for the same base frame, rank/direction and equipment loadout share an in-flight/completed composition promise. Failed compositions are evicted so a later request can retry. Keep the resolved canvas in the caller's draw-state cache and draw it synchronously; do not call `renderCharacter` from inside the frame draw loop.
+
+### World-scene HD presenter integration
+
+The world scene now lazily creates an HD runtime and a frame presenter when the HD module is available. Player and follower draw paths request the current idle/walk frame; the request is asynchronous, and the draw path immediately uses the existing equipment walker/portrait until the prepared canvas is ready. Once ready, the HD canvas is drawn as a 24×24 pixel-art frame with smoothing disabled. Ghost rendering remains on the classic path so its palette treatment is preserved.
+
+The presenter deduplicates repeated requests, discards stale asynchronous results when a newer frame is requested, and suppresses repeated retries for a failed asset key until cleared. Generated frame and equipment assets still must be deployed under `assets_hd64/`. HD output is scaled to the existing world-character footprint; this is an integration step, not a larger-resolution viewport change. Attack/cast/death animation selection still requires wiring to confirmed game action-state fields.
