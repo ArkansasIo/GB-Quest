@@ -45,6 +45,9 @@ jobs:
           assert report["frame_count_target"] == 19584, report
           assert report["artwork_generated"] is False, report
           print(report)
+          frames = list(Path('assets_hd64/animations/frames/warrior/F').rglob('frame_*.png'))
+          assert len(frames) == 408, f'Expected 408 warrior frames, found {len(frames)}'
+          print(f'Validated {len(frames)} F-rank warrior prototype frames')
           PY
       - name: Upload manifest artifact
         uses: actions/upload-artifact@v4
