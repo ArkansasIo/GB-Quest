@@ -4,11 +4,11 @@ extends Node2D
 
 var main: Node2D
 var i := 0
-const ROWS := ["MUSIC", "SOUND", "UI THEME"]
+const ROWS := ["MUSIC", "SOUND", "UI THEME", "MONSTER ART", "ART GALLERY"]
 
 func step(_d: float) -> void:
-	if main.pressed("ui_up"): i = (i + 2) % 3
-	if main.pressed("ui_down"): i = (i + 1) % 3
+	if main.pressed("ui_up"): i = (i + ROWS.size() - 1) % ROWS.size()
+	if main.pressed("ui_down"): i = (i + 1) % ROWS.size()
 	var d := 0
 	if main.pressed("ui_left"): d = -1
 	if main.pressed("ui_right") or main.pressed("ui_a"): d = 1
@@ -19,6 +19,8 @@ func step(_d: float) -> void:
 			2:
 				var ids: Array = Data.THEMES.keys()
 				Data.set_theme(ids[(ids.find(Data.theme) + d + ids.size()) % ids.size()])
+			3: Data.set_hd_monsters(not Data.hd_monsters)
+			4: main.push(load("res://scripts/gallery.gd").new())
 		Sound.sfx("select")
 	if main.pressed("ui_b"): main.pop(self)
 
@@ -26,12 +28,12 @@ func _draw() -> void:
 	draw_rect(Rect2(0, 0, 640, 576), Color8(16, 20, 36))
 	Data.panel(self, Rect2(8, 8, 624, 72))
 	Data.text_c(self, "SETTINGS", 320, 26, Data.EDGE)
-	Data.panel(self, Rect2(8, 96, 624, 220))
-	var vals := ["%d/3" % Sound.music_vol, "%d/3" % Sound.sfx_vol, str(Data.THEMES[Data.theme]["name"])]
-	for k in range(3):
-		var y := 124 + k * 60
-		Data.text(self, ROWS[k], Vector2(72, y))
-		Data.text_r(self, "< %s >" % vals[k], 600, y, Data.EDGE)
+	Data.panel(self, Rect2(8, 96, 624, 228))
+	var vals := ["%d/3" % Sound.music_vol, "%d/3" % Sound.sfx_vol, str(Data.THEMES[Data.theme]["name"]), "HD64" if Data.hd_monsters else "CLASSIC", "%d" % Data.pack.get("categories", {}).values().reduce(func(a, l): return a + l.size(), 0)]
+	for k in range(ROWS.size()):
+		var y := 116 + k * 40
+		Data.text(self, ROWS[k], Vector2(72, y), Data.INK, 0.8)
+		Data.text_r(self, ("< %s >" if k < 4 else "%s >") % vals[k], 600, y, Data.EDGE, 0.8)
 		if k == i: draw_colored_polygon(PackedVector2Array([Vector2(36, y + 4), Vector2(52, y + 18), Vector2(36, y + 32)]), Data.INK)
 	# a preview of the theme: a panel, a bar and some text
 	Data.panel(self, Rect2(8, 332, 624, 150))

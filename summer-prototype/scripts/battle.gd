@@ -53,7 +53,7 @@ const SHORT := {"bleeding": "BLD", "burning": "BRN", "venom": "PSN", "frostbite"
 
 func _ready() -> void:
 	var blk := Data.monster_block(foe_lvl)
-	foe = {"name": str(foe_def.get("name", "FOE")).substr(0, 12), "art": foe_def.get("art", ""), "lvl": foe_lvl, "hp": int(blk.get("hp", 10)), "max": int(blk.get("hp", 10)),
+	foe = {"name": str(foe_def.get("name", "FOE")).substr(0, 12), "art": Data.monster_art(foe_def, boss) if not str(foe_def.get("art", "")).begins_with("c_") else foe_def.get("art", ""), "lvl": foe_lvl, "hp": int(blk.get("hp", 10)), "max": int(blk.get("hp", 10)),
 		"ac": int(blk.get("ac", 12)), "hit": int(blk.get("hit", 3)), "dice": str(blk.get("dice", "1d6")), "xp": int(blk.get("xp", 10)), "gold": int(blk.get("gold", 3)), "dt": foe_def.get("dt", "slashing")}
 	army = Game.army()
 	for pid in _party():

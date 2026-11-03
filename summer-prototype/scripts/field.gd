@@ -838,7 +838,7 @@ func _draw() -> void:
 		if mp.x < -T or mp.x > 640 or mp.y < -T or mp.y > 576: continue
 		var big: bool = m.get("boss", false)
 		var bob := sin(Time.get_ticks_msec() / 300.0 + int(m["x"])) * 3
-		Data.blit_fit(self, str(m["def"].get("art", "")), Rect2(mp + Vector2(-8 if big else 4, (-24 if big else -4) + bob), Vector2(80, 80) if big else Vector2(56, 56)), true)
+		Data.blit_fit(self, Data.monster_art(m["def"], big), Rect2(mp + Vector2(-8 if big else 4, (-24 if big else -4) + bob), Vector2(80, 80) if big else Vector2(56, 56)), true)
 	# other players on the realm, in this zone (browser or Godot)
 	for op in Online.players_here():
 		var opp := Vector2(int(op["x"]), int(op["y"])) * T - cam

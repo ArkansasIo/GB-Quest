@@ -9,6 +9,12 @@ on:
         type: choice
         default: '256'
         options: ['128', '256', '512', '1024']
+      generator:
+        description: Source generator (hd64 = tools/gen_pack6000_hd.py, starter = tools/generate_6000_asset_pack.py)
+        required: true
+        type: choice
+        default: hd64
+        options: ['hd64', 'starter']
       tiff:
         description: Include 16-bit/channel TIFF masters
         required: true
@@ -29,7 +35,13 @@ jobs:
       - name: Install image pipeline
         run: python -m pip install --disable-pip-version-check Pillow numpy tifffile
       - name: Generate original 6,000 source sprites
-        run: python tools/generate_6000_asset_pack.py --output assets_hd64/gbq_6000 --zip /tmp/GB-Quest-6000-source.zip
+        shell: bash
+        run: |
+          if [ '${{ inputs.generator }}' = 'starter' ]; then
+            python tools/generate_6000_asset_pack.py --output assets_hd64/gbq_6000 --zip /tmp/GB-Quest-6000-source.zip
+          else
+            python tools/gen_pack6000_hd.py --output assets_hd64/gbq_6000 --zip /tmp/GB-Quest-6000-source.zip
+          fi
       - name: Build HD remasters
         shell: bash
         run: |

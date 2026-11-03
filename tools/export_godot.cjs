@@ -100,6 +100,38 @@ for n in open(lst).read().split('\\n'):
   fs.unlinkSync(list);
   const { imageSize } = { imageSize: f => { const b = fs.readFileSync(f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; } };
   for (const f of missing) { const [w, h] = imageSize(path.join(OUT, 'art', 'single', f)); sprites[f.slice(0, -4)] = [`single/${f}`, 0, 0, w, h]; }
+  // ---- the HD64 6,000 asset pack (tools/gen_pack6000_hd.py): generated if missing, packed into 1024x1024 atlases
+  const PACK = path.join(ROOT, 'assets_hd64', 'gbq_6000');
+  if (!fs.existsSync(path.join(PACK, 'metadata', 'asset_manifest.json'))) {
+    try { execFileSync('python3', [path.join(ROOT, 'tools', 'gen_pack6000_hd.py'), '--output', PACK], { stdio: 'inherit' }); }
+    catch (e) { console.warn('HD64 pack not generated (needs: pip install numpy pillow):', e.message); }
+  }
+  if (fs.existsSync(path.join(PACK, 'metadata', 'asset_manifest.json'))) {
+    const rows = JSON.parse(fs.readFileSync(path.join(PACK, 'metadata', 'asset_manifest.json')));
+    const listFile = path.join(OUT, 'art', '_hd6000.json');
+    fs.writeFileSync(listFile, JSON.stringify(rows.map(r => path.join(PACK, r.path))));
+    execFileSync('python3', ['-c', `
+import sys, json
+from PIL import Image
+files, out = json.load(open(sys.argv[1])), sys.argv[2]
+per = 256
+for p in range(0, len(files), per):
+    sheet = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
+    for j, f in enumerate(files[p:p + per]):
+        sheet.paste(Image.open(f).convert('RGBA'), ((j % 16) * 64, (j // 16) * 64))
+    sheet.save(f'{out}/hd6000_{p // per}.png')
+`, listFile, path.join(OUT, 'art')]);
+    fs.unlinkSync(listFile);
+    const pack = { categories: {}, families: {}, boss_families: {} };
+    rows.forEach((r, k) => {
+      const name = `hd_${r.category}_${String(r.category_index).padStart(4, '0')}`;
+      sprites[name] = [`hd6000_${Math.floor(k / 256)}.png`, (k % 256 % 16) * 64, Math.floor(k % 256 / 16) * 64, 64, 64];
+      (pack.categories[r.category] ||= []).push(name);
+      if (r.family) ((r.category === 'monsters_creatures' ? pack.families : pack.boss_families)[r.family] ||= []).push(name);
+    });
+    fs.writeFileSync(path.join(OUT, 'data', 'pack6000.json'), JSON.stringify(pack));
+    console.log(`packed ${rows.length} HD64 pack assets into ${Math.ceil(rows.length / 256)} atlases`);
+  }
   fs.writeFileSync(path.join(OUT, 'data', 'sprites.json'), JSON.stringify(sprites));
   // ---- audio: render the chip engine (src/engine.js play / Music.tick) to looping WAVs, as the browser would play them
   renderAudio(dump.data, path.join(OUT, 'audio'));

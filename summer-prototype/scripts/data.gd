@@ -40,6 +40,8 @@ const GREY := Color8(120, 128, 150)
 var game: Dictionary = {}
 var zones: Dictionary = {}
 var sprites: Dictionary = {}
+var pack: Dictionary = {}          # the HD64 6,000 asset pack: {categories, families, boss_families} (data/pack6000.json)
+var hd_monsters := true            # SETTINGS > MONSTER ART: HD64 pack pictures for monsters and bosses
 var _tex_cache: Dictionary = {}
 var _atlas_cache: Dictionary = {}
 var ok := false
@@ -48,9 +50,29 @@ func _ready() -> void:
 	game = _load_json("res://data/game.json")
 	zones = _load_json("res://data/zones.json")
 	sprites = _load_json("res://data/sprites.json")
+	pack = _load_json("res://data/pack6000.json")
 	ok = not game.is_empty() and not zones.is_empty() and not sprites.is_empty()
 	var c := ConfigFile.new()
-	if c.load("user://settings.cfg") == OK: set_theme(str(c.get_value("ui", "theme", "classic")))
+	if c.load("user://settings.cfg") == OK:
+		set_theme(str(c.get_value("ui", "theme", "classic")))
+		hd_monsters = bool(c.get_value("ui", "hd_monsters", true))
+
+func set_hd_monsters(on: bool) -> void:
+	hd_monsters = on
+	var c := ConfigFile.new()
+	c.load("user://settings.cfg")
+	c.set_value("ui", "hd_monsters", on)
+	c.save("user://settings.cfg")
+
+## a monster's picture: with HD64 on, one of the pack's pictures of its family (the same one every time for that monster)
+func monster_art(def: Dictionary, boss: bool = false) -> String:
+	var art := str(def.get("art", ""))
+	if not hd_monsters or pack.is_empty(): return art
+	var fam := str(def.get("fam", ""))
+	var lists: Dictionary = pack.get("boss_families" if boss else "families", {})
+	var l: Array = lists.get(fam, [])
+	if l.is_empty(): return art
+	return str(l[absi(hash(str(def.get("id", def.get("name", ""))))) % l.size()])
 	if not ok:
 		push_error("GB-Quest data missing: run `node tools/export_godot.cjs` from the repository root.")
 

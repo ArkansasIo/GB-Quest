@@ -8,7 +8,7 @@ This is a non-destructive companion pipeline for the existing 6,000 procedural s
 
 ```bash
 python -m pip install Pillow numpy tifffile
-python tools/generate_6000_asset_pack.py --output assets_hd64/gbq_6000
+python tools/gen_pack6000_hd.py --output assets_hd64/gbq_6000      # HD64 source art (or tools/generate_6000_asset_pack.py, the starter set)
 python tools/remaster_6000_asset_pack.py --source assets_hd64/gbq_6000 --output assets_hd64/gbq_6000_hd --size 256
 ```
 

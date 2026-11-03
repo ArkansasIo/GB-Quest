@@ -151,6 +151,7 @@ func _ready() -> void:
 	await _stage6()
 	await _stage7()
 	await _stage10()
+	await _stage11()
 	get_tree().quit()
 
 ## run a pushed battle to the end with ATTACK, keeping the hero alive unless told not to
@@ -571,3 +572,32 @@ func _stage10() -> void:
 		shots.append(th)
 	Data.set_theme("classic")
 	print("CHECK themes: %s" % [shots])
+
+func _stage11() -> void:
+	# the HD64 6,000 asset pack: atlases load, the gallery pages through every category, monsters use their family's art
+	var cats: Dictionary = Data.pack.get("categories", {})
+	var total := 0
+	for c in cats: total += cats[c].size()
+	var loaded := 0
+	for c in cats:
+		for nm in [cats[c][0], cats[c][cats[c].size() - 1]]:
+			if Data.sprite(str(nm)) != null: loaded += 1
+	print("CHECK pack: %d categories, %d pictures, first+last of each loaded %d/%d" % [cats.size(), total, loaded, cats.size() * 2])
+	main.clear()
+	var gal = main.push(load("res://scripts/gallery.gd").new())
+	var shots := 0
+	for k in [0, 5, 6, 7, 11, 12]:
+		gal.cat = k; gal.row = 0; await _wait(0.15); await _shot("34_gallery_%02d" % k); shots += 1
+	main.pop(gal)
+	Data.set_hd_monsters(true)
+	var golem_def := {}
+	for b in Data.game["BESTIARY"]:
+		if b["fam"] == "construct": golem_def = b; break
+	print("CHECK hd monster art: %s (%s) -> %s; off -> %s" % [golem_def["name"], golem_def["fam"], Data.monster_art(golem_def), (func(): Data.hd_monsters = false; var a2 := Data.monster_art(golem_def); Data.hd_monsters = true; return a2).call()])
+	Game.new_hero("HDHERO", "warden", "stonekin"); Game.hero["lvl"] = 10; Game.hero["hp"] = Game.hp_max()
+	Game.zone_id = "elderwood"; Game.pos = Vector2i(3, 8)
+	main.clear(); var f = main.push(load("res://scripts/field.gd").new()); await _wait(0.2); await _clear_dialogs(f)
+	var b = load("res://scripts/battle.gd").new(); b.foe_def = golem_def; b.foe_lvl = 10; b.biome = "volcanic"; b.boss = true
+	main.push(b); await _wait(1.0); b.state = "menu"; await _wait(0.1); await _shot("35_hd_golem_battle")
+	print("CHECK battle foe art=%s" % b.foe["art"])
+	main.pop(b)
