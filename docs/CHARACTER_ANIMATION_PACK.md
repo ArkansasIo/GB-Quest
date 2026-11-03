@@ -225,3 +225,7 @@ The presenter deduplicates repeated requests, discards stale asynchronous result
 ### Per-character frame cache
 
 The frame presenter now keeps a bounded least-recently-used cache (24 entries by default, configurable from 2 to 128). Previously prepared idle/walk frames can be reused immediately when animation cycles back to them, rather than recomposed on every direction/frame change. In-flight requests are deduplicated by character/loadout/animation key; failed keys are suppressed until the presenter is cleared. The runtime's own image and composite caches remain shared underneath these per-character presenter caches.
+
+### Battle scene animation integration
+
+The battle party renderer now requests the HD character compositor for party members that have equipment data. The battle renderer maps live presentation state to animation clips: attack actions request `attack`, spell actions request `cast`, damage flashes request `hit`, and defeated characters request `death`. Attack and cast poses expire using the battle frame counter, returning to idle instead of remaining stuck on an action frame. Prepared canvases are drawn into the existing battle-sprite footprint; if generated HD assets are absent or a frame fails, the existing portrait/sprite renderer remains active. Battle enemies continue using their existing creature sprites.
