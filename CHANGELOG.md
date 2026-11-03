@@ -161,3 +161,5 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
  Per-character async presenter caches prevent player/follower frame requests from invalidating one another.
 
 - **HD frame cache:** Added a bounded per-character LRU cache for prepared animation frames, reusing prior frames on animation loops and deduplicating in-flight work.
+
+- **Battle HD animation integration:** Connected party battle sprites to HD attack, cast, hit, death and idle frames with timed action poses and classic-sprite fallback.
