@@ -105,3 +105,16 @@ test('asset pack: monster art by family, stable faces, rarity rings exist', () =
   assert.equal(A.apMonsterArt('beast', 'wolf|7'), A.apMonsterArt('beast', 'wolf|7'));
   assert.equal(A.apPortraitFor('ELDER MAE'), A.apPortraitFor('ELDER MAE')); assert.equal(A.apPortraitFor(''), null);
 });
+
+test('pixel packs: index sprites exist, aliases point at real art, monster picks are stable', () => {
+  const idx = (() => { const c = {}; vm.runInNewContext(src('pack_index.js').replace(/^const PACK_INDEX/m, 'globalThis.PACK_INDEX'), Object.assign(c, { globalThis: c })); return c.PACK_INDEX; })();
+  const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
+  for (const L of [...Object.values(idx.items), ...Object.values(idx.monsters)]) for (const n of L) assert.ok(has(n), n);
+  for (const [old, pk] of Object.entries(idx.alias)) { assert.ok(has(pk), pk); assert.ok(has(old), `alias target ${old} is a real game sprite`); }
+  assert.equal(idx.items.sword.length, 11, '11 sword tiers');
+  const c = { Math, Object, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('pack_art.js'), c); const P = c.GBQPackArt;
+  assert.equal(P.nextArtMode('classic'), 'nes'); assert.equal(P.nextArtMode('nes'), 'packs'); assert.equal(P.nextArtMode('packs'), 'classic');
+  assert.equal(P.packMonsterFor('plant', 'x', idx.monsters), null);
+  let n = 0; for (let i = 0; i < 300; i++) if (P.packMonsterFor('undead', 'z|' + i, idx.monsters)) n++;
+  assert.ok(n > 60 && n < 140, 'about a third of a family');
+});

@@ -21,7 +21,7 @@ FAMILIES = {
     'tiles': 'gt_', 'dungeon_tiles': 'gd_', 'objects': 'go_', 'icons': 'i_', 'battle': 'b_',
     'buffs': 'bf_', 'conditions': 'cd_', 'skills': 'sk_', 'passives': 'ps_', 'talents': 'tl_', 'achievements': 'ac_', 'titles': 'tt_',
     'slots': 'sl_', 'rarity_gems': 'rg_', 'ranks': 'rk_', 'named_items': 'nn_', 'class_sheets': 'c_',
-    'creatures': 'cc_', 'perk_icons': 'pp_', 'asset_pack': 'ap_', 'ui_kit': 'au_',
+    'creatures': 'cc_', 'perk_icons': 'pp_', 'asset_pack': 'ap_', 'ui_kit': 'au_', 'pixel_packs': 'pk_',
 }
 
 def scale2x(a):

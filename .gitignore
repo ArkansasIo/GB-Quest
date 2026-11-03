@@ -5,3 +5,6 @@ server/data/
 node_modules/
 release/
 .vscode/
+
+# third-party asset packs (licences forbid redistributing them as packs); tools/gen_packs.py reads them
+art_source/packs/
