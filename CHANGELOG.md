@@ -30,6 +30,12 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
   - **Rotation:** the key moves to a new dungeon after every run.
 - **Rested XP** from time away and long rests doubles XP until spent; a **wardrobe** (MENU > WARDROBE) collects appearances for transmog; **gear score** is shown on the paper doll.
 
+- **WoW-style chat:**
+  - **Layout:** the panel is docked bottom-left above the action bar, see-through, with WoW-shaped tabs.
+  - **Tabs:** GENERAL, COMBAT LOG, LOOT, WHISPERS, WORLD and GUILD by default. You can add, rename and delete tabs and choose each tab's channels; the active tab is remembered.
+  - **Channel switches:** world chat (1. General), Trade, Local Defense, LFG, joined channels, adventurer chatter, or all chat. A muted channel is neither shown nor sendable.
+  - **Where to set them:** **SETTINGS > CHAT SETTINGS** (in game), the panel's ⚙ menu, `/chatoff`, `/chaton`, `/leave 1-4` and `/join general`.
+
 ### Fixed
 - Server errors were returned as "Server error." without being logged anywhere.
 - A request body of `null`, an array or a bare value crashed routes with a 500; it now returns 400.

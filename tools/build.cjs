@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'polish', 'towns', 'ui_dark', 'battlebg', 'mount_data', 'mounts', 'chatwow', 'admin', 'chatbox', 'identity', 'main', 'debug'];
+const ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'polish', 'towns', 'ui_dark', 'battlebg', 'mount_data', 'mounts', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'main', 'debug'];
 
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const clientFile = (name) => name === 'main' ? 'client/main.js' : `src/${name}.js`;
