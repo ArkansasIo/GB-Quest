@@ -187,8 +187,8 @@ function claimProceeds(db, { sellerId, idempotencyKey }) {
   return idempotent(db, sellerId, idempotencyKey, 'market.claim', {}, () => {
     const seller = playerFor(db, sellerId);
     const gold = seller.proceedsGold;
-    seller.proceedsGold = 0;
     if (seller.gold > MAX_GOLD - gold) fail('GOLD_OVERFLOW', 'The wallet balance limit would be exceeded.');
+    seller.proceedsGold = 0;
     seller.gold += gold;
     return { gold, walletGold: seller.gold };
   });
