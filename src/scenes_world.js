@@ -1331,7 +1331,7 @@ function openInstanceChest() {
   say([`The chest holds ${g} G and:`, `[${RARITY[it.rarity].name}] ${it.name}`]);
 }
 function leaveInstance() {
-  choose(['LEAVE', 'STAY'], k => { if (k !== 0) return; const r = G.inst.return; fadeTo(() => { G.inst = null; G.map = r.map; G.x = r.x; G.y = r.y + 1; FIELD.reload(); }); }, 'Leave the instance? Progress resets.');
+  choose(['LEAVE', 'STAY'], k => { if (k !== 0) return; const r = G.inst.return; fadeTo(() => { G.inst = null; G.map = r.map; G.x = r.x; G.y = r.y + 1; FIELD.reload(); safeSpot(); }); }, 'Leave the instance? Progress resets.');
 }
 function towerMenu() {
   const cps = [1]; for (let f = 10; f <= Math.min(100, G.towerBest + 1); f += 10) if (f <= G.towerBest + 1) cps.push(f);
@@ -1736,4 +1736,29 @@ class Credits {
     const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
     lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 3 || i === 7 ? 'gold' : 0); });
   }
+}
+
+// ---------------------------------------------------------------- stairs, exits and safe arrival
+// never arrive inside a wall, water or an NPC: step to the nearest free tile (rings out to 4 tiles)
+function safeSpot() {
+  const f = FIELD; if (!f || !f.blocked || !f.blocked(G.x, G.y)) return;
+  for (let r = 1; r <= 4; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+    if (!f.blocked(G.x + dx, G.y + dy)) { G.x += dx; G.y += dy; return; }
+  }
+}
+// stepping onto stairs asks right away (no need to face them and press A)
+{
+  const u0 = Field.prototype.update;
+  Field.prototype.update = function () {
+    const r = u0.apply(this, arguments);
+    try {
+      if (G && G.inst && scenes[scenes.length - 1] === this && !this.ox && !this.oy) {
+        const here = `${G.map}|${G.x},${G.y}`, ch = this.chAt(G.x, G.y);
+        if (here !== this._stairAt && (ch === 'U' || ch === 'L')) { this._stairAt = here; if (ch === 'U') towerNext(); else leaveInstance(); }
+        else if (ch !== 'U' && ch !== 'L') this._stairAt = null;
+      }
+    } catch (e) { /* movement must never break */ }
+    return r;
+  };
 }

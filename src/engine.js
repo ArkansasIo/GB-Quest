@@ -183,9 +183,15 @@ function font(c) {
   }
   return fontC[key];
 }
+// characters the pixel font lacks become their plain-ASCII look-alikes (instead of '?')
+const TEXT_ASCII = { '\u00b7': '-', '\u2022': '-', '\u2013': '-', '\u2014': '-', '\u2019': "'", '\u2018': "'", '\u201c': '"', '\u201d': '"', '\u2026': '...', '\u00d7': 'x', '\u2192': '>', '\u2190': '<', '\u2191': '^', '\u2193': 'v', '\u25b6': '>', '\u2605': '*', '\u2606': '*', '\u00e9': 'e', '\u00f6': 'o', '\u00fc': 'u' };
+// a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
+const HILITE = { frame: -1, rects: [] };
 function text(s, x, y, c = 3, sc = 1) {
   if (!IMG.font_6x9) return;
-  const f = font(c); let cx = x; s = String(s);
+  s = String(s); if (/[^\x20-\x7e\n]/.test(s)) s = s.replace(/[^\x20-\x7e\n]/g, ch => TEXT_ASCII[ch] || '?');
+  if (c === 1 && HILITE.frame === frameN && HILITE.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3])) c = 3;
+  const f = font(c); let cx = x;
   for (const ch of s) {
     if (ch === '\n') { y += 10 * sc; cx = x; continue; }
     let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
@@ -195,7 +201,7 @@ function text(s, x, y, c = 3, sc = 1) {
 }
 const textR = (s, rx, y, c, sc = 1) => text(s, rx - String(s).length * 6 * sc, y, c, sc);
 const textC = (s, cx, y, c, sc = 1) => text(s, Math.round(cx - String(s).length * 3 * sc), y, c, sc);
-function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); }
+function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); if (c === 1 && h >= 8 && h <= 14 && w >= 30) { if (HILITE.frame !== frameN) { HILITE.frame = frameN; HILITE.rects = []; } HILITE.rects.push([x, y, w, h]); } }
 function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
   fill(x + 2, y + 2, w - 4, 1, 1); fill(x + 2, y + 2, 1, h - 4, 1);

@@ -155,19 +155,19 @@ class InventoryScene {
       else { const it = e && ITEMS[e]; drawItemCell(it ? { rarity: 1 } : null, x, y, sel, it ? { icon: it.icon, count: G.inv[e] } : {}); }
     }
     // tooltip
-    frame(1, 115, 158, 28);
+    frame(1, 113, 158, 30);
     const e = this.cur();
-    if (this.msg) { text(wrap(this.msg, 25).slice(0, 2).join('\n'), 5, 118, 'gold'); }
+    if (this.msg) { text(wrap(this.msg, 25).slice(0, 2).join('\n'), 5, 117, 'gold'); }
     else if (e && this.tab === 0) {
-      if (IMG['rg_' + e.rarity]) blit(spr('rg_' + e.rarity, 8, 8), 4, 117); text(e.name.slice(0, 16), 13, 117, rarityCol(e.rarity)); textR(`${SLOT_NAME[itemSlot(e)] === 'RING 1' ? 'RING' : SLOT_NAME[itemSlot(e)]}`, 156, 117, 2);
+      if (IMG['rg_' + e.rarity]) blit(spr('rg_' + e.rarity, 8, 8), 4, 116); text(e.name.slice(0, 14), 13, 116, rarityCol(e.rarity)); textR(`${SLOT_NAME[itemSlot(e)] === 'RING 1' ? 'RING' : SLOT_NAME[itemSlot(e)]}`, 156, 116, 2);
       const { cur, d } = compareDelta(G, e), sgn = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
       let line = `IL${e.ilvl} G${formatGearLevel(e)} P${formatPowerLevel(e)}`;
       if (d) { const bits = []; if (d.ac) bits.push(`AC${sgn(d.ac)}`); if (d.hp) bits.push(`HP${sgn(d.hp)}`); if (d.hit) bits.push(`HIT${sgn(d.hit)}`); if (Math.abs(d.dmg) >= 0.1) bits.push(`DMG${sgn(d.dmg)}`); if (d.init) bits.push(`INI${sgn(d.init)}`); line += ' ' + (bits.join(' ') || '= SAME'); }
       else line += ' NEW SLOT!';
-      text(line.slice(0, 25), 5, 126, d && Object.values(d).some(v => v < 0) && !Object.values(d).some(v => v > 0) ? 'red' : 'green');
-      { const tp = typeof tierPowerText === 'function' ? tierPowerText(e) : ''; const alt = tp && (Date.now() / 2200 | 0) % 2; text((alt ? tp : `${e.adventurerRank || 'F'} RANK  ★${Math.min(12, e.starLevel || 1)}`).slice(0, 25), 5, 135, alt ? 'gold' : 2); }
-    } else if (e) { const it = ITEMS[e]; text(it.name.slice(0, 20), 5, 117, 3); textR('x' + G.inv[e], 156, 117, 2); text(wrap(it.desc, 25).slice(0, 2).join('\n'), 5, 126, 2); }
-    else text(this.tab === 0 ? `BAG ${G.bag.length}/${BAG_MAX}   ${G.gold} G` : 'EMPTY', 5, 118, 2), text('A:ITEM SEL:TAB START:SORT/JUNK', 5, 130, 1);
+      text(line.slice(0, 25), 5, 124, d && Object.values(d).some(v => v < 0) && !Object.values(d).some(v => v > 0) ? 'red' : 'green');
+      { const tp = typeof tierPowerText === 'function' ? tierPowerText(e) : ''; const alt = tp && (Date.now() / 2200 | 0) % 2; text((alt ? tp : `${e.adventurerRank || 'F'} RANK  ★${Math.min(12, e.starLevel || 1)}`).slice(0, 25), 5, 132, alt ? 'gold' : 2); }
+    } else if (e) { const it = ITEMS[e]; text(it.name.slice(0, 20), 5, 117, 3); textR('x' + G.inv[e], 156, 116, 2); text(wrap(it.desc, 25).slice(0, 2).join('\n'), 5, 126, 2); }
+    else text(this.tab === 0 ? `BAG ${G.bag.length}/${BAG_MAX}   ${G.gold} G` : 'EMPTY', 5, 117, 2), text('A:ITEM SEL:TAB START:SORT/JUNK', 5, 129, 1);
   }
 }
 // ---------------------------------------------------------------- COMPARE (item vs equipped)

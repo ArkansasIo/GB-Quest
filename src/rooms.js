@@ -201,6 +201,8 @@ function buildInstance(kind, def, floor = 0) {
     for (const t of lost) { const o = rooms.find(o => inside(o, t.x, t.y)) || rooms[0]; for (let j = o.y; j < o.y + o.h; j++) for (let i = o.x; i < o.x + o.w; i++) if (['o', 'p', 'b', 's', 'i', 'h', 'x', 'B'].includes(at(i, j))) set(i, j, '.'); }
   }
   for (const s of seals) set(s.x, s.y, 'D');
+  for (const o of rooms) if (o.door && g[o.door[1]] && g[o.door[1]][o.door[0]] === '.') g[o.door[1]][o.door[0]] = 'd'; // doorways into every room
+  tidyMap(g, seals);
   const rowsOut = g.map(rw => rw.join(''));
   return {
     id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, theme), tiles: dungeonTiles(theme), entry: M.entry, pulls, chest, traps, lvl,
@@ -209,6 +211,29 @@ function buildInstance(kind, def, floor = 0) {
   };
 }
 const neighbours = t => [[t.x + 1, t.y], [t.x - 1, t.y], [t.x, t.y + 1], [t.x, t.y - 1]];
+// final clean-up of a generated floor:
+//   * wall decor (torches, signs, shelves, braziers on walls) only where the wall has floor below it (a visible wall face)
+//   * a door only in a real doorway: walls on both sides (left+right or above+below) and floor on the other two;
+//     otherwise it becomes plain floor (doors in wide corridors or open rooms looked like they floated)
+//   * stairs (L exit, U up) always have a free floor tile next to them
+function tidyMap(g, seals) {
+  const H = g.length, W = g[0].length, at = (x, y) => (g[y] && g[y][x] !== undefined ? g[y][x] : '#');
+  const solid = c => c === '#' || c === 't' || c === 'n' || c === 'h';
+  const open = c => DUN_WALK.has(c) || c === 'd' || c === 'D';
+  const sealAt = (x, y) => (seals || []).some(s => s.x === x && s.y === y);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const c = at(x, y);
+    if ((c === 't' || c === 'n' || c === 'h') && !open(at(x, y + 1)) && !(c === 'h' && open(at(x, y - 1)))) g[y][x] = '#';
+    if (c === 'd' && !sealAt(x, y)) {
+      const lr = solid(at(x - 1, y)) && solid(at(x + 1, y)) && open(at(x, y - 1)) && open(at(x, y + 1));
+      const ud = solid(at(x, y - 1)) && solid(at(x, y + 1)) && open(at(x - 1, y)) && open(at(x + 1, y));
+      if (!lr && !ud) g[y][x] = '.';
+    }
+    if ((c === 'L' || c === 'U') && !neighbours({ x, y }).some(([a, b]) => DUN_WALK.has(at(a, b)) && at(a, b) !== 'L' && at(a, b) !== 'U')) {
+      const [a, b] = neighbours({ x, y }).find(([a, b]) => a > 0 && b > 0 && a < W - 1 && b < H - 1) || [x, y]; g[b][a] = '.';
+    }
+  }
+}
 function reach(g, start, blockers) {
   const H = g.length, W = g[0].length, seen = new Set([start.x + ',' + start.y]), q = [[start.x, start.y]];
   while (q.length) { const [x, y] = q.shift(); for (const [a, b] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) { if (a < 0 || b < 0 || a >= W || b >= H) continue; const c = g[b][a], k = a + ',' + b; if (seen.has(k) || c === '#' || blockers.has(c)) continue; seen.add(k); q.push([a, b]); } }
@@ -282,7 +307,7 @@ function gridLayout(r, kind, nBosses) {
     }
     if (B.type === 'arena' || B.type === 'entrance') B.ex = horiz ? (B.cx > A.cx ? B.x : B.x + B.w - 1) : B.cx;
   };
-  for (let i = 1; i < path.length; i++) link(byCell[key(...path[i - 1])], byCell[key(...path[i])], path.length - 1 === i);
+  for (let i = 1; i < path.length; i++) link(byCell[key(...path[i - 1])], byCell[key(...path[i])], true); // every room on the main path gets a door
   for (const s of sides) link(byCell[key(...s.from)], byCell[key(...s.at)], true);
   // the entrance stairs sit on the far wall from the next room
   const E = rooms[0], nx = rooms[1]; E.ex = nx.cx > E.cx ? E.x : E.x + E.w - 1; E.ey = E.cy;

@@ -367,18 +367,18 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
       frame(1, 105, 158, 38);
       if (this.vendor) {
         const p = HEIRLOOM_BY_ID[list[this.i]];
-        text(`GOLD ${fmt(G.gold)}  OWNED ${owned.length}/${HEIRLOOM_PIECES.length}`.slice(0, 25), 5, 108, 'gold');
-        text(p ? `${p.name}: ${p.group === 'trinket' ? 'BATTLE-START BUFF' : p.group === 'jewel' ? 'JEWELLERY' : 'GEAR'}`.slice(0, 25) : 'UNLOCK EVERY MISSING PIECE', 5, 118, 2);
-        text('BUY ONCE: ALL HEROES', 5, 128, 2); text('SUMMON FROM MENU>HEIRLOOMS', 5, 137, 1);
+        text(`GOLD ${fmt(G.gold)}  OWNED ${owned.length}/${HEIRLOOM_PIECES.length}`.slice(0, 25), 5, 107, 'gold');
+        text(p ? `${p.name}: ${p.group === 'trinket' ? 'BATTLE-START BUFF' : p.group === 'jewel' ? 'JEWELLERY' : 'GEAR'}`.slice(0, 25) : 'UNLOCK EVERY MISSING PIECE', 5, 116, 2);
+        text('BUY ONCE: ALL HEROES', 5, 125, 2); text('SUMMON FROM MENU>HEIRLOOMS', 5, 134, 1);
         return;
       }
-      text(`SET ${n}/${HEIRLOOM_PIECES.length}  ITEM LV ${G.lvl}`, 5, 108, n >= 2 ? 'gold' : 2);
+      text(`SET ${n}/${HEIRLOOM_PIECES.length}  ITEM LV ${G.lvl}`, 5, 107, n >= 2 ? 'gold' : 2);
       const next = HEIRLOOM_SET_BONUS.find(t => n < t.need), totals = {};
       for (const [s, v] of heirloomSetBonus(n, G.lvl)) totals[s] = (totals[s] || 0) + v;
       const have = Object.entries(totals), short = { xp: 'XP', hp: 'HP', resist: 'RES', dmg: 'DMG', heal: 'HEAL', gf: 'GOLD', mf: 'MF', crit: 'CRIT', critdmg: 'CDMG', leech: 'LEECH', haste: 'HASTE' };
-      text(have.length ? have.map(([s, v]) => `${short[s] || s.toUpperCase()}+${v}`).join(' ').slice(0, 25) : 'NO SET BONUS YET', 5, 118, have.length ? 'green' : 1);
-      text(next ? `${next.need}PC: ${heirloomSetBonus(next.need, G.lvl).slice(-2).map(([s, v]) => `${SUBSTATS[s].name.slice(0, 5)}+${v}`).join(' ')}`.slice(0, 25) : 'FULL SET BONUS ACTIVE', 5, 128, next ? 2 : 'gold');
-      text('SHARED BY ALL YOUR HEROES', 5, 137, 1);
+      text(have.length ? have.map(([s, v]) => `${short[s] || s.toUpperCase()}+${v}`).join(' ').slice(0, 25) : 'NO SET BONUS YET', 5, 116, have.length ? 'green' : 1);
+      text(next ? `${next.need}PC: ${heirloomSetBonus(next.need, G.lvl).slice(-2).map(([s, v]) => `${SUBSTATS[s].name.slice(0, 5)}+${v}`).join(' ')}`.slice(0, 25) : 'FULL SET BONUS ACTIVE', 5, 125, next ? 2 : 'gold');
+      text('SHARED BY ALL YOUR HEROES', 5, 134, 1);
     }
   }
   window.HeirloomScene = HeirloomScene;

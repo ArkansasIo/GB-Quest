@@ -285,8 +285,8 @@ class CharacterMenu {
     this.tabs().forEach(([name, label], index) => {
       const x = 2 + index * 52, active = index === this.tab;
       fill(x, 23, 50, 10, active ? (diablo ? 'gold' : 3) : 1); textC(label, x + 25, 24, active ? 0 : 3);
-      if (active) text(name, x + 2, 35, 'gold');
     });
+    textC(this.tab === 0 ? 'STATS - A: FULL SHEET' : this.tab === 1 ? 'BAG - A: OPEN BAGS' : 'GEAR - A: EQUIPMENT', 80, 35, 'gold');
     const D = derive(G), portrait = heroPortrait(G);
     fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
@@ -294,17 +294,25 @@ class CharacterMenu {
     text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
     text(`LV ${G.lvl}`, 5, 111, 3);
     text('HP', 5, 120, 2); bar(18, 121, 33, 4, G.hp, D.hpMax, 'hp');
+    if (this.tab === 1) { // bag preview: the first 15 items as icons
+      const bag = G.bag || [];
+      for (let k = 0; k < 15; k++) { const it = bag[k], x = 60 + (k % 5) * 19, y = 49 + Math.floor(k / 5) * 19; fill(x, y, 18, 18, it ? rarityCol(it.rarity === undefined ? 1 : it.rarity) : 2); fill(x + 1, y + 1, 16, 16, 0); if (it) { const ic = itemIcon(it); if (ic && IMG[ic]) blit(sprFit(ic, 13), x + 3, y + 3); } }
+      text(`ITEMS ${bag.length}/${BAG_MAX}`, 60, 108, 3); text(`GOLD ${fmt(G.gold)}`.slice(0, 16), 60, 118, 'gold');
+    } else {
     // paper doll: 7 slot icons down each side, stats in the middle (no more overlapping slot names)
     const gearSlots = ['head', 'neck', 'back', 'armor', 'hands', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'weapon', 'offhand', 'artifact', 'relic'];
-    gearSlots.forEach((slot, index) => {
+    if (this.tab === 2) gearSlots.forEach((slot, index) => {
       const item = G.eq[slot], x = index < 7 ? 59 : 146, y = 48 + (index % 7) * 11;
       fill(x, y, 11, 11, item ? rarityCol(item.rarity === undefined ? 1 : item.rarity) : 2); fill(x + 1, y + 1, 9, 9, 0);
       if (item) { const ic = itemIcon(item); if (ic && IMG[ic]) blit(sprFit(ic, 8), x + 2, y + 2); }
     });
     const prim = CLASSES[G.cls].primary, ilv = (() => { const L = gearSlots.map(s => G.eq[s]).filter(Boolean); return L.length ? Math.round(L.reduce((a, it) => a + (it.ilvl || 1), 0) / L.length) : 0; })();
-    [[`HP`, `${D.hpMax}`], ['AC', `${D.ac}`], [prim, `${D.A[prim]}`], ['ILVL', `${ilv}`], ['GEAR', `${gearSlots.filter(s => G.eq[s]).length}/14`], ['BAG', `${G.bag.length}/${BAG_MAX}`]].forEach(([k, v], i) => {
-      text(k, 73, 50 + i * 12, 2); textR(String(v).slice(0, 6), 143, 50 + i * 12, 3);
+    if (this.tab === 2) { const short = { head: 'HEAD', neck: 'NECK', back: 'BACK', armor: 'CHEST', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', ring1: 'RING', ring2: 'RING', weapon: 'MAIN', offhand: 'OFF', artifact: 'ARTI', relic: 'RELIC' };
+      for (let k = 0; k < 7; k++) { const y = 50 + k * 11; text(short[gearSlots[k]], 72, y, G.eq[gearSlots[k]] ? 3 : 2); textR(short[gearSlots[k + 7]], 144, y, G.eq[gearSlots[k + 7]] ? 3 : 2); }
+    } else [[`HP`, `${D.hpMax}`], ['AC', `${D.ac}`], [prim, `${D.A[prim]}`], ['ILVL', `${ilv}`], ['GEAR', `${gearSlots.filter(s => G.eq[s]).length}/14`], ['BAG', `${G.bag.length}/${BAG_MAX}`]].forEach(([k, v], i) => {
+      text(k, 62, 50 + i * 12, 2); textR(String(v).slice(0, 8), 154, 50 + i * 12, 3);
     });
+    }
     fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }
@@ -381,14 +389,14 @@ class Spellbook extends ListScene {
     frame(2, 95, 156, 47);
     const s = L[this.i];
     if (s) {
-      text(`${SCHOOLS[s.school].name} · ${s.lvl ? 'L' + s.lvl : 'CANTRIP'}${s.conc ? ' · CONC' : ''}${s.bonus ? ' · BONUS' : ' · ACT'}`, 5, 97, 'gold');
+      text(`${SCHOOLS[s.school].name} - ${s.lvl ? 'L' + s.lvl : 'CANTRIP'}${s.conc ? ' - CONC' : ''}${s.bonus ? ' - BONUS' : ' - ACT'}`.slice(0, 25), 5, 97, 'gold');
       const hit = s.save ? `${s.save} SAVE${s.half ? ' (1/2)' : ''}` : s.atk ? 'SPELL ATK' : (s.eff || '').toUpperCase();
-      const tags = [s.t ? s.t.toUpperCase() : '', hit, s.dt ? s.dt.toUpperCase() : '', s.dice || ''].filter(Boolean).join(' · ');
+      const tags = [s.t ? s.t.toUpperCase() : '', hit, s.dt ? s.dt.toUpperCase() : '', s.dice || ''].filter(Boolean).join(' - ');
       text(tags.slice(0, 25), 5, 106, 2);
       text(wrap(s.desc + (s.scale ? ` (+${s.scale})` : ''), 25).slice(0, 2).join('\n'), 5, 115);
       const clsList = (s.cls || []).map(c => c.slice(0, 3).toUpperCase()).join('/');
-      text(`CLS:${clsList || 'ALL'}`, 5, 133, 2);
-      textR(`SEL:SCH START:${mode}`, 155, 133, 1);
+      text(`${(s.cls || []).length ? (s.cls || []).length + ' CLASSES' : 'ALL CLASSES'}`, 5, 133, 2);
+      textR(`SEL:SCHOOL`, 155, 133, 2);
     } else {
       text(`${sch.name} TRADITION`, 5, 97, 'gold');
       text(wrap(sch.desc, 25).slice(0, 2).join('\n'), 5, 108);
@@ -560,7 +568,7 @@ class CraftScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; text(`<${k === 'ALL' ? 'ALL' : PROFS[k].slice(0, 9)} ${k === 'ALL' ? '' : G.prof[k]}> SEL:BLUEPRINT`, 2, 14, 2); }
-    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 18), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 16), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
     const r = this.items()[this.i]; if (!r) return; frame(2, 108, 156, 34);
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
     text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
@@ -829,7 +837,7 @@ class RealmStoreScene extends ListScene {
   }
 }
 class SocialScene extends ListScene {
-  constructor() { super(9); this.lb = null; this.loading = false; }
+  constructor() { super(8); this.lb = null; this.loading = false; }
   items() { return ['PARTY', 'FRIENDS', 'CREATE INVITE CODE', 'JOIN WITH CODE', 'TRADE', 'TRADING HUB', 'SERVER / MULTIPLAYER', 'LEADERBOARD', 'WHO (ONLINE)', 'GUILD', 'PET', 'REALM STORE', 'CHAT HELP']; }
   update() {
     this.navList();
@@ -887,9 +895,10 @@ class SocialScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr(); textC('SOCIAL', 80, 13, 'gold');
     this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 26 + j * 12; if (i === this.i) { fill(4, y - 2, 152, 12, 3); text(s, 10, y, 0); } else text(s, 10, y); });
-    this.scrollbar(155, 26, 108);
-    text(`MODE: ${modeOf().name}  NET: ${NET.status || 'OFFLINE'}`, 4, 124, 2);
-    text(G.guild ? `<${G.guild}>` : 'NO GUILD', 4, 134, 2);
+    this.scrollbar(155, 26, 94);
+    fill(2, 122, 156, 1, 2);
+    text(`${modeOf().name}  NET: ${NET.status || 'OFFLINE'}`.slice(0, 25), 4, 125, 2);
+    text((G.guild ? `<${G.guild}>` : 'NO GUILD').slice(0, 25), 4, 134, 2);
     if (this.loading) textC('LOADING...', 80, 110, 'blue');
   }
 }
