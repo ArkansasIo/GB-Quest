@@ -19,7 +19,7 @@ on:
         description: "Prototype rank to generate"
         required: true
         type: choice
-        options: ["F", "E", "D", "C", "B", "A", "S", "SSS"]
+        options: ["F", "E", "D", "C", "B", "A", "S", "SS", "SSS"]
         default: "F"
 
 permissions:
@@ -54,7 +54,7 @@ jobs:
             --output assets_hd64/equipment \
             --size "${{ inputs.frame_size }}" \
             --ranks "${{ inputs.rank }}"
-      - name: Build an equipped character preview
+      - name: Validate catalog equipment visual mappings\n        run: |\n          python tools/validate_equipment_visual_map.py \\\n            --catalog src/mmorpg/data/equipment.json \\\n            --mapping data/visuals/equipment-catalog-visual-map.json \\\n            --manifest assets_hd64/equipment/equipment_manifest.json \\\n            --rank "${{ inputs.rank }}"\n      - name: Build an equipped character preview
         run: |
           python - <<'PY'
           import json
