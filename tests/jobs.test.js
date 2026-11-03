@@ -212,3 +212,11 @@ test('action-RPG gear: aspects, greater affixes, tempering and masterwork', () =
   assert.ok(A.masterworkCost(11, 100).gold > A.masterworkCost(0, 100).gold * 10);
   assert.equal(A.TEMPER_MAX, 2); assert.equal(A.MW_MAX, 12);
 });
+
+test('guide: every topic listed and pages wrap to the dialogue box', () => {
+  const c = { Math, String, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('guide.js'), c); const Gd = c.GBQGuide;
+  assert.ok(Gd.GUIDE_TOPICS.length >= 13); assert.ok(Gd.GUIDE_TOPICS.includes('ASPECT CODEX'));
+  const pages = plain(Gd.guidePages(['one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty']));
+  for (const pg of pages) for (const line of pg.split(' ')) assert.ok(line.length <= 25);
+  assert.ok(pages.length >= 2, 'long text spans several pages');
+});
