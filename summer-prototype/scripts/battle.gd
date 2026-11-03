@@ -27,6 +27,11 @@ var barrier := 0
 var first_hit := true
 var used := {}                  # job abilities used this battle
 var round_no := 1
+var army: Array = []            # the necromancer's raised dead: {kind, name, hp, max, dmg, ac, taunt}
+var raised := false             # RAISE DEAD used this battle
+var remote_hp: Dictionary = {}  # hosting: joined player -> [hp, max]
+const ARMY_ART := {"warrior": "pk_mon_skeleton_soldier", "mage": "pk_mon_skelguard", "golem": "pk_mon_skelknight"}
+const ARMY_LABEL := {"warrior": "SKEL", "mage": "SMAG", "golem": "GOLM"}
 var hp_mult := 3                # boss HP multiplier (raid bosses use 4, world bosses 5)
 var on_lose: Callable = Callable()   # trials: losing ends the trial instead of sending you to the shrine
 var max_rounds := 0             # trials: TRIAL OF HOURS
@@ -50,6 +55,13 @@ func _ready() -> void:
 	var blk := Data.monster_block(foe_lvl)
 	foe = {"name": str(foe_def.get("name", "FOE")).substr(0, 12), "art": foe_def.get("art", ""), "lvl": foe_lvl, "hp": int(blk.get("hp", 10)), "max": int(blk.get("hp", 10)),
 		"ac": int(blk.get("ac", 12)), "hit": int(blk.get("hit", 3)), "dice": str(blk.get("dice", "1d6")), "xp": int(blk.get("xp", 10)), "gold": int(blk.get("gold", 3)), "dt": foe_def.get("dt", "slashing")}
+	army = Game.army()
+	for pid in _party():
+		var ch: Dictionary = Online.joined[pid]
+		var hd := int(Data.cls(str(ch.get("cls", "warden"))).get("hd", 8))
+		var L := clampi(int(ch.get("lvl", 1)), 1, 720)
+		var mx := hd + (mini(L, 20) - 1) * (hd / 2 + 1) + maxi(0, L - 20) * 2
+		remote_hp[pid] = [mx, mx]
 	# difficulty (the oracle) and series scaling
 	var D: Dictionary = Social.difficulty()
 	foe["max"] = maxi(1, roundi(int(foe["max"]) * hp_scale * float(D.get("hp", 1))))
@@ -77,6 +89,8 @@ func _ready() -> void:
 		elif act.has("buff"):
 			buffs[str(act["buff"])] = int(a["v"])
 			intro.append("%s: %s for %d rounds." % [Loot.aspect_name(a), str(act["buff"]).to_upper(), int(a["v"])])
+	Sound.music("arcboss" if foe_def.has("act") else ("boss" if boss else "battle"))
+	if boss: Sound.sfx("boss_appear")
 	_say(intro)
 
 func options() -> Array:
@@ -85,6 +99,7 @@ func options() -> Array:
 	if Game.is_caster() and Game.known_spells().size(): o.append("SPELL")
 	o.append("POTION x%d" % int(Game.hero["potions"]))
 	if _battle_items().size(): o.append("ITEM")
+	if army.size() and not raised and army.any(func(m): return int(m["hp"]) <= 0): o.append("RAISE DEAD")
 	o.append("RUN")
 	return o
 
@@ -111,7 +126,8 @@ func _sync(active: bool, text: String) -> void:
 	var party := [[str(Game.hero["name"]).substr(0, 8), maxi(0, int(Game.hero["hp"])), Game.hp_max()]]
 	for pid in _party():
 		var ch: Dictionary = Online.joined[pid]
-		party.append([str(ch.get("name", "?")).substr(0, 8), 1, 1])
+		var hpv: Array = remote_hp.get(pid, [1, 1])
+		party.append([str(ch.get("name", "?")).substr(0, 8), int(hpv[0]), int(hpv[1])])
 	Online.emit_topic("srv_battle", {"active": active and state != "over", "text": text.substr(0, 120), "party": party,
 		"foes": [[str(foe["name"]).substr(0, 10), maxi(0, int(foe["hp"])), int(foe["max"]), "f1", str(foe["art"])]]})
 	if active and state != "over" and _turn_sent != round_no:
@@ -123,6 +139,7 @@ func _sync(active: bool, text: String) -> void:
 func _remote_round(out: Array) -> void:
 	for pid in _party():
 		if int(foe["hp"]) <= 0: return
+		if int(remote_hp.get(pid, [1, 1])[0]) <= 0: continue
 		var ch: Dictionary = Online.joined[pid]
 		var act: Dictionary = Online.pending_acts.get(pid, {"kind": "attack"})
 		Online.pending_acts.erase(pid)
@@ -186,6 +203,13 @@ func _act(o: String) -> void:
 			names.append(str(ab["name"]).substr(0, 16) + ("" if not used.has(ab["id"]) else " (USED)"))
 		main.choose(names, Callable(self, "_skill"), "Job abilities work once a battle.")
 		return
+	elif o == "RAISE DEAD":
+		raised = true
+		var n := 0
+		for m in army:
+			if int(m["hp"]) <= 0: m["hp"] = m["max"]; n += 1
+		Sound.sfx("revive")
+		out.append("RAISE DEAD! %d minion%s rise again." % [n, "" if n == 1 else "s"])
 	elif o == "ITEM":
 		var names := []
 		for id in _battle_items(): names.append("%s x%d" % [Craft.item_name(id).substr(0, 14), int(Craft.items()[id])])
@@ -201,7 +225,7 @@ func _act(o: String) -> void:
 		if int(Game.hero["potions"]) <= 0: _say(["No potions left."]); return
 		Game.hero["potions"] = int(Game.hero["potions"]) - 1
 		var h := (Game.roll("2d4+2") + int(Game.hero["lvl"]) / 5) * (100 + Game.stat("heal")) / 100
-		_heal(h); out.append("You drink a potion: +%d HP." % h)
+		_heal(h); out.append("You drink a potion: +%d HP." % h); Sound.sfx("drink")
 	elif o == "RUN":
 		if boss or no_escape:
 			_say(["There is no escape from %s!" % foe["name"]])
@@ -225,10 +249,12 @@ func _swing(out: Array, bonus_pct: int, cond_on_hit: String = "") -> void:
 		var idx := out.size()
 		var dmg := _deal(base, "phys", dt, crit, bonus_pct, out)
 		out.insert(idx, ("CRITICAL! " if crit else "") + "You hit for %d. (d20 %d+%d)" % [dmg, r, hit])
+		Sound.sfx("crit" if crit else ("hit_pierce" if dt == "piercing" else ("hit_blunt" if dt == "bludgeoning" else "hit_slash")))
 		if cond_on_hit != "" and int(foe["hp"]) > 0:
 			conds[cond_on_hit] = 3; out.append("%s is %s!" % [foe["name"], cond_on_hit.to_upper()])
 	else:
 		out.append("You miss. (d20 %d+%d vs AC %d)" % [r, hit, ac])
+		Sound.sfx("miss")
 
 ## damage the foe: affix %, elements, buff and condition modifiers, aspect conditions, crits; then procs and lifesteal
 func _deal(base: int, kind: String, dt: String, crit: bool, bonus_pct: int, out: Array) -> int:
@@ -394,6 +420,11 @@ func _after(out: Array) -> void:
 		if int(foe["hp"]) <= 0:
 			_victory(out)
 			return
+	if army.size():
+		_army_turn(out)
+		if int(foe["hp"]) <= 0:
+			_victory(out)
+			return
 	if not Social.companion().is_empty():
 		out.append_array(Social.companion_turn(foe))
 		if int(foe["hp"]) <= 0:
@@ -411,6 +442,7 @@ func _after(out: Array) -> void:
 			_say(out, Callable(self, "_lost"))
 			return
 		out.append_array(["You have fallen...", "You wake at the village shrine with half your gold."])
+		Sound.music("defeat")
 		_say(out, Callable(self, "_died"))
 		return
 	# end of round: damage over time, regeneration, durations
@@ -436,7 +468,50 @@ func _after(out: Array) -> void:
 		return
 	_say(out)
 
+## the army strikes together: warriors swing, mages cast (never miss), the golem pounds
+func _army_turn(out: Array) -> void:
+	var total := 0
+	var L := int(Game.hero["lvl"])
+	for m in army:
+		if int(m["hp"]) <= 0: continue
+		var d := 0
+		match str(m["kind"]):
+			"warrior":
+				if Game.d20() + 2 + L / 4 >= int(foe["ac"]): d = Game.roll("1d6") + L / 3
+			"mage": d = Game.roll("1d8") + L / 3
+			"golem":
+				if Game.d20() + 1 + L / 4 >= int(foe["ac"]): d = Game.roll("1d10") + L / 4
+		total += roundi(d * float(m["dmg"]))
+	if total > 0:
+		foe["hp"] = int(foe["hp"]) - total
+		out.append("Your army deals %d." % total)
+
+## who the foe goes for: a taunting golem first, else anyone standing (the hero counts double)
+func _foe_target() -> String:
+	var alive := army.filter(func(m): return int(m["hp"]) > 0)
+	for m in alive:
+		if m.get("taunt", false) and Game.rng.randf() < 0.6: return "m%d" % army.find(m)
+	var pool := ["hero", "hero"]
+	for m in alive: pool.append("m%d" % army.find(m))
+	for pid in remote_hp:
+		if int(remote_hp[pid][0]) > 0: pool.append("p" + pid)
+	return pool[Game.rng.randi_range(0, pool.size() - 1)]
+
 func _foe_attack(out: Array) -> void:
+	var tgt := _foe_target()
+	if tgt != "hero":
+		var dmg2 := maxi(1, roundi(Game.roll(str(foe["dice"])) * dmg_scale))
+		if tgt.begins_with("m"):
+			var m: Dictionary = army[int(tgt.substr(1))]
+			if Game.d20() + int(foe["hit"]) < 10 + int(m["ac"]):
+				out.append("%s misses your %s." % [foe["name"], m["name"]]); return
+			m["hp"] = maxi(0, int(m["hp"]) - dmg2)
+			out.append("%s hits your %s for %d.%s" % [foe["name"], m["name"], dmg2, " It falls!" if int(m["hp"]) == 0 else ""])
+		else:
+			var pid := tgt.substr(1)
+			remote_hp[pid][0] = maxi(0, int(remote_hp[pid][0]) - dmg2)
+			out.append("%s hits %s for %d.%s" % [foe["name"], str(Online.joined[pid].get("name", "ALLY")), dmg2, " They fall!" if int(remote_hp[pid][0]) == 0 else ""])
+		return
 	var r := Game.d20()
 	var hit := int(foe["hit"]) - (2 if conds.has("frostbite") or conds.has("slowed") else 0) - (2 if conds.has("frightened") else 0)
 	if not (r == 20 or (r != 1 and r + hit >= Game.ac())):
@@ -485,6 +560,8 @@ func _victory(out: Array) -> void:
 	var ups := Game.gain_xp(xp)
 	Game.hero["gold"] = int(Game.hero["gold"]) + gold; Game.hero["kills"] = int(Game.hero.get("kills", 0)) + 1
 	out.append_array(["%s is defeated!" % foe["name"], "Got %d XP and %d G." % [xp, gold]])
+	Sound.sfx("boss_die" if boss else "monster_die")
+	Sound.music("victory")
 	for a in Game.aspects():
 		var e: Dictionary = a["e"]
 		if e.get("t") != "kill": continue
@@ -493,7 +570,9 @@ func _victory(out: Array) -> void:
 			var h := Game.hp_max() * int(a["v"]) / 100; _heal(h); out.append("%s: +%d HP." % [Loot.aspect_name(a), h])
 		elif act.has("explode"):
 			out.append("%s: the foe bursts in %s!" % [Loot.aspect_name(a), act["explode"]])
-	if ups: out.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
+	if ups:
+		out.append("LEVEL UP! You are now level %d." % int(Game.hero["lvl"]))
+		Sound.sfx("levelup")
 	var gd: Dictionary = Data.game.get("GEM_DROP", {})
 	if loot and Game.rng.randf() < float(gd.get("boss" if boss else "normal", 0.02)) * (1.0 + Game.stat("mf") / 100.0):
 		var g := GearX.random_gem(int(foe["lvl"]), Game.rng)
@@ -528,6 +607,11 @@ func _draw() -> void:
 	var cmp := Social.companion()
 	if not cmp.is_empty():
 		Data.blit_fit(self, "c_%s_4" % cmp["cls"], Rect2(196, 262, 90, 110))
+	for k in range(army.size()):
+		var m: Dictionary = army[k]
+		var pos := Vector2(212 + (k % 5) * 34, 286 + (k / 5) * 44)
+		Data.blit_fit(self, ARMY_ART.get(str(m["kind"]), "pk_mon_skeleton"), Rect2(pos, Vector2(44, 44)))
+		if int(m["hp"]) <= 0: draw_rect(Rect2(pos, Vector2(44, 44)), Color(0.06, 0.07, 0.12, 0.65))
 	var look := "c_%s_4" % Game.hero["cls"]
 	Data.blit_fit(self, look if Data.sprite(look) else "np_class_" + Game.hero["cls"], Rect2(80, 220, 130, 150))
 	# HP boxes, with the barrier as a white band and conditions / buffs as tags under them

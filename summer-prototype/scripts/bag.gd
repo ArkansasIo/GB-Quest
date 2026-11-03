@@ -211,6 +211,7 @@ func _act(k: int) -> void:
 	else:
 		var it: Dictionary = Game.bag()[k]
 		if Game.equip(k):
+			Sound.sfx("equip")
 			note = "Equipped %s." % Game.item_name(it)
 		else:
 			note = "Your class can't use that."

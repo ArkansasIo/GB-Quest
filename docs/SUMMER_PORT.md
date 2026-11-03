@@ -20,9 +20,10 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 | Output | Contents |
 |---|---|
-| `data/game.json` | 82 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
+| `data/game.json` | 90 rule tables (CHAPTERS, ACTS, ARC_BOSSES, RECIPES, AFFIX_POOL/AFFIX_K, ASPECT_TEXT, SUPPORT_TRAITS added for stage 4; SLOTS, GEM_*, TEMPER_*, MW_*, RAID/TRIAL/WORLD_BOSSES for stage 5); zones also carry gathering nodes and world-boss spots: CLASSES, SPECIES, SPELLS, BUFFS, ITEMS, BESTIARY (with art), BOSSES, ASPECT_SPECS, XP, MONSTER_LEVELS, BIOMES, SPELL_UNLOCK… |
 | `data/zones.json` | 154 zones/towns with 406 NPCs: tile rows (pack-aliased art), walk mask, exits, hub, level range |
 | `data/sprites.json` | 5,077 sprite names → `[file, x, y, w, h]` in the 4× art |
+| `audio/` (gitignored) | 127 WAVs: the 21 looping tracks, 3 jingles and 103 SFX of the browser's chip engine (src/engine.js `TRACKS` / `composeTrack` / `SFX_BANK`), rendered by a small offline copy of its 4-channel synth |
 | `art/` (gitignored) | `assets_hd64/` sheets plus 568 single 4× PNGs |
 
 `art/` is regenerated rather than committed, because it is derived from `assets/` and from third-party packs whose raw files stay out of git.
@@ -68,6 +69,11 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 - Difficulty 1-9 (DIFFICULTY) at the oracle: foe HP and damage up, XP and loot up, with level gates.
 - Online realm play (scripts/online.gd, realm.gd, market.gd): the port is a client of the game's own realm server (`npm run server`, backend/server.cjs) using the same endpoints as the browser client, so Godot and browser players share one realm. TITLE or START > REALM: set the server address, register or log in (the session token is kept in `user://online.cfg` on that machine only), see who is online, the leaderboard, and send say or world chat. Other players in your zone walk on the map with name tags and chat lines appear over the field; your presence uses the browser's format so browser players see you too. The town AUCTIONEER opens the trading hub: browse and buy listings from any player, list bag items at your price, cancel, and claim sale gold and expired items (items convert between the browser and port formats). Saving publishes your hero to the realm leaderboard. The server is unchanged.
 - Realm parties and war mode (the browser's host-server battle messages, srv_char / srv_battle / srv_turn / srv_act / srv_end): REALM > HOST PARTY opens your battles to other players; joined players (browser or Godot) are asked for a move each round, act beside you (or attack on their own if they don't answer) and share the XP and half the gold. REALM > JOIN PARTY joins any host on the realm: their battle is shown as a party battle view, and on your turn you pick a target or your best spell; the host's reward arrives when it ends. WAR MODE flags you (presence `w`), and pressing A on a flagged player in the wilds starts a duel (as the browser's fightWorldPvp: a fight against their class and level, honor with a repeat penalty).
+- Audio: zone music (each zone's track or its biome's), battle, boss and story-boss themes, victory and defeat jingles, dungeon and raid music, and SFX for menus, hits, crits, misses, kills, level-ups, potions, gathering, fishing, chests, stairs and equipping. SETTINGS sets music and sound volume 0-3.
+- UI themes: SETTINGS > UI THEME switches every panel, border and text colour between CLASSIC, MMO, CRIMSON, SANCTUM and DIABLO (the browser's theme names; CRIMSON is its `mu` theme).
+- Necromancer army (src/necro_army.js): necromancers raise up to 9 minions (2 at level 1, +1 per 4 levels, W W M W W M W W G; a necromancer support job raises up to 3) that fight every round and can be targeted; the BOOK OF DEAD (START menu) picks each kind's variant or sacrifices it for its lasting bonus; RAISE DEAD revives the fallen once a battle.
+- NPC AI (after src/npc_ai.js): townsfolk, trainers and wardens wander within 2 tiles of their posts, wait while you stand beside them and turn to face you when spoken to; shopkeepers and other fixed services keep their posts.
+- Hosted party battles track joined players' HP; the foe can target them, the army or you.
 - Town smiths (blacksmith, armorsmith, weaponsmith) sell ARMS and buy gear; road wardens have a line.
 - GEAR & BAG pages (LEFT/RIGHT tabs, A equips or puts away; two-handed weapons and shields swap each other out; items your class can't use are greyed).
 - START menu: status (with weapon and armour), gear & bag, potion, save, save & quit. Save/load to `user://gbquest_save.json`.
@@ -75,7 +81,7 @@ Then open `summer-prototype/project.godot` in Summer Engine or the Godot 4.3 edi
 
 ## Not ported yet (planned stages)
 
-Cloud saves (the server's save slots hold the browser's save format, so the port keeps its own local save), necromancer army, NPC AI, guilds and conquest, the MMO HUD themes, multiplayer, audio.
+Cloud saves (the server's save slots hold the browser's save format, so the port keeps its own local save). The day/night cycle, weapon mastery, amitoi expeditions and morph forms (src/tnl_systems.js), the 64-bit audio engine (the port renders the chip engine), and the MMO HUD layouts beyond colour themes (minimap, hotbar, orbs).
 
 ## Verified
 
@@ -147,6 +153,14 @@ CHECK waypoints=["elderwood_s1"] travelled to elderwood_s1 at (22, 12)
 CHECK spire fights=1 best=1
 CHECK difficulty VETERAN: dmg x1.30
 CHECK save=true load=true guild=DOT MATRIX comp=esme talents=12
+CHECK audio: field music true (7.3 s, loop true), levelup sfx true
+CHECK music in ardenhold: town
+CHECK npc ai: 6 of 35 moved in 6 s, fixed services moved=0, all within leash=true
+CHECK army: cap=9 raised=["SKIRMISHER SKELETON 98", ..., "BONE GOLEM 385"]
+CHECK battle music=battle army in battle=9
+CHECK raise dead: ["RAISE DEAD! 3 minions rise again."] alive=9
+CHECK sacrifice warriors: army=3 crit 0 -> 8
+CHECK themes: ["classic", "mmo", "mu", "sanctum", "diablo"]
 ```
 
 Online, against `GBQ_DATA=<temp dir> node backend/server.cjs` with a second client driven by curl in the browser's formats

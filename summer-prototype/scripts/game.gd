@@ -88,6 +88,35 @@ func weapon_damage(crit: bool) -> int:
 	var d := weapon_dice()
 	return maxi(1, roll(d) + (roll(d) if crit else 0) + weapon_mod() + int(gear().get("weapon", {}).get("plus", 0)) + int(hero.get("lvl", 1)) / 10)
 
+# ------------------------------------------------------------------ the necromancer's army (src/necro_army.js)
+## up to 9 for a necromancer (2 at level 1, +1 per 4 levels), up to 3 for a necromancer support job
+func army_cap() -> int:
+	var L := int(hero.get("lvl", 1))
+	var n := mini(9, 2 + L / 4)
+	if hero.get("cls") == "necromancer": return n
+	if str(hero.get("job", "")) == "necromancer" and L >= int(Data.game.get("SUPPORT_UNLOCK", 18)): return mini(3, n)
+	return 0
+
+func book() -> Dictionary:
+	var b: Dictionary = Data.game.get("DEFAULT_BOOK", {"warrior": "skirmisher", "mage": "shadow", "golem": "bone"}).duplicate()
+	b.merge(hero.get("book", {}), true)
+	return b
+
+## the minions raised at the start of a battle, in ARMY_ORDER, sacrificed kinds left out
+func army() -> Array:
+	var out := []
+	var L := int(hero.get("lvl", 1))
+	var bk := book()
+	var base := {"warrior": 10 + L * 4, "mage": 8 + L * 3, "golem": 14 + L * 5}
+	var order: Array = Data.game.get("ARMY_ORDER", [])
+	for kind in order.slice(0, army_cap()):
+		if bk.get(kind, "") == "sacrifice": continue
+		var v: Dictionary = Data.game.get("ARMY_VARIANTS", {}).get(kind, {}).get(bk[kind], {})
+		var mx := roundi(base[kind] * float(v.get("hp", 1)))
+		out.append({"kind": kind, "name": "%s %s" % [str(v.get("name", "")), {"warrior": "SKELETON", "mage": "SKELETAL MAGE", "golem": "GOLEM"}[kind]], "hp": mx, "max": mx,
+			"dmg": float(v.get("dmg", 1)), "ac": 10 + int(v.get("ac", 0)) + L / 8, "taunt": v.get("taunt", false)})
+	return out
+
 # ------------------------------------------------------------------ gear and the bag
 ## an owned item: {"k": "w"|"a", "id": WEAPONS/ARMORS key, "r": RARITY index, "plus": int}
 func def_of(it: Dictionary) -> Dictionary:
@@ -142,6 +171,12 @@ func stat(k: String) -> int:
 		for sv in Loot.support_bonus(str(hero["job"]), int(hero.get("lvl", 1))):
 			if sv[0] == k: v += int(sv[1])
 	v += Social.stat(k)
+	if army_cap() > 0:
+		var bk := book()
+		for t in bk:
+			if bk[t] == "sacrifice":
+				for kv in Data.game.get("SACRIFICE", {}).get(t, []):
+					if kv[0] == k: v += int(kv[1]) if k != "hp" else mini(200, 10 + int(hero.get("lvl", 1)))
 	return mini(v, int(Data.game.get("SUBSTATS", {}).get(k, {}).get("max", 99999)))
 
 ## the legendary aspects on equipped gear: [{"id", "v", "e"}]
@@ -161,7 +196,8 @@ func item_name(it: Dictionary) -> String:
 func rarity_color(it: Dictionary) -> Color:
 	var rr: Dictionary = Data.game.get("RARITY", [])[int(it.get("r", 1))]
 	var c := Color.html(str(rr.get("color", "#ffffff")))
-	return Data.INK if int(it.get("r", 1)) <= 1 else c.darkened(0.25)
+	if int(it.get("r", 1)) <= 1: return Data.INK
+	return c.darkened(0.25) if Data.theme == "classic" else c.lightened(0.1)
 
 func item_stat(it: Dictionary) -> String:
 	var d := def_of(it)

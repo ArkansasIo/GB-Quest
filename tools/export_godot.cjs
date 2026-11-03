@@ -48,6 +48,13 @@ const { chromium } = require('playwright');
       AI_GUILDS: typeof AI_GUILDS !== 'undefined' ? AI_GUILDS : [], CASTLE_BUFF: typeof CASTLE_BUFF !== 'undefined' ? CASTLE_BUFF : [], CASTLE_NEEDS: typeof CASTLE_NEEDS !== 'undefined' ? CASTLE_NEEDS : 3,
       CHALLENGE_WAVES: typeof challengeWaves === 'function' ? Object.fromEntries(['stone', 'castle', 'defend', 'castle_defend'].map(k => [k, challengeWaves(k)])) : {},
       TOWER_BOSSES: BOSSES.filter(b => b.cat === 'tower').map(b => ({ id: b.id, name: b.name, lvl: b.lvl, fam: b.fam, art: monsterArt(b) })),
+      // stage 10: audio (the chip engine's songs and SFX as note lists), the necromancer army
+      SONGS: Object.fromEntries(Object.keys(TRACKS).filter(id => !TRACKS[id].jingle).map(id => [id, composeTrack(id)])),
+      JINGLES: Object.fromEntries(Object.entries(JINGLES).map(([id, ms]) => [id, ms.map((m, i) => ['s', m ? N(m) : 0, m ? N(m) : 0, 0.16, m ? 0.05 : 0.0001, i * 0.13])])),
+      SFX_BANK, MUSIC_BY_BIOME: typeof MUSIC_BY_BIOME !== 'undefined' ? MUSIC_BY_BIOME : {},
+      ARMY_ORDER: typeof ARMY_ORDER !== 'undefined' ? ARMY_ORDER : [], ARMY_VARIANTS: typeof ARMY_VARIANTS !== 'undefined' ? ARMY_VARIANTS : {},
+      DEFAULT_BOOK: typeof DEFAULT_BOOK !== 'undefined' ? DEFAULT_BOOK : {},
+      SACRIFICE: typeof SACRIFICE !== 'undefined' ? Object.fromEntries(Object.entries(SACRIFICE).map(([k, f]) => [k, f(1)])) : {},
       SIDE_TEMPLATES, BOUNTY_TYPES: typeof BOUNTY_TYPES !== 'undefined' ? BOUNTY_TYPES : [],
       SLOTS, GEM_TYPES, GEM_DROP, GEM_TIER_MAX, GEM_SOCKET_LIMIT, GEM_ART: typeof AP_GEM_ART !== 'undefined' ? AP_GEM_ART : {},
       TEMPER_POOLS, TEMPER_BASE, TEMPER_MAX, MW_MAX, MW_STEP, MW_CRIT,
@@ -94,5 +101,59 @@ for n in open(lst).read().split('\\n'):
   const { imageSize } = { imageSize: f => { const b = fs.readFileSync(f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; } };
   for (const f of missing) { const [w, h] = imageSize(path.join(OUT, 'art', 'single', f)); sprites[f.slice(0, -4)] = [`single/${f}`, 0, 0, w, h]; }
   fs.writeFileSync(path.join(OUT, 'data', 'sprites.json'), JSON.stringify(sprites));
+  // ---- audio: render the chip engine (src/engine.js play / Music.tick) to looping WAVs, as the browser would play them
+  renderAudio(dump.data, path.join(OUT, 'audio'));
   console.log(`exported ${Object.keys(dump.data).length} tables, ${Object.keys(dump.zones).length} zones, ${Object.keys(sprites).length} sprites (${missing.length} single)`);
 })().catch(e => { console.error(e); process.exit(1); });
+
+// A small offline version of the browser's 4-channel chip synth: notes are [wave, f0, f1, dur, vol, delay];
+// waves s/p/q are 50/25/12.5% pulses, t triangle, w saw, n the 15-bit LFSR noise played at rate f0/1000.
+function renderAudio(data, dir) {
+  const RATE = 22050;
+  fs.mkdirSync(dir, { recursive: true });
+  let lfsr = 0x7fff; const noise = new Float32Array(RATE);
+  for (let i = 0; i < RATE; i++) { const bit = (lfsr ^ (lfsr >> 1)) & 1; lfsr = (lfsr >> 1) | (bit << 14); noise[i] = (lfsr & 1) ? 0.6 : -0.6; }
+  const osc = (wv, ph) => { const x = ph - Math.floor(ph);
+    if (wv === 't') return 1 - 4 * Math.abs(x - 0.5); if (wv === 'w') return 2 * x - 1;
+    const duty = wv === 'p' ? 0.25 : wv === 'q' ? 0.125 : 0.5; return x < duty ? 1 : -1; };
+  const mix = (buf, notes, loop) => {
+    for (const [wv, f0, f1, dur, vol, del = 0] of notes) {
+      if (!vol || vol < 0.001) continue;
+      const start = Math.round(del * RATE), n = Math.round((dur + 0.02) * RATE); let ph = 0;
+      for (let k = 0; k < n; k++) {
+        const u = Math.min(1, k / (dur * RATE)), g = vol * Math.pow(0.0001 / vol, u);
+        const f = f1 === f0 ? f0 : (wv === 'n' ? f0 + (f1 - f0) * u : f0 * Math.pow(f1 / f0, u));
+        let v;
+        if (wv === 'n') { ph += Math.max(0.05, f / 1000); v = noise[Math.floor(ph) % RATE]; }
+        else { ph += Math.max(20, f) / RATE; v = osc(wv, ph); }
+        let at = start + k; if (loop) at %= buf.length; else if (at >= buf.length) break;
+        buf[at] += v * g;
+      }
+    }
+  };
+  const wav = (file, buf, peak) => {
+    let m = 0; for (const x of buf) m = Math.max(m, Math.abs(x)); const k = m ? peak / m : 0;
+    const b = Buffer.alloc(44 + buf.length * 2);
+    b.write('RIFF', 0); b.writeUInt32LE(36 + buf.length * 2, 4); b.write('WAVE', 8); b.write('fmt ', 12); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+    b.writeUInt32LE(RATE, 24); b.writeUInt32LE(RATE * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(buf.length * 2, 40);
+    for (let i = 0; i < buf.length; i++) b.writeInt16LE(Math.max(-32767, Math.min(32767, Math.round(buf[i] * k * 32767))), 44 + i * 2);
+    fs.writeFileSync(path.join(dir, file), b);
+  };
+  let n = 0;
+  for (const [id, s] of Object.entries(data.SONGS)) {
+    const dt = 60 / s.bpm / 2, steps = s.lead.length, buf = new Float32Array(Math.round(steps * dt * RATE)), notes = [];
+    for (let i = 0; i < steps; i++) {
+      const d = i * dt, N = m => 440 * Math.pow(2, (m - 69) / 12);
+      if (s.lead[i]) notes.push(['p', N(s.lead[i]), N(s.lead[i]), dt * 0.85, 0.022, d]);
+      if (s.harm[i]) notes.push(['q', N(s.harm[i]), N(s.harm[i]), dt * 3, 0.012, d]);
+      if (s.bass[i]) notes.push(['t', N(s.bass[i]), N(s.bass[i]), dt * 1.4, 0.05, d]);
+      const dc = s.drums[i % (s.drums.length || 1)];
+      if (dc === 'k') notes.push(['n', 300, 80, 0.08, 0.05, d]); else if (dc === 's') notes.push(['n', 2500, 1500, 0.08, 0.035, d]); else if (dc === 'h') notes.push(['n', 8000, 8000, 0.02, 0.015, d]);
+    }
+    mix(buf, notes, true); wav(`music_${id}.wav`, buf, 0.45); n++;
+  }
+  const one = (file, notes, peak) => { let end = 0; for (const x of notes) end = Math.max(end, (x[5] || 0) + x[3] + 0.03); const buf = new Float32Array(Math.max(1, Math.round(end * RATE))); mix(buf, notes, false); wav(file, buf, peak); n++; };
+  for (const [id, notes] of Object.entries(data.JINGLES)) one(`music_${id}.wav`, notes, 0.5);
+  for (const [id, notes] of Object.entries(data.SFX_BANK)) if (Array.isArray(notes) && notes.length) one(`sfx_${id}.wav`, notes, 0.55);
+  console.log(`rendered ${n} audio files`);
+}

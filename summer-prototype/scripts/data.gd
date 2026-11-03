@@ -4,11 +4,35 @@ extends Node
 
 const T := 64                       # one tile: 16 px in the browser game, x4 here
 const GLYPH := Vector2(24, 36)      # the game's 6x9 pixel font, x4
-const INK := Color8(24, 28, 48)
-const EDGE := Color8(64, 88, 160)
-const PANEL := Color8(248, 246, 232)
-const PANEL2 := Color8(226, 232, 244)
+# UI colours: the current theme's (SETTINGS > UI THEME); names follow the browser's themes, mu is shown as CRIMSON
+var INK := Color8(24, 28, 48)
+var EDGE := Color8(64, 88, 160)
+var PANEL := Color8(248, 246, 232)
+var PANEL2 := Color8(226, 232, 244)
+var BORDER := Color8(24, 28, 48)
 const GOLD := Color8(232, 184, 48)
+const THEMES := {
+	"classic": {"name": "CLASSIC", "ink": [24, 28, 48], "edge": [64, 88, 160], "panel": [248, 246, 232], "panel2": [226, 232, 244], "border": [24, 28, 48]},
+	"mmo": {"name": "MMO", "ink": [236, 232, 210], "edge": [200, 168, 88], "panel": [26, 34, 60], "panel2": [42, 54, 92], "border": [8, 10, 20]},
+	"mu": {"name": "CRIMSON", "ink": [242, 222, 184], "edge": [200, 44, 40], "panel": [38, 14, 16], "panel2": [66, 24, 26], "border": [10, 4, 4]},
+	"sanctum": {"name": "SANCTUM", "ink": [212, 232, 228], "edge": [64, 172, 160], "panel": [24, 28, 30], "panel2": [38, 46, 48], "border": [6, 8, 8]},
+	"diablo": {"name": "DIABLO", "ink": [232, 204, 150], "edge": [160, 96, 40], "panel": [22, 17, 13], "panel2": [42, 31, 21], "border": [6, 4, 2]},
+}
+var theme := "classic"
+
+func set_theme(id: String) -> void:
+	if not THEMES.has(id): id = "classic"
+	theme = id
+	var t: Dictionary = THEMES[id]
+	INK = Color8(t["ink"][0], t["ink"][1], t["ink"][2])
+	EDGE = Color8(t["edge"][0], t["edge"][1], t["edge"][2])
+	PANEL = Color8(t["panel"][0], t["panel"][1], t["panel"][2])
+	PANEL2 = Color8(t["panel2"][0], t["panel2"][1], t["panel2"][2])
+	BORDER = Color8(t["border"][0], t["border"][1], t["border"][2])
+	var c := ConfigFile.new()
+	c.load("user://settings.cfg")
+	c.set_value("ui", "theme", id)
+	c.save("user://settings.cfg")
 const HP_RED := Color8(216, 48, 40)
 const MP_BLUE := Color8(48, 104, 224)
 const GREY := Color8(120, 128, 150)
@@ -25,6 +49,8 @@ func _ready() -> void:
 	zones = _load_json("res://data/zones.json")
 	sprites = _load_json("res://data/sprites.json")
 	ok = not game.is_empty() and not zones.is_empty() and not sprites.is_empty()
+	var c := ConfigFile.new()
+	if c.load("user://settings.cfg") == OK: set_theme(str(c.get_value("ui", "theme", "classic")))
 	if not ok:
 		push_error("GB-Quest data missing: run `node tools/export_godot.cjs` from the repository root.")
 
@@ -55,7 +81,8 @@ func sprite(name: String) -> Texture2D:
 	return at
 
 # ------------------------------------------------------------------ drawing helpers (call from a CanvasItem's _draw)
-func text(ci: CanvasItem, s: String, pos: Vector2, color: Color = INK, scale: float = 1.0) -> void:
+func text(ci: CanvasItem, s: String, pos: Vector2, color: Color = Color(0, 0, 0, 0), scale: float = 1.0) -> void:
+	if color.a == 0.0: color = INK   # default: the theme's ink
 	var font := sprite("font_6x9")
 	if font == null:
 		ci.draw_string(ThemeDB.fallback_font, pos + Vector2(0, 28 * scale), s, HORIZONTAL_ALIGNMENT_LEFT, -1, int(28 * scale), color)
@@ -74,25 +101,26 @@ func text(ci: CanvasItem, s: String, pos: Vector2, color: Color = INK, scale: fl
 			ci.draw_texture_rect_region(at.atlas, Rect2(Vector2(x, pos.y), GLYPH * scale), Rect2(at.region.position + Vector2((code - 32) * 24, 0), GLYPH), color)
 		x += GLYPH.x * scale
 
-func text_c(ci: CanvasItem, s: String, cx: float, y: float, color: Color = INK, scale: float = 1.0) -> void:
+func text_c(ci: CanvasItem, s: String, cx: float, y: float, color: Color = Color(0, 0, 0, 0), scale: float = 1.0) -> void:
 	text(ci, s, Vector2(cx - s.length() * GLYPH.x * scale / 2.0, y), color, scale)
 
-func text_r(ci: CanvasItem, s: String, rx: float, y: float, color: Color = INK, scale: float = 1.0) -> void:
+func text_r(ci: CanvasItem, s: String, rx: float, y: float, color: Color = Color(0, 0, 0, 0), scale: float = 1.0) -> void:
 	text(ci, s, Vector2(rx - s.length() * GLYPH.x * scale, y), color, scale)
 
 ## the handheld panel: rounded double border, cream fill
-func panel(ci: CanvasItem, r: Rect2, fill: Color = PANEL) -> void:
+func panel(ci: CanvasItem, r: Rect2, fill: Color = Color(0, 0, 0, 0)) -> void:
+	if fill.a == 0.0: fill = PANEL
 	var b := 4.0
-	ci.draw_rect(Rect2(r.position + Vector2(2 * b, 0), r.size - Vector2(4 * b, 0)), INK)
-	ci.draw_rect(Rect2(r.position + Vector2(0, 2 * b), r.size - Vector2(0, 4 * b)), INK)
-	ci.draw_rect(Rect2(r.position + Vector2(b, b), r.size - Vector2(2 * b, 2 * b)), INK)
+	ci.draw_rect(Rect2(r.position + Vector2(2 * b, 0), r.size - Vector2(4 * b, 0)), BORDER)
+	ci.draw_rect(Rect2(r.position + Vector2(0, 2 * b), r.size - Vector2(0, 4 * b)), BORDER)
+	ci.draw_rect(Rect2(r.position + Vector2(b, b), r.size - Vector2(2 * b, 2 * b)), BORDER)
 	ci.draw_rect(Rect2(r.position + Vector2(2 * b, b), r.size - Vector2(4 * b, 2 * b)), EDGE)
 	ci.draw_rect(Rect2(r.position + Vector2(b, 2 * b), r.size - Vector2(2 * b, 4 * b)), EDGE)
 	ci.draw_rect(Rect2(r.position + Vector2(2 * b, 2 * b), r.size - Vector2(4 * b, 4 * b)), fill)
-	ci.draw_rect(Rect2(r.position + Vector2(3 * b, 3 * b), Vector2(r.size.x - 6 * b, b)), PANEL2)
+	ci.draw_rect(Rect2(r.position + Vector2(3 * b, 3 * b), Vector2(r.size.x - 6 * b, b)), PANEL2 if fill == PANEL else fill.lightened(0.08))
 
 func bar(ci: CanvasItem, r: Rect2, frac: float, color: Color) -> void:
-	ci.draw_rect(r, INK)
+	ci.draw_rect(r, BORDER)
 	ci.draw_rect(Rect2(r.position + Vector2(4, 4), r.size - Vector2(8, 8)), Color8(40, 44, 60))
 	var w := (r.size.x - 8) * clampf(frac, 0.0, 1.0)
 	if w > 0:

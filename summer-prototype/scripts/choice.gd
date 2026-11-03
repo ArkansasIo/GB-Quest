@@ -15,6 +15,7 @@ func step(_d: float) -> void:
 	if n == 0:
 		_finish(-1)
 		return
+	if main.pressed("ui_up") or main.pressed("ui_down"): Sound.sfx("cursor")
 	if main.pressed("ui_up"):
 		i = (i + n - 1) % n
 	if main.pressed("ui_down"):
@@ -29,6 +30,7 @@ func step(_d: float) -> void:
 		_finish(-1)
 
 func _finish(k: int) -> void:
+	Sound.sfx("select" if k >= 0 else "back")
 	main.pop(self)
 	if done.is_valid():
 		done.call(k)

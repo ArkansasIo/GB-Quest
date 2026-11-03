@@ -25,7 +25,7 @@ func step(delta: float) -> void:
 			if main.pressed("ui_a"):
 				_end(["Too early! The fish swims off."]); return
 			if t > wait:
-				state = "bite"; bite_at = t
+				state = "bite"; bite_at = t; Sound.sfx("bite")
 		"bite":
 			if main.pressed("ui_a"):
 				_catch(); return
@@ -44,6 +44,7 @@ func _catch() -> void:
 	if k == "old_boot":
 		out.append("An old boot. Lovely.")
 	else:
+		Sound.sfx("reel")
 		Craft.add(k)
 		Social.count("fish")
 		var cr: Dictionary = Game.hero.get("craft", {}); cr["fish"] = skill() + 1; Game.hero["craft"] = cr

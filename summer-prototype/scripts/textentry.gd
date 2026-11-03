@@ -39,8 +39,8 @@ func _draw() -> void:
 	var y := 184.0
 	for l in load("res://scripts/loot.gd").wrap(prompt, 24).slice(0, 2):
 		Data.text(self, str(l), Vector2(32, y)); y += 40
-	draw_rect(Rect2(28, 272, 584, 56), Data.INK)
-	draw_rect(Rect2(32, 276, 576, 48), Color.WHITE)
+	draw_rect(Rect2(28, 272, 584, 56), Data.EDGE)
+	draw_rect(Rect2(32, 276, 576, 48), Data.PANEL2)
 	var shown: String = ("*".repeat(_edit.text.length()) if secret else _edit.text) if _edit else value
 	if shown.length() > 22: shown = shown.substr(shown.length() - 22)
 	Data.text(self, shown + ("_" if int(_t * 2) % 2 == 0 else " "), Vector2(44, 282))

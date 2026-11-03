@@ -150,6 +150,7 @@ func _ready() -> void:
 	await _stage5()
 	await _stage6()
 	await _stage7()
+	await _stage10()
 	get_tree().quit()
 
 ## run a pushed battle to the end with ATTACK, keeping the hero alive unless told not to
@@ -526,3 +527,47 @@ func _online(url: String) -> void:
 		f._duel(foe_p); await _autobattle(main.top()); await _clear_dialogs(f)
 	print("CHECK duel honor %d -> %d" % [h0, int(Game.hero.get("honor", 0))])
 	print("CHECK done peer=%s" % Online.peer)
+
+func _stage10() -> void:
+	# audio: the rendered chip tracks and SFX load, and the field / battle pick the right music
+	var st = Sound._stream("music_field", true)
+	var sx = Sound._stream("sfx_levelup", false)
+	print("CHECK audio: field music %s (%.1f s, loop %s), levelup sfx %s" % [st != null, st.data.size() / 2.0 / st.mix_rate if st else 0.0, st.loop_mode == AudioStreamWAV.LOOP_FORWARD if st else false, sx != null])
+	Game.new_hero("MORT", "necromancer", "twinblood"); Game.hero["lvl"] = 28; Game.hero["xp"] = Data.xp_for(28); Game.hero["hp"] = Game.hp_max()
+	Game.zone_id = "ardenhold"; Game.pos = Vector2i(16, 12)
+	main.clear(); var f = main.push(load("res://scripts/field.gd").new()); await _wait(0.3); await _clear_dialogs(f)
+	print("CHECK music in ardenhold: %s" % Sound.cur)
+	# NPC AI: townsfolk move about their posts
+	var before: Array = f.zone["npcs"].map(func(n): return Vector2i(int(n["x"]), int(n["y"])))
+	for k in range(60):
+		f.step(0.1)
+		await get_tree().process_frame
+	var moved := 0
+	for k in range(before.size()):
+		if Vector2i(int(f.zone["npcs"][k]["x"]), int(f.zone["npcs"][k]["y"])) != before[k]: moved += 1
+	var fixed_moved := 0
+	for k in range(before.size()):
+		var n2: Dictionary = f.zone["npcs"][k]
+		if str(n2.get("svc")) in f.FIXED and Vector2i(int(n2["x"]), int(n2["y"])) != before[k]: fixed_moved += 1
+	var leash_ok: bool = f.zone["npcs"].all(func(n3): return not n3.has("x0") or (absi(int(n3["x"]) - int(n3["x0"])) <= 2 and absi(int(n3["y"]) - int(n3["y0"])) <= 2))
+	print("CHECK npc ai: %d of %d moved in 6 s, fixed services moved=%d, all within leash=%s" % [moved, before.size(), fixed_moved, leash_ok])
+	# the necromancer's army: 9 at level 28, then a sacrifice
+	print("CHECK army: cap=%d raised=%s" % [Game.army_cap(), Game.army().map(func(m): return "%s %d" % [m["name"], m["max"]])])
+	f._encounter(); await _wait(1.0); var b = main.top()
+	print("CHECK battle music=%s army in battle=%d options=%s" % [Sound.cur, b.army.size(), b.options()])
+	b.state = "menu"; await _wait(0.1); await _shot("32_army_battle")
+	for m in b.army.slice(0, 3): m["hp"] = 0
+	b._act("RAISE DEAD")
+	print("CHECK raise dead: %s alive=%d" % [b.msgs.slice(0, 1), b.army.filter(func(m): return m["hp"] > 0).size()])
+	await _autobattle(b); await _clear_dialogs(f)
+	var crit0 := Game.stat("crit")
+	f._book_kind = "warrior"; f._book_set(3); await _clear_dialogs(f)
+	print("CHECK sacrifice warriors: army=%d crit %d -> %d book=%s" % [Game.army().size(), crit0, Game.stat("crit"), Game.book()])
+	# UI themes
+	var shots := []
+	for th in Data.THEMES:
+		Data.set_theme(th)
+		var bg = main.push(load("res://scripts/settings.gd").new()); bg.i = 2; await _wait(0.15); await _shot("33_theme_" + th); main.pop(bg)
+		shots.append(th)
+	Data.set_theme("classic")
+	print("CHECK themes: %s" % [shots])

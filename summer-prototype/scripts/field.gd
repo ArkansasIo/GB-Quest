@@ -91,6 +91,7 @@ func _gather_here() -> bool:
 			var item := str(n[3])
 			var qty := 1 + (1 if Game.rng.randf() < 0.35 else 0)
 			Craft.add(item, qty)
+			Sound.sfx("gather")
 			main.say(["%s: gathered %d %s." % [str(n[2]).to_upper(), qty, Craft.mat_name(item)]] + Quest.on_gather(Game.zone_id))
 			return true
 	return false
@@ -136,7 +137,39 @@ func _dungeon_at(x: int, y: int) -> String:
 
 const DIRS := {"up": Vector2i(0, -1), "down": Vector2i(0, 1), "left": Vector2i(-1, 0), "right": Vector2i(1, 0)}
 
+# ------------------------------------------------------------------ NPC AI (after src/npc_ai.js): townsfolk and trainers wander
+## near their posts (a leash of 2 tiles), stop when you stand next to them and turn to face you when spoken to.
+## Shopkeepers, innkeepers and other fixed services keep their posts.
+const NPC_STEP := 0.3
+const FIXED := ["inn", "vendor", "bank", "auction", "guild", "honor", "lfg", "difficulty", "tower", "trials", "portal", "server", "stable", "arena",
+	"blacksmith", "armorsmith", "weaponsmith", "housing", "elder", "trainer", "craftmaster"]
+var _ai_t := 0.0
+
+func _npc_ai(delta: float) -> void:
+	var npcs: Array = zone.get("npcs", [])
+	for n in npcs:
+		if n.has("mt") and float(n["mt"]) > 0: n["mt"] = maxf(0.0, float(n["mt"]) - delta)
+	_ai_t -= delta
+	if _ai_t > 0 or npcs.is_empty(): return
+	_ai_t = 0.35
+	for k in range(2):
+		var n: Dictionary = npcs[Game.rng.randi_range(0, npcs.size() - 1)]
+		if str(n.get("svc")) in FIXED or Game.rng.randf() < 0.5: continue
+		if not n.has("x0"): n["x0"] = int(n["x"]); n["y0"] = int(n["y"])
+		var here := Vector2i(int(n["x"]), int(n["y"]))
+		if (here - Game.pos).length() < 1.5: continue   # waits for you
+		var dname: String = ["up", "down", "left", "right"][Game.rng.randi_range(0, 3)]
+		var to: Vector2i = here + DIRS[dname]
+		n["d"] = dname
+		if absi(to.x - int(n["x0"])) > 2 or absi(to.y - int(n["y0"])) > 2: continue
+		var w: Array = zone.get("walk", [])
+		if to.y < 0 or to.y >= w.size() or to.x < 0 or to.x >= str(w[to.y]).length() or str(w[to.y])[to.x] != "1": continue
+		if to == Game.pos or not _npc_at(to.x, to.y).is_empty() or _mob_at(to.x, to.y) >= 0: continue
+		n["px"] = here.x; n["py"] = here.y; n["x"] = to.x; n["y"] = to.y; n["mt"] = NPC_STEP; n["f"] = 1 - int(n.get("f", 0))
+
 func step(delta: float) -> void:
+	_npc_ai(delta)
+	Sound.zone_music(zone)   # back to the zone's track after battles and jingles
 	if banner > 0: banner -= delta
 	if moving:
 		move_t += delta
@@ -268,6 +301,7 @@ func _arrived_dungeon() -> void:
 		if zone.get("last", false):
 			_finish_dungeon()
 		else:
+			Sound.sfx("stairs")
 			enter_dungeon(str(Game.dun["id"]), int(zone["floor"]) + 1)
 	elif _trap_at(p):
 		pass
@@ -277,6 +311,7 @@ func _arrived_dungeon() -> void:
 		Game.hero["gold"] = int(Game.hero["gold"]) + g
 		var it := Game.random_drop(int(zone["lvl"][0]) + 10)
 		Game.bag().append(it)
+		Sound.sfx("chest")
 		main.say(["A hidden cache! %d G" % g, "and %s." % Game.item_name(it)])
 
 ## hidden traps: a DEX save (d20 + DEX + proficiency) against the trap's DC, or take its damage; found traps show as spikes
@@ -350,6 +385,8 @@ func _mob_down(m: Dictionary) -> void:
 		main.say(["The seal on the stairs breaks."])
 
 func _talk(n: Dictionary) -> void:
+	n["d"] = {"up": "down", "down": "up", "left": "right", "right": "left"}[Game.facing]   # turns to face you
+	Sound.sfx("confirm")
 	var svc := str(n.get("svc"))
 	talking = str(n.get("name", "NPC"))
 	if svc == "inn":
@@ -674,8 +711,9 @@ func _buy(k: int) -> void:
 	Game.bag().append(it)
 	main.say(["Bought %s. Equip it from GEAR & BAG." % Game.item_name(it)])
 
-const MENU := ["CHARACTER", "GEAR & BAG", "ITEMS", "POTION", "QUEST", "MOUNT", "TRAVEL", "COMPANION", "BOUNTIES", "REALM", "SAVE", "SAVE & QUIT", "BACK"]
+const MENU := ["CHARACTER", "GEAR & BAG", "ITEMS", "POTION", "QUEST", "MOUNT", "BOOK OF DEAD", "TRAVEL", "COMPANION", "BOUNTIES", "REALM", "SETTINGS", "SAVE", "SAVE & QUIT", "BACK"]
 var menu_opts: Array = []
+var menu_keys: Array = []
 
 var item_ids: Array = []
 
@@ -684,14 +722,41 @@ func _use_item(k: int) -> void:
 	main.say(Craft.use_item(str(item_ids[k]), false)[0])
 
 func _menu() -> void:
-	menu_opts = MENU.duplicate()
-	menu_opts[3] = "POTION (%d)" % int(Game.hero["potions"])
-	menu_opts[5] = ("DISMOUNT" if Game.hero.get("mounted", false) else "MOUNT") if Game.hero.get("mount", "") != "" else "MOUNT (NONE)"
+	Sound.sfx("open")
+	menu_keys = MENU.filter(func(m): return m != "BOOK OF DEAD" or Game.army_cap() > 0)
+	menu_opts = []
+	for m in menu_keys:
+		match m:
+			"POTION": menu_opts.append("POTION (%d)" % int(Game.hero["potions"]))
+			"MOUNT": menu_opts.append(("DISMOUNT" if Game.hero.get("mounted", false) else "MOUNT") if Game.hero.get("mount", "") != "" else "MOUNT (NONE)")
+			_: menu_opts.append(m)
 	main.choose(menu_opts, Callable(self, "_menu_pick"))
+
+# ------------------------------------------------------------------ the Book of the Dead: a variant per minion kind, or sacrifice it
+var _book_kind := ""
+
+func _book() -> void:
+	var bk := Game.book()
+	main.choose(["WARRIORS: %s" % str(bk["warrior"]).to_upper(), "MAGES: %s" % str(bk["mage"]).to_upper(), "GOLEM: %s" % str(bk["golem"]).to_upper()], Callable(self, "_book_pick"),
+		"Army of %d. Pick a variant, or sacrifice a kind for a lasting bonus." % Game.army_cap())
+
+func _book_pick(k: int) -> void:
+	if k < 0: return
+	_book_kind = ["warrior", "mage", "golem"][k]
+	var vs: Dictionary = Data.game.get("ARMY_VARIANTS", {}).get(_book_kind, {})
+	main.choose(vs.values().map(func(v): return str(v["name"])) + ["SACRIFICE"], Callable(self, "_book_set"), "SACRIFICE: %s" % ", ".join(Data.game.get("SACRIFICE", {}).get(_book_kind, []).map(func(kv): return "+%s %s" % [kv[1], kv[0]])))
+
+func _book_set(k: int) -> void:
+	if k < 0: return
+	var vs: Array = Data.game.get("ARMY_VARIANTS", {}).get(_book_kind, {}).keys()
+	var b: Dictionary = Game.hero.get("book", {})
+	b[_book_kind] = vs[k] if k < vs.size() else "sacrifice"
+	Game.hero["book"] = b
+	main.say(["%s: %s." % [_book_kind.to_upper(), str(b[_book_kind]).to_upper()], "Your army: %d raised next battle." % Game.army().size()])
 
 func _menu_pick(k: int) -> void:
 	if k < 0: return
-	var pick: String = MENU[k]
+	var pick: String = menu_keys[k]
 	match pick:
 		"CHARACTER": main.push(CharPage.new())
 		"GEAR & BAG": main.push(Bag.new())
@@ -716,6 +781,8 @@ func _menu_pick(k: int) -> void:
 		"COMPANION": Social.open_companions(main)
 		"BOUNTIES": Social.open_bounties(main)
 		"REALM": main.push(load("res://scripts/realm.gd").new())
+		"SETTINGS": main.push(load("res://scripts/settings.gd").new())
+		"BOOK OF DEAD": _book()
 		"POTION":
 			if int(Game.hero["potions"]) <= 0:
 				main.say(["No potions."])
@@ -751,8 +818,12 @@ func _draw() -> void:
 	for n in zone.get("npcs", []):
 		var p := Vector2(int(n["x"]), int(n["y"])) * T - cam
 		if p.x < -T or p.x > 640 or p.y < -T or p.y > 576: continue
-		var spr: String = (str(n["sprite"]) + "_down0") if n.get("sprite") else "gh_npc_townsman_down0"
-		Data.blit_fit(self, spr, Rect2(p + Vector2(0, -12), Vector2(T, T)))
+		var nd := str(n.get("d", "down"))
+		var ndir := "side" if nd in ["left", "right"] else nd
+		var spr: String = "%s_%s%d" % [str(n["sprite"]) if n.get("sprite") else "gh_npc_townsman", ndir, int(n.get("f", 0))]
+		var np2 := p
+		if n.has("mt") and float(n["mt"]) > 0: np2 = (Vector2(int(n["px"]), int(n["py"])) * T - cam).lerp(p, 1.0 - float(n["mt"]) / NPC_STEP)
+		Data.blit_fit(self, spr, Rect2(np2 + Vector2(0, -12), Vector2(T, T)), nd == "left")
 	var dir := "side" if Game.facing in ["left", "right"] else Game.facing
 	var f := walk_frame if moving else 0
 	var ns: Array = zone.get("nodes", [])
