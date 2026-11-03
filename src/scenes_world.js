@@ -760,15 +760,18 @@ class Field {
         const f = LOOK_F[G.dir][(this.ox || this.oy) ? (this.walk >> 3) % 2 : 0];
         if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
-        const gearWalker = worldGearWalker(G, G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost);
-        const portrait = gearWalker || worldPortrait(G, G.dir, ghost);
+        const walkFrame = (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0;
+        const hdFrame = hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
+        const gearWalker = worldGearWalker(G, G.dir, walkFrame, ghost);
+        const portrait = hdFrame || gearWalker || worldPortrait(G, G.dir, ghost);
         if (portrait) blit(portrait, px - cx + (T - portrait.width) / 2, py - cy + T - portrait.height - 1 - (G.mounted ? 6 : 0) - moveBob);
         else if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
         const bob = (this.walk >> 3) % 2;
+        const hdFrame = hdWorldFrame(e.c, e.dir, bob, true, false);
         const gearWalker = worldGearWalker(e.c, e.dir, bob);
-        const portrait = gearWalker || worldPortrait(e.c, e.dir);
+        const portrait = hdFrame || gearWalker || worldPortrait(e.c, e.dir);
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1 - bob);
         else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex, ey - 3);
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
@@ -852,6 +855,33 @@ function worldPortrait(character, dir = 'down', ghost = false) {
     if (icon) x.drawImage(icon, v.x, v.y);
   }
   return out;
+}
+// HD art is prepared asynchronously and only drawn after its canvas is ready.
+let HD_WORLD_PRESENTER = null, HD_WORLD_SOURCE = null, HD_WORLD_SCALED = null;
+function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost = false) {
+  if (ghost || !character || !character.eq || typeof globalThis === 'undefined') return null;
+  const api = globalThis.GBQHDCharacterArt;
+  if (!api) return null;
+  try {
+    if (!HD_WORLD_PRESENTER) {
+      const runtime = api.createRuntime();
+      HD_WORLD_PRESENTER = api.createFramePresenter(runtime);
+    }
+    const canvas = HD_WORLD_PRESENTER.request(character, {
+      direction: dir, frame: Number(frame) || 0,
+      state: moving ? 'moving' : 'idle',
+      rank: character.rank || character.gearRank || 'F'
+    });
+    if (!canvas) return null;
+    if (HD_WORLD_SOURCE !== canvas) {
+      HD_WORLD_SOURCE = canvas;
+      HD_WORLD_SCALED = typeof scaled === 'function' ? scaled(canvas, 24, 24) : canvas;
+    }
+    return HD_WORLD_SCALED;
+  } catch (error) {
+    console.warn('HD character frame unavailable; using classic sprite', error);
+    return null;
+  }
 }
 const NPC_LOOK = { villager_0: 'villager0', villager_1: 'villager1', villager_2: 'villager2', villager_3: 'villager3', villager_4: 'guard', villager_5: 'merchant',
   elder_0: 'elder', elder_1: 'sage', elder_2: 'elder', elder_3: 'sage', elder_4: 'sage', elder_5: 'elder', hero_0: 'guard', hero_1: 'guard', hero_2: 'vanguard', hero_3: 'warden' };
