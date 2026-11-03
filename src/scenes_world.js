@@ -857,7 +857,7 @@ function worldPortrait(character, dir = 'down', ghost = false) {
   return out;
 }
 // HD art is prepared asynchronously and only drawn after its canvas is ready.
-let HD_WORLD_PRESENTER = null, HD_WORLD_SOURCE = null, HD_WORLD_SCALED = null;
+let HD_WORLD_RUNTIME = null;\nconst HD_WORLD_PRESENTERS = new WeakMap(), HD_WORLD_SCALED = new WeakMap();
 function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost = false) {
   if (ghost || !character || !character.eq || typeof globalThis === 'undefined') return null;
   const api = globalThis.GBQHDCharacterArt;
