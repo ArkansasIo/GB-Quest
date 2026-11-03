@@ -95,8 +95,8 @@ jobs:
           import json, os
           from pathlib import Path
           report = json.loads(Path("assets_hd64/animations/animation_pack_report.json").read_text())
-          assert report["sequence_count"] == 3072, report
-          assert report["frame_count_target"] == 19584, report
+          assert report["sequence_count"] == 3456, report
+          assert report["frame_count_target"] == 22032, report
           assert report["artwork_generated"] is False, report
           archetype, rank = os.environ["ARCHETYPE"], os.environ["RANK"]
           frames = list((Path("assets_hd64/animations/frames") / archetype / rank).rglob("frame_*.png"))
