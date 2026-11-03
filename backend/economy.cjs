@@ -39,6 +39,7 @@ function ensureEconomy(db) {
   db.economy.players ||= {};
   db.economy.listings ||= {};
   db.economy.idempotency ||= {};
+  db.economy.trades ||= {};
   return db.economy;
 }
 
