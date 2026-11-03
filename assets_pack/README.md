@@ -14,7 +14,7 @@ Source: `art_source/asset_pack_sheet.png`, the asset sheet supplied for the proj
 
 Each folder has the full-detail cutout (`<panel>_NNN.png`, transparent background) and an 8-bit version in `px/` (32 colours, dark outline). `manifest.json` lists every asset with its source box on the sheet; `preview.png` shows all the pixel versions.
 
-The script also installs every `px/` version into the game as `assets/ap_<panel>_NNN.png` (scenes: `assets/ap_scene_<name>.png`). The game uses them in `src/asset_pack.js`: SETTINGS > BATTLE BG > SCENES, the potion/food/scroll/book/key/coin item icons, and gem icons in the socket forge. All of them are loaded by name, so any other one can be used with `blit(sprFit('ap_monsters_003', 32), x, y)`.
+The script also installs every `px/` version into the game as `assets/ap_<panel>_NNN.png` (scenes: `assets/ap_scene_<name>.png`). The game uses them in `src/asset_pack.js`: SETTINGS > BATTLE BG > SCENES, the potion/food/scroll/book/key/coin item icons, gem icons in the socket forge, monster art for about half of each matching bestiary family, and NPC face portraits in dialogue. All of them are loaded by name, so any other one can be used with `blit(sprFit('ap_monsters_003', 32), x, y)`.
 
 ## UI kit (`ui/`)
 

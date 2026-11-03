@@ -121,6 +121,17 @@ UI_SHEET = {
     'scenes': {'minimap': (750, 618, 892, 752), 'world_map': (918, 624, 1118, 740), 'guild_crest': (1160, 626, 1230, 706)},
 }
 
+# item-cell borders: the ornate rim of the UI kit's NORMAL frame, tinted once per rarity tier (au_rframe_0..8)
+RARITY_RGB = [(157, 157, 157), (255, 255, 255), (30, 255, 0), (0, 112, 221), (163, 53, 238), (255, 128, 0), (230, 38, 77), (230, 204, 128), (127, 255, 212)]
+def make_rarity_rings(game, size=18, ring=2):
+    src = Image.open(os.path.join(OUT, 'rarity_frames', 'rarity_frames_000.png')).convert('RGBA').resize((size, size), Image.LANCZOS)
+    a = np.array(src).astype(float); lum = (a[..., :3] @ np.array([0.3, 0.59, 0.11]))[..., None] / 255
+    a[ring:size - ring, ring:size - ring, 3] = 0
+    for t, col in enumerate(RARITY_RGB):
+        o = a.copy(); o[..., :3] = np.clip(np.array(col) * (0.35 + lum * 1.1), 0, 255); o[..., 3] = np.where(o[..., 3] > 0, 255, 0)
+        Image.fromarray(o.astype(np.uint8), 'RGBA').save(os.path.join(game, f'au_rframe_{t}.png'))
+    print('made 9 rarity rings as assets/au_rframe_<tier>.png')
+
 def main():
     global SRC, OUT, PANELS, REGIONS, OPAQUE, SCENES
     if '--sheet' in sys.argv and sys.argv[sys.argv.index('--sheet') + 1] == 'ui':
@@ -181,6 +192,8 @@ def main():
         dst = f"{prefix}scene_{e['name']}.png" if e['panel'] == 'scenes' else f"{prefix}{e['name']}.png"
         Image.open(os.path.join(OUT, e['px'])).save(os.path.join(game, dst))
     print(f'installed {len(manifest)} images as assets/{prefix}*.png')
+    if prefix == 'au_': make_rarity_rings(game)
+
     # contact sheet of the pixel versions, one band per panel
     bands = []
     for panel in PANELS:

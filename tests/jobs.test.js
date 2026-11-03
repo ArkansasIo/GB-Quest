@@ -92,3 +92,16 @@ test('asset pack: scene choice, battle bg cycle and art names exist', () => {
   const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
   for (const n of [...Object.values(A.AP_ITEM_ART), ...Object.values(A.AP_GEM_ART), 'ap_scene_boss_fight', 'ap_scene_dungeon', 'ap_scene_city', 'ap_scene_wilderness']) assert.ok(has(n), n);
 });
+
+test('asset pack: monster art by family, stable faces, rarity rings exist', () => {
+  const c = { Math, Object, Array, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('asset_pack.js'), c); const A = c.GBQAssetPack;
+  const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
+  for (const L of Object.values(A.AP_MONSTERS)) for (const n of L) assert.ok(has(n), n);
+  for (const n of A.AP_PORTRAITS) assert.ok(has(n), n);
+  for (let t = 0; t < 9; t++) assert.ok(has(`au_rframe_${t}`));
+  assert.equal(A.apMonsterArt('plant', 'x'), null, 'families without pack art keep theirs');
+  let hits = 0; for (let i = 0; i < 200; i++) if (A.apMonsterArt('beast', 'wolf|' + i)) hits++;
+  assert.ok(hits > 60 && hits < 140, 'about half of a family uses the pack art');
+  assert.equal(A.apMonsterArt('beast', 'wolf|7'), A.apMonsterArt('beast', 'wolf|7'));
+  assert.equal(A.apPortraitFor('ELDER MAE'), A.apPortraitFor('ELDER MAE')); assert.equal(A.apPortraitFor(''), null);
+});
