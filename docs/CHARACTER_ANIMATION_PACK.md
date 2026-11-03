@@ -51,3 +51,16 @@ Validation reports missing frames per sequence. It does not judge animation qual
 5. Export sprite atlases and engine metadata only after frame validation.
 
 Do not create eight-direction variants by simply mirroring directional art when equipment, handedness, weapon grip, or asymmetric silhouettes would become incorrect.
+
+## F-rank warrior prototype sprite generation
+
+Generate the first procedural sprite set (8 directions × 8 animation states = 408 PNG frames):
+
+```bash
+python -m pip install Pillow
+python tools/generate_warrior_f_sprite.py --output assets_hd64/animations/frames --size 128
+```
+
+The generator writes frames under `warrior/F/<direction>/<animation>/frame_000.png` and a `warrior_f_generation_report.json`. Supported output canvases are 64, 128, 256, and 512 pixels; larger canvases use nearest-neighbour scaling to preserve the pixel-art look. These frames are deliberately labeled prototype placeholder art and should be reviewed/redrawn before release.
+
+The GitHub Actions workflow generates the manifest and this F-rank warrior prototype, then checks that all 408 frames exist before uploading the artifact. It does not run the full 6,000-image remaster job.
