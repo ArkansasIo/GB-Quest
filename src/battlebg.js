@@ -85,7 +85,7 @@ function drawBattleBackdrop(b) {
     return;
   }
   // CITADEL vector environment art is the default painted scene layer.
-  const citadel = S.citadelArt !== false && battleBackdrop(b.kind);
+  const citadel = S.battleBg === 'painted' && S.citadelArt !== false && battleBackdrop(b.kind);
   if (citadel && IMG[citadel]) {
     const smooth = ctx.imageSmoothingEnabled, quality = ctx.imageSmoothingQuality;
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
