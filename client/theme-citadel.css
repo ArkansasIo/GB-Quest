@@ -34,3 +34,12 @@ body { background:radial-gradient(ellipse at 50% 0%,#26344a 0%,#0b111c 48%,#0507
 .led { background:#5e1d18; } body.ready .led { background:#58d39a; box-shadow:0 0 10px #58d39a; }
 .round:focus-visible,.pill:focus-visible,.atlas-btn:focus-visible { outline:2px solid #e4c27a; outline-offset:3px; }
 @media(max-width:520px) { .device { border-radius:14px; padding:12px; } .brand { font-size:16px; } }
+
+/* Original scalable heraldic identity asset from assets_citadel/ui. */
+.brand { display:flex; align-items:center; gap:10px; }
+.brand::before {
+  content:""; display:inline-block; flex:0 0 42px; width:42px; height:42px;
+  background:url("../assets_citadel/ui/citadel_crest.svg") center/contain no-repeat;
+  filter:drop-shadow(0 0 9px rgba(207,171,99,.28));
+}
+.brand em { text-shadow:0 0 14px rgba(217,182,110,.25); }
