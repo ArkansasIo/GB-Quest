@@ -73,7 +73,7 @@ function staticFile(requestPath) {
   const relative = decoded === "/" ? "index.html" : decoded.slice(1);
   if (!relative || relative.split(/[\\/]/).some(part => part.startsWith("."))) return null;
   const file = path.resolve(root, relative);
-  const allowedRoots = ["src", "client", "assets", "dist", "legacy"].map(dir => path.join(root, dir) + path.sep);
+  const allowedRoots = ["src", "client", "assets", "assets_citadel", "dist", "legacy"].map(dir => path.join(root, dir) + path.sep);
   if (file !== path.join(root, "index.html") && !allowedRoots.some(dir => file.startsWith(dir))) return null;
   return file;
 }
@@ -85,6 +85,7 @@ function contentType(file) {
     case ".css": return "text/css; charset=utf-8";
     case ".json": return "application/json; charset=utf-8";
     case ".png": return "image/png";
+    case ".svg": return "image/svg+xml";
     default: return "application/octet-stream";
   }
 }
