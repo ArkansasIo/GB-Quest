@@ -114,6 +114,8 @@ async function loadCitadelAssets() {
     ['environments', 'assets_citadel/environment_catalog.json', 'entries'],
     ['props', 'assets_citadel/prop_catalog.json', 'entries'],
     ['terrain', 'assets_citadel/terrain_catalog.json', 'entries'],
+    ['buildings', 'assets_citadel/building_catalog.json', 'entries'],
+    ['roads', 'assets_citadel/road_catalog.json', 'entries'],
   ];
   const loadImage = (key, path) => new Promise(resolve => {
     const im = new Image();
@@ -128,7 +130,7 @@ async function loadCitadelAssets() {
       const parts = path.split('/');
       if (parts.length < 3 || parts[0] !== 'assets_citadel') continue;
       const category = parts[1], id = parts[parts.length - 1].replace(/\\.svg$/i, '');
-      const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', props: 'prop', terrain: 'terrain', ui: 'ui' })[category] || category;
+      const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', props: 'prop', terrain: 'terrain', buildings: 'building', roads: 'road', ui: 'ui' })[category] || category;
       const key = `citadel_${singular}_${id}`;
       if (await loadImage(key, path)) loaded++;
     }
@@ -140,7 +142,7 @@ async function loadCitadelAssets() {
         const entries = docs.get(path)[field] || [];
         await Promise.all(entries.map(async entry => {
           const id = entry.id, src = entry.src;
-          const key = `citadel_${kind === 'races' ? 'race' : kind === 'classes' ? 'class' : kind === 'creatures' ? 'creature' : kind === 'bosses' ? 'boss' : kind === 'props' ? 'prop' : kind === 'terrain' ? 'terrain' : 'environment'}_${id}`;
+          const key = `citadel_${kind === 'races' ? 'race' : kind === 'classes' ? 'class' : kind === 'creatures' ? 'creature' : kind === 'bosses' ? 'boss' : kind === 'props' ? 'prop' : kind === 'terrain' ? 'terrain' : kind === 'buildings' ? 'building' : kind === 'roads' ? 'road' : 'environment'}_${id}`;
           if (await loadImage(key, src)) loaded++;
         }));
       } catch (e) { console.warn('CITADEL asset catalog unavailable:', path, e); }
@@ -149,6 +151,8 @@ async function loadCitadelAssets() {
   }
   window.GBQ_CITADEL_PROPS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_prop_')).map(key => [key.slice('citadel_prop_'.length), IMG[key]]));
   window.GBQ_CITADEL_TERRAIN = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_terrain_')).map(key => [key.slice('citadel_terrain_'.length), IMG[key]]));
+  window.GBQ_CITADEL_BUILDINGS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_building_')).map(key => [key.slice('citadel_building_'.length), IMG[key]]));
+  window.GBQ_CITADEL_ROADS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_road_')).map(key => [key.slice('citadel_road_'.length), IMG[key]]));
   window.GBQ_CITADEL_ASSET_COUNT = loaded;
   return loaded;
 }
