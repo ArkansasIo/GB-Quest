@@ -82,6 +82,13 @@
       "format": "SVG",
       "count": 6,
       "status": "created"
+    },
+    {
+      "id": "biome_backdrops_10",
+      "path": "assets_citadel/environments/",
+      "format": "SVG",
+      "count": 10,
+      "status": "created-and-runtime-integrated"
     }
   ],
   "provenance": "Original project artwork; no third-party game assets.",
@@ -104,6 +111,20 @@
       "name": "Raid bosses",
       "bossBanners": 6,
       "status": "created"
+    },
+    {
+      "id": "05",
+      "name": "Biome environment backdrops",
+      "environmentBackdrops": 10,
+      "status": "created-and-runtime-integrated"
     }
-  ]
+  ],
+  "runtimeIntegration": {
+    "loader": "src/engine.js loadCitadelAssets",
+    "portraitRouting": "src/art.js",
+    "battleBackdropRouting": "src/battlebg.js",
+    "standaloneEmbedding": "tools/build.cjs",
+    "toggle": "SETTINGS > CITADEL ART",
+    "legacyFallback": "Set CITADEL ART to OFF; existing art packs remain available"
+  }
 }
