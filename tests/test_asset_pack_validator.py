@@ -48,7 +48,10 @@ class AssetPackValidatorTests(unittest.TestCase):
         with (self.root / "metadata" / "asset_manifest.csv").open(
             "w", newline="", encoding="utf-8"
         ) as handle:
-            writer = csv.DictWriter(handle, fieldnames=list(self.records[0]))
+            fields = list(dict.fromkeys(
+                field for record in self.records for field in record
+            ))
+            writer = csv.DictWriter(handle, fieldnames=fields)
             writer.writeheader()
             writer.writerows(self.records)
 
@@ -64,6 +67,14 @@ class AssetPackValidatorTests(unittest.TestCase):
         result = self.run_validator()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("1 unique assets", result.stdout)
+
+    def test_accepts_blank_optional_csv_metadata_column(self):
+        self.add_image("GBQ-0001", "one.png")
+        self.add_image("GBQ-0002", "two.png")
+        self.records[0]["family"] = "undead"
+        self.write_manifests()
+        result = self.run_validator()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_rejects_csv_metadata_drift_even_when_ids_match(self):
         self.add_image("GBQ-0001", "one.png")
