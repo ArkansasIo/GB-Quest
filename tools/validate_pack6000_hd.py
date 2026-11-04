@@ -12,7 +12,7 @@ import csv
 import hashlib
 import json
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 from PIL import Image
@@ -68,17 +68,15 @@ def main() -> int:
 
     root = args.root
     metadata = root / "metadata"
-    manifest_path = metadata / "manifest.json"
-    csv_path = metadata / "assets.csv"
+    manifest_path = metadata / "asset_manifest.json"
+    csv_path = metadata / "asset_manifest.csv"
     errors: list[str] = []
     manifest = load_json(manifest_path, errors)
     if manifest is None:
         print("\n".join(errors), file=sys.stderr)
         return 1
 
-    records = manifest.get("assets") if isinstance(manifest, dict) else None
-    if records is None and isinstance(manifest, dict):
-        records = manifest.get("items")
+    records = manifest if isinstance(manifest, list) else None
     if not isinstance(records, list):
         fail(errors, "manifest.json must contain an 'assets' or 'items' array")
         records = []
@@ -95,7 +93,7 @@ def main() -> int:
             continue
         asset_id = str(record.get("id", "")).strip()
         category = str(record.get("category", "")).strip()
-        relative = record.get("path") or record.get("file")
+        relative = record.get("path") or record.get("file") or record.get("filename")
         if not asset_id:
             fail(errors, f"Manifest entry {index} has no id")
             continue
@@ -109,10 +107,16 @@ def main() -> int:
         if not isinstance(relative, str) or not relative:
             fail(errors, f"{asset_id}: missing path/file")
             continue
+        relative_path = Path(relative)
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            fail(errors, f"{asset_id}: unsafe image path {relative!r}")
+            continue
         if relative in paths:
             fail(errors, f"Duplicate asset path in manifest: {relative}")
         paths.add(relative)
-        image_path = root / relative
+        image_path = root / relative_path
+        if not image_path.is_file() and (root / "assets" / relative_path).is_file():
+            image_path = root / "assets" / relative_path
         if not image_path.is_file():
             fail(errors, f"{asset_id}: missing image {image_path}")
             continue
