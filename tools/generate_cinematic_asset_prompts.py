@@ -42,6 +42,7 @@ def main():
  a.output.parent.mkdir(parents=True,exist_ok=True)
  fields=["asset_id","category","sequence","variation_seed","asset_name","asset_type","target_engine","resolution","maps","prompt","negative_prompt","source_filename","status"]
  rows=[]
+ used_seeds=set()
  with a.output.open("w",newline="",encoding="utf-8") as f:
   w=csv.DictWriter(f,fieldnames=fields); w.writeheader()
   n=0
