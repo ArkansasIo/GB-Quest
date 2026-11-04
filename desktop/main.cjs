@@ -319,6 +319,9 @@ ipcMain.on('gbq:realm-stream-start', event => {
         }
       }
     }
+    // the server ending the stream (restart, ban, live play switched off) must reach the game like an
+    // error; otherwise it keeps showing ONLINE on a dead connection (the browser's EventSource reconnects)
+    if (!controller.signal.aborted) throw new Error('The realm server closed the live connection.');
   })().catch(error => {
     if (!controller.signal.aborted && gameWindow && !gameWindow.isDestroyed()) {
       gameWindow.webContents.send('gbq:realm-stream-error', error.message);
