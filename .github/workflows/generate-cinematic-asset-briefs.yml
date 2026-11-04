@@ -1,0 +1,46 @@
+name: Generate GB-Quest Cinematic Asset Briefs
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Deterministic prompt variation seed
+        required: true
+        default: "5700"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/ue57-cinematic-asset-upgrade
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate exactly 6,000 unique asset briefs
+        run: python tools/generate_cinematic_asset_prompts.py --seed "${{ inputs.seed }}"
+      - name: Validate brief count and IDs
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          p = Path("data/visuals/cinematic_asset_prompts.csv")
+          rows = list(csv.DictReader(p.open(encoding="utf-8")))
+          ids = [r["asset_id"] for r in rows]
+          assert len(rows) == 6000, len(rows)
+          assert len(set(ids)) == 6000
+          assert ids[0] == "GBQ-CIN-0001" and ids[-1] == "GBQ-CIN-6000"
+          assert all(r["prompt"] and r["negative_prompt"] for r in rows)
+          print("Validated 6,000 unique cinematic production briefs.")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GB-Quest-Cinematic-6000-Asset-Briefs
+          path: data/visuals/cinematic_asset_prompts.csv
+          if-no-files-found: error
+          retention-days: 30
