@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<title>CITADEL scalable interface ornament set</title>
+<defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="#f4d99c"/><stop offset=".5" stop-color="#bd914b"/><stop offset="1" stop-color="#68451f"/></linearGradient><linearGradient id="p" x2="0" y2="1"><stop stop-color="#253b54"/><stop offset="1" stop-color="#090f19"/></linearGradient></defs>
+<g fill="none" stroke="url(#g)" stroke-width="12" stroke-linejoin="round">
+ <g id="frame"><path d="M80 80h864v864H80z" stroke-width="20"/><path d="M120 120h784v784H120z" opacity=".65"/><path d="M80 180h65M80 844h65M879 80v65M879 879v65"/></g>
+ <g id="divider"><path d="M80 512h340l92-45 92 45h340"/><path d="m470 512 42-48 42 48-42 48Z"/></g>
+ <g id="slot"><path d="M80 80h864v864H80z" stroke-width="18"/><path d="M112 112h800v800H112z" opacity=".65"/></g>
+ <g id="crest"><path d="M512 70 850 190v270c0 230-145 385-338 494C319 845 174 690 174 460V190Z"/><path d="M512 128 790 228v230c0 187-112 318-278 414-166-96-278-227-278-414V228Z" opacity=".65"/></g>
+</g>
+<g fill="url(#g)">
+ <path id="gem" d="M512 160 710 400 512 650 314 400Z"/><path d="m512 160 0 490 198-250Z" fill="#f4d99c" opacity=".45"/>
+ <path id="star" d="m512 90 36 110 116 0-94 68 36 110-94-68-94 68 36-110-94-68h116Z"/>
+</g>
+<g fill="url(#p)" stroke="url(#g)" stroke-width="12"><circle id="orb" cx="512" cy="512" r="310"/><circle cx="512" cy="512" r="265" fill="none" opacity=".7"/></g>
+</svg>
