@@ -11,7 +11,8 @@ import csv
 import os
 import unreal
 
-PROJECT_ROOT = os.path.abspath(os.path.join(unreal.Paths.project_dir(), ".."))
+_PROJECT_CANDIDATES = [os.path.abspath(unreal.Paths.project_dir()), os.path.abspath(os.path.join(unreal.Paths.project_dir(), ".."))]
+PROJECT_ROOT = next((p for p in _PROJECT_CANDIDATES if os.path.isfile(os.path.join(p, "data", "visuals", "cinematic_asset_prompts.csv"))), _PROJECT_CANDIDATES[0])
 SOURCE_ROOT = os.path.join(PROJECT_ROOT, "Content", "GBQuest", "ArtSource")
 DEST_ROOT = "/Game/GBQuest/Cinematic"
 MANIFEST = os.path.join(PROJECT_ROOT, "data", "visuals", "cinematic_asset_prompts.csv")
@@ -25,7 +26,6 @@ def import_one(source_path, destination):
     task.automated = True
     task.replace_existing = False
     task.save = True
-    task.factory = None
     unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([task])
     return list(task.imported_object_paths or [])
 
