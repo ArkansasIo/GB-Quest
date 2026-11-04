@@ -1,0 +1,36 @@
+/* CITADEL HD theme — cinematic fantasy command interface.
+   This skins the browser/desktop shell; in-game rendering still uses the selected HD64 video mode. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --room:#07090e; --shell:#111722; --shell-hi:#273447; --shell-lo:#080d15;
+  --bezel:#070b12; --ring:#c5a15a; --ink:#e9e1d0; --ink-dim:#a9a18f;
+  --btn:#263246; --citadel-gold:#d9b66e; --citadel-blue:#5b91c8;
+  --citadel-panel:rgba(10,16,26,.92); --citadel-line:rgba(211,177,111,.55);
+  --pixel:'Inter',system-ui,sans-serif; color-scheme:dark;
+}
+html,body { background:#07090e; color:var(--ink); font-family:Inter,system-ui,sans-serif; }
+body { background:radial-gradient(ellipse at 50% 0%,#26344a 0%,#0b111c 48%,#05070b 100%); }
+.device,.game-client {
+  background:linear-gradient(145deg,rgba(38,51,70,.98),rgba(11,17,27,.99) 55%,rgba(5,8,14,.99));
+  border:1px solid rgba(213,180,116,.42); border-radius:20px;
+  box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px rgba(255,255,255,.10),0 0 34px rgba(73,119,174,.14);
+}
+.bezel { background:linear-gradient(145deg,#050a12,#101a29); border:1px solid rgba(218,184,116,.5);
+  box-shadow:inset 0 0 0 1px #02050a,0 0 28px rgba(0,0,0,.55); }
+#lcd { image-rendering:auto; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
+.brand { color:#f3e7ce; font:700 19px/1.2 Cinzel,Georgia,serif; letter-spacing:.16em; text-shadow:0 2px 18px #000; }
+.brand em { color:var(--citadel-gold); }
+.brand small { display:block; margin-top:4px; color:#aebbd0; font:600 9px Inter,sans-serif; letter-spacing:.34em; }
+.bezel-top,.keys,.build-info { font-family:Inter,sans-serif; letter-spacing:.08em; }
+.bezel-top { color:#c5b58f; }
+.bezel-top span { background:linear-gradient(90deg,var(--citadel-gold),transparent); }
+#dpad::before,#dpad::after { background:linear-gradient(145deg,#35445a,#111a28); box-shadow:inset 0 1px rgba(255,255,255,.12),0 4px 0 #03060b; }
+.round { background:radial-gradient(circle at 32% 25%,#75849a,#35445a 52%,#101722); color:#f3e5c7; box-shadow:0 4px 0 #03060b,0 0 0 2px rgba(205,171,103,.5); font-family:Cinzel,Georgia,serif; }
+.pill { background:linear-gradient(#29374a,#101722); color:#d9c89f; box-shadow:0 3px 0 #03060b; font-family:Inter,sans-serif; }
+.chatlog,.chatform input,.build-info { background:var(--citadel-panel); border:1px solid var(--citadel-line); color:#d8dce3; border-radius:8px; }
+.chat-tabs button,.chatform button,.atlas-btn { background:linear-gradient(180deg,#27384d,#101927); border:1px solid var(--citadel-line); color:#e8d8b4; border-radius:5px; font:600 10px Inter,sans-serif; }
+.chat-tabs button[aria-pressed="true"] { background:linear-gradient(180deg,#6b5128,#302516); border-color:#e0bd75; color:#fff1cf; }
+.build-info { color:#b8c6d8; } .build-info strong { color:#e5c37b; }
+.led { background:#5e1d18; } body.ready .led { background:#58d39a; box-shadow:0 0 10px #58d39a; }
+.round:focus-visible,.pill:focus-visible,.atlas-btn:focus-visible { outline:2px solid #e4c27a; outline-offset:3px; }
+@media(max-width:520px) { .device { border-radius:14px; padding:12px; } .brand { font-size:16px; } }
