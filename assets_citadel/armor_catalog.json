@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "category": "armor",
+  "format": "image/svg+xml",
+  "masterViewBox": "0 0 520 560",
+  "entries": [
+    {
+      "id": "crownplate-helm",
+      "name": "Crownplate Helm",
+      "src": "assets_citadel/armor/crownplate-helm.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "warden-cuirass",
+      "name": "Warden Cuirass",
+      "src": "assets_citadel/armor/warden-cuirass.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "ranger-mantle",
+      "name": "Ranger Mantle",
+      "src": "assets_citadel/armor/ranger-mantle.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "ironroot-gauntlets",
+      "name": "Ironroot Gauntlets",
+      "src": "assets_citadel/armor/ironroot-gauntlets.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "kingdom-greaves",
+      "name": "Kingdom Greaves",
+      "src": "assets_citadel/armor/kingdom-greaves.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "aetherweave-robe",
+      "name": "Aetherweave Robe",
+      "src": "assets_citadel/armor/aetherweave-robe.svg",
+      "status": "concept-icon"
+    }
+  ],
+  "note": "Original scalable inventory concept icons, not production 3D equipment meshes or PBR texture sets."
+}
