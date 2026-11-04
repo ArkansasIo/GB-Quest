@@ -19,7 +19,8 @@ for (const b of BOSSES) b.nspr = b.cat === 'arc' ? null : nesPick(b.cat === 'rai
 const CITADEL_CREATURES = { beast: ['dire-wolf','griffin','forest-stag'], humanoid: ['stone-troll','harpy'], undead: ['wraith'], fiend: ['wyvern'], fey: ['forest-stag'], elemental: ['iron-golem'], construct: ['iron-golem'], dragon: ['wyvern'], giant: ['stone-troll'], ooze: ['mimic'], aberration: ['sea-leviathan'], monstrosity: ['basilisk','cave-spider'], plant: ['forest-stag'], celestial: ['griffin'] };
 const citadelCreatureFor = b => {
   if (!b || S.citadelArt === false) return null;
-  const pool = CITADEL_CREATURES[b.fam] || ['dire-wolf'];
+  const pool = CITADEL_CREATURES[b.fam];
+  if (!pool || !pool.length) return null;
   const key = pool[hashStr(String(b.sub || b.id || b.name || b.variant || b.fam)) % pool.length];
   const image = 'citadel_creature_' + key;
   return IMG[image] ? image : null;
@@ -76,7 +77,8 @@ const classPortrait = cls => {
 };
 const CITADEL_RACE_ALIASES = { hearthkin: 'human', human: 'human', thornelf: 'elf', elf: 'elf', lunari: 'elf', stonekin: 'dwarf', dwarf: 'dwarf', burrowkin: 'dwarf', orc: 'orc', tuskborn: 'orc', hornfolk: 'orc', tiefling: 'tiefling', emberborn: 'tiefling', felinar: 'beastkin', beastkin: 'beastkin', wolfkin: 'beastkin', wispling: 'beastkin', dragonkin: 'dragonkin', drakkin: 'dragonkin', starkin: 'human', pipkin: 'human', twinblood: 'human', undead: 'undead', returned: 'undead', halfling: 'human' };
 const racePortrait = (sp, i = 0) => {
-  const id = CITADEL_RACE_ALIASES[String(sp || '').toLowerCase()] || 'human';
+  const raw = String(sp || '').toLowerCase();
+  const id = CITADEL_RACE_ALIASES[raw] || raw;
   const citadel = 'citadel_race_' + id;
   if (S.citadelArt !== false && IMG[citadel]) return citadel;
   if (!artOn()) return null;
