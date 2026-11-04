@@ -24,7 +24,12 @@ const citadelCreatureFor = b => {
   const image = 'citadel_creature_' + key;
   return IMG[image] ? image : null;
 };
+const CITADEL_BOSSES = ['ember-ancient','frost-tyrant','void-oracle','dread-colossus','storm-seraph','hollow-king'];
 const monsterArt = b => {
+  if (b && (b.boss || b.cat === 'raid' || b.cat === 'world') && S.citadelArt !== false) {
+    const boss = 'citadel_boss_' + CITADEL_BOSSES[hashStr(String(b.id || b.name || b.sub)) % CITADEL_BOSSES.length];
+    if (IMG[boss]) return boss;
+  }
   const citadel = citadelCreatureFor(b);
   if (citadel) return citadel;
   if (b && b.ccArt && IMG[b.ccArt]) return b.ccArt;
