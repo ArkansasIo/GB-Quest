@@ -20,6 +20,7 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 - World tile contract: layered 16×16 tiles, 16-way cardinal autotiling, animated shorelines, nine biome palettes, and six dungeon themes.
 - Asset generation and build instructions: [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md).
 - Equipment progression: [docs/GEAR_PROGRESSION.md](docs/GEAR_PROGRESSION.md) (4-digit gear level, 6-digit power, item levels 1–720, F–SSS × 12 stars).
+- Weapon progression: [docs/WEAPON_MASTERY.md](docs/WEAPON_MASTERY.md) (weapon skill 1–720, mastery 1–200, a six-branch circle board and six traits per weapon, signature weapons for all 27 classes).
 
 ## Play
 

@@ -3,6 +3,7 @@
 | Document | What's inside |
 |---|---|
 | [ARTIFACTS_AND_RELICS.md](ARTIFACTS_AND_RELICS.md) | Full catalog of 42 dedicated artifacts and 42 dedicated relics, slot rules and progression |
+| [WEAPON_MASTERY.md](WEAPON_MASTERY.md) | Weapon skill 1-720, mastery 1-200, circle boards, six traits and six arts per weapon, class signature weapons |
 | [GEMS_AND_SOCKETS.md](GEMS_AND_SOCKETS.md) | Gem families, socket capacity, inventory operations, stat integration and current limitations |
 | [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) | Confirmed implementation, outstanding feature work, C++/assembly port plan and completion criteria |
 | [GDD.md](GDD.md) | Game design document: vision, pillars, loops, systems, content scale, economy, multiplayer, presentation, roadmap |

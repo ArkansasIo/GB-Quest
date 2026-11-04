@@ -1,7 +1,7 @@
 'use strict';
 // ================================================================ THRONE-STYLE WORLD SYSTEMS
 // Four systems in the spirit of modern open-world MMOs:
-//   * WEAPON MASTERY (MAIN MENU > MASTERY): every weapon family (sword, dagger, axe, mace, polearm, bow, crossbow,
+//   * WEAPON MASTERY (legacy; weapon_mastery.js replaces it in game and converts its levels to weapon skill): every weapon family (sword, dagger, axe, mace, polearm, bow, crossbow,
 //     staff, wand) levels 1-30 from the battles you win with it equipped. Each level adds that family's bonuses
 //     while you wield it; levels 10, 20 and 30 are SPECIALIZATION ranks (ADEPT, EXPERT, MASTER) with a bigger step.
 //   * AMITOI EXPEDITIONS (MAIN MENU > AMITOI): small companion spirits you send on real-time expeditions
@@ -57,10 +57,10 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof der
   // ------------------------------------------------ mastery
   const famOf = it => { if (!it || it.kind !== 'weapon') return null; const f = (typeof WEAPON_ART !== 'undefined' && WEAPON_ART[it.base]) || (WEAPONS[it.base] && WEAPONS[it.base].fam) || 'sword'; return MASTERY_FAMS.includes(f) ? f : 'sword'; };
   const M = () => (G.mastery ||= {});
-  { const sb0 = armorSetBonus; armorSetBonus = function (c) { const out = sb0.apply(this, arguments); if (c && c.mastery) { const f = famOf(c.eq && c.eq.weapon); if (f && c.mastery[f]) out.push(...masteryBonus(f, c.mastery[f].lvl)); } return out; }; }
+  { const sb0 = armorSetBonus; armorSetBonus = function (c) { const out = sb0.apply(this, arguments); if (c && c.mastery && !globalThis.GBQWeaponMastery) { const f = famOf(c.eq && c.eq.weapon); if (f && c.mastery[f]) out.push(...masteryBonus(f, c.mastery[f].lvl)); } return out; }; }
   { const f0 = Battle.prototype.finish; Battle.prototype.finish = function (result) {
       try {
-        if (result === 'win' && G && !this.noRewards) {
+        if (result === 'win' && G && !this.noRewards && !globalThis.GBQWeaponMastery) {   // superseded by weapon_mastery.js
           const f = famOf(G.eq.weapon);
           if (f) { const m = (M()[f] ||= { lvl: 1, xp: 0 }), before = m.lvl, ups = masteryAdd(m, (this.foes || []).length * 6 + (this.foes || []).filter(x => x.boss || x.elite).length * 20);
             if (ups) { toast(`${f.toUpperCase()} MASTERY ${m.lvl}`, m.lvl % 10 === 0 && before < m.lvl ? `SPECIALIZATION: ${masteryRank(m.lvl)}` : 'Weapon bonuses up', 'pp_xp', 'levelup'); if (typeof chatLog === 'function') chatLog('xp', 'MASTERY', `${f.toUpperCase()} mastery reached ${m.lvl} (${masteryRank(m.lvl)}).`); } }
