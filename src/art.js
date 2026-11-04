@@ -74,7 +74,7 @@ const classPortrait = cls => {
   const citadel = 'citadel_class_' + id;
   return S.citadelArt !== false && IMG[citadel] ? citadel : artOn() && IMG[`np_class_${cls}`] ? `np_class_${cls}` : null;
 };
-const CITADEL_RACE_ALIASES = { human: 'human', elf: 'elf', lunari: 'elf', dwarf: 'dwarf', orc: 'orc', tiefling: 'tiefling', hornfolk: 'orc', felinar: 'beastkin', beastkin: 'beastkin', wolfkin: 'beastkin', dragonkin: 'dragonkin', starkin: 'human', pipkin: 'human', undead: 'undead', returned: 'undead', halfling: 'human' };
+const CITADEL_RACE_ALIASES = { hearthkin: 'human', human: 'human', thornelf: 'elf', elf: 'elf', lunari: 'elf', stonekin: 'dwarf', dwarf: 'dwarf', burrowkin: 'dwarf', orc: 'orc', tuskborn: 'orc', hornfolk: 'orc', tiefling: 'tiefling', emberborn: 'tiefling', felinar: 'beastkin', beastkin: 'beastkin', wolfkin: 'beastkin', wispling: 'beastkin', dragonkin: 'dragonkin', drakkin: 'dragonkin', starkin: 'human', pipkin: 'human', twinblood: 'human', undead: 'undead', returned: 'undead', halfling: 'human' };
 const racePortrait = (sp, i = 0) => {
   const id = CITADEL_RACE_ALIASES[String(sp || '').toLowerCase()] || 'human';
   const citadel = 'citadel_race_' + id;
