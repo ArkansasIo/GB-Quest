@@ -21,7 +21,7 @@ REQUIRED = {
     "asset_type", "target_engine", "resolution", "maps", "prompt",
     "negative_prompt", "source_filename", "status",
 }
-ASSET_ID = re.compile(r"^GBQ-CIN-(\\d{4})$")
+ASSET_ID = re.compile(r"^GBQ-CIN-(\d{4})$")
 
 
 def validate(budget_path: Path, csv_path: Path) -> dict:
@@ -121,7 +121,7 @@ def main() -> int:
     print(output)
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)
-        args.report.write_text(output + "\\n", encoding="utf-8")
+        args.report.write_text(output + "\n", encoding="utf-8")
     return 0 if result["valid"] else 1
 
 
