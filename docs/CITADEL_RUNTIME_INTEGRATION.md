@@ -24,3 +24,10 @@ Existing PNG packs, legacy sprites, gameplay rules, saves and network systems ar
 - `src/engine.js` loads the prop catalog and exposes `window.GBQ_CITADEL_PROPS` keyed by stable prop ID for scene-level rendering.
 - The standalone build already embeds every SVG found under `assets_citadel/`; the new prop files are therefore included automatically by `tools/build.cjs`.
 - These are concept illustrations, not final 3D meshes, collision geometry, or instanced world props.
+
+## Batch 07 — terrain materials
+- Added eight seamless SVG terrain material concepts under `assets_citadel/terrain/`.
+- `assets_citadel/terrain_catalog.json` lists stable IDs and source paths.
+- `src/engine.js` loads them and exposes `window.GBQ_CITADEL_TERRAIN`.
+- The standalone builder embeds all SVGs recursively, so these assets are included automatically in generated standalone builds.
+- These are vector material concepts, not production PBR maps; base-color, normal, roughness, ambient-occlusion and displacement maps remain to be authored for a true 3D material pipeline.
