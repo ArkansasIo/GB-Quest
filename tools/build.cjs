@@ -25,7 +25,7 @@ function walkCitadel(dir) {
   }
 }
 walkCitadel(path.join(ROOT, 'assets_citadel'));
-const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fromEntries(citadelFiles)) + ';</script>\\n';
+const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fromEntries(citadelFiles)) + ';</script>\n';
 const shell = rd('client/shell.html');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
