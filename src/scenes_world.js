@@ -1572,7 +1572,7 @@ function buildAtlas() {
 class WorldMap {
   // zoom 0: all of VALENDRIA (160 px), zoom 1: detail map (320 px, scrolls), zoom 2: the zone's own tiles
   constructor() {
-    this.opaque = true; this.zoom = 0; this.legend = false;
+    this.opaque = true; this.zoom = 0; this.legend = false; this.settlementView = false;
     const z = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map] || ZONE_BY_ID.elderwood;
     this.sel = z; G.visited = G.visited || {}; G.visited[z.id] = true;
   }
@@ -1618,6 +1618,10 @@ class WorldMap {
     else if ((k === 'boss' || k === 'arc') && !big) { fill(x - 1, y - 1, 3, 3, dead ? 1 : 3); fill(x, y, 1, 1, dead ? 1 : k === 'arc' ? 'purple' : 'red'); }
     else if (k === 'boss' || k === 'arc') { if (dead) { fill(x - s, y - s, 3 * s, 3 * s, 1); return; } fill(x - 2 * s, y - 2 * s, 5 * s, 4 * s, k === 'arc' ? 'purple' : 'red'); fill(x - s, y - s, s, s, 0); fill(x + s, y - s, s, s, 0); fill(x - s, y + s, 3 * s, s, k === 'arc' ? 'purple' : 'red'); }
     else if (k === 'quest' && (frameN >> 4) % 2) { fill(x - s, y - 4 * s, 3 * s, 5 * s, 3); fill(x, y - 3 * s, s, 2 * s, 'gold'); fill(x, y, s, s, 'gold'); }
+    // settlement icons: city=gold walls, town=blue house, village=green dot
+    else if (k === 'settlement_city') { fill(x - 3*s, y - 2*s, 7*s, 4*s, 'gold'); fill(x - 2*s, y - 4*s, 2*s, 2*s, 'gold'); fill(x + s, y - 4*s, 2*s, 2*s, 'gold'); fill(x - s, y - s, 2*s, 3*s, 0); }
+    else if (k === 'settlement_town') { fill(x - 2*s, y - 2*s, 5*s, 3*s, 'blue'); fill(x - s, y - 4*s, 3*s, 2*s, 'blue'); fill(x - s, y - s, 2*s, 3*s, 0); }
+    else if (k === 'settlement_village') { fill(x - s, y - 2*s, 3*s, 3*s, 'green'); fill(x, y - 3*s, s, s, 'green'); fill(x, y, s, s, 0); }
   }
   roads() {
     if (WorldMap._roads) return WorldMap._roads;

@@ -626,3 +626,94 @@ const worldOf = z => { const x = z && z.exp ? EXPANSIONS.find(e => e.n === z.exp
 const worldName = n => n ? EXPANSIONS.find(e => e.n === n).name : 'VALENDRIA';
 const worldImg = (n, small) => n ? `gm_x${n}${small ? '_s' : ''}` : (small ? 'gm_dunia_s' : 'gm_dunia');
 function continentOf(z) { if (worldOf(z)) return worldName(worldOf(z)); const p = REGION_PINS[z.region] || [0.5, 0.5]; return p[0] < 0.38 ? 'THE WEST ISLES' : p[1] < 0.5 ? 'NORTH KARRA' : 'SOUTH KARRA'; }
+
+// ================================================================ SETTLEMENTS: cities, towns & villages as sub-zones
+// Each base region has at most one city (region hub), one town (first sub-zone), and villages in the rest.
+// Ardenhold is the sole full city; every other region has a town or village depending on its act tier.
+// Format: { kind, name, amenities[], desc }
+// kind: 'city' | 'town' | 'village'
+// amenities: services available (inn, market, blacksmith, stable, healer, library, dock, guild, arena, shrine)
+const SETTLEMENT_DEFS = {
+  // --- Ardenhold (the city) ---
+  ardenhold:  { kind: 'city',    name: 'ARDENHOLD',       amenities: ['inn','market','blacksmith','stable','healer','library','dock','guild','arena','shrine'], desc: 'The last free city of Aelmoor. All trades, guilds and the Grand Lantern Temple.' },
+  // --- Elderwood ---
+  elderwood:  { kind: 'town',    name: 'MILLHAVEN',        amenities: ['inn','market','blacksmith','stable','healer','shrine'],          desc: 'A prosperous mill-town at the edge of the great green hills.' },
+  elderwood_s1: { kind: 'village', name: 'BLOOMWICK',      amenities: ['inn','healer','shrine'],                                         desc: 'A flower-farming hamlet famous for its honey mead.' },
+  elderwood_s2: { kind: 'village', name: 'HARROW\'S END',  amenities: ['inn','market'],                                                  desc: 'A quiet farming settlement at the edge of the old orchard.' },
+  elderwood_s3: { kind: 'village', name: 'RIVERGATE',      amenities: ['inn','stable','healer'],                                         desc: 'A fishing village where the river bends south.' },
+  // --- Hollowmere ---
+  hollowmere:  { kind: 'town',   name: 'BOGLUND',          amenities: ['inn','market','healer','shrine'],                                desc: 'A stilted town above the peat bogs, known for its lantern-fisher guild.' },
+  hollowmere_s1: { kind: 'village', name: 'MISTFEN',       amenities: ['inn','healer'],                                                  desc: 'Half the village is built on floating reed-rafts.' },
+  hollowmere_s2: { kind: 'village', name: 'SUNKHOLD',      amenities: ['inn','shrine'],                                                  desc: 'Named for the old watchtower that sank into the fens.' },
+  hollowmere_s3: { kind: 'village', name: 'REEDFALL',      amenities: ['inn','market'],                                                  desc: 'Reed-cutters and herb-pickers eke out a living on the marsh edge.' },
+  // --- Thornwood ---
+  thornwood:   { kind: 'town',   name: 'BARKMORE',         amenities: ['inn','market','blacksmith','healer','shrine'],                   desc: 'A fortified logging town hemmed in by hostile vines.' },
+  thornwood_s1: { kind: 'village', name: 'TANGLEVAST',     amenities: ['inn','healer'],                                                  desc: 'Hunters who know every safe path through the canopy.' },
+  thornwood_s2: { kind: 'village', name: 'FERNLOW',        amenities: ['inn','shrine'],                                                  desc: 'An isolated hamlet; its people light fires to keep the jungle back.' },
+  thornwood_s3: { kind: 'village', name: 'RAINMERE',       amenities: ['inn','market'],                                                  desc: 'Built beneath a great waterfall, perpetually damp.' },
+  // --- Greypeak ---
+  greypeak:    { kind: 'town',   name: 'STONEHOLT',        amenities: ['inn','market','blacksmith','stable','healer','shrine'],          desc: 'A dwarven-built pass-town, trades in ore and mountain pelts.' },
+  greypeak_s1: { kind: 'village', name: 'GLACIERWATCH',   amenities: ['inn','healer'],                                                  desc: 'A watchtower garrison turned hamlet, always cold.' },
+  greypeak_s2: { kind: 'village', name: 'TAIGAHOLLOW',    amenities: ['inn','market'],                                                  desc: 'Trappers and ice-fishers who never venture above the tree line.' },
+  greypeak_s3: { kind: 'village', name: 'ICECRAG',        amenities: ['inn','shrine'],                                                  desc: 'A hermit community clinging to the highest crags.' },
+  // --- Sandspire ---
+  sandspire:   { kind: 'town',   name: 'DUSTHAVEN',        amenities: ['inn','market','blacksmith','healer','shrine'],                   desc: 'A red-walled caravan hub that charges steep water-prices.' },
+  sandspire_s1: { kind: 'village', name: 'MESA CAMP',     amenities: ['inn','market'],                                                  desc: 'A temporary dig-camp that became permanent.' },
+  sandspire_s2: { kind: 'village', name: 'BONEDUNE',      amenities: ['inn','shrine'],                                                  desc: 'Relic-pickers living in crypt-side tents.' },
+  sandspire_s3: { kind: 'village', name: 'DRYSALT',       amenities: ['inn','healer'],                                                  desc: 'Named for the salt flats that shimmer at noon.' },
+  // --- Saltreach ---
+  saltreach:   { kind: 'town',   name: 'TIDEWATCH',        amenities: ['inn','market','blacksmith','stable','healer','dock','shrine'],   desc: 'A harbour town with a sea-captain\'s guild and a raucous fish market.' },
+  saltreach_s1: { kind: 'village', name: 'TIDECAVE OUTPOST', amenities: ['inn','healer'],                                              desc: 'A cave-mouth settlement used by deep-divers and kelp-harvesters.' },
+  saltreach_s2: { kind: 'village', name: 'DUNEWHISTLE',   amenities: ['inn','market'],                                                  desc: 'Smuggler families who pretend to be salt-miners.' },
+  saltreach_s3: { kind: 'village', name: 'CLIFFGATE',     amenities: ['inn','shrine'],                                                  desc: 'Rope-bridges and goat-paths connect this clifftop hamlet.' },
+  // --- Emberwaste ---
+  emberwaste:  { kind: 'town',   name: 'ASHFORD',          amenities: ['inn','market','blacksmith','healer'],                            desc: 'A soot-stained town in a volcanic caldera, fiend-warded walls.' },
+  emberwaste_s1: { kind: 'village', name: 'LAVAPOND',     amenities: ['inn','shrine'],                                                  desc: 'Built around a cooling lava pool, warm all year round.' },
+  emberwaste_s2: { kind: 'village', name: 'CINDERPOST',   amenities: ['inn','market'],                                                  desc: 'Relay-riders who carry messages across the ash wastes.' },
+  emberwaste_s3: { kind: 'village', name: 'OBSIDIAN RISE',amenities: ['inn','healer'],                                                  desc: 'Obsidian-cutters whose blades are prized across the realm.' },
+  // --- Frostmarch ---
+  frostmarch:  { kind: 'town',   name: 'RIMEGATE',         amenities: ['inn','market','blacksmith','stable','healer','shrine'],          desc: 'A frost-stone citadel that stands against the rime-queen\'s cold.' },
+  frostmarch_s1: { kind: 'village', name: 'TUNDRAPOST',   amenities: ['inn','healer'],                                                  desc: 'Scout-rangers who watch for ice-giant movements.' },
+  frostmarch_s2: { kind: 'village', name: 'GLACIEREDGE',  amenities: ['inn','market'],                                                  desc: 'Ice-sculptors and frost-fishers on the glacier\'s lip.' },
+  frostmarch_s3: { kind: 'village', name: 'SNOWVEIL',     amenities: ['inn','shrine'],                                                  desc: 'Almost invisible in a blizzard; the locals like it that way.' },
+  // --- Verdant Deep ---
+  verdantdeep: { kind: 'town',   name: 'LEAFWARD',         amenities: ['inn','market','healer','shrine'],                                desc: 'A treehouse-town of the Deep Wardens, shaped from living wood.' },
+  verdantdeep_s1: { kind: 'village', name: 'CANOPYREST',  amenities: ['inn','healer'],                                                  desc: 'Vine-bridges connect the platform homes in the upper canopy.' },
+  verdantdeep_s2: { kind: 'village', name: 'FERN HAVEN',  amenities: ['inn','shrine'],                                                  desc: 'Verdant monks who tend the ancient fern-gardens.' },
+  verdantdeep_s3: { kind: 'village', name: 'RAINPOOL',    amenities: ['inn','market'],                                                  desc: 'Named for the sacred rain-pool at its heart.' },
+  // --- Ashen Barrows ---
+  ashenbarrows: { kind: 'town',  name: 'GRAVEMOOR',        amenities: ['inn','market','healer','shrine'],                                desc: 'A walled town of tomb-keepers surrounded by the old king\'s barrows.' },
+  ashenbarrows_s1: { kind: 'village', name: 'DUSKHOLLOW',  amenities: ['inn','shrine'],                                                 desc: 'Mourners who tend the oldest graves and sell relic-maps.' },
+  ashenbarrows_s2: { kind: 'village', name: 'SHADEVALE',   amenities: ['inn','healer'],                                                 desc: 'The trees here never drop their leaves; they turn grey instead.' },
+  ashenbarrows_s3: { kind: 'village', name: 'NIGHTMIRE CAMP', amenities: ['inn','market'],                                             desc: 'Undead-hunters who make camp near the necromantic ley-lines.' },
+  // --- Silverhaven ---
+  silverhaven:  { kind: 'town',  name: 'CRYSTALSPIRE',     amenities: ['inn','market','healer','library','shrine'],                     desc: 'A far-elf citadel of crystal towers, open to friendly mortals.' },
+  silverhaven_s1: { kind: 'village', name: 'PRISMSHORE',   amenities: ['inn','healer'],                                                 desc: 'Glassworkers on the crystal lake\'s edge.' },
+  silverhaven_s2: { kind: 'village', name: 'SHARDFIELD',   amenities: ['inn','market'],                                                 desc: 'Gem-pickers who work the shattered crystal plains.' },
+  silverhaven_s3: { kind: 'village', name: 'STARLIT VALE', amenities: ['inn','shrine'],                                                 desc: 'A meditation village where the stars are reflected in every pool.' },
+  // --- Duskmoor ---
+  duskmoor:    { kind: 'town',   name: 'SHADOWFEN',         amenities: ['inn','market','healer','shrine'],                               desc: 'The only walled settlement on the moor, torches burn day and night.' },
+  duskmoor_s1: { kind: 'village', name: 'GLOOMWATCH',      amenities: ['inn','healer'],                                                 desc: 'Watchers who track undead migrations across the moor.' },
+  duskmoor_s2: { kind: 'village', name: 'GRAVEHILLS POST', amenities: ['inn','shrine'],                                                 desc: 'A relay-post for brave couriers crossing the barrow-country.' },
+  duskmoor_s3: { kind: 'village', name: 'NIGHTVINE REST',  amenities: ['inn','market'],                                                 desc: 'Herbalists who harvest gloom-herbs found only on moonless nights.' },
+};
+// Amenity icons and descriptions for the world-map info panel
+const AMENITY_INFO = {
+  inn:        { icon: '🏠', label: 'INN',         desc: 'Rest, recover HP, and hear local rumours.' },
+  market:     { icon: '🛒', label: 'MARKET',      desc: 'Buy potions, rations and general supplies.' },
+  blacksmith: { icon: '⚒',  label: 'SMITHY',      desc: 'Repair and upgrade equipment.' },
+  stable:     { icon: '🐎', label: 'STABLE',      desc: 'Mount services and fast travel.' },
+  healer:     { icon: '✚',  label: 'HEALER',      desc: 'Cure ailments and revive fallen allies.' },
+  library:    { icon: '📖', label: 'LIBRARY',     desc: 'Research lore and buy skill scrolls.' },
+  dock:       { icon: '⚓', label: 'DOCK',        desc: 'Sea-routes and fishing licences.' },
+  guild:      { icon: '⚔',  label: 'GUILD HALL',  desc: 'Arena challenges and faction contracts.' },
+  arena:      { icon: '🏟', label: 'ARENA',       desc: 'Ranked combat and gladiatorial prizes.' },
+  shrine:     { icon: '🕯',  label: 'SHRINE',      desc: 'Set your hearthstone and receive a blessing.' },
+};
+// Look up the settlement definition for a zone (returns null for unsettled zones)
+function zoneSettlement(z) {
+  if (!z) return null;
+  return SETTLEMENT_DEFS[z.id] || null;
+}
+// Ordered list of all base-game zone ids that have settlements (for the world-map browse)
+const SETTLED_ZONE_IDS = Object.keys(SETTLEMENT_DEFS);
