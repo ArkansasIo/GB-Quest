@@ -151,17 +151,18 @@ async function loadCitadelAssets() {
 async function loadAssets(onProgress) {
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
-  if (!ASSET_NAMES.length) onProgress && onProgress(1);
+  if (!ASSET_NAMES.length) onProgress && onProgress(0.9);
   let done = 0;
   await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
     const im = new Image();
     let settled = false;
-    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(done / Math.max(1, ASSET_NAMES.length)); res(); };
+    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(0.9 * done / Math.max(1, ASSET_NAMES.length)); res(); };
     im.onload = () => { IMG[n] = im; finish(); };
     im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
   })));
   await loadCitadelAssets();
+  onProgress && onProgress(1);
 }
 
 // ---------------------------------------------------------------- sprite pipeline
