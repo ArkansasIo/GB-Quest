@@ -1,0 +1,266 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lost Kingdom of Shadowbane Chronicles</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Cinzel:wght@500;700&display=swap">
+<style>
+/* Layout: one handheld, centred, portrait like the original DMG; controls sized for thumbs. */
+:root {
+  --room: #121513;        /* desk the device sits on */
+  --shell: #2c2f2c;       /* gunmetal body */
+  --shell-hi: #3d413c;
+  --shell-lo: #1c1e1c;
+  --bezel: #161816;
+  --ring: #7fa52c;        /* the green ring from the device mockup */
+  --ink: #c9d0b0;         /* printed labels */
+  --ink-dim: #7c8570;
+  --btn: #4a4e48;
+  --pixel: "Silkscreen", "Courier New", monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: radial-gradient(120% 80% at 50% 0%, #1b201b 0%, var(--room) 70%);
+  color: var(--ink);
+  font-family: var(--pixel);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  touch-action: manipulation; -webkit-user-select: none; user-select: none;
+  overflow-x: hidden;
+}
+.device {
+  width: min(100%, 380px);
+  background: linear-gradient(160deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  border-radius: 22px 22px 64px 22px;
+  padding: 18px 18px 26px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), inset 0 -4px 0 rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.55);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.bezel {
+  background: var(--bezel);
+  border-radius: 12px 12px 30px 12px;
+  padding: 14px 16px 10px;
+  box-shadow: inset 0 0 0 2px #0b0c0b, inset 0 0 0 4px color-mix(in srgb, var(--ring) 55%, transparent);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bezel-top { display: flex; align-items: center; gap: 8px; font-size: 9px; letter-spacing: .12em; color: var(--ink-dim); }
+.led { width: 7px; height: 7px; border-radius: 50%; background: #3a1010; box-shadow: 0 0 0 1px #000; }
+body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
+.bezel-top span { flex: 1; height: 2px; background: linear-gradient(90deg, var(--ring), transparent); opacity: .6; }
+#lcd {
+  width: 100%; max-width: 100%; aspect-ratio: 160 / 144;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  background: #000; border-radius: 3px; display: block;
+}
+.brand { font-weight: 700; font-size: 15px; letter-spacing: .06em; color: var(--ink); padding-left: 4px; }
+.brand em { font-style: normal; color: var(--ring); }
+.brand small { font-size: 9px; color: var(--ink-dim); letter-spacing: .14em; }
+.controls { display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 0 4px; }
+#dpad {
+  position: relative; width: 120px; height: 120px; touch-action: none; cursor: pointer;
+  border-radius: 50%; background: radial-gradient(circle, #1f221f 58%, transparent 60%);
+}
+#dpad::before, #dpad::after {
+  content: ""; position: absolute; background: #1a1c1a; border-radius: 6px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 3px 0 #0a0b0a;
+}
+#dpad::before { left: 40px; top: 10px; width: 40px; height: 100px; }
+#dpad::after { left: 10px; top: 40px; width: 100px; height: 40px; }
+#dpad i { position: absolute; z-index: 1; width: 0; height: 0; border: 7px solid transparent; opacity: .45; }
+#dpad .u { left: 53px; top: 17px; border-bottom-color: var(--ink); }
+#dpad .d { left: 53px; bottom: 17px; border-top-color: var(--ink); }
+#dpad .l { top: 53px; left: 17px; border-right-color: var(--ink); }
+#dpad .r { top: 53px; right: 17px; border-left-color: var(--ink); }
+#dpad[data-dir="up"] .u, #dpad[data-dir="down"] .d, #dpad[data-dir="left"] .l, #dpad[data-dir="right"] .r { opacity: 1; }
+.ab { justify-self: end; display: flex; gap: 14px; transform: rotate(-22deg); padding-top: 10px; }
+.round {
+  width: 54px; height: 54px; border-radius: 50%; border: 0; cursor: pointer; touch-action: none;
+  background: radial-gradient(circle at 35% 30%, #6b7066, var(--btn) 55%, #2d302b);
+  box-shadow: 0 4px 0 #111, 0 0 0 3px #1d1f1c; color: var(--ink); font: 700 15px var(--pixel);
+  display: grid; place-items: center;
+}
+.round.down, .pill.down { transform: translateY(3px); box-shadow: 0 1px 0 #111, 0 0 0 3px #1d1f1c; }
+.ab .round:nth-child(2) { margin-top: -22px; }
+.ab .round span { transform: rotate(22deg); }
+.sys { display: flex; justify-content: center; gap: 22px; }
+.pill {
+  border: 0; cursor: pointer; touch-action: none; background: #1d1f1c; color: var(--ink-dim);
+  width: 64px; height: 16px; border-radius: 9px; transform: rotate(-22deg);
+  box-shadow: 0 3px 0 #0a0b0a; font: 700 8px var(--pixel); letter-spacing: .12em; position: relative;
+}
+.round:focus-visible, .pill:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.speaker { justify-self: end; display: grid; grid-template-columns: repeat(5, 6px); gap: 6px; transform: rotate(-22deg); margin: -6px 8px 0 0; }
+.speaker b { height: 30px; border-radius: 3px; background: #151715; box-shadow: inset 0 2px 2px #000; }
+.foot { display: flex; justify-content: space-between; align-items: center; }
+.keys {
+  font: 400 10px/1.7 var(--pixel); color: var(--ink-dim); text-align: center; max-width: 380px; letter-spacing: .04em;
+}
+.keys kbd { color: var(--ink); font: inherit; border: 1px solid #39403a; border-radius: 3px; padding: 0 4px; }
+.chat { width: min(100%, 380px); display: flex; flex-direction: column; gap: 6px; }
+.chat-tabs { display: flex; gap: 3px; min-height: 24px; }
+.chat-tabs button { flex: 1; min-width: 0; padding: 4px 2px; overflow: hidden; background: #10151b; border: 1px solid #303b45; color: #aab4be; border-radius: 3px; font: 700 9px Arial, sans-serif; cursor: pointer; }
+.chat-tabs button[aria-pressed="true"] { background: #263440; color: #f0d58e; border-color: #897342; }
+.chatlog { height: 92px; overflow-y: auto; background: #0d100e; border: 1px solid #2a302b; border-radius: 6px; padding: 6px 8px;
+  font: 400 10px/1.5 var(--pixel); color: var(--ink-dim); letter-spacing: .02em; overflow-wrap: anywhere; }
+.chatlog b { font-weight: 700; color: var(--ink); }
+.chatlog .ch-say b, .chatlog .ch-yell b { color: #9fd7ff; } .chatlog .ch-trade b { color: #f0c860; } .chatlog .ch-lfg b { color: #ff9f7a; }
+.chatlog .ch-party b { color: #9ed7ff; } .chatlog .ch-guild b { color: #7fe27f; } .chatlog .ch-system b { color: var(--ring); }
+.chatlog .ch-whisper b { color: #e6a2ff; } .chatlog .ch-world b { color: #ffcf70; } .chatlog .ch-emote b { color: #e6a2ff; }
+.chatform { display: flex; gap: 6px; min-width: 0; }
+.chatform input { flex: 1; min-width: 0; background: #0d100e; border: 1px solid #2a302b; border-radius: 6px; color: var(--ink); font: 400 11px var(--pixel); padding: 7px 8px; }
+.chatform input:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
+.chatform button { background: #1d1f1c; color: var(--ink); border: 1px solid #39403a; border-radius: 6px; font: 700 10px var(--pixel); padding: 0 12px; cursor: pointer; }
+.build-info { width: min(100%, 380px); box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 6px 10px; border: 1px solid #39403a; border-radius: 5px; background: #101410; color: #a9b99a; font: 8px/1.5 var(--pixel); letter-spacing: .02em; }
+.atlas-btn { background: #1d1f1c; color: #d4e7bd; border: 1px solid #7fa52c; border-radius: 4px; font: 700 9px var(--pixel); padding: 3px 8px; cursor: pointer; letter-spacing: .08em; }
+.build-info strong { color: #d4e7bd; font-weight: 700; }
+body.full-window-mode { height: 100%; overflow: hidden; padding: 0; display: block; background: #080a08; }
+body.full-window-mode .build-info, body.full-window-mode .keys, body.full-window-mode .speaker { display: none; }
+body.full-window-mode .device { position: fixed; inset: 0; width: auto; max-width: none; border-radius: 0; padding: 10px; display: flex; gap: 8px; box-shadow: none; }
+body.full-window-mode .bezel { flex: 1; min-height: 0; display: grid; place-items: center; padding: 8px; }
+body.full-window-mode #lcd { width: min(100%, 80vh); max-width: 100%; height: auto; }
+body.full-window-mode .brand { text-align: center; padding: 0; }
+body.full-window-mode .chat { position: fixed; z-index: 15; left: max(8px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); width: min(380px, calc(100vw - 16px)); background: #000c; padding: 6px; border-radius: 8px; }
+@media (hover: hover) and (pointer: fine) { body.full-window-mode .controls, body.full-window-mode .foot { display: none; } }
+body.fullscreen-mode { height: 100%; overflow: hidden; padding: 0; display: block; background: #000; }
+body.fullscreen-mode .build-info, body.fullscreen-mode .brand, body.fullscreen-mode .bezel-top,
+body.fullscreen-mode .keys, body.fullscreen-mode .speaker { display: none; }
+body.fullscreen-mode .device { position: fixed; inset: 0; width: auto; background: none; box-shadow: none; border-radius: 0; padding: 0; display: block; }
+body.fullscreen-mode .bezel { position: absolute; inset: 0; display: grid; place-items: center; background: #000; box-shadow: none; border-radius: 0; padding: 0; }
+body.fullscreen-mode #lcd { width: min(100vw, calc(100vh * 160 / 144)); height: auto; max-width: none; border-radius: 0; }
+body.fullscreen-mode .controls, body.fullscreen-mode .foot { position: fixed; z-index: 12; left: 0; right: 0; pointer-events: none; padding: 0 max(16px, env(safe-area-inset-left, 0px)); }
+body.fullscreen-mode .controls { bottom: calc(env(safe-area-inset-bottom, 0px) + 64px); display: flex; justify-content: space-between; }
+body.fullscreen-mode .foot { bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); justify-content: center; }
+body.fullscreen-mode .controls > *, body.fullscreen-mode .foot .sys { pointer-events: auto; opacity: .65; }
+body.fullscreen-mode .chat { position: fixed; z-index: 15; left: max(8px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); width: min(380px, calc(100vw - 16px)); background: #000c; padding: 6px; border-radius: 8px; }
+@media (hover: hover) and (pointer: fine) { body.fullscreen-mode .controls, body.fullscreen-mode .foot { display: none; } }
+@media (pointer: coarse) and (orientation: portrait) {
+  body.fullscreen-mode .bezel { place-items: start center; padding-top: calc(env(safe-area-inset-top, 0px) + 24px); }
+  body.fullscreen-mode .controls { bottom: calc(env(safe-area-inset-bottom, 0px) + 110px); }
+  body.fullscreen-mode #dpad { transform: scale(1.2); transform-origin: left bottom; }
+  body.fullscreen-mode .ab { transform: rotate(-22deg) scale(1.2); transform-origin: right bottom; }
+  body.fullscreen-mode .foot { bottom: calc(env(safe-area-inset-bottom, 0px) + 36px); }
+}
+@media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
+@media (max-height: 640px) { body.fullscreen-mode #dpad { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
+/* Desktop client shell: keep the game canvas, remove the handheld hardware frame. */
+body { box-sizing: border-box; display: block; height: 100dvh; min-height: 100dvh; padding: 42px 0 24px; overflow: hidden; background: #0b0e12; }
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 42% 42%, #1d2630 0%, #11171d 42%, #090b0f 100%); }
+.build-info { position: fixed; z-index: 20; inset: 0 0 auto; width: 100%; height: 36px; box-sizing: border-box; padding: 0 18px; border: 0; border-bottom: 1px solid #39434e; border-radius: 0; background: linear-gradient(#202832, #131920); align-items: center; color: #b9c4ce; font: 11px/1.3 Arial, sans-serif; letter-spacing: .04em; }
+.build-info strong { color: #e3c98a; }
+.atlas-btn { font: 700 10px Arial, sans-serif; }
+.game-client { position: relative; width: 100%; height: 100%; box-sizing: border-box; padding: 8px 314px 30px 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.game-viewport { width: 100%; height: 100%; display: grid; place-items: center; }
+.bezel-top, .brand, .speaker { display: none; }
+#lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
+.controls, .foot { display: none; }
+.chat { position: fixed; z-index: 16; top: 48px; right: 10px; bottom: 36px; width: 284px; max-width: calc(34vw - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #39434e; border-radius: 4px; background: linear-gradient(160deg, #171e26ee, #0c1117ee); box-shadow: 0 8px 24px #0007; }
+.chatlog { flex: 1; min-height: 0; height: auto; font: 12px/1.5 Arial, sans-serif; }
+.chatform input, .chatform button { font: 12px Arial, sans-serif; }
+.keys { position: fixed; z-index: 10; bottom: 0; left: 0; right: 304px; max-width: none; height: 24px; box-sizing: border-box; margin: 0; padding: 5px 10px; overflow: hidden; background: #10151b; border-top: 1px solid #303b45; font: 10px Arial, sans-serif; }
+.keys kbd { border-radius: 2px; }
+body.full-window-mode, body.fullscreen-mode { padding: 42px 0 24px; background: #0b0e12; }
+body.full-window-mode .game-client, body.fullscreen-mode .game-client { position: relative; inset: auto; width: 100%; height: 100%; padding: 8px 314px 30px 12px; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+body.full-window-mode #lcd, body.fullscreen-mode #lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; border-radius: 2px; }
+body.fullscreen-mode .build-info { display: flex; }
+body.fullscreen-mode .chat, body.full-window-mode .chat { top: 48px; right: 10px; bottom: 36px; left: auto; width: 284px; max-width: calc(34vw - 16px); }
+body.fullscreen-mode .keys, body.full-window-mode .keys { display: block; }
+@media (hover: none), (pointer: coarse) {
+  body { padding: 8px 0; overflow: auto; }
+  .build-info { display: none; }
+  .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  .game-viewport { min-height: 0; aspect-ratio: 160 / 144; }
+  #lcd { width: 100%; height: auto; max-height: none; }
+  .controls { display: grid; position: fixed; z-index: 12; inset: auto 12px 54px; pointer-events: none; }
+  .controls > * { pointer-events: auto; opacity: .8; }
+  .foot { display: flex; position: fixed; z-index: 12; left: 0; right: 0; bottom: 16px; justify-content: center; }
+  .chat { display: none; }
+  .keys { display: none; }
+  body.fullscreen-mode, body.full-window-mode { padding: 8px 0; }
+  body.fullscreen-mode .game-client, body.full-window-mode .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  body.fullscreen-mode .controls, body.full-window-mode .controls { position: fixed; }
+  body.fullscreen-mode .foot, body.full-window-mode .foot { position: fixed; }
+}
+body.full-window-mode, body.fullscreen-mode { position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; overflow: hidden; background: #000; }
+body.full-window-mode .build-info, body.full-window-mode .keys, body.fullscreen-mode .build-info, body.fullscreen-mode .keys { display: none; }
+body.full-window-mode .game-client, body.fullscreen-mode .game-client { position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 0; max-width: none; margin: 0; padding: 0; }
+body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
+body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+.game-viewport { position: relative; }
+.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
+.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
+body.game-rendered .game-start-fallback { display: none; }
+.game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
+.game-viewport > .chat { display: flex; }
+body:not(.chat-on) .game-viewport > .chat { display: none; }
+body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { position: absolute; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-height: min(42%, 360px); }
+.chat-titlebar { display: flex; align-items: center; justify-content: space-between; color: #f0d58e; font: 700 10px Arial, sans-serif; letter-spacing: .08em; }
+.chat-titlebar button { border: 0; background: transparent; color: #b9c4ce; font: 700 16px Arial, sans-serif; cursor: pointer; }
+#chatShow { display: none; position: absolute; z-index: 16; right: 12px; bottom: 12px; padding: 8px 12px; border: 1px solid #52606b; border-radius: 4px; background: #0b1016e8; color: #f0d58e; font: 700 11px Arial, sans-serif; cursor: pointer; }
+body:not(.chat-on) #chatShow { display: block; }
+@media (pointer: coarse) { .game-viewport > .chat { right: 8px; bottom: 8px; width: min(340px, 72%); max-height: 38%; } }
+/* ---- SANCTUM theme: black, bronze and blood-red, like a dark action RPG ---- */
+:root { --san-bg: #070606; --san-panel: #120e0c; --san-panel2: #1a1411; --san-trim: #765a36; --san-trim-dim: #3a2c1e; --san-gold: #d4ac60; --san-bone: #e8dcc4; --san-dim: #9c8a70; --san-red: #b3241c; --san-blue: #2f5fd0; --san-title: "Cinzel", Georgia, "Times New Roman", serif; }
+body { background: var(--san-bg) !important; color: var(--san-bone); }
+body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a09 38%, #050404 100%) !important; }
+.build-info { background: linear-gradient(#17110e, #0c0908) !important; border-bottom: 1px solid var(--san-trim) !important; box-shadow: 0 1px 0 #000, 0 2px 0 var(--san-trim-dim), 0 6px 18px rgba(0,0,0,.6); color: var(--san-dim) !important; font-family: var(--san-title) !important; letter-spacing: .08em; }
+.build-info strong { color: var(--san-gold) !important; font-family: var(--san-title); font-weight: 700; letter-spacing: .12em; text-shadow: 0 0 8px rgba(212,172,96,.35); }
+.atlas-btn, .chatform button, .chat-tabs button { background: linear-gradient(#241a14, #120d0a) !important; color: var(--san-gold) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; font-family: var(--san-title) !important; letter-spacing: .1em; }
+.atlas-btn:hover, .chatform button:hover, .chat-tabs button:hover { border-color: var(--san-gold) !important; color: #fff3d2 !important; }
+.chat-tabs button[aria-pressed="true"] { background: linear-gradient(#4a1c14, #24100c) !important; color: #ffe6b0 !important; border-color: var(--san-gold) !important; }
+.chat, .game-viewport > .chat { background: linear-gradient(rgba(20,14,12,.94), rgba(10,8,7,.94)) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px var(--san-trim-dim), 0 8px 24px rgba(0,0,0,.7) !important; }
+.chat-titlebar { color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.chatlog { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-dim) !important; }
+.chatlog b { color: var(--san-bone) !important; }
+.chatform input { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-bone) !important; }
+.chatform input:focus { outline: 1px solid var(--san-gold) !important; }
+.keys { background: linear-gradient(#0c0908, #16100d) !important; border-top: 1px solid var(--san-trim) !important; color: var(--san-dim) !important; }
+.keys kbd { color: var(--san-gold) !important; border-color: var(--san-trim) !important; background: #120d0a; }
+#lcd { box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--san-trim), 0 0 0 4px #000, 0 0 40px rgba(140,30,20,.25) !important; }
+.game-start-fallback { background: var(--san-bg) !important; color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.device { background: linear-gradient(160deg, #241a14, #120d0a 45%, #070505) !important; }
+.bezel { background: #050404 !important; box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--san-trim) !important; }
+.round { background: radial-gradient(circle at 35% 30%, #5a2018, #2c0e0b 60%, #120605) !important; color: var(--san-gold) !important; box-shadow: 0 4px 0 #000, 0 0 0 2px var(--san-trim) !important; }
+.pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
+.game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
+#dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
+</style>
+
+<aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
+<main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
+  <div class="game-viewport">
+    <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
+    <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
+    <section class="chat" aria-label="In-game chat">
+      <div class="chat-titlebar"><span>REALM CHAT · C</span><button type="button" id="chatHide" aria-label="Hide chat">×</button></div>
+      <div class="chat-tabs" role="tablist" aria-label="Chat channel filters">
+        <button type="button" role="tab" data-chat-filter="all" aria-pressed="true">ALL</button>
+        <button type="button" role="tab" data-chat-filter="say" aria-pressed="false">SAY</button>
+        <button type="button" role="tab" data-chat-filter="party" aria-pressed="false">PARTY</button>
+        <button type="button" role="tab" data-chat-filter="guild" aria-pressed="false">GUILD</button>
+        <button type="button" role="tab" data-chat-filter="social" aria-pressed="false">SOCIAL</button>
+      </div>
+      <div id="chatlog" class="chatlog" aria-live="polite"></div>
+      <form id="chatform" class="chatform"><input id="chatinput" maxlength="180" autocomplete="off" placeholder="Message or /channel command · /help" aria-label="Chat message"><button type="submit">SEND</button></form>
+    </section>
+    <button type="button" id="chatShow">CHAT</button>
+  </div>
+  <div class="controls">
+    <div id="dpad" role="group" aria-label="Direction pad"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i></div>
+    <div class="ab">
+      <button class="round" data-btn="b" aria-label="B button"><span>B</span></button>
+      <button class="round" data-btn="a" aria-label="A button"><span>A</span></button>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="sys">
+      <button class="pill" data-btn="select">SELECT</button>
+      <button class="pill" data-btn="start">START</button>
+    </div>
+    <div class="speaker"><b></b><b></b><b></b><b></b><b></b></div>
+  </div>
+</main>
+<p class="keys">Keys: <kbd>arrows</kbd> move · <kbd>Z</kbd> A · <kbd>X</kbd> B/mount · <kbd>Enter</kbd> menu · <kbd>Shift</kbd> map / auto-battle · <kbd>M</kbd> atlas</p>

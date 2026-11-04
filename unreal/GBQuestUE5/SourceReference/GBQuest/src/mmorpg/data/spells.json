@@ -1,0 +1,16 @@
+{
+  "ruleset": "SRD-5.2.1",
+  "license": "CC-BY-4.0",
+  "source": "System Reference Document 5.2.1",
+  "note": "Compact mechanical records for the listed SRD spells. Descriptive text and complete spell coverage are intentionally not reproduced here.",
+  "spells": [
+    {"id":"fire-bolt","name":"Fire Bolt","level":0,"school":"evocation","castingTime":"action","rangeFeet":120,"components":["V","S"],"duration":"instantaneous","attack":true,"damage":"1d10","damageType":"fire"},
+    {"id":"ray-of-frost","name":"Ray of Frost","level":0,"school":"evocation","castingTime":"action","rangeFeet":60,"components":["V","S"],"duration":"instantaneous","attack":true,"damage":"1d8","damageType":"cold"},
+    {"id":"guiding-bolt","name":"Guiding Bolt","level":1,"school":"evocation","castingTime":"action","rangeFeet":120,"components":["V","S"],"duration":"1 round","attack":true,"damage":"4d6","damagePerSlotLevel":"1d6","damageType":"radiant"},
+    {"id":"cure-wounds","name":"Cure Wounds","level":1,"school":"abjuration","castingTime":"action","rangeFeet":5,"components":["V","S"],"duration":"instantaneous","healing":"1d8","addSpellcastingModifier":true},
+    {"id":"healing-word","name":"Healing Word","level":1,"school":"evocation","castingTime":"bonus action","actionCost":"bonusAction","rangeFeet":60,"components":["V"],"duration":"instantaneous","healing":"1d4","addSpellcastingModifier":true},
+    {"id":"burning-hands","name":"Burning Hands","level":1,"school":"evocation","castingTime":"action","rangeFeet":15,"components":["V","S"],"duration":"instantaneous","saveAbility":"dex","damage":"3d6","damagePerSlotLevel":"1d6","damageType":"fire","saveForHalf":true},
+    {"id":"thunderwave","name":"Thunderwave","level":1,"school":"evocation","castingTime":"action","rangeFeet":15,"components":["V","S"],"duration":"instantaneous","saveAbility":"con","damage":"2d8","damagePerSlotLevel":"1d8","damageType":"thunder","saveForHalf":true},
+    {"id":"hold-person","name":"Hold Person","level":2,"school":"enchantment","castingTime":"action","rangeFeet":60,"components":["V","S","M"],"duration":"concentration, up to 1 minute","saveAbility":"wis","condition":"paralyzed","conditionDuration":10,"concentration":true}
+  ]
+}

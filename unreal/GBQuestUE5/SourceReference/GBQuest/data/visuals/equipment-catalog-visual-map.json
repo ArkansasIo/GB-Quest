@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "sourceCatalog": "src/mmorpg/data/equipment.json",
+  "visualManifest": "assets_hd64/equipment/equipment_manifest.json",
+  "purpose": "Appearance-only mapping. Does not change gameplay stats, item level, rarity, rank, stars, gear level or power level.",
+  "status": "prototype_visual_aliases",
+  "records": [
+    {
+      "catalogId": "weapon:club",
+      "name": "Club",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:dagger",
+      "name": "Dagger",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "paired_daggers",
+      "strategy": "dagger_family"
+    },
+    {
+      "catalogId": "weapon:greatclub",
+      "name": "Greatclub",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:handaxe",
+      "name": "Handaxe",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:javelin",
+      "name": "Javelin",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:light-hammer",
+      "name": "Light Hammer",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:mace",
+      "name": "Mace",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:quarterstaff",
+      "name": "Quarterstaff",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "oak_staff",
+      "strategy": "focus_weapon_family"
+    },
+    {
+      "catalogId": "weapon:sickle",
+      "name": "Sickle",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:spear",
+      "name": "Spear",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:dart",
+      "name": "Dart",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:light-crossbow",
+      "name": "Light Crossbow",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "short_bow",
+      "strategy": "ranged_weapon_family"
+    },
+    {
+      "catalogId": "weapon:shortbow",
+      "name": "Shortbow",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "short_bow",
+      "strategy": "ranged_weapon_family"
+    },
+    {
+      "catalogId": "weapon:sling",
+      "name": "Sling",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:battleaxe",
+      "name": "Battleaxe",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:flail",
+      "name": "Flail",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:glaive",
+      "name": "Glaive",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:greataxe",
+      "name": "Greataxe",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:greatsword",
+      "name": "Greatsword",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:halberd",
+      "name": "Halberd",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:lance",
+      "name": "Lance",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:longsword",
+      "name": "Longsword",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:maul",
+      "name": "Maul",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:morningstar",
+      "name": "Morningstar",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:pike",
+      "name": "Pike",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:rapier",
+      "name": "Rapier",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:scimitar",
+      "name": "Scimitar",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:shortsword",
+      "name": "Shortsword",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:trident",
+      "name": "Trident",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:warhammer",
+      "name": "Warhammer",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "holy_mace",
+      "strategy": "blunt_weapon_family"
+    },
+    {
+      "catalogId": "weapon:war-pick",
+      "name": "War Pick",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:whip",
+      "name": "Whip",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:blowgun",
+      "name": "Blowgun",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "short_bow",
+      "strategy": "ranged_weapon_family"
+    },
+    {
+      "catalogId": "weapon:hand-crossbow",
+      "name": "Hand Crossbow",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "short_bow",
+      "strategy": "ranged_weapon_family"
+    },
+    {
+      "catalogId": "weapon:heavy-crossbow",
+      "name": "Heavy Crossbow",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "short_bow",
+      "strategy": "ranged_weapon_family"
+    },
+    {
+      "catalogId": "weapon:longbow",
+      "name": "Longbow",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "short_bow",
+      "strategy": "ranged_weapon_family"
+    },
+    {
+      "catalogId": "weapon:musket",
+      "name": "Musket",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "weapon:pistol",
+      "name": "Pistol",
+      "catalogSection": "weapons",
+      "slot": "main_hand",
+      "visualItemId": "iron_sword",
+      "strategy": "generic_melee_weapon"
+    },
+    {
+      "catalogId": "armor:padded-armor",
+      "name": "Padded Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "shadow_leathers",
+      "strategy": "light_armor"
+    },
+    {
+      "catalogId": "armor:leather-armor",
+      "name": "Leather Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "shadow_leathers",
+      "strategy": "light_armor"
+    },
+    {
+      "catalogId": "armor:studded-leather-armor",
+      "name": "Studded Leather Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "shadow_leathers",
+      "strategy": "light_armor"
+    },
+    {
+      "catalogId": "armor:hide-armor",
+      "name": "Hide Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "traveler_tunic",
+      "strategy": "medium_armor"
+    },
+    {
+      "catalogId": "armor:chain-shirt",
+      "name": "Chain Shirt",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "traveler_tunic",
+      "strategy": "medium_armor"
+    },
+    {
+      "catalogId": "armor:scale-mail",
+      "name": "Scale Mail",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "traveler_tunic",
+      "strategy": "medium_armor"
+    },
+    {
+      "catalogId": "armor:breastplate",
+      "name": "Breastplate",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "traveler_tunic",
+      "strategy": "medium_armor"
+    },
+    {
+      "catalogId": "armor:half-plate-armor",
+      "name": "Half Plate Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "traveler_tunic",
+      "strategy": "medium_armor"
+    },
+    {
+      "catalogId": "armor:ring-mail",
+      "name": "Ring Mail",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "iron_plate",
+      "strategy": "armor_category"
+    },
+    {
+      "catalogId": "armor:chain-mail",
+      "name": "Chain Mail",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "iron_plate",
+      "strategy": "armor_category"
+    },
+    {
+      "catalogId": "armor:splint-armor",
+      "name": "Splint Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "iron_plate",
+      "strategy": "armor_category"
+    },
+    {
+      "catalogId": "armor:plate-armor",
+      "name": "Plate Armor",
+      "catalogSection": "armor",
+      "slot": "chest",
+      "visualItemId": "iron_plate",
+      "strategy": "armor_category"
+    },
+    {
+      "catalogId": "armor:shield",
+      "name": "Shield",
+      "catalogSection": "armor",
+      "slot": "off_hand",
+      "visualItemId": "iron_shield",
+      "strategy": "shield"
+    }
+  ]
+}

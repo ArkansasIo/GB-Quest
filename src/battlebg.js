@@ -25,6 +25,18 @@ function bbgKind(kind) {
   if (kind === 'raid' || kind === 'arena' || kind === 'pvp' || (z && z.town)) return 'arena';
   return (z && BBG[z.biome]) ? z.biome : 'meadow';
 }
+function hd64BattleBackdrop(kind) {
+  if (S.video !== 'hd64' || S.battleBg === 'scenes') return null;
+  const z = ZONE_BY_ID[G && G.map];
+  const biome = z && z.biome;
+  let scene = 'forest';
+  if (['dungeon', 'tower', 'trial'].includes(kind) || (G && G.inst && G.inst.kind !== 'raid')) scene = 'crypt';
+  else if (kind === 'raid' || ['volcanic', 'badlands'].includes(biome)) scene = 'volcanic';
+  else if (['snow', 'crystal'].includes(biome)) scene = 'frost';
+  else if (['marsh', 'jungle', 'dusk'].includes(biome)) scene = 'marsh';
+  const name = `hd64_battle_${scene}`;
+  return IMG[name] || null;
+}
 function bbgColor(rgb) {
   if (!MONO(S.palette)) return css(rgb);
   const l = 0.3 * rgb[0] + 0.59 * rgb[1] + 0.11 * rgb[2];
@@ -62,6 +74,16 @@ function bbgCanvas(key, foes) {
   return c;
 }
 function drawBattleBackdrop(b) {
+  const hd = hd64BattleBackdrop(b.kind);
+  if (hd) {
+    const smooth = ctx.imageSmoothingEnabled, quality = ctx.imageSmoothingQuality;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(hd, 0, 38, W, 56);
+    ctx.imageSmoothingEnabled = smooth; ctx.imageSmoothingQuality = quality;
+    ctx.fillStyle = 'rgba(8,10,18,0.18)'; ctx.fillRect(0, 38, W, 56);
+    fill(0, BBG_BOT - 1, W, 1, 3);
+    return;
+  }
   if (S.battleBg === 'painted') {
     const bgn = battleBackdrop(b.kind);
     if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); }

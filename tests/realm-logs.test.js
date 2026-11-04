@@ -109,13 +109,30 @@ test("realm server writes audit and debug logs and exposes them to staff", async
       assert.equal(r.status, 400, `body ${bad}`);
     }
     assert.equal((await call("/api/saves/0", { method: "PUT", token: player.body.token, body: { state: { name: "Hero", cls: "fighter", lvl: 3 } } })).status, 200);
+    // This child is force-terminated on Windows; wait for the server's batched save to reach disk before restarting it.
+    const realmFile = path.join(data, "realm.json");
+    const deadline = Date.now() + 2500;
+    let durable = false;
+    while (Date.now() < deadline) {
+      try {
+        const saved = JSON.parse(fs.readFileSync(realmFile, "utf8"));
+        durable = !!saved.accounts.rootacct && !!saved.accounts.player1 && !!saved.saves[player.body.account.id];
+      } catch {}
+      if (durable) break;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    assert.ok(durable, "account and save writes reached the realm file before restart");
   } finally { await stop(server); }
 
   // restart with the first account as root; the audit chain must carry on
   server = await startServer({ PORT: port, GBQ_DATA: data, GBQ_ROOT_ID: root.body.account.id, GBQ_LOG_LEVEL: "debug" });
   try {
-    const login = await call("/api/login", { method: "POST", body: { username: "rootacct", password: "correct-horse" } }), token = login.body.token;
-    const all = (await call("/api/admin/audit?limit=100", { token })).body.entries;
+    const login = await call("/api/login", { method: "POST", body: { username: "rootacct", password: "correct-horse" } });
+    assert.equal(login.status, 200, `root login response: ${JSON.stringify(login.body)}`);
+    const token = login.body.token;
+    const auditResponse = await call("/api/admin/audit?limit=100", { token });
+    assert.equal(auditResponse.status, 200, `audit endpoint response: ${JSON.stringify(auditResponse.body)}`);
+    const all = auditResponse.body.entries;
     const actions = all.map(e => `${e.action}:${e.outcome}`).reverse();
     for (const want of ["server.start:success", "auth.register:success", "auth.login:failure", "admin.access:denied", "save.write:success"]) assert.ok(actions.includes(want), `missing ${want} in ${actions}`);
     assert.equal(actions[actions.length - 1], "auth.login:success");

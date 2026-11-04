@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lost Kingdom of Shadowbane Chronicles</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Cinzel:wght@500;700&display=swap">
+<style>
+/* Layout: one handheld, centred, portrait like the original DMG; controls sized for thumbs. */
+:root {
+  --room: #121513;        /* desk the device sits on */
+  --shell: #2c2f2c;       /* gunmetal body */
+  --shell-hi: #3d413c;
+  --shell-lo: #1c1e1c;
+  --bezel: #161816;
+  --ring: #7fa52c;        /* the green ring from the device mockup */
+  --ink: #c9d0b0;         /* printed labels */
+  --ink-dim: #7c8570;
+  --btn: #4a4e48;
+  --pixel: "Silkscreen", "Courier New", monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: radial-gradient(120% 80% at 50% 0%, #1b201b 0%, var(--room) 70%);
+  color: var(--ink);
+  font-family: var(--pixel);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  touch-action: manipulation; -webkit-user-select: none; user-select: none;
+  overflow-x: hidden;
+}
+.device {
+  width: min(100%, 380px);
+  background: linear-gradient(160deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  border-radius: 22px 22px 64px 22px;
+  padding: 18px 18px 26px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), inset 0 -4px 0 rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.55);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.bezel {
+  background: var(--bezel);
+  border-radius: 12px 12px 30px 12px;
+  padding: 14px 16px 10px;
+  box-shadow: inset 0 0 0 2px #0b0c0b, inset 0 0 0 4px color-mix(in srgb, var(--ring) 55%, transparent);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bezel-top { display: flex; align-items: center; gap: 8px; font-size: 9px; letter-spacing: .12em; color: var(--ink-dim); }
+.led { width: 7px; height: 7px; border-radius: 50%; background: #3a1010; box-shadow: 0 0 0 1px #000; }
+body.ready .led { background: #e2402c; box-shadow: 0 0 6px #e2402c; }
+.bezel-top span { flex: 1; height: 2px; background: linear-gradient(90deg, var(--ring), transparent); opacity: .6; }
+#lcd {
+  width: 100%; max-width: 100%; aspect-ratio: 160 / 144;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  background: #000; border-radius: 3px; display: block;
+}
+.brand { font-weight: 700; font-size: 15px; letter-spacing: .06em; color: var(--ink); padding-left: 4px; }
+.brand em { font-style: normal; color: var(--ring); }
+.brand small { font-size: 9px; color: var(--ink-dim); letter-spacing: .14em; }
+.controls { display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 0 4px; }
+#dpad {
+  position: relative; width: 120px; height: 120px; touch-action: none; cursor: pointer;
+  border-radius: 50%; background: radial-gradient(circle, #1f221f 58%, transparent 60%);
+}
+#dpad::before, #dpad::after {
+  content: ""; position: absolute; background: #1a1c1a; border-radius: 6px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 3px 0 #0a0b0a;
+}
+#dpad::before { left: 40px; top: 10px; width: 40px; height: 100px; }
+#dpad::after { left: 10px; top: 40px; width: 100px; height: 40px; }
+#dpad i { position: absolute; z-index: 1; width: 0; height: 0; border: 7px solid transparent; opacity: .45; }
+#dpad .u { left: 53px; top: 17px; border-bottom-color: var(--ink); }
+#dpad .d { left: 53px; bottom: 17px; border-top-color: var(--ink); }
+#dpad .l { top: 53px; left: 17px; border-right-color: var(--ink); }
+#dpad .r { top: 53px; right: 17px; border-left-color: var(--ink); }
+#dpad[data-dir="up"] .u, #dpad[data-dir="down"] .d, #dpad[data-dir="left"] .l, #dpad[data-dir="right"] .r { opacity: 1; }
+.ab { justify-self: end; display: flex; gap: 14px; transform: rotate(-22deg); padding-top: 10px; }
+.round {
+  width: 54px; height: 54px; border-radius: 50%; border: 0; cursor: pointer; touch-action: none;
+  background: radial-gradient(circle at 35% 30%, #6b7066, var(--btn) 55%, #2d302b);
+  box-shadow: 0 4px 0 #111, 0 0 0 3px #1d1f1c; color: var(--ink); font: 700 15px var(--pixel);
+  display: grid; place-items: center;
+}
+.round.down, .pill.down { transform: translateY(3px); box-shadow: 0 1px 0 #111, 0 0 0 3px #1d1f1c; }
+.ab .round:nth-child(2) { margin-top: -22px; }
+.ab .round span { transform: rotate(22deg); }
+.sys { display: flex; justify-content: center; gap: 22px; }
+.pill {
+  border: 0; cursor: pointer; touch-action: none; background: #1d1f1c; color: var(--ink-dim);
+  width: 64px; height: 16px; border-radius: 9px; transform: rotate(-22deg);
+  box-shadow: 0 3px 0 #0a0b0a; font: 700 8px var(--pixel); letter-spacing: .12em; position: relative;
+}
+.round:focus-visible, .pill:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.speaker { justify-self: end; display: grid; grid-template-columns: repeat(5, 6px); gap: 6px; transform: rotate(-22deg); margin: -6px 8px 0 0; }
+.speaker b { height: 30px; border-radius: 3px; background: #151715; box-shadow: inset 0 2px 2px #000; }
+.foot { display: flex; justify-content: space-between; align-items: center; }
+.keys {
+  font: 400 10px/1.7 var(--pixel); color: var(--ink-dim); text-align: center; max-width: 380px; letter-spacing: .04em;
+}
+.keys kbd { color: var(--ink); font: inherit; border: 1px solid #39403a; border-radius: 3px; padding: 0 4px; }
+.chat { width: min(100%, 380px); display: flex; flex-direction: column; gap: 6px; }
+.chat-tabs { display: flex; gap: 3px; min-height: 24px; }
+.chat-tabs button { flex: 1; min-width: 0; padding: 4px 2px; overflow: hidden; background: #10151b; border: 1px solid #303b45; color: #aab4be; border-radius: 3px; font: 700 9px Arial, sans-serif; cursor: pointer; }
+.chat-tabs button[aria-pressed="true"] { background: #263440; color: #f0d58e; border-color: #897342; }
+.chatlog { height: 92px; overflow-y: auto; background: #0d100e; border: 1px solid #2a302b; border-radius: 6px; padding: 6px 8px;
+  font: 400 10px/1.5 var(--pixel); color: var(--ink-dim); letter-spacing: .02em; overflow-wrap: anywhere; }
+.chatlog b { font-weight: 700; color: var(--ink); }
+.chatlog .ch-say b, .chatlog .ch-yell b { color: #9fd7ff; } .chatlog .ch-trade b { color: #f0c860; } .chatlog .ch-lfg b { color: #ff9f7a; }
+.chatlog .ch-party b { color: #9ed7ff; } .chatlog .ch-guild b { color: #7fe27f; } .chatlog .ch-system b { color: var(--ring); }
+.chatlog .ch-whisper b { color: #e6a2ff; } .chatlog .ch-world b { color: #ffcf70; } .chatlog .ch-emote b { color: #e6a2ff; }
+.chatform { display: flex; gap: 6px; min-width: 0; }
+.chatform input { flex: 1; min-width: 0; background: #0d100e; border: 1px solid #2a302b; border-radius: 6px; color: var(--ink); font: 400 11px var(--pixel); padding: 7px 8px; }
+.chatform input:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
+.chatform button { background: #1d1f1c; color: var(--ink); border: 1px solid #39403a; border-radius: 6px; font: 700 10px var(--pixel); padding: 0 12px; cursor: pointer; }
+.build-info { width: min(100%, 380px); box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 6px 10px; border: 1px solid #39403a; border-radius: 5px; background: #101410; color: #a9b99a; font: 8px/1.5 var(--pixel); letter-spacing: .02em; }
+.atlas-btn { background: #1d1f1c; color: #d4e7bd; border: 1px solid #7fa52c; border-radius: 4px; font: 700 9px var(--pixel); padding: 3px 8px; cursor: pointer; letter-spacing: .08em; }
+.build-info strong { color: #d4e7bd; font-weight: 700; }
+body.full-window-mode { height: 100%; overflow: hidden; padding: 0; display: block; background: #080a08; }
+body.full-window-mode .build-info, body.full-window-mode .keys, body.full-window-mode .speaker { display: none; }
+body.full-window-mode .device { position: fixed; inset: 0; width: auto; max-width: none; border-radius: 0; padding: 10px; display: flex; gap: 8px; box-shadow: none; }
+body.full-window-mode .bezel { flex: 1; min-height: 0; display: grid; place-items: center; padding: 8px; }
+body.full-window-mode #lcd { width: min(100%, 80vh); max-width: 100%; height: auto; }
+body.full-window-mode .brand { text-align: center; padding: 0; }
+body.full-window-mode .chat { position: fixed; z-index: 15; left: max(8px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); width: min(380px, calc(100vw - 16px)); background: #000c; padding: 6px; border-radius: 8px; }
+@media (hover: hover) and (pointer: fine) { body.full-window-mode .controls, body.full-window-mode .foot { display: none; } }
+body.fullscreen-mode { height: 100%; overflow: hidden; padding: 0; display: block; background: #000; }
+body.fullscreen-mode .build-info, body.fullscreen-mode .brand, body.fullscreen-mode .bezel-top,
+body.fullscreen-mode .keys, body.fullscreen-mode .speaker { display: none; }
+body.fullscreen-mode .device { position: fixed; inset: 0; width: auto; background: none; box-shadow: none; border-radius: 0; padding: 0; display: block; }
+body.fullscreen-mode .bezel { position: absolute; inset: 0; display: grid; place-items: center; background: #000; box-shadow: none; border-radius: 0; padding: 0; }
+body.fullscreen-mode #lcd { width: min(100vw, calc(100vh * 160 / 144)); height: auto; max-width: none; border-radius: 0; }
+body.fullscreen-mode .controls, body.fullscreen-mode .foot { position: fixed; z-index: 12; left: 0; right: 0; pointer-events: none; padding: 0 max(16px, env(safe-area-inset-left, 0px)); }
+body.fullscreen-mode .controls { bottom: calc(env(safe-area-inset-bottom, 0px) + 64px); display: flex; justify-content: space-between; }
+body.fullscreen-mode .foot { bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); justify-content: center; }
+body.fullscreen-mode .controls > *, body.fullscreen-mode .foot .sys { pointer-events: auto; opacity: .65; }
+body.fullscreen-mode .chat { position: fixed; z-index: 15; left: max(8px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); width: min(380px, calc(100vw - 16px)); background: #000c; padding: 6px; border-radius: 8px; }
+@media (hover: hover) and (pointer: fine) { body.fullscreen-mode .controls, body.fullscreen-mode .foot { display: none; } }
+@media (pointer: coarse) and (orientation: portrait) {
+  body.fullscreen-mode .bezel { place-items: start center; padding-top: calc(env(safe-area-inset-top, 0px) + 24px); }
+  body.fullscreen-mode .controls { bottom: calc(env(safe-area-inset-bottom, 0px) + 110px); }
+  body.fullscreen-mode #dpad { transform: scale(1.2); transform-origin: left bottom; }
+  body.fullscreen-mode .ab { transform: rotate(-22deg) scale(1.2); transform-origin: right bottom; }
+  body.fullscreen-mode .foot { bottom: calc(env(safe-area-inset-bottom, 0px) + 36px); }
+}
+@media (max-height: 640px) { .device { gap: 12px; padding-top: 12px; } #dpad { transform: scale(.85); } }
+@media (max-height: 640px) { body.fullscreen-mode #dpad { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .round.down, .pill.down { transform: none; } }
+/* Desktop client shell: keep the game canvas, remove the handheld hardware frame. */
+body { box-sizing: border-box; display: block; height: 100dvh; min-height: 100dvh; padding: 42px 0 24px; overflow: hidden; background: #0b0e12; }
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 42% 42%, #1d2630 0%, #11171d 42%, #090b0f 100%); }
+.build-info { position: fixed; z-index: 20; inset: 0 0 auto; width: 100%; height: 36px; box-sizing: border-box; padding: 0 18px; border: 0; border-bottom: 1px solid #39434e; border-radius: 0; background: linear-gradient(#202832, #131920); align-items: center; color: #b9c4ce; font: 11px/1.3 Arial, sans-serif; letter-spacing: .04em; }
+.build-info strong { color: #e3c98a; }
+.atlas-btn { font: 700 10px Arial, sans-serif; }
+.game-client { position: relative; width: 100%; height: 100%; box-sizing: border-box; padding: 8px 314px 30px 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.game-viewport { width: 100%; height: 100%; display: grid; place-items: center; }
+.bezel-top, .brand, .speaker { display: none; }
+#lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
+.controls, .foot { display: none; }
+.chat { position: fixed; z-index: 16; top: 48px; right: 10px; bottom: 36px; width: 284px; max-width: calc(34vw - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #39434e; border-radius: 4px; background: linear-gradient(160deg, #171e26ee, #0c1117ee); box-shadow: 0 8px 24px #0007; }
+.chatlog { flex: 1; min-height: 0; height: auto; font: 12px/1.5 Arial, sans-serif; }
+.chatform input, .chatform button { font: 12px Arial, sans-serif; }
+.keys { position: fixed; z-index: 10; bottom: 0; left: 0; right: 304px; max-width: none; height: 24px; box-sizing: border-box; margin: 0; padding: 5px 10px; overflow: hidden; background: #10151b; border-top: 1px solid #303b45; font: 10px Arial, sans-serif; }
+.keys kbd { border-radius: 2px; }
+body.full-window-mode, body.fullscreen-mode { padding: 42px 0 24px; background: #0b0e12; }
+body.full-window-mode .game-client, body.fullscreen-mode .game-client { position: relative; inset: auto; width: 100%; height: 100%; padding: 8px 314px 30px 12px; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+body.full-window-mode #lcd, body.fullscreen-mode #lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; border-radius: 2px; }
+body.fullscreen-mode .build-info { display: flex; }
+body.fullscreen-mode .chat, body.full-window-mode .chat { top: 48px; right: 10px; bottom: 36px; left: auto; width: 284px; max-width: calc(34vw - 16px); }
+body.fullscreen-mode .keys, body.full-window-mode .keys { display: block; }
+@media (hover: none), (pointer: coarse) {
+  body { padding: 8px 0; overflow: auto; }
+  .build-info { display: none; }
+  .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  .game-viewport { min-height: 0; aspect-ratio: 160 / 144; }
+  #lcd { width: 100%; height: auto; max-height: none; }
+  .controls { display: grid; position: fixed; z-index: 12; inset: auto 12px 54px; pointer-events: none; }
+  .controls > * { pointer-events: auto; opacity: .8; }
+  .foot { display: flex; position: fixed; z-index: 12; left: 0; right: 0; bottom: 16px; justify-content: center; }
+  .chat { display: none; }
+  .keys { display: none; }
+  body.fullscreen-mode, body.full-window-mode { padding: 8px 0; }
+  body.fullscreen-mode .game-client, body.full-window-mode .game-client { height: auto; min-height: 100%; padding: 0 8px 170px; }
+  body.fullscreen-mode .controls, body.full-window-mode .controls { position: fixed; }
+  body.fullscreen-mode .foot, body.full-window-mode .foot { position: fixed; }
+}
+body.full-window-mode, body.fullscreen-mode { position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; overflow: hidden; background: #000; }
+body.full-window-mode .build-info, body.full-window-mode .keys, body.fullscreen-mode .build-info, body.fullscreen-mode .keys { display: none; }
+body.full-window-mode .game-client, body.fullscreen-mode .game-client { position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 0; max-width: none; margin: 0; padding: 0; }
+body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
+body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+.game-viewport { position: relative; }
+.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
+.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
+body.game-rendered .game-start-fallback { display: none; }
+.game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
+.game-viewport > .chat { display: flex; }
+body:not(.chat-on) .game-viewport > .chat { display: none; }
+body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { position: absolute; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-height: min(42%, 360px); }
+.chat-titlebar { display: flex; align-items: center; justify-content: space-between; color: #f0d58e; font: 700 10px Arial, sans-serif; letter-spacing: .08em; }
+.chat-titlebar button { border: 0; background: transparent; color: #b9c4ce; font: 700 16px Arial, sans-serif; cursor: pointer; }
+#chatShow { display: none; position: absolute; z-index: 16; right: 12px; bottom: 12px; padding: 8px 12px; border: 1px solid #52606b; border-radius: 4px; background: #0b1016e8; color: #f0d58e; font: 700 11px Arial, sans-serif; cursor: pointer; }
+body:not(.chat-on) #chatShow { display: block; }
+@media (pointer: coarse) { .game-viewport > .chat { right: 8px; bottom: 8px; width: min(340px, 72%); max-height: 38%; } }
+/* ---- SANCTUM theme: black, bronze and blood-red, like a dark action RPG ---- */
+:root { --san-bg: #070606; --san-panel: #120e0c; --san-panel2: #1a1411; --san-trim: #765a36; --san-trim-dim: #3a2c1e; --san-gold: #d4ac60; --san-bone: #e8dcc4; --san-dim: #9c8a70; --san-red: #b3241c; --san-blue: #2f5fd0; --san-title: "Cinzel", Georgia, "Times New Roman", serif; }
+body { background: var(--san-bg) !important; color: var(--san-bone); }
+body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a09 38%, #050404 100%) !important; }
+.build-info { background: linear-gradient(#17110e, #0c0908) !important; border-bottom: 1px solid var(--san-trim) !important; box-shadow: 0 1px 0 #000, 0 2px 0 var(--san-trim-dim), 0 6px 18px rgba(0,0,0,.6); color: var(--san-dim) !important; font-family: var(--san-title) !important; letter-spacing: .08em; }
+.build-info strong { color: var(--san-gold) !important; font-family: var(--san-title); font-weight: 700; letter-spacing: .12em; text-shadow: 0 0 8px rgba(212,172,96,.35); }
+.atlas-btn, .chatform button, .chat-tabs button { background: linear-gradient(#241a14, #120d0a) !important; color: var(--san-gold) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; font-family: var(--san-title) !important; letter-spacing: .1em; }
+.atlas-btn:hover, .chatform button:hover, .chat-tabs button:hover { border-color: var(--san-gold) !important; color: #fff3d2 !important; }
+.chat-tabs button[aria-pressed="true"] { background: linear-gradient(#4a1c14, #24100c) !important; color: #ffe6b0 !important; border-color: var(--san-gold) !important; }
+.chat, .game-viewport > .chat { background: linear-gradient(rgba(20,14,12,.94), rgba(10,8,7,.94)) !important; border: 1px solid var(--san-trim) !important; border-radius: 2px !important; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px var(--san-trim-dim), 0 8px 24px rgba(0,0,0,.7) !important; }
+.chat-titlebar { color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.chatlog { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-dim) !important; }
+.chatlog b { color: var(--san-bone) !important; }
+.chatform input { background: #0a0807 !important; border: 1px solid var(--san-trim-dim) !important; border-radius: 2px !important; color: var(--san-bone) !important; }
+.chatform input:focus { outline: 1px solid var(--san-gold) !important; }
+.keys { background: linear-gradient(#0c0908, #16100d) !important; border-top: 1px solid var(--san-trim) !important; color: var(--san-dim) !important; }
+.keys kbd { color: var(--san-gold) !important; border-color: var(--san-trim) !important; background: #120d0a; }
+#lcd { box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--san-trim), 0 0 0 4px #000, 0 0 40px rgba(140,30,20,.25) !important; }
+.game-start-fallback { background: var(--san-bg) !important; color: var(--san-gold) !important; font-family: var(--san-title) !important; }
+.device { background: linear-gradient(160deg, #241a14, #120d0a 45%, #070505) !important; }
+.bezel { background: #050404 !important; box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--san-trim) !important; }
+.round { background: radial-gradient(circle at 35% 30%, #5a2018, #2c0e0b 60%, #120605) !important; color: var(--san-gold) !important; box-shadow: 0 4px 0 #000, 0 0 0 2px var(--san-trim) !important; }
+.pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
+.game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
+#dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
+</style>
+
+</head><body>
+<aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
+<main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
+  <div class="game-viewport">
+    <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
+    <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
+    <section class="chat" aria-label="In-game chat">
+      <div class="chat-titlebar"><span>REALM CHAT · C</span><button type="button" id="chatHide" aria-label="Hide chat">×</button></div>
+      <div class="chat-tabs" role="tablist" aria-label="Chat channel filters">
+        <button type="button" role="tab" data-chat-filter="all" aria-pressed="true">ALL</button>
+        <button type="button" role="tab" data-chat-filter="say" aria-pressed="false">SAY</button>
+        <button type="button" role="tab" data-chat-filter="party" aria-pressed="false">PARTY</button>
+        <button type="button" role="tab" data-chat-filter="guild" aria-pressed="false">GUILD</button>
+        <button type="button" role="tab" data-chat-filter="social" aria-pressed="false">SOCIAL</button>
+      </div>
+      <div id="chatlog" class="chatlog" aria-live="polite"></div>
+      <form id="chatform" class="chatform"><input id="chatinput" maxlength="180" autocomplete="off" placeholder="Message or /channel command · /help" aria-label="Chat message"><button type="submit">SEND</button></form>
+    </section>
+    <button type="button" id="chatShow">CHAT</button>
+  </div>
+  <div class="controls">
+    <div id="dpad" role="group" aria-label="Direction pad"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i></div>
+    <div class="ab">
+      <button class="round" data-btn="b" aria-label="B button"><span>B</span></button>
+      <button class="round" data-btn="a" aria-label="A button"><span>A</span></button>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="sys">
+      <button class="pill" data-btn="select">SELECT</button>
+      <button class="pill" data-btn="start">START</button>
+    </div>
+    <div class="speaker"><b></b><b></b><b></b><b></b><b></b></div>
+  </div>
+</main>
+<p class="keys">Keys: <kbd>arrows</kbd> move · <kbd>Z</kbd> A · <kbd>X</kbd> B/mount · <kbd>Enter</kbd> menu · <kbd>Shift</kbd> map / auto-battle · <kbd>M</kbd> atlas</p>
+
+<script>window.NES_INDEX={"dragon":["nm_dragon_0","nm_dragon_1","nm_dragon_2","nm_dragon_3","nm_dragon_4"],"hero":["nm_hero_0","nm_hero_1","nm_hero_2","nm_hero_3","nm_hero_4","nm_hero_5"],"companion":["nm_companion_0","nm_companion_1","nm_companion_2","nm_companion_3"],"npc":["nm_npc_0","nm_npc_1","nm_npc_2","nm_npc_3","nm_npc_4","nm_npc_5","nm_npc_6","nm_npc_7","nm_npc_8","nm_npc_9","nm_npc_10","nm_npc_11","nm_npc_12","nm_npc_13","nm_npc_14","nm_npc_15","nm_npc_16","nm_npc_17","nm_npc_18","nm_npc_19","nm_npc_20","nm_npc_21","nm_npc_22","nm_npc_23"],"monster":["nm_monster_0","nm_monster_1","nm_monster_2","nm_monster_3","nm_monster_4","nm_monster_5","nm_monster_6","nm_monster_7","nm_monster_8","nm_monster_9","nm_monster_10","nm_monster_11","nm_monster_12","nm_monster_13","nm_monster_14","nm_monster_15","nm_monster_16","nm_monster_17","nm_monster_18","nm_monster_19","nm_monster_20","nm_monster_21","nm_monster_22","nm_monster_23","nm_monster_24","nm_monster_25","nm_monster_26","nm_monster_27","nm_monster_28","nm_monster_29","nm_monster_30","nm_monster_31","nm_monster_32","nm_monster_33","nm_monster_34","nm_monster_35","nm_monster_36","nm_monster_37","nm_monster_38","nm_monster_39","nm_monster_40","nm_monster_41","nm_monster_42","nm_monster_43","nm_monster_44"],"strong":["nm_strong_0","nm_strong_1","nm_strong_2","nm_strong_3","nm_strong_4","nm_strong_5","nm_strong_6","nm_strong_7"],"undead":["nm_undead_0","nm_undead_1","nm_undead_2","nm_undead_3","nm_undead_4","nm_undead_5","nm_undead_6","nm_undead_7","nm_undead_8","nm_undead_9","nm_undead_10","nm_undead_11","nm_undead_12","nm_undead_16","nm_undead_17","nm_undead_18","nm_undead_19","nm_undead_20","nm_undead_21","nm_undead_22","nm_undead_23","nm_undead_24","nm_undead_25","nm_undead_28","nm_undead_29","nm_undead_30","nm_undead_31","nm_undead_32","nm_undead_33","nm_undead_34","nm_undead_35","nm_undead_36","nm_undead_37"],"demon":["nm_demon_0","nm_demon_1","nm_demon_2","nm_demon_3","nm_demon_4","nm_demon_5","nm_demon_6","nm_demon_7","nm_demon_8","nm_demon_9","nm_demon_10"],"elemental":["nm_elemental_0","nm_elemental_1","nm_elemental_2","nm_elemental_3","nm_elemental_4","nm_elemental_5","nm_elemental_6","nm_elemental_7","nm_elemental_8","nm_elemental_9","nm_elemental_10","nm_elemental_11"],"beast":["nm_beast_0","nm_beast_1","nm_beast_2","nm_beast_3","nm_beast_4","nm_beast_5","nm_beast_6","nm_beast_7","nm_beast_8","nm_beast_9","nm_beast_10","nm_beast_11"],"plant":["nm_plant_0","nm_plant_1","nm_plant_2","nm_plant_3","nm_plant_4","nm_plant_5","nm_plant_6","nm_plant_7","nm_plant_8","nm_plant_9","nm_plant_10"],"slime":["nm_slime_0","nm_slime_1","nm_slime_2","nm_slime_3","nm_slime_4","nm_slime_5","nm_slime_6","nm_slime_7","nm_slime_8","nm_slime_9","nm_slime_10","nm_slime_11","nm_slime_12","nm_slime_13"],"town":["nm_town_0","nm_town_1","nm_town_2","nm_town_3","nm_town_4","nm_town_5","nm_town_6","nm_town_7","nm_town_8","nm_town_9","nm_town_10"],"dungeon":["nm_dungeon_0","nm_dungeon_1","nm_dungeon_2","nm_dungeon_3","nm_dungeon_4","nm_dungeon_5","nm_dungeon_6","nm_dungeon_7","nm_dungeon_8","nm_dungeon_9","nm_dungeon_10","nm_dungeon_11","nm_dungeon_12","nm_dungeon_13","nm_dungeon_14","nm_dungeon_15","nm_dungeon_16","nm_dungeon_17","nm_dungeon_18","nm_dungeon_19","nm_dungeon_20","nm_dungeon_21","nm_dungeon_22"],"world":["nm_world_0","nm_world_1","nm_world_2","nm_world_3","nm_world_4","nm_world_5"],"interior":["nm_interior_0","nm_interior_1","nm_interior_2","nm_interior_3","nm_interior_4","nm_interior_5","nm_interior_6","nm_interior_7","nm_interior_8","nm_interior_9","nm_interior_10","nm_interior_11","nm_interior_12","nm_interior_13"],"item":["nm_item_0","nm_item_1","nm_item_2","nm_item_3","nm_item_4","nm_item_5","nm_item_6","nm_item_7","nm_item_8","nm_item_9","nm_item_10","nm_item_11","nm_item_12","nm_item_13","nm_item_14","nm_item_15","nm_item_16","nm_item_17","nm_item_18"],"weapon":["nm_weapon_0","nm_weapon_1","nm_weapon_2","nm_weapon_3","nm_weapon_4","nm_weapon_5","nm_weapon_6","nm_weapon_7","nm_weapon_8","nm_weapon_9"],"armor":["nm_armor_0","nm_armor_1","nm_armor_2","nm_armor_3","nm_armor_4","nm_armor_5","nm_armor_6","nm_armor_7","nm_armor_8","nm_armor_9","nm_armor_10","nm_armor_11","nm_armor_12"],"spell":["nm_spell_0","nm_spell_1","nm_spell_2","nm_spell_3","nm_spell_5","nm_spell_7","nm_spell_8","nm_spell_10","nm_spell_11","nm_spell_12","nm_spell_13","nm_spell_15","nm_spell_17","nm_spell_18","nm_spell_19"],"status":["nm_status_0","nm_status_1","nm_status_2","nm_status_3","nm_status_4","nm_status_5","nm_status_6","nm_status_7","nm_status_8","nm_status_9","nm_status_10","nm_status_11","nm_status_13","nm_status_14","nm_status_15","nm_status_16","nm_status_17","nm_status_18","nm_status_19","nm_status_21","nm_status_22","nm_status_23","nm_status_24","nm_status_25","nm_status_26","nm_status_27","nm_status_28","nm_status_29","nm_status_30"],"treasure":["nm_treasure_0","nm_treasure_1","nm_treasure_2","nm_treasure_3","nm_treasure_4","nm_treasure_5","nm_treasure_6","nm_treasure_7","nm_treasure_8","nm_treasure_9","nm_treasure_10","nm_treasure_11","nm_treasure_12"],"book":["nm_book_0","nm_book_1","nm_book_2","nm_book_3","nm_book_4","nm_book_5","nm_book_6","nm_book_7","nm_book_8","nm_book_9"],"door":["nm_door_0","nm_door_1","nm_door_2","nm_door_3","nm_door_4","nm_door_5","nm_door_6","nm_door_7","nm_door_8","nm_door_9","nm_door_10","nm_door_11","nm_door_12","nm_door_13","nm_door_14","nm_door_15"],"effect":["nm_effect_0","nm_effect_1","nm_effect_2","nm_effect_3","nm_effect_4","nm_effect_5","nm_effect_7","nm_effect_8","nm_effect_9","nm_effect_10","nm_effect_11","nm_effect_12","nm_effect_13","nm_effect_15"],"battlebg":["nm_battlebg_0","nm_battlebg_1","nm_battlebg_2","nm_battlebg_3","nm_battlebg_4"],"sword":["ne_sword_0","ne_sword_1","ne_sword_2","ne_sword_3","ne_sword_4","ne_sword_5","ne_sword_6","ne_sword_7","ne_sword_8"],"dagger":["ne_dagger_0","ne_dagger_1","ne_dagger_2","ne_dagger_3","ne_dagger_4","ne_dagger_5","ne_dagger_6","ne_dagger_7","ne_dagger_8"],"axe":["ne_axe_0","ne_axe_1","ne_axe_2","ne_axe_3","ne_axe_4","ne_axe_5","ne_axe_6","ne_axe_7","ne_axe_8"],"mace":["ne_mace_0","ne_mace_1","ne_mace_2","ne_mace_3","ne_mace_4","ne_mace_5","ne_mace_6","ne_mace_7","ne_mace_8"],"polearm":["ne_polearm_0","ne_polearm_1","ne_polearm_2","ne_polearm_3","ne_polearm_4","ne_polearm_5","ne_polearm_6","ne_polearm_7","ne_polearm_8","ne_polearm_9","ne_polearm_10"],"bow":["ne_bow_0","ne_bow_1","ne_bow_2","ne_bow_3","ne_bow_4","ne_bow_5","ne_bow_6","ne_bow_7"],"crossbow":["ne_crossbow_0","ne_crossbow_1","ne_crossbow_2","ne_crossbow_3","ne_crossbow_4","ne_crossbow_5"],"staff":["ne_staff_0","ne_staff_1","ne_staff_2","ne_staff_3","ne_staff_4"],"wand":["ne_wand_0","ne_wand_1","ne_wand_2","ne_wand_3","ne_wand_4","ne_wand_5","ne_wand_6","ne_wand_7"],"thrown":["ne_thrown_0","ne_thrown_1","ne_thrown_2","ne_thrown_3","ne_thrown_4","ne_thrown_5","ne_thrown_6"],"lightarmor":["ne_lightarmor_0","ne_lightarmor_1","ne_lightarmor_2","ne_lightarmor_3","ne_lightarmor_4","ne_lightarmor_5","ne_lightarmor_6","ne_lightarmor_7","ne_lightarmor_8","ne_lightarmor_9","ne_lightarmor_10","ne_lightarmor_11","ne_lightarmor_12","ne_lightarmor_13"],"mediumarmor":["ne_mediumarmor_0","ne_mediumarmor_1","ne_mediumarmor_2","ne_mediumarmor_3","ne_mediumarmor_4","ne_mediumarmor_5","ne_mediumarmor_6","ne_mediumarmor_7","ne_mediumarmor_8","ne_mediumarmor_9","ne_mediumarmor_10","ne_mediumarmor_11","ne_mediumarmor_12","ne_mediumarmor_13"],"heavyarmor":["ne_heavyarmor_0","ne_heavyarmor_1","ne_heavyarmor_2","ne_heavyarmor_3","ne_heavyarmor_4","ne_heavyarmor_5","ne_heavyarmor_6","ne_heavyarmor_7","ne_heavyarmor_8","ne_heavyarmor_9","ne_heavyarmor_10","ne_heavyarmor_11","ne_heavyarmor_12","ne_heavyarmor_13"],"shield":["ne_shield_0","ne_shield_1","ne_shield_2","ne_shield_3","ne_shield_4","ne_shield_5","ne_shield_6","ne_shield_7","ne_shield_8","ne_shield_9","ne_shield_10"],"ring":["ne_ring_0","ne_ring_1","ne_ring_2","ne_ring_3","ne_ring_4","ne_ring_5","ne_ring_6","ne_ring_7","ne_ring_8"],"amulet":["ne_amulet_0","ne_amulet_1","ne_amulet_2","ne_amulet_3","ne_amulet_4","ne_amulet_5","ne_amulet_6","ne_amulet_7","ne_amulet_8"],"belt":["ne_belt_0","ne_belt_1","ne_belt_2","ne_belt_3","ne_belt_4","ne_belt_5","ne_belt_6","ne_belt_7","ne_belt_8"],"glove":["ne_glove_0","ne_glove_1","ne_glove_2","ne_glove_3","ne_glove_4","ne_glove_5"],"boots":["ne_boots_0","ne_boots_1","ne_boots_2","ne_boots_3","ne_boots_4","ne_boots_5","ne_boots_6","ne_boots_7","ne_boots_8"],"potion":["ne_potion_0","ne_potion_1","ne_potion_2","ne_potion_3","ne_potion_4","ne_potion_5","ne_potion_6","ne_potion_7","ne_potion_8","ne_potion_9","ne_potion_10","ne_potion_11","ne_potion_12","ne_potion_13","ne_potion_14"],"scroll":["ne_scroll_0","ne_scroll_1","ne_scroll_2","ne_scroll_3","ne_scroll_4","ne_scroll_5","ne_scroll_6","ne_scroll_7","ne_scroll_8","ne_scroll_9","ne_scroll_10","ne_scroll_11","ne_scroll_12","ne_scroll_13","ne_scroll_14"],"food":["ne_food_0","ne_food_1","ne_food_2","ne_food_3","ne_food_4","ne_food_5","ne_food_6","ne_food_7","ne_food_8","ne_food_9","ne_food_10","ne_food_11","ne_food_12","ne_food_13","ne_food_14"],"tome":["ne_tome_0","ne_tome_1","ne_tome_2","ne_tome_3","ne_tome_4","ne_tome_5","ne_tome_6","ne_tome_7","ne_tome_8","ne_tome_9","ne_tome_10","ne_tome_11","ne_tome_12","ne_tome_13","ne_tome_14"],"magicitem":["ne_magicitem_0","ne_magicitem_1","ne_magicitem_2","ne_magicitem_3","ne_magicitem_4","ne_magicitem_5","ne_magicitem_6","ne_magicitem_7","ne_magicitem_8","ne_magicitem_9","ne_magicitem_10","ne_magicitem_11","ne_magicitem_12"],"tool":["ne_tool_0","ne_tool_1","ne_tool_2","ne_tool_3","ne_tool_4","ne_tool_5","ne_tool_6","ne_tool_7","ne_tool_8","ne_tool_9","ne_tool_10","ne_tool_11"],"light":["ne_light_0","ne_light_1","ne_light_2","ne_light_3","ne_light_4","ne_light_5","ne_light_6","ne_light_7","ne_light_8","ne_light_9"],"key":["ne_key_0","ne_key_1","ne_key_2","ne_key_3","ne_key_4","ne_key_5","ne_key_6","ne_key_7","ne_key_8","ne_key_9","ne_key_10"],"treasure2":["ne_treasure2_0","ne_treasure2_1","ne_treasure2_2","ne_treasure2_3","ne_treasure2_4","ne_treasure2_5","ne_treasure2_6","ne_treasure2_7","ne_treasure2_8","ne_treasure2_9"],"misc":["ne_misc_0","ne_misc_1","ne_misc_2","ne_misc_3","ne_misc_4","ne_misc_5","ne_misc_6","ne_misc_7","ne_misc_8","ne_misc_9"],"ore":["ne_ore_0","ne_ore_1","ne_ore_2","ne_ore_3","ne_ore_4","ne_ore_5","ne_ore_6","ne_ore_7","ne_ore_8"],"gem":["ne_gem_0","ne_gem_1","ne_gem_2","ne_gem_3","ne_gem_4","ne_gem_5","ne_gem_6","ne_gem_7","ne_gem_8"],"leather":["ne_leather_0","ne_leather_1","ne_leather_2","ne_leather_3","ne_leather_4","ne_leather_5","ne_leather_6","ne_leather_7","ne_leather_8"],"wood":["ne_wood_0","ne_wood_1","ne_wood_2","ne_wood_3","ne_wood_4","ne_wood_5","ne_wood_6","ne_wood_7","ne_wood_8"],"reagent":["ne_reagent_0","ne_reagent_1","ne_reagent_2","ne_reagent_3","ne_reagent_4","ne_reagent_5","ne_reagent_6","ne_reagent_7","ne_reagent_8"],"mount":["ne_mount_0","ne_mount_1","ne_mount_2","ne_mount_3","ne_mount_4","ne_mount_5","ne_mount_6","ne_mount_7","ne_mount_8","ne_mount_9","ne_mount_10","ne_mount_11","ne_mount_12","ne_mount_13","ne_mount_14","ne_mount_15","ne_mount_16","ne_mount_17","ne_mount_18","ne_mount_19","ne_mount_20","ne_mount_21","ne_mount_22","ne_mount_23"],"vehicle":["ne_vehicle_0","ne_vehicle_1","ne_vehicle_2","ne_vehicle_3","ne_vehicle_4","ne_vehicle_5","ne_vehicle_6","ne_vehicle_7","ne_vehicle_8","ne_vehicle_9"],"relic":["ne_relic_0","ne_relic_1","ne_relic_2","ne_relic_3","ne_relic_4","ne_relic_5","ne_relic_6","ne_relic_7","ne_relic_8","ne_relic_9","ne_relic_10","ne_relic_11","ne_relic_12","ne_relic_13"],"artifact":["ne_artifact_0","ne_artifact_1","ne_artifact_2","ne_artifact_3","ne_artifact_4","ne_artifact_5","ne_artifact_6","ne_artifact_7","ne_artifact_8","ne_artifact_9","ne_artifact_10","ne_artifact_11","ne_artifact_12","ne_artifact_13"],"questitem":["ne_questitem_0","ne_questitem_1","ne_questitem_2","ne_questitem_3","ne_questitem_4","ne_questitem_5","ne_questitem_6","ne_questitem_7","ne_questitem_8","ne_questitem_9","ne_questitem_10","ne_questitem_11","ne_questitem_12","ne_questitem_13","ne_questitem_14"],"banner":["ne_banner_0","ne_banner_1","ne_banner_2","ne_banner_3","ne_banner_4","ne_banner_5","ne_banner_6","ne_banner_7","ne_banner_8","ne_banner_9","ne_banner_10","ne_banner_11","ne_banner_12","ne_banner_13"],"instrument":["ne_instrument_0","ne_instrument_1","ne_instrument_2","ne_instrument_3","ne_instrument_4","ne_instrument_5","ne_instrument_6","ne_instrument_7","ne_instrument_8","ne_instrument_9","ne_instrument_10","ne_instrument_11","ne_instrument_12","ne_instrument_13"],"currency":["ne_currency_0","ne_currency_1","ne_currency_2","ne_currency_3","ne_currency_4","ne_currency_5","ne_currency_6","ne_currency_7","ne_currency_8","ne_currency_9","ne_currency_10","ne_currency_11","ne_currency_12"],"m_dragon":["ne_m_dragon_0","ne_m_dragon_1","ne_m_dragon_2","ne_m_dragon_3","ne_m_dragon_4","ne_m_dragon_5","ne_m_dragon_6","ne_m_dragon_7","ne_m_dragon_8","ne_m_dragon_9","ne_m_dragon_10"],"m_undead":["ne_m_undead_0","ne_m_undead_1","ne_m_undead_2","ne_m_undead_3","ne_m_undead_4","ne_m_undead_5","ne_m_undead_6","ne_m_undead_7","ne_m_undead_8","ne_m_undead_9","ne_m_undead_10","ne_m_undead_11","ne_m_undead_12","ne_m_undead_13","ne_m_undead_14"],"m_beast":["ne_m_beast_0","ne_m_beast_1","ne_m_beast_2","ne_m_beast_3","ne_m_beast_4","ne_m_beast_5","ne_m_beast_6","ne_m_beast_7","ne_m_beast_8","ne_m_beast_9","ne_m_beast_10","ne_m_beast_11","ne_m_beast_12","ne_m_beast_13","ne_m_beast_14"],"m_fiend":["ne_m_fiend_0","ne_m_fiend_1","ne_m_fiend_2","ne_m_fiend_3","ne_m_fiend_4","ne_m_fiend_5","ne_m_fiend_6","ne_m_fiend_7","ne_m_fiend_8","ne_m_fiend_9","ne_m_fiend_10","ne_m_fiend_11","ne_m_fiend_12","ne_m_fiend_13","ne_m_fiend_14","ne_m_fiend_15"],"m_elemental":["ne_m_elemental_0","ne_m_elemental_1","ne_m_elemental_2","ne_m_elemental_3","ne_m_elemental_4","ne_m_elemental_5","ne_m_elemental_6","ne_m_elemental_7","ne_m_elemental_8","ne_m_elemental_9","ne_m_elemental_10","ne_m_elemental_11","ne_m_elemental_12","ne_m_elemental_13","ne_m_elemental_14","ne_m_elemental_15"],"m_aberration":["ne_m_aberration_0","ne_m_aberration_1","ne_m_aberration_2","ne_m_aberration_3","ne_m_aberration_4","ne_m_aberration_5","ne_m_aberration_6","ne_m_aberration_7","ne_m_aberration_8","ne_m_aberration_9","ne_m_aberration_10","ne_m_aberration_11","ne_m_aberration_12","ne_m_aberration_13","ne_m_aberration_14","ne_m_aberration_15"],"m_giant":["ne_m_giant_0","ne_m_giant_1","ne_m_giant_2","ne_m_giant_3","ne_m_giant_4","ne_m_giant_5","ne_m_giant_6","ne_m_giant_7","ne_m_giant_8","ne_m_giant_9","ne_m_giant_10","ne_m_giant_11","ne_m_giant_12","ne_m_giant_13","ne_m_giant_14","ne_m_giant_15"],"m_fey":["ne_m_fey_0","ne_m_fey_1","ne_m_fey_2","ne_m_fey_3","ne_m_fey_4","ne_m_fey_5","ne_m_fey_6","ne_m_fey_7","ne_m_fey_8","ne_m_fey_9","ne_m_fey_10","ne_m_fey_11","ne_m_fey_12","ne_m_fey_13","ne_m_fey_14","ne_m_fey_15"],"m_humanoid":["ne_m_humanoid_0","ne_m_humanoid_1","ne_m_humanoid_2","ne_m_humanoid_3","ne_m_humanoid_4","ne_m_humanoid_5","ne_m_humanoid_6","ne_m_humanoid_7","ne_m_humanoid_8","ne_m_humanoid_9","ne_m_humanoid_10","ne_m_humanoid_11","ne_m_humanoid_12","ne_m_humanoid_13","ne_m_humanoid_14"],"m_ooze":["ne_m_ooze_0","ne_m_ooze_1","ne_m_ooze_2","ne_m_ooze_3","ne_m_ooze_4","ne_m_ooze_5","ne_m_ooze_6","ne_m_ooze_7","ne_m_ooze_8","ne_m_ooze_9","ne_m_ooze_10","ne_m_ooze_11","ne_m_ooze_12","ne_m_ooze_13","ne_m_ooze_14","ne_m_ooze_15","ne_m_ooze_16"],"c_hero":["ne_c_hero_0","ne_c_hero_1","ne_c_hero_2","ne_c_hero_3","ne_c_hero_4","ne_c_hero_5"],"c_townsfolk":["ne_c_townsfolk_0","ne_c_townsfolk_1","ne_c_townsfolk_2","ne_c_townsfolk_3","ne_c_townsfolk_4","ne_c_townsfolk_5"],"c_merchant":["ne_c_merchant_0","ne_c_merchant_1","ne_c_merchant_2","ne_c_merchant_3","ne_c_merchant_4","ne_c_merchant_5"],"c_noble":["ne_c_noble_0","ne_c_noble_1","ne_c_noble_2","ne_c_noble_3","ne_c_noble_4","ne_c_noble_5"],"c_guard":["ne_c_guard_0","ne_c_guard_1","ne_c_guard_2","ne_c_guard_3","ne_c_guard_4","ne_c_guard_5"],"c_special":["ne_c_special_0","ne_c_special_1","ne_c_special_2","ne_c_special_3","ne_c_special_4","ne_c_special_5"],"buff":["ne_buff_0","ne_buff_1","ne_buff_2","ne_buff_3","ne_buff_4","ne_buff_5","ne_buff_6","ne_buff_7","ne_buff_8","ne_buff_9","ne_buff_10","ne_buff_11","ne_buff_12"],"status2":["ne_status2_0","ne_status2_1","ne_status2_2","ne_status2_3","ne_status2_4","ne_status2_5","ne_status2_6","ne_status2_7","ne_status2_8","ne_status2_9","ne_status2_10","ne_status2_11","ne_status2_12","ne_status2_13"],"class_portrait":["np_class_warden","np_class_berserker","np_class_shade","np_class_strider","np_class_vanguard","np_class_chaplain","np_class_arcanist","np_class_pactbound","np_class_verdant","np_class_wildblood","np_class_cantor","np_class_ascetic","np_class_necromancer","np_class_summoner","np_class_sunwarden","np_class_runeblade","np_class_ronin","np_class_shinobi","np_class_bladedancer","np_class_wyrmlancer","np_class_corsair","np_class_beastcaller","np_class_puppeteer","np_class_dreadknight","np_class_voidhunter","np_class_scalesage","np_class_stormcaller"],"race_portrait":["np_race_hearthkin_0","np_race_hearthkin_1","np_race_thornelf_0","np_race_thornelf_1","np_race_stonekin_0","np_race_wispling_0","np_race_wispling_1","np_race_drakkin_0","np_race_drakkin_1","np_race_burrowkin_0","np_race_burrowkin_1","np_race_twinblood_0","np_race_twinblood_1","np_race_emberborn_0","np_race_emberborn_1","np_race_tuskborn_0","np_race_tuskborn_1","np_race_hornfolk_0","np_race_hornfolk_1","np_race_felinar_0","np_race_felinar_1","np_race_pipkin_0","np_race_pipkin_1","np_race_lunari_0","np_race_lunari_1","np_race_wolfkin_0","np_race_wolfkin_1","np_race_starkin_0","np_race_starkin_1"]};</script>
+<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>
+<script src="src/data_rules.js"></script>
+<script src="src/jobs_data.js"></script>
+<script src="src/data_world.js"></script>
+<script src="src/gen.js"></script>
+<script src="src/creatures.js"></script>
+<script src="src/rooms.js"></script>
+<script src="src/engine.js"></script>
+<script src="src/audio64.js"></script>
+<script src="src/video64.js"></script>
+<script src="src/rules.js"></script>
+<script src="src/combat.js"></script>
+<script src="src/mmorpg/systems/pvp.js"></script>
+<script src="src/systems.js"></script>
+<script src="src/rank-system.js"></script>
+<script src="src/art.js"></script>
+<script src="src/scenes_menu.js"></script>
+<script src="src/scenes_world.js"></script>
+<script src="src/npc_art.js"></script>
+<script src="src/inventory.js"></script>
+<script src="src/items.js"></script>
+<script src="src/gems.js"></script>
+<script src="src/runes.js"></script>
+<script src="src/boss_rewards.js"></script>
+<script src="src/boss_progression.js"></script>
+<script src="src/easter_eggs.js"></script>
+<script src="src/secret_world.js"></script>
+<script src="src/gem_ui.js"></script>
+<script src="src/rune_ui.js"></script>
+<script src="src/armory.js"></script>
+<script src="src/trinkets.js"></script>
+<script src="src/profperks.js"></script>
+<script src="src/materials.js"></script>
+<script src="src/companions.js"></script>
+<script src="src/arts.js"></script>
+<script src="src/netlocal.js"></script>
+<script src="src/market.js"></script>
+<script src="src/heirlooms.js"></script>
+<script src="src/mmo_loop.js"></script>
+<script src="src/keystones.js"></script>
+<script src="src/dread.js"></script>
+<script src="src/polish.js"></script>
+<script src="src/hd_character_art.js"></script>
+<script src="src/durability.js"></script>
+<script src="src/guild_prog.js"></script>
+<script src="src/world_quests.js"></script>
+<script src="src/loadouts.js"></script>
+<script src="src/jobs.js"></script>
+<script src="src/necro_army.js"></script>
+<script src="src/towns.js"></script>
+<script src="src/npc_ai.js"></script>
+<script src="src/ui_dark.js"></script>
+<script src="src/ui_mmo.js"></script>
+<script src="src/battlebg.js"></script>
+<script src="src/asset_pack.js"></script>
+<script src="src/pack_index.js"></script>
+<script src="src/pack_art.js"></script>
+<script src="src/mount_data.js"></script>
+<script src="src/mounts.js"></script>
+<script src="src/tnl_systems.js"></script>
+<script src="src/tnl_extras.js"></script>
+<script src="src/guild_war.js"></script>
+<script src="src/extras.js"></script>
+<script src="src/aspects_data.js"></script>
+<script src="src/d4_gear.js"></script>
+<script src="src/totems.js"></script>
+<script src="src/awakening.js"></script>
+<script src="src/guide.js"></script>
+<script src="src/chatwow.js"></script>
+<script src="src/admin.js"></script>
+<script src="src/chatbox.js"></script>
+<script src="src/chatframe.js"></script>
+<script src="src/identity.js"></script>
+<script src="client/main.js"></script>
+<script src="src/debug.js"></script>
+</body></html>
