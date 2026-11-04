@@ -17,3 +17,10 @@ The uploaded `pixel_16_woods v2 free.zip` contains a 352×192 pixel-art woodland
 
 ## Compatibility
 Existing PNG packs, legacy sprites, gameplay rules, saves and network systems are retained. Turn CITADEL ART OFF to restore the previous art routing.
+
+## Batch 06 — world props
+- Added ten original scalable prop illustrations under `assets_citadel/props/`.
+- `assets_citadel/prop_catalog.json` provides stable IDs and source paths.
+- `src/engine.js` loads the prop catalog and exposes `window.GBQ_CITADEL_PROPS` keyed by stable prop ID for scene-level rendering.
+- The standalone build already embeds every SVG found under `assets_citadel/`; the new prop files are therefore included automatically by `tools/build.cjs`.
+- These are concept illustrations, not final 3D meshes, collision geometry, or instanced world props.
