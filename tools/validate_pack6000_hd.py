@@ -164,7 +164,13 @@ def main() -> int:
     if csv_path.is_file():
         try:
             with csv_path.open(newline="", encoding="utf-8") as handle:
-                rows = list(csv.DictReader(handle))
+                reader = csv.DictReader(handle)
+                csv_fields = set(reader.fieldnames or [])
+                rows = list(reader)
+            required_fields = {field for record in records if isinstance(record, dict) for field in record}
+            missing_fields = required_fields - csv_fields
+            if missing_fields:
+                fail(errors, "asset_manifest.csv is missing JSON fields: " + ", ".join(sorted(missing_fields)))
             csv_ids = [str(row.get("asset_id", row.get("id", ""))).strip() for row in rows]
             if len(rows) != len(records):
                 fail(errors, f"asset_manifest.csv has {len(rows)} rows; manifest has {len(records)}")
