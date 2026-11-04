@@ -96,6 +96,13 @@
       "format": "SVG",
       "count": 10,
       "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "terrain_materials_8",
+      "path": "assets_citadel/terrain/",
+      "format": "SVG",
+      "count": 8,
+      "status": "created-and-runtime-loaded"
     }
   ],
   "provenance": "Original project artwork; no third-party game assets.",
@@ -130,6 +137,12 @@
       "name": "World environment props",
       "props": 10,
       "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "07",
+      "name": "Terrain material concepts",
+      "terrainMaterials": 8,
+      "status": "created-and-runtime-loaded"
     }
   ],
   "runtimeIntegration": {
@@ -139,6 +152,7 @@
     "standaloneEmbedding": "tools/build.cjs",
     "toggle": "SETTINGS > CITADEL ART",
     "legacyFallback": "Set CITADEL ART to OFF; existing art packs remain available",
-    "propCatalog": "assets_citadel/prop_catalog.json"
+    "propCatalog": "assets_citadel/prop_catalog.json",
+    "terrainCatalog": "assets_citadel/terrain_catalog.json"
   }
 }
