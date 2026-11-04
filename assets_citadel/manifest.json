@@ -89,6 +89,13 @@
       "format": "SVG",
       "count": 10,
       "status": "created-and-runtime-integrated"
+    },
+    {
+      "id": "world_environment_props_10",
+      "path": "assets_citadel/props/",
+      "format": "SVG",
+      "count": 10,
+      "status": "created-and-runtime-loaded"
     }
   ],
   "provenance": "Original project artwork; no third-party game assets.",
@@ -117,6 +124,12 @@
       "name": "Biome environment backdrops",
       "environmentBackdrops": 10,
       "status": "created-and-runtime-integrated"
+    },
+    {
+      "id": "06",
+      "name": "World environment props",
+      "props": 10,
+      "status": "created-and-runtime-loaded"
     }
   ],
   "runtimeIntegration": {
@@ -125,6 +138,7 @@
     "battleBackdropRouting": "src/battlebg.js",
     "standaloneEmbedding": "tools/build.cjs",
     "toggle": "SETTINGS > CITADEL ART",
-    "legacyFallback": "Set CITADEL ART to OFF; existing art packs remain available"
+    "legacyFallback": "Set CITADEL ART to OFF; existing art packs remain available",
+    "propCatalog": "assets_citadel/prop_catalog.json"
   }
 }
