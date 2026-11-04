@@ -2,14 +2,26 @@
   "FileVersion": 3,
   "EngineAssociation": "5.7",
   "Category": "Games",
-  "Description": "Unreal Engine 5.7 port of GB-Quest",
+  "Description": "GB-Quest Unreal Engine 5.7 project",
   "Modules": [
-    {"Name":"GBQuest","Type":"Runtime","LoadingPhase":"Default"},
-    {"Name":"GBQuestEditor","Type":"Editor","LoadingPhase":"PostEngineInit"}
+    {
+      "Name": "GBQuest",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
   ],
   "Plugins": [
-    {"Name":"EnhancedInput","Enabled":true},
-    {"Name":"UMG","Enabled":true},
-    {"Name":"Niagara","Enabled":true}
+    {
+      "Name": "EnhancedInput",
+      "Enabled": true
+    },
+    {
+      "Name": "UMG",
+      "Enabled": true
+    },
+    {
+      "Name": "Niagara",
+      "Enabled": true
+    }
   ]
 }
