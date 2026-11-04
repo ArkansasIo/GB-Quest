@@ -64,3 +64,17 @@ its own family; SETTINGS > ART GALLERY browses all 6,000.
 
 These are generated assets, not hand-painted final art; review before shipping. The older starter generator,
 tools/generate_6000_asset_pack.py, is kept; this generator uses the same layout and asset ids.
+
+## Asset integrity validation
+
+After generating the complete pack, run the read-only integrity checker:
+
+```bash
+python tools/validate_pack6000_hd.py
+```
+
+The validator checks the 6,000-record JSON manifest and CSV, all 18 category totals,
+unique asset IDs and paths, PNG decodability, 64x64 RGBA dimensions, and duplicate
+image content. It does not alter or regenerate assets. The `--allow-partial` option
+is intended only for inspecting a deliberately limited development pack; the full
+CI job validates the complete generated pack.
