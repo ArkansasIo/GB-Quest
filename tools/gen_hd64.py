@@ -52,9 +52,13 @@ def enhance(img):
     up = np.zeros_like(solid); up[1:] = solid[:-1]
     rim = solid & ~up
     rgb[rim] = rgb[rim] * 0.6 + 255 * 0.4
+    # Four-neighbour dilation without np.roll: roll wraps edge pixels to the
+    # opposite side of the sprite and creates stray outline pixels at the seams.
     grow = solid.copy()
-    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-        grow |= np.roll(np.roll(solid, dy, 0), dx, 1)
+    grow[1:, :] |= solid[:-1, :]
+    grow[:-1, :] |= solid[1:, :]
+    grow[:, 1:] |= solid[:, :-1]
+    grow[:, :-1] |= solid[:, 1:]
     outline = grow & ~solid
     out = np.dstack([np.clip(rgb, 0, 255), a[..., 3:4]]).astype(np.uint8)
     out[outline] = [18, 14, 26, 230]
