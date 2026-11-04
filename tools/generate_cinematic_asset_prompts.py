@@ -40,7 +40,7 @@ def main():
  a=ap.parse_args()
  spec=json.loads(BUDGET.read_text()); rng=random.Random(a.seed)
  a.output.parent.mkdir(parents=True,exist_ok=True)
- fields=["asset_id","category","sequence","asset_name","asset_type","target_engine","resolution","maps","prompt","negative_prompt","source_filename","status"]
+ fields=["asset_id","category","sequence","variation_seed","asset_name","asset_type","target_engine","resolution","maps","prompt","negative_prompt","source_filename","status"]
  rows=[]
  with a.output.open("w",newline="",encoding="utf-8") as f:
   w=csv.DictWriter(f,fieldnames=fields); w.writeheader()
@@ -55,7 +55,7 @@ def main():
             f'Composition: {camera}. Original design language for GB-Quest; physically plausible construction, '
             f'exceptional craftsmanship, fine surface microdetail, cinematic AAA dark-fantasy realism, '
             f'production-ready silhouette and clean readable forms. Variation seed {seed}.')
-    row={"asset_id":f"GBQ-CIN-{n:04d}","category":cat["id"],"sequence":i,"asset_name":name,
+    row={"asset_id":f"GBQ-CIN-{n:04d}","category":cat["id"],"sequence":i,"variation_seed":seed,"asset_name":name,
          "asset_type":"image_or_model_brief","target_engine":"Unreal Engine 5.7",
          "resolution":"4096x4096 preferred; 2048x2048 minimum",
          "maps":"BaseColor;Normal;ORM;Emissive-if-needed;Opacity-if-needed",
