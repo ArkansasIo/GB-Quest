@@ -78,7 +78,7 @@ def main() -> int:
 
     records = manifest if isinstance(manifest, list) else None
     if not isinstance(records, list):
-        fail(errors, "manifest.json must contain an 'assets' or 'items' array")
+        fail(errors, "asset_manifest.json must contain a JSON array of records")
         records = []
 
     counts: Counter[str] = Counter()
@@ -150,11 +150,11 @@ def main() -> int:
         try:
             with csv_path.open(newline="", encoding="utf-8") as handle:
                 rows = list(csv.DictReader(handle))
-            csv_ids = [str(row.get("id", "")).strip() for row in rows]
+            csv_ids = [str(row.get("asset_id", row.get("id", ""))).strip() for row in rows]
             if len(rows) != len(records):
-                fail(errors, f"assets.csv has {len(rows)} rows; manifest has {len(records)}")
+                fail(errors, f"asset_manifest.csv has {len(rows)} rows; manifest has {len(records)}")
             if Counter(csv_ids) != Counter(
-                str(row.get("id", "")).strip() for row in records if isinstance(row, dict)
+                str(row.get("asset_id", row.get("id", ""))).strip() for row in records if isinstance(row, dict)
             ):
                 fail(errors, "assets.csv IDs do not match manifest IDs")
         except (OSError, UnicodeError, csv.Error) as exc:
