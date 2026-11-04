@@ -139,7 +139,7 @@ async function loadCitadelAssets() {
         const entries = docs.get(path)[field] || [];
         await Promise.all(entries.map(async entry => {
           const id = entry.id, src = entry.src;
-          const key = `citadel_${kind === 'races' ? 'race' : kind === 'classes' ? 'class' : kind === 'creatures' ? 'creature' : kind === 'bosses' ? 'boss' : 'environment'}_${id}`;
+          const key = `citadel_${kind === 'races' ? 'race' : kind === 'classes' ? 'class' : kind === 'creatures' ? 'creature' : kind === 'bosses' ? 'boss' : kind === 'props' ? 'prop' : 'environment'}_${id}`;
           if (await loadImage(key, src)) loaded++;
         }));
       } catch (e) { console.warn('CITADEL asset catalog unavailable:', path, e); }
