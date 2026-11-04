@@ -29,7 +29,7 @@ process.on('uncaughtException', e => { log.error('uncaught exception', e); log.f
 process.on('unhandledRejection', e => log.error('unhandled promise rejection', e instanceof Error ? e : { reason: String(e) }));
 const ROOT_ACCOUNT_ID = String(process.env.GBQ_ROOT_ID || '').toLowerCase();
 const ADMIN_ACCOUNT_ID = String(process.env.GBQ_ADMIN_ID || '').toLowerCase();
-const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3;
+const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3, MAX_PRESENCE = 2048;
 const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end', 'chat', 'trade']);
 
 // ---------------------------------------------------------------- storage
@@ -66,6 +66,9 @@ const shutdown = sig => { log.info('shutting down', { signal: sig }); try { flus
 process.on('SIGINT', () => shutdown('SIGINT')); process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 // ---------------------------------------------------------------- accounts
+// db tables are plain objects keyed by user input; a name like "constructor" or "__proto__" would
+// otherwise resolve to an inherited Object.prototype member instead of "no such entry"
+const own = (table, key) => Object.hasOwn(table, key) ? table[key] : undefined;
 const scrypt = (pw, salt) => new Promise((res, rej) => crypto.scrypt(pw, salt, 64, { N: 16384, r: 8, p: 1 }, (e, k) => e ? rej(e) : res(k)));
 const validName = n => typeof n === 'string' && /^[A-Za-z0-9_]{3,16}$/.test(n);
 const validPw = p => typeof p === 'string' && p.length >= 8 && p.length <= 72;
@@ -81,6 +84,13 @@ function sessionFor(req, url) {
 const fails = new Map();
 const throttled = key => { const f = fails.get(key); return f && f.n >= 10 && Date.now() - f.t < 600e3; };
 const fail = key => { const f = fails.get(key); if (!f || Date.now() - f.t > 600e3) fails.set(key, { n: 1, t: Date.now() }); else f.n++; };
+// housekeeping: stale throttle windows (one per name tried) and expired sessions otherwise pile up forever
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, f] of fails) if (now - f.t > 600e3) fails.delete(k);
+  let n = 0; for (const t in db.sessions) if (db.sessions[t].exp < now) { delete db.sessions[t]; n++; }
+  if (n) { save(); log.debug('expired sessions removed', { count: n }); }
+}, 600e3).unref();
 const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created });
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
@@ -193,7 +203,7 @@ const server = http.createServer(async (req, res) => {
       const { username, password } = await body(req);
       if (!validName(username)) return json(res, 400, { error: 'Username: 3-16 letters, digits or _.' });
       if (!validPw(password)) return json(res, 400, { error: 'Password: 8-72 characters.' });
-      const key = username.toLowerCase(); if (db.accounts[key]) return json(res, 409, { error: 'That name is taken.' });
+      const key = username.toLowerCase(); if (own(db.accounts, key)) return json(res, 409, { error: 'That name is taken.' });
       if (throttled('reg:' + ip)) { A({ action: 'auth.register', actor: username, outcome: 'throttled' }); log.warn('registration throttled', { ip, reqId }); return json(res, 429, { error: 'Too many attempts. Try later.' }); }
       fail('reg:' + ip); // count registrations per ip too
       const salt = crypto.randomBytes(16).toString('hex'), hash = (await scrypt(password, salt)).toString('hex');
@@ -207,7 +217,7 @@ const server = http.createServer(async (req, res) => {
       const key = String(username || '').toLowerCase();
       const tried = key.slice(0, 32).replace(/[^\w.-]/g, '?'); // attempted name, sanitised; never the password
       if (throttled('ip:' + ip) || throttled('u:' + key)) { A({ action: 'auth.login', actor: tried, outcome: 'throttled' }); log.warn('login throttled', { ip, name: tried, reqId }); return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' }); }
-      const acct = db.accounts[key];
+      const acct = own(db.accounts, key);
       const salt = acct ? acct.salt : '00', want = acct ? Buffer.from(acct.hash, 'hex') : Buffer.alloc(64);
       const got = await scrypt(String(password || ''), salt); // always hash, so timing does not reveal which names exist
       if (!acct || !crypto.timingSafeEqual(got, want)) {
@@ -308,7 +318,7 @@ const server = http.createServer(async (req, res) => {
         if (!['player', 'moderator', 'admin'].includes(role)) return json(res, 400, { error: 'Role must be player, moderator or admin.' });
         if (role === 'admin' && adminRoleFor(sess.acct) !== 'root') return json(res, 403, { error: 'Only root can create admin accounts.' });
         const key = username.toLowerCase();
-        if (db.accounts[key]) return json(res, 409, { error: 'That name is already taken.' });
+        if (own(db.accounts, key)) return json(res, 409, { error: 'That name is already taken.' });
         const salt = crypto.randomBytes(16).toString('hex');
         const acct = { id: crypto.randomUUID(), name: username, salt, hash: (await scrypt(password, salt)).toString('hex'), created: Date.now(), lastLogin: null };
         db.accounts[key] = acct;
@@ -399,7 +409,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { friends, requests });
     }
     if (p === '/api/friends/request' && req.method === 'POST') {
-      const { username } = await body(req), key = String(username || '').toLowerCase(), target = db.accounts[key];
+      const { username } = await body(req), key = String(username || '').toLowerCase(), target = own(db.accounts, key);
       if (!target) return json(res, 404, { error: 'Account not found.' });
       if (target.id === uid) return json(res, 400, { error: 'You cannot add yourself.' });
       const friends = friendIds(uid), targetFriends = friendIds(target.id);
@@ -419,6 +429,8 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/api/friends/remove' && req.method === 'POST') {
       const { accountId } = await body(req), other = String(accountId || '');
+      // only real accounts: any other string used to leave an empty friendRequests entry behind
+      if (!accountById(other)) return json(res, 404, { error: 'Account not found.' });
       db.friendships[uid] = friendIds(uid).filter(id => id !== other);
       if (db.friendships[other]) db.friendships[other] = db.friendships[other].filter(id => id !== uid);
       db.friendRequests[uid] = (db.friendRequests[uid] || []).filter(id => id !== other);
@@ -446,8 +458,10 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/api/password' && req.method === 'POST') {
       const { oldPassword, newPassword } = await body(req);
+      // a stolen session must not be a way to guess the password without the login throttle
+      if (throttled('pw:' + uid)) { A({ ...actx, action: 'auth.password.change', outcome: 'throttled' }); return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' }); }
       const got = await scrypt(String(oldPassword || ''), sess.acct.salt);
-      if (!crypto.timingSafeEqual(got, Buffer.from(sess.acct.hash, 'hex'))) { A({ ...actx, action: 'auth.password.change', outcome: 'failure', details: { reason: 'wrong_current_password' } }); return json(res, 401, { error: 'Current password is wrong.' }); }
+      if (!crypto.timingSafeEqual(got, Buffer.from(sess.acct.hash, 'hex'))) { fail('pw:' + uid); A({ ...actx, action: 'auth.password.change', outcome: 'failure', details: { reason: 'wrong_current_password' } }); return json(res, 401, { error: 'Current password is wrong.' }); }
       if (!validPw(newPassword)) return json(res, 400, { error: 'Password: 8-72 characters.' });
       sess.acct.salt = crypto.randomBytes(16).toString('hex'); sess.acct.hash = (await scrypt(newPassword, sess.acct.salt)).toString('hex');
       let revoked = 0; for (const t in db.sessions) if (db.sessions[t].uid === uid && t !== sess.token) { delete db.sessions[t]; revoked++; } // log out other devices
@@ -501,7 +515,7 @@ const server = http.createServer(async (req, res) => {
         save(); return json(res, 200, { ok: true, id });
       }
       if (p === '/api/market/buy' && req.method === 'POST') {
-        const { id } = await body(req), l = db.market[id];
+        const { id } = await body(req), l = own(db.market, String(id));
         if (!l) return json(res, 404, { error: 'That listing is gone.' });
         if (l.seller === uid) return json(res, 400, { error: 'That is your own listing.' });
         delete db.market[id]; (db.proceeds[l.seller] ||= { gold: 0, returned: [] }).gold += Math.floor(l.price * 0.95);
@@ -509,7 +523,7 @@ const server = http.createServer(async (req, res) => {
         save(); return json(res, 200, { ok: true, listing: l });
       }
       if (p === '/api/market/cancel' && req.method === 'POST') {
-        const { id } = await body(req), l = db.market[id];
+        const { id } = await body(req), l = own(db.market, String(id));
         if (!l || l.seller !== uid) return json(res, 404, { error: 'Not your listing.' });
         delete db.market[id]; A({ ...actx, action: 'market.cancel', target: id, details: { price: l.price } }); save(); return json(res, 200, { ok: true, listing: l });
       }
@@ -525,7 +539,9 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/heroes' && req.method === 'GET') return json(res, 200, { heroes: Object.values(db.heroes).sort((a, b) => b.lvl - a.lvl || b.ach - a.ach).slice(0, 50) });
     if (p === '/api/hero' && req.method === 'PUT') {
       const h = await body(req);
-      db.heroes[uid] = { name: String(h.name || sess.acct.name).slice(0, 12), cls: String(h.cls || '').slice(0, 16), lvl: Math.max(1, Math.min(720, +h.lvl || 1)), ach: +h.ach || 0, tower: Math.min(100, +h.tower || 0), rating: +h.rating || 1000, ch: +h.ch || 0, account: sess.acct.name, ts: Date.now() };
+      // whole numbers in range: Infinity used to serialise as null and negatives sorted oddly
+      const int = (v, min, max, dflt) => { const n = Math.floor(+v); return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : dflt; };
+      db.heroes[uid] = { name: String(h.name || sess.acct.name).slice(0, 12), cls: String(h.cls || '').slice(0, 16), lvl: int(h.lvl, 1, 720, 1), ach: int(h.ach, 0, 1e6, 0), tower: int(h.tower, 0, 100, 0), rating: int(h.rating, 0, 1e5, 1000), ch: int(h.ch, 0, 1e4, 0), account: sess.acct.name, ts: Date.now() };
       save(); return json(res, 200, { ok: true });
     }
 
@@ -546,7 +562,9 @@ const server = http.createServer(async (req, res) => {
       if (!db.realmSettings.livePlayEnabled) return json(res, 503, { error: 'Live realm features are disabled.' });
       const { peer, presence } = await body(req); const c = clients.get(peer);
       if (!c || c.uid !== uid) return json(res, 403, { error: 'Not your connection.' });
-      c.presence = presence && typeof presence === 'object' ? presence : {}; broadcastPeers();
+      // presence is re-sent to every peer on every update; the client's is ~200 bytes, so cap it
+      if (presence && JSON.stringify(presence).length > MAX_PRESENCE) return json(res, 413, { error: 'Presence too large.' });
+      c.presence = presence && typeof presence === 'object' && !Array.isArray(presence) ? presence : {}; broadcastPeers();
       return json(res, 200, { ok: true });
     }
     if (p === '/api/emit' && req.method === 'POST') {
