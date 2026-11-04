@@ -1388,7 +1388,7 @@ function fightPull(p) {
     if (inst.kind === 'trial' && !p.final) { const nx = instVisiblePulls(inst)[0]; if (nx) toast('NEXT WAVE', nx.boss ? 'A CHAMPION ENTERS' : 'FOES POUR IN', 'px_skull', 'boss_appear'); }
     if (p.final) {
       if (inst.kind === 'dungeon') { G.stats.dungeons++; questEvent('dungeon', inst.def.id); toast('DUNGEON CLEARED', inst.def.name, 'item_chest', 'quest_done'); }
-      if (inst.kind === 'raid') { G.stats.raids++; G.raidWeek[inst.def.id] = weekKey(); toast('RAID CLEARED', inst.def.name, 'px_crown', 'act_complete'); }
+      if (inst.kind === 'raid') { G.stats.raids++; G.raidWeek[inst.def.id] = weekKey(); questEvent('raid', inst.def.id); toast('RAID CLEARED', inst.def.name, 'px_crown', 'act_complete'); }
       checkAchievements();
     }
     if (inst.kind === 'tower' && p.boss) { G.towerBest = Math.max(G.towerBest, inst.floor); NET.publishHero(); checkAchievements(); }
@@ -1756,6 +1756,12 @@ class ExpansionMapsScene {
       text(`${index + 1} ${z.name}`.slice(0, 10), ox - 2, oy + 34, index === this.zoneIndex ? 'gold' : 2);
       textR(`LV${z.lvl[0]}`, ox + ZW + 1, oy + 34, 2);
     });
+    const campaign = EXPANSION_CAMPAIGNS[this.expIndex], progress = G.expansionCampaigns && G.expansionCampaigns[x.id];
+    const story = progress ? (progress.done ? campaign.epilogue : campaign.beats[progress.step] || campaign.intro) : campaign.beats[0];
+    const step = campaign.steps[progress?.step || 0];
+    const objective = progress?.done ? 'CAMPAIGN COMPLETE' : !progress ? '0/4 ARRIVE AT FRONTIER' : step.kind === 'slay' ? `2/4 FOES ${progress.kills || 0}/${step.target}` : `${progress.step + 1}/4 ${step.kind === 'raid' ? 'RAID' : step.kind === 'dungeon' ? 'DUNGEON' : 'REACH'}: ${step.kind === 'raid' ? x.raid : step.kind === 'dungeon' ? EXP_ZONE_NAMES[this.expIndex][1] : EXP_ZONE_NAMES[this.expIndex][0]}`;
+    textC(story.toUpperCase().slice(0, 25), 80, 105, 2);
+    textC(objective.slice(0, 25), 80, 116, progress?.done ? 'gold' : 2);
     const selected = zones[this.zoneIndex];
     fill(0, 125, W, 19, 0); textC(`${selected?.name || ''}  LV${selected?.lvl[0] || 0}-${selected?.lvl[1] || 0}`, 80, 126, 'gold');
     textC('UP/DN: EXPANSION  LEFT/RIGHT: ZONE  A: DETAIL', 80, 136, 2);

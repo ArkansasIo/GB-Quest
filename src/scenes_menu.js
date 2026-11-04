@@ -301,10 +301,12 @@ class CharacterMenu {
     } else {
     // paper doll: 7 slot icons down each side, stats in the middle (no more overlapping slot names)
     const gearSlots = ['head', 'neck', 'back', 'armor', 'hands', 'waist', 'legs', 'feet', 'ring1', 'ring2', 'weapon', 'offhand', 'artifact', 'relic'];
+    const blackbirdSlotArt = { head: 'bb_helm', neck: 'bb_neck', back: 'bb_cloak', armor: 'bb_slot', hands: 'bb_gloves', waist: 'bb_belt', legs: 'bb_slot', feet: 'bb_boots', ring1: 'bb_ring1', ring2: 'bb_ring2', weapon: 'bb_weapon1', offhand: 'bb_weapon2', artifact: 'bb_trinket', relic: 'bb_trinket' };
     if (this.tab === 2) gearSlots.forEach((slot, index) => {
       const item = G.eq[slot], x = index < 7 ? 59 : 146, y = 48 + (index % 7) * 11;
       fill(x, y, 11, 11, item ? rarityCol(item.rarity === undefined ? 1 : item.rarity) : 2); fill(x + 1, y + 1, 9, 9, 0);
       if (item) { const ic = itemIcon(item); if (ic && IMG[ic]) blit(sprFit(ic, 8), x + 2, y + 2); }
+      else if (S.uiTheme === 'blackbird' && IMG[blackbirdSlotArt[slot]]) blit(sprFit(blackbirdSlotArt[slot], 8), x + 2, y + 2);
     });
     const prim = CLASSES[G.cls].primary, ilv = (() => { const L = gearSlots.map(s => G.eq[s]).filter(Boolean); return L.length ? Math.round(L.reduce((a, it) => a + (it.ilvl || 1), 0) / L.length) : 0; })();
     if (this.tab === 2) { const short = { head: 'HEAD', neck: 'NECK', back: 'BACK', armor: 'CHEST', hands: 'HANDS', waist: 'WAIST', legs: 'LEGS', feet: 'FEET', ring1: 'RING', ring2: 'RING', weapon: 'MAIN', offhand: 'OFF', artifact: 'ARTI', relic: 'RELIC' };
@@ -547,6 +549,13 @@ class QuestLog extends ListScene {
   items() {
     const o = []; const ch = chapterDef();
     o.push({ t: ch ? `ACT ${ch.act}: ${ACTS[ch.act - 1].name}` : 'STORY COMPLETE', d: ch ? `CH.${ch.i + 1} ${ch.title}\n${ch.line}\n${chapterGoal(ch)}` : 'All 12 acts and 50 chapters are done.', main: true });
+    for (const x of EXPANSIONS) {
+      const state = G.expansionCampaigns && G.expansionCampaigns[x.id]; if (!state) continue;
+      const campaign = EXPANSION_CAMPAIGNS[x.n - 1], step = campaign.steps[state.step];
+      const status = state.done ? 'CAMPAIGN COMPLETE' : `STEP ${state.step + 1}/4: ${step ? step.title : 'Continue the campaign.'}`;
+      const progress = !state.done && state.step === 1 ? `Foes defeated: ${state.kills || 0}/${campaign.steps[1].target}.` : '';
+      o.push({ t: x.name, d: `${status}\n${progress}\n${state.done ? campaign.epilogue : campaign.beats[state.step] || campaign.intro}\nFinal reward: ${fmt(campaign.reward.xp)} XP, ${fmt(campaign.reward.gold)} G.`, campaign: true, done: state.done });
+    }
     for (const id in G.sideq) { const st = G.sideq[id]; if (st.state === 'done') continue; const d = sideQuestDef(id); if (d) o.push({ t: d.name, d: `${d.text}\n${st.state === 'ready' ? 'READY: return to the warden.' : `Progress ${st.prog}/${d.count}`} (${ZONE_BY_ID[d.zone].name})` }); }
     return o;
   }
@@ -555,7 +564,7 @@ class QuestLog extends ListScene {
     fill(0, 0, W, H, 0); hdr();
     text(`STORY ${G.chapter}/50   QUESTS DONE ${G.stats.quests}`, 4, 14, 2);
     const L = this.items();
-    L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 26 + j * 11; if (i === this.i) fill(2, y - 2, 152, 11, 1); text(e.main ? '*' : '!', 4, y, e.main ? 'gold' : 3); text(e.t.slice(0, 23), 12, y); });
+    L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 26 + j * 11; if (i === this.i) fill(2, y - 2, 152, 11, 1); text(e.main ? '*' : e.campaign ? (e.done ? '#' : '+') : '!', 4, y, e.main || (e.campaign && e.done) ? 'gold' : 3); text(e.t.slice(0, 23), 12, y); });
     frame(2, 84, 156, 58); text(wrap(L[this.i].d, 24).slice(0, 5).join('\n'), 6, 88);
   }
 }
@@ -1073,9 +1082,10 @@ class SettingsScene extends ListScene {
     saveSettings(); SFX.toggle();
   }
   draw() {
-    fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); }
+    fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
+    if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
     textC('SETTINGS', 80, 13, 'gold');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), typeof adminAllowed === 'function' && adminAllowed() ? 'OPEN' : 'LOCKED', S.devMode ? 'ON' : typeof accountDevMode === 'function' && accountDevMode() ? 'ACCOUNT' : 'OFF', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), typeof adminAllowed === 'function' && adminAllowed() ? 'OPEN' : 'LOCKED', S.devMode ? 'ON' : typeof accountDevMode === 'function' && accountDevMode() ? 'ACCOUNT' : 'OFF', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
@@ -1096,7 +1106,8 @@ class KeybindScene extends ListScene {
     SFX.confirm();
   }
   draw() {
-    fill(0, 0, W, H, 0); if (G) hdr(); else fill(0, 0, W, 11, 0);
+    fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
+    if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
     textC('KEY BINDINGS', 80, 13, 'gold');
     this.actions.forEach(([action, label], index) => { const y = 29 + index * 12; if (index === this.i) fill(3, y - 2, 154, 11, 1); text(label, 7, y); textR(this.capture === action ? 'PRESS KEY…' : keyLabel(S.keybinds[action]), 151, y, this.capture === action ? 'gold' : 2); });
     const y = 29 + this.actions.length * 12; if (this.i === this.actions.length) fill(3, y - 2, 154, 11, 1); text('RESTORE DEFAULTS', 7, y, this.i === this.actions.length ? 3 : 2);
@@ -1114,8 +1125,10 @@ class SoundTest extends ListScene {
     if (P('a')) { const k = this.items()[this.i]; if (this.tab) { Music.cur = null; Music.play(k); } else SFX[k](); }
   }
   draw() {
-    fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
-    textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, 0);
+    fill(0, 0, W, H, 0);
+    if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); else fill(0, 0, W, 11, 3);
+    if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
+    textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, S.uiTheme === 'blackbird' ? 'gold' : 0);
     this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
     this.scrollbar(156, 14, 110);
     text('A:PLAY SEL:SFX/MUSIC START:ENGINE', 2, 134, 2);

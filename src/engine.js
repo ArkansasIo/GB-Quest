@@ -70,6 +70,41 @@ const rarityCol = r => (MONO(S.palette) || r <= 1) ? (r === 0 ? 1 : 3) : RARITY[
 // ================================================================ assets
 const IMG = {};
 let ASSET_NAMES = [];
+let HD64_INDEX = null, HD64_INDEX_PROMISE = null;
+const HD64_ATLASES = new Map();
+const HD64_REQUESTED = new Set();
+async function hd64Index() {
+  if (HD64_INDEX) return HD64_INDEX;
+  if (!HD64_INDEX_PROMISE) HD64_INDEX_PROMISE = (async () => {
+    let indexes = window.GBQ_HD64_INDEXES;
+    if (!indexes) {
+      const files = ['achievements', 'asset_pack', 'battle', 'buffs', 'class_sheets', 'conditions', 'creatures', 'dungeon_tiles', 'equipment', 'monsters', 'named_items', 'objects', 'passives', 'perk_icons', 'pixel_packs', 'portraits', 'ranks', 'rarity_gems', 'skills', 'slots', 'talents', 'tiles', 'titles', 'ui_kit', 'walkers'];
+      indexes = Object.fromEntries(await Promise.all(files.map(async family => [family, await (await fetch(`assets_hd64/${family}.json`)).json()])));
+    }
+    HD64_INDEX = new Map();
+    for (const [family, sprites] of Object.entries(indexes)) for (const [name, rect] of Object.entries(sprites || {})) HD64_INDEX.set(name, { family, rect });
+    return HD64_INDEX;
+  })().catch(error => { HD64_INDEX_PROMISE = null; console.warn('HD64 sprite indexes unavailable', error); return null; });
+  return HD64_INDEX_PROMISE;
+}
+async function hd64Atlas(family, page) {
+  const key = `${family}_${page}`;
+  if (!HD64_ATLASES.has(key)) HD64_ATLASES.set(key, new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => { HD64_ATLASES.set(key, im); clearCaches(); resolve(im); };
+    im.onerror = () => { HD64_ATLASES.delete(key); reject(new Error(`HD64 atlas unavailable: ${key}`)); };
+    im.src = window.GBQ_HD64_ATLASES && window.GBQ_HD64_ATLASES[key] || `assets_hd64/${key}.png`;
+  }));
+  return HD64_ATLASES.get(key);
+}
+function requestHd64Sprite(name) {
+  if (S.video !== 'hd64' || HD64_REQUESTED.has(name)) return;
+  HD64_REQUESTED.add(name);
+  hd64Index().then(index => {
+    const entry = index && index.get(name);
+    if (entry) hd64Atlas(entry.family, entry.rect[0]).catch(() => {});
+  });
+}
 async function loadAssets(onProgress) {
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
@@ -125,14 +160,29 @@ function medianCut4(d) {
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 function spr(name, w, h, opt) {
   const img = IMG[name]; if (!img) return null;
+  requestHd64Sprite(name);
   opt = opt || {};
   w = w || img.width; h = h || Math.round(img.height * w / img.width);
   const key = `${name}|${w}|${h}|${S.palette}|${opt.flip ? 1 : 0}|${opt.rot ? 1 : 0}|${opt.ghost ? 1 : 0}|${opt.clean ? 1 : 0}`;
   let c = sprCache.get(key); if (c) return c;
   c = scaled(img, w, h);
+  let hdReady = false;
+  if (S.video === 'hd64' && HD64_INDEX) {
+    const hd = HD64_INDEX.get(name);
+    const atlas = hd && HD64_ATLASES.get(`${hd.family}_${hd.rect[0]}`);
+    if (hd && atlas && atlas.width) {
+      const [page, sx, sy, sw, sh] = hd.rect;
+      const hdc = mkCanvas(w, h), hdx = hdc.getContext('2d');
+      hdx.imageSmoothingEnabled = true; hdx.drawImage(atlas, sx, sy, sw, sh, 0, 0, w, h);
+      c = hdc; hdReady = true;
+    }
+  }
   const x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data;
   const mode = S.palette;
-  if (MONO(mode)) {
+  if (hdReady) {
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] < 110) d[i + 3] = 0;
+    x.putImageData(id, 0, 0);
+  } else if (MONO(mode)) {
     const pixelArt = /^g[tdohm]_/.test(name);
     const g = tileGroup(name), th = pixelArt ? [78, 128, 182] : g ? groupThresh(g, w, h) : quantiles([d], [0.22, 0.48, 0.78]);
     const P = PALS[mode].ui;

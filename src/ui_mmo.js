@@ -1,6 +1,6 @@
 'use strict';
-// ================================================================ 8-BIT MMO UI THEME (default)
-// SETTINGS > UI THEME: 8-BIT MMO / CLASSIC / SANCTUM / DIABLO IV.
+// ================================================================ MMO UI THEMES
+// SETTINGS > UI THEME: BLACKBIRD / 8-BIT MMO / CRIMSON / CLASSIC / SANCTUM / DIABLO IV.
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -12,8 +12,8 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo'];
-const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV' };
+const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
+const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -24,13 +24,18 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
-  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu';
+  // One-time upgrade from the prior default to the newly imported BlackBird skin.
+  if (!S.blackbirdUiDefaulted) { if (!S.uiTheme || S.uiTheme === 'mmo' || S.uiTheme === 'sanctum') S.uiTheme = 'blackbird'; S.blackbirdUiDefaulted = true; try { saveSettings(); } catch (e) {} }
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
   const isMu = () => S.uiTheme === 'mu';
+  const isBlackbird = () => S.uiTheme === 'blackbird';
+  let blackbirdPanelPattern = null;
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
   // colours per theme: 8-BIT MMO (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
   const PALETTE = {
     mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
+    blackbird: { ink: [5, 6, 9], edge: [92, 100, 111], panel: [16, 18, 22], panel2: [42, 46, 52], shade: [72, 78, 86], hp: [184, 44, 44], hpLow: [250, 94, 48], mp: [58, 110, 183], xp: [189, 147, 62], gold: [224, 188, 104], title: [12, 14, 17] },
   };
   const C = new Proxy({}, { get: (_, k) => (PALETTE[S.uiTheme] || PALETTE.mmo)[k] });
   const mono = () => typeof MONO === 'function' && MONO(S.palette);
@@ -39,6 +44,24 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // handheld panel: rounded double border
   function panel(x, y, w, h, bg) {
     const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2), fillc = bg != null && bg !== 0 ? col(bg) : rgb(C.panel, 0);
+    if (isBlackbird()) {
+      fill(x, y, w, h, ink); fill(x + 1, y + 1, w - 2, h - 2, edge);
+      fill(x + 2, y + 2, w - 4, h - 4, fillc);
+      if (bg == null || bg === 0) {
+        const texture = IMG.bb_panel;
+        if (texture && w > 6 && h > 6) {
+          ctx.save(); ctx.beginPath(); ctx.rect(x + 2, y + 2, w - 4, h - 4); ctx.clip();
+          if (!blackbirdPanelPattern) blackbirdPanelPattern = ctx.createPattern(texture, 'repeat');
+          ctx.globalAlpha = 0.82; ctx.fillStyle = blackbirdPanelPattern; ctx.fillRect(x + 2, y + 2, w - 4, h - 4); ctx.restore();
+        }
+      }
+      if (IMG.bb_border && w >= 10 && h >= 10) {
+        ctx.save(); ctx.globalAlpha = 0.82;
+        for (const [cx, cy] of [[x + 1, y + 1], [x + w - 5, y + 1], [x + 1, y + h - 5], [x + w - 5, y + h - 5]]) ctx.drawImage(IMG.bb_border, cx, cy, 4, 4);
+        ctx.restore();
+      }
+      return;
+    }
     fill(x + 2, y, w - 4, h, ink); fill(x, y + 2, w, h - 4, ink); fill(x + 1, y + 1, w - 2, h - 2, ink);
     fill(x + 2, y + 1, w - 4, h - 2, edge); fill(x + 1, y + 2, w - 2, h - 4, edge);
     fill(x + 2, y + 2, w - 4, h - 4, fillc);
@@ -64,14 +87,21 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   function unitFrame() {
     const U = MMO_LAYOUT.unit, D = derive(G), hpF = pct(G.hp, D.hpMax), mpF = typeof resourceFrac === 'function' ? resourceFrac(G) : 1;
     panel(U.x, U.y, U.w, U.h);
+    if (isBlackbird() && IMG.bb_vitals_bg) ctx.drawImage(IMG.bb_vitals_bg, U.x + 21, U.y + 9, U.w - 23, 12);
     fill(U.x + 3, U.y + 3, 17, 17, rgb(C.ink, 3)); fill(U.x + 4, U.y + 4, 15, 15, rgb([196, 214, 236], 1));
     const por = heroPortrait(G); if (por) { const s = sprFit(por, 15); blit(s, U.x + 4 + ((15 - s.width) >> 1), U.y + 4 + ((15 - s.height) >> 1)); }
     else { const w = typeof walker === 'function' ? walker(heroLook(G), 'down', 0) : null; if (w) blit(w, U.x + 3, U.y + 4); }
     text(`L${G.lvl} ${G.name}`.slice(0, 7), U.x + 22, U.y + 3, 3);
-    hbar(U.x + 22, U.y + 11, U.w - 25, 5, hpF, G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? C.hpLow : C.hp, 'red');
-    hbar(U.x + 22, U.y + 16, U.w - 25, 4, mpF, C.mp, 'blue');
+    const barX = isBlackbird() ? U.x + 29 : U.x + 22, barW = U.x + U.w - 3 - barX;
+    hbar(barX, U.y + 11, barW, 5, hpF, G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? C.hpLow : C.hp, 'red');
+    hbar(barX, U.y + 16, barW, 4, mpF, C.mp, 'blue');
+    if (isBlackbird() && IMG.bb_vitals_fg) ctx.drawImage(IMG.bb_vitals_fg, U.x + 21, U.y + 9, U.w - 23, 12);
     const x0 = xpForLevel(G.lvl), x1 = xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1));
-    hbar(U.x + 1, U.y + U.h, U.w - 2, 3, pct(G.xp - x0, Math.max(1, x1 - x0)), C.xp, 'gold');
+    const xpFrac = pct(G.xp - x0, Math.max(1, x1 - x0));
+    if (isBlackbird() && IMG.bb_xp) {
+      ctx.drawImage(IMG.bb_xp, U.x + 1, U.y + U.h, U.w - 2, 3);
+      fill(U.x + 2, U.y + U.h + 1, Math.round((U.w - 4) * xpFrac), 1, rgb(C.xp, 'gold'));
+    } else hbar(U.x + 1, U.y + U.h, U.w - 2, 3, xpFrac, C.xp, 'gold');
     // party frames
     (G.companions || []).filter(c => c && !c.dead).slice(0, 3).forEach((c, i) => {
       const y = U.y + U.h + 4 + i * 10, Dc = derive(c);
@@ -99,7 +129,9 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
-    fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2));
+    if (isBlackbird()) panel(0, Hd.y + 2, W, H - Hd.y - 2);
+    else { fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2)); }
+    if (isBlackbird() && IMG.bb_tab) ctx.drawImage(IMG.bb_tab, 0, Hd.y + 2, W, 2);
     const OR = isMu() ? 11 : Hd.orbR;
     if (isMu()) { fill(0, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); fill(W - 26, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); }
     orb(13, H - 11, OR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
@@ -168,20 +200,34 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
     RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
     ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
-    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS' };
+    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS', SoundTest: 'SOUND TEST' };
   const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; if (WIN_TITLE[n]) return WIN_TITLE[n]; } return null; };
   window.mmoPageTitle = pageTitle;
   if (typeof hdr === 'function') {
     const h0 = hdr;
     hdr = function () {
-      const t = hudMmo() && G ? pageTitle() : null; if (!t) return h0.apply(this, arguments);
+      const t = hudMmo() && G ? pageTitle() : null;
+      if (!t && isBlackbird() && G && IMG.bb_title) {
+        panel(1, 12, W - 2, H - 14);
+        ctx.drawImage(IMG.bb_title, 0, 0, W, 12);
+        const d = new Date(); text(`${pad2(d.getHours())}:${pad2(d.getMinutes())}`, 3, 2, 2); text(`LV${G.lvl}`, 40, 2, 'gold');
+        if (NET.room) text(NET.server ? 'HOST' : NET.hostOf ? 'JOIN' : 'LIVE', 72, 2, 'blue');
+        const gold = fmt(G.gold); textR(gold, W - 3, 2, 'gold');
+        return;
+      }
+      if (!t) return h0.apply(this, arguments);
+      if (isBlackbird()) panel(1, 12, W - 2, H - 14);
       const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2);
-      fill(0, 0, W, 12, rgb(C.title, 3)); fill(0, 11, W, 1, isMu() ? rgb(C.gold, 2) : edge); fill(1, 1, W - 2, 1, isMu() ? rgb([150, 40, 30], 1) : rgb([60, 70, 110], 1));
+      if (isBlackbird() && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12);
+      else fill(0, 0, W, 12, rgb(C.title, 3));
+      fill(0, 11, W, 1, isMu() ? rgb(C.gold, 2) : edge); fill(1, 1, W - 2, 1, isMu() ? rgb([150, 40, 30], 1) : rgb([60, 70, 110], 1));
       fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1));            // window icon
       text(t.slice(0, 15), 12, 2, 'gold');
       const g = fmt(G.gold); textR(g, W - 13, 2, 'white');
-      fill(W - 11, 1, 10, 9, rgb([150, 30, 26], 2)); fill(W - 10, 2, 8, 7, rgb([200, 50, 40], 2));  // close button (B)
-      for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, 'white'); fill(W - 5 - k, 3 + k, 1, 1, 'white'); }
+      fill(W - 11, 1, 10, 9, isBlackbird() ? rgb(C.edge, 2) : rgb([150, 30, 26], 2));
+      fill(W - 10, 2, 8, 7, isBlackbird() ? rgb(C.ink, 3) : rgb([200, 50, 40], 2));  // B closes the window
+      const closeInk = isBlackbird() ? rgb(C.gold, 2) : 'white';
+      for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, closeInk); fill(W - 5 - k, 3 + k, 1, 1, closeInk); }
     };
   }
   { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); hotbar(); } catch (e) { console.warn('mmo hud', e); } } }; }

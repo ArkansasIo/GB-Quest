@@ -295,10 +295,10 @@ const BUILD = {
 const EXPANSION_STORIES = BUILD.expansions.map((name, index) => {
   const stories = [
     { subtitle: 'THE SEA TAKES WHAT WAS BURIED', art: 'nm_dragon_0', threat: 'A drowned throne stirs beneath the Shattered Isles.', hook: 'Follow the lanterns below the waves, before the tide forgets the shore.' },
-    { subtitle: 'THE DEEP REMEMBERS', art: 'px_skull', threat: 'The Sunken Depths answer every prayer with a voice from the dark.', hook: 'Descend through drowned cities and discover what the abyss kept alive.' },
-    { subtitle: 'A KINGDOM ABOVE THE CLOUDS', art: 'px_waypoint', threat: 'The sky roads fracture as a storm gathers over the floating isles.', hook: 'Climb beyond the clouds and decide who rules the winds.' },
-    { subtitle: 'THE FIRE BENEATH THE WORLD', art: 'nm_dragon_1', threat: 'A wound of flame opens, and ancient things crawl into the light.', hook: 'Cross the Emberfell frontier and silence the heart of the rift.' },
-    { subtitle: 'WHEN THE LAST LIGHT FAILS', art: 'px_rune', threat: 'The first lantern goes dark. The long night begins again.', hook: 'Seek the dawn beyond the edge of the known world.' },
+    { subtitle: 'DRAGONFIRE BELOW THE TIDE', art: 'nm_dragon_0', threat: 'A dragon sleeps beneath the Sunken Depths, bound by the Abyssal Choir.', hook: 'Descend through drowned cities, break the choir’s hold, and face the fire below.' },
+    { subtitle: 'EMBERFELL IN THE SKY', art: 'px_waypoint', threat: 'Embers from a lost sky-forge ignite the cloud roads and split the floating isles.', hook: 'Climb through the storm, find Emberfell’s forge, and choose who commands its flame.' },
+    { subtitle: 'THE WIZARDS’ RIFT', art: 'nm_dragon_1', threat: 'The Dominion’s magisters tore a hole in the world and cannot control what answers.', hook: 'Cross the rift frontier, confront the conclave, and seal the breach they opened.' },
+    { subtitle: 'THE PLAGUE OF THE FIRST LIGHT', art: 'px_rune', threat: 'A blight spreads from the First Lantern, dimming the dawn wherever its light falls.', hook: 'Carry the lantern through the Halo Fields and discover what poisoned its flame.' },
     { subtitle: 'THE CRYSTAL REMEMBERS', art: 'px_gem', threat: 'A living crystal begins to repeat the voices of the dead.', hook: 'Enter the mirrored realm and find which reflection is yours.' },
     { subtitle: 'WINTER HAS A CROWN', art: 'px_skull', threat: 'An old dynasty wakes beneath the unbroken ice.', hook: 'Cross the frostbound court before the cold claims every name.' },
     { subtitle: 'ASCEND, OR BE UNMADE', art: 'px_rune', threat: 'A tower of spell-light rises where no tower stood before.', hook: 'Master the arcane trials and learn what waits at the summit.' },
@@ -505,11 +505,11 @@ const POINT_BUY = { budget: 27, min: 8, max: 15, cost: { 8: 0, 9: 1, 10: 2, 11: 
 
 // ================================================================ expansions (endgame, levels 40-720)
 const EXPANSIONS = [
-  { n: 1, id: 'x1', name: 'SHATTERED ISLES', lvl: [40, 120], biomes: ['coast', 'jungle', 'marsh'], raid: 'THE DROWNED THRONE', theme: 'temple', desc: 'Islands torn from the sea floor.' },
-  { n: 2, id: 'x2', name: 'THE SUNKEN DEPTHS', lvl: [120, 240], biomes: ['marsh', 'crystal', 'dusk'], raid: 'ABYSSAL CHOIR', theme: 'ice', desc: 'Cities beneath the waves.' },
-  { n: 3, id: 'x3', name: 'SKYREACH', lvl: [240, 360], biomes: ['snow', 'crystal', 'meadow'], raid: 'THRONE OF WINDS', theme: 'void', desc: 'Floating isles above the clouds.' },
-  { n: 4, id: 'x4', name: 'THE ABYSSAL RIFT', lvl: [360, 540], biomes: ['volcanic', 'dusk', 'badlands'], raid: 'HEART OF THE RIFT', theme: 'lava', desc: 'A wound in the world, bleeding fiends.' },
-  { n: 5, id: 'x5', name: 'ETERNAL DAWN', lvl: [540, 720], biomes: ['crystal', 'coast', 'snow'], raid: 'THE FIRST LANTERN', theme: 'crypt', desc: 'Beyond the sunrise, the gods wait.' },
+  { n: 1, id: 'x1', name: 'ETERNAL ODYSSEY', lvl: [40, 120], biomes: ['coast', 'jungle', 'marsh'], raid: 'THE DROWNED THRONE', theme: 'temple', desc: 'Sail the Shattered Isles and reclaim the throne below the waves.' },
+  { n: 2, id: 'x2', name: 'DRAGONFIRE REALM', lvl: [120, 240], biomes: ['marsh', 'crystal', 'dusk'], raid: 'ABYSSAL CHOIR', theme: 'ice', desc: 'Cities beneath the waves answer the call of an ancient dragon.' },
+  { n: 3, id: 'x3', name: 'EMBERFELL SAGA', lvl: [240, 360], biomes: ['snow', 'crystal', 'meadow'], raid: 'THRONE OF WINDS', theme: 'void', desc: 'A kingdom above the clouds faces a storm without end.' },
+  { n: 4, id: 'x4', name: "WIZARD'S DOMINION", lvl: [360, 540], biomes: ['volcanic', 'dusk', 'badlands'], raid: 'HEART OF THE RIFT', theme: 'lava', desc: 'Cross the Emberfell frontier and seal its burning rift.' },
+  { n: 5, id: 'x5', name: 'PLAGUEBORN LEGACY', lvl: [540, 720], biomes: ['crystal', 'coast', 'snow'], raid: 'THE FIRST LANTERN', theme: 'crypt', desc: 'The last light falters; seek the dawn beyond the known world.' },
   // expansions 6-13 are worlds of their own, each with its own painted map (assets/gm_x<N>.png)
   { n: 6, id: 'x6', name: 'CRYSTALIZED REALMS', lvl: [100, 220], biomes: ['crystal', 'coast', 'dusk'], raid: 'THE MIRROR CROWN', theme: 'temple', desc: 'A living crystal repeats the dead.', world: true },
   { n: 7, id: 'x7', name: 'FROSTSONG DYNASTY', lvl: [160, 300], biomes: ['snow', 'crystal', 'badlands'], raid: 'THE RIME DYNASTY', theme: 'ice', desc: 'An old crown wakes under the ice.', world: true },
@@ -536,6 +536,24 @@ EXPANSIONS.forEach(x => {
   RAIDS.push({ id: 'rd_' + x.id, name: x.raid, theme: x.theme, lvl: x.lvl[1] - 10, bosses: 5, zone: `${x.id}_2`, exp: x.n });
   [0, 1].forEach(i => DUNGEONS.push({ id: `dg_${x.id}_${i}`, zone: `${x.id}_${i}`, name: `${EXP_ZONE_NAMES[x.n - 1][i]} DEPTHS`, theme: x.theme, lvl: x.lvl[0] + (i + 1) * 30, size: 4, exp: x.n }));
 });
+// Persistent campaign objectives per expansion, driven by normal travel, combat, and instance events.
+const EXPANSION_CAMPAIGNS = EXPANSIONS.map((x, i) => Object.freeze({
+  exp: x.n, title: x.name, intro: EXPANSION_STORIES[i].hook,
+  beats: [
+    EXPANSION_STORIES[i].threat,
+    EXPANSION_STORIES[i].hook,
+    `The trail leads into ${EXP_ZONE_NAMES[i][1]}, where the old defenses still hold.`,
+    `${x.raid} is the source of the upheaval. End it, and the frontier may heal.`,
+  ],
+  epilogue: `${x.name} is safe for now. ${x.raid} can threaten it no longer.`,
+  steps: [
+    { kind: 'arrive', zone: `${x.id}_0`, title: `Reach ${EXP_ZONE_NAMES[i][0]}` },
+    { kind: 'slay', target: 12, title: `Defeat 12 foes across ${x.name}` },
+    { kind: 'dungeon', target: `dg_${x.id}_1`, title: `Clear ${EXP_ZONE_NAMES[i][1]} DEPTHS` },
+    { kind: 'raid', target: `rd_${x.id}`, title: `Defeat ${x.raid}` },
+  ],
+  reward: { xp: Math.round(x.lvl[1] * 18), gold: x.lvl[1] * 25 },
+}));
 
 // hand-made starting zone
 const ELDERWOOD_MAP = [

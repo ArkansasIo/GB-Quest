@@ -64,15 +64,34 @@ const yieldText = y => Object.entries(y).map(([k, v]) => `${v} ${ITEMS[k].name}`
 // ---------------------------------------------------------------- shared grid drawing
 function drawItemCell(it, x, y, sel, opts = {}) {
   const S = 18;
+  if (S.uiTheme === 'blackbird') {
+    fill(x, y, S, S, sel ? '#c9ad75' : '#45494f');
+    fill(x + 1, y + 1, S - 2, S - 2, '#090b0e');
+    fill(x + 2, y + 2, S - 4, S - 4, it ? rarityCol(it.rarity === undefined ? 1 : it.rarity) : '#17191d');
+    fill(x + 3, y + 3, S - 6, S - 6, '#080a0c');
+  } else {
   fill(x, y, S, S, sel ? 'gold' : 3);
   fill(x + 1, y + 1, S - 2, S - 2, it ? rarityCol(it.rarity === undefined ? 1 : it.rarity) : 1);
   fill(x + 2, y + 2, S - 4, S - 4, 0);
+  }
   if (!it) return;
   const icon = opts.icon || itemIcon(it); if (icon) blit(sprFit(icon, 13), x + 3, y + 3);
   if (opts.count != null) textR(String(opts.count), x + S - 1, y + 10, 3);
   if (it.junk) text('x', x + 2, y + 1, 'red');
   if (it.fav) text('*', x + 2, y + 1, 'gold');
   if (opts.up) text('^', x + 12, y + 1, 'green');
+}
+
+function drawInventoryTab(label, x, y, w, h, active, disabled = false) {
+  if (S.uiTheme === 'blackbird' && IMG.bb_tab) {
+    ctx.drawImage(IMG.bb_tab, x, y, w, h);
+    fill(x, y, w, h - 1, active ? 'rgba(178,146,88,0.22)' : 'rgba(0,0,0,0.35)');
+    fill(x, y + h - 1, w, 1, active ? '#d1b277' : '#51565c');
+    textC(label, x + Math.floor(w / 2), y + 2, active ? 'gold' : disabled ? 2 : 3);
+  } else {
+    fill(x, y, w, h, active ? 3 : disabled ? 2 : 1);
+    textC(label, x + Math.floor(w / 2), y + 1, active ? 0 : 3);
+  }
 }
 
 // ---------------------------------------------------------------- INVENTORY
@@ -147,7 +166,7 @@ class InventoryScene {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    INV_TABS.forEach(([t], i) => { const x = 2 + i * 40; fill(x, 12, 38, 10, i === this.tab ? 3 : 1); textC(t, x + 19, 13, i === this.tab ? 0 : 3); });
+    INV_TABS.forEach(([t], i) => { const x = 2 + i * 40; drawInventoryTab(t, x, 12, 38, 10, i === this.tab); });
     const L = this.list();
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {
       const idx = j * INV_COLS + i, e = L[idx], x = 4 + i * 19, y = 24 + j * 18, sel = i === this.cx && j === this.cy;
@@ -251,8 +270,7 @@ class StashScene {
     const st = stashOf();
     for (let t = 0; t < STASH_TABS; t++) {
       const x = 2 + t * 39, on = this.pane && t === this.tab, lock = t >= st.unlocked;
-      fill(x, 12, 37, 10, on ? 3 : lock ? 2 : 1);
-      textC(lock ? '$' : (STASH_TAB_LABELS[st.names[t]] || st.names[t].slice(0, 5)), x + 18, 13, on ? 0 : 3);
+      drawInventoryTab(lock ? '$' : (STASH_TAB_LABELS[st.names[t]] || st.names[t].slice(0, 5)), x, 12, 37, 10, on, lock);
     }
     const L = this.list();
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {

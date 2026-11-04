@@ -8,6 +8,10 @@ const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const clientFile = (name) => name === 'main' ? 'client/main.js' : `src/${name}.js`;
 
 const nes = '<script>window.NES_INDEX=' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'nes_index.json'), 'utf8'))) + ';</script>\n';
+const hd64Files = fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.endsWith('.png')).sort();
+const hd64Atlases = Object.fromEntries(hd64Files.map(f => [f.slice(0, -4), 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets_hd64', f)).toString('base64')]));
+const hd64Indexes = Object.fromEntries(fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.endsWith('.json')).map(f => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(ROOT, 'assets_hd64', f), 'utf8'))]));
+const hd64 = '<script>window.GBQ_HD64_ATLASES=' + JSON.stringify(hd64Atlases) + ';window.GBQ_HD64_INDEXES=' + JSON.stringify(hd64Indexes) + ';</script>\n';
 const shell = rd('client/shell.html');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
@@ -31,7 +35,7 @@ for (const n of names) {
 fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
 const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
 const single = shell + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\n' + nes + atlas
-  + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('');
+  + hd64 + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('');
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);
 
 const fsHtml = rd('client/fullscreen.html');

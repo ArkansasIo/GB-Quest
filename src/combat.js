@@ -972,12 +972,16 @@ class Battle {
     fill(0, 0, W, H, 0);
     if (typeof drawBattleBackdrop === 'function') drawBattleBackdrop(this);
     else { const bgn = battleBackdrop(this.kind); if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); } fill(0, 93, W, 1, 2); }
+    if (S.uiTheme === 'blackbird') { frame(0, 0, 80, 38); frame(81, 0, 79, 38); }
     // party panel
     const big = this.party.length > 4;
     this.party.forEach((u, i) => {
       if (big) { const cx = (i % 2) * 40, cy = 1 + Math.floor(i / 2) * 6; text(u.name.slice(0, 2), cx + 1, cy - 2, this.actor === u ? 2 : 3); bar(cx + 14, cy, 24, 4, Math.max(0, hpOf(u)), maxHpOf(u), hpOf(u) < maxHpOf(u) * 0.3 ? 'red' : 'hp'); return; }
       const y = 1 + i * 9; const act = this.actor === u;
-      if (act) fill(0, y - 1, 79, 9, 1);
+      if (act) {
+        if (S.uiTheme === 'blackbird') { fill(1, y - 1, 77, 9, 'rgba(185,145,82,0.25)'); fill(1, y - 1, 1, 9, 'gold'); }
+        else fill(0, y - 1, 79, 9, 1);
+      }
       text(u.name.slice(0, 6), 2, y, isChar(u) && u.ch.hp <= 0 ? 1 : 3);
       bar(40, y + 1, 30, 4, Math.max(0, hpOf(u)), maxHpOf(u), hpOf(u) < maxHpOf(u) * 0.3 ? 'red' : 'hp');
       if (u.temp) fill(40, y + 5, Math.min(30, u.temp), 1, 'blue');
@@ -986,7 +990,10 @@ class Battle {
     // foe panel
     this.foes.slice(0, 4).forEach((f, i) => {
       const y = 1 + i * 9; const tgt = this.state === 'target' && this.targets[this.ti] === f;
-      if (tgt && (frameN >> 3) % 2) fill(81, y - 1, 79, 9, 1);
+      if (tgt && (frameN >> 3) % 2) {
+        if (S.uiTheme === 'blackbird') { fill(82, y - 1, 77, 9, 'rgba(185,145,82,0.25)'); fill(158, y - 1, 1, 9, 'gold'); }
+        else fill(81, y - 1, 79, 9, 1);
+      }
       textR(f.name.slice(0, 6), 118, y, f.hp <= 0 ? 1 : f.boss ? 'red' : 3);
       bar(128, y + 1, 30, 4, Math.max(0, f.hp), f.maxhp, f.boss ? 'red' : 2);
       { const ic = (f.effects || []).map(e => effectIcon(e.id)).filter(Boolean); if (ic.length) blit(spr(ic[Math.floor(frameN / 40) % ic.length], 7, 7), 120, y); }
@@ -1048,7 +1055,7 @@ class Battle {
       text(`${u.name.slice(0, 8)} ${Math.max(0, c.hp)}/${D.hpMax}`, 7, 98, 2);
       text(resLine(c, D), 80, 98, 2);
       if (this.state === 'menu') {
-        this.menuOpts().forEach((s, i) => { const x = 16 + (i % 2) * 72, y = 109 + (i >> 1) * 10; if (i === this.menu) { fill(x - 9, y - 1, 66, 10, 3); text(s, x, y, 0); text('>', x - 7, y, 0); } else text(s, x, y); });
+        this.menuOpts().forEach((s, i) => { const x = 16 + (i % 2) * 72, y = 109 + (i >> 1) * 10; if (i === this.menu) { if (S.uiTheme === 'blackbird') { fill(x - 9, y - 1, 66, 10, 'rgba(185,145,82,0.25)'); fill(x - 9, y - 1, 1, 10, 'gold'); text(s, x, y, 'gold'); text('>', x - 7, y, 'gold'); } else { fill(x - 9, y - 1, 66, 10, 3); text(s, x, y, 0); text('>', x - 7, y, 0); } } else text(s, x, y); });
         if (S.autoBattle) textR('AUTO', 154, 98, 'red');
       } else if (this.state === 'list') {
         this.list.slice(this.subTop, this.subTop + 3).forEach((e, j) => { const i = this.subTop + j, y = 108 + j * 10; if (i === this.sub) text('>', 6, y); text(e.name.slice(0, 16), 13, y, e.ok ? 3 : 1); textR(e.sub, 154, y, e.ok ? 2 : 1); });
