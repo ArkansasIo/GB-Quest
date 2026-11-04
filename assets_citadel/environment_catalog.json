@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "category": "environments",
+  "format": "image/svg+xml",
+  "masterViewBox": "0 0 1600 900",
+  "entries": [
+    {
+      "id": "forest",
+      "src": "assets_citadel/environments/forest.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "plains",
+      "src": "assets_citadel/environments/plains.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "coast",
+      "src": "assets_citadel/environments/coast.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "snow",
+      "src": "assets_citadel/environments/snow.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "swamp",
+      "src": "assets_citadel/environments/swamp.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "desert",
+      "src": "assets_citadel/environments/desert.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "volcanic",
+      "src": "assets_citadel/environments/volcanic.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "dungeon",
+      "src": "assets_citadel/environments/dungeon.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "city",
+      "src": "assets_citadel/environments/city.svg",
+      "status": "concept-background"
+    },
+    {
+      "id": "crystal",
+      "src": "assets_citadel/environments/crystal.svg",
+      "status": "concept-background"
+    }
+  ],
+  "note": "Vector environment concept backgrounds for battle scenes. Final world exploration environments still require layered tile materials and 3D/painted assets."
+}
