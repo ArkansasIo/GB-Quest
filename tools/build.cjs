@@ -12,6 +12,20 @@ const hd64Files = fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.e
 const hd64Atlases = Object.fromEntries(hd64Files.map(f => [f.slice(0, -4), 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets_hd64', f)).toString('base64')]));
 const hd64Indexes = Object.fromEntries(fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.endsWith('.json')).map(f => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(ROOT, 'assets_hd64', f), 'utf8'))]));
 const hd64 = '<script>window.GBQ_HD64_ATLASES=' + JSON.stringify(hd64Atlases) + ';window.GBQ_HD64_INDEXES=' + JSON.stringify(hd64Indexes) + ';</script>\n';
+const citadelFiles = [];
+function walkCitadel(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkCitadel(full);
+    else if (entry.isFile() && entry.name.toLowerCase().endsWith('.svg')) {
+      const rel = path.relative(ROOT, full).split(path.sep).join('/');
+      citadelFiles.push([rel, 'data:image/svg+xml;base64,' + fs.readFileSync(full).toString('base64')]);
+    }
+  }
+}
+walkCitadel(path.join(ROOT, 'assets_citadel'));
+const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fromEntries(citadelFiles)) + ';</script>\\n';
 const shell = rd('client/shell.html');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
@@ -35,7 +49,7 @@ for (const n of names) {
 fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
 const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
 const single = shell + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\n' + nes + atlas
-  + hd64 + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('');
+  + hd64 + citadel + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('');
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);
 
 const fsHtml = rd('client/fullscreen.html');
