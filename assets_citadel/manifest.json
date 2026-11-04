@@ -68,6 +68,13 @@
       "format": "SVG",
       "count": 12,
       "status": "created"
+    },
+    {
+      "id": "bestiary_creatures_12",
+      "path": "assets_citadel/creatures/",
+      "format": "SVG",
+      "count": 12,
+      "status": "created"
     }
   ],
   "provenance": "Original project artwork; no third-party game assets.",
@@ -77,6 +84,12 @@
       "name": "Races and classes",
       "racePortraits": 8,
       "classInsignia": 12,
+      "status": "created"
+    },
+    {
+      "id": "03",
+      "name": "Bestiary creatures",
+      "creatureEmblems": 12,
       "status": "created"
     }
   ]
