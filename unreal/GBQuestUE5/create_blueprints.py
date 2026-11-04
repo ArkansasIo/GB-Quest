@@ -245,7 +245,7 @@ def create_blueprint_scaffolds():
         ("BP_GBQ_GameState", unreal.GameStateBase),
         ("BP_GBQ_PlayerState", unreal.PlayerState),
         ("BP_GBQ_PlayerController", unreal.PlayerController),
-        ("BP_GBQ_PlayerCharacter", unreal.Character),
+        ("BP_GBQ_PlayerCharacter", unreal.load_class(None, "/Script/GBQuestUE5.GBQPlayerCharacter") or unreal.Character),
         ("BP_GBQ_BattleManager", unreal.Actor),
         ("BP_GBQ_GameSystems", unreal.ActorComponent),
         ("BP_GBQ_Presentation", unreal.Actor),
