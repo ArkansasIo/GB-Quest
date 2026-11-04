@@ -12408,6 +12408,272 @@ if (typeof window !== 'undefined' && typeof enterInstance === 'function' && type
 </script>
 <script>
 'use strict';
+(() => { // own scope: the game loads every module as a classic script sharing one global scope
+// ================================================================ DREAD DUNGEONS (MAIN MENU > DREAD DUNGEONS)
+// Endgame dungeon modes in the spirit of modern action-RPGs (all names original):
+//   * DREAD SIGILS (level 10+): consumable sigils that turn a dungeon into a DREAD run of tier 1-100. Foes get
+//     +7% HP and damage per tier, one BOON affix (more gold, XP, loot...) and 1-3 BANE affixes (foes start
+//     MIGHTY, THORNSKIN, FORTIFIED, HASTED or the party starts WEAKENED). No timer; leaving or wiping burns the
+//     sigil. A clear pays sigil powder, gear (item level grows with tier) and a new sigil of tier +1 to +3.
+//     Sigils also drop from ordinary dungeon clears (50%). Craft a sigil from 10 powder; salvage one for 3.
+//   * THE PIT (level 20+): a tiered timed climb, tier 1-150. Foes +10% HP and damage per tier. Clear the final
+//     boss in time to unlock the next tiers (+1, +2 under 80% of the timer, +3 under 60%) and earn PIT SHARDS
+//     and gear. Out of time pays a few shards; leaving or wiping pays nothing.
+//   * SHARD EXCHANGE: trade pit shards for SCRAP, the material the OCCULTIST spends on MASTERWORK (d4_gear.js).
+//   * ENDLESS HORDE (level 15+): back-to-back battles in your current zone, ten waves. Foes +12% per wave.
+//     After each wave pick a BOON (a buff that opens every later battle) and bank AETHER, or cash out:
+//     aether buys a chest of gear and gold. A wipe loses half the aether.
+// Pure rules are exported as GBQDread for tests; the game wiring runs only inside the game.
+
+const SIGIL_MIN_LVL = 10, PIT_MIN_LVL = 20, HORDE_MIN_LVL = 15;
+const SIGIL_MAX = 100, PIT_MAX = 150, SIGIL_BAG = 12, HORDE_WAVES = 10, SCRAP_PER_SHARD = 4;
+const SIGIL_BOONS = {
+  gilded: { name: 'GILDED', desc: '+50% gold from the clear chest.', gold: 1.5 },
+  learned: { name: 'LEARNED', desc: '+50% clear XP.', xp: 1.5 },
+  bountiful: { name: 'BOUNTIFUL', desc: '+1 gear item in the clear chest.', items: 1 },
+  attuned: { name: 'ATTUNED', desc: '+5 sigil powder.', powder: 5 },
+};
+const SIGIL_BANES = {
+  brutal: { name: 'BRUTAL', desc: 'Foes start MIGHTY (+15% damage) for 3 rounds.', foe: 'might', rounds: 3 },
+  thorned: { name: 'THORNED', desc: 'Foes have THORNSKIN all battle.', foe: 'thornskin', rounds: 99 },
+  bulwark: { name: 'BULWARK', desc: 'Foes start FORTIFIED for 2 rounds.', foe: 'fortify', rounds: 2 },
+  frenzied: { name: 'FRENZIED', desc: 'Foes start HASTED for 1 round.', foe: 'haste', rounds: 1 },
+  sapping: { name: 'SAPPING', desc: 'Your party starts WEAKENED for 2 rounds.', party: 'weakened', rounds: 2 },
+  hardened: { name: 'HARDENED', desc: 'Foes +15% HP.', hp: 1.15 },
+};
+const BOON_IDS = Object.keys(SIGIL_BOONS), BANE_IDS = Object.keys(SIGIL_BANES);
+const clampT = (t, max) => Math.max(1, Math.min(max, Math.floor(Number(t) || 1)));
+const r3 = v => Math.round(v * 1000) / 1000;
+const sigilScale = tier => r3(Math.pow(1.07, clampT(tier, SIGIL_MAX) - 1));
+const baneCount = tier => 1 + (tier >= 15 ? 1 : 0) + (tier >= 40 ? 1 : 0);
+// a sigil of a tier for one of the given dungeon ids
+function rollSigil(tier, dungeonIds, rnd) {
+  tier = clampT(tier, SIGIL_MAX);
+  const banes = BANE_IDS.slice(), neg = [];
+  while (neg.length < baneCount(tier) && banes.length) neg.push(banes.splice(Math.floor(rnd() * banes.length) % banes.length, 1)[0]);
+  return { tier, dungeon: dungeonIds[Math.floor(rnd() * dungeonIds.length) % dungeonIds.length], pos: BOON_IDS[Math.floor(rnd() * BOON_IDS.length) % BOON_IDS.length], neg };
+}
+// HP / damage multipliers for a foe in a sigil run
+function sigilFoeMult(sig) { let hp = sigilScale(sig.tier), dmg = sigilScale(sig.tier); for (const id of sig.neg || []) { const b = SIGIL_BANES[id]; if (b && b.hp) hp *= b.hp; } return { hp: r3(hp), dmg: r3(dmg) }; }
+function sigilRewards(sig, dungeonLvl, rnd) {
+  const t = clampT(sig.tier, SIGIL_MAX), boon = SIGIL_BOONS[sig.pos] || {};
+  return { powder: 3 + Math.floor(t / 5) + (boon.powder || 0), items: 1 + (t >= 20 ? 1 : 0) + (boon.items || 0), ilvl: Math.min(720, Math.max(1, Math.floor(dungeonLvl) + 3 * t)),
+    rarity: t >= 50 ? 5 : t >= 15 ? 4 : 3, gold: Math.round((100 + 25 * t) * (boon.gold || 1)), xp: Math.round((250 + 60 * t) * (boon.xp || 1)), next: Math.min(SIGIL_MAX, t + 1 + Math.floor((rnd ? rnd() : 0.5) * 3)) };
+}
+const SIGIL_CRAFT = 10, SIGIL_SALVAGE = 3;
+
+// ---------------------------------------------------------------- the pit
+const pitScale = tier => r3(Math.pow(1.1, clampT(tier, PIT_MAX) - 1));
+const pitLimit = rooms => 90 + 60 * Math.max(1, Math.floor(Number(rooms) || 1));
+function pitResult(tier, elapsed, limit) {
+  const timed = elapsed <= limit, up = !timed ? 0 : elapsed <= limit * 0.6 ? 3 : elapsed <= limit * 0.8 ? 2 : 1;
+  return { timed, unlock: Math.min(PIT_MAX, clampT(tier, PIT_MAX) + up) };
+}
+const pitShards = (tier, timed) => (timed ? 2 + Math.floor(clampT(tier, PIT_MAX) / 4) : 1);
+
+
+// ---------------------------------------------------------------- horde
+const HORDE_BOONS = {
+  might: { name: 'BLOODLUST', buff: 'might' }, fortify: { name: 'IRONHIDE', buff: 'fortify' }, regen: { name: 'RENEWAL', buff: 'regen' },
+  focus: { name: 'KEEN SIGHT', buff: 'focus' }, haste: { name: 'TAILWIND', buff: 'haste' }, bless: { name: 'GRACE', buff: 'bless' }, thornskin: { name: 'BRAMBLES', buff: 'thornskin' },
+};
+const HORDE_BOON_IDS = Object.keys(HORDE_BOONS);
+const hordeScale = wave => r3(1 + 0.12 * (Math.max(1, Math.floor(wave)) - 1));
+const hordeAether = wave => 10 + 5 * Math.max(1, Math.floor(wave));
+function hordeOffer(owned, rnd) { const pool = HORDE_BOON_IDS.filter(id => !(owned || []).includes(id)), out = []; while (out.length < 3 && pool.length) out.push(pool.splice(Math.floor(rnd() * pool.length) % pool.length, 1)[0]); return out; }
+const hordeChest = (aether, lvl) => ({ items: Math.min(5, Math.floor(aether / 60)), gold: Math.round(aether * (2 + Math.max(1, lvl) / 10)), rarity: aether >= 400 ? 5 : aether >= 200 ? 4 : 3 });
+
+if (typeof globalThis !== 'undefined') globalThis.GBQDread = {
+  SIGIL_MIN_LVL, PIT_MIN_LVL, HORDE_MIN_LVL, SIGIL_MAX, PIT_MAX, SIGIL_BAG, HORDE_WAVES, SCRAP_PER_SHARD, SIGIL_BOONS, SIGIL_BANES, BOON_IDS, BANE_IDS,
+  sigilScale, baneCount, rollSigil, sigilFoeMult, sigilRewards, SIGIL_CRAFT, SIGIL_SALVAGE, pitScale, pitLimit, pitResult, pitShards,
+  HORDE_BOONS, HORDE_BOON_IDS, hordeScale, hordeAether, hordeOffer, hordeChest,
+};
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof enterInstance === 'function' && typeof DUNGEONS !== 'undefined' && typeof Battle !== 'undefined') {
+  if (typeof ITEMS !== 'undefined' && !ITEMS.pit_shard) ITEMS.pit_shard = { name: 'PIT SHARD', icon: 'ne_gem_4', type: 'mat', price: 60, rarity: 4, desc: 'From THE PIT. Trade for masterwork scrap.' };
+  const D = () => {
+    const s = G.dread = G.dread && typeof G.dread === 'object' ? G.dread : {};
+    s.sigils = Array.isArray(s.sigils) ? s.sigils : []; s.powder = s.powder || 0; s.sigilBest = s.sigilBest || 0; s.pitBest = Math.max(1, s.pitBest || 1);
+    if (s.run === undefined) s.run = null; if (s.horde === undefined) s.horde = null;
+    if (s.lastDungeons === undefined) s.lastDungeons = (G.stats && G.stats.dungeons) || 0;
+    return s;
+  };
+  const dgIds = () => DUNGEONS.filter(d => d.lvl <= G.lvl + 5).map(d => d.id).concat(DUNGEONS.length ? [] : []);
+  const dungeonDef = id => DUNGEONS.find(d => d.id === id);
+  const scaleDice = (dice, m) => (typeof diceAvg === 'function' && typeof dmgDice === 'function' ? dmgDice(diceAvg(dice) * m) : dice);
+  const scaleFoe = (f, hp, dmg, tag) => { f.maxhp = Math.round(f.maxhp * hp); f.hp = f.maxhp; (f.attacks || []).forEach(a => { if (a.dice) a.dice = scaleDice(a.dice, dmg); }); if (tag) f.name = (tag + ' ' + f.name).slice(0, 16); };
+  const activeRun = () => { const s = G && G.dread, r = s && s.run; return r && r.entered && G.inst && G.inst.kind === 'dungeon' && G.inst.def.id === r.dungeon ? r : null; };
+  const keyBusy = () => !!(G.keystone && G.keystone.run && !G.keystone.run.done);
+  let hordeBattle = false;
+  const sigilName = sg => `T${sg.tier} ${(dungeonDef(sg.dungeon) || { name: '?' }).name}`;
+
+  // ------------------------------------------------ foes and battle starts
+  { const fm0 = applyFloorMod; applyFloorMod = function (foes) {
+      const out = fm0.apply(this, arguments), r = activeRun(); if (!r) return out;
+      for (const f of foes) {
+        if (r.mode === 'sigil') { const m = sigilFoeMult(r); scaleFoe(f, m.hp, m.dmg, `T${r.tier}`); }
+        else { const m = pitScale(r.tier); scaleFoe(f, m, m, `P${r.tier}`); }
+      }
+      return out;
+    }; }
+  { const se0 = Battle.prototype.setupEffects; Battle.prototype.setupEffects = function () {
+      se0.apply(this, arguments);
+      const r = activeRun();
+      if (r && r.mode === 'sigil') for (const id of r.neg || []) { const b = SIGIL_BANES[id]; if (!b) continue;
+        if (b.foe && BUFFS[b.foe]) for (const u of this.foes) addEffect(u, { id: b.foe, rounds: b.rounds });
+        if (b.party && BUFFS[b.party]) for (const u of this.party) addEffect(u, { id: b.party, rounds: b.rounds }); }
+      const h = G && G.dread && G.dread.horde;
+      if (hordeBattle && h) for (const id of h.boons) { const b = HORDE_BOONS[id]; if (b && BUFFS[b.buff]) for (const u of this.party) if (isChar(u)) addEffect(u, { id: b.buff, rounds: 3 }); }
+    }; }
+
+  // ------------------------------------------------ run results
+  function finishRun(r, ok, timedOut) {
+    const s = D(), def = dungeonDef(r.dungeon) || { name: 'DUNGEON', lvl: G.lvl }, lines = []; s.run = null;
+    if (r.mode === 'sigil') {
+      if (!ok) { lines.push(`DREAD T${r.tier} ${def.name} FAILED.`, 'The sigil burns away.'); }
+      else {
+        const rw = sigilRewards(r, def.lvl, R); s.sigilBest = Math.max(s.sigilBest, r.tier); s.powder += rw.powder; G.gold += rw.gold; if (typeof gainXP === 'function') gainXP(G, rw.xp);
+        for (let i = 0; i < rw.items; i++) addGear(makeItem({ lvl: rw.ilvl, rarity: rw.rarity, boss: true }));
+        let got = ''; if (s.sigils.length < SIGIL_BAG) { const sg = rollSigil(rw.next, dgIds().length ? dgIds() : [DUNGEONS[0].id], R); s.sigils.push(sg); got = `New sigil: ${sigilName(sg)}.`; } else { s.powder += SIGIL_SALVAGE; got = 'Sigil bag full: salvaged for powder.'; }
+        lines.push(`DREAD T${r.tier} ${def.name} CLEARED!`, `${rw.items} item(s) iLvl ${rw.ilvl}, +${rw.gold}G, +${rw.xp} XP, +${rw.powder} powder.`, got);
+      }
+    } else {
+      const elapsed = (Date.now() - r.start) / 1000;
+      if (!ok && !timedOut) lines.push(`PIT T${r.tier} FAILED.`, 'You left or fell. No reward.');
+      else {
+        const res = pitResult(r.tier, elapsed, r.limit), n = pitShards(r.tier, res.timed); addItem('pit_shard', n);
+        if (res.timed) { s.pitBest = Math.max(s.pitBest, res.unlock); addGear(makeItem({ lvl: Math.min(720, def.lvl + 4 * r.tier), rarity: r.tier >= 40 ? 5 : 4, boss: true })); }
+        lines.push(res.timed ? `PIT T${r.tier} CONQUERED in ${Math.floor(elapsed)}s!` : `PIT T${r.tier}: OUT OF TIME.`, `+${n} pit shard${n > 1 ? 's' : ''}.${res.timed ? ` Tiers up to ${s.pitBest} unlocked.` : ''}`);
+      }
+    }
+    saveGame(); toast(ok ? 'DREAD CLEARED' : 'DREAD FAILED', lines[0].slice(0, 22), ok ? 'item_chest' : 'px_skull', ok ? 'act_complete' : 'error'); say(lines);
+  }
+  function poll() {
+    if (!G || !G.stats) return; const s = D(), r = s.run, d = G.stats.dungeons || 0;
+    if (r && !r.entered) {
+      if (G.inst && G.inst.kind === 'dungeon' && G.inst.def.id === r.dungeon) { r.entered = true; r.start = Date.now(); r.base = d; if (r.mode === 'pit') r.limit = pitLimit(G.inst.map.roomCount || (G.inst.map.rooms || []).length); }
+      else if (Date.now() - r.asked > 20000) s.run = null; // never arrived: nothing is spent
+    } else if (r) {
+      if (d > r.base) { s.lastDungeons = d; return finishRun(r, true); }
+      if (!G.inst || G.inst.def.id !== r.dungeon) { s.lastDungeons = d; return finishRun(r, false); }
+    }
+    if (d > s.lastDungeons) { // ordinary dungeon clears drop sigils
+      if (G.lvl >= SIGIL_MIN_LVL) for (let i = s.lastDungeons; i < d; i++) if (R() < 0.5 && s.sigils.length < SIGIL_BAG) { const sg = rollSigil(1 + Math.floor(R() * Math.max(1, s.sigilBest)), dgIds().length ? dgIds() : [DUNGEONS[0].id], R); s.sigils.push(sg); toast('DREAD SIGIL', sigilName(sg).slice(0, 22), 'item_key', 'achievement'); }
+      s.lastDungeons = d;
+    }
+  }
+  { let n = 0; const t0 = tick; window.tick = tick = function () { const res = t0.apply(this, arguments); if (G && ++n % 30 === 0) { try { poll(); } catch (e) { /* keep the loop alive */ } } return res; }; }
+  if (typeof Field !== 'undefined') { const d0 = Field.prototype.draw; Field.prototype.draw = function () {
+      d0.apply(this, arguments); const r = activeRun(); if (!r) return;
+      if (r.mode === 'pit') { const left = r.limit - (Date.now() - r.start) / 1000; fill(1, 12, 56, 9, 0); text(`P${r.tier} ${left >= 0 ? Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0') : 'LATE'}`, 3, 13, left >= 0 ? (left < 60 ? 'gold' : 3) : 'red'); }
+      else { fill(1, 12, 40, 9, 0); text(`DREAD T${r.tier}`, 3, 13, 'purple'); }
+    }; }
+  function startRun(run) {
+    const def = dungeonDef(run.dungeon);
+    if (G.inst) { SFX.error(); return say('Leave your current instance first.'); }
+    if (G.ghost) { SFX.error(); return say('Recover your body first.'); }
+    if (keyBusy()) { SFX.error(); return say('A keystone run is already active.'); }
+    D().run = Object.assign(run, { asked: Date.now(), entered: false });
+    while (scenes.length > 1 && scenes[scenes.length - 1] !== currentField()) scenes.pop();
+    enterInstance('dungeon', def, 1, Math.max(1, Math.min(4, typeof fieldPartySize === 'function' ? fieldPartySize() : 1)));
+  }
+
+  // ------------------------------------------------ horde
+  function hordeWave() {
+    const s = D(), h = s.horde, z = ZONE_BY_ID[G.map]; if (!h || !z) return;
+    const foes = rollEncounter(z, { group: true }), m = hordeScale(h.wave); foes.forEach(f => scaleFoe(f, m, m, `W${h.wave}`));
+    hordeBattle = true;
+    startBattle(foes, { onEnd: res => {
+      hordeBattle = false;
+      if (res === 'lose') { const lost = Math.floor(h.aether / 2); h.aether -= lost; const ae = h.aether; s.horde = null; onPartyWipe(); return say(`The horde overwhelms you at wave ${h.wave}. Half the aether is lost (${ae} kept).`, () => hordePayout(ae)); }
+      if (res !== 'win') { s.horde = null; return; }
+      h.aether += hordeAether(h.wave); checkAchievements();
+      if (h.wave >= HORDE_WAVES) { const ae = h.aether; s.horde = null; return say(`The horde is broken! All ${HORDE_WAVES} waves cleared.`, () => hordePayout(ae)); }
+      const offer = hordeOffer(h.boons, R);
+      const next = () => choose(['NEXT WAVE', `CASH OUT (${h.aether} AETHER)`], k => { if (k === 1) { const ae = h.aether; s.horde = null; return hordePayout(ae); } h.wave++; saveGame(); hordeWave(); }, `WAVE ${h.wave}/${HORDE_WAVES} CLEARED  AETHER ${h.aether}`);
+      if (!offer.length) return next();
+      choose(offer.map(id => `${HORDE_BOONS[id].name}: ${BUFFS[HORDE_BOONS[id].buff].name}`), k => { const id = offer[Math.max(0, k)]; h.boons.push(id); saveGame(); next(); }, 'Choose a boon: it opens every later battle.');
+    } });
+  }
+  function hordePayout(ae) {
+    const c = hordeChest(ae, G.lvl); G.gold += c.gold; for (let i = 0; i < c.items; i++) addGear(makeItem({ lvl: G.lvl, rarity: c.rarity, boss: true }));
+    saveGame(); toast('HORDE CHEST', `${ae} AETHER`, 'item_chest', 'act_complete'); say(`Aether chest: +${c.gold}G and ${c.items} item(s).`);
+  }
+
+  // ------------------------------------------------ menus
+  function sigilMenu() {
+    const s = D();
+    if (G.lvl < SIGIL_MIN_LVL) return say(`DREAD SIGILS open at level ${SIGIL_MIN_LVL}.`, dreadMenu);
+    const opts = [...s.sigils.map(sigilName), `CRAFT SIGIL (${SIGIL_CRAFT} PWD)`, 'BACK'];
+    choose(opts, i => {
+      const sg = s.sigils[i];
+      if (sg) {
+        const def = dungeonDef(sg.dungeon), m = sigilFoeMult(sg);
+        const info = [`${sigilName(sg)} (LV ${def ? def.lvl : '?'}). Foes +${Math.round((m.hp - 1) * 100)}% HP.`, `BOON ${SIGIL_BOONS[sg.pos].name}: ${SIGIL_BOONS[sg.pos].desc}`, ...sg.neg.map(id => `BANE ${SIGIL_BANES[id].name}: ${SIGIL_BANES[id].desc}`)];
+        return choose(['ACTIVATE', 'DETAILS', `SALVAGE (+${SIGIL_SALVAGE})`, 'BACK'], k => {
+          if (k === 0) { s.sigils.splice(s.sigils.indexOf(sg), 1); saveGame(); return startRun({ mode: 'sigil', tier: sg.tier, dungeon: sg.dungeon, pos: sg.pos, neg: sg.neg.slice() }); }
+          if (k === 1) return say(info, sigilMenu);
+          if (k === 2) { s.sigils.splice(s.sigils.indexOf(sg), 1); s.powder += SIGIL_SALVAGE; saveGame(); return sigilMenu(); }
+          sigilMenu();
+        }, info[0]);
+      }
+      if (i === s.sigils.length) {
+        if (s.powder < SIGIL_CRAFT) { SFX.error(); return say(`Needs ${SIGIL_CRAFT} sigil powder.`, sigilMenu); }
+        if (s.sigils.length >= SIGIL_BAG) { SFX.error(); return say('Your sigil bag is full.', sigilMenu); }
+        s.powder -= SIGIL_CRAFT; const sg = rollSigil(Math.max(1, s.sigilBest), dgIds().length ? dgIds() : [DUNGEONS[0].id], R); s.sigils.push(sg); saveGame(); SFX.chest(); return say(`Crafted ${sigilName(sg)}.`, sigilMenu);
+      }
+      dreadMenu();
+    }, `SIGILS ${s.sigils.length}/${SIGIL_BAG}  POWDER ${s.powder}  BEST T${s.sigilBest}`);
+  }
+  function pitMenu() {
+    const s = D();
+    if (G.lvl < PIT_MIN_LVL) return say(`THE PIT opens at level ${PIT_MIN_LVL}.`, dreadMenu);
+    const tiers = []; for (let t = s.pitBest; t >= 1 && tiers.length < 6; t -= t > 10 ? 5 : 1) tiers.push(t);
+    choose([...tiers.map(t => `ENTER TIER ${t} (+${Math.round((pitScale(t) - 1) * 100)}%)`), 'BACK'], i => {
+      const t = tiers[i]; if (!t) return dreadMenu();
+      const pool = dgIds().length ? dgIds() : [DUNGEONS[0].id];
+      startRun({ mode: 'pit', tier: t, dungeon: pool[Math.floor(R() * pool.length)] });
+    }, `THE PIT  BEST TIER ${s.pitBest}/${PIT_MAX}  SHARDS ${G.inv.pit_shard || 0}`);
+  }
+  function shardMenu() {
+    const have = G.inv.pit_shard || 0;
+    choose([`TRADE 1 (+${SCRAP_PER_SHARD} SCRAP)`, `TRADE ALL (${have})`, 'BACK'], i => {
+      const n = i === 0 ? 1 : i === 1 ? have : 0; if (!n) return i === 2 || i < 0 ? dreadMenu() : say('You have no pit shards.', shardMenu);
+      if (have < n) { SFX.error(); return say('You have no pit shards.', shardMenu); }
+      G.inv.pit_shard -= n; if (!G.inv.pit_shard) delete G.inv.pit_shard; addItem('scrap', n * SCRAP_PER_SHARD); saveGame(); SFX.confirm();
+      say(`+${n * SCRAP_PER_SHARD} SCRAP. Masterwork at the OCCULTIST.`, shardMenu);
+    }, `SHARD EXCHANGE  SHARDS ${have}  SCRAP ${G.inv.scrap || 0}`);
+  }
+  function hordeMenu() {
+    const s = D(), z = ZONE_BY_ID[G.map];
+    if (G.lvl < HORDE_MIN_LVL) return say(`THE ENDLESS HORDE opens at level ${HORDE_MIN_LVL}.`, dreadMenu);
+    if (G.inst || !z || z.town) return say('Start a horde out in the open world, not in a town or instance.', dreadMenu);
+    choose(['START HORDE', 'HOW IT WORKS', 'BACK'], i => {
+      if (i === 1) return say([`${HORDE_WAVES} waves of battles in ${z.name}. Foes +12% per wave.`, 'After each wave pick a boon and bank aether, or cash out for a chest.', 'A wipe loses half the aether.'], hordeMenu);
+      if (i !== 0) return dreadMenu();
+      s.horde = { wave: 1, boons: [], aether: 0 }; saveGame();
+      while (scenes.length > 1 && scenes[scenes.length - 1] !== currentField()) scenes.pop();
+      hordeWave();
+    }, `ENDLESS HORDE  ${z.name.slice(0, 18)}`);
+  }
+  function dreadMenu() {
+    const s = D();
+    choose([`DREAD SIGILS (${s.sigils.length})`, `THE PIT T${s.pitBest}`, 'SHARD EXCHANGE', 'ENDLESS HORDE', 'BACK'], i => { const go = [sigilMenu, pitMenu, shardMenu, hordeMenu][i]; if (go) go(); },
+      `DREAD DUNGEONS  POWDER ${s.powder}  SHARDS ${G.inv.pit_shard || 0}`);
+  }
+  window.dreadMenu = dreadMenu;
+  window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { 'DREAD DUNGEONS': 'Sigil dungeons, the Pit, shard exchange and the endless horde.' });
+  if (typeof MainMenu !== 'undefined') {
+    const i0 = MainMenu.prototype.items; MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('CHALLENGES') + 1; L.splice(at > 0 ? at : L.length, 0, 'DREAD DUNGEONS'); return L; };
+    const u0 = MainMenu.prototype.update; MainMenu.prototype.update = function () { if (P('a') && (this.items()[this.i] || '') === 'DREAD DUNGEONS') { SFX.select(); return dreadMenu(); } return u0.apply(this, arguments); };
+  }
+}
+})();
+
+</script>
+<script>
+'use strict';
 // ================================================================ CHARACTER POLISH: rested XP, transmog wardrobe, gear score
 //   * RESTED XP: time away builds a rested pool (5% of a level per 8 hours, up to 1.5 levels). While it
 //     lasts, XP you earn is doubled and the bonus is taken from the pool. A long rest also adds 4% of a level
@@ -14968,6 +15234,396 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof der
 </script>
 <script>
 'use strict';
+(() => { // own scope: the game loads every module as a classic script sharing one global scope
+// ================================================================ THRONE-STYLE SYSTEMS II (MAIN MENU > ADVENTURE)
+// Five systems that build on tnl_systems.js (mastery, amitoi, day/night, morph):
+//   * DUNGEON TOKENS: up to 10, one refills every 2 real hours (start with 5). A dungeon clear made while you
+//     hold a token spends it for a BONUS CHEST (a rare+ item), 10+ DUNGEON MARKS and a TRAIT STONE. Without a token
+//     a clear still pays 2 marks. Tokens can be switched off to save them. Marks buy from the MARKS SHOP.
+//   * CONTRACTS: three factions post six contracts a day (kill, elite, dungeon, quest, craft, fish, world boss,
+//     travel). Hold up to three at once; progress counts from the moment you accept. Turn in for CONTRACT COINS,
+//     gold and XP. Coins buy from the CONTRACT SHOP.
+//   * GEAR TRAITS: any weapon, armour or wondrous item can hold three traits (rank 1-5). Unlock a random trait
+//     or rank one up with trait stones, or EXTRACT a trait from a bag item onto an equipped one (the bag item
+//     is destroyed). BOSS SLAYER adds damage against bosses; the rest add substats.
+//   * CODEX: every monster family is a page (30 kills completes it) and every dungeon is a page (one clear).
+//     Each completed page gives a permanent bonus; every 5 pages also add +2% damage and +2% healing.
+//   * FIELD EVENTS: every 30 minutes an event opens for 12 minutes in a zone near your level. Win the event's
+//     battles in that zone (RIFT SURGE foes are elite more often) for gold, XP, marks, coins and gear.
+// Pure rules are exported as GBQTnlx for tests; the game wiring runs only inside the game.
+
+// ---------------------------------------------------------------- shared helpers
+const hashStr = s => { let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+const seeded = seed => { let a = hashStr(seed) || 1; return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+const dayKey = now => { const d = new Date(now); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
+// ---------------------------------------------------------------- dungeon tokens
+const TOKEN_MAX = 10, TOKEN_START = 5, TOKEN_MS = 2 * 3600 * 1000;
+// refill: whole tokens earned since `last`; the remainder carries over
+function regenTokens(tok, now) {
+  const t = { n: Math.max(0, Math.min(TOKEN_MAX, Math.floor(Number(tok && tok.n) || 0))), last: Number.isFinite(Number(tok && tok.last)) && tok.last !== null ? Number(tok.last) : now };
+  if (t.n >= TOKEN_MAX) return { n: TOKEN_MAX, last: now };
+  const gained = Math.floor(Math.max(0, now - t.last) / TOKEN_MS);
+  if (!gained) return t;
+  const n = Math.min(TOKEN_MAX, t.n + gained);
+  return { n, last: n >= TOKEN_MAX ? now : t.last + gained * TOKEN_MS };
+}
+const nextTokenIn = (tok, now) => (tok.n >= TOKEN_MAX ? 0 : Math.max(0, TOKEN_MS - (now - tok.last)));
+const clearMarks = (dungeonLvl, withToken) => (withToken ? 10 + Math.floor(Math.max(0, Number(dungeonLvl) || 0) / 10) : 2);
+const MARKS_SHOP = [
+  { id: 'stones', name: 'TRAIT STONES x3', cost: 15 },
+  { id: 'token', name: 'DUNGEON TOKEN', cost: 25 },
+  { id: 'cache', name: 'GEAR CACHE (RARE)', cost: 40 },
+  { id: 'mythic', name: 'MYTHIC CACHE', cost: 150 },
+];
+
+// ---------------------------------------------------------------- contracts
+const FACTIONS = {
+  guard: { name: 'LANTERN GUARD' },
+  artisans: { name: "ARTISANS' GUILD" },
+  delvers: { name: "DELVERS' LEAGUE" },
+};
+const CONTRACTS = [
+  { id: 'cull', faction: 'guard', stat: 'kills', n: 12, name: 'CULL THE WILDS', desc: 'Defeat {n} foes.' },
+  { id: 'patrol', faction: 'guard', stat: 'steps', n: 400, name: 'ROAD PATROL', desc: 'Travel {n} steps.' },
+  { id: 'warlord', faction: 'guard', stat: 'worldBosses', n: 1, name: 'WARLORD BOUNTY', desc: 'Defeat {n} world boss.', minLvl: 5 },
+  { id: 'quests', faction: 'guard', stat: 'quests', n: 2, name: 'TOWN REQUESTS', desc: 'Complete {n} quests.' },
+  { id: 'craft', faction: 'artisans', stat: 'crafted', n: 5, name: 'WORK ORDER', desc: 'Craft {n} items.' },
+  { id: 'fish', faction: 'artisans', stat: 'fish', n: 4, name: 'FRESH CATCH', desc: 'Catch {n} fish.' },
+  { id: 'elites', faction: 'delvers', stat: 'elites', n: 2, name: 'ELITE HUNT', desc: 'Defeat {n} elites.' },
+  { id: 'delve', faction: 'delvers', stat: 'dungeons', n: 1, name: 'DEEP DELVE', desc: 'Clear {n} dungeon.' },
+  { id: 'delve2', faction: 'delvers', stat: 'dungeons', n: 2, name: 'TWIN DELVE', desc: 'Clear {n} dungeons.', minLvl: 10 },
+];
+const CONTRACT_SLOTS = 3, CONTRACT_OFFERS = 6;
+// today's board: six distinct contracts for this hero (seeded by day + hero)
+function contractOffers(day, hero, lvl) {
+  const pool = CONTRACTS.filter(c => (lvl || 1) >= (c.minLvl || 0)), r = seeded(`${day}|${hero}`), out = [];
+  const bag = pool.slice();
+  while (out.length < Math.min(CONTRACT_OFFERS, pool.length)) out.push(bag.splice(Math.floor(r() * bag.length), 1)[0].id);
+  return out;
+}
+const contractDef = id => CONTRACTS.find(c => c.id === id) || null;
+const contractText = c => c.desc.replace('{n}', c.n);
+function contractReward(id, lvl) {
+  const c = contractDef(id); if (!c) return null; const L = Math.max(1, Number(lvl) || 1), big = c.stat === 'dungeons' || c.stat === 'worldBosses';
+  return { coins: big ? 12 : 6, gold: Math.round((big ? 120 : 50) * (1 + L / 10)), xp: Math.round((big ? 400 : 160) * (1 + L / 8)) };
+}
+const CONTRACT_SHOP = [
+  { id: 'stone', name: 'TRAIT STONE', cost: 8 },
+  { id: 'token', name: 'DUNGEON TOKEN', cost: 12 },
+  { id: 'gold', name: 'GOLD PURSE', cost: 5 },
+  { id: 'cache', name: 'GEAR CACHE (RARE)', cost: 30 },
+];
+
+// ---------------------------------------------------------------- gear traits
+const TRAIT_MAX = 3, TRAIT_RANK_MAX = 5;
+const TRAITS = {
+  bossdmg: { name: 'BOSS SLAYER', per: 4, unit: '%', desc: 'damage vs bosses' },
+  crit: { name: 'KEEN EDGE', per: 1.5, unit: '%', stat: 'crit' },
+  critdmg: { name: 'BRUTALITY', per: 6, unit: '%', stat: 'critdmg' },
+  dmg: { name: 'MIGHT', per: 3, unit: '%', stat: 'dmg' },
+  heal: { name: 'MERCY', per: 4, unit: '%', stat: 'heal' },
+  resist: { name: 'WARDING', per: 2, unit: '%', stat: 'resist' },
+  hpPct: { name: 'VIGOR', per: 2, unit: '%', stat: 'hpPct' },
+  haste: { name: 'SWIFTNESS', per: 2, unit: '%', stat: 'haste' },
+  leech: { name: 'THIRST', per: 0.6, unit: '%', stat: 'leech' },
+  dodge: { name: 'EVASION', per: 1.2, unit: '%', stat: 'dodge' },
+  block: { name: 'BULWARK', per: 1.5, unit: '%', stat: 'block' },
+  mf: { name: 'FORTUNE', per: 5, unit: '%', stat: 'mf' },
+};
+const TRAIT_IDS = Object.keys(TRAITS);
+const TRAIT_KINDS = ['weapon', 'armor', 'wondrous'];
+const unlockCost = traits => 1 + (traits || []).length;
+const upgradeCost = rank => rank + 1;
+const EXTRACT_COST = 2;
+const traitValue = (id, rank) => (TRAITS[id] ? Math.round(TRAITS[id].per * Math.max(1, Math.min(TRAIT_RANK_MAX, rank)) * 10) / 10 : 0);
+const traitText = t => (TRAITS[t.id] ? `${TRAITS[t.id].name} R${t.r} +${traitValue(t.id, t.r)}%${TRAITS[t.id].desc ? ' ' + TRAITS[t.id].desc : ''}` : '');
+// a new random trait the item does not already hold
+function rollTrait(traits, rnd) {
+  const have = new Set((traits || []).map(t => t.id)), pool = TRAIT_IDS.filter(id => !have.has(id));
+  return pool.length ? { id: pool[Math.floor(rnd() * pool.length) % pool.length], r: 1 } : null;
+}
+// summed trait bonuses over a set of items -> { stat: value, bossdmg }
+function traitTotals(items) {
+  const s = {};
+  for (const it of items || []) for (const t of (it && it.traits) || []) { const d = TRAITS[t.id]; if (!d) continue; const k = d.stat || t.id; s[k] = Math.round(((s[k] || 0) + traitValue(t.id, t.r)) * 10) / 10; }
+  return s;
+}
+
+// ---------------------------------------------------------------- codex
+const CODEX_KILLS = 30;
+const CODEX_FAMILY_BONUS = {
+  beast: ['crit', 1], humanoid: ['hit', 1], undead: ['radiant', 3], fiend: ['resist', 1], fey: ['dodge', 1], elemental: ['fire', 3],
+  construct: ['block', 1.5], dragon: ['critdmg', 5], giant: ['hp', 25], ooze: ['leech', 0.5], aberration: ['haste', 1.5],
+  monstrosity: ['dmg', 2], plant: ['heal', 3], celestial: ['necrotic', 3],
+};
+const CODEX_DUNGEON_BONUS = [['hp', 10], ['mf', 2]];
+// pages from a codex record: { fam: { id: kills }, dg: { id: 1 } }
+function codexPages(cx) {
+  const fams = Object.keys(CODEX_FAMILY_BONUS).filter(f => ((cx && cx.fam && cx.fam[f]) || 0) >= CODEX_KILLS);
+  const dgs = Object.keys((cx && cx.dg) || {}).filter(k => cx.dg[k]);
+  return { fams, dgs, total: fams.length + dgs.length };
+}
+function codexBonus(cx) {
+  const s = {}, add = (k, v) => { s[k] = Math.round(((s[k] || 0) + v) * 10) / 10; }, p = codexPages(cx);
+  for (const f of p.fams) add(...CODEX_FAMILY_BONUS[f]);
+  for (let i = 0; i < p.dgs.length; i++) for (const [k, v] of CODEX_DUNGEON_BONUS) add(k, v);
+  const tiers = Math.floor(p.total / 5); if (tiers) { add('dmg', 2 * tiers); add('heal', 2 * tiers); }
+  return s;
+}
+
+// ---------------------------------------------------------------- field events
+const EVENT_EVERY = 30 * 60 * 1000, EVENT_OPEN = 12 * 60 * 1000;
+const EVENT_TYPES = [
+  { id: 'invasion', name: 'INVASION', need: 4, desc: 'Raiders pour into the zone. Win 4 battles here.' },
+  { id: 'rift', name: 'RIFT SURGE', need: 3, elite: 0.4, desc: 'A rift spills elites. Win 3 battles here.' },
+  { id: 'hunt', name: 'GREAT HUNT', need: 3, desc: 'The beasts are restless. Win 3 battles here.' },
+];
+// the event slot for a moment in time: slot number, open?, time left, type
+function eventSlot(now) {
+  const slot = Math.floor(now / EVENT_EVERY), into = now - slot * EVENT_EVERY;
+  return { slot, open: into < EVENT_OPEN, left: Math.max(0, EVENT_OPEN - into), type: EVENT_TYPES[hashStr('ev' + slot) % EVENT_TYPES.length] };
+}
+// the zone for a slot: a non-town zone near the hero's level (zones: [{id, lvl:[a,b], town}])
+function eventZone(slot, zones, lvl) {
+  const near = zones.filter(z => !z.town && z.lvl[0] <= lvl + 5 && z.lvl[1] >= lvl - 15);
+  const pool = near.length ? near : zones.filter(z => !z.town).sort((a, b) => Math.abs(a.lvl[0] - lvl) - Math.abs(b.lvl[0] - lvl)).slice(0, 3);
+  return pool.length ? pool[hashStr('zone' + slot) % pool.length].id : null;
+}
+const eventReward = lvl => { const L = Math.max(1, Number(lvl) || 1); return { gold: Math.round(80 * (1 + L / 8)), xp: Math.round(300 * (1 + L / 6)), marks: 5, coins: 3 }; };
+
+if (typeof globalThis !== 'undefined') globalThis.GBQTnlx = {
+  hashStr, seeded, dayKey, TOKEN_MAX, TOKEN_START, TOKEN_MS, regenTokens, nextTokenIn, clearMarks, MARKS_SHOP,
+  FACTIONS, CONTRACTS, CONTRACT_SLOTS, CONTRACT_OFFERS, contractOffers, contractDef, contractText, contractReward, CONTRACT_SHOP,
+  TRAITS, TRAIT_IDS, TRAIT_MAX, TRAIT_RANK_MAX, TRAIT_KINDS, unlockCost, upgradeCost, EXTRACT_COST, traitValue, traitText, rollTrait, traitTotals,
+  CODEX_KILLS, CODEX_FAMILY_BONUS, CODEX_DUNGEON_BONUS, codexPages, codexBonus,
+  EVENT_EVERY, EVENT_OPEN, EVENT_TYPES, eventSlot, eventZone, eventReward,
+};
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof gearAffixes === 'function' && typeof DUNGEONS !== 'undefined') {
+  const X = () => {
+    const s = G.tnlx = G.tnlx && typeof G.tnlx === 'object' ? G.tnlx : {};
+    if (!s.tok) s.tok = { n: TOKEN_START, last: Date.now() };
+    if (s.useTokens === undefined) s.useTokens = true;
+    s.marks = s.marks || 0; s.coins = s.coins || 0; s.stones = s.stones || 0;
+    if (!s.ct) s.ct = { day: null, offers: [], taken: [], active: [] };
+    if (!s.cx) s.cx = { fam: {}, dg: {} };
+    if (!s.ev) s.ev = { slot: -1, wins: 0, done: false, zone: null };
+    if (s.lastDungeons === undefined) s.lastDungeons = (G.stats && G.stats.dungeons) || 0;
+    return s;
+  };
+  const fmt = ms => { const m = Math.ceil(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)}H${String(m % 60).padStart(2, '0')}` : `${m}M`; };
+  const gearCache = rarity => addGear(makeItem({ lvl: G.lvl, rarity, boss: true }));
+  const pay = (gold, xp) => { if (gold) G.gold += gold; if (xp && typeof gainXP === 'function') gainXP(G, xp); };
+  const equipped = c => SLOTS.map(s => c.eq && c.eq[s]).filter(Boolean);
+  const famName = f => (typeof FAMILIES !== 'undefined' && FAMILIES[f] ? FAMILIES[f].name : String(f).toUpperCase());
+
+  // ------------------------------------------------ stats: traits + codex
+  { const ga0 = gearAffixes; gearAffixes = function (c) {
+      const s = ga0.apply(this, arguments); if (!c) return s;
+      for (const [k, v] of Object.entries(traitTotals(equipped(c)))) if (k !== 'bossdmg') s[k] = (s[k] || 0) + v;
+      if (c === G && G.tnlx && G.tnlx.cx) for (const [k, v] of Object.entries(codexBonus(G.tnlx.cx))) s[k] = (s[k] || 0) + v;
+      return s;
+    }; }
+  // BOSS SLAYER
+  { const ad0 = Battle.prototype.applyDamage; Battle.prototype.applyDamage = function (src, tgt, amt) {
+      const args = Array.prototype.slice.call(arguments);
+      if (src && src.ch && tgt && tgt.boss && typeof amt === 'number') { const b = traitTotals(equipped(src.ch)).bossdmg || 0; if (b) args[2] = Math.round(amt * (1 + b / 100)); }
+      return ad0.apply(this, args);
+    }; }
+  // item text
+  if (typeof itemDesc === 'function') { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it); return it && it.traits && it.traits.length ? `TRAITS: ${it.traits.map(traitText).join('; ')}. ${s}` : s; }; }
+
+  // ------------------------------------------------ battle results: codex kills, field events
+  { const f0 = Battle.prototype.finish; Battle.prototype.finish = function (result) {
+      try {
+        if (result === 'win' && G) {
+          const s = X();
+          for (const f of this.foes || []) if (f && f.fam && CODEX_FAMILY_BONUS[f.fam]) {
+            const before = s.cx.fam[f.fam] || 0; s.cx.fam[f.fam] = before + 1;
+            if (before + 1 === CODEX_KILLS) toast('CODEX PAGE', famName(f.fam), 'item_spellbook', 'achievement');
+          }
+          const ev = eventSlot(Date.now());
+          if (ev.open && !G.inst && s.ev.slot === ev.slot && !s.ev.done && G.map === s.ev.zone) {
+            s.ev.wins++;
+            if (s.ev.wins >= ev.type.need) { s.ev.done = true; const r = eventReward(G.lvl); pay(r.gold, r.xp); s.marks += r.marks; s.coins += r.coins; gearCache(ev.type.id === 'rift' ? 4 : 3);
+              toast('EVENT COMPLETE', ev.type.name, 'px_crown', 'act_complete'); if (typeof chatLog === 'function') chatLog('system', 'EVENT', `${ev.type.name} complete: +${r.gold}G, +${r.marks} marks, +${r.coins} coins, gear.`); }
+          }
+        }
+      } catch (e) { /* never block the battle ending */ }
+      return f0.apply(this, arguments);
+    }; }
+  // rift surge: more elites in the event zone
+  if (typeof rollEncounter === 'function') { const re0 = rollEncounter; rollEncounter = function (zoneDef) {
+      const foes = re0.apply(this, arguments);
+      try { const ev = eventSlot(Date.now()), s = G && G.tnlx; if (s && ev.open && ev.type.elite && s.ev.slot === ev.slot && zoneDef && zoneDef.id === s.ev.zone && !G.inst)
+        for (const f of foes) if (!f.elite && !f.boss && R() < ev.type.elite) { f.elite = true; f.maxhp = Math.round(f.maxhp * 1.5); f.hp = f.maxhp; f.name = ('ELITE ' + f.name).slice(0, 16); } } catch (e) { /* keep the encounter */ }
+      return foes;
+    }; }
+
+  // ------------------------------------------------ poll: tokens, dungeon clears, contracts, events
+  let lastInst = null;
+  function poll() {
+    if (!G || !G.stats) return; const s = X(), now = Date.now();
+    s.tok = regenTokens(s.tok, now);
+    if (G.inst && G.inst.kind === 'dungeon') lastInst = G.inst.def;
+    const d = G.stats.dungeons || 0;
+    if (d > s.lastDungeons) {
+      for (let i = s.lastDungeons; i < d; i++) {
+        const def = lastInst || { id: 'unknown', name: 'DUNGEON', lvl: G.lvl }, use = s.useTokens && s.tok.n > 0;
+        if (use) { if (s.tok.n === TOKEN_MAX) s.tok.last = now; s.tok.n--; gearCache(4); s.stones++; }
+        const m = clearMarks(def.lvl, use); s.marks += m;
+        if (def.id !== 'unknown' && !s.cx.dg[def.id]) { s.cx.dg[def.id] = 1; toast('CODEX PAGE', def.name.slice(0, 20), 'item_spellbook', 'achievement'); }
+        if (typeof chatLog === 'function') chatLog('system', 'DUNGEON', use ? `Token spent: bonus chest, trait stone, +${m} marks.` : `+${m} marks (no token used).`);
+        if (use) toast('DUNGEON TOKEN', `BONUS CHEST +${m} MARKS`, 'item_chest', 'achievement');
+      }
+      s.lastDungeons = d;
+    }
+    for (const a of s.ct.active) { const c = contractDef(a.id); if (c && !a.ready && (G.stats[c.stat] || 0) - a.base >= c.n) { a.ready = true; toast('CONTRACT READY', c.name, 'item_key', 'quest_done'); } }
+    const ev = eventSlot(now);
+    if (ev.open && s.ev.slot !== ev.slot) {
+      s.ev = { slot: ev.slot, wins: 0, done: false, zone: eventZone(ev.slot, ZONES, G.lvl) };
+      const z = ZONE_BY_ID[s.ev.zone]; if (z) { toast(`EVENT: ${ev.type.name}`, z.name.slice(0, 22), 'px_skull', 'boss_appear'); if (typeof chatLog === 'function') chatLog('system', 'EVENT', `${ev.type.name} at ${z.name} for ${fmt(ev.left)}. ${ev.type.desc}`); }
+    }
+  }
+  { let n = 0; const t0 = tick; window.tick = tick = function () { const r = t0.apply(this, arguments); if (G && ++n % 30 === 0) { try { poll(); } catch (e) { /* keep the game loop alive */ } } return r; }; }
+  // event progress on the field
+  if (typeof Field !== 'undefined') { const d0 = Field.prototype.draw; Field.prototype.draw = function () {
+      d0.apply(this, arguments);
+      const s = G && G.tnlx; if (!s || G.inst) return; const ev = eventSlot(Date.now());
+      if (!ev.open || s.ev.slot !== ev.slot || G.map !== s.ev.zone) return;
+      fill(1, 22, 74, 9, 0); text(s.ev.done ? `${ev.type.name.slice(0, 9)} DONE` : `${ev.type.name.slice(0, 9)} ${s.ev.wins}/${ev.type.need} ${fmt(ev.left)}`, 3, 23, s.ev.done ? 'green' : 'gold');
+    }; }
+
+  // ------------------------------------------------ menus
+  function buy(id) {
+    const s = X();
+    if (id === 'stones') s.stones += 3; else if (id === 'stone') s.stones += 1;
+    else if (id === 'token') { if (s.tok.n >= TOKEN_MAX) return false; s.tok.n++; }
+    else if (id === 'cache') gearCache(4); else if (id === 'mythic') gearCache(5);
+    else if (id === 'gold') G.gold += Math.round(60 * (1 + G.lvl / 10));
+    return true;
+  }
+  function shopMenu(label, list, have, spend, back) {
+    choose([...list.map(x => `${x.name} ${x.cost}`), 'BACK'], i => {
+      const x = list[i], again = () => shopMenu(label, list, have, spend, back); if (!x) return back();
+      if (have() < x.cost) { SFX.error(); return say(`Needs ${x.cost} ${label.toLowerCase()}.`, again); }
+      if (!buy(x.id)) { SFX.error(); return say('You cannot hold more of that.', again); }
+      spend(x.cost); saveGame(); SFX.confirm(); again();
+    }, `${label} SHOP: ${have()}`);
+  }
+  function tokenMenu() {
+    const s = X(); s.tok = regenTokens(s.tok, Date.now());
+    choose([`USE TOKENS: ${s.useTokens ? 'ON' : 'OFF'}`, `MARKS SHOP (${s.marks})`, 'HOW IT WORKS', 'BACK'], i => {
+      if (i === 0) { s.useTokens = !s.useTokens; saveGame(); return tokenMenu(); }
+      if (i === 1) return shopMenu('MARKS', MARKS_SHOP, () => s.marks, v => { s.marks -= v; }, tokenMenu);
+      if (i === 2) return say([`You hold up to ${TOKEN_MAX} dungeon tokens. One refills every 2 hours.`, 'Clearing a dungeon spends one for a bonus chest, a trait stone and 10+ marks.', 'With tokens OFF (or none left) a clear pays 2 marks.'], tokenMenu);
+      adventureMenu();
+    }, `TOKENS ${s.tok.n}/${TOKEN_MAX}${s.tok.n < TOKEN_MAX ? ' NEXT ' + fmt(nextTokenIn(s.tok, Date.now())) : ''}  MARKS ${s.marks}`);
+  }
+  function contractsMenu() {
+    const s = X(), day = dayKey(Date.now());
+    if (s.ct.day !== day) { s.ct.day = day; s.ct.offers = contractOffers(day, G.name, G.lvl); s.ct.taken = []; }
+    const rows = s.ct.active.filter(a => contractDef(a.id)).map(a => { const c = contractDef(a.id), p = Math.max(0, Math.min(c.n, (G.stats[c.stat] || 0) - a.base)); return { a, c, label: `${a.ready ? '* ' : ''}${c.name.slice(0, 14)} ${p}/${c.n}` }; });
+    const open = s.ct.offers.filter(id => !s.ct.taken.includes(id));
+    choose([...rows.map(r => r.label), `BOARD (${open.length})`, `COIN SHOP (${s.coins})`, 'BACK'], i => {
+      if (i >= 0 && i < rows.length) {
+        const { a, c } = rows[i];
+        if (!a.ready) return choose(['KEEP', 'ABANDON'], k => { if (k === 1) { s.ct.active = s.ct.active.filter(x => x !== a); saveGame(); } contractsMenu(); }, `${FACTIONS[c.faction].name}: ${contractText(c)}`);
+        const r = contractReward(c.id, G.lvl); s.coins += r.coins; pay(r.gold, r.xp); s.ct.active = s.ct.active.filter(x => x !== a); saveGame(); SFX.confirm();
+        return say(`${c.name} done: +${r.coins} coins, +${r.gold}G, +${r.xp} XP.`, contractsMenu);
+      }
+      if (i === rows.length) {
+        if (!open.length) return say('The board is empty until tomorrow.', contractsMenu);
+        return choose([...open.map(id => contractDef(id).name), 'BACK'], k => {
+          const id = open[k]; if (!id) return contractsMenu();
+          if (s.ct.active.length >= CONTRACT_SLOTS) { SFX.error(); return say(`You can hold ${CONTRACT_SLOTS} contracts at once.`, contractsMenu); }
+          const c = contractDef(id), r = contractReward(id, G.lvl);
+          choose(['ACCEPT', 'BACK'], j => { if (j === 0) { s.ct.taken.push(id); s.ct.active.push({ id, base: G.stats[c.stat] || 0, ready: false }); saveGame(); SFX.confirm(); } contractsMenu(); },
+            `${FACTIONS[c.faction].name}: ${contractText(c)} Pays ${r.coins} coins, ${r.gold}G.`);
+        }, `CONTRACT BOARD ${day}`);
+      }
+      if (i === rows.length + 1) return shopMenu('COINS', CONTRACT_SHOP, () => s.coins, v => { s.coins -= v; }, contractsMenu);
+      adventureMenu();
+    }, `CONTRACTS ${s.ct.active.length}/${CONTRACT_SLOTS}  COINS ${s.coins}`);
+  }
+  function traitItemMenu(slot) {
+    const s = X(), it = G.eq[slot]; if (!it) return traitsMenu();
+    it.traits = Array.isArray(it.traits) ? it.traits.filter(t => t && TRAITS[t.id]) : [];
+    const opts = it.traits.map(t => `${TRAITS[t.id].name.slice(0, 11)} R${t.r}${t.r < TRAIT_RANK_MAX ? ' +' + upgradeCost(t.r) : ''}`);
+    if (it.traits.length < TRAIT_MAX) opts.push(`UNLOCK TRAIT ${unlockCost(it.traits)}`, `EXTRACT ONTO ${EXTRACT_COST}`);
+    opts.push('BACK');
+    choose(opts, i => {
+      const back = () => traitItemMenu(slot), o = opts[i] || 'BACK';
+      if (i >= 0 && i < it.traits.length) {
+        const t = it.traits[i]; if (t.r >= TRAIT_RANK_MAX) return say('That trait is at maximum rank.', back);
+        if (s.stones < upgradeCost(t.r)) { SFX.error(); return say(`Needs ${upgradeCost(t.r)} trait stones.`, back); }
+        s.stones -= upgradeCost(t.r); t.r++; saveGame(); SFX.confirm(); return say(`${traitText(t)}.`, back);
+      }
+      if (o.startsWith('UNLOCK')) {
+        if (s.stones < unlockCost(it.traits)) { SFX.error(); return say(`Needs ${unlockCost(it.traits)} trait stones.`, back); }
+        const t = rollTrait(it.traits, R); if (!t) return say('No traits left to learn.', back);
+        s.stones -= unlockCost(it.traits); it.traits.push(t); saveGame(); SFX.chest(); return say(`New trait: ${traitText(t)}.`, back);
+      }
+      if (o.startsWith('EXTRACT')) {
+        const src = (G.bag || []).filter(b => b && b.traits && b.traits.length && b !== it);
+        if (!src.length) return say('No bag item has a trait to extract.', back);
+        return choose([...src.map(b => b.name.slice(0, 20)), 'BACK'], k => {
+          const b = src[k]; if (!b) return back();
+          const free = b.traits.filter(t => TRAITS[t.id] && !it.traits.some(x => x.id === t.id)); if (!free.length) return say('This item already has those traits.', back);
+          choose([...free.map(t => `${TRAITS[t.id].name.slice(0, 12)} R${t.r}`), 'BACK'], j => {
+            const t = free[j]; if (!t) return back();
+            if (s.stones < EXTRACT_COST) { SFX.error(); return say(`Needs ${EXTRACT_COST} trait stones.`, back); }
+            s.stones -= EXTRACT_COST; it.traits.push({ id: t.id, r: t.r }); G.bag.splice(G.bag.indexOf(b), 1); saveGame(); SFX.chest();
+            say([`${traitText(t)} moves onto ${it.name}.`, `${b.name} crumbles to dust.`], back);
+          }, `Extract from ${b.name.slice(0, 18)} (destroys it)`);
+        }, 'Extract a trait from which bag item?');
+      }
+      traitsMenu();
+    }, `${it.name.slice(0, 22)}  STONES ${s.stones}`);
+  }
+  function traitsMenu() {
+    const s = X(), slots = SLOTS.filter(k => G.eq[k] && TRAIT_KINDS.includes(G.eq[k].kind));
+    if (!slots.length) return say('Equip some gear first.', adventureMenu);
+    choose([...slots.map(k => `${k.toUpperCase().slice(0, 7)} ${((G.eq[k].traits || []).length)}/${TRAIT_MAX}`), 'BACK'], i => { const k = slots[i]; if (!k) return adventureMenu(); traitItemMenu(k); }, `GEAR TRAITS  STONES ${s.stones}`);
+  }
+  function codexMenu() {
+    const s = X(), p = codexPages(s.cx), fams = Object.keys(CODEX_FAMILY_BONUS);
+    const lines = fams.map(f => { const n = Math.min(CODEX_KILLS, s.cx.fam[f] || 0), [k, v] = CODEX_FAMILY_BONUS[f]; return `${n >= CODEX_KILLS ? '*' : ' '}${famName(f).slice(0, 11)} ${n}/${CODEX_KILLS} +${v} ${k.toUpperCase()}`; });
+    const dl = DUNGEONS.map(dg => `${s.cx.dg[dg.id] ? '*' : ' '}${dg.name}`);
+    const btxt = Object.entries(codexBonus(s.cx)).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(', ') || 'none yet';
+    choose(['MONSTER PAGES', 'DUNGEON PAGES', 'TOTAL BONUS', 'BACK'], i => {
+      if (i === 0) return say(lines, codexMenu);
+      if (i === 1) return say([...dl, 'Each dungeon page: +10 HP, +2% magic find.'], codexMenu);
+      if (i === 2) return say([`${p.total} pages. Every 5 pages: +2% damage and healing.`, btxt], codexMenu);
+      adventureMenu();
+    }, `CODEX ${p.total}/${fams.length + DUNGEONS.length} PAGES`);
+  }
+  function eventsMenu() {
+    const s = X(), now = Date.now(), ev = eventSlot(now), z = ev.open && s.ev.slot === ev.slot ? ZONE_BY_ID[s.ev.zone] : null;
+    say(z ? [`${ev.type.name} at ${z.name} (LV ${z.lvl[0]}-${z.lvl[1]}).`, ev.type.desc, s.ev.done ? 'You completed this event.' : `Progress ${s.ev.wins}/${ev.type.need}. ${fmt(ev.left)} left.`]
+      : [`No event is open. The next opens in ${fmt(EVENT_EVERY - (now % EVENT_EVERY))}.`, 'Events open every 30 minutes for 12 minutes in a zone near your level.'], adventureMenu);
+  }
+  const hasNews = () => { const s = G && G.tnlx; if (!s || !s.ct || !s.ev) return false; const ev = eventSlot(Date.now()); return s.ct.active.some(a => a.ready) || (ev.open && s.ev.slot === ev.slot && !s.ev.done); };
+  function adventureMenu() {
+    const s = X(); s.tok = regenTokens(s.tok, Date.now());
+    const ev = eventSlot(Date.now()), evOn = ev.open && s.ev.slot === ev.slot && !s.ev.done, go = [tokenMenu, contractsMenu, traitsMenu, codexMenu, eventsMenu];
+    choose([`DUNGEON TOKENS ${s.tok.n}/${TOKEN_MAX}`, `CONTRACTS${s.ct.active.some(a => a.ready) ? ' (!)' : ''}`, `GEAR TRAITS (${s.stones})`, 'CODEX', `FIELD EVENTS${evOn ? ' (!)' : ''}`, 'BACK'], i => { if (go[i]) go[i](); },
+      `MARKS ${s.marks}  COINS ${s.coins}  STONES ${s.stones}`);
+  }
+  window.adventureMenu = adventureMenu;
+  window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { ADVENTURE: 'Dungeon tokens, contracts, gear traits, codex and field events.' });
+  if (typeof MainMenu !== 'undefined') {
+    const i0 = MainMenu.prototype.items; MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('CHALLENGES') + 1; L.splice(at > 0 ? at : L.length, 0, hasNews() ? 'ADVENTURE (!)' : 'ADVENTURE'); return L; };
+    const u0 = MainMenu.prototype.update; MainMenu.prototype.update = function () { if (P('a') && (this.items()[this.i] || '').replace(' (!)', '') === 'ADVENTURE') { SFX.select(); return adventureMenu(); } return u0.apply(this, arguments); };
+  }
+}
+})();
+
+</script>
+<script>
+'use strict';
 // ================================================================ GUILD CONQUEST: BOONSTONES AND CASTLE SIEGE
 // MAIN MENU > CONQUEST. Throne-style guild territory, fought against the realm's AI guilds until the server runs it
 // between real guilds:
@@ -15492,6 +16148,137 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
     const u0 = MainMenu.prototype.update; MainMenu.prototype.update = function () { if (P('a') && this.items()[this.i] === 'OCCULTIST') { SFX.select(); return occultistMenu(); } return u0.apply(this, arguments); };
   }
 }
+
+</script>
+<script>
+'use strict';
+(() => { // own scope: the game loads every module as a classic script sharing one global scope
+// ================================================================ TOTEMS: a 15th weapon family, five elements, three roles
+// Five totem weapons - FLAME, FROST, STORM, EARTH, SPIRIT - are one-handed simple weapons, so every class can
+// wield one (tanks keep their shield). A totem adapts to its wielder's ROLE (CLASSES[cls].role):
+//   * PASSIVE (scales with the totem's gear tier):
+//       TANK   resist, max HP, and the element's stat (EARTH: block)
+//       DPS    damage and the element's damage (EARTH: crit damage)
+//       HEALER healing and the element's damage (EARTH: resist)
+//   * PLANT TOTEM (bonus action, once per battle; twice with a LEGENDARY+ totem). The planted totem's effect
+//     depends on element x role (15 effects). Effects last 3 rounds (4 from gear tier 10):
+//       TANK   temp HP (% of max HP), guard buffs on the party or self, debuffs on every foe
+//       DPS    an elemental pulse hitting every foe, debuffs on every foe, a buff on the wielder
+//       HEALER heals the whole party (% of max HP) and buffs everyone
+//   AI companions holding a totem plant it on their first turn.
+// Totems drop like any weapon. Pure rules are exported as GBQTotems for tests; game wiring runs only in the game.
+
+const TOTEM_ROLES = ['tank', 'dps', 'healer'];
+const TOTEM_ELEMENTS = {
+  flame: { name: 'FLAME', weapon: 'flametotem', wname: 'FLAME TOTEM', dt: 'fire', stat: 'fire', school: 'flux', roles: {
+    tank: { name: 'EMBER WARD', self: ['fortify'], foes: ['burning'], temp: 15 },
+    dps: { name: 'INFERNO', foes: ['burning', 'burning'], self: ['might'], pulse: '2d6' },
+    healer: { name: 'CAUTERIZE', party: ['regen'], heal: 10 },
+  } },
+  frost: { name: 'FROST', weapon: 'frosttotem', wname: 'FROST TOTEM', dt: 'cold', stat: 'cold', school: 'storm', roles: {
+    tank: { name: 'GLACIER WALL', self: ['fortify'], foes: ['frostbite'], temp: 15 },
+    dps: { name: 'BLIZZARD', foes: ['frostbite'], self: ['focus'], pulse: '2d6' },
+    healer: { name: 'SNOWMELT', party: ['fortify'], heal: 12 },
+  } },
+  storm: { name: 'STORM', weapon: 'stormtotem', wname: 'STORM TOTEM', dt: 'lightning', stat: 'lightning', school: 'storm', roles: {
+    tank: { name: 'THUNDER AEGIS', self: ['thornskin'], foes: ['shocked'], temp: 15 },
+    dps: { name: 'TEMPEST', foes: ['shocked'], self: ['haste'], pulse: '2d6' },
+    healer: { name: 'RAINCALL', party: ['regen', 'bless'], heal: 8 },
+  } },
+  earth: { name: 'EARTH', weapon: 'earthtotem', wname: 'EARTH TOTEM', dt: 'bludgeoning', stat: null, school: 'aegis', roles: {
+    tank: { name: 'STONESKIN', party: ['fortify'], foes: [], temp: 20 },
+    dps: { name: 'QUAKE', foes: ['sundered', 'sundered'], self: ['might'], pulse: '2d6' },
+    healer: { name: 'DEEP ROOTS', party: ['fortify', 'regen'], heal: 10 },
+  } },
+  spirit: { name: 'SPIRIT', weapon: 'spirittotem', wname: 'SPIRIT TOTEM', dt: 'radiant', stat: 'radiant', school: 'calling', roles: {
+    tank: { name: 'ANCESTOR GUARD', party: ['bless'], self: ['fortify'], temp: 15 },
+    dps: { name: 'SOUL FIRE', foes: ['doomed'], self: ['focus'], pulse: '2d6' },
+    healer: { name: 'ANCESTRAL MEND', party: ['regen', 'bless'], heal: 14 },
+  } },
+};
+const TOTEM_IDS = Object.keys(TOTEM_ELEMENTS);
+const TOTEM_WEAPONS = {};
+for (const id of TOTEM_IDS) { const e = TOTEM_ELEMENTS[id]; TOTEM_WEAPONS[e.weapon] = { name: e.wname, dmg: '1d6', type: e.dt, cat: 'simple', props: '', fam: 'totem', icon: 'px_totem', cost: 40, focus: true, element: id }; }
+// the element of a weapon base id (null when it is not a totem)
+const totemOf = base => (TOTEM_WEAPONS[base] ? TOTEM_WEAPONS[base].element : null);
+const roleOf = role => (TOTEM_ROLES.includes(role) ? role : 'dps');
+// role passive stats for a totem of gear tier t
+function rolePassive(elem, role, t) {
+  const e = TOTEM_ELEMENTS[elem]; if (!e) return [];
+  t = Math.max(1, Math.floor(Number(t) || 1)); role = roleOf(role);
+  if (role === 'tank') return [['resist', 2 + Math.floor(t / 3)], ['hp', 5 + 4 * t], e.stat ? [e.stat, 2 + t] : ['block', 1 + Math.floor(t / 4)]];
+  if (role === 'healer') return [['heal', 6 + 2 * t], e.stat ? [e.stat, 3 + t] : ['resist', 1 + Math.floor(t / 4)]];
+  return [['dmg', 2 + t], e.stat ? [e.stat, 6 + 2 * t] : ['critdmg', 8 + 2 * t]];
+}
+// what planting does: effect lists, rounds, temp HP / heal %, pulse dice and uses per battle
+function plantPlan(elem, role, rank, rarity) {
+  const e = TOTEM_ELEMENTS[elem]; if (!e) return null;
+  const r = e.roles[roleOf(role)], t = Math.max(1, Math.floor(Number(rank) || 1));
+  return { element: elem, role: roleOf(role), name: r.name, dt: e.dt, school: e.school, self: r.self || [], foes: r.foes || [], party: r.party || [],
+    temp: r.temp || 0, heal: r.heal ? r.heal + Math.floor(t / 2) : 0, pulse: r.pulse || null,
+    rounds: 3 + (t >= 10 ? 1 : 0), uses: (Number(rarity) || 0) >= 5 ? 2 : 1 };
+}
+const roleWord = { tank: 'TANK', dps: 'DPS', healer: 'HEALER' };
+function totemDesc(base) {
+  const elem = totemOf(base); if (!elem) return '';
+  const e = TOTEM_ELEMENTS[elem];
+  return `${e.name} TOTEM. PLANT (bonus): ${TOTEM_ROLES.map(r => `${roleWord[r]} ${e.roles[r].name}`).join(', ')}.`;
+}
+
+if (typeof globalThis !== 'undefined') globalThis.GBQTotems = { TOTEM_ROLES, TOTEM_ELEMENTS, TOTEM_IDS, TOTEM_WEAPONS, totemOf, rolePassive, plantPlan, totemDesc };
+
+// ================================================================ game wiring (browser build only)
+if (typeof window !== 'undefined' && typeof WEAPONS !== 'undefined' && typeof gearAffixes === 'function' && typeof Battle !== 'undefined') {
+  Object.assign(WEAPONS, TOTEM_WEAPONS); // joins the loot pool (gen.js picks from WEAPONS)
+  if (typeof WEAPON_CLASSES !== 'undefined') WEAPON_CLASSES.totem = { name: 'TOTEM', stats: t => [['resist', 1 + Math.floor(t / 5)]], desc: 'Elemental totem: adapts to your role. PLANT TOTEM in battle.' };
+  const heldTotem = c => { const w = c && c.eq && c.eq.weapon; const el = w && totemOf(w.base); return el ? { w, el } : null; };
+  const roleOfChar = c => roleOf(typeof CLASSES !== 'undefined' && CLASSES[c.cls] ? CLASSES[c.cls].role : 'dps');
+  const buffName = id => (BUFFS[id] ? BUFFS[id].name : String(id).toUpperCase());
+
+  // role passive
+  { const ga0 = gearAffixes; gearAffixes = function (c) {
+      const s = ga0.apply(this, arguments), h = heldTotem(c); if (!h) return s;
+      for (const [k, v] of rolePassive(h.el, roleOfChar(c), h.w.rank || 1)) s[k] = (s[k] || 0) + v;
+      return s;
+    }; }
+  // PLANT TOTEM
+  function plant(b, u, p) {
+    const c = u.ch, foes = b.enemiesOf(u), allies = b.party.filter(m => isChar(m) && !m.ch.dead);
+    const en = TOTEM_ELEMENTS[p.element].name;
+    let steps = [b.say(`${c.name} plants ${/^[AEIOU]/.test(en) ? 'an' : 'a'} ${en} TOTEM: ${p.name}!`, () => { if (SFX[p.school + '_cast']) SFX[p.school + '_cast'](); })];
+    if (p.pulse && foes.length) steps = steps.concat(b.castSpell(u, { id: 'totem_' + p.element, name: p.name, school: p.school, lvl: 0, t: 'enemies', eff: 'dmg', save: 'CON', half: true, dice: p.pulse, dt: p.dt }, foes));
+    if (p.temp) steps.push(b.say(`${c.name} gains a totem guard.`, () => { u.temp = (u.temp || 0) + Math.max(1, Math.round(maxHpOf(u) * p.temp / 100)); }));
+    if (p.heal) steps.push(b.say(`The totem restores the party (${p.heal}% HP).`, () => { allies.forEach(m => b.heal(m, Math.max(1, Math.round(maxHpOf(m) * p.heal / 100)))); SFX.heal(); }));
+    const fx = [];
+    for (const id of p.self) if (BUFFS[id]) fx.push(() => addEffect(u, { id, rounds: p.rounds }));
+    for (const id of p.party) if (BUFFS[id]) fx.push(() => allies.forEach(m => addEffect(m, { id, rounds: p.rounds })));
+    for (const id of p.foes) if (BUFFS[id]) fx.push(() => b.enemiesOf(u).forEach(f => { if (alive(f)) addEffect(f, { id, rounds: p.rounds, src: u.id }); }));
+    const names = [...new Set([...p.self, ...p.party, ...p.foes])].map(buffName);
+    if (fx.length) steps.push(b.say(`Totem aura: ${names.join(', ')} for ${p.rounds} rounds.`, () => fx.forEach(f => f())));
+    return steps;
+  }
+  { const ab0 = Battle.prototype.abilities; Battle.prototype.abilities = function (u) {
+      const list = ab0.apply(this, arguments), c = u && u.ch, h = heldTotem(c);
+      if (!c || !h) return list;
+      const p = plantPlan(h.el, roleOfChar(c), h.w.rank || 1, h.w.rarity);
+      this.totemUses = this.totemUses || {};
+      const left = p.uses - (this.totemUses[u.id] || 0);
+      list.unshift({ id: 'totem_plant', name: 'PLANT TOTEM', cost: left > 0 ? `${left}/${p.uses}` : 'USED', ok: left > 0 && !this.bonusUsed, bonus: true,
+        fn: () => { this.totemUses[u.id] = (this.totemUses[u.id] || 0) + 1; return plant(this, u, p); } });
+      return list;
+    }; }
+  // AI companions plant their totem on their first turn
+  { const ai0 = Battle.prototype.aiTurn; Battle.prototype.aiTurn = function (u) {
+      const c = u && u.ch, h = heldTotem(c);
+      if (!h || this.bonusUsed || (this.totemUses && this.totemUses[u.id])) return ai0.apply(this, arguments);
+      const a = this.abilities(u).find(x => x.id === 'totem_plant' && x.ok); if (!a) return ai0.apply(this, arguments);
+      this.bonusUsed = true; const pre = a.fn();
+      return pre.concat(ai0.apply(this, arguments) || []);
+    }; }
+  // item text
+  if (typeof itemDesc === 'function') { const d0 = itemDesc; itemDesc = function (it) { const s = d0(it); return it && it.kind === 'weapon' && totemOf(it.base) ? `${totemDesc(it.base)} ${s}` : s; }; }
+}
+})();
 
 </script>
 <script>
