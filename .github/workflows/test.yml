@@ -75,6 +75,8 @@ jobs:
         run: python tools/gen_newart.py
       - name: Build enhanced 64-bit atlas pages
         run: python tools/gen_hd64.py
+      - name: Validate HD64 6,000 asset pack
+        run: python tools/validate_pack6000_hd.py --root assets_hd64/gbq_6000
       - name: Build browser and desktop game bundles
         run: node tools/build.cjs
       - name: Upload generated art package
