@@ -12,6 +12,7 @@ python3 tools/gen_newart.py
 python3 tools/gen_jobs.py
 python3 tools/slice_assetpack.py && python3 tools/slice_assetpack.py --sheet ui
 python3 tools/gen_hd64.py
+node tools/gen_expansion_icons.cjs
 node tools/build.cjs
 ```
 
@@ -21,6 +22,7 @@ node tools/build.cjs
 - `gen_jobs.py` makes walkers, portraits and battle sheets for the 11 new jobs and portraits for the 6 new races, tinted from related classes and races with an emblem.
 - `slice_assetpack.py` cuts the reference sheets in `art_source/` into sprites (`assets_pack/`) and installs 8-bit versions as `assets/ap_*.png` (asset pack) and, with `--sheet ui`, `assets/au_*.png` (UI kit). `src/asset_pack.js` uses them: SCENES battle backgrounds, item icons for potions, food, scrolls, books, keys and coins, gem icons in the socket forge, rarity-tinted item borders (`au_rframe_<tier>`, made from the UI kit's frame), pack monster art for about half of each matching bestiary family, and NPC face portraits in dialogue. The UI kit's logo, named class line-up and event-named banner are not cut.
 - `gen_hd64.py` creates the 4× enhanced atlas pages and JSON sprite indexes from the generated native sprites.
+- `gen_expansion_icons.cjs` creates the 13 original 32×32 expansion emblems with hard-edged pixel geometry and per-world palettes. Campaign maps and the quest log use these icons.
 - `build.cjs` embeds the Game Boy PNGs plus the HD64 atlas pages and indexes into the single-file browser and desktop builds. In 64-BIT video mode, matching enhanced sprites are loaded from those atlases on demand.
 
 ## Adventurer rank ladder

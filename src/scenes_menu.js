@@ -554,7 +554,7 @@ class QuestLog extends ListScene {
       const campaign = EXPANSION_CAMPAIGNS[x.n - 1], step = campaign.steps[state.step];
       const status = state.done ? 'CAMPAIGN COMPLETE' : `STEP ${state.step + 1}/4: ${step ? step.title : 'Continue the campaign.'}`;
       const progress = !state.done && state.step === 1 ? `Foes defeated: ${state.kills || 0}/${campaign.steps[1].target}.` : '';
-      o.push({ t: x.name, d: `${status}\n${progress}\n${state.done ? campaign.epilogue : campaign.beats[state.step] || campaign.intro}\nFinal reward: ${fmt(campaign.reward.xp)} XP, ${fmt(campaign.reward.gold)} G.`, campaign: true, done: state.done });
+      o.push({ t: x.name, d: `${status}\n${progress}\n${state.done ? campaign.epilogue : campaign.beats[state.step] || campaign.intro}\nFinal reward: ${fmt(campaign.reward.xp)} XP, ${fmt(campaign.reward.gold)} G.`, campaign: true, icon: campaign.icon, done: state.done });
     }
     for (const id in G.sideq) { const st = G.sideq[id]; if (st.state === 'done') continue; const d = sideQuestDef(id); if (d) o.push({ t: d.name, d: `${d.text}\n${st.state === 'ready' ? 'READY: return to the warden.' : `Progress ${st.prog}/${d.count}`} (${ZONE_BY_ID[d.zone].name})` }); }
     return o;
@@ -564,7 +564,7 @@ class QuestLog extends ListScene {
     fill(0, 0, W, H, 0); hdr();
     text(`STORY ${G.chapter}/50   QUESTS DONE ${G.stats.quests}`, 4, 14, 2);
     const L = this.items();
-    L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 26 + j * 11; if (i === this.i) fill(2, y - 2, 152, 11, 1); text(e.main ? '*' : e.campaign ? (e.done ? '#' : '+') : '!', 4, y, e.main || (e.campaign && e.done) ? 'gold' : 3); text(e.t.slice(0, 23), 12, y); });
+    L.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 26 + j * 11; if (i === this.i) fill(2, y - 2, 152, 11, 1); if (e.icon && IMG[e.icon]) blit(spr(e.icon, 8, 8), 4, y); else text(e.main ? '*' : '!', 4, y, e.main ? 'gold' : 3); text(e.t.slice(0, 23), 14, y); });
     frame(2, 84, 156, 58); text(wrap(L[this.i].d, 24).slice(0, 5).join('\n'), 6, 88);
   }
 }

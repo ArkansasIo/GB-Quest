@@ -1739,6 +1739,7 @@ class ExpansionMapsScene {
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 12, 3);
     const x = this.expansion(), zones = this.zones();
+    blit(spr(EXPANSION_CAMPAIGNS[this.expIndex].icon, 10, 10), 4, 1);
     textC(`${x.n}. ${x.name}`.slice(0, 25), 80, 2, 0);
     textC(`LEVEL ${x.lvl[0]}-${x.lvl[1]}  ${x.desc}`.slice(0, 25), 80, 15, 'gold');
     zones.forEach((z, index) => {

@@ -538,7 +538,7 @@ EXPANSIONS.forEach(x => {
 });
 // Persistent campaign objectives per expansion, driven by normal travel, combat, and instance events.
 const EXPANSION_CAMPAIGNS = EXPANSIONS.map((x, i) => Object.freeze({
-  exp: x.n, title: x.name, intro: EXPANSION_STORIES[i].hook,
+  exp: x.n, title: x.name, icon: `exp_icon_${x.n}`, intro: EXPANSION_STORIES[i].hook,
   beats: [
     EXPANSION_STORIES[i].threat,
     EXPANSION_STORIES[i].hook,
