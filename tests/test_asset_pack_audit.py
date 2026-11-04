@@ -1,10 +1,13 @@
 import json
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 
 from PIL import Image
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 from tools.audit_pack6000 import audit
 
 
