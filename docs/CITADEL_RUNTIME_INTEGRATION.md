@@ -38,3 +38,10 @@ Existing PNG packs, legacy sprites, gameplay rules, saves and network systems ar
 - `src/engine.js` loads both catalogs and exposes `window.GBQ_CITADEL_BUILDINGS` and `window.GBQ_CITADEL_ROADS` by stable ID.
 - The standalone build embeds these SVGs through the recursive asset bundler.
 - These assets are concept illustrations; map placement, collision, navmesh and actual world-tile replacement remain separate integration work.
+
+## Batches 10–12 — equipment artwork
+- Added six weapon icons, six armor icons and four shield icons under `assets_citadel/weapons/`, `armor/` and `shields/`.
+- Catalogs: `weapons_catalog.json`, `armor_catalog.json` and `shields_catalog.json`.
+- `src/engine.js` loads these catalogs and exposes `window.GBQ_CITADEL_WEAPONS`, `window.GBQ_CITADEL_ARMOR` and `window.GBQ_CITADEL_SHIELDS` by stable ID.
+- Standalone builds embed these SVG assets recursively.
+- These are inventory concept icons, not production 3D equipment models, PBR materials or equip animations.
