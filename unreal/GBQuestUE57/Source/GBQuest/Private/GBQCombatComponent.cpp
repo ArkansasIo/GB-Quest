@@ -1,0 +1,11 @@
+#include "GBQCombatComponent.h"
+FGBQCombatResult UGBQCombatComponent::ResolveAttack(int32 Bonus,int32 AC,float BaseDamage,EGBQDamageType Type,bool bAdv,bool bDis)
+{
+    FGBQCombatResult R; R.DamageType=Type;
+    const int32 A=FMath::RandRange(1,20), B=FMath::RandRange(1,20);
+    R.NaturalRoll=(bAdv&&!bDis)?FMath::Max(A,B):((bDis&&!bAdv)?FMath::Min(A,B):A);
+    R.TotalRoll=R.NaturalRoll+Bonus; R.bCritical=(R.NaturalRoll==20);
+    R.bHit=(R.NaturalRoll==20)||(R.NaturalRoll!=1&&R.TotalRoll>=AC);
+    R.Damage=R.bHit?BaseDamage*(R.bCritical?2.f:1.f):0.f;
+    OnAttackResolved.Broadcast(R); return R;
+}
