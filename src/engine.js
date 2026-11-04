@@ -112,6 +112,7 @@ async function loadCitadelAssets() {
     ['creatures', 'assets_citadel/creature_catalog.json', 'entries'],
     ['bosses', 'assets_citadel/boss_catalog.json', 'entries'],
     ['environments', 'assets_citadel/environment_catalog.json', 'entries'],
+    ['props', 'assets_citadel/prop_catalog.json', 'entries'],
   ];
   const loadImage = (key, path) => new Promise(resolve => {
     const im = new Image();
@@ -126,7 +127,7 @@ async function loadCitadelAssets() {
       const parts = path.split('/');
       if (parts.length < 3 || parts[0] !== 'assets_citadel') continue;
       const category = parts[1], id = parts[parts.length - 1].replace(/\\.svg$/i, '');
-      const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', ui: 'ui' })[category] || category;
+      const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', props: 'prop', ui: 'ui' })[category] || category;
       const key = `citadel_${singular}_${id}`;
       if (await loadImage(key, path)) loaded++;
     }
@@ -145,6 +146,7 @@ async function loadCitadelAssets() {
     }));
     for (const [key, path] of [['citadel_ui_crest','assets_citadel/ui/citadel_crest.svg'],['citadel_ui_ornaments','assets_citadel/ui/citadel_ornaments.svg']]) if (await loadImage(key,path)) loaded++;
   }
+  window.GBQ_CITADEL_PROPS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_prop_')).map(key => [key.slice('citadel_prop_'.length), IMG[key]]));
   window.GBQ_CITADEL_ASSET_COUNT = loaded;
   return loaded;
 }
