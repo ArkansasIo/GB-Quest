@@ -185,7 +185,12 @@ def main() -> int:
                     continue
                 for field, csv_value in csv_row.items():
                     if field not in json_row:
-                        fail(errors, f"CSV row {index + 2}: unexpected column {field!r}")
+                        # CSV schemas may include optional columns (for example,
+                        # monster family) that are blank for records without that
+                        # attribute. A populated value without a JSON counterpart
+                        # is still a real manifest mismatch.
+                        if csv_value not in ("", None):
+                            fail(errors, f"CSV row {index + 2}: unexpected populated column {field!r}")
                         continue
                     expected_value = "" if json_row[field] is None else str(json_row[field])
                     if csv_value != expected_value:
