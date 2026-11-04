@@ -4,6 +4,9 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 
 ## Unreleased
 
+### Added
+- **AWAKENING** (MAIN MENU > AWAKENING, `src/awakening.js`): post-cap evolution for all 27 classes. Five class tiers (levels 60/150/270/420/600, paid in gold) add class substats, a once-per-battle **awakened ultimate** (tier I) and a battle-start buff (tier III, longer at V). **TALENT / SPELL / ABILITY** tracks (ranks 0-10, bought with awakening points) boost learned talents, spell power, DC and slots, and crit, class resources and active-skill uses per battle. **GOD TALENTS** (tier III+): four pantheons (WAR, ARCANA, LIFE, SHADOW) of five ranks bought with divinity points; only one rank-5 god capstone may be held. Points reset for gold.
+
 ### Changed
 - **Dungeon floors**: every room on the main path now has a doorway; doors only sit in real doorways (walls on both sides), so none float in wide corridors or open rooms; wall torches, signs and shelves only hang on visible wall faces (no more torches in the void on tower floors); stairs always have a free tile beside them. Stepping onto the UP stairs or the EXIT now asks right away (no need to face them and press A), and leaving an instance never drops you inside a wall or water.
 - **Menus and sub-pages**: the CHARACTER page's CHAR, BAG and GEAR tabs now show different previews (stats; the first 15 bag items; the 14 equipment slots) with the right A-button hint. Selected rows no longer hide text drawn in the highlight colour (MOUNTS, BESTIARY, ACHIEVEMENTS and others). Fixed text overflowing in SPELLBOOK (and its '?' separators), PROFESSIONS, SOCIAL, HEIRLOOMS and the BAG tooltip. Characters the pixel font lacks (like the middle dot, dashes and stars) now draw as their plain look-alikes instead of '?'.
