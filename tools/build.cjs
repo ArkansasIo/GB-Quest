@@ -26,7 +26,7 @@ function walkCitadel(dir) {
 }
 walkCitadel(path.join(ROOT, 'assets_citadel'));
 const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fromEntries(citadelFiles)) + ';</script>\n';
-const shell = rd('client/shell.html');
+const shell = rd('client/shell.html').replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\\n' + rd('client/theme-citadel.css') + '\\n</style>');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
   .filter(f => f.endsWith('.png') && !f.startsWith('device_mockup') && !f.startsWith('bg_patterns'))
