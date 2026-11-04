@@ -94,3 +94,27 @@ jobs:
             dist/gbquest-fullscreen.html
           if-no-files-found: error
           retention-days: 14
+
+  cinematic-brief-validation:
+    name: Validate UE5.7 cinematic production briefs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate deterministic 6,000-asset brief queue
+        run: python tools/generate_cinematic_asset_prompts.py --output build/cinematic_asset_prompts.csv --seed 5700
+      - name: Validate IDs, category quotas, seeds and metadata
+        run: python tools/validate_cinematic_asset_briefs.py --csv build/cinematic_asset_prompts.csv --report build/reports/cinematic_brief_validation.json
+      - name: Run cinematic brief validator unit tests
+        run: python -m unittest tests/test_cinematic_asset_briefs.py
+      - name: Upload validated production brief queue
+        uses: actions/upload-artifact@v4
+        with:
+          name: gb-quest-cinematic-asset-briefs
+          path: |
+            build/cinematic_asset_prompts.csv
+            build/reports/cinematic_brief_validation.json
+          if-no-files-found: error
+          retention-days: 30
