@@ -1,0 +1,4 @@
+#include "GBQuest.h"
+#include "Modules/ModuleManager.h"
+DEFINE_LOG_CATEGORY(LogGBQuest);
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, GBQuest, "GBQuest");
