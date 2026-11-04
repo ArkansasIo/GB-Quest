@@ -1,7 +1,4 @@
 #include "GBQCharacter.h"
 #include "GBQStatsComponent.h"
-AGBQCharacter::AGBQCharacter()
-{
-    PrimaryActorTick.bCanEverTick=true;
-    Stats=CreateDefaultSubobject<UGBQStatsComponent>(TEXT("Stats"));
-}
+#include "GBQCombatComponent.h"
+AGBQCharacter::AGBQCharacter() { PrimaryActorTick.bCanEverTick=false; Stats=CreateDefaultSubobject<UGBQStatsComponent>(TEXT("Stats")); Combat=CreateDefaultSubobject<UGBQCombatComponent>(TEXT("Combat")); }
