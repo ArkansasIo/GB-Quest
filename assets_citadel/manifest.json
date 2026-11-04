@@ -75,6 +75,13 @@
       "format": "SVG",
       "count": 12,
       "status": "created"
+    },
+    {
+      "id": "raid_boss_banners_6",
+      "path": "assets_citadel/bosses/",
+      "format": "SVG",
+      "count": 6,
+      "status": "created"
     }
   ],
   "provenance": "Original project artwork; no third-party game assets.",
@@ -90,6 +97,12 @@
       "id": "03",
       "name": "Bestiary creatures",
       "creatureEmblems": 12,
+      "status": "created"
+    },
+    {
+      "id": "04",
+      "name": "Raid bosses",
+      "bossBanners": 6,
       "status": "created"
     }
   ]
