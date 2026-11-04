@@ -105,19 +105,62 @@ function requestHd64Sprite(name) {
     if (entry) hd64Atlas(entry.family, entry.rect[0]).catch(() => {});
   });
 }
+async function loadCitadelAssets() {
+  const catalogs = [
+    ['races', 'assets_citadel/catalog.json', 'races'],
+    ['classes', 'assets_citadel/catalog.json', 'classes'],
+    ['creatures', 'assets_citadel/creature_catalog.json', 'entries'],
+    ['bosses', 'assets_citadel/boss_catalog.json', 'entries'],
+    ['environments', 'assets_citadel/environment_catalog.json', 'entries'],
+  ];
+  const loadImage = (key, path) => new Promise(resolve => {
+    const im = new Image();
+    im.onload = () => { IMG[key] = im; resolve(true); };
+    im.onerror = () => resolve(false);
+    const embedded = window.GBQ_CITADEL_ASSETS && window.GBQ_CITADEL_ASSETS[path];
+    im.src = embedded || path;
+  });
+  let loaded = 0;
+  if (window.GBQ_CITADEL_ASSETS) {
+    for (const [path] of Object.entries(window.GBQ_CITADEL_ASSETS)) {
+      const parts = path.split('/');
+      if (parts.length < 3 || parts[0] !== 'assets_citadel') continue;
+      const category = parts[1], id = parts[parts.length - 1].replace(/\\.svg$/i, '');
+      const key = `citadel_${category.slice(0, -1)}_${id}`;
+      if (await loadImage(key, path)) loaded++;
+    }
+  } else {
+    const docs = new Map();
+    await Promise.all(catalogs.map(async ([kind, path, field]) => {
+      try {
+        if (!docs.has(path)) docs.set(path, await (await fetch(path)).json());
+        const entries = docs.get(path)[field] || [];
+        await Promise.all(entries.map(async entry => {
+          const id = entry.id, src = entry.src;
+          const key = `citadel_${kind === 'races' ? 'race' : kind === 'classes' ? 'class' : kind === 'creatures' ? 'creature' : kind === 'bosses' ? 'boss' : 'environment'}_${id}`;
+          if (await loadImage(key, src)) loaded++;
+        }));
+      } catch (e) { console.warn('CITADEL asset catalog unavailable:', path, e); }
+    }));
+    for (const [key, path] of [['citadel_ui_crest','assets_citadel/ui/citadel_crest.svg'],['citadel_ui_ornaments','assets_citadel/ui/citadel_ornaments.svg']]) if (await loadImage(key,path)) loaded++;
+  }
+  window.GBQ_CITADEL_ASSET_COUNT = loaded;
+  return loaded;
+}
 async function loadAssets(onProgress) {
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
-  if (!ASSET_NAMES.length) { onProgress && onProgress(1); return; }
+  if (!ASSET_NAMES.length) onProgress && onProgress(1);
   let done = 0;
   await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
     const im = new Image();
     let settled = false;
-    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(done / ASSET_NAMES.length); res(); };
+    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(done / Math.max(1, ASSET_NAMES.length)); res(); };
     im.onload = () => { IMG[n] = im; finish(); };
     im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
   })));
+  await loadCitadelAssets();
 }
 
 // ---------------------------------------------------------------- sprite pipeline
