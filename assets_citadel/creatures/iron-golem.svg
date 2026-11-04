@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc"><title id="title">Iron Golem — GB Quest bestiary</title><desc id="desc">Original bestiary emblem depicting rune-bound plate and massive fists.</desc><defs><radialGradient id="bg"><stop stop-color="#31465a"/><stop offset="1" stop-color="#090f18"/></radialGradient><linearGradient id="hide" x2=".8" y2="1"><stop stop-color="#e0d5bd"/><stop offset=".25" stop-color="#a8b4bd"/><stop offset="1" stop-color="#394957"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff0c2"/><stop offset=".5" stop-color="#c39a58"/><stop offset="1" stop-color="#60401e"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="16"/></filter></defs><rect width="1024" height="1024" rx="42" fill="url(#bg)"/><circle cx="512" cy="460" r="340" fill="#e6a0ff" opacity=".1" filter="url(#glow)"/><circle cx="512" cy="460" r="380" fill="none" stroke="url(#gold)" stroke-width="16"/><circle cx="512" cy="460" r="355" fill="none" stroke="#d9c28f" stroke-opacity=".4" stroke-width="4"/>
+<g stroke="#394957" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" fill="url(#hide)">
+
+
+
+
+
+
+<path d="M300 300 460 220 620 250 770 380 700 650 560 800 320 680 220 450Z"/><path d="M320 650 250 880 430 780 520 900 620 770 780 870 700 620Z"/><path d="M390 320 510 140 630 330Z"/>
+
+
+
+
+
+</g><path d="M370 460q60-55 120 0m44 0q60-55 120 0" fill="none" stroke="#394957" stroke-width="24"/><ellipse cx="430" cy="465" rx="20" ry="27" fill="#e6a0ff"/><ellipse cx="594" cy="465" rx="20" ry="27" fill="#e6a0ff"/><path d="M470 570 512 600 554 570" fill="none" stroke="#1b1a1a" stroke-width="20"/><path d="M512 80v110M512 730v150M132 460h110M782 460h110" stroke="url(#gold)" stroke-width="12"/><text x="512" y="955" text-anchor="middle" fill="#f0dfb8" font-family="Georgia,serif" font-size="52" letter-spacing="7">IRON GOLEM</text></svg>
