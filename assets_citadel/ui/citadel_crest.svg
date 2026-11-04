@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">GB Quest — CITADEL fantasy crest</title><desc id="desc">Original heraldic crest with a silver-blue citadel, golden sun, mountain silhouettes and an ornate shield.</desc>
+<defs>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff0bd"/><stop offset=".28" stop-color="#d7b56b"/><stop offset=".68" stop-color="#8d6530"/><stop offset="1" stop-color="#f0d38c"/></linearGradient>
+ <linearGradient id="steel" x2="0" y2="1"><stop stop-color="#dbe7f0"/><stop offset=".4" stop-color="#728ba4"/><stop offset="1" stop-color="#273b53"/></linearGradient>
+ <linearGradient id="night" x2="0" y2="1"><stop stop-color="#263f5c"/><stop offset="1" stop-color="#080f1b"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff2c5"/><stop offset=".6" stop-color="#d9b66e"/><stop offset="1" stop-color="#9d7038"/></radialGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="16" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<circle cx="512" cy="430" r="330" fill="none" stroke="#c5a15a" stroke-opacity=".22" stroke-width="5"/>
+<circle cx="512" cy="430" r="295" fill="url(#night)" stroke="url(#gold)" stroke-width="18"/>
+<circle cx="512" cy="310" r="112" fill="url(#sun)" filter="url(#glow)"/>
+<path d="M220 590 365 390 448 490 540 350 800 590v115H220Z" fill="#172b40" stroke="#9eb3c7" stroke-opacity=".6" stroke-width="9"/>
+<path d="m295 590 130-165 61 76 54-93 185 182Z" fill="#324b63"/>
+<path d="m375 490 50-65 26 33-27-8-18 18Zm145-82 20-34 35 42-30-10-12 15Z" fill="#e4eaf0"/>
+<g fill="url(#steel)" stroke="#17283a" stroke-width="12">
+ <path d="M335 690V510h78V690Zm276 0V510h78V690ZM412 690V460h200v230Z"/>
+ <path d="M390 470V385h54v85Zm190 0V385h54v85Z"/>
+ <path d="M455 690V560q57-86 114 0v130Z"/>
+</g>
+<g fill="url(#gold)" stroke="#4b351f" stroke-width="8">
+ <path d="M380 388v-75l37-30 37 30v75Z"/><path d="M570 388v-75l37-30 37 30v75Z"/>
+ <path d="M470 455v-90l42-38 42 38v90Z"/>
+ <path d="M492 270h40v90h-40z"/><path d="M468 300h88v24h-88z"/>
+</g>
+<path d="M245 650 512 770 779 650 735 895 512 1000 289 895Z" fill="#101a29" stroke="url(#gold)" stroke-width="22"/>
+<path d="M310 710 512 800 714 710 680 866 512 950 344 866Z" fill="none" stroke="#71869d" stroke-width="7"/>
+<path d="M512 790 558 858 512 925 466 858Z" fill="url(#gold)" stroke="#4a341c" stroke-width="8"/>
+<path d="M512 812v90" stroke="#fff0bd" stroke-width="7"/>
+<g fill="url(#gold)"><path d="m512 52 19 44 48 4-36 31 11 47-42-25-42 25 11-47-36-31 48-4Z"/><circle cx="512" cy="175" r="10"/></g>
+</svg>
