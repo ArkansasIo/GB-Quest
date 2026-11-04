@@ -50,6 +50,8 @@ def main():
    for i in range(1,cat["count"]+1):
     n+=1; mood=rng.choice(MOODS); material=rng.choice(MATERIALS); light=rng.choice(LIGHTS); camera=rng.choice(CAMERAS)
     seed=rng.randrange(1,2**31)
+    while seed in used_seeds: seed=rng.randrange(1,2**31)
+    used_seeds.add(seed)
     name=f'{cat["id"].replace("_"," ").title()} {i:04d}'
     prompt=(f'{template}. Art direction: {mood}. Material emphasis: {material}. Lighting: {light}. '
             f'Composition: {camera}. Original design language for GB-Quest; physically plausible construction, '
