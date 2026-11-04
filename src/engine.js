@@ -126,7 +126,8 @@ async function loadCitadelAssets() {
       const parts = path.split('/');
       if (parts.length < 3 || parts[0] !== 'assets_citadel') continue;
       const category = parts[1], id = parts[parts.length - 1].replace(/\\.svg$/i, '');
-      const key = `citadel_${category.slice(0, -1)}_${id}`;
+      const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', ui: 'ui' })[category] || category;
+      const key = `citadel_${singular}_${id}`;
       if (await loadImage(key, path)) loaded++;
     }
   } else {
