@@ -103,6 +103,20 @@
       "format": "SVG",
       "count": 8,
       "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "medieval_buildings_8",
+      "path": "assets_citadel/buildings/",
+      "format": "SVG",
+      "count": 8,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "road_tiles_6",
+      "path": "assets_citadel/roads/",
+      "format": "SVG",
+      "count": 6,
+      "status": "created-and-runtime-loaded"
     }
   ],
   "provenance": "Original project artwork; no third-party game assets.",
@@ -143,6 +157,18 @@
       "name": "Terrain material concepts",
       "terrainMaterials": 8,
       "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "08",
+      "name": "Medieval buildings",
+      "buildings": 8,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "09",
+      "name": "Road tiles",
+      "roadVariants": 6,
+      "status": "created-and-runtime-loaded"
     }
   ],
   "runtimeIntegration": {
@@ -153,6 +179,8 @@
     "toggle": "SETTINGS > CITADEL ART",
     "legacyFallback": "Set CITADEL ART to OFF; existing art packs remain available",
     "propCatalog": "assets_citadel/prop_catalog.json",
-    "terrainCatalog": "assets_citadel/terrain_catalog.json"
+    "terrainCatalog": "assets_citadel/terrain_catalog.json",
+    "buildingCatalog": "assets_citadel/building_catalog.json",
+    "roadCatalog": "assets_citadel/road_catalog.json"
   }
 }
