@@ -84,6 +84,17 @@ function drawBattleBackdrop(b) {
     fill(0, BBG_BOT - 1, W, 1, 3);
     return;
   }
+  // CITADEL vector environment art is the default painted scene layer.
+  const citadel = S.citadelArt !== false && battleBackdrop(b.kind);
+  if (citadel && IMG[citadel]) {
+    const smooth = ctx.imageSmoothingEnabled, quality = ctx.imageSmoothingQuality;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(IMG[citadel], 0, 38, W, 56);
+    ctx.imageSmoothingEnabled = smooth; ctx.imageSmoothingQuality = quality;
+    ctx.fillStyle = 'rgba(8,10,18,0.12)'; ctx.fillRect(0, 38, W, 56);
+    fill(0, BBG_BOT - 1, W, 1, 3);
+    return;
+  }
   if (S.battleBg === 'painted') {
     const bgn = battleBackdrop(b.kind);
     if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); }
