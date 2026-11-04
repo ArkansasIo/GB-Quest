@@ -16,7 +16,21 @@ const FAMILY_ART = {
 // every bestiary entry and boss gets a stable NES sprite (same subtype + variant -> same art)
 for (const b of BESTIARY) if (!b.ccArt) b.nspr = nesPick(FAMILY_ART[b.fam] || ['monster'], b.sub + '|' + b.variant + '|' + b.rank);
 for (const b of BOSSES) b.nspr = b.cat === 'arc' ? null : nesPick(b.cat === 'raid' || b.cat === 'world' ? ['strong', 'dragon', 'demon'] : ['strong', ...(FAMILY_ART[b.fam] || ['monster'])], b.id);
-const monsterArt = b => (b && b.ccArt && IMG[b.ccArt]) ? b.ccArt : (artOn() && b && b.nspr && IMG[b.nspr]) ? b.nspr : (b ? b.spr : 'enemy_goblin');
+const CITADEL_CREATURES = { beast: ['dire-wolf','griffin','forest-stag'], humanoid: ['stone-troll','harpy'], undead: ['wraith'], fiend: ['wyvern'], fey: ['forest-stag'], elemental: ['iron-golem'], construct: ['iron-golem'], dragon: ['wyvern'], giant: ['stone-troll'], ooze: ['mimic'], aberration: ['sea-leviathan'], monstrosity: ['basilisk','cave-spider'], plant: ['forest-stag'], celestial: ['griffin'] };
+const citadelCreatureFor = b => {
+  if (!b || S.citadelArt === false) return null;
+  const pool = CITADEL_CREATURES[b.fam] || ['dire-wolf'];
+  const key = pool[hashStr(String(b.sub || b.id || b.name || b.variant || b.fam)) % pool.length];
+  const image = 'citadel_creature_' + key;
+  return IMG[image] ? image : null;
+};
+const monsterArt = b => {
+  const citadel = citadelCreatureFor(b);
+  if (citadel) return citadel;
+  if (b && b.ccArt && IMG[b.ccArt]) return b.ccArt;
+  if (artOn() && b && b.nspr && IMG[b.nspr]) return b.nspr;
+  return b ? b.spr : 'enemy_goblin';
+};
 
 // items
 const WEAPON_ART = { knife: 'dagger', crescent: 'dagger', longbrand: 'sword', needleblade: 'sword', widesword: 'sword', hatchet: 'axe', cleaver: 'axe',
@@ -49,10 +63,31 @@ function spellArt(sp) {
   return NES.spell[Math.min(NES.spell.length - 1, i || 0)];
 }
 // heroes & species
-const classPortrait = cls => artOn() && IMG[`np_class_${cls}`] ? `np_class_${cls}` : null;
-const racePortrait = (sp, i = 0) => { if (!artOn()) return null; const n = `np_race_${sp}_${i}`; return IMG[n] ? n : IMG[`np_race_${sp}_0`] ? `np_race_${sp}_0` : null; };
+const CITADEL_CLASS_ALIASES = { fighter: 'warrior', warden: 'warrior', barbarian: 'berserker', wizard: 'mage', sorcerer: 'mage', warlock: 'necromancer', druid: 'mage', monk: 'rogue', bard: 'bard', artificer: 'artificer', cleric: 'cleric', paladin: 'paladin', ranger: 'ranger', rogue: 'rogue', warrior: 'warrior', summoner: 'summoner', necromancer: 'necromancer', berserker: 'berserker', alchemist: 'alchemist' };
+const classPortrait = cls => {
+  const id = CITADEL_CLASS_ALIASES[String(cls || '').toLowerCase()] || String(cls || '').toLowerCase();
+  const citadel = 'citadel_class_' + id;
+  return S.citadelArt !== false && IMG[citadel] ? citadel : artOn() && IMG[`np_class_${cls}`] ? `np_class_${cls}` : null;
+};
+const CITADEL_RACE_ALIASES = { human: 'human', elf: 'elf', lunari: 'elf', dwarf: 'dwarf', orc: 'orc', tiefling: 'tiefling', hornfolk: 'orc', felinar: 'beastkin', beastkin: 'beastkin', wolfkin: 'beastkin', dragonkin: 'dragonkin', starkin: 'human', pipkin: 'human', undead: 'undead', returned: 'undead', halfling: 'human' };
+const racePortrait = (sp, i = 0) => {
+  const id = CITADEL_RACE_ALIASES[String(sp || '').toLowerCase()] || 'human';
+  const citadel = 'citadel_race_' + id;
+  if (S.citadelArt !== false && IMG[citadel]) return citadel;
+  if (!artOn()) return null;
+  const n = `np_race_${sp}_${i}`; return IMG[n] ? n : IMG[`np_race_${sp}_0`] ? `np_race_${sp}_0` : null;
+};
 // battle backdrops: plains, forest, mountains, cave, castle
 function battleBackdrop(kind) {
+  if (S.citadelArt !== false) {
+    const z = ZONE_BY_ID[G && G.map];
+    let id = 'forest';
+    if (kind === 'dungeon' || kind === 'tower' || kind === 'trial' || (G && G.inst && G.inst.kind !== 'raid')) id = 'dungeon';
+    else if (kind === 'raid' || kind === 'arena' || (z && z.town)) id = 'city';
+    else if (z) id = ({ meadow: 'plains', coast: 'coast', marsh: 'swamp', jungle: 'forest', snow: 'snow', badlands: 'desert', volcanic: 'volcanic', dusk: 'forest', crystal: 'crystal' })[z.biome] || 'plains';
+    const citadel = 'citadel_environment_' + id;
+    if (IMG[citadel]) return citadel;
+  }
   if (!artOn() || !NES.battlebg || !NES.battlebg.length) return null;
   const z = ZONE_BY_ID[G && G.map];
   let i = 0;
