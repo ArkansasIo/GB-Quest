@@ -31,3 +31,10 @@ Existing PNG packs, legacy sprites, gameplay rules, saves and network systems ar
 - `src/engine.js` loads them and exposes `window.GBQ_CITADEL_TERRAIN`.
 - The standalone builder embeds all SVGs recursively, so these assets are included automatically in generated standalone builds.
 - These are vector material concepts, not production PBR maps; base-color, normal, roughness, ambient-occlusion and displacement maps remain to be authored for a true 3D material pipeline.
+
+## Batches 08–09 — buildings and roads
+- Added eight medieval building concept illustrations under `assets_citadel/buildings/` and six road layout tiles under `assets_citadel/roads/`.
+- Catalogs: `assets_citadel/building_catalog.json` and `assets_citadel/road_catalog.json`.
+- `src/engine.js` loads both catalogs and exposes `window.GBQ_CITADEL_BUILDINGS` and `window.GBQ_CITADEL_ROADS` by stable ID.
+- The standalone build embeds these SVGs through the recursive asset bundler.
+- These assets are concept illustrations; map placement, collision, navmesh and actual world-tile replacement remain separate integration work.
