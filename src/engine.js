@@ -14,7 +14,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'painted', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
 if (S.displayMode === 'windowed' && !S.displayModeUserSet) S.displayMode = 'full-window';
