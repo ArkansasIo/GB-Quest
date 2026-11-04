@@ -91,7 +91,7 @@ def main() -> int:
         if not isinstance(record, dict):
             fail(errors, f"Manifest entry {index} is not an object")
             continue
-        asset_id = str(record.get("id", "")).strip()
+        asset_id = str(record.get("asset_id", record.get("id", ""))).strip()
         category = str(record.get("category", "")).strip()
         relative = record.get("path") or record.get("file") or record.get("filename")
         if not asset_id:
