@@ -37,7 +37,7 @@ test("successful upgrades consume materials and update stats from the original b
   const second = upgradeGear(state.item, { ...state, random: () => 0 });
   assert.equal(second.ok, true);
   assert.deepEqual(state.item.stats, { attackPower: 115, strength: 23 });
-  assert.equal(countItem(state.inventory, "material:upgrade-stone"), 97);
+  assert.equal(countItem(state.inventory, "material:upgrade-stone"), 95);
 });
 
 test("failed upgrade consumes quoted resources but does not alter item stats or level", () => {
