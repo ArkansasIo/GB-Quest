@@ -75,3 +75,34 @@ test("invalid item state and material-free upgrade caps are safely rejected", ()
   assert.equal(upgradeGear(state.item, { ...state, random: () => 0 }).reason, "upgrade_cap");
   assert.equal(countItem(state.inventory, "material:upgrade-stone"), 100);
 });
+
+test("overflowing projected stats are rejected before charging or consuming materials", () => {
+  const state = setup();
+  state.item.stats = { attackPower: Number.MAX_VALUE };
+  const beforeGold = state.wallet.copper;
+  const beforeStones = countItem(state.inventory, "material:upgrade-stone");
+  let randomCalled = false;
+  const result = upgradeGear(state.item, {
+    ...state,
+    random: () => { randomCalled = true; return 0; }
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, "invalid_upgrade_result");
+  assert.equal(randomCalled, false);
+  assert.equal(state.wallet.copper, beforeGold);
+  assert.equal(countItem(state.inventory, "material:upgrade-stone"), beforeStones);
+  assert.equal(state.item.upgradeLevel, 1);
+  assert.equal(state.item.stats.attackPower, Number.MAX_VALUE);
+});
+
+test("invalid baseline stats are rejected without consuming resources", () => {
+  const state = setup();
+  state.item.baseUpgradeStats = { attackPower: Infinity };
+  const beforeGold = state.wallet.copper;
+  const beforeStones = countItem(state.inventory, "material:upgrade-stone");
+  const result = upgradeGear(state.item, { ...state, random: () => 0 });
+  assert.equal(result.reason, "invalid_base_stats");
+  assert.equal(state.wallet.copper, beforeGold);
+  assert.equal(countItem(state.inventory, "material:upgrade-stone"), beforeStones);
+});
+
