@@ -2,11 +2,74 @@ export const PRIMARY_STATS=Object.freeze(["strength","dexterity","constitution",
 export const SUB_STATS=Object.freeze(["attackPower","spellPower","armor","criticalChance","criticalDamage","hitChance","dodgeChance","blockChance","parryChance","haste","movementSpeed","healthRegen","manaRegen","lifeSteal","resistance","fireResistance","frostResistance","lightningResistance","poisonResistance","shadowResistance"]);
 export const QUALITY_MULTIPLIER=Object.freeze({poor:.55,common:1,uncommon:1.12,rare:1.28,epic:1.52,legendary:1.85,artifact:2.2});
 const AFFIX_COUNT={poor:0,common:0,uncommon:1,rare:2,epic:3,legendary:4,artifact:5};
+
+export const EQUIPMENT_SET_BONUSES = Object.freeze({
+  crypt_warden: Object.freeze({
+    name: "Crypt Warden",
+    bonuses: Object.freeze({
+      2: Object.freeze({ armor: 18, vitality: 4 }),
+      3: Object.freeze({ maxHealth: 180, resistance: 12 })
+    })
+  }),
+  forgefire: Object.freeze({
+    name: "Forgefire",
+    bonuses: Object.freeze({
+      2: Object.freeze({ strength: 5, fireResistance: 10 }),
+      3: Object.freeze({ attackPower: 24, criticalDamage: 0.12 })
+    })
+  }),
+  rime_throne: Object.freeze({
+    name: "Rime Throne",
+    bonuses: Object.freeze({
+      2: Object.freeze({ dexterity: 5, frostResistance: 12 }),
+      3: Object.freeze({ haste: 0.08, dodgeChance: 0.04 })
+    })
+  }),
+  long_night: Object.freeze({
+    name: "Long Night",
+    bonuses: Object.freeze({
+      2: Object.freeze({ intelligence: 5, shadowResistance: 12 }),
+      3: Object.freeze({ criticalChance: 0.04, lifeSteal: 0.03 })
+    })
+  })
+});
+
+function equipmentSetId(item) {
+  const id = item?.setId ?? item?.set ?? item?.template?.setId ?? item?.template?.set;
+  return typeof id === "string" && Object.hasOwn(EQUIPMENT_SET_BONUSES, id) ? id : null;
+}
+
+export function getEquipmentSetBonuses(equipment = {}) {
+  const counts = {};
+  for (const item of Object.values(equipment)) {
+    if (!item || (item.durability != null && item.durability <= 0)) continue;
+    const id = equipmentSetId(item);
+    if (id) counts[id] = (counts[id] ?? 0) + 1;
+  }
+  const active = [];
+  const stats = {};
+  for (const [setId, count] of Object.entries(counts)) {
+    const definition = EQUIPMENT_SET_BONUSES[setId];
+    const thresholds = Object.keys(definition.bonuses).map(Number).sort((a, b) => a - b);
+    const unlocked = thresholds.filter(required => count >= required);
+    if (!unlocked.length) continue;
+    const pieces = {};
+    for (const required of unlocked) {
+      const bonus = definition.bonuses[required];
+      pieces[required] = { ...bonus };
+      for (const [key, value] of Object.entries(bonus)) {
+        stats[key] = round((stats[key] ?? 0) + value);
+      }
+    }
+    active.push({ setId, name: definition.name, equippedPieces: count, unlockedBonuses: pieces });
+  }
+  return { active, stats };
+}
 const round=n=>Math.round(n*100)/100,clamp=(n,a,b)=>Math.min(b,Math.max(a,n)),finite=n=>Number.isFinite(n)?n:0;
 export function normalizeStats(stats={}){const out={};for(const k of [...PRIMARY_STATS,...SUB_STATS,"maxHealth","maxMana"]){const n=finite(Number(stats[k]));if(n!==0)out[k]=round(n);}return out;}
 export function deriveSubStats(attributes={},gear={}){const a=normalizeStats(attributes),g=normalizeStats(gear),v=k=>finite(a[k])+finite(g[k]);const str=Math.max(1,v("strength")||10),dex=Math.max(1,v("dexterity")||10),con=Math.max(1,v("constitution")||10),int=Math.max(1,v("intelligence")||10),wis=Math.max(1,v("wisdom")||10),vit=Math.max(1,v("vitality")||10),dm=Math.floor((dex-10)/2),im=Math.floor((int-10)/2);return {maxHealth:round(vit*15+con*10+finite(g.maxHealth)),maxMana:round(wis*10+im*5+finite(g.maxMana)),attackPower:round(str*2+finite(g.attackPower)),spellPower:round(im*3+finite(g.spellPower)),armor:round(Math.max(0,finite(g.armor))),criticalChance:clamp(.05+dm*.005+finite(g.criticalChance),0,.75),criticalDamage:round(1.5+finite(g.criticalDamage)),hitChance:clamp(.9+dm*.002+finite(g.hitChance),0,.99),dodgeChance:clamp(.02+dm*.004+finite(g.dodgeChance),0,.6),blockChance:clamp(finite(g.blockChance),0,.75),parryChance:clamp(finite(g.parryChance),0,.6),haste:clamp(finite(g.haste),0,1),movementSpeed:round(1+finite(g.movementSpeed)),healthRegen:round(con*.1+finite(g.healthRegen)),manaRegen:round(wis*.1+finite(g.manaRegen)),lifeSteal:clamp(finite(g.lifeSteal),0,.35),resistance:round(Math.max(0,finite(g.resistance))),fireResistance:round(Math.max(0,finite(g.fireResistance))),frostResistance:round(Math.max(0,finite(g.frostResistance))),lightningResistance:round(Math.max(0,finite(g.lightningResistance))),poisonResistance:round(Math.max(0,finite(g.poisonResistance))),shadowResistance:round(Math.max(0,finite(g.shadowResistance)))};}
-export function aggregateEquipmentStats(equipment={}){const totals={};for(const item of Object.values(equipment)){if(!item||(item.durability!=null&&item.durability<=0))continue;for(const [k,v] of Object.entries(normalizeStats(item.stats??item.rolledStats??{})))totals[k]=round((totals[k]??0)+v);}return totals;}
-export function calculateCharacterGearProfile(character={}){const base=normalizeStats(character.attributes??character.stats??{}),gear=aggregateEquipmentStats(character.equipment??{}),total={...base};for(const [k,v] of Object.entries(gear))total[k]=round((total[k]??0)+v);return {base,gear,total,derived:deriveSubStats(base,gear)};}
+export function aggregateEquipmentStats(equipment={}){const totals={};for(const item of Object.values(equipment)){if(!item||(item.durability!=null&&item.durability<=0))continue;for(const [k,v] of Object.entries(normalizeStats(item.stats??item.rolledStats??{})))totals[k]=round((totals[k]??0)+v);}for(const [k,v] of Object.entries(getEquipmentSetBonuses(equipment).stats))totals[k]=round((totals[k]??0)+v);return totals;}
+export function calculateCharacterGearProfile(character={}){const base=normalizeStats(character.attributes??character.stats??{}),gear=aggregateEquipmentStats(character.equipment??{}),total={...base};for(const [k,v] of Object.entries(gear))total[k]=round((total[k]??0)+v);return {base,gear,total,derived:deriveSubStats(base,gear),setBonuses:getEquipmentSetBonuses(character.equipment??{})};}
 export function rollGearAffixes({quality="common",itemLevel=1,allowedStats=SUB_STATS,random=Math.random}={}){if(!(quality in AFFIX_COUNT))throw new RangeError("Unknown gear quality");if(!Number.isInteger(itemLevel)||itemLevel<1||itemLevel>1000)throw new RangeError("Item level must be 1..1000");const pool=[...new Set(allowedStats)].filter(s=>SUB_STATS.includes(s)),count=Math.min(pool.length,AFFIX_COUNT[quality]),stats={};for(let i=0;i<count;i++){const index=Math.min(pool.length-1,Math.floor(clamp(random(),0,.999999)*pool.length)),key=pool.splice(index,1)[0],pct=["criticalChance","criticalDamage","hitChance","dodgeChance","blockChance","parryChance","haste","movementSpeed","lifeSteal"].includes(key);stats[key]=round(itemLevel*QUALITY_MULTIPLIER[quality]*(pct?.0008:.35));}return stats;}
 export function createGearInstance(template,{itemLevel=1,quality="common",random=Math.random,instanceId=null,stats=null}={}){if(!template?.id||!template?.name)throw new TypeError("Gear template requires id and name");if(!(quality in QUALITY_MULTIPLIER)||!Number.isInteger(itemLevel)||itemLevel<1)throw new RangeError("Invalid gear quality or item level");const rolled=stats?normalizeStats(stats):rollGearAffixes({quality,itemLevel,random});return {instanceId:instanceId??template.id+":"+itemLevel+":"+quality+":"+Math.floor(random()*1e9),templateId:template.id,name:template.name,slot:template.slot??null,itemLevel,quality,stats:rolled,requiredLevel:Math.max(1,Math.floor(itemLevel*.8)),durability:100,maxDurability:100,bind:template.bind??"bind_on_equip",template:structuredClone(template)};}
 export function getGearStatScore(stats={}){const w={strength:1,dexterity:1,constitution:1,intelligence:1,wisdom:1,vitality:1,attackPower:.55,spellPower:.55,armor:.25,criticalChance:90,criticalDamage:35,hitChance:70,dodgeChance:60,blockChance:45,parryChance:45,haste:80,movementSpeed:50,healthRegen:1.5,manaRegen:1.5,lifeSteal:80,resistance:.25,fireResistance:.25,frostResistance:.25,lightningResistance:.25,poisonResistance:.25,shadowResistance:.25};return round(Object.entries(normalizeStats(stats)).reduce((sum,[k,v])=>sum+v*(w[k]??0),0));}
