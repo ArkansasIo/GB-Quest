@@ -27,9 +27,9 @@ java -jar java-launcher/target/gbquest-java-0.4.0.jar --browser
 - Nine character attributes, species bonuses, class hit dice, derived HP/AC, proficiency, saving throws and skills
 - Level progression through 720, using the reference XP thresholds through level 20 and paragon XP thereafter
 - Procedural rarity tiers and affixes, gear stats, equipment slots, inventory, vendor purchasing and item selling
-- Enemy pursuit, contact damage, directional melee, XP and gold rewards, pickups and healing potions
+- Enemy pursuit, contact damage, directional melee, XP and gold rewards, rarity-based equipment drops, ground pickups and healing potions
 - Version 2 local saves including character identity, progression, wallet, inventory, equipped items and exact item stat rolls
-- JUnit tests for character rules, item generation, inventory, vendors and save/load
+- JUnit tests for character rules, item generation, inventory, vendors, equipment pickups and save/load
 
 ## Controls
 
