@@ -9,7 +9,7 @@ export function createInventory({ capacity = 40, maxWeight = 100 } = {}) {
 }
 
 function inventoryWeight(items) {
-  return items.reduce((sum, entry) => sum + entry.weight * entry.quantity, 0);
+  return items.reduce((sum, entry) => sum + (entry.weight ?? 0) * entry.quantity, 0);
 }
 
 export function addItem(inventory, item, quantity = 1) {
