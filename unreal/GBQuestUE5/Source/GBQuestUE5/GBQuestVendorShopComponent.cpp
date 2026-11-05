@@ -41,9 +41,15 @@ FGBQuestVendorQuote UGBQuestVendorShopComponent::GetSellQuote(const FGBQuestGear
 {
  FGBQuestVendorQuote Q;
  Q.Item=Item;
- const double RawPrice=Item.VendorValue>0?std::floor(static_cast<double>(Item.VendorValue)*0.5):0.0;
+ float SellMultiplier=0.5f;
+ if(const FGBQuestVendorStockEntry* Entry=Stock.FindByPredicate([&Item](const FGBQuestVendorStockEntry& E){return E.Item.ItemId==Item.ItemId;}))
+ {
+  SellMultiplier=Entry->SellPriceMultiplier;
+ }
+ const bool bValidMultiplier=FMath::IsFinite(SellMultiplier)&&SellMultiplier>0.f;
+ const double RawPrice=Item.VendorValue>0&&bValidMultiplier?std::floor(static_cast<double>(Item.VendorValue)*static_cast<double>(SellMultiplier)):0.0;
  Q.Price=RawPrice<=static_cast<double>(MAX_int32)?FMath::Max(0,static_cast<int32>(RawPrice)):0;
- Q.bCanSell=Item.VendorValue>0&&Q.Price>0;
+ Q.bCanSell=Item.VendorValue>0&&bValidMultiplier&&Q.Price>0;
  if(!Q.bCanSell) Q.Reason=NSLOCTEXT("GBQuestVendor","CannotSell","This item has no vendor resale value");
  return Q;
 }
