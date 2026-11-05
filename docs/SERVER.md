@@ -67,6 +67,12 @@ The client (`src/netlocal.js`) wraps this API in an object with the same shape a
 
 ## Trading hub (auction house) and direct trade
 
+**Realm-server safety gate:** The realm-server auction-house endpoints and `trade` relay topic are disabled by default. The current protocol lets a client submit item payloads and locally debit/credit currency; the server does not own the character inventory or wallet. This is not safe for a public player economy.
+
+The server responds with HTTP 503 for realm `/api/market...` requests and rejects the `trade` topic unless the process is started with `GBQ_ENABLE_UNSAFE_LEGACY_ECONOMY=1`. That environment variable is an explicit, temporary compatibility override for isolated development only. **Do not enable it on an internet-facing realm.** The shared-page and offline modes remain client-settled simulations and must not be treated as secure economies.
+
+The gate is intentionally conservative: it prevents further exploitation through the realm API, but it does not migrate existing listings or compensate for any previously forged inventory.
+
 `src/market.js` picks the backend automatically:
 
 | Mode | When | Listings live in |
@@ -91,4 +97,22 @@ Server endpoints:
 
 Friends, invite codes, the nine-realm directory, and the disabled store frame are described in [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md). The store is a UI prototype only; checkout is disabled until a server-verified payment integration exists.
 
-Item ownership is not checked on the server yet. A realm or page you host trusts its players' clients, so a modified client could list or trade items it doesn't own.
+For the next production implementation, add a canonical server-owned character inventory and wallet, then implement atomic listing escrow, purchase settlement, cancellation, expiry returns, and direct trade against those records. Validate item definitions and quantities against server catalogs; never accept client-supplied item stats, seller identity, balance, or proceeds as authority.
+
+
+## Server-owned economy core (foundation)
+
+`backend/economy.cjs` contains the first server-side transaction primitives. It stores per-account wallets, server-issued item UIDs, escrowed listings, seller proceeds, expiry returns, and idempotency records under `db.economy`. It deliberately exposes no player-facing grant endpoint: only trusted server-side reward handlers may call `grantGold` or `grantItem`.
+
+The module is a tested foundation, not yet wired into the live HTTP marketplace routes. The realm marketplace and direct-trade relay remain disabled by default until character selection, server-authoritative rewards, inventory synchronization, and wallet persistence are integrated. Do not enable the legacy compatibility override on public servers.
+
+Current transaction invariants:
+
+- Listing requires an item UID already present in the seller's server-owned inventory; the item moves into escrow before the listing is created.
+- Buying debits the buyer and transfers the escrowed item in one synchronous transaction; seller proceeds are credited once with a 5% market fee.
+- Cancellation returns the escrowed item only to its seller; the listing deposit is not refunded.
+- Expiry returns escrowed items to the seller.
+- Repeated requests with the same idempotency key and payload return the original result; reusing a key with a different payload is rejected.
+- Item UIDs are globally unique across player inventories and active listings.
+
+The same module now provides server-side direct-trade primitives: a trade session has two authenticated account participants, each submits only item UIDs and a gold amount, offers become immutable when locked, and settlement occurs only after both participants confirm. Both inventories and wallets are validated before either side is mutated. The live relay remains disabled until authenticated HTTP handlers are connected to these primitives; the existing client-applied trade flow is not used as settlement authority.
