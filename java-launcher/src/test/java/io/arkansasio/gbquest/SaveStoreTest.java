@@ -15,9 +15,10 @@ class SaveStoreTest {
         original.inventory.add(ItemSystem.generate("moonsteel_blade",ItemSystem.Rarity.EPIC,12,new Random(88)));
         Path file=temp.resolve("hero.properties");
         SaveStore.save(original,file);
-        GameState loaded=new GameState();
+        var config=SaveStore.readCharacterConfig(file);
+        GameState loaded=new GameState(config.name(),config.species(),config.classId());
         SaveStore.load(loaded,file);
-        assertEquals(7,loaded.level);
+        assertEquals("Ari",loaded.hero.name);\n        assertEquals("thornelf",loaded.hero.speciesId);\n        assertEquals("arcanist",loaded.hero.classId);\n        assertEquals(7,loaded.level);
         assertEquals(14000,loaded.xp);
         assertEquals(444,loaded.gold);
         assertEquals(original.inventory.equipment().get(ItemSystem.Slot.WEAPON).name,
