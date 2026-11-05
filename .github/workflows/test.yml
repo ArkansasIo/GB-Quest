@@ -25,6 +25,8 @@ jobs:
           node --check src/rank-system.js
           python3 -m py_compile tools/gen_newart.py tools/gen_gbtiles.py
           node --check client/main.js
+          node --check src/engine.js
+          node --check tools/build.cjs
           node -e "const fs=require('node:fs'); const html=fs.readFileSync('desktop/launcher.html','utf8'); const script=html.split('<script>')[1]?.split('</script>')[0]; if (!script) throw new Error('Launcher script missing'); new Function(script);"
       - name: Run Node.js test suite
         run: npm test
