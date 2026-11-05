@@ -18,7 +18,19 @@ public final class Main {
             System.exit(2);
         }
         SwingUtilities.invokeLater(() -> {
-            GameState state=new GameState();
+            GameState state;
+            if(SaveStore.exists()) state=new GameState();
+            else {
+                String name=JOptionPane.showInputDialog(null,"Name your adventurer:","CHARACTER CREATION",JOptionPane.QUESTION_MESSAGE);
+                if(name==null||name.isBlank())name="Adventurer";
+                String[] species=CharacterRules.speciesIds().stream().sorted().toArray(String[]::new);
+                String selectedSpecies=(String)JOptionPane.showInputDialog(null,"Choose your lineage:","SPECIES",JOptionPane.PLAIN_MESSAGE,null,species,"hearthkin");
+                if(selectedSpecies==null)selectedSpecies="hearthkin";
+                String[] classes=CharacterRules.classIds().stream().sorted().toArray(String[]::new);
+                String selectedClass=(String)JOptionPane.showInputDialog(null,"Choose your class:","CLASS",JOptionPane.PLAIN_MESSAGE,null,classes,"warden");
+                if(selectedClass==null)selectedClass="warden";
+                state=new GameState(name,selectedSpecies,selectedClass);
+            }
             try { SaveStore.load(state); } catch(IOException ex) { System.err.println("Save load failed: "+ex.getMessage()); }
             JFrame frame=new JFrame("Lost Kingdom of Shadowbane Chronicles — Java Edition");
             frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
