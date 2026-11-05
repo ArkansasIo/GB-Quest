@@ -33,7 +33,7 @@
     return 'idle';
   };
   const archetypeForClass = value => {
-    const key = String(value || '').toLowerCase().replace(/[\\s_-]+/g, '');
+    const key = String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
     const map = {
       warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
       bladeknight: 'warrior', abyssaltemplar: 'cleric',
