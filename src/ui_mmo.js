@@ -12,8 +12,8 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird', 'gothic'];
+const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD', gothic: 'GOTHIC 4-COLOR' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -26,9 +26,10 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
   // One-time upgrade from the prior default to the newly imported BlackBird skin.
   if (!S.blackbirdUiDefaulted) { if (!S.uiTheme || S.uiTheme === 'mmo' || S.uiTheme === 'sanctum') S.uiTheme = 'blackbird'; S.blackbirdUiDefaulted = true; try { saveSettings(); } catch (e) {} }
-  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird' || S.uiTheme === 'gothic';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
+  const isGothic = () => S.uiTheme === 'gothic';
   let blackbirdPanelPattern = null;
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
   // colours per theme: 8-BIT MMO (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
@@ -36,6 +37,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
     blackbird: { ink: [5, 6, 9], edge: [92, 100, 111], panel: [16, 18, 22], panel2: [42, 46, 52], shade: [72, 78, 86], hp: [184, 44, 44], hpLow: [250, 94, 48], mp: [58, 110, 183], xp: [189, 147, 62], gold: [224, 188, 104], title: [12, 14, 17] },
+    gothic: { ink: [15, 19, 22], edge: [107, 118, 99], panel: [25, 35, 35], panel2: [46, 60, 54], shade: [73, 88, 76], hp: [177, 52, 46], hpLow: [244, 111, 57], mp: [52, 140, 158], xp: [206, 167, 89], gold: [222, 193, 136], title: [14, 18, 22] },
   };
   const C = new Proxy({}, { get: (_, k) => (PALETTE[S.uiTheme] || PALETTE.mmo)[k] });
   const mono = () => typeof MONO === 'function' && MONO(S.palette);
@@ -44,6 +46,13 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // handheld panel: rounded double border
   function panel(x, y, w, h, bg) {
     const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2), fillc = bg != null && bg !== 0 ? col(bg) : rgb(C.panel, 0);
+    if (isGothic()) {
+      fill(x + 2, y, w - 4, h, ink); fill(x, y + 2, w, h - 4, ink);
+      fill(x + 1, y + 1, w - 2, h - 2, edge);
+      fill(x + 2, y + 2, w - 4, h - 4, fillc);
+      if (w > 18 && h > 14 && IMG.au_frames_000) ctx.drawImage(IMG.au_frames_000, x, y, w, h);
+      return;
+    }
     if (isBlackbird()) {
       fill(x, y, w, h, ink); fill(x + 1, y + 1, w - 2, h - 2, edge);
       fill(x + 2, y + 2, w - 4, h - 4, fillc);
@@ -66,7 +75,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     fill(x + 2, y + 1, w - 4, h - 2, edge); fill(x + 1, y + 2, w - 2, h - 4, edge);
     fill(x + 2, y + 2, w - 4, h - 4, fillc);
     if (w > 8 && h > 8) { fill(x + 3, y + 3, w - 6, 1, rgb(C.panel2, 0)); }
-    if (isMu() && w > 10 && h > 10) { // gold inner trim and corner studs
+    if ((isMu() || isGothic()) && w > 10 && h > 10) { // gold inner trim and corner studs
       const gd = rgb(C.gold, 2); fill(x + 2, y + 2, w - 4, 1, gd); fill(x + 2, y + h - 3, w - 4, 1, gd); fill(x + 2, y + 2, 1, h - 4, gd); fill(x + w - 3, y + 2, 1, h - 4, gd);
       fill(x + 3, y + 3, w - 6, 1, rgb([120, 90, 40], 1));
       for (const [sx, sy] of [[x, y], [x + w - 3, y], [x, y + h - 3], [x + w - 3, y + h - 3]]) fill(sx, sy, 3, 3, gd);
@@ -125,13 +134,14 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     fill(cx - 1, cy - 1, 3, 3, (frameN >> 4) % 2 ? 'white' : rgb(C.ink, 3));
     const z = field.zone, tag = G.inst ? 'INST' : !z ? '' : z.town ? 'SAFE' : G.pvpEnabled ? 'PVP' : 'PVE';
     if (tag) { const w = tag.length * 6 + 4; fill(cx - (w >> 1), M.y + M.s, w, 8, z && z.town ? rgb([40, 120, 70], 2) : G.pvpEnabled ? 'red' : rgb(C.edge, 2)); textC(tag, cx, M.y + M.s, 0); }
-    if (isMu() && field.zone) { const lab = `(${G.x},${G.y})`; fill(M.x - 2, M.y + M.s + 9, M.s + 4, 8, rgb(C.ink, 3)); textC(lab.slice(0, 7), cx, M.y + M.s + 9, 'gold'); } // MU-style coordinates
+    if ((isMu() || isGothic()) && field.zone) { const lab = `(${G.x},${G.y})`; fill(M.x - 2, M.y + M.s + 9, M.s + 4, 8, rgb(C.ink, 3)); textC(lab.slice(0, 7), cx, M.y + M.s + 9, 'gold'); } // MU-style coordinates
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
     if (isBlackbird()) panel(0, Hd.y + 2, W, H - Hd.y - 2);
     else { fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2)); }
     if (isBlackbird() && IMG.bb_tab) ctx.drawImage(IMG.bb_tab, 0, Hd.y + 2, W, 2);
+    if (isGothic() && IMG.au_frames_001) ctx.drawImage(IMG.au_frames_001, 0, Hd.y + 2, W, 2);
     const OR = isMu() ? 11 : Hd.orbR;
     if (isMu()) { fill(0, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); fill(W - 26, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); }
     orb(13, H - 11, OR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
@@ -140,7 +150,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     for (let i = 0; i < Hb.slots; i++) {
       const x = Hb.x + i * Hb.step, y = Hd.y + 6;
       panel(x, y, 18, 14, 0);
-      if (i < 4) { const a = arts[i]; if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2); } }
+      if (i < 4) { const a = arts[i]; if (a) { const gothicIcons = ['au_skill_icons_000', 'au_skill_icons_001', 'au_skill_icons_002', 'au_skill_icons_003']; const ic = isGothic() ? gothicIcons[i] : (a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'); if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2); } }
       else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 3, y + 2); textR(String(Math.min(99, n)), x + 17, y + 6, n ? 3 : 2); }
     }
   }
