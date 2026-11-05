@@ -1,0 +1,33 @@
+{
+  "name": "Lost Kingdom of Shadowbane Chronicles",
+  "applicationId": "io.arkansasio.gbquest",
+  "version": "0.3.0",
+  "runtime": "html5",
+  "language": "javascript",
+  "entryPoint": "index.html",
+  "browser": {
+    "defaultEntryPoint": "dist/gbquest-fullscreen.html",
+    "windowedEntryPoint": "dist/gbquest.html",
+    "fullscreenEntryPoint": "dist/gbquest-fullscreen.html",
+    "displayMode": "viewport",
+    "fullscreenApi": true,
+    "fullscreenRequiresUserGesture": true
+  },
+  "java": {
+    "jarRequired": false,
+    "jarClassName": null,
+    "note": "This project is an HTML5/JavaScript game and has no Java JAR entry class."
+  },
+  "viewport": {
+    "width": 160,
+    "height": 144,
+    "aspectRatio": "10:9",
+    "scaling": "integer-pixel-preferred",
+    "fit": "contain",
+    "allowResponsiveResize": true
+  },
+  "rendering": {
+    "renderer": "Canvas 2D",
+    "canvasId": "lcd"
+  }
+}
