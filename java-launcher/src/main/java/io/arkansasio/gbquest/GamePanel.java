@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 
 /** Native Swing/AWT renderer; logical world remains tile-based and pixel crisp. */
 public final class GamePanel extends JPanel implements ActionListener {
-    private static final int SCALE=3, W=640, H=480;
+    private static final int SCALE=2, W=320, H=240;
     private final GameState game;
     private final Timer timer=new Timer(16,this);
     private final boolean[] keys=new boolean[512];
