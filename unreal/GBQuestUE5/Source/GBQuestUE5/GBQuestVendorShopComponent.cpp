@@ -1,11 +1,12 @@
 #include "GBQuestVendorShopComponent.h"
+#include <cmath>
 
 namespace
 {
 int32 CalculatePurchasePrice(const FGBQuestVendorStockEntry& Entry)
 {
  if(Entry.Item.VendorValue<=0||!FMath::IsFinite(Entry.BuyPriceMultiplier)||Entry.BuyPriceMultiplier<=0.f) return 0;
- const double RawPrice=FMath::CeilToDouble(static_cast<double>(Entry.Item.VendorValue)*static_cast<double>(Entry.BuyPriceMultiplier));
+ const double RawPrice=std::ceil(static_cast<double>(Entry.Item.VendorValue)*static_cast<double>(Entry.BuyPriceMultiplier));
  if(RawPrice>static_cast<double>(MAX_int32)) return 0;
  return FMath::Max(1,static_cast<int32>(RawPrice));
 }
@@ -25,7 +26,7 @@ TArray<FGBQuestVendorQuote> UGBQuestVendorShopComponent::GetPurchaseQuotes(int32
   FGBQuestVendorQuote Q;
   Q.Item=Entry.Item;
   Q.Price=CalculatePurchasePrice(Entry);
-  Q.bCanPurchase=Q.Price>0&&Entry.Stock!=-0&&Entry.Stock>=-1&&Entry.Item.RequiredLevel<=CharacterLevel&&AvailableGold>=Q.Price;
+  Q.bCanPurchase=Q.Price>0&&Entry.Stock!=0&&Entry.Stock>=-1&&Entry.Item.RequiredLevel<=CharacterLevel&&AvailableGold>=Q.Price;
   if(Entry.Stock==0) Q.Reason=NSLOCTEXT("GBQuestVendor","OutOfStock","Out of stock");
   else if(Entry.Stock < -1) Q.Reason=NSLOCTEXT("GBQuestVendor","InvalidStock","Vendor stock configuration is invalid");
   else if(Q.Price==0) Q.Reason=NSLOCTEXT("GBQuestVendor","InvalidPrice","This item has no valid vendor price");
@@ -40,7 +41,7 @@ FGBQuestVendorQuote UGBQuestVendorShopComponent::GetSellQuote(const FGBQuestGear
 {
  FGBQuestVendorQuote Q;
  Q.Item=Item;
- const double RawPrice=Item.VendorValue>0?FMath::FloorToDouble(static_cast<double>(Item.VendorValue)*0.5):0.0;
+ const double RawPrice=Item.VendorValue>0?std::floor(static_cast<double>(Item.VendorValue)*0.5):0.0;
  Q.Price=RawPrice<=static_cast<double>(MAX_int32)?FMath::Max(0,static_cast<int32>(RawPrice)):0;
  Q.bCanSell=Item.VendorValue>0&&Q.Price>0;
  if(!Q.bCanSell) Q.Reason=NSLOCTEXT("GBQuestVendor","CannotSell","This item has no vendor resale value");
