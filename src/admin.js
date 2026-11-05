@@ -1,3 +1,7 @@
+// Privileged GM controls are excluded from the normal game build.
+// For isolated local development only, change this constant to true and rebuild.
+const GAME_ADMIN_ENABLED = false;
+if (GAME_ADMIN_ENABLED) {
 // ================================================================ ADMIN CONTROL (in-game GM console with menus and sub-menus)
 // Who can open it:
 //   * the owner of the shared page (claude.ai user capability: isOwner)
@@ -193,4 +197,6 @@ addEventListener('keydown', e => { if (e.key === 'F10') { e.preventDefault(); if
 {
   const s0 = NET.sendChat.bind(NET);
   NET.sendChat = function (raw) { const m = String(raw || '').trim().match(/^\/(gm|admin)\b\s*(.*)$/i); if (m) return gmCommand(m[2] ? m[2].trim().split(/\s+/).map((x, i) => i ? x : x.toLowerCase()) : []); return s0(raw); };
+}
+
 }
