@@ -9,12 +9,13 @@
 // keep their classic look.
 
 const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
+const GOTHIC_PALETTE = [[13, 17, 20], [56, 70, 66], [122, 141, 117], [226, 206, 158]];
 const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
 if (S.uiTheme == null) S.uiTheme = 'sanctum';
-const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird') && !MONO(S.palette);
+const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird' || S.uiTheme === 'gothic') && !MONO(S.palette);
 {
   const col0 = col;
-  col = function (c) { if (typeof c === 'number' && uiDark()) return css(SANCTUM[c] || SANCTUM[3]); return col0(c); };
+  col = function (c) { if (typeof c === 'number' && uiDark()) return css(S.uiTheme === 'gothic' ? (GOTHIC_PALETTE[c] || GOTHIC_PALETTE[3]) : (SANCTUM[c] || SANCTUM[3])); return col0(c); };
   const font0 = font;
   font = function (c) { const k = String(c) + S.palette; if (fontC[k] && fontC[k].__theme !== S.uiTheme) delete fontC[k]; const f = font0(c); f.__theme = S.uiTheme; return f; };
   const frame0 = frame;
