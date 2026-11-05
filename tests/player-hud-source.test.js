@@ -30,3 +30,9 @@ test('player HUD stylesheet supports desktop and mobile layouts', () => {
   assert.match(styles, /@media\(max-width:620px\)/);
   assert.match(styles, /pointer-events:none/);
 });
+
+test('player HUD uses authoritative combat and field map bridges', () => {
+  assert.match(source, /GBQCombatHotbar/);
+  assert.match(source, /GBQWorldMapMini/);
+  assert.match(source, /drawMiniMap\(mapData\)/);
+});
