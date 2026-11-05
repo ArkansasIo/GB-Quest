@@ -16,7 +16,8 @@ test("GM and debug scripts are compile-time disabled in the public client", () =
 
 test("player settings do not expose GM, developer mode or debug panel entries", () => {
   const menus = read("../src/scenes_menu.js");
-  const match = menus.match(/items\(\) \{ return \[([^\]]+)\]; \}/);
+  const settings = menus.slice(menus.indexOf("class SettingsScene"));
+  const match = settings.match(/items\(\) \{ return \[([^\]]+)\]; \}/);
   assert.ok(match, "settings list exists");
   assert.doesNotMatch(match[1], /ADMIN CONTROL|DEVELOPER MODE|DEBUG PANEL/);
   assert.doesNotMatch(menus, /S\.devMode = !S\.devMode/);
