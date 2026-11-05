@@ -10,13 +10,13 @@ import javax.imageio.ImageIO;
 /** Native Swing/AWT renderer; logical world remains tile-based and pixel crisp. */
 public final class GamePanel extends JPanel implements ActionListener {
     private static final int SCALE=3, W=640, H=480;
-    private final GameState game=new GameState();
+    private final GameState game;
     private final Timer timer=new Timer(16,this);
     private final boolean[] keys=new boolean[512];
     private BufferedImage tileAtlas;
     private int cameraX,cameraY;
 
-    public GamePanel() {
+    public GamePanel(GameState game) {\n        this.game=game;
         setPreferredSize(new Dimension(W*SCALE,H*SCALE));
         setFocusable(true);setBackground(new Color(12,16,24));
         addKeyListener(new KeyAdapter(){@Override public void keyPressed(KeyEvent e){int k=e.getKeyCode();if(k<keys.length)keys[k]=true;
