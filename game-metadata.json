@@ -14,8 +14,8 @@
     "fullscreenRequiresUserGesture": true
   },
   "java": {
-    "jarRequired": false,
-    "jarClassName": null,
+    "jarRequired": true,
+    "jarClassName": "io.arkansasio.gbquest.Main",
     "launcherProject": "java-launcher/",
     "buildCommand": "cd java-launcher && mvn clean package",
     "artifact": "java-launcher/target/gbquest-java-0.4.0.jar",
