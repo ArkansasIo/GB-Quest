@@ -7,7 +7,7 @@ A gear preview carries item identity, slot, rarity, item level, required level, 
 UGBQuestGearInspectionLibrary is Blueprint-callable. InspectGear compares a candidate against the item currently equipped in the same slot and returns per-stat candidate/equipped/delta values, a simple weighted power score, and a level requirement result. The score is a sorting aid only; it is not a universal build recommendation. Class, specialization, damage type, resist caps, breakpoints and set bonuses should be added to build-aware scoring before using it as an auto-equip decision.
 
 ## Vendor integration
-UGBQuestVendorShopComponent exposes stock, buy quotes, sell quotes and a purchase operation. Quote data includes the complete item so the vendor UI can show stats before the player commits gold. Stock = -1 means unlimited stock; 0 means sold out; positive values decrement on purchase.
+UGBQuestVendorShopComponent exposes stock, buy quotes, sell quotes and a purchase operation. Quote data includes the complete item so the vendor UI can show stats before the player commits gold. Stock = -1 means unlimited stock; 0 means sold out; positive values decrement on purchase. Invalid prices and stock values below -1 are rejected. Purchase quotes round up consistently with the browser rules; resale quotes round down and expose a dedicated `bCanSell` flag, so a zero-value payout cannot appear sellable.
 
 ## Market integration
 Market and auction UI should use the same FGBQuestGearItem payload and inspection library as vendor UI. Keep the inspection view read-only until the player explicitly buys or equips the item. Do not trust client-submitted item stats or market prices: server-side item templates, affix rolls, ownership and transaction totals must be authoritative.
