@@ -8,14 +8,14 @@ import { spawn, execFileSync } from "node:child_process";
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "gbq-admin-"));
 function startServer(env) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ["backend/server.cjs"], { env: { ...process.env, HOST: "127.0.0.1", GBQ_ROOT_ID: "", GBQ_ADMIN_ID: "", ...env }, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(process.execPath, ["backend/server.cjs"], { env: { ...process.env, HOST: "127.0.0.1", GBQ_ROOT_ID: "", GBQ_ADMIN_ID: "", GBQ_ENABLE_ADMIN: "1", ...env }, stdio: ["ignore", "pipe", "pipe"] });
     let out = ""; const timer = setTimeout(() => { child.kill(); reject(new Error("no start: " + out)); }, 8000);
     child.stdout.on("data", d => { out += d; if (out.includes("realm server on")) { clearTimeout(timer); resolve(child); } });
     child.stderr.on("data", d => { out += d; });
   });
 }
 const stop = child => new Promise(r => { child.on("exit", r); child.kill("SIGTERM"); });
-const cli = (data, port, ...args) => { try { return { code: 0, out: execFileSync(process.execPath, ["backend/admin-cli.cjs", ...args], { env: { ...process.env, GBQ_DATA: data, PORT: port, GBQ_ROOT_ID: "", GBQ_ADMIN_ID: "" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }) }; } catch (e) { return { code: e.status, out: String(e.stdout) + String(e.stderr) }; } };
+const cli = (data, port, ...args) => { try { return { code: 0, out: execFileSync(process.execPath, ["backend/admin-cli.cjs", ...args], { env: { ...process.env, GBQ_DATA: data, PORT: port, GBQ_ROOT_ID: "", GBQ_ADMIN_ID: "", GBQ_ENABLE_ADMIN: "1" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }) }; } catch (e) { return { code: e.status, out: String(e.stdout) + String(e.stderr) }; } };
 
 test("first local account can claim realm root once; proxies and later claims are refused", async () => {
   const data = tmp(), port = String(20000 + Math.floor(Math.random() * 20000)), base = `http://127.0.0.1:${port}`;
@@ -62,4 +62,31 @@ test("admin CLI creates, promotes, lists and demotes accounts the server then ho
   } finally { await stop(server); }
   const audit = fs.readFileSync(path.join(data, "logs", "audit.log"), "utf8");
   assert.match(audit, /"via":"cli"/);
+});
+
+test("admin control plane is disabled by default, including its API and claim bootstrap", async () => {
+  const data = tmp(), port = String(20000 + Math.floor(Math.random() * 20000)), base = `http://127.0.0.1:${port}`;
+  const server = await startServer({ PORT: port, GBQ_DATA: data, GBQ_ENABLE_ADMIN: "0" });
+  try {
+    const register = await fetch(base + "/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: "player1", password: "player-pass" }) });
+    const account = await register.json();
+    assert.equal(register.status, 201);
+    const headers = { Authorization: `Bearer ${account.token}` };
+    const me = await fetch(base + "/api/me", { headers }).then(r => r.json());
+    assert.equal(me.role, "player");
+    assert.equal(me.canClaimAdmin, false);
+    assert.equal((await fetch(base + "/api/admin/me", { headers })).status, 404);
+    assert.equal((await fetch(base + "/api/admin/claim", { method: "POST", headers })).status, 404);
+    assert.equal((await fetch(base + "/admin")).status, 404);
+    assert.equal((await fetch(base + "/admin/controlplane.js")).status, 404);
+  } finally { await stop(server); }
+});
+
+test("admin CLI refuses all commands unless explicitly enabled", () => {
+  const data = tmp();
+  let output = "";
+  try {
+    output = execFileSync(process.execPath, ["backend/admin-cli.cjs", "list"], { env: { ...process.env, GBQ_DATA: data, GBQ_ENABLE_ADMIN: "0" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  } catch (e) { output = String(e.stderr); }
+  assert.match(output, /Admin CLI is disabled/);
 });
