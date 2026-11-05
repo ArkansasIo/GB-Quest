@@ -81,6 +81,10 @@ jobs:
         run: python tools/gen_pack6000_hd.py --output assets_hd64/gbq_6000
       - name: Validate HD64 6,000 asset pack
         run: python tools/validate_pack6000_hd.py --root assets_hd64/gbq_6000
+      - name: Test HD64 asset validator edge cases
+        run: python tests/test_asset_pack_validator.py
+      - name: Test HD64 atlas sprite boundaries
+        run: python tests/test_hd64_generator.py
       - name: Build browser and desktop game bundles
         run: node tools/build.cjs
       - name: Upload generated art package
