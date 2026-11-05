@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests",
+    "test": "node --test tests/*.test.js tests/**/*.test.js",
+    "test:unreal-reference": "node --test unreal/GBQuestUE5/SourceReference/GBQuest/tests",
     "test:unreal-reference": "node --test unreal/GBQuestUE5/SourceReference/GBQuest/tests",
     "sweep": "python3 tests/sweep.py",
     "native:build": "cmake -S native -B build/native -DGBQ_ENABLE_X86_64_ASM=OFF && cmake --build build/native --config Release",
