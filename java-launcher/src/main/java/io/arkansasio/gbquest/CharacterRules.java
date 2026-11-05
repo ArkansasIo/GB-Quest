@@ -110,7 +110,9 @@ public final class CharacterRules {
             case "pactbound" -> Set.of("WIS","CHA");
             case "bladedancer","corsair" -> Set.of("DEX","CHA");
             case "beastcaller" -> Set.of("STR","CHA");
-            case "voidhunter" -> Set.of("DEX","CON");\n            case "summoner" -> Set.of("CON","CHA");\n            case "runeblade" -> Set.of("STR","CON");
+            case "voidhunter" -> Set.of("DEX","CON");
+            case "summoner" -> Set.of("CON","CHA");
+            case "runeblade" -> Set.of("STR","CON");
             default -> Set.of("STR","CON");
         };
     }
