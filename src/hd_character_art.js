@@ -80,10 +80,12 @@
     if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
     const maxEntries = Math.max(2, Math.min(128, Number(options.maxEntries) || 24));
     const entries = new Map();
-    const failed = new Set();
+    const failedUntil = new Map();
+    const retryDelayMs = Math.max(0, Number(options.retryDelayMs ?? 1500) || 0);
     const keyFor = (character, spec) => JSON.stringify([
       character && (character.id || character.name || character.cls),
-      character && character.rank, character && character.eq,
+      character && character.cls, character && character.archetype,
+      character && character.rank, character && character.gearRank, character && character.eq,
       spec.direction, spec.frame, spec.state, spec.action, spec.animation,
       spec.rank, spec.archetype, spec.ghost
     ]);
@@ -94,7 +96,9 @@
     };
     const request = (character, spec = {}) => {
       const key = keyFor(character, spec);
-      if (failed.has(key)) return null;
+      const retryAt = failedUntil.get(key);
+      if (retryAt && Date.now() < retryAt) return null;
+      if (retryAt) failedUntil.delete(key);
       const cached = entries.get(key);
       if (cached) {
         touch(key, cached);
@@ -113,14 +117,14 @@
         return canvas;
       }, error => {
         entries.delete(key);
-        failed.add(key);
+        if (retryDelayMs > 0) failedUntil.set(key, Date.now() + retryDelayMs);
         throw error;
       });
       // The renderer consumes readiness through the next synchronous request.
       entry.promise.catch(() => {});
       return null;
     };
-    const clear = () => { entries.clear(); failed.clear(); };
+    const clear = () => { entries.clear(); failedUntil.clear(); };
     return {
       request, clear,
       getReady: () => {
@@ -140,28 +144,36 @@
     let manifestPromise = null;
     let visualMapPromise = null;
     const loadImage = url => {
-      if (!imageCache.has(url)) imageCache.set(url, new Promise((resolve, reject) => {
-        if (typeof Image === 'undefined') return reject(new Error('Image API unavailable'));
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Unable to load HD character asset: ${url}`));
-        img.src = url;
-      }));
+      if (!imageCache.has(url)) {
+        const pending = new Promise((resolve, reject) => {
+          if (typeof Image === 'undefined') return reject(new Error('Image API unavailable'));
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Unable to load HD character asset: ${url}`));
+          img.src = url;
+        });
+        imageCache.set(url, pending);
+        pending.catch(() => { if (imageCache.get(url) === pending) imageCache.delete(url); });
+      }
       return imageCache.get(url);
     };
     const getVisualMap = () => {
       if (!visualMapPromise) {
-        visualMapPromise = typeof fetch === 'function'
+        const pending = typeof fetch === 'function'
           ? fetch(visualMapUrl).then(r => { if (!r.ok) throw new Error(`Equipment visual map HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
+        visualMapPromise = pending;
+        pending.catch(() => { if (visualMapPromise === pending) visualMapPromise = null; });
       }
       return visualMapPromise;
     };
     const getManifest = () => {
       if (!manifestPromise) {
-        manifestPromise = typeof fetch === 'function'
+        const pending = typeof fetch === 'function'
           ? fetch(manifestUrl).then(r => { if (!r.ok) throw new Error(`Equipment manifest HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
+        manifestPromise = pending;
+        pending.catch(() => { if (manifestPromise === pending) manifestPromise = null; });
       }
       return manifestPromise;
     };
