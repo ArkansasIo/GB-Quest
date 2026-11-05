@@ -21,6 +21,13 @@ class CharacterRulesTest {
         assertTrue(c.grantXp(300));
         assertEquals(2,c.level);
     }
+    @Test void exposesAllTwentySevenReferenceClassesAndFifteenSpecies() {
+        assertEquals(27,CharacterRules.classIds().size());
+        assertEquals(15,CharacterRules.speciesIds().size());
+        assertTrue(CharacterRules.classIds().contains("necromancer"));
+        assertTrue(CharacterRules.classIds().contains("runeblade"));
+        assertFalse(CharacterRules.classIds().contains("ranger"));
+    }
     @Test void rejectsUnknownCharacterOptions() {
         assertThrows(IllegalArgumentException.class,()->CharacterRules.create("Hero","unknown","warden"));
         assertThrows(IllegalArgumentException.class,()->CharacterRules.create("Hero","hearthkin","unknown"));
