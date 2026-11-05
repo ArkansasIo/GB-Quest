@@ -38,7 +38,7 @@ test("durability and repair reject corrupted states without mutating them", () =
 test("inventory creation validates limits and additions are atomic", () => {
   assert.throws(() => createInventory({ capacity: -1 }), /capacity/i);
   assert.throws(() => createInventory({ maxWeight: Infinity }), /weight/i);
-  const inventory = createInventory({ capacity: 2, maxWeight: 5 });
+  const inventory = createInventory({ capacity: 2, maxWeight: 9 });
   assert.deepEqual(addItem(inventory, { id: "ore", weight: 2 }, 2), { ok: true, quantity: 2 });
   assert.deepEqual(addItem(inventory, { id: "ore", weight: 2 }, 2), { ok: true, quantity: 4 });
   assert.deepEqual(addItem(inventory, { id: "ore", weight: 2 }, 1), { ok: false, reason: "overweight" });
