@@ -70,16 +70,37 @@ export function inspectGear(candidate = {}, equipped = null, { characterLevel = 
     restriction: requiredLevel > level ? `Requires level ${requiredLevel}` : null
   };
 }
-export function quoteVendorPurchase(item, { buyMultiplier = 1.25, characterLevel = 1, availableGold = 0, stock = -1 } = {}) {
-  const price = Math.max(1, Math.ceil(Math.max(0, Number(item?.vendorValue) || 0) * Math.max(0.01, Number(buyMultiplier) || 1.25)));
+export function quoteVendorPurchase(item, options = {}) {
+  const buyMultiplier = options.buyMultiplier ?? 1.25;
+  const characterLevel = options.characterLevel ?? 1;
+  const availableGold = options.availableGold ?? 0;
+  const stock = options.stock ?? -1;
+  const vendorValue = Number(item?.vendorValue);
+  const validValue = Number.isFinite(vendorValue) && vendorValue > 0;
+  const validMultiplier = Number.isFinite(buyMultiplier) && buyMultiplier > 0;
+  const validLevel = Number.isFinite(characterLevel) && characterLevel >= 1;
+  const validWallet = Number.isFinite(availableGold) && availableGold >= 0;
+  const validStock = stock === -1 || (Number.isSafeInteger(stock) && stock >= 0);
+  const rawPrice = validValue && validMultiplier ? Math.ceil(vendorValue * buyMultiplier) : 0;
+  const price = Number.isSafeInteger(rawPrice) && rawPrice > 0 ? rawPrice : 0;
   let reason = null;
-  if (stock === 0) reason = "out_of_stock";
+  if (!validValue) reason = "invalid_vendor_value";
+  else if (!validMultiplier || !validLevel || !validWallet || !validStock || !price) reason = "invalid_quote";
+  else if (stock === 0) reason = "out_of_stock";
   else if ((Number(item?.requiredLevel) || 0) > characterLevel) reason = "level_too_low";
   else if (availableGold < price) reason = "insufficient_gold";
   return { item: structuredClone(item || {}), price, canPurchase: reason === null, reason };
 }
-export function quoteVendorSale(item, { sellMultiplier = 0.5 } = {}) {
-  const value = Math.max(0, Number(item?.vendorValue) || 0);
-  const price = Math.max(0, Math.floor(value * Math.max(0, Number(sellMultiplier) || 0)));
-  return { item: structuredClone(item || {}), price, canSell: value > 0 && price > 0, reason: value > 0 && price > 0 ? null : "no_resale_value" };
+export function quoteVendorSale(item, options = {}) {
+  const vendorValue = Number(item?.vendorValue);
+  const sellMultiplier = options.sellMultiplier ?? 0.5;
+  const validValue = Number.isFinite(vendorValue) && vendorValue > 0;
+  const validMultiplier = Number.isFinite(sellMultiplier) && sellMultiplier > 0;
+  const rawPrice = validValue && validMultiplier ? Math.floor(vendorValue * sellMultiplier) : 0;
+  const price = Number.isSafeInteger(rawPrice) && rawPrice > 0 ? rawPrice : 0;
+  const canSell = validValue && validMultiplier && price > 0;
+  return {
+    item: structuredClone(item || {}), price, canSell,
+    reason: canSell ? null : validValue ? "no_resale_value" : "invalid_vendor_value"
+  };
 }
