@@ -554,6 +554,12 @@ const blacksmithTier = level => BLACKSMITH_TIERS.filter(t => level >= t.level).a
 const TILE_SVC = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', a: 'bank' };
 let FIELD = null;
 const currentField = () => FIELD;
+window.GBQWorldMapMini = () => {
+  if (!G || !FIELD || !FIELD.m || !Array.isArray(FIELD.m.rows)) return null;
+  const rows = FIELD.m.rows;
+  const entities = typeof FIELD.entities === 'function' ? FIELD.entities().filter(e => Number.isFinite(e.x) && Number.isFinite(e.y)).slice(0, 80).map(e => ({ x: e.x, y: e.y, kind: e.kind })) : [];
+  return { zone: FIELD.zone?.name || G.map || 'Unknown region', x: Number(G.x) || 0, y: Number(G.y) || 0, width: Math.max(1, ...rows.map(row => String(row).length)), height: rows.length, rows: rows.map(row => String(row)), entities };
+};
 function enterWorld() { reset(new Field()); }
 class Field {
   constructor() { this.opaque = true; this.ox = 0; this.oy = 0; this.walk = 0; this.since = 0; this.toast = 90; this.trail = []; FIELD = this; this.reload(); }
