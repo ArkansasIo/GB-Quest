@@ -138,5 +138,24 @@
       ],
       "description": "Expansion gear, wings, mounts and biome panels"
     }
+  ],
+  "runtimeSprites": [
+    {
+      "file": "assets/gothic_skills_atlas.png",
+      "key": "gothic_skills_atlas",
+      "width": 256,
+      "height": 108,
+      "columns": 8,
+      "rows": 3,
+      "cellWidth": 32,
+      "cellHeight": 36,
+      "count": 24,
+      "category": "skills",
+      "source": "skills-abilities-atlas.png",
+      "status": "runtime-integrated"
+    }
+  ],
+  "notes": [
+    "A first-pass 24-icon skill atlas is registered in assets/index.json and used by the Gothic in-game hotbar. Remaining composite category panels still require sprite-level cleanup before runtime use."
   ]
 }
