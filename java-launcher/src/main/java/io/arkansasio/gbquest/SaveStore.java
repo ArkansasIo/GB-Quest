@@ -27,7 +27,8 @@ public final class SaveStore {
         p.setProperty("x",Double.toString(s.x));p.setProperty("y",Double.toString(s.y));
         p.setProperty("hp",Integer.toString(s.hp));p.setProperty("level",Integer.toString(s.level));
         p.setProperty("xp",Integer.toString(s.xp));p.setProperty("gold",Integer.toString(s.gold));
-        p.setProperty("potions",Integer.toString(s.potions));\n        p.setProperty("heroName",s.hero.name);p.setProperty("species",s.hero.speciesId);p.setProperty("class",s.hero.classId);
+        p.setProperty("potions",Integer.toString(s.potions));
+        p.setProperty("heroName",s.hero.name);p.setProperty("species",s.hero.speciesId);p.setProperty("class",s.hero.classId);
         p.setProperty("bag.count",Integer.toString(s.inventory.items().size()));
         for(int i=0;i<s.inventory.items().size();i++)writeItem(p,"bag."+i,s.inventory.items().get(i));
         for(var entry:s.inventory.equipment().entrySet())writeItem(p,"equip."+entry.getKey().name(),entry.getValue());
