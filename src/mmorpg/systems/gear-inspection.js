@@ -11,9 +11,18 @@ function statEntries(lines) {
   if (lines && typeof lines === "object") return Object.entries(lines).filter(([, value]) => Number.isFinite(Number(value))).map(([statId, value]) => ({ statId, value: Number(value) }));
   return [];
 }
+function itemStatLines(item = {}) {
+  return [...statEntries(item.baseStats), ...statEntries(item.subStats), ...statEntries(item.stats)];
+}
+function isPercentStat(item, statId) {
+  return itemStatLines(item).some(line => line.statId === statId && line.isPercent === true);
+}
+function scoreStatValue(value, isPercent) {
+  return isPercent ? value / 100 : value;
+}
 export function aggregateGearStats(item = {}) {
   const totals = new Map();
-  for (const line of [...statEntries(item.baseStats), ...statEntries(item.subStats), ...statEntries(item.stats)]) {
+  for (const line of itemStatLines(item)) {
     totals.set(line.statId, (totals.get(line.statId) || 0) + Number(line.value));
   }
   return Object.fromEntries([...totals.entries()].sort(([a], [b]) => a.localeCompare(b)));
@@ -23,7 +32,7 @@ export function compareGearStats(candidate = {}, equipped = {}) {
   return [...new Set([...Object.keys(next), ...Object.keys(current)])].sort().map(statId => ({
     statId, candidateValue: next[statId] || 0, equippedValue: current[statId] || 0,
     difference: (next[statId] || 0) - (current[statId] || 0),
-    isPercent: [...statEntries(candidate.baseStats), ...statEntries(candidate.subStats)].find(x => x.statId === statId)?.isPercent === true
+    isPercent: isPercentStat(candidate, statId) || isPercentStat(equipped, statId)
   }));
 }
 function weightFor(key, weights) {
@@ -34,7 +43,8 @@ function weightFor(key, weights) {
 }
 export function calculateGearScore(item = {}, weights = DEFAULT_WEIGHTS) {
   const stats = aggregateGearStats(item);
-  const statScore = Object.entries(stats).reduce((sum, [key, value]) => sum + value * weightFor(key, weights), 0);
+  const statScore = Object.entries(stats).reduce((sum, [key, value]) =>
+    sum + scoreStatValue(value, isPercentStat(item, key)) * weightFor(key, weights), 0);
   return statScore + Math.max(0, Number(item.rarity) || 0) * 0.25 + Math.max(1, Number(item.itemLevel) || 1) * 0.05;
 }
 export function inspectGear(candidate = {}, equipped = null, { characterLevel = 1, weights = DEFAULT_WEIGHTS } = {}) {
@@ -43,7 +53,8 @@ export function inspectGear(candidate = {}, equipped = null, { characterLevel = 
   const score = calculateGearScore(candidate, weights);
   const equippedScore = equipped ? calculateGearScore(equipped, weights) : 0;
   const comparison = compareGearStats(candidate, equipped || {});
-  const statDeltaScore = comparison.reduce((sum, row) => sum + row.difference * weightFor(row.statId, weights), 0);
+  const statDeltaScore = comparison.reduce((sum, row) =>
+    sum + scoreStatValue(row.difference, row.isPercent) * weightFor(row.statId, weights), 0);
   const upgradeDelta = statDeltaScore
     + (Math.max(0, Number(candidate.rarity) || 0) - Math.max(0, Number(equipped?.rarity) || 0)) * 0.25
     + (Math.max(1, Number(candidate.itemLevel) || 1) - Math.max(1, Number(equipped?.itemLevel) || 1)) * 0.05;
