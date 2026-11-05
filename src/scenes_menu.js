@@ -1040,7 +1040,7 @@ class HomeInteriorScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'ADMIN CONTROL', 'DEVELOPER MODE', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
+  items() { return ['CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
@@ -1052,8 +1052,6 @@ class SettingsScene extends ListScene {
       const modes = ['windowed', 'full-window', 'borderless', 'fullscreen'], k = modes.indexOf(S.displayMode);
       applyDisplayMode(modes[(k + (d > 0 ? 1 : modes.length - 1)) % modes.length]); SFX.toggle(); return;
     }
-    if (o === 'ADMIN CONTROL') { if (typeof openAdmin === 'function') openAdmin(); return; }
-    if (o === 'DEVELOPER MODE') { S.devMode = !S.devMode; }
     if (o === 'HOVER TOOLTIPS') S.tooltipHover = S.tooltipHover !== false ? false : true;
     if (o === 'RIGHT-CLICK TOOLTIPS') S.tooltipRightClick = S.tooltipRightClick !== false ? false : true;
     if (o === 'BATTLE BG') { S.battleBg = typeof nextBattleBg === 'function' ? nextBattleBg(S.battleBg || 'clean') : S.battleBg === 'painted' ? 'clean' : 'painted'; }
@@ -1078,7 +1076,6 @@ class SettingsScene extends ListScene {
     if (o === 'SWAP A/B') S.swap = !S.swap;
     if (o === 'DIFFICULTY' && G) { difficultyMenu(); return; }
     if (o === 'SOUND TEST' && P('a')) { push(new SoundTest()); return; }
-    if (o === 'DEBUG PANEL' && P('a')) { window.DBG && DBG.toggle(); return; }
     if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, 'EXPANSIONS:', ...BUILD.expansions, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
     saveSettings(); SFX.toggle();
   }
@@ -1086,7 +1083,7 @@ class SettingsScene extends ListScene {
     fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
     if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
     textC('SETTINGS', 80, 13, 'gold');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), typeof adminAllowed === 'function' && adminAllowed() ? 'OPEN' : 'LOCKED', S.devMode ? 'ON' : typeof accountDevMode === 'function' && accountDevMode() ? 'ACCOUNT' : 'OFF', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
   }
 }
