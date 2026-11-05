@@ -10,8 +10,8 @@ class CharacterRulesTest {
         assertEquals("thornelf",c.speciesId);
         assertEquals("arcanist",c.classId);
         assertTrue(CharacterRules.derive(c).hpMax()>0);
-        assertEquals(15+2,c.base.get("DEX"));
-        assertEquals(14+1,c.base.get("WIS"));
+        assertEquals(13+2,c.base.get("DEX"));
+        assertEquals(12+1,c.base.get("WIS"));
     }
     @Test void progressionUsesReferenceThresholds() {
         assertEquals(300,CharacterRules.xpForLevel(2));
