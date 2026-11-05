@@ -33,10 +33,17 @@
     return 'idle';
   };
   const archetypeForClass = value => {
-    const key = String(value || '').toLowerCase();
-    const map = { warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
-      mage: 'mage', wizard: 'mage', sorcerer: 'mage', ranger: 'ranger', rogue: 'rogue',
-      cleric: 'cleric', priest: 'cleric', summoner: 'summoner', warlock: 'summoner', druid: 'summoner', necromancer: 'summoner' };
+    const key = String(value || '').toLowerCase().replace(/[\\s_-]+/g, '');
+    const map = {
+      warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
+      bladeknight: 'warrior', abyssaltemplar: 'cleric',
+      mage: 'mage', wizard: 'mage', sorcerer: 'mage', darksorceress: 'mage',
+      ranger: 'ranger', shadowranger: 'ranger',
+      rogue: 'rogue', voidassassin: 'rogue',
+      cleric: 'cleric', priest: 'cleric',
+      summoner: 'summoner', warlock: 'summoner', druid: 'summoner',
+      necromancer: 'summoner', bloodnecromancer: 'summoner'
+    };
     return map[key] || 'warrior';
   };
   const fallbackVisual = (slot, base) => {
