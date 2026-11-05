@@ -121,7 +121,7 @@ test('pixel packs: index sprites exist, aliases point at real art, monster picks
 
 test('8-bit MMO UI: theme cycle and a layout that keeps frames apart', () => {
   const c = { Math, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('ui_mmo.js'), c); const U = c.GBQUiMmo;
-  assert.equal(U.nextUiTheme('mmo'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'blackbird'); assert.equal(U.nextUiTheme('blackbird'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'blackbird');
+  assert.equal(U.nextUiTheme('mmo'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'blackbird'); assert.equal(U.nextUiTheme('blackbird'), 'gothic'); assert.equal(U.nextUiTheme('mmo', -1), 'gothic');
   const L = U.MMO_LAYOUT;
   assert.ok(L.unit.x + L.unit.w < L.map.x, 'unit frame and minimap do not touch');
   assert.ok(L.toastY > L.map.y + L.map.s + 8 && L.bannerY > L.toastY + 25, 'toasts and banners sit below the frames');

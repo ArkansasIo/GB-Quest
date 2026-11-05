@@ -1,0 +1,13 @@
+const fs = require('fs');
+const vm = require('vm');
+const source = fs.readFileSync('src/scenes_world.js','utf8');
+new vm.Script(source, { filename: 'src/scenes_world.js' });
+const i = source.indexOf('class Title {');
+const j = source.indexOf('\n// ================================================================ SAVE SLOTS', i);
+if (i < 0 || j < 0) throw new Error('Title scene missing');
+const title = source.slice(i, j);
+const required = ['CONTINUE','NEW GAME','LOAD GAME','STORY TRAILERS','ONLINE','ACCOUNT','EXTRAS','SETTINGS','CREDITS'];
+for (const label of required) if (!title.includes("c === '" + label + "'")) throw new Error('Missing title action: ' + label);
+for (const asset of ['au_frames_000','au_banners_000','au_buttons_000','au_menu_icons_000']) if (!title.includes(asset)) throw new Error('Missing Gothic title asset: ' + asset);
+if (!title.includes("S.uiTheme === 'gothic'")) throw new Error('Gothic title branch missing');
+console.log('Title scene syntax and menu action checks passed.');

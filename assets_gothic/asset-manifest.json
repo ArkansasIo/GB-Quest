@@ -1,0 +1,161 @@
+{
+  "pack": "GB-Quest Dark Fantasy Replacement Art Pack",
+  "version": "1.0.0",
+  "sourceSheets": [
+    {
+      "file": "master-atlas-v3-expansion.png",
+      "id": "master-atlas-v3-expansion"
+    },
+    {
+      "file": "great-catalog-v2.png",
+      "id": "great-catalog-v2"
+    },
+    {
+      "file": "sprite-sheet-collection-v1-5.png",
+      "id": "sprite-sheet-collection-v1-5"
+    },
+    {
+      "file": "master-developer-mockup.png",
+      "id": "master-developer-mockup"
+    },
+    {
+      "file": "asset-sheet-v1-2.png",
+      "id": "asset-sheet-v1-2"
+    },
+    {
+      "file": "gothic-4-color-ui-kit.png",
+      "id": "gothic-4-color-ui-kit"
+    }
+  ],
+  "atlases": [
+    {
+      "file": "characters-monsters-atlas.png",
+      "source": "sprite-sheet-collection-v1-5.png",
+      "crop": [
+        500,
+        125,
+        940,
+        335
+      ],
+      "description": "Monster and character sprite panel"
+    },
+    {
+      "file": "weapons-armor-atlas.png",
+      "source": "sprite-sheet-collection-v1-5.png",
+      "crop": [
+        80,
+        340,
+        480,
+        555
+      ],
+      "description": "Weapon and armor panel"
+    },
+    {
+      "file": "biomes-atlas.png",
+      "source": "sprite-sheet-collection-v1-5.png",
+      "crop": [
+        500,
+        345,
+        940,
+        560
+      ],
+      "description": "Isometric biome tile panel"
+    },
+    {
+      "file": "dungeon-interiors-atlas.png",
+      "source": "sprite-sheet-collection-v1-5.png",
+      "crop": [
+        500,
+        580,
+        940,
+        700
+      ],
+      "description": "Dungeon interior tiles"
+    },
+    {
+      "file": "skills-abilities-atlas.png",
+      "source": "sprite-sheet-collection-v1-5.png",
+      "crop": [
+        80,
+        125,
+        480,
+        310
+      ],
+      "description": "Skill and ability icon panel"
+    },
+    {
+      "file": "ui-components-atlas.png",
+      "source": "sprite-sheet-collection-v1-5.png",
+      "crop": [
+        960,
+        345,
+        1330,
+        700
+      ],
+      "description": "UI icons, frames, cards and orbs"
+    },
+    {
+      "file": "catalog-items-monsters-atlas.png",
+      "source": "great-catalog-v2.png",
+      "crop": [
+        570,
+        85,
+        1380,
+        625
+      ],
+      "description": "Items, consumables and monster catalog"
+    },
+    {
+      "file": "catalog-world-blocks-atlas.png",
+      "source": "great-catalog-v2.png",
+      "crop": [
+        810,
+        85,
+        1115,
+        625
+      ],
+      "description": "World blocks, tiles and structures"
+    },
+    {
+      "file": "gothic-ui-kit-atlas.png",
+      "source": "gothic-4-color-ui-kit.png",
+      "crop": [
+        0,
+        0,
+        1408,
+        768
+      ],
+      "description": "Gothic UI reference sheet"
+    },
+    {
+      "file": "expansion-gear-biomes-atlas.png",
+      "source": "master-atlas-v3-expansion.png",
+      "crop": [
+        550,
+        55,
+        1330,
+        715
+      ],
+      "description": "Expansion gear, wings, mounts and biome panels"
+    }
+  ],
+  "runtimeSprites": [
+    {
+      "file": "assets/gothic_skills_atlas.png",
+      "key": "gothic_skills_atlas",
+      "width": 256,
+      "height": 108,
+      "columns": 8,
+      "rows": 3,
+      "cellWidth": 32,
+      "cellHeight": 36,
+      "count": 24,
+      "category": "skills",
+      "source": "skills-abilities-atlas.png",
+      "status": "runtime-integrated"
+    }
+  ],
+  "notes": [
+    "A first-pass 24-icon skill atlas is registered in assets/index.json and used by the Gothic in-game hotbar. Remaining composite category panels still require sprite-level cleanup before runtime use."
+  ]
+}
