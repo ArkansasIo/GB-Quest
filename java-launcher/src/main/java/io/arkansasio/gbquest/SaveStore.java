@@ -9,8 +9,8 @@ import java.util.*;
 public final class SaveStore {
     private SaveStore() {}
     public record CharacterConfig(String name,String species,String classId) {}
-    public static CharacterConfig readCharacterConfig() throws IOException {
-        Path file=Path.of("saves","java-edition.properties");
+    public static CharacterConfig readCharacterConfig() throws IOException { return readCharacterConfig(Path.of("saves","java-edition.properties")); }
+    public static CharacterConfig readCharacterConfig(Path file) throws IOException {
         if(!Files.isRegularFile(file))return new CharacterConfig("Adventurer","hearthkin","warden");
         Properties p=new Properties();try(var in=Files.newInputStream(file)){p.load(in);}
         String species=p.getProperty("species","hearthkin"),classId=p.getProperty("class","warden");
