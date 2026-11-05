@@ -87,7 +87,7 @@ public final class CharacterRules {
     public static Derived derive(Character c){
         ClassDef cls=CLASSES.get(c.classId);if(cls==null)throw new IllegalArgumentException("Unknown class");
         Map<String,Integer> a=new LinkedHashMap<>(),m=new LinkedHashMap<>();
-        for(String key:ATTRIBUTES){int score=c.base.getOrDefault(key,10)+c.ascension.getOrDefault(key,0);a.put(key,score);m.put(key,modifier(score));}
+        for(String key:ATTRIBUTES){int score=c.base.getOrDefault(key,10)+c.ascension.getOrDefault(key,0)+c.gearBonuses.getOrDefault(key,0);a.put(key,score);m.put(key,modifier(score));}
         int level=Math.max(1,Math.min(MAX_LEVEL,c.level)),con=m.get("CON"),dex=m.get("DEX");
         double rawHp=cls.hitDie()+con+(level-1)*(cls.hitDie()/2.0+1+con)+Math.max(0,level-20)*(cls.hitDie()/2.0+Math.max(1,con));
         int hp=(int)Math.round(rawHp);
@@ -116,7 +116,7 @@ public final class CharacterRules {
     }
     public static final class Character {
         public final String name,speciesId,classId;
-        public final Map<String,Integer> base=new LinkedHashMap<>(),ascension=new LinkedHashMap<>();
+        public final Map<String,Integer> base=new LinkedHashMap<>(),ascension=new LinkedHashMap<>(),gearBonuses=new LinkedHashMap<>();
         public int level=1,xp=0,hp=1,maxHp=1,flatHp=0,armorBonus=0,shieldBonus=0,gold=0;
         public Character(String name,String speciesId,String classId,Map<String,Integer> scores){this.name=name;this.speciesId=speciesId;this.classId=classId;this.base.putAll(scores);}
         public boolean grantXp(int amount){if(amount<0)throw new IllegalArgumentException("XP cannot be negative");xp=Math.min(Integer.MAX_VALUE,xp+amount);int next=levelForXp(xp);if(next>level){level=next;Derived d=derive(this);maxHp=d.hpMax();hp=maxHp;return true;}return false;}
