@@ -50,6 +50,10 @@ public final class ItemSystem {
     private static void add(Map<String,Template> m,String id,String name,Slot slot,int price,Map<String,Integer> stats){m.put(id,new Template(id,name,slot,price,stats));}
     private ItemSystem() {}
     public static Set<String> templateIds(){return TEMPLATES.keySet();}
+    public static Item restoreItem(String templateId,String name,Rarity rarity,int level,Map<String,Integer> stats,List<String> affixes){
+        Template t=TEMPLATES.get(templateId);if(t==null)throw new IllegalArgumentException("Unknown item template: "+templateId);
+        return new Item(t.id,name,t.slot,rarity,Math.max(1,Math.min(720,level)),t.basePrice,stats,affixes);
+    }
     public static Item generate(String templateId,Rarity rarity,int level,Random rng){
         Template t=TEMPLATES.get(templateId);if(t==null)throw new IllegalArgumentException("Unknown item template: "+templateId);
         int ilvl=Math.max(1,Math.min(720,level));Map<String,Integer> stats=new LinkedHashMap<>(t.stats());List<String> names=new ArrayList<>();
@@ -66,6 +70,9 @@ public final class ItemSystem {
         public List<Item> items(){return Collections.unmodifiableList(bag);}
         public Map<Slot,Item> equipment(){return Collections.unmodifiableMap(equipped);}
         public boolean add(Item item){if(bag.size()>=capacity)return false;bag.add(item);return true;}
+        public void clear(){bag.clear();equipped.clear();}
+        public void restoreEquipped(Slot slot,Item item){equipped.put(slot,item);}
+        public void restoreBag(Item item){if(!add(item))throw new IllegalStateException("Save exceeds inventory capacity");}
         public Item equip(int bagIndex){
             if(bagIndex<0||bagIndex>=bag.size())throw new IndexOutOfBoundsException("Invalid inventory index");
             Item item=bag.remove(bagIndex);Slot slot=item.slot;
