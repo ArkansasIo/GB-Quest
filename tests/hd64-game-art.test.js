@@ -35,6 +35,6 @@ test('HD64 atlas adapter maps equipment categories and deterministic monster art
   assert.deepEqual(Array.from(context.NES.potion), ['ne_potion_0']);
   assert.ok(context.BESTIARY.every(entry => entry.nspr));
   assert.equal(status.equipmentMapped, 3);
-  assert.equal(status.spriteCount, 5);
+  assert.equal(status.spriteCount, 6);
   assert.equal(context.window.GBQ_HD64_ASSET_LIBRARY.resolve('au_buttons_000').atlas, 'assets_hd64/ui_kit_0.png');
 });
