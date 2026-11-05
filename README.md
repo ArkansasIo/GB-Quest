@@ -21,6 +21,16 @@ All art comes from the original asset sheet in `src_sheet/sheet.png`, or is gene
 - Asset generation and build instructions: [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md).
 - Equipment progression: [docs/GEAR_PROGRESSION.md](docs/GEAR_PROGRESSION.md) (4-digit gear level, 6-digit power, item levels 1–720, F–SSS × 12 stars).
 
+## itch.io browser release
+
+Build a self-contained HTML5 upload ZIP with:
+
+```sh
+npm run build:itch
+```
+
+Upload `build/gbquest-itch-html5.zip` to an itch.io project configured as **HTML**, mark the file as playable in the browser, and use a **960 × 864** (10:9) embed viewport. Full instructions: [docs/ITCH_IO_RELEASE.md](docs/ITCH_IO_RELEASE.md). GitHub Actions also creates a downloadable `gbquest-itch-html5` artifact on relevant changes.
+
 ## Play
 
 - **Single file:** open `dist/gbquest.html` in any browser. It opens in the desktop game window layout.
