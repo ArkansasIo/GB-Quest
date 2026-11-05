@@ -15,8 +15,12 @@
   },
   "java": {
     "jarRequired": false,
-    "jarClassName": null,
-    "note": "This project is an HTML5/JavaScript game and has no Java JAR entry class."
+    "jarClassName": "io.arkansasio.gbquest.Main",
+    "launcherProject": "java-launcher/",
+    "buildCommand": "mvn clean package",
+    "artifact": "java-launcher/target/gbquest-browser-launcher-0.3.0.jar",
+    "minimumJavaVersion": 17,
+    "description": "Optional Java JAR launcher that opens the HTML5 game in the default browser. The game itself is not a Java application."
   },
   "viewport": {
     "width": 160,
