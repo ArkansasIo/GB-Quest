@@ -22,7 +22,7 @@ public final class Main {
             try { SaveStore.load(state); } catch(IOException ex) { System.err.println("Save load failed: "+ex.getMessage()); }
             JFrame frame=new JFrame("Lost Kingdom of Shadowbane Chronicles — Java Edition");
             frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            GamePanel panel=new GamePanel();
+            GamePanel panel=new GamePanel(state);
             frame.add(panel);frame.pack();frame.setLocationRelativeTo(null);frame.setResizable(false);
             frame.addWindowListener(new WindowAdapter(){@Override public void windowClosing(WindowEvent e){
                 try { SaveStore.save(state); } catch(IOException ex){System.err.println("Save failed: "+ex.getMessage());}
