@@ -187,7 +187,7 @@
         const width = Number(manifest.canvas && manifest.canvas.width), height = Number(manifest.canvas && manifest.canvas.height);
         if (!(width > 0 && height > 0)) throw new Error('Equipment manifest has invalid canvas dimensions');
         const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.drawImage(base, 0, 0, width, height);
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(base, 0, 0, width, height);
         const loadout = spec.equipment || {};
         const chosen = Object.entries(loadout).map(([slot, id]) => (manifest.items || []).find(item =>
           item.id === id && item.slot === slot && item.rank === spec.rank && item.direction === spec.direction
