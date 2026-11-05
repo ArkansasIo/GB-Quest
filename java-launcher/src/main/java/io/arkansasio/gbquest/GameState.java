@@ -11,7 +11,7 @@ public final class GameState {
     public final List<Enemy> enemies = new ArrayList<>();
     public final List<Loot> loot = new ArrayList<>();
     public final Random random = new Random(7319);
-    public final CharacterRules.Character hero = CharacterRules.create("Adventurer", "hearthkin", "warden");
+    public final CharacterRules.Character hero;
     public final ItemSystem.Inventory inventory = new ItemSystem.Inventory();
     public final ItemSystem.Wallet wallet = new ItemSystem.Wallet(25);
     public final ItemSystem.Vendor vendor = new ItemSystem.Vendor(random, 1);
@@ -26,7 +26,9 @@ public final class GameState {
     public int messageTicks = 420;
     private long nextEnemyId = 1;
 
-    public GameState() {
+    public GameState() { this("Adventurer","hearthkin","warden"); }
+    public GameState(String name,String species,String classId) {
+        hero=CharacterRules.create(name,species,classId);
         generateWorld();
         inventory.add(ItemSystem.generate("rusted_sword", ItemSystem.Rarity.COMMON, 1, random));
         inventory.add(ItemSystem.generate("padded_vest", ItemSystem.Rarity.COMMON, 1, random));
