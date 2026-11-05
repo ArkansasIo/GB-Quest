@@ -21,7 +21,11 @@ public final class GamePanel extends JPanel implements ActionListener {
         setPreferredSize(new Dimension(W*SCALE,H*SCALE));
         setFocusable(true);setBackground(new Color(12,16,24));
         addKeyListener(new KeyAdapter(){@Override public void keyPressed(KeyEvent e){int k=e.getKeyCode();if(k<keys.length)keys[k]=true;
-            if(k==KeyEvent.VK_SPACE)game.attack();if(k==KeyEvent.VK_H)game.drinkPotion();if(k==KeyEvent.VK_ESCAPE)System.exit(0);}
+            if(k==KeyEvent.VK_SPACE)game.attack();
+            if(k==KeyEvent.VK_H)game.drinkPotion();
+            if(k==KeyEvent.VK_V)openVendor();
+            if(k==KeyEvent.VK_I)openInventory();
+            if(k==KeyEvent.VK_ESCAPE){Window w=SwingUtilities.getWindowAncestor(GamePanel.this);if(w!=null)w.dispatchEvent(new WindowEvent(w,WindowEvent.WINDOW_CLOSING));else System.exit(0);}}
             @Override public void keyReleased(KeyEvent e){int k=e.getKeyCode();if(k<keys.length)keys[k]=false;}});
         loadAtlas();timer.start();
     }
@@ -31,6 +35,25 @@ public final class GamePanel extends JPanel implements ActionListener {
         if(key(KeyEvent.VK_UP)||key(KeyEvent.VK_W))dy--;if(key(KeyEvent.VK_DOWN)||key(KeyEvent.VK_S))dy++;
         double len=Math.hypot(dx,dy);if(len>0)game.move(dx/len*1.8,dy/len*1.8);
         game.update();cameraX=(int)game.x-W/2;cameraY=(int)game.y-H/2;repaint();
+    }
+    private void openVendor(){
+        var stock=game.vendor.stock();if(stock.isEmpty()){game.message="The vendor is sold out.";game.messageTicks=100;return;}
+        String[] options=stock.stream().map(i->i.name+" — "+i.value()+" gold").toArray(String[]::new);
+        int choice=JOptionPane.showOptionDialog(this,"Purchase an item?","TRAVELLER'S MERCHANT",JOptionPane.DEFAULT_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,options[0]);
+        if(choice>=0){boolean bought=game.vendor.buy(choice,game.inventory,game.wallet);game.gold=game.wallet.gold;
+            game.message=bought?"Purchased "+options[choice]+".":"Not enough gold or inventory space.";game.messageTicks=120;if(bought)game.refreshDerivedStats();}
+        requestFocusInWindow();
+    }
+    private void openInventory(){
+        var bag=game.inventory.items();if(bag.isEmpty()){game.message="Your pack is empty.";game.messageTicks=90;return;}
+        String[] options=bag.stream().map(i->i.name+" ["+i.rarity+"]").toArray(String[]::new);
+        int choice=JOptionPane.showOptionDialog(this,"Select an item to equip or sell.","INVENTORY",JOptionPane.DEFAULT_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,options[0]);
+        if(choice>=0&&choice<bag.size()){
+            Object[] actions={"Equip","Sell","Cancel"};int action=JOptionPane.showOptionDialog(this,options[choice],"ITEM ACTION",JOptionPane.DEFAULT_OPTION,JOptionPane.PLAIN_MESSAGE,null,actions,actions[0]);
+            if(action==0){ItemSystem.Item old=game.inventory.equip(choice);game.refreshDerivedStats();game.message="Equipped "+options[choice]+".";game.messageTicks=110;}
+            else if(action==1){int value=game.inventory.sell(choice);game.wallet.gold+=value;game.gold=game.wallet.gold;game.message="Sold item for "+value+" gold.";game.messageTicks=110;}
+        }
+        requestFocusInWindow();
     }
     private boolean key(int k){return k<keys.length&&keys[k];}
     @Override protected void paintComponent(Graphics raw){super.paintComponent(raw);Graphics2D g=(Graphics2D)raw.create();
@@ -57,6 +80,6 @@ public final class GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.WHITE);g.drawString("HP "+game.hp+"/"+game.maxHp+"   MP "+game.mana+"/"+game.maxMana,145,35);
         g.drawString("GOLD "+game.gold+"   POTIONS "+game.potions,145,48);
         if(game.messageTicks>0){g.setColor(new Color(8,12,20,220));g.fillRoundRect(8,H-32,W-16,24,6,6);g.setColor(new Color(238,226,194));g.drawString(game.message,16,H-17);}
-        g.setColor(new Color(220,220,230));g.drawString("WASD/ARROWS MOVE   SPACE ATTACK   H POTION   ESC QUIT",8,H-5);
+        g.setColor(new Color(220,220,230));g.drawString("WASD/ARROWS MOVE   SPACE ATTACK   H POTION   V VENDOR   I INVENTORY",8,H-5);
     }
 }
