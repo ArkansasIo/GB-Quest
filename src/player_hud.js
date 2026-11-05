@@ -58,10 +58,23 @@
     const target = event.target.closest('[data-hud-action]');
     if (!target) return;
     const action = target.dataset.hudAction, api = window.GBQ;
-    const keyMap = {character:'c',inventory:'i',skills:'k',talents:'t',crafting:'y',map:'m',journal:'j',guild:'g',market:'b',collection:'p'};
+    const sceneMap = {
+      character: () => typeof CharacterMenu === 'function' ? new CharacterMenu() : null,
+      inventory: () => typeof BagScene === 'function' ? new BagScene() : typeof InventoryScene === 'function' ? new InventoryScene() : null,
+      skills: () => typeof ArtsScene === 'function' ? new ArtsScene() : typeof AbilitySkillsScene === 'function' ? new AbilitySkillsScene() : null,
+      talents: () => typeof GrowthScene === 'function' ? new GrowthScene() : typeof TalentScene === 'function' ? new TalentScene() : null,
+      crafting: () => typeof CraftScene === 'function' ? new CraftScene() : null,
+      journal: () => typeof QuestLog === 'function' ? new QuestLog() : null,
+      guild: () => typeof SocialScene === 'function' ? new SocialScene() : null,
+      market: () => typeof AuctionHouse === 'function' ? new AuctionHouse() : null,
+      collection: () => typeof AchievementScene === 'function' ? new AchievementScene() : null
+    };
     if (action === 'map' && api && typeof api.openAtlas === 'function') { api.openAtlas(); return; }
     if (action === 'chat') { document.getElementById('chatShow')?.click(); return; }
-    if (keyMap[action]) { window.dispatchEvent(new KeyboardEvent('keydown', {key:keyMap[action], bubbles:true})); return; }
+    if (sceneMap[action] && api && typeof api.push === 'function') {
+      const scene = sceneMap[action]();
+      if (scene) { api.push(scene); return; }
+    }
     const toast = root.querySelector('.gbq-hud-toast');
     const messages = {quick1:'Quick skill slot Q',quick2:'Quick skill slot E',potion:'Potion slot R',mana:'Mana potion slot F'};
     if (toast) { toast.textContent = messages[action] || 'Open the game menu with Enter'; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 1800); }
