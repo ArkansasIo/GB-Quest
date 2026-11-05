@@ -17,7 +17,7 @@ The first run presents character creation. Select a hero name, one of the 15 sou
 To open the existing HTML5 edition instead:
 
 ```sh
-java -jar java-launcher/target/gbquest-java-0.4.0.jar --browser
+java -jar target/gbquest-java-0.4.0.jar --browser
 ```
 
 ## Current native systems
