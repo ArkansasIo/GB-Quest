@@ -14,13 +14,15 @@
     "fullscreenRequiresUserGesture": true
   },
   "java": {
-    "jarRequired": false,
+    "jarRequired": true,
     "jarClassName": "io.arkansasio.gbquest.Main",
     "launcherProject": "java-launcher/",
-    "buildCommand": "mvn clean package",
-    "artifact": "java-launcher/target/gbquest-browser-launcher-0.3.0.jar",
+    "buildCommand": "cd java-launcher && mvn clean package",
+    "artifact": "java-launcher/target/gbquest-java-0.4.0.jar",
     "minimumJavaVersion": 17,
-    "description": "Optional Java JAR launcher that opens the HTML5 game in the default browser. The game itself is not a Java application."
+    "description": "Native Java desktop edition using Swing/AWT. The HTML5 edition remains available through the --browser launcher option.",
+    "runtime": "native-desktop",
+    "language": "java"
   },
   "viewport": {
     "width": 160,
@@ -33,5 +35,19 @@
   "rendering": {
     "renderer": "Canvas 2D",
     "canvasId": "lcd"
+  },
+  "nativeJava": {
+    "status": "initial-playable-port",
+    "entryPoint": "io.arkansasio.gbquest.Main",
+    "sourceRoot": "java-launcher/src/main/java",
+    "features": [
+      "tile-world-and-camera",
+      "keyboard-movement-and-collision",
+      "enemy-pursuit-and-contact-combat",
+      "directional-melee",
+      "xp-and-level-progression",
+      "gold-and-potion-pickups",
+      "versioned-local-save"
+    ]
   }
-}
+}\n
