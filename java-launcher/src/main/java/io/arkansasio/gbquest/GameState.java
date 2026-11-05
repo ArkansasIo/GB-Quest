@@ -77,9 +77,21 @@ public final class GameState {
         if(target!=null) {
             int damage=attack+CharacterRules.modifier(hero.base.getOrDefault(CharacterRules.primaryAttribute(hero.classId),10))/2+random.nextInt(4);
             target.hp-=damage;
-            if(target.hp<=0){target.alive=false;xp+=target.xp;gold+=target.xp/2;wallet.gold=gold;boolean leveled=hero.grantXp(target.xp);level=hero.level;xp=hero.xp;syncHeroStats();message=target.name+" defeated! +"+target.xp+" XP"+(leveled?" — LEVEL UP!":"");messageTicks=150;}
+            if(target.hp<=0){
+                target.alive=false;xp+=target.xp;gold+=target.xp/2;wallet.gold=gold;
+                boolean leveled=hero.grantXp(target.xp);level=hero.level;xp=hero.xp;syncHeroStats();
+                message=target.name+" defeated! +"+target.xp+" XP"+(leveled?" — LEVEL UP!":"");messageTicks=150;
+                if(random.nextDouble()<0.45)dropEquipment(target);
+            }
             else {message="Hit "+target.name+" for "+damage;messageTicks=70;}
         } else { message="Your strike cuts through the air.";messageTicks=45; }
+    }
+    private void dropEquipment(Enemy enemy) {
+        String[] templates={"iron_longsword","oak_staff","hunter_bow","chain_hauberk","leather_cap","iron_gauntlets","traveller_boots","warding_cloak","iron_buckler","silver_ring","vitality_amulet"};
+        ItemSystem.Rarity[] rarities={ItemSystem.Rarity.COMMON,ItemSystem.Rarity.UNCOMMON,ItemSystem.Rarity.RARE,ItemSystem.Rarity.EPIC};
+        ItemSystem.Rarity rarity=rarities[Math.min(rarities.length-1,random.nextInt(rarities.length)+(level>=10?1:0))];
+        ItemSystem.Item item=ItemSystem.generate(templates[random.nextInt(templates.length)],rarity,level,random);
+        loot.add(Loot.item(enemy.x,enemy.y,item));
     }
     public void drinkPotion() {
         if(potions<=0){message="No healing potions.";messageTicks=90;return;}
@@ -96,8 +108,15 @@ public final class GameState {
             if(d<17 && invulnerability==0){hp=Math.max(0,hp-e.damage);invulnerability=45;message=e.name+" hit you for "+e.damage+".";messageTicks=90;}
         }
         for(Loot l:loot) if(!l.taken && Math.hypot(x-l.x,y-l.y)<19) {
-            l.taken=true;if(l.kind.equals("gold")){gold+=l.amount;wallet.gold=gold;message="Found "+l.amount+" gold.";}
-            else {potions+=l.amount;message="Found a healing potion.";}messageTicks=100;
+            if(l.kind.equals("item")) {
+                if(inventory.add(l.item)){l.taken=true;message="Found "+l.item.name+" ["+l.item.rarity+"].";}
+                else {message="Inventory full — "+l.item.name+" remains on the ground.";}
+            } else {
+                l.taken=true;
+                if(l.kind.equals("gold")){gold+=l.amount;wallet.gold=gold;message="Found "+l.amount+" gold.";}
+                else {potions+=l.amount;message="Found a healing potion.";}
+            }
+            messageTicks=100;
         }
     }
     public void restoreProgress(){hero.level=Math.max(1,Math.min(CharacterRules.MAX_LEVEL,level));hero.xp=Math.max(0,xp);syncHeroStats();hp=Math.max(0,Math.min(maxHp,hp));hero.hp=hp;}
@@ -108,7 +127,9 @@ public final class GameState {
         Enemy(long id,double x,double y,String name,int hp,int damage,int xp){this.id=id;this.x=x;this.y=y;this.name=name;this.hp=hp;this.maxHp=hp;this.damage=damage;this.xp=xp;}
     }
     public static final class Loot {
-        public final double x,y;public final int amount;public final String kind;public boolean taken;
-        Loot(double x,double y,int amount,String kind){this.x=x;this.y=y;this.amount=amount;this.kind=kind;}
+        public final double x,y;public final int amount;public final String kind;public final ItemSystem.Item item;public boolean taken;
+        Loot(double x,double y,int amount,String kind){this(x,y,amount,kind,null);}
+        private Loot(double x,double y,int amount,String kind,ItemSystem.Item item){this.x=x;this.y=y;this.amount=amount;this.kind=kind;this.item=item;}
+        public static Loot item(double x,double y,ItemSystem.Item item){return new Loot(x,y,1,"item",item);}
     }
 }
