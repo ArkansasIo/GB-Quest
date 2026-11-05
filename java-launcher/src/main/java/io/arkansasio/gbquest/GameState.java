@@ -11,6 +11,7 @@ public final class GameState {
     public final List<Enemy> enemies = new ArrayList<>();
     public final List<Loot> loot = new ArrayList<>();
     public final Random random = new Random(7319);
+    public final CharacterRules.Character hero = CharacterRules.create("Adventurer", "hearthkin", "warden");
     public double x = 8 * TILE, y = 8 * TILE;
     public int hp = 42, maxHp = 42, mana = 18, maxMana = 18;
     public int level = 1, xp = 0, gold = 25, potions = 3;
@@ -24,6 +25,7 @@ public final class GameState {
 
     public GameState() {
         generateWorld();
+        syncHeroStats();
         spawnEnemy(16, 10, "Ash Wolf", 22, 4, 8);
         spawnEnemy(25, 17, "Grave Raider", 30, 5, 12);
         spawnEnemy(11, 22, "Cave Stalker", 18, 3, 7);
@@ -65,9 +67,9 @@ public final class GameState {
             if(d<best){best=d;target=e;}
         }
         if(target!=null) {
-            int damage=attack+strength/4+random.nextInt(4);
+            int damage=attack+CharacterRules.modifier(hero.base.getOrDefault("STR",10))/2+random.nextInt(4);
             target.hp-=damage;
-            if(target.hp<=0){target.alive=false;xp+=target.xp;gold+=target.xp/2;message=target.name+" defeated! +"+target.xp+" XP";messageTicks=150;checkLevel();}
+            if(target.hp<=0){target.alive=false;xp+=target.xp;gold+=target.xp/2;boolean leveled=hero.grantXp(target.xp);level=hero.level;xp=hero.xp;syncHeroStats();message=target.name+" defeated! +"+target.xp+" XP"+(leveled?" — LEVEL UP!":"");messageTicks=150;}
             else {message="Hit "+target.name+" for "+damage;messageTicks=70;}
         } else { message="Your strike cuts through the air.";messageTicks=45; }
     }
@@ -90,9 +92,7 @@ public final class GameState {
             else {potions+=l.amount;message="Found a healing potion.";}messageTicks=100;
         }
     }
-    private void checkLevel() {
-        while(level<50 && xp>=level*level*100){xp-=level*level*100;level++;maxHp+=5;maxMana+=2;hp=maxHp;mana=maxMana;attack++;message="LEVEL UP! You are now level "+level+".";messageTicks=180;}
-    }
+    private void syncHeroStats(){CharacterRules.Derived d=CharacterRules.derive(hero);maxHp=d.hpMax();hp=Math.min(hp,maxHp);attack=4+d.proficiency()+d.modifiers().get("STR");defense=d.armorClass();hero.hp=hp;hero.maxHp=maxHp;hero.level=level;hero.xp=xp;}
     public static final class Enemy {
         public final long id; public double x,y; public final String name; public int hp; public final int maxHp,damage,xp; public boolean alive=true;
         Enemy(long id,double x,double y,String name,int hp,int damage,int xp){this.id=id;this.x=x;this.y=y;this.name=name;this.hp=hp;this.maxHp=hp;this.damage=damage;this.xp=xp;}
