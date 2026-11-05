@@ -65,6 +65,7 @@ public final class CharacterRules {
     private CharacterRules() {}
     public static Set<String> speciesIds(){return SPECIES.keySet();}
     public static Set<String> classIds(){return CLASSES.keySet();}
+    public static String primaryAttribute(String classId){ClassDef c=CLASSES.get(classId);if(c==null)throw new IllegalArgumentException("Unknown class: "+classId);return c.primary();}
     public static int xpForLevel(int level){int l=Math.max(1,Math.min(MAX_LEVEL,level));return l<=20?XP[l-1]:XP[19]+(l-20)*PARAGON_XP;}
     public static int levelForXp(int xp){int level=1;while(level<MAX_LEVEL&&xp>=xpForLevel(level+1))level++;return level;}
     public static int modifier(int score){return (int)Math.floor((score-10)/2.0);}
