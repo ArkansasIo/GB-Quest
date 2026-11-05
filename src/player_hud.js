@@ -36,7 +36,7 @@
         <section class="gbq-hud-panel gbq-hud-party"><div class="gbq-hud-section-title">PARTY <span data-hud-party-count>1 / 4</span></div><div data-hud-party-list></div></section>
       </aside>
       <aside class="gbq-hud-right">
-        <section class="gbq-hud-panel gbq-hud-map"><div class="gbq-hud-map-art"><span class="gbq-map-road"></span><b>⌖</b><i>✦</i></div><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
+        <section class="gbq-hud-panel gbq-hud-map"><canvas class="gbq-hud-map-art" data-hud-minimap width="180" height="112" aria-label="Live local map"></canvas><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
         <section class="gbq-hud-panel gbq-hud-quests"><div class="gbq-hud-section-title">✧ QUESTS <span>⌃</span></div><div data-hud-quests><div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Continue your journey</small></span></div></div></section>
       </aside>
       <div class="gbq-hud-bottom">
@@ -58,6 +58,7 @@
     const target = event.target.closest('[data-hud-action]');
     if (!target) return;
     const action = target.dataset.hudAction, api = window.GBQ;
+    if (/^slot[1-8]$/.test(action)) { const bridge = window.GBQCombatHotbar, index = Number(action.slice(4)) - 1; if (bridge && typeof bridge.use === 'function' && bridge.entries().length > index) { bridge.use(index); return; } showToast('Combat abilities are available during battle'); return; }
     const sceneMap = {
       character: () => typeof CharacterMenu === 'function' ? new CharacterMenu() : null,
       inventory: () => typeof BagScene === 'function' ? new BagScene() : typeof InventoryScene === 'function' ? new InventoryScene() : null,
@@ -80,6 +81,18 @@
     if (toast) { toast.textContent = messages[action] || 'Open the game menu with Enter'; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 1800); }
     if (action === 'potion' && api && typeof api.G === 'object') window.dispatchEvent(new KeyboardEvent('keydown', {key:'r', bubbles:true}));
   }
+  function showToast(message) { const toast = root && root.querySelector('.gbq-hud-toast'); if (!toast) return; toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 1800); }
+  function drawMiniMap(data) {
+    const canvas = root && root.querySelector('[data-hud-minimap]'); if (!canvas) return;
+    const ctx = canvas.getContext('2d'); if (!ctx) return; const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h); ctx.fillStyle='#17232a'; ctx.fillRect(0,0,w,h);
+    if (!data || !Array.isArray(data.rows) || !data.rows.length) { ctx.fillStyle='#d7c58b'; ctx.font='11px sans-serif'; ctx.fillText('MAP DATA UNAVAILABLE',8,18); return; }
+    const cols=Math.max(1,data.width||1), rows=data.rows.length, sx=w/cols, sy=h/rows;
+    const colors={'.':'#73875b',',':'#607b4f','~':'#315d78','w':'#315d78','W':'#315d78','^':'#7a7770','m':'#68715a','f':'#426044','T':'#36563c','#':'#8b8067','d':'#9b8058','s':'#8e815e','L':'#b19a68','+':'#8d7651'};
+    data.rows.forEach((line,y)=>{ for(let x=0;x<String(line).length;x++){ const ch=String(line)[x]; ctx.fillStyle=colors[ch] || (/[0-9A-Z]/.test(ch)?'#64745b':'#657b58'); ctx.fillRect(x*sx,y*sy,Math.ceil(sx+.3),Math.ceil(sy+.3)); }});
+    (data.entities||[]).forEach(e=>{ctx.fillStyle=e.kind==='npc'?'#6fd3d1':e.kind==='pull'?'#e76b55':'#e4c16f';ctx.fillRect((e.x+.5)*sx-1,(e.y+.5)*sy-1,3,3);});
+    ctx.fillStyle='#ffe28a';ctx.strokeStyle='#25180d';ctx.lineWidth=2;ctx.beginPath();ctx.arc((data.x+.5)*sx,(data.y+.5)*sy,4,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }
   function update() {
     if (!root || !root.isConnected) { if (timer) window.clearInterval(timer); timer = null; return; }
     const g = getGame();
@@ -99,8 +112,10 @@
     setText('[data-hud-mp-text]', fmt(mp) + ' / ' + fmt(mpMax)); setBar('[data-hud-mp]', pct(mp,mpMax));
     setText('[data-hud-xp-text]', xpPct + '%'); setBar('[data-hud-xp]', xpPct);
     setText('[data-hud-gold]', fmt(g.gold)); setText('[data-hud-gems]', fmt(g.gems || g.crystals || 0));
-    setText('[data-hud-zone]', String(g.map || 'THE FRONTIER').replace(/[-_]/g,' ').toUpperCase());
-    setText('[data-hud-coords]', 'X: ' + Math.round(g.x || 0) + ' · Y: ' + Math.round(g.y || 0));
+    const mapData = typeof window.GBQWorldMapMini === 'function' ? window.GBQWorldMapMini() : null;
+    setText('[data-hud-zone]', String(mapData?.zone || g.map || 'THE FRONTIER').replace(/[-_]/g,' ').toUpperCase());
+    setText('[data-hud-coords]', 'X: ' + Math.round(mapData?.x ?? g.x ?? 0) + ' · Y: ' + Math.round(mapData?.y ?? g.y ?? 0));
+    drawMiniMap(mapData);
     setText('[data-hud-potions]', fmt(g.inv && (g.inv.potion || g.inv.health_potion) || 0));
     const companions = Array.isArray(g.companions) ? g.companions.filter(Boolean).slice(0,3) : [];
     setText('[data-hud-party-count]', (companions.length + 1) + ' / 4');
@@ -110,10 +125,11 @@
     const quests = Array.isArray(g.quests) ? g.quests : Array.isArray(g.activeQuests) ? g.activeQuests : [];
     const questNode = root.querySelector('[data-hud-quests]');
     if (questNode) questNode.innerHTML = quests.length ? quests.slice(0,3).map((q,i)=>`<div class="gbq-hud-quest"><b>${i===0?'✦':'◇'}</b><span><strong>${esc(q.name || q.title || 'Active Quest')}</strong><small>${esc(q.objective || q.description || q.progressText || 'Quest in progress')}</small></span></div>`).join('') : '<div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Open Journal to review your quests</small></span></div>';
-    const arts = Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : [];
+    const combatEntries = window.GBQCombatHotbar && typeof window.GBQCombatHotbar.entries === 'function' ? window.GBQCombatHotbar.entries() : [];
+    const arts = combatEntries.length ? combatEntries : (Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : []);
     const hotbar = root.querySelector('[data-hud-hotbar]');
-    if (hotbar) hotbar.innerHTML = Array.from({length:8},(_,i)=>{const a=arts[i];return `<button type="button" data-hud-action="slot${i+1}" title="${esc(a && (a.name || a.id) || 'Action slot '+(i+1))}"><span>${a?'✧':'+'}</span><small>${i+1}</small></button>`;}).join('');
-    const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length].join('|');
+    if (hotbar) hotbar.innerHTML = Array.from({length:8},(_,i)=>{const a=arts[i];return `<button type="button" data-hud-action="slot${i+1}" ${a && a.ok === false ? 'disabled' : ''} title="${esc(a && (a.name || a.id) || 'Action slot '+(i+1))}"><span>${a?'✧':'+'}</span><small>${i+1}</small></button>`;}).join('');
+    const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
   function init() { mount(); if (!root) window.setTimeout(init, 250); }
