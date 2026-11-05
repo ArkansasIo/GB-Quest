@@ -8,6 +8,7 @@ import java.util.*;
 /** Versioned local persistence for character progression, wallet and exact equipment rolls. */
 public final class SaveStore {
     private SaveStore() {}
+    public static boolean exists(){return Files.isRegularFile(Path.of("saves","java-edition.properties"));}
     public static void save(GameState s) throws IOException { save(s,Path.of("saves","java-edition.properties")); }
     public static void save(GameState s,Path file) throws IOException {
         if(file.getParent()!=null)Files.createDirectories(file.getParent());
