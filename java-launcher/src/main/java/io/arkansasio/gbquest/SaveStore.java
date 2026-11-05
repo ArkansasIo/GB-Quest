@@ -8,6 +8,16 @@ import java.util.*;
 /** Versioned local persistence for character progression, wallet and exact equipment rolls. */
 public final class SaveStore {
     private SaveStore() {}
+    public record CharacterConfig(String name,String species,String classId) {}
+    public static CharacterConfig readCharacterConfig() throws IOException {
+        Path file=Path.of("saves","java-edition.properties");
+        if(!Files.isRegularFile(file))return new CharacterConfig("Adventurer","hearthkin","warden");
+        Properties p=new Properties();try(var in=Files.newInputStream(file)){p.load(in);}
+        String species=p.getProperty("species","hearthkin"),classId=p.getProperty("class","warden");
+        if(!CharacterRules.speciesIds().contains(species))species="hearthkin";
+        if(!CharacterRules.classIds().contains(classId))classId="warden";
+        return new CharacterConfig(p.getProperty("heroName","Adventurer"),species,classId);
+    }
     public static boolean exists(){return Files.isRegularFile(Path.of("saves","java-edition.properties"));}
     public static void save(GameState s) throws IOException { save(s,Path.of("saves","java-edition.properties")); }
     public static void save(GameState s,Path file) throws IOException {
@@ -17,7 +27,7 @@ public final class SaveStore {
         p.setProperty("x",Double.toString(s.x));p.setProperty("y",Double.toString(s.y));
         p.setProperty("hp",Integer.toString(s.hp));p.setProperty("level",Integer.toString(s.level));
         p.setProperty("xp",Integer.toString(s.xp));p.setProperty("gold",Integer.toString(s.gold));
-        p.setProperty("potions",Integer.toString(s.potions));
+        p.setProperty("potions",Integer.toString(s.potions));\n        p.setProperty("heroName",s.hero.name);p.setProperty("species",s.hero.speciesId);p.setProperty("class",s.hero.classId);
         p.setProperty("bag.count",Integer.toString(s.inventory.items().size()));
         for(int i=0;i<s.inventory.items().size();i++)writeItem(p,"bag."+i,s.inventory.items().get(i));
         for(var entry:s.inventory.equipment().entrySet())writeItem(p,"equip."+entry.getKey().name(),entry.getValue());
