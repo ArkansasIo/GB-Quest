@@ -12,6 +12,7 @@ on:
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
       - 'package.json'
+      - 'game-metadata.json'
       - '.github/workflows/itch-html5.yml'
   pull_request:
     paths:
