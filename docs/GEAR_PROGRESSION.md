@@ -43,3 +43,18 @@ The save migration pass recalculates these fields for owned equipment in invento
 Configuration: `data/progression/gear-progression.json`.
 Implementation: `src/items.js`, `src/gen.js`, and `src/armory.js`.
 Tests: `tests/content-catalog.test.js`.
+
+
+## Enhancement system (MMORPG gear instances)
+
+The newer instance-based MMORPG rules layer provides a separate material-based enhancement track in `src/mmorpg/systems/gear-upgrade.js`. It does not overwrite the legacy 108 rank-star mapping above.
+
+- Maximum enhancement is +20.
+- Each attempt consumes upgrade stones and copper; every fifth enhancement also consumes arcane dust.
+- Upgrade cost scales with item level and the target enhancement level.
+- Success chance starts at 100% and decreases by 2.5 percentage points per current enhancement level, with a 50% floor.
+- A failed attempt consumes the quoted materials and copper but does not change the item's enhancement level or stats.
+- Successful stat scaling is calculated from the stored original stat baseline, preventing repeated upgrades from compounding the multiplier.
+- Quotes, material availability, wallet balance, stat validity and random-source bounds are checked before resources are consumed.
+
+Run the enhancement tests with `node --test tests/mmorpg/gear-upgrade.test.js`.
