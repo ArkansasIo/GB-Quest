@@ -198,13 +198,14 @@ class MarketScene {
       const delta = equipped ? itemPower(G, gear) - itemPower(G, equipped) : 0;
       const affix = (gear.affixes || []).slice(0, 2).map(([k, v]) => SUBSTATS[k] ? `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 5)}` : '').filter(Boolean).join(' ');
       const comparison = equipped ? `VS EQUIPPED ${delta >= 0 ? '+' : ''}${Math.round(delta)} PWR` : 'NEW EQUIPMENT SLOT';
-      text((affix || comparison).slice(0, 25), 5, 123, equipped && delta < 0 ? 'red' : 'green');
+      text((affix || 'NO ROLLED AFFIXES').slice(0, 25), 5, 123, 3);
+      text(comparison.slice(0, 25), 5, 132, equipped && delta < 0 ? 'red' : 'green');
     } else if (e && this.tab === 0) {
       text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
       text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 114, 3);
     } else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 105, 2);
     else if (e && this.tab === 2) text(`LISTED AT ${fmt(e.price)} G\nA: CANCEL`, 5, 105, 2);
-    text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 5, 134, this.msg ? 'gold' : 1);
+    text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 5, 139, this.msg ? 'gold' : 1);
   }
 }
 
