@@ -248,8 +248,10 @@ These are local PvE-driven simulations using the game's combat system and simula
 - Expand the independent C++23 + SDL2 native port; the installable Windows/macOS desktop app currently runs the complete browser game in Electron.
 - Game Boy Color ROM (RGBDS assembly) of a core version that fits real hardware.
 
-## Legal
+## License and legal
 
-All names, lore and story are original to Lost Kingdom of Shadowbane Chronicles.
+**Lost Kingdom of Shadowbane Chronicles / GB-Quest is proprietary. All rights reserved.** No reuse, copying, modification, redistribution, publication, sublicensing, or commercial use of the game's proprietary source code or original content is permitted without prior express written permission from ArkansasIo.
 
-The rules engine models mechanics from the System Reference Document 5.1 by Wizards of the Coast LLC, which is available under the [Creative Commons Attribution 4.0 License](https://creativecommons.org/licenses/by/4.0/legalcode). No book text is reproduced.
+This applies to the game's original source code, game design, story, characters, original artwork, audio, animations, UI, branding, and other original materials. Public repository access does not grant a reuse license. See [LICENSE](LICENSE).
+
+Third-party software and content remain under their respective licenses. In particular, any SRD material identified in the project remains subject to the applicable Creative Commons Attribution 4.0 terms and attribution requirements; this proprietary notice does not override those rights. See [docs/SRD_ATTRIBUTION.md](docs/SRD_ATTRIBUTION.md) and each dependency's license.
