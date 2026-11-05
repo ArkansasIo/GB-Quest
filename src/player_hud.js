@@ -128,7 +128,7 @@
     const combatEntries = window.GBQCombatHotbar && typeof window.GBQCombatHotbar.entries === 'function' ? window.GBQCombatHotbar.entries() : [];
     const arts = combatEntries.length ? combatEntries : (Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : []);
     const hotbar = root.querySelector('[data-hud-hotbar]');
-    if (hotbar) hotbar.innerHTML = Array.from({length:8},(_,i)=>{const a=arts[i];return `<button type="button" data-hud-action="slot${i+1}" ${a && a.ok === false ? 'disabled' : ''} title="${esc(a && (a.name || a.id) || 'Action slot '+(i+1))}"><span>${a?'✧':'+'}</span><small>${i+1}</small></button>`;}).join('');
+    if (hotbar) hotbar.innerHTML = Array.from({length:8},(_,i)=>{const a=arts[i], remaining=Number(a?.remaining||0), cooling=remaining>0, blocked=(a && a.ok===false)||cooling||!!a?.paused, label=cooling?`${Math.ceil(remaining/60)}s`:a?.paused?'PAUSE':'';return `<button type="button" data-hud-action="slot${i+1}" ${blocked?'disabled':''} title="${esc(a && (a.name || a.id) || 'Action slot '+(i+1))}${cooling?' · '+label:a?.paused?' · Paused':''}"><span>${a?'✧':'+'}</span>${cooling?`<i class="gbq-hud-cooldown">${label}</i>`:''}<small>${i+1}</small></button>`;}).join('');
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
