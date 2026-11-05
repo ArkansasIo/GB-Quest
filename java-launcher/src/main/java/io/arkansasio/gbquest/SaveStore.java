@@ -32,8 +32,8 @@ public final class SaveStore {
         s.level=clamp(integer(p,"level",s.level),1,CharacterRules.MAX_LEVEL);
         s.xp=Math.max(0,integer(p,"xp",s.xp));s.gold=Math.max(0,integer(p,"gold",s.gold));
         s.potions=Math.max(0,integer(p,"potions",s.potions));s.wallet.gold=s.gold;
-        s.restoreProgress();s.hp=clamp(integer(p,"hp",s.hp),0,s.maxHp);s.hero.hp=s.hp;
         if(version.equals("2"))readInventory(p,s.inventory);
+        s.restoreProgress();s.hp=clamp(integer(p,"hp",s.hp),0,s.maxHp);s.hero.hp=s.hp;
     }
     private static void writeItem(Properties p,String prefix,ItemSystem.Item item){
         p.setProperty(prefix+".id",item.id);p.setProperty(prefix+".name",item.name);
