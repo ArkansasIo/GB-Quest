@@ -78,7 +78,7 @@ public final class ItemSystem {
             Map<String,Integer> out=new LinkedHashMap<>();for(Item item:equipped.values())item.stats.forEach((k,v)->out.merge(k,v,Integer::sum));return Map.copyOf(out);
         }
         public void applyTo(CharacterRules.Character c){
-            Map<String,Integer> s=totalStats();for(String a:CharacterRules.ATTRIBUTES)c.ascension.put(a,s.getOrDefault(a,0));
+            Map<String,Integer> s=totalStats();for(String a:CharacterRules.ATTRIBUTES)c.gearBonuses.put(a,s.getOrDefault(a,0));
             c.armorBonus=s.getOrDefault("AC",0);c.flatHp=s.getOrDefault("HP",0);
         }
     }
