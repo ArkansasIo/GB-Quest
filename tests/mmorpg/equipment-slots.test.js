@@ -19,7 +19,7 @@ test("equipment exposes sixteen stable slots and equips compatible items", () =>
 test("equipment rejects invalid slots, slot mismatches, level and broken gear", () => {
   const character = loadout();
   assert.equal(equipItem(character, gear("unknown")).reason, "invalid_slot");
-  assert.equal(equipItem(character, gear("head", { slot: "chest" })).reason, "slot_mismatch");
+  assert.equal(equipItem(character, gear("chest"), "head").reason, "slot_mismatch");
   assert.equal(equipItem(character, gear("head", { requiredLevel: 21 })).reason, "level_too_low");
   assert.equal(equipItem(character, gear("head", { durability: 0 })).reason, "broken_item");
 });
