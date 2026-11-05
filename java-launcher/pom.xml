@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.arkansasio</groupId>
-  <artifactId>gbquest-browser-launcher</artifactId>
-  <version>0.3.0</version>
-  <name>GB-Quest Browser Launcher</name>
+  <artifactId>gbquest-java</artifactId>
+  <version>0.4.0</version>
+  <name>GB-Quest Native Java Edition</name>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
