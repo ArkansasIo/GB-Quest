@@ -62,7 +62,7 @@ class Battle {
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
     this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
     combatHotkeyHandler = index => this.useHotbar(index);
-    window.GBQCombatHotbar = { entries: () => ['menu', 'list', 'realtime'].includes(this.state) && this.actor?.ch === G ? this.hotbarEntries(this.actor).map(entry => ({ id: entry.id, name: entry.name, ok: !!entry.ok, sub: entry.sub || '' })) : [], use: index => this.useHotbar(index) };
+    window.GBQCombatHotbar = { entries: () => ['menu', 'list', 'realtime'].includes(this.state) && this.actor?.ch === G ? this.hotbarEntries(this.actor).map(entry => { const cooldown = Number(this.rt?.cooldowns?.[entry.id] || 0), gcd = this.combatMode === 'realtime' ? Number(this.rt?.gcd || 0) : 0; return { id: entry.id, name: entry.name, ok: !!entry.ok, sub: entry.sub || '', remaining: Math.max(cooldown, gcd), cooldown, gcd, paused: !!this.rt?.paused }; }) : [], use: index => this.useHotbar(index) };
     for (const u of this.party) { if (u.ch.ai === false && this.rule === 'frail') u.ch.hp = Math.ceil(u.ch.hp / 2); }
     this.setupEffects();
     const intro = this.foes.length === 1 ? `${this.foes[0].boss ? '' : 'A '}${this.foes[0].name} ${this.foes[0].boss ? 'blocks the way!' : 'appears!'}` : `${this.foes.length} foes appear!`;
