@@ -14,8 +14,14 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'painted', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'hd64', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'full', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'painted', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
+// Migrate existing installations to the HD64 visual pipeline once. Players can still
+// switch back to Game Boy video in Settings; their choice is retained afterwards.
+if (!store.get('gbq_hd64_visual_default_v1')) {
+  S.video = 'hd64'; S.palette = 'full';
+  store.set('gbq_hd64_visual_default_v1', true);
+}
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
 if (S.displayMode === 'windowed' && !S.displayModeUserSet) S.displayMode = 'full-window';
 function syncDisplayMode() {
@@ -81,6 +87,7 @@ async function hd64Index() {
       const files = ['achievements', 'asset_pack', 'battle', 'buffs', 'class_sheets', 'conditions', 'creatures', 'dungeon_tiles', 'equipment', 'monsters', 'named_items', 'objects', 'passives', 'perk_icons', 'pixel_packs', 'portraits', 'ranks', 'rarity_gems', 'skills', 'slots', 'talents', 'tiles', 'titles', 'ui_kit', 'walkers'];
       indexes = Object.fromEntries(await Promise.all(files.map(async family => [family, await (await fetch(`assets_hd64/${family}.json`)).json()])));
     }
+    window.GBQ_HD64_INDEXES = indexes;
     HD64_INDEX = new Map();
     for (const [family, sprites] of Object.entries(indexes)) for (const [name, rect] of Object.entries(sprites || {})) HD64_INDEX.set(name, { family, rect });
     return HD64_INDEX;
@@ -104,6 +111,23 @@ function requestHd64Sprite(name) {
     const entry = index && index.get(name);
     if (entry) hd64Atlas(entry.family, entry.rect[0]).catch(() => {});
   });
+}
+// Preload every HD64 atlas page, not just the subset encountered during the first scene.
+// The named sprite index remains the source of truth for all 5,000+ individual sprites.
+async function preloadHd64Atlases(onProgress) {
+  const index = await hd64Index();
+  if (!index) return { sprites: 0, atlases: 0, failed: 1 };
+  const pages = new Set();
+  for (const entry of index.values()) pages.add(`${entry.family}_${entry.rect[0]}`);
+  let done = 0, failed = 0;
+  await Promise.all(Array.from(pages, async key => {
+    const split = key.lastIndexOf('_'), family = key.slice(0, split), page = Number(key.slice(split + 1));
+    try { await hd64Atlas(family, page); } catch (error) { failed++; console.warn('HD64 atlas failed:', key, error); }
+    done++; if (onProgress) onProgress(done / pages.size);
+  }));
+  const result = { sprites: index.size, atlases: pages.size, failed };
+  window.GBQ_HD64_STATUS = result;
+  return result;
 }
 async function loadCitadelAssets() {
   const catalogs = [
@@ -176,6 +200,11 @@ async function loadAssets(onProgress) {
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
   })));
   await loadCitadelAssets();
+  // HD64 is the new default presentation. Load every atlas family so character,
+  // equipment, world, dungeon, battle, UI, and progression sprites are available
+  // before gameplay starts instead of arriving piecemeal after a scene requests them.
+  await preloadHd64Atlases();
+  if (typeof window.GBQ_HD64_APPLY_ART === 'function') window.GBQ_HD64_APPLY_ART();
   onProgress && onProgress(1);
 }
 
