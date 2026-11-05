@@ -43,16 +43,24 @@ export function inspectGear(candidate = {}, equipped = null, { characterLevel = 
   const requiredLevel = Math.max(0, Math.floor(Number(candidate.requiredLevel) || 0));
   const score = calculateGearScore(candidate, weights);
   const equippedScore = equipped ? calculateGearScore(equipped, weights) : 0;
+  const comparison = compareGearStats(candidate, equipped || {});
+  const statDeltaScore = comparison.reduce((sum, row) => sum + row.difference * (Number.isFinite(weights[row.statId]) ? weights[row.statId] : 0.5), 0);
+  // Compare like-for-like item power: absolute item level is a progression gate,
+  // not a stat upgrade by itself. Preserve rarity/ilvl tie-breakers for equivalent stats.
+  const upgradeDelta = statDeltaScore
+    + (Math.max(0, Number(candidate.rarity) || 0) - Math.max(0, Number(equipped?.rarity) || 0)) * 0.25
+    + (Math.max(1, Number(candidate.itemLevel) || 1) - Math.max(1, Number(equipped?.itemLevel) || 1)) * 0.05;
   return {
     item: structuredClone(candidate),
     baseStats: statEntries(candidate.baseStats),
     subStats: statEntries(candidate.subStats).map(line => ({ ...line, greaterAffix: line.greaterAffix === true })),
     affixes: Array.isArray(candidate.affixes) ? [...candidate.affixes] : [],
     specialEffect: String(candidate.specialEffect || ""),
-    comparison: compareGearStats(candidate, equipped || {}),
+    comparison,
     powerScore: score,
     equippedPowerScore: equippedScore,
-    isUpgradeByScore: !equipped || score > equippedScore,
+    upgradeDelta,
+    isUpgradeByScore: !equipped || upgradeDelta > 0,
     canEquip: requiredLevel <= level,
     restriction: requiredLevel > level ? `Requires level ${requiredLevel}` : null
   };
