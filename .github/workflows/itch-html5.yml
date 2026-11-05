@@ -1,0 +1,51 @@
+name: itch.io HTML5 Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/**'
+      - 'src/**'
+      - 'assets/**'
+      - 'assets_hd64/**'
+      - 'assets_citadel/**'
+      - 'tools/build.cjs'
+      - 'tools/build-itch.cjs'
+      - 'package.json'
+      - '.github/workflows/itch-html5.yml'
+  pull_request:
+    paths:
+      - 'client/**'
+      - 'src/**'
+      - 'assets/**'
+      - 'assets_hd64/**'
+      - 'assets_citadel/**'
+      - 'tools/build.cjs'
+      - 'tools/build-itch.cjs'
+      - 'package.json'
+      - '.github/workflows/itch-html5.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Build and validate itch.io ZIP
+        run: npm run build:itch
+      - name: Upload itch.io HTML5 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: gbquest-itch-html5
+          path: build/gbquest-itch-html5.zip
+          if-no-files-found: error
+          retention-days: 30
