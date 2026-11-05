@@ -1,0 +1,109 @@
+/* GB-Quest player HUD — responsive DOM layer over the legacy game viewport.
+ * Reads the live character state; never owns or mutates progression data.
+ */
+(() => {
+  'use strict';
+  if (window.GBQPlayerHUD) return;
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const clamp = n => Math.max(0, Math.min(1, Number(n) || 0));
+  const pct = (value, max) => Math.round(clamp(Number(value) / Math.max(1, Number(max))) * 100);
+  const fmt = n => Math.max(0, Number(n) || 0).toLocaleString();
+  const getGame = () => window.GBQ && window.GBQ.G;
+  let root, timer, lastSignature = '';
+  const button = (label, key, glyph, extra = '') => `<button class="gbq-hud-nav" type="button" data-hud-action="${key}" ${extra}><span class="gbq-hud-glyph">${glyph}</span><span>${label}</span></button>`;
+  function mount() {
+    const viewport = document.querySelector('.game-viewport');
+    if (!viewport || document.getElementById('gbq-player-hud')) return;
+    root = document.createElement('section');
+    root.id = 'gbq-player-hud';
+    root.className = 'gbq-player-hud';
+    root.setAttribute('aria-label', 'Player heads-up display');
+    root.innerHTML = `
+      <header class="gbq-hud-top">
+        <div class="gbq-hud-brand"><span class="gbq-hud-crest">✦</span><span>GB-QUEST<small>REALM OF SHADOWBANE</small></span></div>
+        <div class="gbq-hud-compass" aria-label="Compass"><span>W</span><i></i><b>NW</b><i></i><strong>N</strong><i></i><b>NE</b><i></i><span>E</span></div>
+        <div class="gbq-hud-wallet"><span>◉ <b data-hud-gold>0</b></span><span>◆ <b data-hud-gems>0</b></span></div>
+      </header>
+      <aside class="gbq-hud-left">
+        <section class="gbq-hud-panel gbq-hud-player">
+          <div class="gbq-hud-avatar" data-hud-avatar>⚔</div>
+          <div class="gbq-hud-player-info"><div class="gbq-hud-player-name" data-hud-name>Adventurer</div><div class="gbq-hud-level" data-hud-level>LEVEL 1 · WANDERER</div>
+            <div class="gbq-hud-meter hp"><span>HP</span><b data-hud-hp-text>0 / 0</b><i><em data-hud-hp></em></i></div>
+            <div class="gbq-hud-meter mp"><span>MP</span><b data-hud-mp-text>0 / 0</b><i><em data-hud-mp></em></i></div>
+            <div class="gbq-hud-meter xp"><span>XP</span><b data-hud-xp-text>0%</b><i><em data-hud-xp></em></i></div>
+          </div>
+        </section>
+        <section class="gbq-hud-panel gbq-hud-party"><div class="gbq-hud-section-title">PARTY <span data-hud-party-count>1 / 4</span></div><div data-hud-party-list></div></section>
+      </aside>
+      <aside class="gbq-hud-right">
+        <section class="gbq-hud-panel gbq-hud-map"><div class="gbq-hud-map-art"><span class="gbq-map-road"></span><b>⌖</b><i>✦</i></div><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
+        <section class="gbq-hud-panel gbq-hud-quests"><div class="gbq-hud-section-title">✧ QUESTS <span>⌃</span></div><div data-hud-quests><div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Continue your journey</small></span></div></div></section>
+      </aside>
+      <div class="gbq-hud-bottom">
+        <div class="gbq-hud-shortcuts">
+          ${button('Character','character','♙')} ${button('Inventory','inventory','▣')} ${button('Skills','skills','⚔')} ${button('Talents','talents','✧')} ${button('Crafting','crafting','⚒')}
+        </div>
+        <div class="gbq-hud-action-area"><div class="gbq-hud-quick"><button type="button" data-hud-action="quick1">Q</button><button type="button" data-hud-action="quick2">E</button></div><div class="gbq-hud-hotbar" data-hud-hotbar></div><div class="gbq-hud-potions"><button type="button" data-hud-action="potion">♥ <small data-hud-potions>0</small></button><button type="button" data-hud-action="mana">✧</button></div></div>
+        <div class="gbq-hud-shortcuts gbq-hud-shortcuts-right">
+          ${button('Map','map','⌖')} ${button('Journal','journal','▤')} ${button('Guild','guild','⚑')} ${button('Market','market','◈')} ${button('Collection','collection','❖')}
+        </div>
+      </div>
+      <div class="gbq-hud-toast" role="status" aria-live="polite"></div>`;
+    viewport.appendChild(root);
+    root.addEventListener('click', onAction);
+    update();
+    timer = window.setInterval(update, 350);
+  }
+  function onAction(event) {
+    const target = event.target.closest('[data-hud-action]');
+    if (!target) return;
+    const action = target.dataset.hudAction, api = window.GBQ;
+    const keyMap = {character:'c',inventory:'i',skills:'k',talents:'t',crafting:'y',map:'m',journal:'j',guild:'g',market:'b',collection:'p'};
+    if (action === 'map' && api && typeof api.openAtlas === 'function') { api.openAtlas(); return; }
+    if (action === 'chat') { document.getElementById('chatShow')?.click(); return; }
+    if (keyMap[action]) { window.dispatchEvent(new KeyboardEvent('keydown', {key:keyMap[action], bubbles:true})); return; }
+    const toast = root.querySelector('.gbq-hud-toast');
+    const messages = {quick1:'Quick skill slot Q',quick2:'Quick skill slot E',potion:'Potion slot R',mana:'Mana potion slot F'};
+    if (toast) { toast.textContent = messages[action] || 'Open the game menu with Enter'; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 1800); }
+    if (action === 'potion' && api && typeof api.G === 'object') window.dispatchEvent(new KeyboardEvent('keydown', {key:'r', bubbles:true}));
+  }
+  function update() {
+    if (!root || !root.isConnected) { if (timer) window.clearInterval(timer); timer = null; return; }
+    const g = getGame();
+    if (!g) { root.classList.remove('is-live'); return; }
+    root.classList.add('is-live');
+    const derived = typeof window.derive === 'function' ? window.derive(g) : {};
+    const hpMax = Number(derived.hpMax || g.hpMax || g.hp || 1), mpMax = Number(derived.mpMax || g.mpMax || g.mp || 1);
+    const hp = Number(g.hp || 0), mp = Number(g.mp ?? g.mana ?? 0), level = Number(g.lvl || g.level || 1);
+    const xpCurrent = Number(g.xp || 0), xpFloor = typeof window.xpForLevel === 'function' ? window.xpForLevel(level) : 0;
+    const xpNext = typeof window.xpForLevel === 'function' ? window.xpForLevel(Math.min(99, level + 1)) : xpFloor + 1;
+    const xpPct = level >= 99 ? 100 : pct(xpCurrent - xpFloor, Math.max(1, xpNext - xpFloor));
+    const setText = (selector, value) => { const node = root.querySelector(selector); if (node) node.textContent = value; };
+    const setBar = (selector, value) => { const node = root.querySelector(selector); if (node) node.style.width = value + '%'; };
+    setText('[data-hud-name]', g.name || 'Adventurer');
+    setText('[data-hud-level]', 'LEVEL ' + level + ' · ' + String(g.cls || 'ADVENTURER').replace(/[-_]/g,' ').toUpperCase());
+    setText('[data-hud-hp-text]', fmt(hp) + ' / ' + fmt(hpMax)); setBar('[data-hud-hp]', pct(hp,hpMax));
+    setText('[data-hud-mp-text]', fmt(mp) + ' / ' + fmt(mpMax)); setBar('[data-hud-mp]', pct(mp,mpMax));
+    setText('[data-hud-xp-text]', xpPct + '%'); setBar('[data-hud-xp]', xpPct);
+    setText('[data-hud-gold]', fmt(g.gold)); setText('[data-hud-gems]', fmt(g.gems || g.crystals || 0));
+    setText('[data-hud-zone]', String(g.map || 'THE FRONTIER').replace(/[-_]/g,' ').toUpperCase());
+    setText('[data-hud-coords]', 'X: ' + Math.round(g.x || 0) + ' · Y: ' + Math.round(g.y || 0));
+    setText('[data-hud-potions]', fmt(g.inv && (g.inv.potion || g.inv.health_potion) || 0));
+    const companions = Array.isArray(g.companions) ? g.companions.filter(Boolean).slice(0,3) : [];
+    setText('[data-hud-party-count]', (companions.length + 1) + ' / 4');
+    const party = [{name:g.name || 'You',hp,max:hpMax,cls:g.cls || 'Hero'}, ...companions.map(c=>({name:c.name || 'Ally',hp:Number(c.hp||0),max:Number((typeof window.derive==='function' && window.derive(c).hpMax)||c.hpMax||c.hp||1),cls:c.cls||'Companion'}))];
+    const partyNode = root.querySelector('[data-hud-party-list]');
+    if (partyNode) partyNode.innerHTML = party.map((p,i)=>`<div class="gbq-hud-party-member"><span class="gbq-hud-party-icon">${i===0?'♜':'♟'}</span><span class="gbq-hud-party-data"><b>${esc(p.name)}</b><small>${esc(p.cls)}</small><i><em style="width:${pct(p.hp,p.max)}%"></em></i></span><strong>${Math.round(p.hp/p.max*100)}%</strong></div>`).join('');
+    const quests = Array.isArray(g.quests) ? g.quests : Array.isArray(g.activeQuests) ? g.activeQuests : [];
+    const questNode = root.querySelector('[data-hud-quests]');
+    if (questNode) questNode.innerHTML = quests.length ? quests.slice(0,3).map((q,i)=>`<div class="gbq-hud-quest"><b>${i===0?'✦':'◇'}</b><span><strong>${esc(q.name || q.title || 'Active Quest')}</strong><small>${esc(q.objective || q.description || q.progressText || 'Quest in progress')}</small></span></div>`).join('') : '<div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Open Journal to review your quests</small></span></div>';
+    const arts = Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : [];
+    const hotbar = root.querySelector('[data-hud-hotbar]');
+    if (hotbar) hotbar.innerHTML = Array.from({length:8},(_,i)=>{const a=arts[i];return `<button type="button" data-hud-action="slot${i+1}" title="${esc(a && (a.name || a.id) || 'Action slot '+(i+1))}"><span>${a?'✧':'+'}</span><small>${i+1}</small></button>`;}).join('');
+    const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length].join('|');
+    if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
+  }
+  function init() { mount(); if (!root) window.setTimeout(init, 250); }
+  window.GBQPlayerHUD = { mount:init, refresh:update, destroy(){ if(timer)window.clearInterval(timer);timer=null;root?.remove();root=null; } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
+})();
