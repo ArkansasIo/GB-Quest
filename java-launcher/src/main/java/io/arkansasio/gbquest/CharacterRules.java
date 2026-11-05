@@ -89,13 +89,30 @@ public final class CharacterRules {
         Map<String,Integer> a=new LinkedHashMap<>(),m=new LinkedHashMap<>();
         for(String key:ATTRIBUTES){int score=c.base.getOrDefault(key,10)+c.ascension.getOrDefault(key,0);a.put(key,score);m.put(key,modifier(score));}
         int level=Math.max(1,Math.min(MAX_LEVEL,c.level)),con=m.get("CON"),dex=m.get("DEX");
-        int hp=cls.hitDie()+con+(level-1)*(cls.hitDie()/2+1+con)+Math.max(0,level-20)*(cls.hitDie()/2+Math.max(1,con));
+        double rawHp=cls.hitDie()+con+(level-1)*(cls.hitDie()/2.0+1+con)+Math.max(0,level-20)*(cls.hitDie()/2.0+Math.max(1,con));
+        int hp=(int)Math.round(rawHp);
         hp=Math.max(1,hp+c.flatHp);
         int ac=10+dex+c.armorBonus+c.shieldBonus;
         int pb=proficiency(level);
-        Map<String,Integer> saves=new LinkedHashMap<>();for(String k:List.of("STR","DEX","CON","INT","WIS","CHA"))saves.put(k,m.get(k)+(cls.role.equals("tank")&&Set.of("STR","CON").contains(k)?pb:0));
+        Set<String> proficientSaves=saveProficiencies(c.classId);
+        Map<String,Integer> saves=new LinkedHashMap<>();for(String k:List.of("STR","DEX","CON","INT","WIS","CHA"))saves.put(k,m.get(k)+(proficientSaves.contains(k)?pb:0));
         Map<String,Integer> skills=new LinkedHashMap<>();SKILLS.forEach((skill,ability)->skills.put(skill,m.get(ability)));
         return new Derived(hp,ac,pb,m.get("DEX"),Map.copyOf(a),Map.copyOf(m),Map.copyOf(saves),Map.copyOf(skills));
+    }
+    private static Set<String> saveProficiencies(String id){
+        return switch(id){
+            case "warden","vanguard","berserker","wyrmlancer","dreadknight" -> Set.of("STR","CON");
+            case "chaplain","cantor","stormcaller" -> Set.of("WIS","CHA");
+            case "verdant","arcanist","scalesage" -> Set.of("INT","WIS");
+            case "strider","ronin","ascetic" -> Set.of("STR","DEX");
+            case "shade","shinobi","puppeteer" -> Set.of("DEX","INT");
+            case "wildblood" -> Set.of("STR","WIS");
+            case "pactbound" -> Set.of("WIS","CHA");
+            case "bladedancer","corsair" -> Set.of("DEX","CHA");
+            case "beastcaller" -> Set.of("STR","CHA");
+            case "voidhunter" -> Set.of("DEX","CON");
+            default -> Set.of("STR","CON");
+        };
     }
     public static final class Character {
         public final String name,speciesId,classId;
