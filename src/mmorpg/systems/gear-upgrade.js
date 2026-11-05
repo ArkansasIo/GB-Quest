@@ -54,12 +54,21 @@ export function upgradeGear(item, { inventory, wallet, random = Math.random } = 
   if (!wallet || !safeCopper(wallet.copper)) return { ok: false, reason: "invalid_wallet", quote };
   if (wallet.copper < quote.goldCopper) return { ok: false, reason: "insufficient_funds", quote };
 
-  const roll = validRandom(random);
   const baseStats = item.baseUpgradeStats ?? structuredClone(item.stats ?? {});
   if (!baseStats || typeof baseStats !== "object" || Array.isArray(baseStats) ||
       Object.values(baseStats).some(value => typeof value !== "number" || !Number.isFinite(value))) {
     return { ok: false, reason: "invalid_base_stats", quote };
   }
+
+  // Calculate and validate the complete result before the transaction commits.
+  const nextStats = {};
+  for (const [key, value] of Object.entries(baseStats)) {
+    const scaled = Math.round(value * quote.statMultiplier * 100) / 100;
+    if (!Number.isFinite(scaled)) return { ok: false, reason: "invalid_upgrade_result", quote };
+    nextStats[key] = scaled;
+  }
+
+  const roll = validRandom(random);
 
   // All failure conditions are checked before consuming any resources.
   for (const material of quote.materials) {
@@ -71,10 +80,6 @@ export function upgradeGear(item, { inventory, wallet, random = Math.random } = 
     return { ok: false, reason: "upgrade_failed", consumed: true, quote, upgradeLevel: quote.currentLevel };
   }
 
-  const nextStats = {};
-  for (const [key, value] of Object.entries(baseStats)) {
-    nextStats[key] = Math.round(value * quote.statMultiplier * 100) / 100;
-  }
   item.baseUpgradeStats ??= structuredClone(baseStats);
   item.stats = nextStats;
   item.upgradeLevel = quote.nextLevel;
