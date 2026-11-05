@@ -51,7 +51,7 @@ def main():
         manifest["groups"][group] = records
     manifest["totalSprites"] = sum(map(len, manifest["groups"].values()))
     (args.output_dir / "sprite-manifest.json").write_text(
-        json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"Extracted {manifest['totalSprites']} icon cells into {args.output_dir}")
 
 if __name__ == "__main__":
