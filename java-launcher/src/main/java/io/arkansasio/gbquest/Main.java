@@ -1,39 +1,44 @@
 package io.arkansasio.gbquest;
 
-import java.awt.Desktop;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Optional Java JAR launcher for the HTML5 GB-Quest browser build.
- * The game itself remains HTML5/JavaScript; this class opens its full-window
- * build in the system browser.
- */
+/** Native Java desktop entry point for GB-Quest. */
 public final class Main {
     private Main() {}
-
-    public static void main(String[] args) throws IOException {
-        Path gameFile = args.length > 0
-                ? Path.of(args[0]).toAbsolutePath().normalize()
-                : Path.of("dist", "gbquest-fullscreen.html").toAbsolutePath().normalize();
-
-        if (!Files.isRegularFile(gameFile)) {
-            System.err.println("GB-Quest browser build was not found: " + gameFile);
-            System.err.println("Run 'node tools/build.cjs' from the repository root first,");
-            System.err.println("or pass the path to an existing HTML game build.");
+    public static void main(String[] args) {
+        if (args.length>0 && "--browser".equals(args[0])) { launchBrowser(args); return; }
+        if (GraphicsEnvironment.isHeadless()) {
+            System.err.println("GB-Quest Java Edition requires a graphical desktop session.");
             System.exit(2);
         }
-
-        var gameUri = gameFile.toUri();
-        if (!Desktop.isDesktopSupported()
-                || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            System.out.println("Open this GB-Quest game URL in a browser:");
-            System.out.println(gameUri);
-            return;
-        }
-
-        Desktop.getDesktop().browse(gameUri);
-        System.out.println("Opened GB-Quest in the default browser: " + gameUri);
+        SwingUtilities.invokeLater(() -> {
+            GameState state=new GameState();
+            try { SaveStore.load(state); } catch(IOException ex) { System.err.println("Save load failed: "+ex.getMessage()); }
+            JFrame frame=new JFrame("Lost Kingdom of Shadowbane Chronicles — Java Edition");
+            frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            GamePanel panel=new GamePanel();
+            frame.add(panel);frame.pack();frame.setLocationRelativeTo(null);frame.setResizable(false);
+            frame.addWindowListener(new WindowAdapter(){@Override public void windowClosing(WindowEvent e){
+                try { SaveStore.save(state); } catch(IOException ex){System.err.println("Save failed: "+ex.getMessage());}
+                frame.dispose();System.exit(0);
+            }});
+            frame.setVisible(true);panel.requestFocusInWindow();
+        });
+    }
+    private static void launchBrowser(String[] args) {
+        Path gameFile=args.length>1?Path.of(args[1]).toAbsolutePath().normalize():
+                Path.of("dist","gbquest-fullscreen.html").toAbsolutePath().normalize();
+        if(!Files.isRegularFile(gameFile)){System.err.println("Browser build not found: "+gameFile);System.exit(2);}
+        try {
+            var uri=gameFile.toUri();
+            if(!Desktop.isDesktopSupported()||!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)){System.out.println(uri);return;}
+            Desktop.getDesktop().browse(uri);
+        } catch(IOException ex){System.err.println("Could not open browser: "+ex.getMessage());System.exit(2);}
     }
 }
