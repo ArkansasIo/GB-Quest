@@ -8,7 +8,7 @@ struct FGBQuestVendorStockEntry
 {
  GENERATED_BODY()
  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vendor") FGBQuestGearItem Item;
- UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vendor", meta=(ClampMin="0")) int32 Stock=-1;
+ UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vendor", meta=(ClampMin="-1")) int32 Stock=-1;
  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vendor", meta=(ClampMin="0.01")) float BuyPriceMultiplier=1.25f;
  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vendor", meta=(ClampMin="0.01")) float SellPriceMultiplier=0.5f;
 };
@@ -18,7 +18,7 @@ struct FGBQuestVendorQuote
  GENERATED_BODY()
  UPROPERTY(BlueprintReadOnly, Category="Vendor") FGBQuestGearItem Item;
  UPROPERTY(BlueprintReadOnly, Category="Vendor") int32 Price=0;
- UPROPERTY(BlueprintReadOnly, Category="Vendor") bool bCanPurchase=false;
+ UPROPERTY(BlueprintReadOnly, Category="Vendor") bool bCanPurchase=false;\n UPROPERTY(BlueprintReadOnly, Category="Vendor") bool bCanSell=false;
  UPROPERTY(BlueprintReadOnly, Category="Vendor") FText Reason;
 };
 UCLASS(ClassGroup=(GBQuest), BlueprintType, Blueprintable, meta=(BlueprintSpawnableComponent))
