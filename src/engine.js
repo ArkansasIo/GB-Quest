@@ -20,6 +20,7 @@ const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'hd64', tiles
 // switch back to Game Boy video in Settings; their choice is retained afterwards.
 if (!store.get('gbq_hd64_visual_default_v1')) {
   S.video = 'hd64'; S.palette = 'full';
+  store.set('gbq2_settings', S);
   store.set('gbq_hd64_visual_default_v1', true);
 }
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
