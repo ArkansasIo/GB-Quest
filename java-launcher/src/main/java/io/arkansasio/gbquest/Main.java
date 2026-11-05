@@ -19,7 +19,10 @@ public final class Main {
         }
         SwingUtilities.invokeLater(() -> {
             GameState state;
-            if(SaveStore.exists()) state=new GameState();
+            if(SaveStore.exists()) {
+                try { var cfg=SaveStore.readCharacterConfig();state=new GameState(cfg.name(),cfg.species(),cfg.classId()); }
+                catch(IOException ex){System.err.println("Character config load failed: "+ex.getMessage());state=new GameState();}
+            }
             else {
                 String name=JOptionPane.showInputDialog(null,"Name your adventurer:","CHARACTER CREATION",JOptionPane.QUESTION_MESSAGE);
                 if(name==null||name.isBlank())name="Adventurer";
