@@ -49,5 +49,19 @@
       "gold-and-potion-pickups",
       "versioned-local-save"
     ]
+  },
+  "itchIo": {
+    "projectType": "HTML",
+    "uploadArtifact": "build/gbquest-itch-html5.zip",
+    "zipEntryPoint": "index.html",
+    "buildCommand": "npm run build:itch",
+    "embedViewport": {
+      "width": 960,
+      "height": 864,
+      "aspectRatio": "10:9"
+    },
+    "browserPlayable": true,
+    "fullscreenApi": true,
+    "note": "Build package is ready for manual upload; publishing to an itch.io account requires authenticated account access."
   }
-}\n
+}
