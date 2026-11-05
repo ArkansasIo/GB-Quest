@@ -11,8 +11,8 @@ test('game metadata declares the HTML5 entry point and native viewport dimension
   const config = JSON.parse(read('game-metadata.json'));
   assert.equal(config.runtime, 'html5');
   assert.equal(config.entryPoint, 'index.html');
-  assert.equal(config.java.jarRequired, false);
-  assert.equal(config.java.jarClassName, null);
+  assert.equal(config.java.jarRequired, true);
+  assert.equal(config.java.jarClassName, 'io.arkansasio.gbquest.Main');
   assert.equal(config.viewport.width, 160);
   assert.equal(config.viewport.height, 144);
   assert.equal(config.browser.fullscreenEntryPoint, 'dist/gbquest-fullscreen.html');
