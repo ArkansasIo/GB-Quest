@@ -6,7 +6,7 @@ Deliver a native Java desktop edition of Lost Kingdom of Shadowbane Chronicles w
 
 ## Current implementation
 
-The initial playable Java slice provides a native Swing/AWT window, a tile-based world, camera tracking, keyboard movement, collision, enemy pursuit, contact damage, directional melee, enemy defeat, XP/level progression, gold and potion pickups, HUD rendering, and versioned local saves.
+The current Java foundation provides a native Swing/AWT window, a tile-based world, camera tracking, keyboard movement, collision, enemy pursuit, contact damage, directional melee, XP/level progression, gold and potion pickups, and HUD rendering. Character creation now exposes the source-game catalog of 27 classes and 15 species; the Java rules layer includes nine attributes, species bonuses, derived HP/AC, proficiency, saving throws, skills and progression through level 720. The equipment layer includes rarity/affix generation, stat-bearing gear, inventory, equipment slots, vendor buying/selling and exact stat-roll persistence. Version 2 saves preserve identity, progression, wallet and gear.
 
 Build: `mvn -B -f java-launcher/pom.xml clean package`
 
