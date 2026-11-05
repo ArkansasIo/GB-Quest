@@ -16,7 +16,8 @@ public final class GamePanel extends JPanel implements ActionListener {
     private BufferedImage tileAtlas;
     private int cameraX,cameraY;
 
-    public GamePanel(GameState game) {\n        this.game=game;
+    public GamePanel(GameState game) {
+        this.game=game;
         setPreferredSize(new Dimension(W*SCALE,H*SCALE));
         setFocusable(true);setBackground(new Color(12,16,24));
         addKeyListener(new KeyAdapter(){@Override public void keyPressed(KeyEvent e){int k=e.getKeyCode();if(k<keys.length)keys[k]=true;
