@@ -85,7 +85,7 @@ function titleExtras() {
   }, 'EXTRAS');
 }
 class Title {
-  constructor() { this.opaque = true; this.t = 0; this.i = 0; }
+  constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
   opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'ONLINE', 'ACCOUNT', 'EXTRAS', 'SETTINGS', 'CREDITS'); return o; }
@@ -109,79 +109,124 @@ class Title {
     }
   }
   draw() {
+    const gothic = typeof S !== 'undefined' && S.uiTheme === 'gothic';
+    const palette = gothic
+      ? { sky: '#101719', sky2: '#1b2928', deep: '#111a1b', stone: '#263634', stoneHi: '#52635a', ink: '#e7d4a6', gold: '#d8b876', teal: '#4f968d', glow: '#a9d5b0' }
+      : { sky: '#10172d', sky2: '#49304b', deep: '#171c2a', stone: '#24283a', stoneHi: '#34334a', ink: '#e7d4a6', gold: '#d8b876', teal: '#65a6a0', glow: '#f1a663' };
     ctx.save();
+    // A moody, layered sky replaces the old sunset gradient when Gothic UI is selected.
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#10172d'); sky.addColorStop(0.56, '#49304b'); sky.addColorStop(1, '#d07852');
+    sky.addColorStop(0, palette.sky); sky.addColorStop(0.58, palette.sky2); sky.addColorStop(1, palette.deep);
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < 32; i++) {
-      const x = (i * 47 + 13) % W, y = (i * 29 + 7) % 72;
-      ctx.globalAlpha = 0.45 + ((i + (this.t >> 4)) % 4) * 0.15;
-      ctx.fillStyle = i % 5 === 0 ? '#ffdca0' : '#d8e5ff';
-      ctx.fillRect(x, y, i % 7 === 0 ? 2 : 1, 1);
+    for (let star = 0; star < 38; star++) {
+      const x = (star * 47 + 13) % W, y = (star * 29 + 7) % 76;
+      ctx.globalAlpha = 0.22 + ((star + (this.t >> 4)) % 4) * 0.1;
+      ctx.fillStyle = star % 5 === 0 ? palette.gold : '#c9d6c3';
+      ctx.fillRect(x, y, star % 7 === 0 ? 2 : 1, 1);
     }
     ctx.globalAlpha = 1;
-    const moon = ctx.createRadialGradient(128, 37, 2, 128, 37, 28);
-    moon.addColorStop(0, 'rgba(255,224,166,.38)'); moon.addColorStop(1, 'rgba(255,190,130,0)');
-    ctx.fillStyle = moon; ctx.fillRect(98, 7, 60, 60);
-    ctx.fillStyle = '#f6dda7'; ctx.beginPath(); ctx.arc(128, 36, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#d6a77d'; ctx.fillRect(123, 32, 3, 2); ctx.fillRect(130, 39, 2, 2);
-
+    const moon = ctx.createRadialGradient(127, 31, 2, 127, 31, 28);
+    moon.addColorStop(0, gothic ? 'rgba(160,210,180,.36)' : 'rgba(255,224,166,.38)');
+    moon.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = moon; ctx.fillRect(96, 0, 64, 64);
+    ctx.fillStyle = gothic ? '#c4d4b5' : '#f6dda7'; ctx.beginPath(); ctx.arc(127, 31, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = gothic ? '#738d78' : '#d6a77d'; ctx.fillRect(123, 28, 3, 2); ctx.fillRect(130, 34, 2, 2);
     const ridge = (points, color) => {
       ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
       points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
     };
-    ridge([[0, 74], [17, 51], [29, 68], [48, 42], [67, 69], [88, 48], [105, 68], [126, 43], [147, 67], [160, 54]], '#34334a');
-    ridge([[0, 91], [18, 75], [38, 89], [58, 68], [78, 91], [99, 72], [118, 88], [139, 66], [160, 86]], '#24283a');
-
+    ridge([[0, 78], [16, 58], [30, 73], [48, 44], [66, 70], [88, 50], [105, 72], [126, 43], [147, 69], [160, 57]], palette.stoneHi);
+    ridge([[0, 94], [18, 76], [38, 92], [58, 69], [78, 94], [99, 73], [118, 91], [139, 67], [160, 88]], palette.stone);
     const drift = Math.floor(this.t / 48) % 4;
-    ctx.fillStyle = '#1b2032';
-    ctx.fillRect(112 - drift, 62, 33, 39); ctx.fillRect(119 - drift, 53, 8, 48);
-    ctx.fillRect(136 - drift, 57, 7, 44); ctx.fillRect(108 - drift, 72, 7, 29);
-    ctx.fillRect(116 - drift, 56, 14, 3); ctx.fillRect(134 - drift, 60, 11, 3);
-    ctx.beginPath(); ctx.moveTo(118 - drift, 56); ctx.lineTo(123 - drift, 48); ctx.lineTo(128 - drift, 56); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(134 - drift, 60); ctx.lineTo(139 - drift, 51); ctx.lineTo(144 - drift, 60); ctx.fill();
-    ctx.fillStyle = '#f1a663';
-    [[116, 77], [126, 70], [137, 78], [121, 88], [141, 91]].forEach(([x, y], i) => {
-      if ((this.t + i * 7) % 80 < 68) ctx.fillRect(x - drift, y, 2, 3);
+    // Fortress silhouette with a central keep, flanking towers and small lit windows.
+    ctx.fillStyle = palette.deep;
+    ctx.fillRect(104 - drift, 63, 47, 42); ctx.fillRect(112 - drift, 51, 12, 54); ctx.fillRect(132 - drift, 55, 11, 50);
+    ctx.fillRect(100 - drift, 72, 10, 33); ctx.fillRect(145 - drift, 74, 8, 31);
+    ctx.fillRect(108 - drift, 59, 20, 4); ctx.fillRect(130 - drift, 62, 16, 4);
+    ctx.beginPath(); ctx.moveTo(111 - drift, 59); ctx.lineTo(118 - drift, 47); ctx.lineTo(125 - drift, 59); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(130 - drift, 62); ctx.lineTo(137 - drift, 50); ctx.lineTo(146 - drift, 62); ctx.fill();
+    ctx.fillStyle = palette.glow;
+    [[111,79],[121,73],[136,79],[116,91],[141,92],[128,88]].forEach(([x,y],n) => {
+      if ((this.t + n * 9) % 84 < 70) ctx.fillRect(x - drift, y, 2, 3);
     });
-
-    const glow = ctx.createRadialGradient(117, 76, 1, 117, 76, 19);
-    glow.addColorStop(0, 'rgba(247,112,65,.27)'); glow.addColorStop(1, 'rgba(247,112,65,0)');
-    ctx.fillStyle = glow; ctx.fillRect(96, 55, 42, 42);
-    blit(sprH('nm_dragon_0', 43, { flip: true }), 109 - drift, 47 + Math.round(Math.sin(this.t / 16) * 2));
-    ridge([[0, 112], [20, 101], [42, 108], [63, 97], [83, 106], [105, 96], [128, 108], [147, 98], [160, 104]], '#171c2a');
-    ctx.fillStyle = '#d98055';
-    for (let i = 0; i < 18; i++) {
-      const x = (i * 37 + 8) % W, y = 112 + ((i * 17) % 28);
-      ctx.fillRect(x, y, 1 + (i % 3), 1);
+    // Dragon silhouette drifts over the keep; ember/glow is green-teal in the Gothic palette.
+    const aura = ctx.createRadialGradient(117, 76, 1, 117, 76, 20);
+    aura.addColorStop(0, gothic ? 'rgba(90,190,155,.25)' : 'rgba(247,112,65,.27)');
+    aura.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = aura; ctx.fillRect(94, 54, 46, 44);
+    blit(sprH('nm_dragon_0', 43, { flip: true }), 108 - drift, 48 + Math.round(Math.sin(this.t / 16) * 2));
+    ridge([[0, 114], [20, 102], [42, 110], [63, 98], [83, 108], [105, 97], [128, 109], [147, 99], [160, 106]], palette.deep);
+    // Stone side rails, corner plates and runic divider.
+    if (gothic && IMG.au_frames_000) {
+      ctx.globalAlpha = 0.92; ctx.drawImage(IMG.au_frames_000, 0, 0, W, H); ctx.globalAlpha = 1;
     }
     ctx.restore();
 
-    { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
+    const li = lastSlot(), info = li >= 0 ? slotInfo(li) : null;
+    const mine = info && (info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls));
+    const heroA = mine || classPortrait('warden'), heroB = mine ? null : classPortrait('arcanist');
     const bob = Math.round(Math.sin(this.t / 12));
-    { // title heroes: your last saved hero's portrait, else the warden and arcanist portraits
-      const li = lastSlot(), info = li >= 0 ? slotInfo(li) : null;
-      const mine = info && (info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls));
-      const a = mine || classPortrait('warden'), b = mine ? null : classPortrait('arcanist');
-      if (a) { const s = sprFit(a, 44); blit(s, (b ? 104 : 116) - s.width / 2, 131 - s.height + bob); } else blit(sprH('c_warden_4', 36), 99, 93 + bob);
-      if (b) { const s = sprFit(b, 40); blit(s, 136 - s.width / 2, 131 - s.height - bob); } else if (!mine) blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
-    }
-    frame(4, 5, 152, 43);
-    textC('LOST KINGDOM OF', 80, 8, 1); textC('SHADOWBANE', 80, 17, 2); textC('CHRONICLES', 80, 26, 3);
-    textC(BUILD.subtitle, 80, 37, 2);
-    const o = this.opts(), rows = Math.min(o.length, 7), h = rows * 9 + 6;
-    this.top = this.top || 0; if (this.i < this.top) this.top = this.i; if (this.i >= this.top + rows) this.top = this.i - rows + 1; this.top = Math.max(0, Math.min(this.top, o.length - rows));
-    frame(5, 60, 83, h);
-    if (this.top > 0) textC('^', 46, 56, 'gold'); if (this.top + rows < o.length) textC('v', 46, 60 + h - 4, 'gold');
-    o.slice(this.top, this.top + rows).forEach((s, j) => {
-      const i = this.top + j, y = 63 + j * 9;
-      if (i === this.i) { fill(8, y - 1, 77, 9, typeof uiDark === 'function' && uiDark() ? 1 : 3); text('>', 10, y, 'gold'); }
-      text(s.slice(0, 11), 19, y, i === this.i ? 'gold' : 2);
+    // Character art occupies the centre-right visual lane, leaving title and menu readable.
+    if (heroA) { const a = sprFit(heroA, 40); blit(a, (heroB ? 112 : 119) - a.width / 2, 132 - a.height + bob); }
+    if (heroB) { const b = sprFit(heroB, 36); blit(b, 139 - b.width / 2, 132 - b.height - bob); }
+    const net = NET.offline ? 'OFFLINE' : NET.isOnline() ? `ONLINE ${NET.peers.length}` : 'LOCAL';
+    const netW = net.length * 5 + 10;
+    fill(W - netW - 3, 3, netW, 10, gothic ? '#344440' : 3);
+    text(net, W - netW + 2, 5, gothic ? palette.ink : 0);
+
+    // Header panel, ornamental separators and restrained title hierarchy.
+    frame(5, 5, 150, 43);
+    if (gothic && IMG.au_banners_000) ctx.drawImage(IMG.au_banners_000, 43, 2, 74, 10);
+    textC('LOST KINGDOM OF', 80, 9, 1);
+    textC('SHADOWBANE', 80, 18, 2);
+    textC('CHRONICLES', 80, 27, 3);
+    textC(BUILD.subtitle, 80, 38, 2);
+
+    const options = this.opts(), rows = Math.min(options.length, 7), height = rows * 10 + 8;
+    this.top = Math.max(0, Math.min(this.top, options.length - rows));
+    if (this.i < this.top) this.top = this.i;
+    if (this.i >= this.top + rows) this.top = this.i - rows + 1;
+    const menuX = 5, menuY = 59, menuW = 82, menuH = height;
+    frame(menuX, menuY, menuW, menuH);
+    if (this.top > 0) textC('^', menuX + menuW / 2, menuY - 5, 'gold');
+    if (this.top + rows < options.length) textC('v', menuX + menuW / 2, menuY + menuH - 4, 'gold');
+    options.slice(this.top, this.top + rows).forEach((label, j) => {
+      const index = this.top + j, y = menuY + 5 + j * 10;
+      if (index === this.i) {
+        fill(menuX + 3, y - 1, menuW - 6, 9, gothic ? '#526a59' : 3);
+        if (gothic && IMG.au_buttons_000) ctx.drawImage(IMG.au_buttons_000, menuX + 2, y - 2, menuW - 4, 11);
+        text('>', menuX + 7, y, 'gold');
+      }
+      text(label.slice(0, 12), menuX + 18, y, index === this.i ? 'gold' : 2);
     });
-    textC(`AELMOOR  ${BUILD.version}`, 80, 134, 1);
+    // Selection detail and game status occupy a separate stone card.
+    frame(92, 72, 63, 39);
+    const descriptions = {
+      CONTINUE: 'RETURN TO YOUR LAST SAVE',
+      'NEW GAME': 'BEGIN A NEW JOURNEY',
+      'LOAD GAME': 'CHOOSE A SAVE SLOT',
+      'STORY TRAILERS': 'THE CHRONICLES',
+      ONLINE: 'ENTER THE REALMS',
+      ACCOUNT: 'ACCOUNT & CHARACTERS',
+      EXTRAS: 'CODEX AND DISCOVERIES',
+      SETTINGS: 'TUNE YOUR EXPERIENCE',
+      CREDITS: 'THE MAKERS'
+    };
+    const selected = options[this.i] || 'NEW GAME';
+    if (gothic && IMG.au_menu_icons_000) {
+      const icons = ['au_menu_icons_000','au_menu_icons_001','au_menu_icons_002','au_menu_icons_003','au_menu_icons_004','au_menu_icons_005','au_menu_icons_006','au_menu_icons_007','au_menu_icons_008','au_menu_icons_009','au_menu_icons_010','au_menu_icons_011'];
+      const slot = options.indexOf(selected);
+      const icon = IMG[icons[Math.max(0, slot) % icons.length]] ? icons[Math.max(0, slot) % icons.length] : null;
+      if (icon) blit(sprFit(icon, 15), 96, 77);
+    }
+    textC(selected.slice(0, 17), 124, 76, 'gold');
+    const desc = descriptions[selected] || 'ADVENTURE AWAITS';
+    text(wrap(desc, 17).slice(0, 2).join('\n'), 96, 92, 2);
+    textC('A / ENTER : SELECT', 123, 115, 2);
+    textC('AELMOOR  •  ' + BUILD.version, 80, 135, 1);
+    textC('UP / DOWN TO CHOOSE', 80, 143, 1);
   }
 }
-
 // ================================================================ SAVE SLOTS
 class SlotPicker {
   constructor(mode) { this.opaque = true; this.mode = mode; this.i = 0; }
