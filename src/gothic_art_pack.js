@@ -5,13 +5,13 @@
 // intentionally not substituted until they have transparent bounds and frame metadata.
 const GOTHIC_ART_PACK = Object.freeze({
   version: '1.0.0',
-  status: 'staging',
+  status: 'partial-runtime-integration',
   categories: Object.freeze({
     characters: { atlas: 'assets_gothic/characters-monsters-atlas.png', runtime: 'characters', frameReady: false },
     monsters: { atlas: 'assets_gothic/characters-monsters-atlas.png', runtime: 'bestiary', frameReady: false },
     weapons: { atlas: 'assets_gothic/weapons-armor-atlas.png', runtime: 'equipment', frameReady: false },
     armor: { atlas: 'assets_gothic/weapons-armor-atlas.png', runtime: 'equipment', frameReady: false },
-    skills: { atlas: 'assets_gothic/skills-abilities-atlas.png', runtime: 'skills', frameReady: false },
+    skills: { atlas: 'assets/gothic_skills_atlas.png', runtime: 'hotbar', frameReady: true, spriteCount: 24, columns: 8, rows: 3, cellWidth: 32, cellHeight: 36 },
     biomes: { atlas: 'assets_gothic/biomes-atlas.png', runtime: 'overworld', frameReady: false },
     dungeons: { atlas: 'assets_gothic/dungeon-interiors-atlas.png', runtime: 'dungeons', frameReady: false },
     items: { atlas: 'assets_gothic/catalog-items-monsters-atlas.png', runtime: 'inventory', frameReady: false },
