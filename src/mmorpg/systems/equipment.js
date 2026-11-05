@@ -44,10 +44,10 @@ function validateItemForSlot(loadout, item, slot) {
   return { ok: true };
 }
 
-export function equipItem(loadout, item) {
+export function equipItem(loadout, item, targetSlot = item?.slot) {
   const valid = validateLoadout(loadout);
   if (!valid.ok) return valid;
-  const slot = item?.slot;
+  const slot = targetSlot;
   const check = validateItemForSlot(loadout, item, slot);
   if (!check.ok) return check;
 
@@ -75,12 +75,12 @@ export function unequipItem(loadout, slot) {
   return { ok: true, item };
 }
 
-export function canEquipItem(loadout, item) {
+export function canEquipItem(loadout, item, targetSlot = item?.slot) {
   const valid = validateLoadout(loadout);
   if (!valid.ok) return valid;
-  const check = validateItemForSlot(loadout, item, item?.slot);
+  const check = validateItemForSlot(loadout, item, targetSlot);
   if (!check.ok) return check;
-  if (item.slot === "offHand" && isTwoHanded(loadout.equipment.mainHand)) {
+  if (targetSlot === "offHand" && isTwoHanded(loadout.equipment.mainHand)) {
     return { ok: false, reason: "main_hand_requires_both_hands" };
   }
   return { ok: true };
