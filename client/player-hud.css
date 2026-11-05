@@ -30,3 +30,6 @@
 body:not(.ready) .gbq-player-hud { display:none; }
 body.chat-on .gbq-player-hud { right:300px; }
 @media(max-width:900px) { body.chat-on .gbq-player-hud { right:0; } }
+
+.gbq-hud-hotbar button:disabled { opacity:.38; filter:grayscale(1); cursor:not-allowed; border-color:#514b43; }
+.gbq-hud-map-art { display:block; width:100%; image-rendering:pixelated; }
