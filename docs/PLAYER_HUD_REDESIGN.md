@@ -19,10 +19,10 @@ The browser game now includes a responsive dark-fantasy DOM HUD layer. The origi
 
 The HUD is read-only with respect to player progression. It polls the live state at a low frequency and does not alter stats, inventory, equipment, quests, or saves. Navigation buttons reuse existing scene constructors and the existing world atlas. The legacy canvas HUD and its renderer remain available as a fallback.
 
-The map panel is currently a stylized location panel, not a new tile-map renderer. Action slots are presentation/shortcut slots until they are connected to the game's authoritative combat-art activation API.
-
 ## Live gameplay integration
 
 - During combat, the HUD reads the active battle's authoritative hotbar entries through `window.GBQCombatHotbar`; action buttons invoke the battle's existing `useHotbar` method, preserving target selection, resource costs, cooldowns, and combat rules. Unavailable actions are disabled.
 - In the overworld, `window.GBQWorldMapMini` exposes a read-only snapshot of the current `Field` map rows, player tile coordinates, region name, and nearby entity markers. The HUD draws that snapshot to its minimap canvas and updates the location/coordinate labels from the same source.
 - The bridge functions are read-only except for the explicit hotbar `use(index)` action. They do not add a parallel combat or map state model.
+
+- In real-time combat, hotbar entries expose remaining cooldown and global-cooldown ticks from the active battle. The HUD shows a seconds overlay and disables unavailable or paused actions; the battle engine remains authoritative for activation.
