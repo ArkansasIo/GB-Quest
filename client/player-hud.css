@@ -33,3 +33,6 @@ body.chat-on .gbq-player-hud { right:300px; }
 
 .gbq-hud-hotbar button:disabled { opacity:.38; filter:grayscale(1); cursor:not-allowed; border-color:#514b43; }
 .gbq-hud-map-art { display:block; width:100%; image-rendering:pixelated; }
+
+.gbq-hud-hotbar button .gbq-hud-cooldown { position:absolute; inset:0; display:grid; place-items:center; border-radius:3px; background:#05080bdc; color:#f2d18b; font:700 12px Cinzel,Georgia,serif; font-style:normal; text-shadow:0 1px 2px #000; pointer-events:none; }
+.gbq-hud-hotbar button:disabled .gbq-hud-cooldown { opacity:1; }
