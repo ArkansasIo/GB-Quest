@@ -101,13 +101,13 @@ public final class CharacterRules {
     }
     private static Set<String> saveProficiencies(String id){
         return switch(id){
-            case "warden","vanguard","berserker","wyrmlancer","dreadknight" -> Set.of("STR","CON");
-            case "chaplain","cantor","stormcaller","sunwarden" -> Set.of("WIS","CHA");
+            case "warden","berserker","wyrmlancer","dreadknight","runeblade" -> Set.of("STR","CON");
+            case "chaplain","stormcaller","sunwarden","vanguard","pactbound" -> Set.of("WIS","CHA");\n            case "cantor","bladedancer","corsair" -> Set.of("DEX","CHA");
             case "verdant","arcanist","scalesage","necromancer" -> Set.of("INT","WIS");
             case "strider","ronin","ascetic" -> Set.of("STR","DEX");
             case "shade","shinobi","puppeteer" -> Set.of("DEX","INT");
-            case "wildblood" -> Set.of("STR","WIS");
-            case "pactbound" -> Set.of("WIS","CHA");
+            case "wildblood" -> Set.of("CON","CHA");
+            
             case "bladedancer","corsair" -> Set.of("DEX","CHA");
             case "beastcaller" -> Set.of("STR","CHA");
             case "voidhunter" -> Set.of("DEX","CON");
