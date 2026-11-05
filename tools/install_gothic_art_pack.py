@@ -65,6 +65,6 @@ def main():
        "Captions, panel borders and UI mockups may remain in some crops.",
        "Split and validate individual sprites and animation frames before runtime replacement.",
        "Legacy assets are intentionally retained until replacement coverage is verified."]}
-    (args.output/"asset-manifest.json").write_text(json.dumps(manifest,indent=2)+"\\n",encoding="utf-8")
+    (args.output/"asset-manifest.json").write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8")
     print(f"Staged {len(records)} images in {args.output}")
 if __name__=="__main__": main()
