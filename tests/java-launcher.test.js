@@ -19,7 +19,7 @@ test('Java launcher metadata points to a real manifest entry class', () => {
 
 test('Java launcher opens the generated full-window HTML build by default', () => {
   const source = read('java-launcher/src/main/java/io/arkansasio/gbquest/Main.java');
-  assert.match(source, /dist", "gbquest-fullscreen\.html/);
+  assert.match(source, /Path\.of\("dist",\s*"gbquest-fullscreen\.html"\)/);
   assert.match(source, /Desktop\.getDesktop\(\)\.browse\(gameUri\)/);
   assert.match(source, /Files\.isRegularFile\(gameFile\)/);
 });
