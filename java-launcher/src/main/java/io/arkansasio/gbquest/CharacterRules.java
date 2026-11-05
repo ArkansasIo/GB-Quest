@@ -51,8 +51,8 @@ public final class CharacterRules {
         addClass(cl,"voidhunter","Voidhunter",10,"DEX","dps"); addClass(cl,"scalesage","Scalesage",8,"INT","healer");
         addClass(cl,"stormcaller","Stormcaller",8,"WIS","healer");
         // Additional legacy job slots use conservative defaults until their exact class records are ported.
-        addClass(cl,"ranger","Ranger",10,"DEX","dps"); addClass(cl,"duelist","Duelist",8,"DEX","dps");
-        addClass(cl,"spellblade","Spellblade",8,"INT","dps"); addClass(cl,"guardian","Guardian",12,"STR","tank");
+        addClass(cl,"necromancer","Necromancer",6,"INT","dps"); addClass(cl,"summoner","Summoner",8,"CHA","dps");
+        addClass(cl,"sunwarden","Sunwarden",10,"WIS","healer"); addClass(cl,"runeblade","Runeblade",10,"STR","tank");
         CLASSES=Map.copyOf(cl);
         SKILLS=Map.ofEntries(Map.entry("athletics","STR"),Map.entry("acrobatics","DEX"),Map.entry("stealth","DEX"),
           Map.entry("sleight","DEX"),Map.entry("arcana","INT"),Map.entry("history","INT"),Map.entry("investigation","INT"),
@@ -102,15 +102,15 @@ public final class CharacterRules {
     private static Set<String> saveProficiencies(String id){
         return switch(id){
             case "warden","vanguard","berserker","wyrmlancer","dreadknight" -> Set.of("STR","CON");
-            case "chaplain","cantor","stormcaller" -> Set.of("WIS","CHA");
-            case "verdant","arcanist","scalesage" -> Set.of("INT","WIS");
+            case "chaplain","cantor","stormcaller","sunwarden" -> Set.of("WIS","CHA");
+            case "verdant","arcanist","scalesage","necromancer" -> Set.of("INT","WIS");
             case "strider","ronin","ascetic" -> Set.of("STR","DEX");
             case "shade","shinobi","puppeteer" -> Set.of("DEX","INT");
             case "wildblood" -> Set.of("STR","WIS");
             case "pactbound" -> Set.of("WIS","CHA");
             case "bladedancer","corsair" -> Set.of("DEX","CHA");
             case "beastcaller" -> Set.of("STR","CHA");
-            case "voidhunter" -> Set.of("DEX","CON");
+            case "voidhunter" -> Set.of("DEX","CON");\n            case "summoner" -> Set.of("CON","CHA");\n            case "runeblade" -> Set.of("STR","CON");
             default -> Set.of("STR","CON");
         };
     }
