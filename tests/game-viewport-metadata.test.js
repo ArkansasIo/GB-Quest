@@ -20,15 +20,14 @@ test('game metadata declares the HTML5 entry point and native viewport dimension
 
 test('fullscreen browser source fills the viewport and preserves the game aspect ratio', () => {
   const source = read('client/fullscreen.html');
-  assert.match(source, /html, body \\{ width: 100%; height: 100%;/);
+  assert.match(source, /html, body \{ width: 100%; height: 100%;/);
   assert.match(source, /inset: 0 !important; width: 100vw !important; height: 100dvh !important/);
-  assert.match(source, /aspect-ratio: 160 \\/ 144/);
+  assert.match(source, /aspect-ratio: 160 \/ 144/);
   assert.match(source, /requestFullscreen/);
-  assert.match(source, /fullscreenRequiresUserGesture/ === true ? /requestFullscreen/ : /requestFullscreen/);
 });
 
 test('build pipeline emits the full-window browser artifact', () => {
   const build = read('tools/build.cjs');
-  assert.match(build, /client\\/fullscreen\\.html/);
-  assert.match(build, /gbquest-fullscreen\\.html/);
+  assert.match(build, /client\/fullscreen\.html/);
+  assert.match(build, /gbquest-fullscreen\.html/);
 });
