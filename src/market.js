@@ -185,8 +185,24 @@ class MarketScene {
     });
     frame(1, 102, 158, 41);
     const e = V[this.i];
-    if (e && this.tab === 0) { text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2); if (e.item) text(wrap(itemDesc(e.item), 25).slice(0, 2).join('\n'), 5, 114, 3); else text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 114, 3); }
-    else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 105, 2);
+    // Gear inspection in the market uses the same live character stat/equipment
+    // model as the inventory screen, so listings show real upgrade deltas.
+    const gear = e && (this.tab === 1 ? e.src && e.src.item : e.item);
+    if (gear) {
+      if (this.tab === 0) text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
+      else if (this.tab === 1) text(`VALUE ${fmt(e.value)} G  DEPOSIT ${depositFor(e.value)} G`.slice(0, 25), 5, 105, 2);
+      else text(`LISTED AT ${fmt(e.price)} G`, 5, 105, 2);
+      const slot = SLOT_NAME[itemSlot(gear)] || 'GEAR';
+      text(`IL${gear.ilvl || 1} ${slot} ${itemKeyStat(gear)}`.slice(0, 25), 5, 114, 3);
+      const equipped = equippedFor(G, gear);
+      const delta = equipped ? itemPower(G, gear) - itemPower(G, equipped) : 0;
+      const affix = (gear.affixes || []).slice(0, 2).map(([k, v]) => SUBSTATS[k] ? `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 5)}` : '').filter(Boolean).join(' ');
+      const comparison = equipped ? `VS EQUIPPED ${delta >= 0 ? '+' : ''}${Math.round(delta)} PWR` : 'NEW EQUIPMENT SLOT';
+      text((affix || comparison).slice(0, 25), 5, 123, equipped && delta < 0 ? 'red' : 'green');
+    } else if (e && this.tab === 0) {
+      text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
+      text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 114, 3);
+    } else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 105, 2);
     else if (e && this.tab === 2) text(`LISTED AT ${fmt(e.price)} G\nA: CANCEL`, 5, 105, 2);
     text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 5, 134, this.msg ? 'gold' : 1);
   }
