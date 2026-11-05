@@ -28,6 +28,9 @@ public final class GameState {
 
     public GameState() {
         generateWorld();
+        inventory.add(ItemSystem.generate("rusted_sword", ItemSystem.Rarity.COMMON, 1, random));
+        inventory.add(ItemSystem.generate("padded_vest", ItemSystem.Rarity.COMMON, 1, random));
+        inventory.equip(0); inventory.equip(0);
         syncHeroStats();
         spawnEnemy(16, 10, "Ash Wolf", 22, 4, 8);
         spawnEnemy(25, 17, "Grave Raider", 30, 5, 12);
