@@ -55,6 +55,6 @@ The newer instance-based MMORPG rules layer provides a separate material-based e
 - Success chance starts at 100% and decreases by 2.5 percentage points per current enhancement level, with a 50% floor.
 - A failed attempt consumes the quoted materials and copper but does not change the item's enhancement level or stats.
 - Successful stat scaling is calculated from the stored original stat baseline, preventing repeated upgrades from compounding the multiplier.
-- Quotes, material availability, wallet balance, stat validity and random-source bounds are checked before resources are consumed.
+- Quotes, material availability, wallet balance, stat validity, projected stat results and random-source bounds are checked before resources are consumed. Overflowing enhancement results are rejected without charging the player or consuming materials.
 
 Run the enhancement tests with `node --test tests/mmorpg/gear-upgrade.test.js`.
