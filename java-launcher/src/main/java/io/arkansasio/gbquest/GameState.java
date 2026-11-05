@@ -75,7 +75,7 @@ public final class GameState {
             if(d<best){best=d;target=e;}
         }
         if(target!=null) {
-            int damage=attack+CharacterRules.modifier(hero.base.getOrDefault("STR",10))/2+random.nextInt(4);
+            int damage=attack+CharacterRules.modifier(hero.base.getOrDefault(CharacterRules.primaryAttribute(hero.classId),10))/2+random.nextInt(4);
             target.hp-=damage;
             if(target.hp<=0){target.alive=false;xp+=target.xp;gold+=target.xp/2;wallet.gold=gold;boolean leveled=hero.grantXp(target.xp);level=hero.level;xp=hero.xp;syncHeroStats();message=target.name+" defeated! +"+target.xp+" XP"+(leveled?" — LEVEL UP!":"");messageTicks=150;}
             else {message="Hit "+target.name+" for "+damage;messageTicks=70;}
@@ -102,7 +102,7 @@ public final class GameState {
     }
     public void restoreProgress(){hero.level=Math.max(1,Math.min(CharacterRules.MAX_LEVEL,level));hero.xp=Math.max(0,xp);syncHeroStats();hp=Math.max(0,Math.min(maxHp,hp));hero.hp=hp;}
     public void refreshDerivedStats(){syncHeroStats();}
-    private void syncHeroStats(){inventory.applyTo(hero);gold=wallet.gold;CharacterRules.Derived d=CharacterRules.derive(hero);maxHp=d.hpMax();hp=Math.min(hp,maxHp);attack=4+d.proficiency()+d.modifiers().get("STR")+inventory.totalStats().getOrDefault("DMG",0);defense=d.armorClass();hero.hp=hp;hero.maxHp=maxHp;hero.level=level;hero.xp=xp;}
+    private void syncHeroStats(){inventory.applyTo(hero);gold=wallet.gold;CharacterRules.Derived d=CharacterRules.derive(hero);maxHp=d.hpMax();hp=Math.min(hp,maxHp);attack=4+d.proficiency()+d.modifiers().get(CharacterRules.primaryAttribute(hero.classId))+inventory.totalStats().getOrDefault("DMG",0);defense=d.armorClass();hero.hp=hp;hero.maxHp=maxHp;hero.level=level;hero.xp=xp;}
     public static final class Enemy {
         public final long id; public double x,y; public final String name; public int hp; public final int maxHp,damage,xp; public boolean alive=true;
         Enemy(long id,double x,double y,String name,int hp,int damage,int xp){this.id=id;this.x=x;this.y=y;this.name=name;this.hp=hp;this.maxHp=hp;this.damage=damage;this.xp=xp;}
