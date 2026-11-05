@@ -132,7 +132,7 @@ async function loadCitadelAssets() {
     for (const [path] of Object.entries(window.GBQ_CITADEL_ASSETS)) {
       const parts = path.split('/');
       if (parts.length < 3 || parts[0] !== 'assets_citadel') continue;
-      const category = parts[1], id = parts[parts.length - 1].replace(/\\.svg$/i, '');
+      const category = parts[1], id = parts[parts.length - 1].replace(/\.svg$/i, '');
       const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', props: 'prop', terrain: 'terrain', buildings: 'building', roads: 'road', weapons: 'weapon', armor: 'armor', shields: 'shield', ui: 'ui' })[category] || category;
       const key = `citadel_${singular}_${id}`;
       if (await loadImage(key, path)) loaded++;
