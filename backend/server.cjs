@@ -29,6 +29,8 @@ process.on('uncaughtException', e => { log.error('uncaught exception', e); log.f
 process.on('unhandledRejection', e => log.error('unhandled promise rejection', e instanceof Error ? e : { reason: String(e) }));
 const ROOT_ACCOUNT_ID = String(process.env.GBQ_ROOT_ID || '').toLowerCase();
 const ADMIN_ACCOUNT_ID = String(process.env.GBQ_ADMIN_ID || '').toLowerCase();
+// Privileged realm administration is opt-in; public/default deployments keep it disabled.
+const ADMIN_ENABLED = process.env.GBQ_ENABLE_ADMIN === '1';
 const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3, MAX_PRESENCE = 2048;
 const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end', 'chat', 'trade']);
 
@@ -95,7 +97,7 @@ const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.create
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
 // staffRoles may hold 'root' only when set by a localhost claim or the admin CLI (backend/admin-cli.cjs)
-const adminRoleFor = acct => isRoot(acct) ? 'root' : isAdmin(acct) ? 'admin' : (['root', 'admin', 'moderator'].includes(db.staffRoles[acct.id]) ? db.staffRoles[acct.id] : 'player');
+const adminRoleFor = acct => !ADMIN_ENABLED ? 'player' : isRoot(acct) ? 'root' : isAdmin(acct) ? 'admin' : (['root', 'admin', 'moderator'].includes(db.staffRoles[acct.id]) ? db.staffRoles[acct.id] : 'player');
 // does the realm already have someone who can run it?
 const hasRealmAdmin = () => (!!ROOT_ACCOUNT_ID && !!accountById(ROOT_ACCOUNT_ID)) || (!!ADMIN_ACCOUNT_ID && !!accountById(ADMIN_ACCOUNT_ID)) || Object.values(db.staffRoles).some(r => r === 'root' || r === 'admin');
 // a request made on the server's own computer, not through a proxy (a proxy on the same machine would look local)
@@ -191,6 +193,8 @@ const server = http.createServer(async (req, res) => {
   });
   const A = event => audit.record({ ip, reqId, ...event }); // audit with request context
   try {
+    // Hide the control plane and deny every admin API route unless explicitly enabled.
+    if (!ADMIN_ENABLED && (p === '/admin' || p.startsWith('/admin/') || p.startsWith('/api/admin/'))) return json(res, 404, { error: 'Not found.' });
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
@@ -401,7 +405,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (p === '/api/logout' && req.method === 'POST') { delete db.sessions[sess.token]; save(); A({ ...actx, action: 'auth.logout' }); return json(res, 200, { ok: true }); }
-    if (p === '/api/me') return json(res, 200, { account: publicAcct(sess.acct), slots: Object.keys(db.saves[uid] || {}), role: adminRoleFor(sess.acct), canClaimAdmin: !hasRealmAdmin() && isLocalRequest(req) });
+    if (p === '/api/me') return json(res, 200, { account: publicAcct(sess.acct), slots: Object.keys(db.saves[uid] || {}), role: adminRoleFor(sess.acct), canClaimAdmin: ADMIN_ENABLED && !hasRealmAdmin() && isLocalRequest(req) });
     if (p.startsWith('/api/friends') && !db.realmSettings.socialEnabled) return json(res, 503, { error: 'Realm social features are disabled.' });
     if (p === '/api/friends' && req.method === 'GET') {
       const friends = friendIds(uid).map(publicFriend).filter(Boolean);
