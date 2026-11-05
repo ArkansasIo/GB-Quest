@@ -8,9 +8,9 @@ import java.util.*;
 /** Versioned local persistence for character progression, wallet and exact equipment rolls. */
 public final class SaveStore {
     private SaveStore() {}
-    public static void save(GameState s) throws IOException {
-        Path file=Path.of("saves","java-edition.properties");
-        Files.createDirectories(file.getParent());
+    public static void save(GameState s) throws IOException { save(s,Path.of("saves","java-edition.properties")); }
+    public static void save(GameState s,Path file) throws IOException {
+        if(file.getParent()!=null)Files.createDirectories(file.getParent());
         Properties p=new Properties();
         p.setProperty("version","2");
         p.setProperty("x",Double.toString(s.x));p.setProperty("y",Double.toString(s.y));
@@ -22,8 +22,8 @@ public final class SaveStore {
         for(var entry:s.inventory.equipment().entrySet())writeItem(p,"equip."+entry.getKey().name(),entry.getValue());
         try(var out=Files.newOutputStream(file)){p.store(out,"GB-Quest native Java save");}
     }
-    public static void load(GameState s) throws IOException {
-        Path file=Path.of("saves","java-edition.properties");
+    public static void load(GameState s) throws IOException { load(s,Path.of("saves","java-edition.properties")); }
+    public static void load(GameState s,Path file) throws IOException {
         if(!Files.isRegularFile(file))return;
         Properties p=new Properties();try(var in=Files.newInputStream(file)){p.load(in);}
         String version=p.getProperty("version","1");
