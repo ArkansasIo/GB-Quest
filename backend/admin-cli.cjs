@@ -44,6 +44,7 @@ const roleOf = (db, a) => {
 };
 
 async function main() {
+  if (process.env.GBQ_ENABLE_ADMIN !== '1') fail('Admin CLI is disabled. Set GBQ_ENABLE_ADMIN=1 only for an isolated private development realm.');
   const args = process.argv.slice(2), force = args.includes('--force'), [cmd, ...rest] = args.filter(a => a !== '--force');
   if (!cmd || cmd === 'help' || cmd === '--help') { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 13).map(l => l.replace(/^\/\/ ?/, '')).join('\n')); return; }
   if (cmd !== 'list' && !force && await serverRunning()) fail(`the realm server is running on ${HOST}:${PORT}. Stop it first (it would overwrite this change), or claim admin in game: ONLINE > ACCOUNT > CLAIM REALM ADMIN.`);
