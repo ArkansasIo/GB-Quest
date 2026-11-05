@@ -36,3 +36,9 @@ test('player HUD uses authoritative combat and field map bridges', () => {
   assert.match(source, /GBQWorldMapMini/);
   assert.match(source, /drawMiniMap\(mapData\)/);
 });
+
+test('player HUD displays authoritative realtime cooldown and pause state', () => {
+  assert.match(source, /remaining=Number\(a\?\.remaining\|\|0\)/);
+  assert.match(source, /gbq-hud-cooldown/);
+  assert.match(styles, /\.gbq-hud-hotbar button \.gbq-hud-cooldown/);
+});
