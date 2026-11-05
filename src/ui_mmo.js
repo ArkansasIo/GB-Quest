@@ -150,7 +150,22 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     for (let i = 0; i < Hb.slots; i++) {
       const x = Hb.x + i * Hb.step, y = Hd.y + 6;
       panel(x, y, 18, 14, 0);
-      if (i < 4) { const a = arts[i]; if (a) { const gothicIcons = ['au_skill_icons_000', 'au_skill_icons_001', 'au_skill_icons_002', 'au_skill_icons_003']; const ic = isGothic() ? gothicIcons[i] : (a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'); if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2); } }
+      if (i < 4) {
+        const a = arts[i];
+        if (a) {
+          if (isGothic() && IMG.gothic_skills_atlas) {
+            const key = String(a.id || a.name || a.kind || i);
+            let hash = 2166136261;
+            for (let k = 0; k < key.length; k++) { hash ^= key.charCodeAt(k); hash = Math.imul(hash, 16777619); }
+            const iconIndex = (hash >>> 0) % 24;
+            const sx = (iconIndex % 8) * 32, sy = Math.floor(iconIndex / 8) * 36;
+            ctx.drawImage(IMG.gothic_skills_atlas, sx, sy, 32, 36, x + 3, y + 1, 12, 12);
+          } else {
+            const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst';
+            if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2);
+          }
+        }
+      }
       else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 3, y + 2); textR(String(Math.min(99, n)), x + 17, y + 6, n ? 3 : 2); }
     }
   }
