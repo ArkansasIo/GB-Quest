@@ -1,0 +1,33 @@
+name: Audit HD64 6,000 Asset Pack
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install image dependencies
+        run: python -m pip install --disable-pip-version-check numpy Pillow
+      - name: Generate complete HD64 asset pack
+        run: python tools/gen_pack6000_hd.py --zip GB-Quest-6000-HD64-Assets.zip
+      - name: Audit all generated assets
+        run: python tools/audit_pack6000.py --root assets_hd64/gbq_6000 --json-out assets_hd64/gbq_6000/metadata/audit-report.json
+      - name: Test audit failure and duplicate handling
+        run: python tests/test_asset_pack_audit.py
+      - name: Upload audited asset pack and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: GB-Quest-HD64-6000-Audited
+          path: |
+            GB-Quest-6000-HD64-Assets.zip
+            assets_hd64/gbq_6000/metadata/audit-report.json
+          if-no-files-found: error
+          retention-days: 30

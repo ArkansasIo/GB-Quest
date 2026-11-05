@@ -71,6 +71,10 @@ jobs:
           python-version: "3.12"
       - name: Install art generator dependencies
         run: python -m pip install --upgrade Pillow numpy
+      - name: Test HD64 asset audit utility
+        run: |
+          python -m py_compile tools/audit_pack6000.py tests/test_asset_pack_audit.py
+          python tests/test_asset_pack_audit.py
       - name: Generate native 16x16 world and dungeon tiles
         run: python tools/gen_gbtiles.py
       - name: Generate rank badges, equipment and UI sprites

@@ -53,7 +53,20 @@ generator, or `starter`, the original one).
 | factions_quests_achievements | 150 | banners, heraldic shields, medals, trophies, sealed quest scrolls |
 | promotional_loading_art | 100 | dusk scenes with mountains, a moon, a castle and a lone hero |
 
-Every asset is deterministic (same id, same picture) and every one of the 6,000 is a different image.
+Generation is deterministic (the same asset ID produces the same pixels). The generator uses distinct per-ID seeds, but visual uniqueness is not assumed: the audit reports byte-identical PNGs so collisions can be reviewed.
+
+## Validate a generated pack
+
+After a complete generation (not a `--only` or `--limit` run), validate the manifest and every PNG:
+
+```bash
+python tools/audit_pack6000.py --root assets_hd64/gbq_6000 --json-out assets_hd64/gbq_6000/metadata/audit-report.json
+python tests/test_asset_pack_audit.py
+```
+
+The audit checks all 6,000 sequential IDs, category totals, category/index uniqueness, safe manifest paths, file existence, PNG decoding, 64×64 dimensions, RGBA mode, and byte-identical image groups. Duplicate image content is a warning by default; use `--strict-duplicates` to fail on duplicates. The audit is read-only and does not rewrite assets or manifests.
+
+A dedicated **Audit HD64 6,000 Asset Pack** GitHub Actions workflow regenerates the pack, runs this audit and the focused unit tests, then uploads the ZIP and JSON report.
 
 ## In the Summer port
 
