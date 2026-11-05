@@ -1,0 +1,94 @@
+/* Shadows of the Abyss — browser shell skin.
+   This changes presentation only; canvas/gameplay rendering and input logic remain untouched. */
+:root {
+  --abyss-black:#070609;
+  --abyss-panel:#100d12;
+  --abyss-panel-raised:#1a141a;
+  --abyss-gold:#c6a15c;
+  --abyss-gold-bright:#f0d18b;
+  --abyss-ink:#eee4d2;
+  --abyss-muted:#b5a78f;
+  --abyss-violet:#8d55d9;
+  --abyss-blue:#4d9ce8;
+  --abyss-crimson:#a82b36;
+}
+body.theme-shadows {
+  color:var(--abyss-ink);
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(93,55,115,.20),transparent 42%),
+    radial-gradient(ellipse at 50% 100%,rgba(119,76,28,.12),transparent 55%),
+    var(--abyss-black);
+}
+.theme-shadows .device {
+  background:linear-gradient(145deg,#211a1c 0%,#100d12 52%,#08070a 100%);
+  border:1px solid rgba(198,161,92,.65);
+  border-radius:14px;
+  box-shadow:0 24px 72px rgba(0,0,0,.8),inset 0 1px rgba(255,235,190,.12),0 0 28px rgba(143,92,175,.12);
+}
+.theme-shadows .bezel {
+  background:linear-gradient(160deg,#09070b,#171019 65%,#08070a);
+  border:1px solid rgba(198,161,92,.55);
+  border-radius:8px;
+  box-shadow:inset 0 0 0 1px #030204,0 0 22px rgba(0,0,0,.65);
+}
+.theme-shadows .bezel-top { color:var(--abyss-muted); font-family:Inter,system-ui,sans-serif; }
+.theme-shadows .bezel-top span { background:linear-gradient(90deg,var(--abyss-gold),transparent); }
+.theme-shadows #lcd {
+  image-rendering:auto;
+  border:1px solid rgba(198,161,92,.45);
+  box-shadow:0 0 0 2px #08060a,0 0 22px rgba(101,62,145,.16);
+}
+.theme-shadows .brand {
+  color:var(--abyss-gold-bright);
+  font-family:Cinzel,Georgia,serif;
+  letter-spacing:.13em;
+  text-shadow:0 2px 16px #000,0 0 18px rgba(198,161,92,.18);
+}
+.theme-shadows .brand em { color:var(--abyss-gold); }
+.theme-shadows .brand small { color:var(--abyss-muted); font-family:Inter,system-ui,sans-serif; letter-spacing:.22em; }
+.theme-shadows .round {
+  background:radial-gradient(circle at 32% 25%,#594b55,#241b27 58%,#0c090e);
+  color:var(--abyss-ink);
+  box-shadow:0 4px 0 #030204,0 0 0 2px rgba(198,161,92,.48);
+  font-family:Cinzel,Georgia,serif;
+}
+.theme-shadows .pill {
+  background:linear-gradient(#302431,#100c13);
+  color:#e7d4ad;
+  box-shadow:0 3px 0 #030204;
+  font-family:Inter,system-ui,sans-serif;
+}
+.theme-shadows .chatlog,
+.theme-shadows .chatform input,
+.theme-shadows .build-info {
+  background:rgba(12,9,15,.94);
+  border:1px solid rgba(198,161,92,.48);
+  color:var(--abyss-ink);
+  border-radius:5px;
+}
+.theme-shadows .chat-tabs button,
+.theme-shadows .chatform button,
+.theme-shadows .atlas-btn {
+  background:linear-gradient(180deg,#332638,#120e16);
+  border:1px solid rgba(198,161,92,.55);
+  color:#efdfbd;
+  border-radius:4px;
+}
+.theme-shadows .chat-tabs button[aria-pressed="true"] {
+  background:linear-gradient(180deg,#72532b,#332314);
+  border-color:var(--abyss-gold-bright);
+  color:#fff3d9;
+}
+.theme-shadows .build-info { color:#c9bdab; }
+.theme-shadows .build-info strong { color:var(--abyss-gold-bright); }
+.theme-shadows .round:focus-visible,
+.theme-shadows .pill:focus-visible,
+.theme-shadows .atlas-btn:focus-visible {
+  outline:2px solid var(--abyss-gold-bright);
+  outline-offset:3px;
+}
+.theme-shadows .led { background:var(--abyss-crimson); }
+.theme-shadows.ready .led { background:#5bd69a; box-shadow:0 0 10px #5bd69a; }
+@media(max-width:520px) {
+  .theme-shadows .device { border-radius:10px; }
+}
