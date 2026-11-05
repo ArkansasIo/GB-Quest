@@ -54,3 +54,18 @@ test("vendor sale quotes use the configured resale multiplier", () => {
   assert.equal(quoteVendorSale({ vendorValue: 200 }, { sellMultiplier: 0.4 }).price, 80);
   assert.equal(quoteVendorSale({ vendorValue: 0 }).canSell, false);
 });
+
+test("vendor quotes reject invalid values and unsafe pricing inputs without enabling transactions", () => {
+  assert.equal(quoteVendorPurchase({ vendorValue: 0 }).reason, "invalid_vendor_value");
+  assert.equal(quoteVendorPurchase({ vendorValue: 100 }, { buyMultiplier: -1, availableGold: 1000 }).reason, "invalid_quote");
+  assert.equal(quoteVendorPurchase({ vendorValue: 100 }, { characterLevel: 1, availableGold: -1 }).canPurchase, false);
+  assert.equal(quoteVendorPurchase({ vendorValue: Number.MAX_SAFE_INTEGER }, { availableGold: Number.MAX_SAFE_INTEGER }).reason, "invalid_quote");
+  assert.equal(quoteVendorSale({ vendorValue: 100 }, { sellMultiplier: -0.5 }).canSell, false);
+  assert.equal(quoteVendorSale({ vendorValue: Number.POSITIVE_INFINITY }).reason, "invalid_vendor_value");
+});
+
+test("vendor quotes preserve explicit zero multiplier and unlimited-stock semantics", () => {
+  assert.equal(quoteVendorPurchase({ vendorValue: 100 }, { buyMultiplier: 0 }).reason, "invalid_quote");
+  assert.equal(quoteVendorPurchase({ vendorValue: 100 }, { stock: -1, availableGold: 125 }).canPurchase, true);
+  assert.equal(quoteVendorSale({ vendorValue: 100 }, { sellMultiplier: 0 }).canSell, false);
+});
