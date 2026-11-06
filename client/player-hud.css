@@ -36,3 +36,9 @@ body.chat-on .gbq-player-hud { right:300px; }
 
 .gbq-hud-hotbar button .gbq-hud-cooldown { position:absolute; inset:0; display:grid; place-items:center; border-radius:3px; background:#05080bdc; color:#f2d18b; font:700 12px Cinzel,Georgia,serif; font-style:normal; text-shadow:0 1px 2px #000; pointer-events:none; }
 .gbq-hud-hotbar button:disabled .gbq-hud-cooldown { opacity:1; }
+
+.gbq-hud-map-tools { display:flex; align-items:center; justify-content:flex-end; gap:4px; min-height:22px; margin-bottom:4px; color:#d9c18d; font:700 9px Inter,Arial,sans-serif; letter-spacing:.1em; }
+.gbq-hud-map-tools span { margin-right:auto; }
+.gbq-hud-map-tools button { width:23px; height:21px; padding:0; border:1px solid #806943; border-radius:3px; background:#111820; color:#f0d18d; font:700 14px Georgia,serif; cursor:pointer; }
+.gbq-hud-map-tools button:hover { border-color:#e7c477; background:#29313a; }
+.gbq-hud-map-art { cursor:crosshair; touch-action:manipulation; }
