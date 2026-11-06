@@ -26,7 +26,9 @@ function walkCitadel(dir) {
 }
 walkCitadel(path.join(ROOT, 'assets_citadel'));
 const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fromEntries(citadelFiles)) + ';</script>\n';
-const themeShadows = rd('client/theme-shadows.css').replaceAll('url("GBQ_MASTER_CATALOG")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_master_catalog.png')).toString('base64') + '")');
+const themeShadows = rd('client/theme-shadows.css')
+  .replaceAll('url("GBQ_MASTER_CATALOG")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_master_catalog.png')).toString('base64') + '")')
+  .replaceAll('url("GBQ_UI_MOCKUP")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_ui_mockup_catalog.png')).toString('base64') + '")');
 const shell = rd('client/shell.html').replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + themeShadows + '\n</style>');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
