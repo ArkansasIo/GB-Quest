@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 test('browser build includes HD character art runtime before world-scene consumers', () => {
-  const builder = fs.readFileSync(path.join(root, 'tools/build.py'), 'utf8');
+  const builder = fs.readFileSync(path.join(root, 'tools/build.cjs'), 'utf8');
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const orderMatch = builder.match(/ORDER = \[([^\]]+)\]/);
   assert.ok(orderMatch, 'build script ORDER list is missing');
