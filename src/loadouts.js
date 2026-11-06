@@ -56,6 +56,44 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
     applySpec(G, next); l.active = other; G.hp = Math.min(G.hp, derive(G).hpMax);
     return null;
   }
+  function previewSet(set) {
+    const plan = planSet(set.items, G.eq, G.bag, G.bank), eq = { ...G.eq };
+    const missing = [], available = [];
+    for (const [slot, p] of Object.entries(plan)) {
+      if (p.where === 'worn') { available.push(slot); continue; }
+      if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      const list = p.where === 'bank' ? G.bank : p.where === 'bag' ? G.bag : Object.values(G.eq);
+      const it = list.find(x => x && x.uid === p.uid);
+      if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      for (const s of Object.keys(eq)) if (eq[s] && eq[s].uid === p.uid) delete eq[s];
+      eq[slot] = it; available.push(slot);
+    }
+    const current = derive(G), target = derive({ ...G, eq });
+    const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+    const lines = [
+      set.name + ' · ' + available.length + '/' + Object.keys(set.items || {}).length + ' pieces found',
+      'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
+      'ATTACK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
+      'DAMAGE ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+      'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')'
+    ];
+    if (missing.length) lines.push(('MISSING: ' + missing.join(', ')).slice(0, 58));
+    return { lines, plan, missing, available };
+  }
+  function applySet(set, plan) {
+    let moved = 0; const missing = [];
+    for (const [slot, p] of Object.entries(plan)) {
+      if (p.where === 'worn') continue;
+      if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      if (p.where === 'eq') { const from = Object.keys(G.eq).find(s => G.eq[s] && G.eq[s].uid === p.uid), it = G.eq[from]; delete G.eq[from]; G.bag.push(it); }
+      const list = p.where === 'bank' ? G.bank : G.bag, it = list.find(x => x && x.uid === p.uid);
+      if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      const why = equipItem(G, it, list, slot);
+      if (why) missing.push((SLOT_NAME[slot] || slot) + ' (' + why + ')'); else moved++;
+    }
+    SFX.equip(); saveGame();
+    say([set.name + ': ' + moved + ' piece' + (moved === 1 ? '' : 's') + ' equipped.', ...(missing.length ? [('Unavailable/rejected: ' + missing.join(', ')).slice(0, 60)] : [])], setsMenu);
+  }
   function setsMenu() {
     const l = L(), opts = [...l.sets.map(s => `EQUIP: ${s.name}`), ...(l.sets.length < MAX_SETS ? ['SAVE CURRENT GEAR'] : []), ...(l.sets.length ? ['OVERWRITE A SET', 'RENAME A SET', 'DELETE A SET'] : []), 'BACK'];
     choose(opts, k => {
@@ -68,16 +106,14 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
         choose(names, n => { if (n >= 0) { l.sets[j].name = names[n]; saveGame(); SFX.confirm(); } setsMenu(); }, `Rename ${l.sets[j].name}`);
       }, 'Rename which set?');
       if (o === 'DELETE A SET') return choose(l.sets.map(s => s.name), j => { if (j >= 0) { l.sets.splice(j, 1); saveGame(); } setsMenu(); }, 'Delete which set?');
-      if (inBattle()) return say('Not during a battle.');
-      const set = l.sets[k], plan = planSet(set.items, G.eq, G.bag, G.bank); let moved = 0; const missing = [];
-      for (const [slot, p] of Object.entries(plan)) {
-        if (p.where === 'worn') continue;
-        if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
-        if (p.where === 'eq') { const from = Object.keys(G.eq).find(s => G.eq[s] && G.eq[s].uid === p.uid), it = G.eq[from]; delete G.eq[from]; G.bag.push(it); }
-        const list = p.where === 'bank' ? G.bank : G.bag, it = list.find(x => x && x.uid === p.uid); if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
-        const why = equipItem(G, it, list, slot); if (why) missing.push(`${SLOT_NAME[slot] || slot} (${why})`); else moved++;
+      if (k < l.sets.length) {
+        if (inBattle()) return say('Not during a battle.');
+        const set = l.sets[k], preview = previewSet(set);
+        return choose(['APPLY LOADOUT', 'CANCEL'], action => {
+          if (action !== 0) return setsMenu();
+          applySet(set, preview.plan);
+        }, preview.lines.join(' · ').slice(0, 120));
       }
-      SFX.equip(); saveGame(); say([`${set.name}: ${moved} piece${moved === 1 ? '' : 's'} equipped.`, ...(missing.length ? [`Missing: ${missing.join(', ')}`.slice(0, 60)] : [])], setsMenu);
     }, `EQUIPMENT SETS ${l.sets.length}/${MAX_SETS}`);
   }
   function barMenu() {
