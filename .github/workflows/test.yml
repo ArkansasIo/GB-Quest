@@ -79,6 +79,8 @@ jobs:
         run: python tools/gen_hd64.py
       - name: Test HD64 atlas validator
         run: python3 -m unittest discover -s tests -p 'test_hd64_atlas_validation.py'
+      - name: Test directional animation manifest contract
+        run: python3 -m unittest discover -s tests -p 'test_animation_manifest.py'
       - name: Validate HD64 atlas manifests and PNG bounds
         run: python tools/validate_hd64_atlases.py --root assets_hd64
       - name: Generate the 6,000-image HD64 source pack
