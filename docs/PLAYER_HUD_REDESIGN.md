@@ -48,3 +48,8 @@ The HUD is read-only with respect to player progression. It polls the live state
 - Added a compact HUD combat profile with armor class, weapon damage, weapon hit bonus, average equipped item level, and equipped-slot count.
 - Values are read from the existing `derive(G)` result and current `G.eq` loadout. The HUD does not calculate combat outcomes or modify equipment.
 - Empty slots and missing optional stat values render as zero; item level averages only equipped items with a positive item-level value.
+
+
+## Live character attributes panel — November 2026
+
+The player HUD now renders STR, DEX, CON, INT, WIS, CHA, LCK, WIL, and SPD with each score and its signed modifier. Values are read from the existing `derive(G).A` and `derive(G).M` rules outputs; the HUD does not calculate or persist a parallel character sheet. The panel uses a compact three-column desktop grid and is hidden on narrow mobile layouts to preserve the gameplay viewport. A source-level regression test checks all nine bindings and the rules bridge.
