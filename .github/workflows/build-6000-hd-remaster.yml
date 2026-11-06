@@ -28,8 +28,8 @@ jobs:
   build-art-pack:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install image pipeline
@@ -74,7 +74,7 @@ jobs:
                       assert a.dtype.name == 'uint16' and a.shape[-1] == 4, (t, a.shape, a.dtype)
           print('Validated 6,000 PNG remasters and available 16-bit TIFF masters')
           PY
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: GB-Quest-6000-HD-${{ inputs.size }}px
           path: assets_hd64/gbq_6000_hd/

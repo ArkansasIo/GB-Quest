@@ -13,10 +13,10 @@ jobs:
     name: JavaScript rules and systems
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
       - name: Validate Electron launcher JavaScript
         run: |
           node --check desktop/main.cjs
@@ -39,7 +39,7 @@ jobs:
       matrix:
         asm: [OFF, ON]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Configure
         run: cmake -S native -B build/native -DCMAKE_BUILD_TYPE=Release -DGBQ_ENABLE_X86_64_ASM=${{ matrix.asm }}
       - name: Build
@@ -51,7 +51,7 @@ jobs:
     name: C++23 SDL2 desktop build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install SDL2 and CMake
         run: |
           sudo apt-get update
@@ -65,8 +65,8 @@ jobs:
     name: Generate pixel-art assets and atlases
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install art generator dependencies
@@ -90,7 +90,7 @@ jobs:
       - name: Build browser and desktop game bundles
         run: node tools/build.cjs
       - name: Upload generated art package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gb-quest-generated-art
           path: |

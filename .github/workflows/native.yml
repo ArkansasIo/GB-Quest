@@ -15,7 +15,7 @@ jobs:
   native:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Configure assembly-enabled build
         run: cmake -S native -B build/native-asm -DCMAKE_BUILD_TYPE=Release -DGBQ_ENABLE_X86_64_ASM=ON
       - name: Build assembly-enabled core

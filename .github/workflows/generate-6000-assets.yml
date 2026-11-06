@@ -10,8 +10,8 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install Pillow
@@ -34,7 +34,7 @@ jobs:
           print(f"Verified {len(pngs)} PNGs and {len(rows)} unique manifest records.")
           PY
       - name: Upload asset pack
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: GB-Quest-6000-Full-Assets
           path: GB-Quest-6000-Full-Assets.zip
