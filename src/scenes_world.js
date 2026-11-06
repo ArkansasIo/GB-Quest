@@ -743,6 +743,10 @@ class Field {
     }
   }
   draw() {
+    // Original Game Boy world palette: desaturate and shift the overworld to the
+    // four-tone green LCD look while leaving menus and HUD text in their own palette.
+    ctx.save();
+    ctx.filter = 'grayscale(1) sepia(1) saturate(1.7) hue-rotate(43deg) contrast(1.08)';
     const m = this.m, cols = m.rows[0].length, rows = m.rows.length;
     const px = G.x * T + this.ox, py = G.y * T + this.oy;
     const cx = Math.max(0, Math.min(cols * T - W, px - 72)), cy = Math.max(0, Math.min(rows * T - H, py - 64));
@@ -805,6 +809,7 @@ class Field {
       else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
+    ctx.restore(); // keep the classic palette confined to world art and actors
     const mmo = typeof hudMmo === 'function' && hudMmo(), by = mmo ? MMO_LAYOUT.bannerY : 4;
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, by, n.length * 6 + 12, 15); textC(n, 80, by + 3); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, by + 17, 'gold'); }
     if (this.zone && !G.inst && !mmo) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
@@ -1713,6 +1718,9 @@ class WorldMap {
   }
   draw() {
     fill(0, 0, W, H, 0);
+    // Keep the atlas terrain and map markers in the same original Game Boy LCD palette.
+    ctx.save();
+    ctx.filter = 'grayscale(1) sepia(1) saturate(1.7) hue-rotate(43deg) contrast(1.08)';
     const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
     if (this.zoom === 0) {
       const wi = IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s', img = IMG[wi]; const m = spr(wi, img.width, img.height);
@@ -1743,6 +1751,7 @@ class WorldMap {
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
+    ctx.restore(); // preserve the normal UI palette for atlas labels and controls
     fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'VALENDRIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
