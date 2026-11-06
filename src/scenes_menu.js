@@ -173,11 +173,21 @@ class BagScene extends ListScene {
     frame(2, 110, 156, 32);
     const e = L[this.i];
     let d = this.msg || '';
-    if (!d && e) d = this.tab === 0 ? itemDesc(e) : ITEMS[e].desc;
+    if (!d && e) d = this.tab === 0 ? itemInspectText(e) : ITEMS[e].desc;
     text(wrap(d, 24).slice(0, 3).join('\n'), 6, 113);
     if (this.tab === 0) textR(`${G.bag.length}/${BAG_MAX}`, 156, 14 + 0, 3);
     text('SEL:TAB', 120, 102, 1);
   }
+}
+function itemInspectText(it) {
+  const slot = itemSlot(it), equipped = G.eq[slot];
+  let comparison = 'EMPTY SLOT';
+  if (equipped) {
+    const delta = Math.round((itemScore(G, it) - itemScore(G, equipped)) * 10) / 10;
+    comparison = delta > 0 ? `UPGRADE +${delta}` : delta < 0 ? `DOWNGRADE ${delta}` : 'SIDEGRADE';
+  }
+  const slotLabel = SLOT_NAME[slot] || slot.toUpperCase();
+  return `IL${it.ilvl || 1} ${slotLabel} · ${comparison}. ${itemDesc(it)}`;
 }
 function itemDesc(it) {
   let s = `${RARITY[it.rarity].name} IL${it.ilvl}. `;
