@@ -68,7 +68,15 @@ const hd64Pack = {
 let html = fs.readFileSync(index, 'utf8');
 const injectionPoint = '<script>window.NES_INDEX=';
 if (!html.includes(injectionPoint)) throw new Error('Could not locate safe HD64 pack injection point.');
-html = html.replace(injectionPoint, '<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\\n' + injectionPoint);
+// Escape HTML-sensitive characters before embedding JSON in an inline script.
+// This prevents an asset/manifest string containing </script> from terminating the pack.
+const packedJson = JSON.stringify(hd64Pack)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026')
+  .replace(/\\u2028/g, '\\u2028')
+  .replace(/\\u2029/g, '\\u2029');
+html = html.replace(injectionPoint, '<script>window.GBQ_HD64_PACK=' + packedJson + ';</script>\n' + injectionPoint);
 fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');
