@@ -1147,10 +1147,11 @@ class HomeInteriorScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
+  items() { return ['GRAPHICS', 'CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
+    if (this.items()[this.i] === 'GRAPHICS' && P('a')) { push(new GraphicsScene()); SFX.confirm(); return; }
     if (this.items()[this.i] === 'KEY BINDINGS' && P('a')) { push(new KeybindScene()); SFX.confirm(); return; }
     if (this.items()[this.i] === 'CHAT SETTINGS' && P('a') && typeof ChatSettingsScene === 'function') { push(new ChatSettingsScene()); SFX.confirm(); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
@@ -1217,6 +1218,78 @@ class SettingsScene extends ListScene {
     fill(8, 127, 144, 9, '#100d22');
     text('UP/DOWN: MOVE   LEFT/RIGHT: CHANGE', 11, 129, 2);
     text('A: SELECT   B: SAVE & BACK', 11, 136, 'gold');
+  }
+}
+class GraphicsScene extends ListScene {
+  constructor() { super(9); }
+  items() { return ['DISPLAY MODE', 'VIDEO PROFILE', 'UPSCALE RESOLUTION', 'FRAME RATE', 'COLOR PALETTE', 'BRIGHTNESS', 'CONTRAST', 'PIXEL FILTER', 'RESTORE GRAPHICS DEFAULTS', 'BACK']; }
+  value(label) {
+    const values = {
+      'DISPLAY MODE': ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED',
+      'VIDEO PROFILE': S.video === 'hd64' ? 'HD 64-BIT' : 'GAME BOY',
+      'UPSCALE RESOLUTION': ({ native: 'NATIVE', '4k': '4K', '8k': '8K' })[S.hdRes] || 'NATIVE',
+      'FRAME RATE': `${S.fps} FPS`,
+      'COLOR PALETTE': PALS[S.palette]?.name || String(S.palette).toUpperCase(),
+      'BRIGHTNESS': String(S.bright),
+      'CONTRAST': String(S.contrast),
+      'PIXEL FILTER': S.tiles === 'painted' ? 'PAINTED' : 'CRISP PIXELS',
+      'RESTORE GRAPHICS DEFAULTS': 'RESET',
+      'BACK': 'RETURN'
+    };
+    return values[label] || '';
+  }
+  update() {
+    this.navList();
+    if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
+    if (!P('a') && !nav('left') && !nav('right')) return;
+    const label = this.items()[this.i], dir = nav('left') ? -1 : 1;
+    if (label === 'BACK') { saveSettings(); removeScene(this); return; }
+    if (label === 'RESTORE GRAPHICS DEFAULTS') {
+      choose(['CANCEL', 'RESTORE'], choice => {
+        if (choice !== 1) return;
+        S.displayMode = 'windowed'; S.video = 'gb'; S.hdRes = 'native'; S.fps = 60;
+        S.palette = 'gbc'; S.bright = 3; S.contrast = 3; S.tiles = 'pixel';
+        UI = PALS[S.palette]; applyDisplayMode(S.displayMode); clearCaches(); saveSettings(); SFX.confirm();
+      }, 'Restore graphics settings?');
+      return;
+    }
+    if (label === 'DISPLAY MODE') {
+      const modes = ['windowed', 'full-window', 'borderless', 'fullscreen'], k = modes.indexOf(S.displayMode);
+      applyDisplayMode(modes[(k + (dir > 0 ? 1 : modes.length - 1)) % modes.length]);
+    } else if (label === 'VIDEO PROFILE') {
+      if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; }
+      else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; }
+      UI = PALS[S.palette]; clearCaches();
+    } else if (label === 'UPSCALE RESOLUTION') {
+      const values = ['native', '4k', '8k'], k = values.indexOf(S.hdRes);
+      S.hdRes = values[(k + (dir > 0 ? 1 : values.length - 1)) % values.length];
+    } else if (label === 'FRAME RATE') {
+      const values = [12, 60, 240], k = values.indexOf(Number(S.fps));
+      S.fps = values[(k + (dir > 0 ? 1 : values.length - 1)) % values.length];
+    } else if (label === 'COLOR PALETTE') {
+      const k = PAL_ORDER.indexOf(S.palette);
+      S.palette = PAL_ORDER[(k + (dir > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length];
+      UI = PALS[S.palette]; clearCaches();
+    } else if (label === 'BRIGHTNESS') S.bright = Math.max(0, Math.min(6, S.bright + dir));
+    else if (label === 'CONTRAST') S.contrast = Math.max(0, Math.min(6, S.contrast + dir));
+    else if (label === 'PIXEL FILTER') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
+    saveSettings(); SFX.toggle();
+  }
+  draw() {
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#090d26'); bg.addColorStop(.58, '#211b42'); bg.addColorStop(1, '#39294d');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    frame(2, 2, 156, 139, 1); fill(5, 5, 150, 15, '#17112d');
+    textC('AELMOOR  •  GRAPHICS', 80, 9, 'gold');
+    this.items().slice(0, 9).forEach((label, j) => {
+      const y = 27 + j * 11, selected = j === this.i;
+      if (selected) { fill(7, y - 2, 146, 10, '#49301f'); frame(6, y - 3, 148, 11, 1); }
+      text(label, 11, y, selected ? 'gold' : 2);
+      textR(this.value(label), 148, y, selected ? 'gold' : 2);
+    });
+    fill(8, 127, 144, 10, '#100d22');
+    text('UP/DOWN: MOVE  LEFT/RIGHT: CHANGE', 10, 129, 2);
+    text('A: CHANGE  B: SAVE & BACK', 10, 136, 'gold');
   }
 }
 class KeybindScene extends ListScene {
