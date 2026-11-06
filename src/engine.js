@@ -652,7 +652,7 @@ class Choice { // scrolling list with optional prompt
         fill(2, H - 44, W - 4, 1, '#b09258');
         fill(2, H - 3, W - 4, 1, '#51432f');
       } else frame(2, H - 44, W - 4, 42);
-      text(wrap(this.prompt).slice(0, 3).join('\\n'), 8, H - 38, blackbird ? '#e1c78f' : undefined);
+      text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38, blackbird ? '#e1c78f' : undefined);
       bottom = H - 46;
     }
     const vis = this.o.slice(this.top, this.top + this.rows);
