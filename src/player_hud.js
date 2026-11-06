@@ -9,7 +9,7 @@
   const pct = (value, max) => Math.round(clamp(Number(value) / Math.max(1, Number(max))) * 100);
   const fmt = n => Math.max(0, Number(n) || 0).toLocaleString();
   const getGame = () => window.GBQ && window.GBQ.G;
-  let root, timer, lastSignature = '';
+  let root, timer, lastSignature = '';\n  let mapZoom = 1, latestMapData = null;
   const button = (label, key, glyph, extra = '') => `<button class="gbq-hud-nav" type="button" data-hud-action="${key}" ${extra}><span class="gbq-hud-glyph">${glyph}</span><span>${label}</span></button>`;
   function mount() {
     const viewport = document.querySelector('.game-viewport');
@@ -36,7 +36,7 @@
         <section class="gbq-hud-panel gbq-hud-party"><div class="gbq-hud-section-title">PARTY <span data-hud-party-count>1 / 4</span></div><div data-hud-party-list></div></section>
       </aside>
       <aside class="gbq-hud-right">
-        <section class="gbq-hud-panel gbq-hud-map"><canvas class="gbq-hud-map-art" data-hud-minimap width="180" height="112" aria-label="Live local map"></canvas><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
+        <section class="gbq-hud-panel gbq-hud-map"><div class="gbq-hud-map-tools"><span>LOCAL MAP</span><button type="button" data-map-zoom="out" aria-label="Zoom out">−</button><button type="button" data-map-zoom="in" aria-label="Zoom in">+</button><button type="button" data-map-zoom="center" aria-label="Center on player">◎</button></div><canvas class="gbq-hud-map-art" data-hud-minimap width="180" height="112" aria-label="Interactive local map; click a marker to inspect it"></canvas><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
         <section class="gbq-hud-panel gbq-hud-quests"><div class="gbq-hud-section-title">✧ QUESTS <span>⌃</span></div><div data-hud-quests><div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Continue your journey</small></span></div></div></section>
       </aside>
       <div class="gbq-hud-bottom">
@@ -50,14 +50,14 @@
       </div>
       <div class="gbq-hud-toast" role="status" aria-live="polite"></div>`;
     viewport.appendChild(root);
-    root.addEventListener('click', onAction);
+    root.addEventListener('click', onAction);\n    root.querySelector('[data-hud-minimap]').addEventListener('click', onMapClick);
     update();
     timer = window.setInterval(update, 350);
   }
   function onAction(event) {
     const target = event.target.closest('[data-hud-action]');
     if (!target) return;
-    const action = target.dataset.hudAction, api = window.GBQ;
+    if (target.hasAttribute('data-map-zoom')) { const mode=target.dataset.mapZoom; mapZoom=mode==='center'?1:Math.max(1,Math.min(5,mapZoom+(mode==='in'?1:-1))); drawMiniMap(latestMapData); return; }\n    const action = target.dataset.hudAction, api = window.GBQ;
     if (/^slot[1-8]$/.test(action)) { const bridge = window.GBQCombatHotbar, index = Number(action.slice(4)) - 1; if (bridge && typeof bridge.use === 'function' && bridge.entries().length > index) { bridge.use(index); return; } showToast('Combat abilities are available during battle'); return; }
     const sceneMap = {
       character: () => typeof CharacterMenu === 'function' ? new CharacterMenu() : null,
@@ -84,14 +84,27 @@
   function showToast(message) { const toast = root && root.querySelector('.gbq-hud-toast'); if (!toast) return; toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 1800); }
   function drawMiniMap(data) {
     const canvas = root && root.querySelector('[data-hud-minimap]'); if (!canvas) return;
-    const ctx = canvas.getContext('2d'); if (!ctx) return; const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d'); if (!ctx) return; const w=canvas.width,h=canvas.height;
     ctx.clearRect(0,0,w,h); ctx.fillStyle='#17232a'; ctx.fillRect(0,0,w,h);
-    if (!data || !Array.isArray(data.rows) || !data.rows.length) { ctx.fillStyle='#d7c58b'; ctx.font='11px sans-serif'; ctx.fillText('MAP DATA UNAVAILABLE',8,18); return; }
-    const cols=Math.max(1,data.width||1), rows=data.rows.length, sx=w/cols, sy=h/rows;
+    if (!data || !Array.isArray(data.rows) || !data.rows.length) { ctx.fillStyle='#d7c58b';ctx.font='11px sans-serif';ctx.fillText('MAP DATA UNAVAILABLE',8,18);return; }
+    const cols=Math.max(1,data.width||1), totalRows=data.rows.length, tileW=w/cols, tileH=h/totalRows;
+    const viewCols=Math.max(1,cols/mapZoom), viewRows=Math.max(1,totalRows/mapZoom);
+    const left=Math.max(0,Math.min(cols-viewCols,(Number(data.x)||0)+.5-viewCols/2));
+    const top=Math.max(0,Math.min(totalRows-viewRows,(Number(data.y)||0)+.5-viewRows/2));
+    const sx=w/viewCols,sy=h/viewRows;
     const colors={'.':'#73875b',',':'#607b4f','~':'#315d78','w':'#315d78','W':'#315d78','^':'#7a7770','m':'#68715a','f':'#426044','T':'#36563c','#':'#8b8067','d':'#9b8058','s':'#8e815e','L':'#b19a68','+':'#8d7651'};
-    data.rows.forEach((line,y)=>{ for(let x=0;x<String(line).length;x++){ const ch=String(line)[x]; ctx.fillStyle=colors[ch] || (/[0-9A-Z]/.test(ch)?'#64745b':'#657b58'); ctx.fillRect(x*sx,y*sy,Math.ceil(sx+.3),Math.ceil(sy+.3)); }});
-    (data.entities||[]).forEach(e=>{ctx.fillStyle=e.kind==='npc'?'#6fd3d1':e.kind==='pull'?'#e76b55':'#e4c16f';ctx.fillRect((e.x+.5)*sx-1,(e.y+.5)*sy-1,3,3);});
-    ctx.fillStyle='#ffe28a';ctx.strokeStyle='#25180d';ctx.lineWidth=2;ctx.beginPath();ctx.arc((data.x+.5)*sx,(data.y+.5)*sy,4,0,Math.PI*2);ctx.fill();ctx.stroke();
+    const x0=Math.floor(left),y0=Math.floor(top),x1=Math.ceil(left+viewCols),y1=Math.ceil(top+viewRows);
+    for(let y=y0;y<Math.min(totalRows,y1);y++){const line=String(data.rows[y]||'');for(let x=x0;x<Math.min(cols,x1,line.length);x++){ctx.fillStyle=colors[line[x]]||(/[0-9A-Z]/.test(line[x])?'#64745b':'#657b58');ctx.fillRect((x-left)*sx,(y-top)*sy,Math.ceil(sx+.3),Math.ceil(sy+.3));}}
+    (data.entities||[]).forEach(e=>{if(e.x<left||e.x>=left+viewCols||e.y<top||e.y>=top+viewRows)return;ctx.fillStyle=e.kind==='npc'||e.kind==='peer'?'#6fd3d1':e.kind==='pull'||e.kind==='boss'?'#e76b55':e.kind==='waypoint'?'#c18bff':'#e4c16f';ctx.beginPath();ctx.arc((e.x+.5-left)*sx,(e.y+.5-top)*sy,Math.max(2,Math.min(4,sx*.22)),0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle='#ffe28a';ctx.strokeStyle='#25180d';ctx.lineWidth=2;ctx.beginPath();ctx.arc((data.x+.5-left)*sx,(data.y+.5-top)*sy,Math.max(3,Math.min(5,sx*.28)),0,Math.PI*2);ctx.fill();ctx.stroke();
+    canvas.dataset.viewLeft=String(left);canvas.dataset.viewTop=String(top);canvas.dataset.viewCols=String(viewCols);canvas.dataset.viewRows=String(viewRows);
+  }
+  function onMapClick(event) {
+    const canvas=event.currentTarget,rect=canvas.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*canvas.width,y=(event.clientY-rect.top)/rect.height*canvas.height;
+    const left=Number(canvas.dataset.viewLeft||0),top=Number(canvas.dataset.viewTop||0),viewCols=Number(canvas.dataset.viewCols||1),viewRows=Number(canvas.dataset.viewRows||1);
+    const tileX=Math.floor(left+x/canvas.width*viewCols),tileY=Math.floor(top+y/canvas.height*viewRows);
+    const marker=(latestMapData?.entities||[]).find(e=>e.x===tileX&&e.y===tileY);
+    showToast(marker?' '+String(marker.name||marker.kind)+' · '+tileX+','+tileY:'Map tile '+tileX+', '+tileY);
   }
   function update() {
     if (!root || !root.isConnected) { if (timer) window.clearInterval(timer); timer = null; return; }
@@ -112,7 +125,7 @@
     setText('[data-hud-mp-text]', fmt(mp) + ' / ' + fmt(mpMax)); setBar('[data-hud-mp]', pct(mp,mpMax));
     setText('[data-hud-xp-text]', xpPct + '%'); setBar('[data-hud-xp]', xpPct);
     setText('[data-hud-gold]', fmt(g.gold)); setText('[data-hud-gems]', fmt(g.gems || g.crystals || 0));
-    const mapData = typeof window.GBQWorldMapMini === 'function' ? window.GBQWorldMapMini() : null;
+    const mapData = typeof window.GBQWorldMapMini === 'function' ? window.GBQWorldMapMini() : null;\n    latestMapData = mapData;
     setText('[data-hud-zone]', String(mapData?.zone || g.map || 'THE FRONTIER').replace(/[-_]/g,' ').toUpperCase());
     setText('[data-hud-coords]', 'X: ' + Math.round(mapData?.x ?? g.x ?? 0) + ' · Y: ' + Math.round(mapData?.y ?? g.y ?? 0));
     drawMiniMap(mapData);
