@@ -11,6 +11,60 @@
   const getGame = () => window.GBQ && window.GBQ.G;
   let root, timer, lastSignature = '';
   let mapZoom = 1, latestMapData = null;
+  const hudSpriteCache = new Map();
+  function hudSpriteData(name) {
+    if (hudSpriteCache.has(name)) return hudSpriteCache.get(name);
+    const pending = (async () => {
+      const indexes = window.GBQ_HD64_INDEXES || {};
+      let family = '', rect = null;
+      for (const [candidate, sprites] of Object.entries(indexes)) {
+        if (sprites && Object.prototype.hasOwnProperty.call(sprites, name)) {
+          family = candidate; rect = sprites[name]; break;
+        }
+      }
+      if (!family || !Array.isArray(rect) || rect.length < 5) return null;
+      const [page, x, y, width, height] = rect.map(Number);
+      if (![page,x,y,width,height].every(Number.isFinite) || width <= 0 || height <= 0) return null;
+      const key = family + '_' + page;
+      const src = window.GBQ_HD64_ATLASES && window.GBQ_HD64_ATLASES[key] || 'assets_hd64/' + key + '.png';
+      const atlas = new Image();
+      await new Promise((resolve, reject) => {
+        atlas.onload = resolve; atlas.onerror = reject; atlas.src = src;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+      context.imageSmoothingEnabled = false;
+      context.drawImage(atlas, x, y, width, height, 0, 0, width, height);
+      return canvas.toDataURL('image/png');
+    })().catch(error => { console.warn('HUD sprite unavailable:', name, error); return null; });
+    hudSpriteCache.set(name, pending);
+    return pending;
+  }
+  function applyHudSprite(node, name) {
+    if (!node || node.dataset.hudArt === name) return;
+    node.dataset.hudArt = name;
+    hudSpriteData(name).then(src => {
+      if (!src || !node.isConnected || node.dataset.hudArt !== name) return;
+      let image = node.querySelector('img.gbq-hud-art');
+      if (!image) { image = document.createElement('img'); image.className = 'gbq-hud-art'; image.alt = ''; image.setAttribute('aria-hidden','true'); node.appendChild(image); }
+      image.src = src;
+      node.classList.add('has-art');
+    });
+  }
+  function updateHudArtwork(game, hotbar) {
+    const avatar = root && root.querySelector('[data-hud-avatar]');
+    const classId = String(game && game.cls || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+    if (classId) applyHudSprite(avatar, 'np_class_' + classId);
+    root && root.querySelectorAll('.gbq-hud-nav .gbq-hud-glyph').forEach((node, index) => {
+      applyHudSprite(node, 'au_menu_icons_' + String(index).padStart(3,'0'));
+    });
+    if (hotbar) [...hotbar.querySelectorAll('button')].forEach((node, index) => {
+      const icon = node.querySelector('span');
+      if (icon) applyHudSprite(icon, 'au_skill_icons_' + String(index).padStart(3,'0'));
+    });
+  }
   const button = (label, key, glyph, extra = '') => `<button class="gbq-hud-nav" type="button" data-hud-action="${key}" ${extra}><span class="gbq-hud-glyph">${glyph}</span><span>${label}</span></button>`;
   function mount() {
     const viewport = document.querySelector('.game-viewport');
@@ -230,6 +284,7 @@
         }
       }
     }
+    updateHudArtwork(g, hotbar);
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
