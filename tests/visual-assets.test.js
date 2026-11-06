@@ -37,3 +37,25 @@ test('itch.io release gate verifies artwork is embedded in the playable HTML', (
   assert.match(build, /Unresolved artwork placeholder/);
   assert.match(build, /embeddedPngs/);
 });
+
+
+test('itch.io package includes generated HD animation frames, equipment, and visual mappings', () => {
+  const build = read('tools/build-itch.cjs');
+  assert.match(build, /assets_hd64[\\\\/]animations/);
+  assert.match(build, /assets_hd64[\\\\/]equipment/);
+  assert.match(build, /equipment-catalog-visual-map\.json/);
+  assert.match(build, /fs\.cpSync/);
+  assert.match(build, /animation_manifest\.json/);
+  assert.match(build, /equipment_manifest\.json/);
+  assert.match(build, /assets_hd64\\/animations\\/frames/);
+});
+
+test('itch.io workflow generates all six F-rank animation sets before packaging', () => {
+  const workflow = read('.github/workflows/itch-html5.yml');
+  for (const archetype of ['warrior', 'mage', 'ranger', 'rogue', 'cleric', 'summoner']) {
+    assert.match(workflow, new RegExp('\\\\b' + archetype + '\\\\b'));
+  }
+  assert.match(workflow, /report\["total_frames"\] == 2448/);
+  assert.match(workflow, /pip install Pillow/);
+  assert.match(workflow, /npm run build:itch/);
+});
