@@ -11,7 +11,7 @@ test('inventory inspection exposes gear identity, set, condition, sockets and at
   const end = menu.indexOf('\nfunction itemDesc(it)', start);
   assert.ok(start >= 0 && end > start, 'item inspection helper exists');
   const helper = menu.slice(start, end);
-  for (const marker of ['IL', 'setId', 'setPieces', 'maxDur', 'gemSocketCapacity', 'runeSocketCapacity', 'it.sockets', 'it.runeSockets', 'it.attune', 'it.aclass']) {
+  for (const marker of ['IL', 'setId', 'setPieces', 'maxDur', 'maxDurability', 'durability', 'gemSocketCapacity', 'runeSocketCapacity', 'it.sockets', 'it.runeSockets', 'it.attune', 'it.aclass']) {
     assert.ok(helper.includes(marker), 'inspection includes ' + marker);
   }
 });
@@ -34,4 +34,18 @@ test('auction gear preview includes rarity, item level, set, durability, sockets
   for (const marker of ['RARITY[item.rarity]', 'item.ilvl', 'setId', 'item.maxDur', 'gemSocketCapacity', 'runeSocketCapacity', 'item.sockets', 'item.runeSockets', 'item.attune']) {
     assert.ok(helper.includes(marker), 'auction preview includes ' + marker);
   }
+});
+
+test('inspection and vendor previews normalize legacy and current durability fields', () => {
+  const inspectStart = menu.indexOf('function itemInspectText(it)');
+  const inspectEnd = menu.indexOf('\\nfunction itemDesc(it)', inspectStart);
+  const inspect = menu.slice(inspectStart, inspectEnd);
+  assert.match(inspect, /it\.maxDur \\?\\? it\.maxDurability/);
+  assert.match(inspect, /it\.dur \\?\\? it\.durability/);
+  const vendorStart = vendor.indexOf('function previewVendorGear(item, price, onBuy)');
+  const vendorEnd = vendor.indexOf('\\nfunction vendorMenu()', vendorStart);
+  const preview = vendor.slice(vendorStart, vendorEnd);
+  assert.match(preview, /item\.maxDur \\?\\? item\.maxDurability/);
+  assert.match(preview, /item\.dur \\?\\? item\.durability/);
+  assert.match(preview, /Math\.max\\(0, Math\.min\\(100/);
 });
