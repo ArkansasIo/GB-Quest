@@ -10,14 +10,14 @@ test('equipment screen reports set-piece progress and optional durability safely
   assert.ok(source.includes('const setId = selected && (selected.setId || selected.set || selected.template?.setId || selected.template?.set)'));
   assert.ok(source.includes('const setPieces = setId ? Object.values(G.eq).filter'));
   assert.ok(source.includes('SET ${String(setId).replace'));
-  assert.ok(source.includes('Number.isFinite(it.durability)'));
+  assert.ok(source.includes('Number.isFinite(dur)'));
   assert.ok(source.includes('DUR ${Math.max(0, Math.min(100'));
   assert.ok(source.includes('DURABILITY N/A'));
   assert.ok(source.includes('ATTUNED'));
 });
 
 test('equipment condition summary supports both current and legacy durability keys', () => {
-  assert.match(source, /it\\?\.maxDur \\?\\? it\\?\.maxDurability/);
-  assert.match(source, /it\\?\.dur \\?\\? it\\?\.durability/);
-  assert.match(source, /Number\.isFinite\\(dur\\)/);
+  assert.ok(source.includes('it?.maxDur ?? it?.maxDurability'));
+  assert.ok(source.includes('it?.dur ?? it?.durability'));
+  assert.ok(source.includes('Number.isFinite(dur)'));
 });
