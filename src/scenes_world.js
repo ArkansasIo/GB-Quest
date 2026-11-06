@@ -162,35 +162,6 @@ class Title {
     ctx.restore();
   }
 }
-// ================================================================ ORIGINAL GAME BOY WORLD PALETTE
-// Quantize only the world-art pass to the four native-style LCD greens.
-// The HUD and menus are drawn afterward and retain their regular palette.
-function applyGameBoyWorldPalette(x = 0, y = 0, width = W, height = H) {
-  try {
-    const frame = ctx.getImageData(x, y, width, height);
-    const pixels = frame.data;
-    const shades = [
-      [15, 56, 15],    // darkest green
-      [48, 98, 48],
-      [139, 172, 15],
-      [155, 188, 15],  // lightest green
-    ];
-    for (let i = 0; i < pixels.length; i += 4) {
-      if (pixels[i + 3] === 0) continue;
-      const luminance = pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722;
-      const shade = luminance < 64 ? 0 : luminance < 128 ? 1 : luminance < 192 ? 2 : 3;
-      pixels[i] = shades[shade][0];
-      pixels[i + 1] = shades[shade][1];
-      pixels[i + 2] = shades[shade][2];
-    }
-    ctx.putImageData(frame, x, y);
-    return true;
-  } catch (_) {
-    // A tainted canvas must never interrupt gameplay; leave its source colors intact.
-    return false;
-  }
-}
-
 // ================================================================ SAVE SLOTS
 class SlotPicker {
   constructor(mode) { this.opaque = true; this.mode = mode; this.i = 0; }
@@ -835,7 +806,6 @@ class Field {
       else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
-    applyGameBoyWorldPalette(0, 0, W, H); // actors, terrain and world effects only
     const mmo = typeof hudMmo === 'function' && hudMmo(), by = mmo ? MMO_LAYOUT.bannerY : 4;
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, by, n.length * 6 + 12, 15); textC(n, 80, by + 3); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, by + 17, 'gold'); }
     if (this.zone && !G.inst && !mmo) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
@@ -1775,7 +1745,6 @@ class WorldMap {
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
-    applyGameBoyWorldPalette(0, 12, W, 97); // keep the atlas chrome outside the LCD palette
     fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'VALENDRIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
