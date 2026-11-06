@@ -285,6 +285,15 @@ class StashScene {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(2, 23, 156, 89, '#171a1f');
+      fill(3, 24, 154, 1, '#343941');
+      fill(3, 111, 154, 1, '#080a0c');
+    }
     const st = stashOf();
     for (let t = 0; t < STASH_TABS; t++) {
       const x = 2 + t * 39, on = this.pane && t === this.tab, lock = t >= st.unlocked;
@@ -294,7 +303,11 @@ class StashScene {
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {
       const e = L[j * INV_COLS + i]; drawItemCell(e, 4 + i * 19, 24 + j * 18, i === this.cx && j === this.cy);
     }
-    frame(1, 115, 158, 28);
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 115, 158, 28, '#080a0c');
+      fill(1, 115, 158, 1, '#b09258');
+      fill(2, 116, 156, 26, '#171a1f');
+    } else frame(1, 115, 158, 28);
     const e = L[this.cy * INV_COLS + this.cx];
     if (e) { text(e.name.slice(0, 18), 5, 117, rarityCol(e.rarity)); text(`${itemKeyStat(e)} IL${e.ilvl}`.slice(0, 25), 5, 126, 2); }
     else text(this.pane ? `${st.names[this.tab]} ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`, 5, 118, 2);
@@ -328,6 +341,15 @@ class PaperDoll {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(54, 12, 52, 101, '#171a1f');
+      fill(55, 13, 50, 1, '#343941');
+      fill(55, 112, 50, 1, '#080a0c');
+    }
     const D = derive(G);
     SLOT_COLS.forEach((col, c) => col.forEach((s, r) => {
       const x = c === 2 ? 110 : c ? 140 : 2, y = 13 + r * 17, it = G.eq[s], sel = c === this.col && r === Math.min(this.row, this.rows() - 1);
@@ -341,7 +363,11 @@ class PaperDoll {
     text(`HIT ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 24, 83); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`.slice(0, 10), 82, 83);
     text(`INIT ${D.init >= 0 ? '+' : ''}${D.init}`, 24, 92); text(`x${D.attacks} ATK`, 82, 92);
     const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNED ${att}/${MAX_ATTUNE}`, 24, 101, 2);
-    frame(1, 115, 158, 28);
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 115, 158, 28, '#080a0c');
+      fill(1, 115, 158, 1, '#b09258');
+      fill(2, 116, 156, 26, '#171a1f');
+    } else frame(1, 115, 158, 28);
     const s = this.slot(), it = G.eq[s];
     text(SLOT_NAME[s], 5, 117, 'gold');
     if (it) { textR(itemKeyStat(it), 156, 117, 2); text(it.name.slice(0, 25), 5, 126, rarityCol(it.rarity)); text(((it.affixes || []).map(([k, v]) => `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 6)}`).join(' ') || RARITY[it.rarity].name).slice(0, 25), 5, 135, 2); }
