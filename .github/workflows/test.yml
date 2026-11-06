@@ -77,6 +77,8 @@ jobs:
         run: python tools/gen_newart.py
       - name: Build enhanced 64-bit atlas pages
         run: python tools/gen_hd64.py
+      - name: Validate HD64 atlas manifests and PNG bounds
+        run: python tools/validate_hd64_atlases.py --root assets_hd64
       - name: Generate the 6,000-image HD64 source pack
         run: python tools/gen_pack6000_hd.py --output assets_hd64/gbq_6000
       - name: Validate HD64 6,000 asset pack
