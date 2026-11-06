@@ -78,3 +78,8 @@ The equipment paper-doll view now reports set-piece progress for the selected eq
 ## Equipment set management — November 2026
 
 The existing loadout manager now supports overwriting a saved equipment set with the currently equipped items and renaming saved sets using role/activity presets (Damage, Tank, Healer, Dungeon, Raid, PvP, Farm, and custom labels). Existing five-set capacity, stable item-UID snapshots, bank/bag lookup, missing-piece reporting, and battle equip restrictions are retained. Regression tests cover UID snapshots, locating pieces across equipped/bag/bank inventories, and the management actions.
+
+
+## Loadout stat preview — November 2026
+
+Selecting a saved equipment set now opens a comparison before applying it. The preview calculates current versus planned AC, weapon attack modifier, weapon damage expression/modifier, and maximum HP using a separate equipment-map copy. It reports how many saved pieces are found and lists missing pieces. Players must explicitly choose APPLY LOADOUT; CANCEL leaves the live equipment unchanged. This is a preview, not a guarantee that every item will equip: the existing equip validation remains authoritative during application and rejected pieces are reported.
