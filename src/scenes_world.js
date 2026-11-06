@@ -209,7 +209,7 @@ class SlotPicker {
     text('UP/DOWN: CHOOSE   A: CONFIRM', 11, 128, 'white');
     text('B: BACK', 11, 136, 'white');
   }
-}}
+}
 
 // ================================================================ PROLOGUE
 class Prologue {
