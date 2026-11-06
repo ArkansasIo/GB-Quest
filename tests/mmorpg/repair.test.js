@@ -24,7 +24,7 @@ test("single-item repair restores durability and rejects insufficient funds", ()
     ok: false, reason: "insufficient_funds", cost: 160
   });
   assert.equal(character.equipment.head.durability, 20);
-  const result = repairEquipment(character, "head", 320);
+  const result = repairEquipment(character, "head", 160);
   assert.equal(result.ok, true);
   assert.equal(character.equipment.head.durability, 100);
 });
