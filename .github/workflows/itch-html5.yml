@@ -27,8 +27,9 @@ on:
       - '.github/workflows/itch-html5.yml'
   workflow_dispatch:
 
+# Releases are published only for non-PR runs. PRs retain read-only behavior.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -43,10 +44,47 @@ jobs:
           python-version: '3.x'
       - name: Build and validate itch.io ZIP
         run: npm run build:itch
-      - name: Upload itch.io HTML5 package
+      - name: Verify ZIP has a single root-level itch.io entry point
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          archive_path = "build/gbquest-itch-html5.zip"
+          with ZipFile(archive_path) as archive:
+              names = archive.namelist()
+              if names != ["index.html"]:
+                  raise SystemExit(f"Invalid itch.io ZIP contents: {names}")
+              if archive.testzip() is not None:
+                  raise SystemExit("ZIP integrity check failed")
+              if archive.getinfo("index.html").file_size < 100_000:
+                  raise SystemExit("index.html is unexpectedly small")
+          print("Validated: one root-level index.html; ZIP integrity OK.")
+          PY
+      - name: Upload itch.io HTML5 package as workflow artifact
         uses: actions/upload-artifact@v7
         with:
           name: gbquest-itch-html5
           path: build/gbquest-itch-html5.zip
           if-no-files-found: error
           retention-days: 30
+      - name: Publish stable public download
+        if: github.event_name != 'pull_request' && github.repository == 'ArkansasIo/GB-Quest'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: itch-latest
+          name: GB Quest - Latest itch.io HTML5 Build
+          body: |
+            Automated browser build for the GB Quest itch.io project.
+
+            Upload `gbquest-itch-html5.zip` to itch.io as an HTML game.
+            The archive contains a single root-level `index.html`.
+          prerelease: true
+          make_latest: false
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          files: build/gbquest-itch-html5.zip
+      - name: Add public download URL to workflow summary
+        if: github.event_name != 'pull_request' && github.repository == 'ArkansasIo/GB-Quest'
+        run: |
+          echo "## GB Quest itch.io build" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download the latest itch.io ZIP](https://github.com/ArkansasIo/GB-Quest/releases/download/itch-latest/gbquest-itch-html5.zip)" >> "$GITHUB_STEP_SUMMARY"
