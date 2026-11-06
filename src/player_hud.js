@@ -55,9 +55,11 @@
     timer = window.setInterval(update, 350);
   }
   function onAction(event) {
+    const zoomTarget = event.target.closest('[data-map-zoom]');
+    if (zoomTarget) { const mode=zoomTarget.dataset.mapZoom; mapZoom=mode==='center'?1:Math.max(1,Math.min(5,mapZoom+(mode==='in'?1:-1))); drawMiniMap(latestMapData); return; }
     const target = event.target.closest('[data-hud-action]');
     if (!target) return;
-    if (target.hasAttribute('data-map-zoom')) { const mode=target.dataset.mapZoom; mapZoom=mode==='center'?1:Math.max(1,Math.min(5,mapZoom+(mode==='in'?1:-1))); drawMiniMap(latestMapData); return; }\n    const action = target.dataset.hudAction, api = window.GBQ;
+    const action = target.dataset.hudAction, api = window.GBQ;
     if (/^slot[1-8]$/.test(action)) { const bridge = window.GBQCombatHotbar, index = Number(action.slice(4)) - 1; if (bridge && typeof bridge.use === 'function' && bridge.entries().length > index) { bridge.use(index); return; } showToast('Combat abilities are available during battle'); return; }
     const sceneMap = {
       character: () => typeof CharacterMenu === 'function' ? new CharacterMenu() : null,
