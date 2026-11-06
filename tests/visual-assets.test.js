@@ -48,7 +48,7 @@ test('itch.io package embeds generated HD animation frames, equipment, and visua
   assert.match(build, /animation_manifest\\.json/);
   assert.match(build, /equipment_manifest\\.json/);
   assert.match(build, /GBQ_HD64_PACK/);
-  assert.match(build, /data:image\\/png;base64,/);
+  assert.ok(build.includes('data:image/png;base64,'));
   assert.match(build, /MAX_FILES = 1000/);
   assert.match(runtime, /GBQ_HD64_PACK/);
   assert.match(runtime, /packedUrl \\|\\| url/);
