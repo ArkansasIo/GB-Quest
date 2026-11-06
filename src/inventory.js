@@ -166,6 +166,18 @@ class InventoryScene {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      // Recessed brass-and-iron inventory cabinet; keep the original 160x144 layout.
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(2, 22, 156, 91, '#171a1f');
+      fill(3, 23, 154, 1, '#343941');
+      fill(3, 112, 154, 1, '#080a0c');
+      fill(3, 23, 1, 89, '#292e34');
+      fill(156, 23, 1, 89, '#080a0c');
+    }
     INV_TABS.forEach(([t], i) => { const x = 2 + i * 40; drawInventoryTab(t, x, 12, 38, 10, i === this.tab); });
     const L = this.list();
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {
@@ -173,8 +185,14 @@ class InventoryScene {
       if (this.tab === 0) { const eq = e && equippedFor(G, e); drawItemCell(e, x, y, sel, { up: e && (!eq || itemPower(G, e) > itemPower(G, eq)) }); }
       else { const it = e && ITEMS[e]; drawItemCell(it ? { rarity: 1 } : null, x, y, sel, it ? { icon: it.icon, count: G.inv[e] } : {}); }
     }
-    // tooltip
-    frame(1, 113, 158, 30);
+    // Tooltip panel uses the same iron-and-brass treatment as the inventory cabinet.
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 113, 158, 30, '#080a0c');
+      fill(1, 113, 158, 1, '#b09258');
+      fill(1, 113, 1, 30, '#796342');
+      fill(158, 113, 1, 30, '#343941');
+      fill(2, 114, 156, 28, '#171a1f');
+    } else frame(1, 113, 158, 30);
     const e = this.cur();
     if (this.msg) { text(wrap(this.msg, 25).slice(0, 2).join('\n'), 5, 117, 'gold'); }
     else if (e && this.tab === 0) {
