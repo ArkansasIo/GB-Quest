@@ -41,7 +41,7 @@ browser. The standalone build embeds its required runtime assets.
 
 ## Rebuild from source
 Install Node.js 24+ and Python 3, then run:
-    npm ci
+    npm install
     npm run build:itch
 
 The browser build is generated at build/gbquest-itch-html5.zip.
@@ -50,8 +50,7 @@ and their respective directories. Desktop packaging requires the platform's
 native build environment.
 
 Third-party dependency caches, private server runtime data, and excluded
-licensed source asset packs are not redistributed. Install dependencies using
-the lockfile and each component's documented build instructions.
+licensed source asset packs are not redistributed. Install optional desktop dependencies with npm install; the browser release builder itself uses Node.js built-ins and Python 3.
 """
 
 def excluded(path: Path) -> bool:
