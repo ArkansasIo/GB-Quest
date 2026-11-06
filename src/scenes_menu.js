@@ -668,14 +668,14 @@ class QuestLog extends ListScene {
 class CraftScene extends ListScene {
   constructor() { super(8); this.pf = 0; }
   items() { return typeof craftList === 'function' ? craftList(this.pf) : RECIPES; }
-  update() { if (P('select')) { SFX.page(); push(new BlueprintScene(this.pf)); return; } if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(this.items()[this.i]); SFX[/^(Made|Forged)/.test(r) ? 'craft' : 'error'](); this.msg = r; } }
+  update() { if (P('select')) { SFX.page(); push(new BlueprintScene(this.pf)); return; } if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const recipe = this.items()[this.i]; if (!recipe) return; const reduction = Math.floor(profTalentRank(recipe.prof, 'efficiency') / 24); const needs = Object.entries(recipe.needs).map(([key, count]) => ITEMS[key].name + ' ' + Math.max(1, count - reduction)).join(', '); if (!G.blueprints.includes(recipe.id)) return say('Blueprint required before crafting.'); if (G.prof[recipe.prof] < recipe.skill) return say('Profession skill too low.'); if (!Object.keys(recipe.needs).every(key => (G.inv[key] || 0) >= Math.max(1, recipe.needs[key] - reduction))) return say(['MISSING MATERIALS', needs]); say(['CRAFT ' + recipe.name + '?', 'INGREDIENTS: ' + needs, 'Output: ' + ITEMS[recipe.makes].name], () => choose(['CRAFT ITEM', 'CANCEL'], confirm => { if (confirm !== 0) return; const result = craft(recipe); SFX[/^(Made|Forged)/.test(result) ? 'craft' : 'error'](); this.msg = result; }, 'Confirm crafting.')); } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
     const blackbird = S.uiTheme === 'blackbird';
     if (blackbird) { fill(1, 21, 158, 122, '#090b0e'); fill(2, 22, 156, 1, '#8c744b'); fill(2, 22, 1, 120, '#6f5b3d'); fill(157, 22, 1, 120, '#292d32'); fill(3, 24, 154, 80, '#171a1f'); fill(3, 108, 154, 33, '#101317'); fill(3, 108, 154, 1, '#b09258'); }
     { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; text(`<${k === 'ALL' ? 'ALL' : PROFS[k].slice(0, 9)} ${k === 'ALL' ? '' : G.prof[k]}> SEL:BLUEPRINT`, 2, 14, 2); }
     this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, blackbird ? '#51432f' : 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 16), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
-    const r = this.items()[this.i]; if (!r) return; if (!blackbird) if (!blackbird) frame(2, 108, 156, 34); else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); } else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); }
+    const r = this.items()[this.i]; if (!r) return; if (!blackbird) frame(2, 108, 156, 34); else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); }
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
     text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
@@ -706,7 +706,7 @@ class BlueprintScene extends ListScene {
       textR(`${recipe.skill}/${PROFS[recipe.prof].slice(0, 3)}`, 154, y, 2);
     });
     const recipe = this.items()[this.i]; if (!recipe) return; const cost = recipeBlueprintCost(recipe);
-    frame(2, 108, 156, 34);
+    if (!blackbird) frame(2, 108, 156, 34); else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); }
     text(`${PROFS[recipe.prof]} ${G.prof[recipe.prof]}/${recipe.skill}`, 6, 111, 2);
     text(G.blueprints.includes(recipe.id) ? 'ALREADY LEARNED' : `LEARN BLUEPRINT ${cost}G`, 6, 122, 'gold');
     if (this.msg) text(this.msg.slice(0, 25), 6, 132, 2);
