@@ -104,6 +104,23 @@ function armorSetBonus(c) {
   for (const [id, count] of Object.entries(legendary)) { const set = LEGENDARY_SET_DEFS[id]; if (count >= 2) out.push(...set.two); if (count >= 3) out.push(...set.three); }
   return out;
 }
+function legendarySetPreview(c, candidate = null) {
+  const current = legendarySetCounts(c), projectedEq = { ...(c && c.eq || {}) };
+  if (candidate) projectedEq[itemSlot(candidate)] = candidate;
+  const projected = legendarySetCounts({ eq: projectedEq });
+  return Object.entries(LEGENDARY_SET_DEFS).map(([setId, definition]) => {
+    const before = current[setId] || 0, after = projected[setId] || 0;
+    const newlyUnlocked = [2, 3].filter(threshold => before < threshold && after >= threshold);
+    return {
+      setId, name: definition.name, currentPieces: before, projectedPieces: after,
+      thresholds: [
+        { pieces: 2, active: after >= 2, newlyUnlocked: newlyUnlocked.includes(2), stats: definition.two },
+        { pieces: 3, active: after >= 3, newlyUnlocked: newlyUnlocked.includes(3), stats: definition.three }
+      ],
+      newlyUnlocked
+    };
+  }).filter(set => set.currentPieces > 0 || set.projectedPieces > 0);
+}
 const canWearClass = (c, k) => { const p = ARMOR_CLASSES[k].prof; return !p || CLASSES[c.cls].armor.includes(p); };
 const bestWearable = c => ACLASS_ORDER.filter(k => canWearClass(c, k)).pop() || 'cloth';
 
