@@ -134,3 +134,12 @@ test('full-window HUD layers the game canvas independently from HUD and chat', (
   assert.match(styles, /transform:translate\(-50%,-50%\)/);
   assert.match(styles, /game-viewport > \.game-start-fallback[\s\S]*?display:none !important/);
 });
+
+
+test('player HUD prefers assets_pack portrait and navigation icon PNGs with HD64 fallback', () => {
+  assert.match(source, /ap_ui_icons/);
+  assert.match(source, /ap_portraits/);
+  assert.match(source, /assets\/' \+ name \+ '.png/);
+  assert.match(source, /GBQ_HD64_INDEXES/);
+  assert.match(source, /% 30/);
+});

@@ -15,6 +15,23 @@
   function hudSpriteData(name) {
     if (hudSpriteCache.has(name)) return hudSpriteCache.get(name);
     const pending = (async () => {
+      // The compact assets_pack PNGs are the first choice for HUD controls and
+      // portraits; HD64 remains the fallback for the larger runtime art catalog.
+      if (/^ap_(?:ui_icons|portraits)_\\d{3}$/.test(name)) {
+        const packed = new Image();
+        const packedSrc = 'assets/' + name + '.png';
+        await new Promise((resolve, reject) => {
+          packed.onload = resolve; packed.onerror = reject; packed.src = packedSrc;
+        });
+        const packedCanvas = document.createElement('canvas');
+        packedCanvas.width = packed.naturalWidth || packed.width;
+        packedCanvas.height = packed.naturalHeight || packed.height;
+        const packedContext = packedCanvas.getContext('2d');
+        if (!packedContext) return null;
+        packedContext.imageSmoothingEnabled = false;
+        packedContext.drawImage(packed, 0, 0);
+        return packedCanvas.toDataURL('image/png');
+      }
       const indexes = window.GBQ_HD64_INDEXES || {};
       let family = '', rect = null;
       for (const [candidate, sprites] of Object.entries(indexes)) {
@@ -56,9 +73,12 @@
   function updateHudArtwork(game, hotbar) {
     const avatar = root && root.querySelector('[data-hud-avatar]');
     const classId = String(game && game.cls || '').toLowerCase().replace(/[^a-z0-9]/g,'');
-    if (classId) applyHudSprite(avatar, 'np_class_' + classId);
+    if (classId) {
+      const portraitIndex = (classId.split('').reduce((hash, char) => Math.imul(hash ^ char.charCodeAt(0), 16777619) >>> 0, 2166136261) % 30);
+      applyHudSprite(avatar, 'ap_portraits_' + String(portraitIndex).padStart(3,'0'));
+    }
     root && root.querySelectorAll('.gbq-hud-nav .gbq-hud-glyph').forEach((node, index) => {
-      applyHudSprite(node, 'au_menu_icons_' + String(index).padStart(3,'0'));
+      applyHudSprite(node, 'ap_ui_icons_' + String(index).padStart(3,'0'));
     });
     if (hotbar) [...hotbar.querySelectorAll('button')].forEach((node, index) => {
       const icon = node.querySelector('span');
