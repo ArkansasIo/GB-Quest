@@ -1221,7 +1221,7 @@ class SettingsScene extends ListScene {
   }
 }
 class GraphicsScene extends ListScene {
-  constructor() { super(9); }
+  constructor() { super(10); }
   items() { return ['DISPLAY MODE', 'VIDEO PROFILE', 'UPSCALE RESOLUTION', 'FRAME RATE', 'COLOR PALETTE', 'BRIGHTNESS', 'CONTRAST', 'PIXEL FILTER', 'RESTORE GRAPHICS DEFAULTS', 'BACK']; }
   value(label) {
     const values = {
@@ -1281,8 +1281,8 @@ class GraphicsScene extends ListScene {
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     frame(2, 2, 156, 139, 1); fill(5, 5, 150, 15, '#17112d');
     textC('AELMOOR  •  GRAPHICS', 80, 9, 'gold');
-    this.items().slice(0, 9).forEach((label, j) => {
-      const y = 27 + j * 11, selected = j === this.i;
+    this.items().forEach((label, j) => {
+      const y = 23 + j * 10, selected = j === this.i;
       if (selected) { fill(7, y - 2, 146, 10, '#49301f'); frame(6, y - 3, 148, 11, 1); }
       text(label, 11, y, selected ? 'gold' : 2);
       textR(this.value(label), 148, y, selected ? 'gold' : 2);
