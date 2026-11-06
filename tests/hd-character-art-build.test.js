@@ -9,8 +9,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 test('browser build includes HD character art runtime before world-scene consumers', () => {
   const builder = fs.readFileSync(path.join(root, 'tools/build.cjs'), 'utf8');
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const orderMatch = builder.match(/ORDER = \[([^\]]+)\]/);
-  assert.ok(orderMatch, 'build script ORDER list is missing');
+  const orderMatch = builder.match(/const ORDER = \[([^\]]+)\]/);
+  assert.ok(orderMatch, 'canonical build script ORDER list is missing');
   const order = [...orderMatch[1].matchAll(/'([^']+)'/g)].map(match => match[1]);
   const runtime = order.indexOf('hd_character_art');
   const world = order.indexOf('scenes_world');
@@ -26,8 +26,8 @@ test('browser build includes HD character art runtime before world-scene consume
 });
 
 test('both generated browser releases contain the HD character runtime', () => {
-  const builder = fs.readFileSync(path.join(root, 'tools/build.py'), 'utf8');
-  assert.match(builder, /hd_character_art/);
-  assert.match(builder, /dist', 'gbquest\.html/);
-  assert.match(builder, /dist', 'gbquest-fullscreen\.html/);
+  const builder = fs.readFileSync(path.join(root, 'tools/build.cjs'), 'utf8');
+  assert.match(builder, /'hd_character_art'/);
+  assert.match(builder, /'gbquest\.html'/);
+  assert.match(builder, /'gbquest-fullscreen\.html'/);
 });
