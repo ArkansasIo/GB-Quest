@@ -624,8 +624,10 @@ class Dialog {
     if (P('a') || P('b')) { SFX.cursor(); this.i++; this.c = 0; if (this.i >= this.p.length) { removeScene(this); this.cb && this.cb(); } }
   }
   draw() {
-    const y = H - 44; frame(2, y, W - 4, 42);
-    if (this.who) { const w = this.who.length * 6 + 8; frame(4, y - 11, w, 12); text(this.who, 8, y - 9, 2); }
+    const y = H - 44, blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, y - 1, W - 2, 43, '#b09258'); fill(2, y, W - 4, 41, '#080a0c'); fill(3, y + 1, W - 6, 39, '#171a1f'); fill(4, y + 2, W - 8, 1, '#343941'); }
+    else frame(2, y, W - 4, 42);
+    if (this.who) { const w = this.who.length * 6 + 8; if (blackbird) { fill(3, y - 12, w + 2, 13, '#b09258'); fill(4, y - 11, w, 11, '#171a1f'); } else frame(4, y - 11, w, 12); text(this.who, 8, y - 9, blackbird ? '#e1c78f' : 2); }
     const L = this.p[this.i]; if (!L) return;
     text(L.slice(0, Math.floor(this.c)), 8, y + 6);
     if (this.c >= L.length && (frameN >> 4) % 2) text('v', W - 14, y + 31);
