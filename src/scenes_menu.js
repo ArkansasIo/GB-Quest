@@ -214,7 +214,21 @@ function itemInspectText(it) {
     comparison = delta > 0 ? `UPGRADE +${delta}` : delta < 0 ? `DOWNGRADE ${delta}` : 'SIDEGRADE';
   }
   const slotLabel = SLOT_NAME[slot] || slot.toUpperCase();
-  return `IL${it.ilvl || 1} ${slotLabel} · ${comparison}. ${itemDesc(it)}`;
+  const setId = it.setId || it.set || it.template?.setId || it.template?.set;
+  const setPieces = setId ? Object.values(G.eq).filter(item => item && (item.setId || item.set || item.template?.setId || item.template?.set) === setId).length : 0;
+  const durability = it.maxDur > 0 ? `DUR ${Math.max(0, Math.min(100, Math.round((it.dur || 0) / it.maxDur * 100)))}%` : 'DUR N/A';
+  const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(it) : 0;
+  const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(it) : 0;
+  const gems = Array.isArray(it.sockets) ? it.sockets.filter(Boolean).length : 0;
+  const runes = Array.isArray(it.runeSockets) ? it.runeSockets.filter(Boolean).length : 0;
+  const details = [
+    setId ? `SET ${String(setId).replace(/_/g, ' ')} · ${setPieces}PC EQUIPPED` : 'NO SET',
+    durability,
+    `GEMS ${gems}/${gemSlots} · RUNES ${runes}/${runeSlots}`,
+    it.attune ? 'ATTUNEMENT REQUIRED' : 'NO ATTUNEMENT',
+    it.aclass ? `ARMOR CLASS ${String(it.aclass).toUpperCase()}` : ''
+  ].filter(Boolean).join(' · ');
+  return `IL${it.ilvl || 1} ${slotLabel} · ${comparison}. ${details}. ${itemDesc(it)}`;
 }
 function itemDesc(it) {
   let s = `${RARITY[it.rarity].name} IL${it.ilvl}. `;
