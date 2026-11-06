@@ -75,7 +75,12 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
       'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
       'ATTACK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
       'DAMAGE ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
-      'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')'
+      'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
+      'CRIT ' + current.crit + '% → ' + target.crit + '% · DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+      'BLOCK ' + current.block + '% → ' + target.block + '% · LEECH ' + current.leech + '% → ' + target.leech + '%',
+      'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
+      'ELEMENTS F' + current.elem.fire + '/C' + current.elem.cold + '/L' + current.elem.lightning + ' → F' + target.elem.fire + '/C' + target.elem.cold + '/L' + target.elem.lightning,
+      'SUBSTATS HIT ' + (current.sub.hit || 0) + ' → ' + (target.sub.hit || 0) + ' · DMG ' + (current.sub.dmg || 0) + ' → ' + (target.sub.dmg || 0)
     ];
     if (missing.length) lines.push(('MISSING: ' + missing.join(', ')).slice(0, 58));
     return { lines, plan, missing, available };
