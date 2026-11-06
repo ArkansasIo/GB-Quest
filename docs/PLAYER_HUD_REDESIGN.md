@@ -53,3 +53,8 @@ The HUD is read-only with respect to player progression. It polls the live state
 ## Live character attributes panel — November 2026
 
 The player HUD now renders STR, DEX, CON, INT, WIS, CHA, LCK, WIL, and SPD with each score and its signed modifier. Values are read from the existing `derive(G).A` and `derive(G).M` rules outputs; the HUD does not calculate or persist a parallel character sheet. The panel uses a compact three-column desktop grid and is hidden on narrow mobile layouts to preserve the gameplay viewport. A source-level regression test checks all nine bindings and the rules bridge.
+
+
+## Weapon damage display correction — November 2026
+
+The combat profile now displays the equipped weapon's damage dice and its signed additive damage modifier together (for example, `1d8 + 4`). The value is sourced directly from `derive(G).weapon`; the HUD does not roll damage or change combat resolution.
