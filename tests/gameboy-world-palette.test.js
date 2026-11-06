@@ -14,8 +14,8 @@ test('overworld rendering preserves its original full-color pixel art', () => {
   assert.match(source, /#5c9fc4/);
 });
 
-test('world atlas retains its original map colors without LCD quantization', () => {
+test('world atlas is not quantized to the monochrome LCD palette', () => {
   assert.doesNotMatch(source, /applyGameBoyWorldPalette/);
   assert.match(source, /class WorldMap/);
-  assert.match(source, /fill\(ox \+ x \* s, oy \+ y \* s, s, s, c\)/);
+  assert.match(source, /fill\(0, 0, W, 12, 3\)/);
 });
