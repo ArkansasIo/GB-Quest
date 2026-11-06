@@ -94,3 +94,11 @@ test('player HUD renders all nine live attributes and their derived modifiers', 
   assert.match(source, /data-hud-attr/);
   assert.match(styles, /\.gbq-hud-attribute-grid/);
 });
+
+test('player HUD displays weapon damage dice plus its signed additive modifier', () => {
+  assert.match(source, /const weaponDice = String\(derived\.weapon\?\.dice \|\| '1d1'\)/);
+  assert.match(source, /weaponModifier > 0 \? weaponDice \+ ' \+ ' \+ weaponModifier/);
+  assert.match(source, /weaponModifier < 0 \? weaponDice \+ ' − ' \+ Math\.abs\(weaponModifier\)/);
+  assert.match(source, /setText\('\[data-hud-attack\]', weaponDamage\)/);
+  assert.match(source, /WEAPON DMG/);
+});
