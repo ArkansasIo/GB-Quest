@@ -125,3 +125,12 @@ test('expanded HUD reserves a separate gameplay canvas and collapses on compact 
   assert.match(styles, /@media \(max-width:900px\), \(max-height:620px\)/);
   assert.match(styles, /body:not\(\.full-window-mode\):not\(\.fullscreen-mode\) \.gbq-player-hud/);
 });
+
+
+test('full-window HUD layers the game canvas independently from HUD and chat', () => {
+  assert.match(styles, /body\.full-window-mode \.game-viewport,[\s\S]*?display:block !important/);
+  assert.match(styles, /body\.full-window-mode \.game-viewport > #lcd,[\s\S]*?position:absolute !important/);
+  assert.match(styles, /left:50% !important/);
+  assert.match(styles, /transform:translate\(-50%,-50%\)/);
+  assert.match(styles, /game-viewport > \.game-start-fallback[\s\S]*?display:none !important/);
+});
