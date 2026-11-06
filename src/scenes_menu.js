@@ -225,7 +225,9 @@ function itemInspectText(it) {
   const slotLabel = SLOT_NAME[slot] || slot.toUpperCase();
   const setId = it.setId || it.set || it.template?.setId || it.template?.set;
   const setPieces = setId ? Object.values(G.eq).filter(item => item && (item.setId || item.set || item.template?.setId || item.template?.set) === setId).length : 0;
-  const durability = it.maxDur > 0 ? `DUR ${Math.max(0, Math.min(100, Math.round((it.dur || 0) / it.maxDur * 100)))}%` : 'DUR N/A';
+  const maxDur = Number(it.maxDur ?? it.maxDurability), dur = Number(it.dur ?? it.durability);
+  const durability = Number.isFinite(maxDur) && maxDur > 0 && Number.isFinite(dur)
+    ? `DUR ${Math.max(0, Math.min(100, Math.round(dur / maxDur * 100)))}%` : 'DUR N/A';
   const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(it) : 0;
   const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(it) : 0;
   const gems = Array.isArray(it.sockets) ? it.sockets.filter(Boolean).length : 0;
@@ -286,8 +288,9 @@ class EquipScene extends ListScene {
     });
     frame(2, 124, 156, 18);
     const it = G.eq[SLOTS[this.i]];
-    const durability = it && Number.isFinite(it.durability) && Number.isFinite(it.maxDurability) && it.maxDurability > 0
-      ? `DUR ${Math.max(0, Math.min(100, Math.round(it.durability / it.maxDurability * 100)))}%`
+    const maxDur = Number(it?.maxDur ?? it?.maxDurability), dur = Number(it?.dur ?? it?.durability);
+    const durability = it && Number.isFinite(dur) && Number.isFinite(maxDur) && maxDur > 0
+      ? `DUR ${Math.max(0, Math.min(100, Math.round(dur / maxDur * 100)))}%`
       : 'DURABILITY N/A';
     text(`${durability}  ${it?.attune ? 'ATTUNED' : ''}`, 6, 126, 2);
     text(wrap(it ? itemDesc(it) : 'Empty slot. A: equip from bag.', 24)[0] || '', 6, 135);
