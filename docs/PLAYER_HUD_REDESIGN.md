@@ -108,3 +108,8 @@ Vendor-generated gear and blacksmith/armorsmith purchases now display a characte
 ## Unified gear inspection metadata — November 2026
 
 Inventory gear descriptions now include the equipment slot, rarity/item level, upgrade score context, set identity and equipped-piece count, durability when durability data exists, gem/rune socket occupancy versus capacity, attunement, and armor-class metadata when present. Vendor-generated gear and auction gear previews expose the same item identity, set, condition, socket, and attunement details before purchase confirmation. Socket capacity is obtained from the existing gem/rune systems; absent durability is shown as unavailable rather than inferred. Existing stat previews and purchase validation remain unchanged.
+
+
+## Legendary set progression and activation previews — November 2026
+
+Added `legendarySetPreview` to the armory rules. It compares equipped set counts with the projected equipment after replacing the candidate item's slot, and reports the 2-piece and 3-piece thresholds, bonus stats, current activation, and newly unlocked thresholds. Inventory inspection and gear comparison display the progression; vendor/blacksmith and auction purchase previews show the same thresholds before purchase confirmation. The preview is read-only and does not equip items or change character stats. Existing set effects continue to be applied by `armorSetBonus` through the gear-affix derivation path.
