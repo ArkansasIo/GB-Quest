@@ -90,7 +90,8 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
       'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
       'BLOCK ' + current.block + '% → ' + target.block + '%',
       'LEECH ' + current.leech + '% → ' + target.leech + '%',
-      'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
+      'HASTE ' + current.haste + '% → ' + target.haste + '%',
+      'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
       'ELEMENTS F' + current.elem.fire + '/C' + current.elem.cold + '/L' + current.elem.lightning + ' → F' + target.elem.fire + '/C' + target.elem.cold + '/L' + target.elem.lightning,
       'SUBSTATS HIT ' + (current.sub.hit || 0) + ' → ' + (target.sub.hit || 0) + ' · DMG ' + (current.sub.dmg || 0) + ' → ' + (target.sub.dmg || 0)
     ];
