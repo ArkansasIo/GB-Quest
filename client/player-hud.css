@@ -351,3 +351,9 @@ body.fullscreen-mode .gbq-hud-toast { bottom:78px; }
   body.full-window-mode .gbq-hud-hotbar button,
   body.fullscreen-mode .gbq-hud-hotbar button { width:29px; height:32px; }
 }
+
+/* The original handheld page already has its own 160x144 menus.
+   Only activate the expanded DOM HUD in full-window play modes. */
+body:not(.full-window-mode):not(.fullscreen-mode) .gbq-player-hud {
+  display:none !important;
+}
