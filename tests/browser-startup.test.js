@@ -1,0 +1,38 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
+
+test('browser boot renders a title scene and schedules the game loop without waiting for assets', () => {
+  const main = read('client/main.js');
+  const browserStart = main.slice(main.indexOf('if (!desktop) {'), main.indexOf('    (async () => {'));
+  assert.match(browserStart, /push\(new Title\(\)\)/);
+  assert.match(browserStart, /render\(\)/);
+  assert.match(browserStart, /requestAnimationFrame\(loop\)/);
+  assert.ok(browserStart.indexOf('requestAnimationFrame(loop)') < browserStart.indexOf('NET.init()'),
+    'the render loop must start before attempting the realm connection');
+});
+
+test('browser boot catches scene, realm, and saved-session startup failures', () => {
+  const main = read('client/main.js');
+  const browserStart = main.slice(main.indexOf('if (!desktop) {'), main.indexOf('    (async () => {'));
+  assert.match(browserStart, /catch \(error\)/);
+  assert.match(browserStart, /fallbackTitle\.enter = \(\) => \{\}/);
+  assert.match(browserStart, /NET\.init\(\)\)\.catch/);
+  assert.match(browserStart, /Saved session.*Could not restore/s);
+});
+
+test('title music is optional and cannot prevent the title scene from entering', () => {
+  const world = read('src/scenes_world.js');
+  const title = world.slice(world.indexOf('class Title {'), world.indexOf('// ================================================================ SAVE SLOTS'));
+  assert.match(title, /enter\(\) \{ try \{ Music\.play\('title'\); \} catch/);
+  assert.match(title, /resume\(\) \{ try \{ Music\.play\('title'\); \} catch/);
+});
+
+test('the HTML boot fallback is hidden only after a successful canvas render', () => {
+  const engine = read('src/engine.js');
+  const shell = read('client/shell.html');
+  assert.match(engine, /function render\(\)[\s\S]*document\.body\.classList\.add\('game-rendered'\)/);
+  assert.match(shell, /body\.game-rendered \.game-start-fallback \{ display:none; \}/);
+});
