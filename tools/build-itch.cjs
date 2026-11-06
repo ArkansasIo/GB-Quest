@@ -24,6 +24,24 @@ const html = fs.readFileSync(index, 'utf8');
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');
 }
+// Release gate: confirm the new artwork is inside the running game build, not merely
+// copied beside it. build.cjs inlines both catalog PNGs into the theme CSS and
+// exposes the complete PNG/HD64 atlases to the game runtime.
+for (const required of [
+  'gbq_master_catalog',
+  'gbq_ui_mockup_catalog',
+  'GBQ_HD64_ATLASES',
+  'theme-shadows'
+]) {
+  if (!html.includes(required)) throw new Error('Release is missing integrated artwork/runtime marker: ' + required);
+}
+if (html.includes('GBQ_MASTER_CATALOG') || html.includes('GBQ_UI_MOCKUP')) {
+  throw new Error('Unresolved artwork placeholder remains in the release HTML.');
+}
+const embeddedPngs = (html.match(/data:image\\/png;base64,/g) || []).length;
+if (embeddedPngs < 3) {
+  throw new Error('Expected embedded game and UI artwork data URIs; found only ' + embeddedPngs);
+}
 if (/src=["'](?:\.\.\/|\.\/)?(?:src|assets)\//i.test(html)) {
   throw new Error('The itch.io HTML still references loose source or asset files.');
 }
