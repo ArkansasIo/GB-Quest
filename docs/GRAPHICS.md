@@ -90,3 +90,8 @@ Each family has `<family>_<page>.png` pages and `<family>.json` (`{ name: [page,
 - **Page shell** (`client/shell.html`, `client/fullscreen.html`): black and blood-red background, bronze-trimmed panels and buttons, Cinzel serif headings, a gold glow around the screen, and the chat lifted above the HUD.
 
 The single-tone palettes (DMG, POCKET, SUNSET, AMBER and OCEAN) keep the classic Game Boy look.
+
+
+## SHADOWS HD artwork integration
+
+The default browser shell theme uses the master art catalog as a subtle device finish and layers the new UI mockup catalog into the bezel at low opacity. `tools/build.cjs` replaces both artwork tokens with embedded PNG data URIs before producing the single-file browser build. This keeps the itch.io HTML5 export self-contained instead of relying on loose artwork files.
