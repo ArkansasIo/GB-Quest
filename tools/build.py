@@ -12,17 +12,24 @@ import subprocess
 subprocess.run(['python3', os.path.join(ROOT, 'tools', 'build_atlas.py')], check=True)
 rd = lambda p: open(os.path.join(ROOT, p), encoding='utf8').read()
 nes = '<script>window.NES_INDEX=' + json.dumps(json.load(open(os.path.join(ROOT, 'assets', 'nes_index.json')))) + ';</script>\n'
-shell = rd('client/shell.html')
+theme_shadows = rd('client/theme-shadows.css').replace('url("GBQ_MASTER_CATALOG")', 'url("data:image/png;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'gbq_master_catalog.png'), 'rb').read()).decode() + '")').replace('url("GBQ_UI_MOCKUP")', 'url("data:image/png;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'gbq_ui_mockup_catalog.png'), 'rb').read()).decode() + '")')
+theme_pokemon = rd('client/theme-pokemon.css')
+shell = (rd('client/shell.html')
+         .replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + theme_shadows + '\n</style>')
+         .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>')
+         .replace('<link rel="stylesheet" href="client/theme-pokemon.css">', '<style>\n' + theme_pokemon + '\n</style>'))
 client_file = lambda n: 'client/main.js' if n == 'main' else f'src/{n}.js'
 names = sorted(os.path.basename(f)[:-4] for f in glob.glob(os.path.join(ROOT, 'assets', '*.png')) if not os.path.basename(f).startswith(('device_mockup', 'bg_patterns')))
 json.dump(names, open(os.path.join(ROOT, 'assets', 'index.json'), 'w'))
 dev = ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-       + shell.replace('<aside', '</head><body>\n<aside', 1) + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n' + ''.join(f'<script src="{client_file(n)}"></script>\n' for n in ORDER) + '</body></html>\n')
+       + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside', 1) + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n' + ''.join(f'<script src="{client_file(n)}"></script>\n' for n in ORDER) + '</body></html>\n')
 open(os.path.join(ROOT, 'index.html'), 'w').write(dev)
 assets = {n: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', n + '.png'), 'rb').read()).decode() for n in names}
 os.makedirs(os.path.join(ROOT, 'dist'), exist_ok=True)
 atlas = '<script>window.ATLAS_HTML=' + json.dumps(rd('dist/atlas.html')).replace('</', '<\\/') + ';</script>\n'
-single = shell + '\n<script>window.GB_ASSETS=' + json.dumps(assets) + ';</script>\n' + nes + atlas + ''.join(f'<script>\n{rd(client_file(n))}\n</script>\n' for n in ORDER)
+single = ('<!doctype html>\n<html lang="en"><head>\n' + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside', 1)
+         + '\n<script>window.GB_ASSETS=' + json.dumps(assets) + ';</script>\n' + nes + atlas
+         + ''.join(f'<script>\n{rd(client_file(n))}\n</script>\n' for n in ORDER) + '\n</body></html>\n')
 open(os.path.join(ROOT, 'dist', 'gbquest.html'), 'w').write(single)
 fs = rd('client/fullscreen.html')
 full = single.replace('<title>Lost Kingdom of Shadowbane Chronicles</title>', '<title>Lost Kingdom of Shadowbane Chronicles Full Screen</title>', 1).replace('</style>', '</style>\n' + fs.split('<div class="fsbar"')[0], 1)
