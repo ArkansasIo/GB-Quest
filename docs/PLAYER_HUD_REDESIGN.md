@@ -63,3 +63,8 @@ The combat profile now displays the equipped weapon's damage dice and its signed
 ## Full combat character sheet — November 2026
 
 The character sheet now has a dedicated sixth **COMBAT** page. It reads directly from the existing `derive(G)` combat profile and presents weapon name, weapon damage dice, flat damage bonus, attack hit modifier, attacks per turn, armor class, initiative, critical range/chance/damage, dodge, block, lifesteal, and haste. The page uses the existing up/down scrolling behavior to expose all 14 values on the compact game viewport. The previous FEATURES page remains intact as page five.
+
+
+## Bag gear inspection and comparison — November 2026
+
+Selecting a gear item in the inventory now previews its item level, equipment slot, rarity/affix description, and a comparison against the item currently equipped in that slot. The comparison reuses the existing `itemScore` heuristic and labels the candidate as an upgrade, downgrade, sidegrade, or empty-slot fit. This is an informational preview only; equipment changes still occur through the existing equip action.
