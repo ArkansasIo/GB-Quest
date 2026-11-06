@@ -33,3 +33,4 @@ jobs:
         with:
           name: gbquest-java-0.4.0
           path: java-launcher/target/gbquest-java-0.4.0.jar
+          if-no-files-found: error
