@@ -1075,7 +1075,8 @@ class SideQuestBoard {
   }
 }
 function previewVendorGear(item, price, onBuy) {
-  const slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item }, target = derive({ ...G, eq });
+  const slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item };
+  const target = derive({ ...G, eq });
   const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
   const setId = item.setId || item.set || item.template?.setId || item.template?.set;
   const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(item) : 0;
