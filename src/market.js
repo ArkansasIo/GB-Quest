@@ -200,6 +200,8 @@ class MarketScene {
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 11, 158, 132, '#090b0e'); fill(2, 12, 156, 1, '#8c744b'); fill(2, 12, 1, 130, '#6f5b3d'); fill(157, 12, 1, 130, '#292d32'); fill(3, 23, 154, 77, '#171a1f'); fill(3, 102, 154, 40, '#101317'); fill(3, 102, 154, 1, '#b09258'); }
     const tabs = ['BROWSE', 'SELL', 'MINE', 'CLAIM'];
     textC(`< ${tabs[this.tab]} >  ${Market.mode().toUpperCase()}`, 80, 1, 'gold');
     if (this.tab === 0) text(`< ${MARKET_CATS[this.cat]} >`, 3, 13, 2);
@@ -210,12 +212,12 @@ class MarketScene {
     if (this.tab !== 3 && !V.length) textC(this.tab === 1 ? 'NOTHING TO SELL' : 'NO LISTINGS', 80, 60, 2);
     V.slice(this.top, this.top + 7).forEach((e, j) => {
       const i = this.top + j, y = 24 + j * 11, sell = this.tab === 1;
-      if (i === this.i) fill(1, y - 1, 158, 11, 1);
+      if (i === this.i) fill(1, y - 1, 158, 11, blackbird ? '#51432f' : 1);
       const ic = sell ? e.icon : listingIcon(e); if (ic && IMG[ic]) blit(sprFit(ic, 9), 3, y);
       text((sell ? e.name : listingName(e)).slice(0, 15), 14, y, rarityCol(sell ? e.rarity : e.item ? e.item.rarity : (ITEMS[e.stack.id] || {}).rarity || 1));
       textR(sell ? `${fmt(e.value)}` : fmt(e.price), 157, y, 2);
     });
-    frame(1, 102, 158, 41);
+    if (!blackbird) frame(1, 102, 158, 41); else { fill(4, 103, 152, 37, '#171a1f'); fill(4, 103, 152, 1, '#343941'); }
     const e = V[this.i];
     // Gear inspection in the market uses the same live character stat/equipment
     // model as the inventory screen, so listings show real upgrade deltas.
