@@ -50,8 +50,7 @@ test('classic Pokémon interface is the default across gameplay and release buil
   assert.ok(build.includes("rd('client/theme-pokemon.css')"));
   assert.ok(build.includes('body class="theme-shadows theme-pokemon"'));
   assert.ok(build.includes('<!doctype html>'));
-  assert.ok(pythonBuild.includes('theme-pokemon.css'));
-  assert.ok(pythonBuild.includes('theme-shadows theme-pokemon'));
+  assert.match(pythonBuild, /tools.*build\\.cjs/);
   assert.ok(itchBuild.includes("'POKEMON CLASSIC'"));
   assert.ok(gameTheme.includes("mmo: 'POKEMON CLASSIC'"));
   assert.ok(gameTheme.includes("S.uiTheme = 'mmo'"));
