@@ -28,3 +28,12 @@ test('standalone browser build embeds both catalog images as data URIs', () => {
   assert.match(build, /gbq_ui_mockup_catalog\.png/);
   assert.match(build, /data:image\/png;base64,/);
 });
+
+test('itch.io release gate verifies artwork is embedded in the playable HTML', () => {
+  const build = read('tools/build-itch.cjs');
+  assert.match(build, /gbq_master_catalog/);
+  assert.match(build, /gbq_ui_mockup_catalog/);
+  assert.match(build, /GBQ_HD64_ATLASES/);
+  assert.match(build, /Unresolved artwork placeholder/);
+  assert.match(build, /embeddedPngs/);
+});
