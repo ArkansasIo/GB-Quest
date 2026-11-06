@@ -8,6 +8,7 @@ third-party source packs are intentionally omitted.
 """
 from __future__ import annotations
 import hashlib
+import os
 from pathlib import Path
 import zipfile
 
@@ -73,10 +74,21 @@ def main() -> None:
     if OUTPUT.exists():
         OUTPUT.unlink()
     entries = []
-    for path in sorted(ROOT.rglob("*")):
-        if path.is_file() and not excluded(path):
+    for current, dirnames, filenames in os.walk(ROOT):
+        current_path = Path(current)
+        kept_dirs = []
+        for dirname in dirnames:
+            candidate = current_path / dirname
+            if not excluded(candidate / "__directory_marker__"):
+                kept_dirs.append(dirname)
+        dirnames[:] = sorted(kept_dirs)
+        for filename in sorted(filenames):
+            path = current_path / filename
+            if excluded(path):
+                continue
             rel = path.relative_to(ROOT).as_posix()
             entries.append((path, f"source/{rel}"))
+    entries.sort(key=lambda item: item[1])
     with zipfile.ZipFile(PLAYABLE) as playable_zip:
         playable_html = playable_zip.read("index.html")
     digest_lines = []
