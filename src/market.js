@@ -159,7 +159,27 @@ class MarketScene {
     const run = (p, ok) => { this.busy = true; p.then(e => { this.busy = false; if (e && !/^Claimed/.test(e)) { this.msg = e.toUpperCase(); SFX.error(); } else { this.msg = (e || ok).toUpperCase(); SFX.buy(); } this.load(); }).catch(e => { this.busy = false; this.msg = String(e.message || e).toUpperCase().slice(0, 25); SFX.error(); }); };
     if (this.tab === 3) return run(Market.claim(), 'CLAIMED');
     const e = V[this.i]; if (!e) return;
-    if (this.tab === 0) return choose([`BUY ${fmt(e.price)} G`, 'BACK'], k => { if (k === 0) run(Market.buy(e), 'BOUGHT ' + listingName(e).slice(0, 14)); }, `${listingName(e)} from ${e.sellerName || 'A SELLER'}.`);
+    if (this.tab === 0) {
+      if (!e.stack && e.item) {
+        const item = e.item, slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item }, target = derive({ ...G, eq });
+        const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+        const rows = [
+          listingName(e) + ' · ' + fmt(e.price) + ' G',
+          'SELLER ' + (e.sellerName || 'A SELLER') + ' · GOLD AFTER ' + fmt(G.gold - e.price),
+          'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
+          'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
+          'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+          'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
+          'CRIT ' + current.crit + '% → ' + target.crit + '% · DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+          'BLOCK ' + current.block + '% → ' + target.block + '% · LEECH ' + current.leech + '% → ' + target.leech + '%',
+          'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'
+        ];
+        const mods = (item.affixes || []).map(([key, value]) => 'AFFIX ' + key.toUpperCase() + ' +' + value);
+        rows.push(...(mods.length ? mods : ['NO ROLLED AFFIXES']));
+        return say(rows, () => choose([`BUY ${fmt(e.price)} G`, 'CANCEL'], k => { if (k === 0) run(Market.buy(e), 'BOUGHT ' + listingName(e).slice(0, 14)); }, 'Confirm only after reviewing the item and price.'));
+      }
+      return choose([`BUY ${fmt(e.price)} G`, 'BACK'], k => { if (k === 0) run(Market.buy(e), 'BOUGHT ' + listingName(e).slice(0, 14)); }, `${listingName(e)} from ${e.sellerName || 'A SELLER'}.`);
+    }
     if (this.tab === 2) return choose(['CANCEL LISTING', 'BACK'], k => { if (k === 0) run(Market.cancel(e), 'RETURNED TO YOU'); }, `${listingName(e)} for ${fmt(e.price)} G.`);
     if (this.tab === 1) {
       const v = e.value, opts = [2, 3, 4, 6, 10].map(x => Math.max(1, Math.round(v * x)));
