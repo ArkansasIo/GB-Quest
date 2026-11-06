@@ -12,7 +12,7 @@ on:
       - 'data/visuals/**'
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
-      - 'tests/visual-assets.test.js'
+      - 'tests/**'
       - 'tools/build_animation_manifest.py'
       - 'tools/generate_character_sprite_pack.py'
       - 'tools/generate_warrior_f_sprite.py'
@@ -52,6 +52,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
+      - name: Run repository regression tests
+        run: npm test
       - name: Install artwork generator dependency
         run: python -m pip install Pillow
       - name: Generate all six F-rank character animation sets
