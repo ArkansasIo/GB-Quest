@@ -1092,8 +1092,10 @@ function previewVendorGear(item, price, onBuy) {
     'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
     'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
     'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
-    'CRIT ' + current.crit + '% → ' + target.crit + '% · DODGE ' + current.dodge + '% → ' + target.dodge + '%',
-    'BLOCK ' + current.block + '% → ' + target.block + '% · LEECH ' + current.leech + '% → ' + target.leech + '%',
+    'CRIT ' + current.crit + '% → ' + target.crit + '%',
+    'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+    'BLOCK ' + current.block + '% → ' + target.block + '%',
+    'LEECH ' + current.leech + '% → ' + target.leech + '%',
     'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
     'A: CONFIRM PURCHASE · B: CANCEL'
   ];
