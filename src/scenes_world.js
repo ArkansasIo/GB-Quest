@@ -1077,8 +1077,15 @@ class SideQuestBoard {
 function previewVendorGear(item, price, onBuy) {
   const slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item }, target = derive({ ...G, eq });
   const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+  const setId = item.setId || item.set || item.template?.setId || item.template?.set;
+  const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(item) : 0;
+  const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(item) : 0;
+  const durability = item.maxDur > 0 ? 'DUR ' + Math.round((item.dur || 0) / item.maxDur * 100) + '%' : 'DUR N/A';
   const rows = [
     item.name + ' · ' + fmt(price) + ' G',
+    'ILVL ' + (item.ilvl || 1) + ' · ' + (RARITY[item.rarity]?.name || 'COMMON') + ' · ' + (SLOT_NAME[slot] || slot).toUpperCase(),
+    'SET ' + (setId || 'NONE') + ' · ' + durability,
+    'GEMS ' + (item.sockets || []).filter(Boolean).length + '/' + gemSlots + ' · RUNES ' + (item.runeSockets || []).filter(Boolean).length + '/' + runeSlots + ' · ' + (item.attune ? 'ATTUNE' : 'NO ATTUNE'),
     'CURRENT GOLD ' + fmt(G.gold) + ' · AFTER ' + fmt(G.gold - price),
     'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
     'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
