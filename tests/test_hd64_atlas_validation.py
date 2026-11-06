@@ -9,7 +9,7 @@ from tools.validate_hd64_atlases import png_size, validate_atlases
 
 def write_png_header(path, width, height):
     path.write_bytes(
-        b"\\x89PNG\\r\\n\\x1a\\n"
+        b"\x89PNG\r\n\x1a\n"
         + struct.pack(">I", 13)
         + b"IHDR"
         + struct.pack(">II", width, height)
