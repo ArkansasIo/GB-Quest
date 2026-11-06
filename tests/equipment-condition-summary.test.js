@@ -15,3 +15,9 @@ test('equipment screen reports set-piece progress and optional durability safely
   assert.ok(source.includes('DURABILITY N/A'));
   assert.ok(source.includes('ATTUNED'));
 });
+
+test('equipment condition summary supports both current and legacy durability keys', () => {
+  assert.match(source, /it\\?\.maxDur \\?\\? it\\?\.maxDurability/);
+  assert.match(source, /it\\?\.dur \\?\\? it\\?\.durability/);
+  assert.match(source, /Number\.isFinite\\(dur\\)/);
+});
