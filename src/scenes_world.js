@@ -557,7 +557,7 @@ const currentField = () => FIELD;
 window.GBQWorldMapMini = () => {
   if (!G || !FIELD || !FIELD.m || !Array.isArray(FIELD.m.rows)) return null;
   const rows = FIELD.m.rows;
-  const entities = typeof FIELD.entities === 'function' ? FIELD.entities().filter(e => Number.isFinite(e.x) && Number.isFinite(e.y)).slice(0, 80).map(e => ({ x: e.x, y: e.y, kind: e.kind })) : [];
+  const entities = typeof FIELD.entities === 'function' ? FIELD.entities().filter(e => Number.isFinite(e.x) && Number.isFinite(e.y)).slice(0, 80).map(e => ({ x: e.x, y: e.y, kind: e.kind, name: e.name || e.b?.name || e.p?.name || e.item || e.kind })) : [];
   return { zone: FIELD.zone?.name || G.map || 'Unknown region', x: Number(G.x) || 0, y: Number(G.y) || 0, width: Math.max(1, ...rows.map(row => String(row).length)), height: rows.length, rows: rows.map(row => String(row)), entities };
 };
 function enterWorld() { reset(new Field()); }
