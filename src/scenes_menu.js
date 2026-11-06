@@ -1029,7 +1029,11 @@ class AuctionHouse extends ListScene {
     if (!P('a')) return;
     const e = this.list[this.i]; if (!e) return;
     if (G.gold < e.price) { SFX.error(); return say('Not enough gold.'); }
-    G.gold -= e.price; addGear(e.it); this.list.splice(this.i, 1); SFX.buy();
+    say(['PURCHASE ' + e.it.name.slice(0, 18) + '?', 'PRICE ' + fmt(e.price) + ' G', 'GOLD AFTER PURCHASE ' + fmt(G.gold - e.price) + ' G'], () => choose(['BUY ITEM', 'CANCEL'], confirm => {
+      if (confirm !== 0 || !this.list.includes(e)) return;
+      if (G.gold < e.price) return say('Your gold changed. Purchase cancelled.');
+      G.gold -= e.price; addGear(e.it); this.list.splice(this.list.indexOf(e), 1); SFX.buy();
+    }, 'Confirm auction purchase.'));
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
