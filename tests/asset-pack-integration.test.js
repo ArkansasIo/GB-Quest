@@ -49,7 +49,7 @@ test('pixel pack mode preserves classic fallback and exposes all generated world
 
 test('asset pack integration provides fallback-aware item, monster, scene and UI art hooks', () => {
   const source = read('src/asset_pack.js');
-  for (const token of ['AP_ITEM_ART', 'AP_GEM_ART', 'AP_MONSTERS', 'AP_PORTRAITS', 'apSceneFor', 'drawBattleBackdrop', 'drawItemCell', 'AP_GEAR_COUNTS', 'apGearIcon', 'ap_weapons_', 'ap_armor_']) {
+  for (const token of ['AP_ITEM_ART', 'AP_GEM_ART', 'AP_MONSTERS', 'AP_PORTRAITS', 'apSceneFor', 'drawBattleBackdrop', 'drawItemCell', 'AP_GEAR_COUNTS', 'apGearIcon', "it.kind === 'weapon'", "it.kind === 'armor'"]) {
     assert.ok(source.includes(token), 'missing asset pack integration hook: ' + token);
   }
   assert.match(source, /if \(!im\) return d0\.apply/);
