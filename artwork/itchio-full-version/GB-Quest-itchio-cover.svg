@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" role="img" aria-labelledby="title desc" shape-rendering="crispEdges">
+<title id="title">GB Quest: Lanterns of Aelmoor — itch.io cover</title><desc id="desc">A moonlit fantasy kingdom with a violet castle, golden lanterns, mountains, and a hero party.</desc>
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#080d2c"/><stop offset=".58" stop-color="#28204d"/><stop offset="1" stop-color="#65416c"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff2a5"/><stop offset=".35" stop-color="#ffc64e"/><stop offset="1" stop-color="#a94b13"/></linearGradient>
+ <radialGradient id="moon"><stop stop-color="#fff2ff"/><stop offset=".55" stop-color="#d4a8ff"/><stop offset="1" stop-color="#8a4bda" stop-opacity="0"/></radialGradient>
+ <linearGradient id="panel" x2="0" y2="1"><stop stop-color="#20102f"/><stop offset="1" stop-color="#090b20"/></linearGradient>
+</defs>
+<rect width="630" height="500" fill="url(#sky)"/>
+<circle cx="520" cy="94" r="115" fill="url(#moon)"/><circle cx="520" cy="94" r="54" fill="#e7cfff"/>
+<path d="M0 300 70 208 112 267 180 190 244 286 318 207 380 270 452 178 520 255 580 194 630 258V500H0Z" fill="#202648"/>
+<path d="M0 350 90 277 160 322 242 256 315 330 400 266 474 327 560 250 630 310V500H0Z" fill="#151c39"/>
+<g fill="#100f2a" stroke="#4b2868" stroke-width="4">
+ <path d="M410 267V183h32v84M442 267V147h37v120M479 267V190h30v77M509 267V132h42v135M551 267V176h28v91M579 267V213h26v54"/>
+ <path d="m435 184 17-36 17 36m31-38 20-48 20 48m24 31 15-33 15 33"/>
+</g>
+<g fill="#ffc45f"><path d="M450 212h8v12h-8zm39-22h8v13h-8zm34-35h9v14h-9zm35 34h8v12h-8zm-90 54h8v12h-8zm57-15h8v12h-8z"/></g>
+<path d="M0 392 94 347 173 378 254 335 335 379 418 339 508 374 630 333V500H0Z" fill="#0c1830"/>
+<path d="M0 430 100 400 177 418 259 390 346 426 430 396 515 419 630 388V500H0Z" fill="#11152b"/>
+<g fill="#f3c36c"><rect x="40" y="355" width="7" height="22"/><rect x="35" y="350" width="17" height="7"/><rect x="588" y="325" width="7" height="24"/><rect x="582" y="319" width="19" height="7"/></g>
+<g transform="translate(90 300)">
+ <path d="M22 76 8 35 22 16 37 35 34 77Z" fill="#b82f39"/><path d="M21 13 30 0 39 14 33 26H18Z" fill="#6b3c21"/><rect x="16" y="31" width="22" height="31" fill="#1d4c83"/><rect x="12" y="62" width="12" height="27" fill="#4c3529"/><rect x="29" y="62" width="12" height="27" fill="#4c3529"/><rect x="35" y="40" width="5" height="46" fill="#e4e8ed"/><path d="M40 38 47 43 40 47Z" fill="#f8e7a0"/>
+</g>
+<g transform="translate(40 337) scale(.78)">
+ <path d="M15 45 7 17 20 2 34 18 29 48Z" fill="#643b9b"/><rect x="14" y="26" width="20" height="28" fill="#422b6e"/><path d="M11 18 22 0 36 17Z" fill="#8f63c9"/><rect x="18" y="53" width="7" height="20" fill="#d8bd83"/>
+</g>
+<g transform="translate(151 355) scale(.72)">
+ <path d="M12 38 3 13 16 0 31 14 27 42Z" fill="#267b49"/><rect x="10" y="23" width="21" height="27" fill="#1b573c"/><rect x="13" y="48" width="7" height="22" fill="#61452c"/><rect x="25" y="48" width="7" height="22" fill="#61452c"/>
+</g>
+<rect x="30" y="22" width="570" height="145" rx="10" fill="url(#panel)" stroke="#f4bd4d" stroke-width="5"/>
+<rect x="39" y="31" width="552" height="127" rx="7" fill="none" stroke="#8e4b20" stroke-width="2"/>
+<text x="315" y="84" text-anchor="middle" font-family="Georgia,serif" font-size="63" font-weight="bold" fill="#170b17" stroke="#1a0c1b" stroke-width="8" paint-order="stroke">GB QUEST</text>
+<text x="315" y="80" text-anchor="middle" font-family="Georgia,serif" font-size="63" font-weight="bold" fill="url(#gold)" stroke="#642b16" stroke-width="2" paint-order="stroke">GB QUEST</text>
+<text x="315" y="112" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="#fff0c3">LOST KINGDOM OF SHADOWBANE CHRONICLES</text>
+<path d="M110 125H520" stroke="#d88b36" stroke-width="2"/><text x="315" y="148" text-anchor="middle" font-family="Georgia,serif" font-size="27" font-weight="bold" fill="#ffd56b">LANTERNS OF AELMOOR</text>
+<rect x="153" y="425" width="324" height="50" rx="8" fill="#100c25" stroke="#f2b948" stroke-width="3"/>
+<text x="315" y="457" text-anchor="middle" font-family="Georgia,serif" font-size="23" fill="#ffe1a0">A KINGDOM LOST TO SHADOW</text>
+<text x="14" y="489" font-family="monospace" font-size="12" fill="#f8e8cb">© 2026 GB QUEST STUDIO • ALL RIGHTS RESERVED</text>
+</svg>
