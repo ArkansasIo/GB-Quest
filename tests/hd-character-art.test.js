@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import art from '../src/hd_character_art.js';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const art = require('../src/hd_character_art.js');
 
 test('HD frame paths accept only supported coordinates and animation indices', () => {
   assert.equal(
