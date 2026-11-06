@@ -13,14 +13,14 @@ class Boot {
     if ((this.t > 150 && ready) || skip || this.t > 600) { fadeTo(() => reset(new Title())); this.t = -9999; }
   }
   draw() {
-    fill(0, 0, W, H, '#080a08');
+    fill(0, 0, W, H, '#dce8d1');
     const pulse = 0.7 + 0.3 * Math.sin(this.t / 12);
-    ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#68ddff'; ctx.shadowBlur = 8;
-    ctx.strokeStyle = '#68ddff'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#285da8'; ctx.shadowBlur = 8;
+    ctx.strokeStyle = '#285da8'; ctx.lineWidth = 2; ctx.beginPath();
     ctx.moveTo(80, 7); ctx.lineTo(94, 15); ctx.lineTo(94, 29); ctx.lineTo(80, 37); ctx.lineTo(66, 29); ctx.lineTo(66, 15); ctx.closePath(); ctx.stroke();
-    ctx.shadowColor = '#ffd36b'; ctx.shadowBlur = 5; ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.shadowColor = '#78a85b'; ctx.shadowBlur = 5; ctx.strokeStyle = '#78a85b'; ctx.lineWidth = 2; ctx.beginPath();
     ctx.moveTo(73, 29); ctx.lineTo(80, 14); ctx.lineTo(87, 29); ctx.moveTo(76, 24); ctx.lineTo(84, 24); ctx.stroke();
-    ctx.fillStyle = '#fff1bd'; ctx.beginPath(); ctx.arc(86, 17, 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#f8f8ef'; ctx.beginPath(); ctx.arc(86, 17, 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     textC(BUILD.engine, 80, 42, 'gold', 1);
     textC('GAME ENGINE', 80, 53, 2);
     textC(`VERSION ${BUILD.engineVersion}`, 80, 65, 3);
@@ -113,28 +113,28 @@ class Title {
     // lantern-lit citadel, rendered at the native 160x144 canvas resolution.
     ctx.save();
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#080d2c'); sky.addColorStop(.52, '#25234d'); sky.addColorStop(1, '#59416a');
+    sky.addColorStop(0, '#234b70'); sky.addColorStop(.52, '#6d9bb0'); sky.addColorStop(1, '#b8d8a0');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
     const moon = ctx.createRadialGradient(132, 24, 2, 132, 24, 30);
-    moon.addColorStop(0, 'rgba(242,218,255,.95)'); moon.addColorStop(.55, 'rgba(177,116,255,.5)'); moon.addColorStop(1, 'rgba(145,74,220,0)');
+    moon.addColorStop(0, 'rgba(255,255,235,.95)'); moon.addColorStop(.55, 'rgba(216,232,198,.5)'); moon.addColorStop(1, 'rgba(184,216,160,0)');
     ctx.fillStyle = moon; ctx.fillRect(98, 0, 62, 58);
-    ctx.fillStyle = '#e9d7ff'; ctx.beginPath(); ctx.arc(132, 23, 13, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#c7a8ed'; [[126,17,3,2],[135,20,4,3],[129,28,5,2],[138,29,2,2]].forEach(([x,y,w,h]) => ctx.fillRect(x,y,w,h));
-    for (let i = 0; i < 42; i++) { const x = (i * 37 + 11) % W, y = (i * 19 + 5) % 76; ctx.globalAlpha = .35 + ((i + (this.t >> 3)) % 4) * .13; ctx.fillStyle = i % 4 ? '#dce6ff' : '#ffd47c'; ctx.fillRect(x,y,i%9===0?2:1,1); }
+    ctx.fillStyle = '#f8f8ef'; ctx.beginPath(); ctx.arc(132, 23, 13, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c9dcb6'; [[126,17,3,2],[135,20,4,3],[129,28,5,2],[138,29,2,2]].forEach(([x,y,w,h]) => ctx.fillRect(x,y,w,h));
+    for (let i = 0; i < 42; i++) { const x = (i * 37 + 11) % W, y = (i * 19 + 5) % 76; ctx.globalAlpha = .35 + ((i + (this.t >> 3)) % 4) * .13; ctx.fillStyle = i % 4 ? '#e8f0dc' : '#fff0a8'; ctx.fillRect(x,y,i%9===0?2:1,1); }
     ctx.globalAlpha = 1;
     const ridge = (pts, color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H); pts.forEach(([x,y])=>ctx.lineTo(x,y)); ctx.lineTo(W,H); ctx.closePath(); ctx.fill(); };
-    ridge([[0,65],[17,43],[30,65],[48,39],[66,65],[84,48],[105,70],[126,42],[146,64],[160,51]], '#292b50');
-    ridge([[0,88],[20,67],[40,83],[61,60],[83,87],[106,65],[128,84],[148,62],[160,75]], '#1b2545');
+    ridge([[0,65],[17,43],[30,65],[48,39],[66,65],[84,48],[105,70],[126,42],[146,64],[160,51]], '#527b70');
+    ridge([[0,88],[20,67],[40,83],[61,60],[83,87],[106,65],[128,84],[148,62],[160,75]], '#355c50');
     // Castle towers and warm windows.
-    ctx.fillStyle = '#10152d'; ctx.fillRect(111,58,42,47); ctx.fillRect(119,48,8,57); ctx.fillRect(137,43,7,62); ctx.fillRect(106,68,8,37);
+    ctx.fillStyle = '#294a43'; ctx.fillRect(111,58,42,47); ctx.fillRect(119,48,8,57); ctx.fillRect(137,43,7,62); ctx.fillRect(106,68,8,37);
     ctx.beginPath(); ctx.moveTo(117,49); ctx.lineTo(123,37); ctx.lineTo(129,49); ctx.moveTo(135,44); ctx.lineTo(140,31); ctx.lineTo(146,44); ctx.fill();
-    ctx.fillStyle = '#ffbd67'; [[115,75],[123,67],[133,78],[141,62],[121,88],[145,90]].forEach(([x,y],i)=>{ if ((this.t+i*9)%90<82) ctx.fillRect(x,y,2,3); });
+    ctx.fillStyle = '#f4d56a'; [[115,75],[123,67],[133,78],[141,62],[121,88],[145,90]].forEach(([x,y],i)=>{ if ((this.t+i*9)%90<82) ctx.fillRect(x,y,2,3); });
     // Foreground cliff path and river glints.
-    ridge([[0,111],[20,101],[40,108],[59,95],[79,108],[101,98],[121,110],[143,97],[160,105]], '#111a30');
-    ctx.strokeStyle = '#70b9ee'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(104,144); ctx.quadraticCurveTo(91,126,108,116); ctx.stroke();
-    ctx.strokeStyle = 'rgba(160,220,255,.7)'; ctx.beginPath(); ctx.moveTo(110,141); ctx.lineTo(105,132); ctx.stroke();
+    ridge([[0,111],[20,101],[40,108],[59,95],[79,108],[101,98],[121,110],[143,97],[160,105]], '#294a43');
+    ctx.strokeStyle = '#5c9fc4'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(104,144); ctx.quadraticCurveTo(91,126,108,116); ctx.stroke();
+    ctx.strokeStyle = 'rgba(220,245,255,.8)'; ctx.beginPath(); ctx.moveTo(110,141); ctx.lineTo(105,132); ctx.stroke();
     // Pixel-art canopy framing the upper-left corner.
-    ctx.fillStyle = '#152b32'; ctx.fillRect(0,0,13,46); ctx.fillRect(8,0,24,7); ctx.fillRect(20,4,18,7);
+    ctx.fillStyle = '#315d45'; ctx.fillRect(0,0,13,46); ctx.fillRect(8,0,24,7); ctx.fillRect(20,4,18,7);
     for (let i=0;i<16;i++){ const x=(i*13)%43, y=(i*7)%22; ctx.fillStyle=i%3===0?'#a3a34a':i%2?'#587b42':'#315d45'; ctx.fillRect(x,y,5,4); }
     // Small adventurer silhouettes, using the existing class portraits.
     const bob = Math.round(Math.sin(this.t/12));
@@ -142,16 +142,16 @@ class Title {
     if (hero) { const p=sprFit(hero,34); blit(p,28,103-p.height+bob); }
     if (mage) { const p=sprFit(mage,29); blit(p,5,113-p.height-bob); }
     // Ornate title plaque and subtitle.
-    fill(17,3,126,39,'#100d27'); frame(3,2,154,43);
+    fill(17,3,126,39,'#f8f8ef'); frame(3,2,154,43);
     textC('GB QUEST',80,5,3); textC('LOST KINGDOM OF SHADOWBANE',80,17,1);
-    textC('CHRONICLES',80,24,2); textC('LATNTERNS OF AELMOOR',80,34,'gold');
+    textC('CHRONICLES',80,24,2); textC('LANTERNS OF AELMOOR',80,34,3);
     // Menu plaque; keep every command visible and selectable.
     const o=this.opts(), rowH=9, h=o.length*rowH+7, y0=57;
     frame(48,y0,64,h,1);
-    o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,1); frame(51,y-2,58,9,1); text('>',54,y,'gold'); } textC(label,82,y,j===this.i?'gold':2); });
+    o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,'#285da8'); frame(51,y-2,58,9,1); text('>',54,y,'white'); } textC(label,82,y,j===this.i?'white':3); });
     // Footer and version.
-    fill(0,134,W,10,'#080b1b'); text('v'+BUILD.version,3,136,0);
-    textC('© 2026 GB QUEST STUDIO  •  ALL RIGHTS RESERVED',83,136,0);
+    fill(0,134,W,10,'#285da8'); text('v'+BUILD.version,3,136,'white');
+    textC('© 2026 GB QUEST STUDIO  •  ALL RIGHTS RESERVED',83,136,'white');
     ctx.restore();
   }
 }
@@ -177,23 +177,23 @@ class SlotPicker {
   }
   draw() {
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#090d29'); bg.addColorStop(.62, '#252047'); bg.addColorStop(1, '#44304f');
+    bg.addColorStop(0, '#b8d8a0'); bg.addColorStop(.62, '#dce8d1'); bg.addColorStop(1, '#a9c4a0');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     for (let n = 0; n < 22; n++) {
       ctx.globalAlpha = .28 + (n % 3) * .12;
-      fill((n * 31 + 7) % W, (n * 17 + 4) % 130, n % 7 === 0 ? 2 : 1, 1, n % 4 ? '#c6b6ff' : '#ffd17b');
+      fill((n * 31 + 7) % W, (n * 17 + 4) % 130, n % 7 === 0 ? 2 : 1, 1, n % 4 ? '#edf4e5' : '#fff0a8');
     }
     ctx.globalAlpha = 1;
     frame(2, 2, 156, 139, 1);
-    fill(5, 5, 150, 17, '#17112d');
+    fill(5, 5, 150, 17, '#285da8');
     textC(this.mode === 'load' ? 'LOAD YOUR JOURNEY' : 'BEGIN A NEW JOURNEY', 80, 9, 'gold');
     textC('CHOOSE A SAVE SLOT', 80, 17, 2);
     for (let i = 0; i < 3; i++) {
       const y = 27 + i * 32, info = slotInfo(i), selected = i === this.i;
-      fill(7, y, 146, 28, selected ? '#392747' : '#15142b');
+      fill(7, y, 146, 28, selected ? '#dce8f7' : '#f8f8ef');
       frame(6, y - 1, 148, 30, selected ? 1 : 0);
-      if (selected) { fill(8, y + 3, 2, 20, '#ffd16b'); text('>', 11, y + 3, 'gold'); }
-      text(`SLOT 0${i + 1}`, 17, y + 3, selected ? 'gold' : 2);
+      if (selected) { fill(8, y + 3, 2, 20, '#285da8'); text('>', 11, y + 3, '#285da8'); }
+      text(`SLOT 0${i + 1}`, 17, y + 3, selected ? '#285da8' : 3);
       if (info) {
         const portrait = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls);
         if (portrait) blit(sprFit(portrait, 20), 126, y + 4);
@@ -205,9 +205,9 @@ class SlotPicker {
         text(this.mode === 'load' ? 'NO DATA TO LOAD' : 'READY FOR A NEW HERO', 17, y + 21, 2);
       }
     }
-    fill(8, 126, 144, 10, '#100d22');
-    text('UP/DOWN: CHOOSE   A: CONFIRM', 11, 128, 2);
-    text('B: BACK', 11, 136, 'gold');
+    fill(8, 126, 144, 10, '#285da8');
+    text('UP/DOWN: CHOOSE   A: CONFIRM', 11, 128, 'white');
+    text('B: BACK', 11, 136, 'white');
   }
 }}
 
