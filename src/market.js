@@ -178,9 +178,12 @@ class MarketScene {
           'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
           'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
           'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
-          'CRIT ' + current.crit + '% → ' + target.crit + '% · DODGE ' + current.dodge + '% → ' + target.dodge + '%',
-          'BLOCK ' + current.block + '% → ' + target.block + '% · LEECH ' + current.leech + '% → ' + target.leech + '%',
-          'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'
+          'CRIT ' + current.crit + '% → ' + target.crit + '%',
+          'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+          'BLOCK ' + current.block + '% → ' + target.block + '%',
+          'LEECH ' + current.leech + '% → ' + target.leech + '%',
+          'HASTE ' + current.haste + '% → ' + target.haste + '%',
+          'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'
         ];
         const mods = (item.affixes || []).map(([key, value]) => 'AFFIX ' + key.toUpperCase() + ' +' + value);
         rows.push(...(mods.length ? mods : ['NO ROLLED AFFIXES']));
