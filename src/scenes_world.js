@@ -1074,7 +1074,9 @@ function previewVendorGear(item, price, onBuy) {
   const setId = item.setId || item.set || item.template?.setId || item.template?.set;
   const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(item) : 0;
   const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(item) : 0;
-  const durability = item.maxDur > 0 ? 'DUR ' + Math.round((item.dur || 0) / item.maxDur * 100) + '%' : 'DUR N/A';
+  const maxDur = Number(item.maxDur ?? item.maxDurability), dur = Number(item.dur ?? item.durability);
+  const durability = Number.isFinite(maxDur) && maxDur > 0 && Number.isFinite(dur)
+    ? 'DUR ' + Math.max(0, Math.min(100, Math.round(dur / maxDur * 100))) + '%' : 'DUR N/A';
   const rows = [
     item.name + ' · ' + fmt(price) + ' G',
     'ILVL ' + (item.ilvl || 1) + ' · ' + (RARITY[item.rarity]?.name || 'COMMON') + ' · ' + (SLOT_NAME[slot] || slot).toUpperCase(),
