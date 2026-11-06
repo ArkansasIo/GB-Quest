@@ -116,3 +116,12 @@ test('standalone release includes runtime HD64 artwork in the player HUD', async
   assert.match(source, /au_menu_icons_/);
   assert.match(source, /au_skill_icons_/);
 });
+
+
+test('expanded HUD reserves a separate gameplay canvas and collapses on compact screens', () => {
+  assert.match(styles, /width:min\(calc\(100vw - 344px\), calc\(\(100dvh - 126px\) \* 160 \/ 144\)\)/);
+  assert.match(styles, /body\.full-window-mode \.gbq-hud-left/);
+  assert.match(styles, /body\.full-window-mode \.gbq-hud-right/);
+  assert.match(styles, /@media \(max-width:900px\), \(max-height:620px\)/);
+  assert.match(styles, /body:not\(\.full-window-mode\):not\(\.fullscreen-mode\) \.gbq-player-hud/);
+});
