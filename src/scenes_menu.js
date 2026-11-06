@@ -227,14 +227,14 @@ class EquipScene extends ListScene {
 class CharSheet {
   constructor() { this.opaque = true; this.page = 0; this.scroll = 0; }
   update() {
-    if (nav('left')) { this.page = (this.page + 4) % 5; this.scroll = 0; SFX.page(); }
-    if (nav('right')) { this.page = (this.page + 1) % 5; this.scroll = 0; SFX.page(); }
+    if (nav('left')) { this.page = (this.page + 5) % 6; this.scroll = 0; SFX.page(); }
+    if (nav('right')) { this.page = (this.page + 1) % 6; this.scroll = 0; SFX.page(); }
     if (nav('down')) this.scroll++; if (nav('up')) this.scroll = Math.max(0, this.scroll - 1);
     if (P('b') || P('a')) { SFX.back(); removeScene(this); }
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    const D = derive(G), pages = ['OVERVIEW', 'ATTRIBUTES', 'SAVES/SKILLS', 'SUBSTATS', 'FEATURES'];
+    const D = derive(G), pages = ['OVERVIEW', 'ATTRIBUTES', 'SAVES/SKILLS', 'SUBSTATS', 'FEATURES', 'COMBAT'];
     textC(`< ${pages[this.page]} >`, 80, 13, 2); fill(2, 22, 156, 1, 3);
     const p = this.page;
     if (p === 0) {
@@ -252,7 +252,7 @@ class CharSheet {
     } else if (p === 3) {
       const rows = [['CRIT', D.crit + '%'], ['CRIT DMG', D.critdmg + '%'], ['DODGE', D.dodge + '%'], ['BLOCK', D.block + '%'], ['LIFESTEAL', D.leech + '%'], ['HASTE', D.haste + '%'], ['DAMAGE', '+' + D.dmgPct + '%'], ['HEALING', '+' + D.healPct + '%'], ['RESIST ALL', D.resistAll + '%'], ['THORNS', D.thorns], ['MAGIC FIND', D.mf + '%'], ['GOLD FIND', D.gf + '%'], ['XP BONUS', D.xpPct + '%']].concat(Object.entries(D.elem).map(([k, v]) => [k.toUpperCase(), '+' + v + '%']));
       rows.slice(this.scroll % rows.length).concat(rows).slice(0, 12).forEach(([k, v], i) => { text(k, 6, 26 + i * 9, 2); textR(String(v), 150, 26 + i * 9); });
-    } else {
+    } else if (p === 4) {
       const feats = CLASSES[G.cls].features.filter(([l]) => l <= D.CL).map(([l, f]) => `L${l} ${FEATURE_NAME[f]}`);
       if (G.sub) feats.push('SUB: ' + CLASSES[G.cls].subs.find(s => s.id === G.sub).desc);
       G.feats.forEach(f => feats.push('FEAT: ' + FEATS[f].name));
@@ -260,6 +260,30 @@ class CharSheet {
       G.boons.forEach(b => feats.push('BOON: ' + MYTHIC_BOONS.find(x => x.id === b).name));
       if (D.res.size) feats.push('RESIST: ' + [...D.res].join(',').toUpperCase());
       feats.slice(this.scroll % Math.max(1, feats.length)).slice(0, 12).forEach((s, i) => text(s.slice(0, 25), 4, 26 + i * 9));
+    } else {
+      const weapon = D.weapon || {};
+      const rows = [
+        ['WEAPON', weapon.name || 'FISTS'],
+        ['DAMAGE DICE', weapon.dice || '1d1'],
+        ['DAMAGE BONUS', (Number(weapon.dmg) > 0 ? '+' : '') + (weapon.dmg || 0)],
+        ['ATTACK HIT', (Number(weapon.hit) > 0 ? '+' : '') + (weapon.hit || 0)],
+        ['ATTACKS / TURN', D.attacks || 1],
+        ['ARMOR CLASS', D.ac],
+        ['INITIATIVE', (D.init >= 0 ? '+' : '') + D.init],
+        ['CRITICAL RANGE', `${D.critRange}-20`],
+        ['CRITICAL CHANCE', `${D.crit}%`],
+        ['CRITICAL DAMAGE', `${D.critdmg}%`],
+        ['DODGE', `${D.dodge}%`],
+        ['BLOCK', `${D.block}%`],
+        ['LIFESTEAL', `${D.leech}%`],
+        ['HASTE', `${D.haste}%`]
+      ];
+      rows.slice(this.scroll % rows.length).concat(rows).slice(0, 12).forEach(([key, value], i) => {
+        const y = 26 + i * 9;
+        text(String(key).slice(0, 16), 5, y, 2);
+        textR(String(value).slice(0, 12), 154, y, 3);
+      });
+      text('UP / DOWN: MORE STATS', 5, 137, 'gold');
     }
   }
 }
