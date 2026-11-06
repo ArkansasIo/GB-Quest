@@ -39,15 +39,19 @@ test('itch.io release gate verifies artwork is embedded in the playable HTML', (
 });
 
 
-test('itch.io package includes generated HD animation frames, equipment, and visual mappings', () => {
+test('itch.io package embeds generated HD animation frames, equipment, and visual mappings in one HTML file', () => {
   const build = read('tools/build-itch.cjs');
+  const runtime = read('src/hd_character_art.js');
   assert.match(build, /assets_hd64[\\\\/]animations/);
   assert.match(build, /assets_hd64[\\\\/]equipment/);
-  assert.match(build, /equipment-catalog-visual-map\.json/);
-  assert.match(build, /fs\.cpSync/);
-  assert.match(build, /animation_manifest\.json/);
-  assert.match(build, /equipment_manifest\.json/);
-  assert.match(build, /assets_hd64.*animations.*frames/);
+  assert.match(build, /equipment-catalog-visual-map\\.json/);
+  assert.match(build, /animation_manifest\\.json/);
+  assert.match(build, /equipment_manifest\\.json/);
+  assert.match(build, /GBQ_HD64_PACK/);
+  assert.match(build, /data:image\\/png;base64,/);
+  assert.match(build, /MAX_FILES = 1000/);
+  assert.match(runtime, /GBQ_HD64_PACK/);
+  assert.match(runtime, /packedUrl \\|\\| url/);
 });
 
 test('itch.io workflow generates all six F-rank animation sets before packaging', () => {
