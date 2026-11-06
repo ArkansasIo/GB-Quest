@@ -57,10 +57,16 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
     return null;
   }
   function setsMenu() {
-    const l = L(), opts = [...l.sets.map(s => `EQUIP: ${s.name}`), ...(l.sets.length < MAX_SETS ? ['SAVE CURRENT GEAR'] : []), ...(l.sets.length ? ['DELETE A SET'] : []), 'BACK'];
+    const l = L(), opts = [...l.sets.map(s => `EQUIP: ${s.name}`), ...(l.sets.length < MAX_SETS ? ['SAVE CURRENT GEAR'] : []), ...(l.sets.length ? ['OVERWRITE A SET', 'RENAME A SET', 'DELETE A SET'] : []), 'BACK'];
     choose(opts, k => {
       const o = opts[k] || 'BACK'; if (o === 'BACK') return loadoutsMenu();
       if (o === 'SAVE CURRENT GEAR') { const n = l.sets.length + 1; l.sets.push({ name: `SET ${n}`, items: setFromEq(G.eq) }); SFX.confirm(); saveGame(); return say(`Saved SET ${n} (${Object.keys(l.sets[n - 1].items).length} pieces).`, setsMenu); }
+      if (o === 'OVERWRITE A SET') return choose(l.sets.map(s => s.name), j => { if (j >= 0) { l.sets[j].items = setFromEq(G.eq); saveGame(); SFX.confirm(); } setsMenu(); }, 'Overwrite with current gear?');
+      if (o === 'RENAME A SET') return choose(l.sets.map(s => s.name), j => {
+        if (j < 0) return setsMenu();
+        const names = ['DAMAGE', 'TANK', 'HEALER', 'DUNGEON', 'RAID', 'PVP', 'FARM', 'CUSTOM 1', 'CUSTOM 2'];
+        choose(names, n => { if (n >= 0) { l.sets[j].name = names[n]; saveGame(); SFX.confirm(); } setsMenu(); }, `Rename ${l.sets[j].name}`);
+      }, 'Rename which set?');
       if (o === 'DELETE A SET') return choose(l.sets.map(s => s.name), j => { if (j >= 0) { l.sets.splice(j, 1); saveGame(); } setsMenu(); }, 'Delete which set?');
       if (inBattle()) return say('Not during a battle.');
       const set = l.sets[k], plan = planSet(set.items, G.eq, G.bag, G.bank); let moved = 0; const missing = [];
