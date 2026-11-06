@@ -42,3 +42,9 @@ The HUD is read-only with respect to player progression. It polls the live state
 - Hotbar activation validates the live combat entries before dispatch and preserves the authoritative combat bridge as the only activation path.
 - Responsive keyboard focus is retained when a hotbar refresh rebuilds its button markup; focus is not moved when the user was interacting elsewhere.
 - Added visible keyboard focus treatment and minimum touch targets for minimap controls.
+
+## Live combat profile panel — November 2026
+
+- Added a compact HUD combat profile with armor class, weapon damage, weapon hit bonus, average equipped item level, and equipped-slot count.
+- Values are read from the existing `derive(G)` result and current `G.eq` loadout. The HUD does not calculate combat outcomes or modify equipment.
+- Empty slots and missing optional stat values render as zero; item level averages only equipped items with a positive item-level value.
