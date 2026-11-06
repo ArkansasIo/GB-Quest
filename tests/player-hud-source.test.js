@@ -42,3 +42,10 @@ test('player HUD displays authoritative realtime cooldown and pause state', () =
   assert.match(source, /gbq-hud-cooldown/);
   assert.match(styles, /\.gbq-hud-hotbar button \.gbq-hud-cooldown/);
 });
+
+test('player HUD avoids replacing unchanged hotbar markup and restores keyboard focus after state changes', () => {
+  assert.match(source, /hotbar\.dataset\.renderedMarkup !== markup/);
+  assert.match(source, /hotbar\.contains\(document\.activeElement\)/);
+  assert.match(source, /next\?\.focus\(\{preventScroll:true\}\)/);
+  assert.match(source, /aria-label=/);
+});
