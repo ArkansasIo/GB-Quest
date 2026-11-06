@@ -1,42 +1,39 @@
-# Aelmoor Artwork Pack — Asset Catalog
+# GB Quest — Aelmoor itch.io Artwork Package
 
-This catalog identifies the raster reference assets prepared for the GB Quest itch.io full-version visual refresh.
+The current conversation handoff package contains the supplied individual reference panels and the full concept sheet.
 
-## Companion archive
+## Package
+- Archive: `GB-Quest-Aelmoor-itchio-assets.zip`
+- Archive contents: 18 files (16 PNGs, README, JSON manifest)
+- Archive size: 6,352,535 bytes
+- ZIP integrity: verified
+- PNG source dimensions are preserved; no lossy resizing was applied.
 
-- File: `GB-Quest-Aelmoor-Art-Pack.zip`
-- Size: 5,960,779 bytes
-- SHA-256: `0c719f97da8f11cb5b6d2e0bc19608ac06051782d0b0a9c6680295ed11093d3f`
-- Contents: 17 files; ZIP integrity verified.
+## Panels
+1. Title screen — 512×325
+2. Character creation — 543×325
+3. Inventory and equipment — 481×325
+4. Options — 380×260
+5. Save/load — 370×260
+6. Crafting — 395×260
+7. World map — 391×260
+8. Town exploration — 525×255
+9. Combat — 545×255
+10. Dialogue — 466×255
+11. Character sprite reference — 360×184
+12. Enemy and boss reference — 330×184
+13. Tileset and environment reference — 365×184
+14. Item icons — 260×184
+15. itch.io feature panel — 221×184
+16. Full concept sheet — 1536×1024
 
-## Included reference panels
+## Integration and release status
+These images are visual reference panels, not production-ready independent sprite sheets, transparent character atlases, tilemaps, or UI components. They still require extraction/redrawing and in-game validation before being treated as integrated production assets.
 
-| File | Purpose | Bytes |
-|---|---|---:|
-| `01-title-screen-reference.png` | Main title screen | 349225 |
-| `02-character-creation-reference.png` | Character creation | 321068 |
-| `03-inventory-equipment-reference.png` | Inventory and equipment | 287309 |
-| `04-options-reference.png` | Options | 162219 |
-| `05-save-load-reference.png` | Save/load slots | 162736 |
-| `06-crafting-reference.png` | Crafting | 170991 |
-| `07-world-map-reference.png` | World map | 229890 |
-| `08-town-exploration-reference.png` | Town exploration | 321034 |
-| `09-combat-reference.png` | Combat | 284552 |
-| `10-dialogue-reference.png` | Dialogue | 210516 |
-| `11-character-sprite-reference.png` | Character sprite concepts | 110212 |
-| `12-enemy-boss-reference.png` | Enemy and boss concepts | 107764 |
-| `13-tileset-environment-reference.png` | Environment/tileset concepts | 127278 |
-| `14-item-icons-reference.png` | Item icon concepts | 71221 |
-| `15-itchio-feature-panel-reference.png` | Store feature-panel concept | 56506 |
-| `GB-Quest-Full-Art-Concept.png` | Full composite concept sheet | 2982775 |
+The feature-panel image mentions Windows, Linux/macOS, and offline play. Do not advertise those as supported until those builds and offline behavior have been verified.
 
-## Production integration status
-
-These are reference crops from a composite concept image. They are not yet individual transparent sprite sheets, tile atlases, nine-slice UI panels, or optimized game textures. Do not wire the cropped concept panels directly as final in-game UI. Production conversion should redraw/export independent elements, preserve nearest-neighbor pixel edges, and validate the result at the game's native resolution.
-
-The companion ZIP is attached to the ChatGPT conversation for download. The GitHub connector available in this session supports text-file commits but has no binary-file upload action, so this catalog and the earlier README are committed while the PNG/ZIP binaries remain pending upload.
+The ZIP is available as a conversation download attachment. The connected GitHub interface in this session can commit text files but does not expose a binary repository upload action; therefore this catalog does not claim the PNG or ZIP files have been pushed to GitHub.
 
 ## Copyright
-
 GB Quest: Lost Kingdom of ShadowBane Chronicles — Lanterns of Aelmoor  
 © 2026 GB Quest Studio. Proprietary — All Rights Reserved.
