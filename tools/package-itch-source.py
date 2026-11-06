@@ -93,6 +93,7 @@ def main() -> None:
         playable_html = playable_zip.read("index.html")
     digest_lines = []
     with zipfile.ZipFile(OUTPUT, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=8) as archive:
+        archive.writestr("index.html", playable_html)
         archive.writestr("itch-build/index.html", playable_html)
         archive.writestr("README-ITCH-SOURCE.md", PACKAGE_README)
         for path, arcname in entries:
@@ -107,7 +108,7 @@ def main() -> None:
         if bad:
             raise SystemExit(f"ZIP integrity check failed at {bad}")
         names = archive.namelist()
-        required = ["itch-build/index.html"]
+        required = ["index.html", "itch-build/index.html"]
         required_prefixes = ["source/src/", "source/native/", "source/tests/"]
         if any(name not in names for name in required):
             raise SystemExit("Playable HTML entry is missing.")
