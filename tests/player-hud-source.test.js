@@ -49,3 +49,13 @@ test('player HUD avoids replacing unchanged hotbar markup and restores keyboard 
   assert.match(source, /next\?\.focus\(\{preventScroll:true\}\)/);
   assert.match(source, /aria-label=/);
 });
+
+test('player HUD minimap supports zoom, player centering, and marker inspection', () => {
+  assert.match(source, /data-map-zoom="in"/);
+  assert.match(source, /data-map-zoom="out"/);
+  assert.match(source, /data-map-zoom="center"/);
+  assert.match(source, /function onMapClick\(event\)/);
+  assert.match(source, /latestMapData\?\.entities/);
+  assert.match(source, /mapZoom=mode==='center'\?1/);
+  assert.match(styles, /\.gbq-hud-map-tools button/);
+});
