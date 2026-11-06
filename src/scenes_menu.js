@@ -180,6 +180,14 @@ class BagScene extends ListScene {
     text('SEL:TAB', 120, 102, 1);
   }
 }
+function legendarySetPreviewLines(item) {
+  if (typeof legendarySetPreview !== 'function') return [];
+  return legendarySetPreview(G, item).flatMap(set => set.thresholds.map(t => {
+    const state = t.newlyUnlocked ? 'NEWLY UNLOCKED' : t.active ? 'ACTIVE' : 'LOCKED';
+    const stats = t.stats.map(([key, value]) => key.toUpperCase() + ' +' + value).join(', ');
+    return set.name + ' ' + t.pieces + 'PC ' + state + ': ' + stats;
+  }));
+}
 function showGearComparison(it) {
   const slot = itemSlot(it), current = derive(G), eq = { ...G.eq, [slot]: it };
   const target = derive({ ...G, eq });
@@ -203,6 +211,7 @@ function showGearComparison(it) {
   if (typeof runeAffixes === 'function') for (const [k, v] of Object.entries(runeAffixes(it))) mods.push('RUNE ' + k.toUpperCase() + ' +' + v);
   if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) mods.push('TIER ' + k.toUpperCase() + ' +' + v);
   rows.push(...(mods.length ? mods : ['NO ITEM MODIFIERS']));
+  rows.push(...legendarySetPreviewLines(it));
   say(rows, () => {});
 }
 
@@ -228,7 +237,8 @@ function itemInspectText(it) {
     it.attune ? 'ATTUNEMENT REQUIRED' : 'NO ATTUNEMENT',
     it.aclass ? `ARMOR CLASS ${String(it.aclass).toUpperCase()}` : ''
   ].filter(Boolean).join(' · ');
-  return `IL${it.ilvl || 1} ${slotLabel} · ${comparison}. ${details}. ${itemDesc(it)}`;
+  const setProgress = legendarySetPreviewLines(it).join('. ');
+  return `IL${it.ilvl || 1} ${slotLabel} · ${comparison}. ${details}. ${setProgress} ${itemDesc(it)}`;
 }
 function itemDesc(it) {
   let s = `${RARITY[it.rarity].name} IL${it.ilvl}. `;
