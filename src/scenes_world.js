@@ -85,103 +85,76 @@ function titleExtras() {
   }, 'EXTRAS');
 }
 class Title {
-  constructor() { this.opaque = true; this.t = 0; this.i = 0; }
+  constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
   enter() { Music.play('title'); }
   resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'ONLINE', 'ACCOUNT', 'EXTRAS', 'SETTINGS', 'CREDITS'); return o; }
+  opts() { const o = ['NEW GAME']; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('LOAD GAME', 'OPTIONS', 'CREDITS', 'QUIT'); return o; }
   update() {
     this.t++;
     const o = this.opts();
     if (nav('up')) { this.i = (this.i + o.length - 1) % o.length; SFX.cursor(); }
     if (nav('down')) { this.i = (this.i + 1) % o.length; SFX.cursor(); }
-    if (P('a') || P('start')) {
-      SFX.select();
-      const c = o[this.i];
-      if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
-      if (c === 'NEW GAME') push(new SlotPicker('new'));
-      if (c === 'LOAD GAME') push(new SlotPicker('load'));
-      if (c === 'STORY TRAILERS') push(new StoryLibrary());
-      if (c === 'ONLINE') { push(new MultiplayerScene()); return; }
-      if (c === 'ACCOUNT') { push(new AccountScene()); return; }
-      if (c === 'EXTRAS') { titleExtras(); return; }
-      if (c === 'SETTINGS') push(new SettingsScene());
-      if (c === 'CREDITS') push(new Credits());
-    }
+    this.i = Math.min(this.i, o.length - 1);
+    if (P('b')) { SFX.back(); return; }
+    if (!(P('a') || P('start'))) return;
+    SFX.select();
+    const c = o[this.i];
+    if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
+    if (c === 'NEW GAME') push(new SlotPicker('new'));
+    if (c === 'LOAD GAME') push(new SlotPicker('load'));
+    if (c === 'OPTIONS') push(new SettingsScene());
+    if (c === 'CREDITS') push(new Credits());
+    if (c === 'QUIT') choose(['NO', 'YES, QUIT'], k => {
+      if (k === 1) say(['Thanks for exploring Aelmoor.', 'You may close this browser tab.']);
+    }, 'Leave GB Quest?');
   }
   draw() {
+    // Aelmoor title scene: deep violet moonlight, layered mountains and a warm
+    // lantern-lit citadel, rendered at the native 160x144 canvas resolution.
     ctx.save();
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#10172d'); sky.addColorStop(0.56, '#49304b'); sky.addColorStop(1, '#d07852');
+    sky.addColorStop(0, '#080d2c'); sky.addColorStop(.52, '#25234d'); sky.addColorStop(1, '#59416a');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < 32; i++) {
-      const x = (i * 47 + 13) % W, y = (i * 29 + 7) % 72;
-      ctx.globalAlpha = 0.45 + ((i + (this.t >> 4)) % 4) * 0.15;
-      ctx.fillStyle = i % 5 === 0 ? '#ffdca0' : '#d8e5ff';
-      ctx.fillRect(x, y, i % 7 === 0 ? 2 : 1, 1);
-    }
+    const moon = ctx.createRadialGradient(132, 24, 2, 132, 24, 30);
+    moon.addColorStop(0, 'rgba(242,218,255,.95)'); moon.addColorStop(.55, 'rgba(177,116,255,.5)'); moon.addColorStop(1, 'rgba(145,74,220,0)');
+    ctx.fillStyle = moon; ctx.fillRect(98, 0, 62, 58);
+    ctx.fillStyle = '#e9d7ff'; ctx.beginPath(); ctx.arc(132, 23, 13, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c7a8ed'; [[126,17,3,2],[135,20,4,3],[129,28,5,2],[138,29,2,2]].forEach(([x,y,w,h]) => ctx.fillRect(x,y,w,h));
+    for (let i = 0; i < 42; i++) { const x = (i * 37 + 11) % W, y = (i * 19 + 5) % 76; ctx.globalAlpha = .35 + ((i + (this.t >> 3)) % 4) * .13; ctx.fillStyle = i % 4 ? '#dce6ff' : '#ffd47c'; ctx.fillRect(x,y,i%9===0?2:1,1); }
     ctx.globalAlpha = 1;
-    const moon = ctx.createRadialGradient(128, 37, 2, 128, 37, 28);
-    moon.addColorStop(0, 'rgba(255,224,166,.38)'); moon.addColorStop(1, 'rgba(255,190,130,0)');
-    ctx.fillStyle = moon; ctx.fillRect(98, 7, 60, 60);
-    ctx.fillStyle = '#f6dda7'; ctx.beginPath(); ctx.arc(128, 36, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#d6a77d'; ctx.fillRect(123, 32, 3, 2); ctx.fillRect(130, 39, 2, 2);
-
-    const ridge = (points, color) => {
-      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
-      points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
-    };
-    ridge([[0, 74], [17, 51], [29, 68], [48, 42], [67, 69], [88, 48], [105, 68], [126, 43], [147, 67], [160, 54]], '#34334a');
-    ridge([[0, 91], [18, 75], [38, 89], [58, 68], [78, 91], [99, 72], [118, 88], [139, 66], [160, 86]], '#24283a');
-
-    const drift = Math.floor(this.t / 48) % 4;
-    ctx.fillStyle = '#1b2032';
-    ctx.fillRect(112 - drift, 62, 33, 39); ctx.fillRect(119 - drift, 53, 8, 48);
-    ctx.fillRect(136 - drift, 57, 7, 44); ctx.fillRect(108 - drift, 72, 7, 29);
-    ctx.fillRect(116 - drift, 56, 14, 3); ctx.fillRect(134 - drift, 60, 11, 3);
-    ctx.beginPath(); ctx.moveTo(118 - drift, 56); ctx.lineTo(123 - drift, 48); ctx.lineTo(128 - drift, 56); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(134 - drift, 60); ctx.lineTo(139 - drift, 51); ctx.lineTo(144 - drift, 60); ctx.fill();
-    ctx.fillStyle = '#f1a663';
-    [[116, 77], [126, 70], [137, 78], [121, 88], [141, 91]].forEach(([x, y], i) => {
-      if ((this.t + i * 7) % 80 < 68) ctx.fillRect(x - drift, y, 2, 3);
-    });
-
-    const glow = ctx.createRadialGradient(117, 76, 1, 117, 76, 19);
-    glow.addColorStop(0, 'rgba(247,112,65,.27)'); glow.addColorStop(1, 'rgba(247,112,65,0)');
-    ctx.fillStyle = glow; ctx.fillRect(96, 55, 42, 42);
-    blit(sprH('nm_dragon_0', 43, { flip: true }), 109 - drift, 47 + Math.round(Math.sin(this.t / 16) * 2));
-    ridge([[0, 112], [20, 101], [42, 108], [63, 97], [83, 106], [105, 96], [128, 108], [147, 98], [160, 104]], '#171c2a');
-    ctx.fillStyle = '#d98055';
-    for (let i = 0; i < 18; i++) {
-      const x = (i * 37 + 8) % W, y = 112 + ((i * 17) % 28);
-      ctx.fillRect(x, y, 1 + (i % 3), 1);
-    }
+    const ridge = (pts, color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H); pts.forEach(([x,y])=>ctx.lineTo(x,y)); ctx.lineTo(W,H); ctx.closePath(); ctx.fill(); };
+    ridge([[0,65],[17,43],[30,65],[48,39],[66,65],[84,48],[105,70],[126,42],[146,64],[160,51]], '#292b50');
+    ridge([[0,88],[20,67],[40,83],[61,60],[83,87],[106,65],[128,84],[148,62],[160,75]], '#1b2545');
+    // Castle towers and warm windows.
+    ctx.fillStyle = '#10152d'; ctx.fillRect(111,58,42,47); ctx.fillRect(119,48,8,57); ctx.fillRect(137,43,7,62); ctx.fillRect(106,68,8,37);
+    ctx.beginPath(); ctx.moveTo(117,49); ctx.lineTo(123,37); ctx.lineTo(129,49); ctx.moveTo(135,44); ctx.lineTo(140,31); ctx.lineTo(146,44); ctx.fill();
+    ctx.fillStyle = '#ffbd67'; [[115,75],[123,67],[133,78],[141,62],[121,88],[145,90]].forEach(([x,y],i)=>{ if ((this.t+i*9)%90<82) ctx.fillRect(x,y,2,3); });
+    // Foreground cliff path and river glints.
+    ridge([[0,111],[20,101],[40,108],[59,95],[79,108],[101,98],[121,110],[143,97],[160,105]], '#111a30');
+    ctx.strokeStyle = '#70b9ee'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(104,144); ctx.quadraticCurveTo(91,126,108,116); ctx.stroke();
+    ctx.strokeStyle = 'rgba(160,220,255,.7)'; ctx.beginPath(); ctx.moveTo(110,141); ctx.lineTo(105,132); ctx.stroke();
+    // Pixel-art canopy framing the upper-left corner.
+    ctx.fillStyle = '#152b32'; ctx.fillRect(0,0,13,46); ctx.fillRect(8,0,24,7); ctx.fillRect(20,4,18,7);
+    for (let i=0;i<16;i++){ const x=(i*13)%43, y=(i*7)%22; ctx.fillStyle=i%3===0?'#a3a34a':i%2?'#587b42':'#315d45'; ctx.fillRect(x,y,5,4); }
+    // Small adventurer silhouettes, using the existing class portraits.
+    const bob = Math.round(Math.sin(this.t/12));
+    const hero = classPortrait('warden'), mage = classPortrait('arcanist');
+    if (hero) { const p=sprFit(hero,34); blit(p,28,103-p.height+bob); }
+    if (mage) { const p=sprFit(mage,29); blit(p,5,113-p.height-bob); }
+    // Ornate title plaque and subtitle.
+    fill(17,3,126,39,'#100d27'); frame(3,2,154,43);
+    textC('GB QUEST',80,5,3); textC('LOST KINGDOM OF SHADOWBANE',80,17,1);
+    textC('CHRONICLES',80,24,2); textC('LATNTERNS OF AELMOOR',80,34,'gold');
+    // Menu plaque; keep every command visible and selectable.
+    const o=this.opts(), rowH=9, h=o.length*rowH+7, y0=57;
+    frame(48,y0,64,h,1);
+    o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,1); frame(51,y-2,58,9,1); text('>',54,y,'gold'); } textC(label,82,y,j===this.i?'gold':2); });
+    // Footer and version.
+    fill(0,134,W,10,'#080b1b'); text('v'+BUILD.version,3,136,0);
+    textC('© 2026 GB QUEST STUDIO  •  ALL RIGHTS RESERVED',83,136,0);
     ctx.restore();
-
-    { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
-    const bob = Math.round(Math.sin(this.t / 12));
-    { // title heroes: your last saved hero's portrait, else the warden and arcanist portraits
-      const li = lastSlot(), info = li >= 0 ? slotInfo(li) : null;
-      const mine = info && (info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls));
-      const a = mine || classPortrait('warden'), b = mine ? null : classPortrait('arcanist');
-      if (a) { const s = sprFit(a, 44); blit(s, (b ? 104 : 116) - s.width / 2, 131 - s.height + bob); } else blit(sprH('c_warden_4', 36), 99, 93 + bob);
-      if (b) { const s = sprFit(b, 40); blit(s, 136 - s.width / 2, 131 - s.height - bob); } else if (!mine) blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
-    }
-    frame(4, 5, 152, 43);
-    textC('LOST KINGDOM OF', 80, 8, 1); textC('SHADOWBANE', 80, 17, 2); textC('CHRONICLES', 80, 26, 3);
-    textC(BUILD.subtitle, 80, 37, 2);
-    const o = this.opts(), rows = Math.min(o.length, 7), h = rows * 9 + 6;
-    this.top = this.top || 0; if (this.i < this.top) this.top = this.i; if (this.i >= this.top + rows) this.top = this.i - rows + 1; this.top = Math.max(0, Math.min(this.top, o.length - rows));
-    frame(5, 60, 83, h);
-    if (this.top > 0) textC('^', 46, 56, 'gold'); if (this.top + rows < o.length) textC('v', 46, 60 + h - 4, 'gold');
-    o.slice(this.top, this.top + rows).forEach((s, j) => {
-      const i = this.top + j, y = 63 + j * 9;
-      if (i === this.i) { fill(8, y - 1, 77, 9, typeof uiDark === 'function' && uiDark() ? 1 : 3); text('>', 10, y, 'gold'); }
-      text(s.slice(0, 11), 19, y, i === this.i ? 'gold' : 2);
-    });
-    textC(`AELMOOR  ${BUILD.version}`, 80, 134, 1);
   }
 }
-
 // ================================================================ SAVE SLOTS
 class SlotPicker {
   constructor(mode) { this.opaque = true; this.mode = mode; this.i = 0; }
