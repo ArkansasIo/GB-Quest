@@ -62,7 +62,16 @@
     const target = event.target.closest('[data-hud-action]');
     if (!target) return;
     const action = target.dataset.hudAction, api = window.GBQ;
-    if (/^slot[1-8]$/.test(action)) { const bridge = window.GBQCombatHotbar, index = Number(action.slice(4)) - 1; if (bridge && typeof bridge.use === 'function' && bridge.entries().length > index) { bridge.use(index); return; } showToast('Combat abilities are available during battle'); return; }
+    if (/^slot[1-8]$/.test(action)) {
+      const combat = window.GBQCombatHotbar, index = Number(action.slice(4)) - 1;
+      const entries = combat && typeof combat.entries === 'function' ? combat.entries() : [];
+      if (combat && typeof combat.use === 'function' && entries.length > index) {
+        combat.use(index);
+        return;
+      }
+      showToast('Combat abilities are available during battle');
+      return;
+    }
     const sceneMap = {
       character: () => typeof CharacterMenu === 'function' ? new CharacterMenu() : null,
       inventory: () => typeof BagScene === 'function' ? new BagScene() : typeof InventoryScene === 'function' ? new InventoryScene() : null,
@@ -77,8 +86,14 @@
     if (action === 'map' && api && typeof api.openAtlas === 'function') { api.openAtlas(); return; }
     if (action === 'chat') { document.getElementById('chatShow')?.click(); return; }
     if (sceneMap[action] && api && typeof api.push === 'function') {
-      const scene = sceneMap[action]();
-      if (scene) { api.push(scene); return; }
+      try {
+        const scene = sceneMap[action]();
+        if (scene) { api.push(scene); return; }
+      } catch (error) {
+        console.warn('HUD navigation action failed:', action, error);
+        showToast('That menu is unavailable right now');
+        return;
+      }
     }
     const toast = root.querySelector('.gbq-hud-toast');
     const messages = {quick1:'Quick skill slot Q',quick2:'Quick skill slot E',potion:'Potion slot R',mana:'Mana potion slot F'};
@@ -118,8 +133,9 @@
     const derived = typeof window.derive === 'function' ? window.derive(g) : {};
     const hpMax = Number(derived.hpMax || g.hpMax || g.hp || 1), mpMax = Number(derived.mpMax || g.mpMax || g.mp || 1);
     const hp = Number(g.hp || 0), mp = Number(g.mp ?? g.mana ?? 0), level = Number(g.lvl || g.level || 1);
-    const xpCurrent = Number(g.xp || 0), xpFloor = typeof window.xpForLevel === 'function' ? window.xpForLevel(level) : 0;
-    const xpNext = typeof window.xpForLevel === 'function' ? window.xpForLevel(Math.min(99, level + 1)) : xpFloor + 1;
+    const xpCurrent = Number(g.xp || 0);
+    const xpFloor = typeof window.xpForLevel === 'function' ? Number(window.xpForLevel(level)) || 0 : 0;
+    const xpNext = typeof window.xpForLevel === 'function' ? Number(window.xpForLevel(Math.min(99, level + 1))) || xpFloor + 1 : xpFloor + 1;
     const xpPct = level >= 99 ? 100 : pct(xpCurrent - xpFloor, Math.max(1, xpNext - xpFloor));
     const setText = (selector, value) => { const node = root.querySelector(selector); if (node) node.textContent = value; };
     const setBar = (selector, value) => { const node = root.querySelector(selector); if (node) node.style.width = value + '%'; };
@@ -140,7 +156,8 @@
     const party = [{name:g.name || 'You',hp,max:hpMax,cls:g.cls || 'Hero'}, ...companions.map(c=>({name:c.name || 'Ally',hp:Number(c.hp||0),max:Number((typeof window.derive==='function' && window.derive(c).hpMax)||c.hpMax||c.hp||1),cls:c.cls||'Companion'}))];
     const partyNode = root.querySelector('[data-hud-party-list]');
     if (partyNode) partyNode.innerHTML = party.map((p,i)=>`<div class="gbq-hud-party-member"><span class="gbq-hud-party-icon">${i===0?'♜':'♟'}</span><span class="gbq-hud-party-data"><b>${esc(p.name)}</b><small>${esc(p.cls)}</small><i><em style="width:${pct(p.hp,p.max)}%"></em></i></span><strong>${Math.round(p.hp/p.max*100)}%</strong></div>`).join('');
-    const quests = Array.isArray(g.quests) ? g.quests : Array.isArray(g.activeQuests) ? g.activeQuests : [];
+    const questSource = Array.isArray(g.quests) ? g.quests : Array.isArray(g.activeQuests) ? g.activeQuests : [];
+    const quests = questSource.filter(q => q && (q.active !== false) && !q.done && !q.completed);
     const questNode = root.querySelector('[data-hud-quests]');
     if (questNode) questNode.innerHTML = quests.length ? quests.slice(0,3).map((q,i)=>`<div class="gbq-hud-quest"><b>${i===0?'✦':'◇'}</b><span><strong>${esc(q.name || q.title || 'Active Quest')}</strong><small>${esc(q.objective || q.description || q.progressText || 'Quest in progress')}</small></span></div>`).join('') : '<div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Open Journal to review your quests</small></span></div>';
     const combatEntries = window.GBQCombatHotbar && typeof window.GBQCombatHotbar.entries === 'function' ? window.GBQCombatHotbar.entries() : [];
@@ -157,9 +174,10 @@
       }).join('');
       if (hotbar.dataset.renderedMarkup !== markup) {
         const focusedAction = hotbar.contains(document.activeElement) ? document.activeElement.dataset.hudAction : '';
+        const focusHadHotbar = hotbar.contains(document.activeElement);
         hotbar.innerHTML = markup;
         hotbar.dataset.renderedMarkup = markup;
-        if (focusedAction) {
+        if (focusHadHotbar && focusedAction) {
           const buttons = [...hotbar.querySelectorAll('button:not(:disabled)')];
           const same = hotbar.querySelector('[data-hud-action="'+focusedAction+'"]:not(:disabled)');
           const focusedIndex = Number(focusedAction.slice(4)) - 1;
