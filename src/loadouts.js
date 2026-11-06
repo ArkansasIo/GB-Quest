@@ -70,6 +70,16 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
     }
     const current = derive(G), target = derive({ ...G, eq });
     const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+    const sourceLines = [];
+    for (const slot of SLOTS) {
+      const it = eq[slot]; if (!it) continue;
+      const mods = [];
+      for (const [k, v] of it.affixes || []) mods.push(k.toUpperCase() + ' ' + (v > 0 ? '+' : '') + v);
+      if (typeof gemAffixes === 'function') for (const [k, v] of Object.entries(gemAffixes(it))) mods.push('GEM ' + k.toUpperCase() + ' +' + v);
+      if (typeof runeAffixes === 'function') for (const [k, v] of Object.entries(runeAffixes(it))) mods.push('RUNE ' + k.toUpperCase() + ' +' + v);
+      if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) mods.push('TIER ' + k.toUpperCase() + ' +' + v);
+      if (mods.length) sourceLines.push((SLOT_NAME[slot] || slot).toUpperCase() + ': ' + (it.name || it.base || 'GEAR') + ' — ' + mods.join(', '));
+    }
     const lines = [
       set.name + ' · ' + available.length + '/' + Object.keys(set.items || {}).length + ' pieces found',
       'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
@@ -82,6 +92,8 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
       'ELEMENTS F' + current.elem.fire + '/C' + current.elem.cold + '/L' + current.elem.lightning + ' → F' + target.elem.fire + '/C' + target.elem.cold + '/L' + target.elem.lightning,
       'SUBSTATS HIT ' + (current.sub.hit || 0) + ' → ' + (target.sub.hit || 0) + ' · DMG ' + (current.sub.dmg || 0) + ' → ' + (target.sub.dmg || 0)
     ];
+    if (sourceLines.length) lines.push('--- EQUIPPED ITEM BONUS SOURCES ---', ...sourceLines);
+    else lines.push('NO PER-ITEM AFFIX, GEM, RUNE OR TIER BONUSES');
     if (missing.length) lines.push(('MISSING: ' + missing.join(', ')).slice(0, 58));
     return { lines, plan, missing, available };
   }
