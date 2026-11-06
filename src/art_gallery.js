@@ -4,11 +4,14 @@ const GBQ_ART_GALLERY = [
   { id: 'gbq_ui_mockup_catalog', title: 'NEW UI / SPRITESHEET MOCKUP COLLECTION' }
 ];
 class ArtGalleryScene {
-  constructor() { this.opaque = true; this.page = 0; }
+  constructor() { this.opaque = true; this.page = 0; this.zoom = 1; this.panY = 0; }
   update() {
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
-    if (P('left') || P('up')) { this.page = (this.page + GBQ_ART_GALLERY.length - 1) % GBQ_ART_GALLERY.length; SFX.cursor(); }
-    if (P('right') || P('down') || P('a')) { this.page = (this.page + 1) % GBQ_ART_GALLERY.length; SFX.cursor(); }
+    if (P('left')) { this.page = (this.page + GBQ_ART_GALLERY.length - 1) % GBQ_ART_GALLERY.length; this.panY = 0; SFX.cursor(); }
+    if (P('right')) { this.page = (this.page + 1) % GBQ_ART_GALLERY.length; this.panY = 0; SFX.cursor(); }
+    if (P('a')) { this.zoom = this.zoom === 1 ? 2 : 1; if (this.zoom === 1) this.panY = 0; SFX.select(); }
+    if (this.zoom > 1 && P('up')) { this.panY = Math.min(32, this.panY + 8); SFX.cursor(); }
+    if (this.zoom > 1 && P('down')) { this.panY = Math.max(-32, this.panY - 8); SFX.cursor(); }
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
@@ -17,13 +20,17 @@ class ArtGalleryScene {
     textR((this.page + 1) + '/' + GBQ_ART_GALLERY.length, W - 4, 14, 2);
     frame(2, 23, W - 4, 104);
     if (img) {
-      const scale = Math.min((W - 10) / img.width, 96 / img.height);
+      const fit = Math.min((W - 10) / img.width, 96 / img.height);
+      const scale = fit * this.zoom;
       const dw = Math.max(1, Math.floor(img.width * scale)), dh = Math.max(1, Math.floor(img.height * scale));
+      const maxPan = Math.max(0, Math.floor((dh - 96) / 2));
+      const pan = Math.max(-maxPan, Math.min(maxPan, this.panY));
       const old = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, Math.floor((W - dw) / 2), 27 + Math.floor((96 - dh) / 2), dw, dh);
-      ctx.imageSmoothingEnabled = old;
+      ctx.save(); ctx.beginPath(); ctx.rect(5, 27, W - 10, 96); ctx.clip();
+      ctx.drawImage(img, Math.floor((W - dw) / 2), 27 + Math.floor((96 - dh) / 2) + pan, dw, dh);
+      ctx.restore(); ctx.imageSmoothingEnabled = old;
     } else textC('MASTER ART NOT INSTALLED', W / 2, 70, 'gold');
     textC(entry.title, W / 2, 138, 2);
-    textC('LEFT / RIGHT: CHANGE SHEET', W / 2, 143, 1);
+    textC(this.zoom === 1 ? 'A: ZOOM  |  LEFT / RIGHT: SHEET' : 'A: FIT  |  UP / DOWN: PAN', W / 2, 143, 1);
   }
 }
