@@ -7,13 +7,16 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(root, 'src/scenes_world.js'), 'utf8');
 
-test('overworld terrain and actors use the classic monochrome Game Boy palette', () => {
-  assert.match(source, /four-tone green LCD look/);
-  assert.match(source, /ctx\.filter\s*=\s*'grayscale\(1\) sepia\(1\) saturate\(1\.7\) hue-rotate\(43deg\) contrast\(1\.08\)'/);
-  assert.match(source, /FX\.draw\(cx, cy\);\s*ctx\.restore\(\); \/\/ keep the classic palette confined to world art and actors/);
+test('overworld terrain, actors and effects are quantized to the four original Game Boy greens', () => {
+  assert.match(source, /function applyGameBoyWorldPalette/);
+  for (const shade of ['[15, 56, 15]', '[48, 98, 48]', '[139, 172, 15]', '[155, 188, 15]']) {
+    assert.ok(source.includes(shade), `missing Game Boy palette shade: ${shade}`);
+  }
+  assert.match(source, /luminance < 64 \? 0 : luminance < 128 \? 1 : luminance < 192 \? 2 : 3/);
+  assert.match(source, /FX\.draw\(cx, cy\);\s*applyGameBoyWorldPalette\(0, 0, W, H\)/);
 });
 
-test('world atlas map art uses the Game Boy palette without recoloring its UI labels', () => {
-  assert.match(source, /same original Game Boy LCD palette/);
-  assert.match(source, /ctx\.restore\(\); \/\/ preserve the normal UI palette for atlas labels and controls/);
+test('world atlas uses the same four-shade palette while keeping atlas chrome outside it', () => {
+  assert.match(source, /applyGameBoyWorldPalette\(0, 12, W, 97\)/);
+  assert.match(source, /applyGameBoyWorldPalette\(0, 12, W, 97\);[\s\S]*?fill\(0, 0, W, 12, 3\)/);
 });
