@@ -9,7 +9,8 @@
   const pct = (value, max) => Math.round(clamp(Number(value) / Math.max(1, Number(max))) * 100);
   const fmt = n => Math.max(0, Number(n) || 0).toLocaleString();
   const getGame = () => window.GBQ && window.GBQ.G;
-  let root, timer, lastSignature = '';\n  let mapZoom = 1, latestMapData = null;
+  let root, timer, lastSignature = '';
+  let mapZoom = 1, latestMapData = null;
   const button = (label, key, glyph, extra = '') => `<button class="gbq-hud-nav" type="button" data-hud-action="${key}" ${extra}><span class="gbq-hud-glyph">${glyph}</span><span>${label}</span></button>`;
   function mount() {
     const viewport = document.querySelector('.game-viewport');
@@ -50,7 +51,8 @@
       </div>
       <div class="gbq-hud-toast" role="status" aria-live="polite"></div>`;
     viewport.appendChild(root);
-    root.addEventListener('click', onAction);\n    root.querySelector('[data-hud-minimap]').addEventListener('click', onMapClick);
+    root.addEventListener('click', onAction);
+    root.querySelector('[data-hud-minimap]').addEventListener('click', onMapClick);
     update();
     timer = window.setInterval(update, 350);
   }
@@ -127,7 +129,8 @@
     setText('[data-hud-mp-text]', fmt(mp) + ' / ' + fmt(mpMax)); setBar('[data-hud-mp]', pct(mp,mpMax));
     setText('[data-hud-xp-text]', xpPct + '%'); setBar('[data-hud-xp]', xpPct);
     setText('[data-hud-gold]', fmt(g.gold)); setText('[data-hud-gems]', fmt(g.gems || g.crystals || 0));
-    const mapData = typeof window.GBQWorldMapMini === 'function' ? window.GBQWorldMapMini() : null;\n    latestMapData = mapData;
+    const mapData = typeof window.GBQWorldMapMini === 'function' ? window.GBQWorldMapMini() : null;
+    latestMapData = mapData;
     setText('[data-hud-zone]', String(mapData?.zone || g.map || 'THE FRONTIER').replace(/[-_]/g,' ').toUpperCase());
     setText('[data-hud-coords]', 'X: ' + Math.round(mapData?.x ?? g.x ?? 0) + ' · Y: ' + Math.round(mapData?.y ?? g.y ?? 0));
     drawMiniMap(mapData);
