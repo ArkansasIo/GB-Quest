@@ -644,16 +644,40 @@ class Choice { // scrolling list with optional prompt
     else if (P('b')) { SFX.back(); removeScene(this); this.cb(-1); }
   }
   draw() {
+    const blackbird = S.uiTheme === 'blackbird';
     let bottom = H - 2;
-    if (this.prompt) { frame(2, H - 44, W - 4, 42); text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38); bottom = H - 46; }
+    if (this.prompt) {
+      if (blackbird) {
+        fill(2, H - 44, W - 4, 42, '#080a0c');
+        fill(2, H - 44, W - 4, 1, '#b09258');
+        fill(2, H - 3, W - 4, 1, '#51432f');
+      } else frame(2, H - 44, W - 4, 42);
+      text(wrap(this.prompt).slice(0, 3).join('\\n'), 8, H - 38, blackbird ? '#e1c78f' : undefined);
+      bottom = H - 46;
+    }
     const vis = this.o.slice(this.top, this.top + this.rows);
     const w = Math.min(156, Math.max(...this.o.map(s => String(s).length)) * 6 + 18), h = vis.length * 11 + 8;
     const x = this.x != null ? this.x : W - w - 2, y = Math.max(2, bottom - h);
-    frame(x, y, w, h);
-    vis.forEach((s, j) => { const i = this.top + j; text(String(s).slice(0, 24), x + 13, y + 5 + j * 11); if (i === this.i) text('>', x + 5, y + 5 + j * 11); });
-    if (this.o.length > this.rows) { if (this.top > 0) text('^', x + w - 9, y + 2, 2); if (this.top + this.rows < this.o.length) text('v', x + w - 9, y + h - 10, 2); }
-  }
-}
+    if (blackbird) {
+      fill(x, y, w, h, '#b09258');
+      fill(x + 1, y + 1, w - 2, h - 2, '#080a0c');
+      fill(x + 2, y + 2, w - 4, h - 4, '#171a1f');
+      fill(x + 4, y + 4, w - 8, 1, '#343941');
+    } else frame(x, y, w, h);
+    vis.forEach((s, j) => {
+      const i = this.top + j, rowY = y + 5 + j * 11;
+      if (blackbird && i === this.i) {
+        fill(x + 3, rowY - 2, w - 6, 10, '#51432f');
+        fill(x + 4, rowY - 1, w - 8, 8, '#29231a');
+      }
+      text(String(s).slice(0, 24), x + 13, rowY, blackbird ? (i === this.i ? '#f2d99f' : '#d1d0ca') : undefined);
+      if (i === this.i) text('>', x + 5, rowY, blackbird ? '#e0bd78' : undefined);
+    });
+    if (this.o.length > this.rows) {
+      if (this.top > 0) text('^', x + w - 9, y + 2, 2);
+      if (this.top + this.rows < this.o.length) text('v', x + w - 9, y + h - 10, 2);
+    }
+  }}
 function choose(opts, cb, prompt, o) { push(new Choice(opts, cb, prompt, o)); }
 
 class Fade {
