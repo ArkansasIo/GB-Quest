@@ -38,7 +38,7 @@ for (const required of [
 if (html.includes('GBQ_MASTER_CATALOG') || html.includes('GBQ_UI_MOCKUP')) {
   throw new Error('Unresolved artwork placeholder remains in the release HTML.');
 }
-const embeddedPngs = (html.match(/data:image\\/png;base64,/g) || []).length;
+const embeddedPngs = html.split('data:image/png;base64,').length - 1;
 if (embeddedPngs < 3) {
   throw new Error('Expected embedded game and UI artwork data URIs; found only ' + embeddedPngs);
 }
