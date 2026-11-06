@@ -220,9 +220,19 @@ class CompareScene {
       fill(157, 11, 1, 132, '#292d32');
       fill(4, 22, 74, 110, '#171a1f');
       fill(82, 22, 74, 110, '#171a1f');
-      fill(80, 22, 1, 112, '#b09258');
+      // Fine inner bevels separate the two item cards without changing their layout.
+      fill(4, 22, 74, 1, '#b09258');
+      fill(82, 22, 74, 1, '#b09258');
+      fill(4, 131, 74, 1, '#51432f');
+      fill(82, 131, 74, 1, '#51432f');
+      fill(4, 22, 1, 110, '#51432f');
+      fill(77, 22, 1, 110, '#080a0c');
+      fill(82, 22, 1, 110, '#51432f');
+      fill(155, 22, 1, 110, '#080a0c');
       fill(5, 23, 72, 1, '#343941');
       fill(83, 23, 72, 1, '#343941');
+      fill(2, 132, 156, 10, '#101317');
+      fill(2, 132, 156, 1, '#8c744b');
     }
     const it = this.it, { cur, d } = compareDelta(G, it);
     textC('COMPARE', 80, 12, 3);
@@ -237,7 +247,10 @@ class CompareScene {
       text(rankText(e).slice(0, 12), x, 113, 2); if (e.attune) text('ATTUNE', x, 122, 'purple'); if (e.lore) text(wrap(e.lore, 12)[0], x, 104, 1);
     };
     col(4, it, 'THIS ITEM'); col(84, cur, 'EQUIPPED');
-    if (d) { const s = Object.entries(d).filter(([, v]) => Math.abs(v) >= 0.1).map(([k, v]) => `${k.toUpperCase()}${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' ') || 'NO CHANGE'; text(s.slice(0, 25), 4, 134, Object.values(d).some(v => v > 0) ? 'green' : 'red'); }
+    if (d) {
+      const s = Object.entries(d).filter(([, v]) => Math.abs(v) >= 0.1).map(([k, v]) => `${k.toUpperCase()}${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' ') || 'NO CHANGE';
+      text(s.slice(0, 25), 4, 134, Object.values(d).some(v => v > 0) ? 'green' : 'red');
+    }
   }
 }
 // ---------------------------------------------------------------- STASH
