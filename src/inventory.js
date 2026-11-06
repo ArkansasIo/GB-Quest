@@ -213,8 +213,20 @@ class CompareScene {
   update() { if (P('b') || P('a') || P('start')) { SFX.back(); removeScene(this); } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(4, 22, 74, 110, '#171a1f');
+      fill(82, 22, 74, 110, '#171a1f');
+      fill(80, 22, 1, 112, '#b09258');
+      fill(5, 23, 72, 1, '#343941');
+      fill(83, 23, 72, 1, '#343941');
+    }
     const it = this.it, { cur, d } = compareDelta(G, it);
-    textC('COMPARE', 80, 12, 3); fill(80, 22, 1, 112, 2);
+    textC('COMPARE', 80, 12, 3);
+    if (S.uiTheme !== 'blackbird') fill(80, 22, 1, 112, 2);
     const col = (x, e, title) => {
       text(title, x, 24, 2);
       if (!e) { text('- EMPTY -', x, 40, 1); return; }
