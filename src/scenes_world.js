@@ -176,20 +176,40 @@ class SlotPicker {
     }
   }
   draw() {
-    fill(0, 0, W, H, 0);
-    textC(this.mode === 'load' ? 'LOAD GAME' : 'NEW GAME: PICK A SLOT', 80, 4, 3);
-    for (let i = 0; i < 3; i++) {
-      const y = 18 + i * 40, info = slotInfo(i);
-      frame(6, y, 148, 36, i === this.i ? 1 : 0);
-      text(`SLOT ${i + 1}`, 12, y + 4, 2);
-      if (info) {
-        { const por = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls); blit(por ? sprFit(por, 26) : sprH(`c_${info.cls}_0`, 22), 126, y + 5); }
-        text(`${info.name}`, 12, y + 14); text(`LV${info.lvl} ${CLASSES[info.cls].name}`, 12, y + 24, 2);
-        textR(info.zone.slice(0, 12), 124, y + 4, 2);
-      } else text('- EMPTY -', 12, y + 16, 1);
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#090d29'); bg.addColorStop(.62, '#252047'); bg.addColorStop(1, '#44304f');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    for (let n = 0; n < 22; n++) {
+      ctx.globalAlpha = .28 + (n % 3) * .12;
+      fill((n * 31 + 7) % W, (n * 17 + 4) % 130, n % 7 === 0 ? 2 : 1, 1, n % 4 ? '#c6b6ff' : '#ffd17b');
     }
+    ctx.globalAlpha = 1;
+    frame(2, 2, 156, 139, 1);
+    fill(5, 5, 150, 17, '#17112d');
+    textC(this.mode === 'load' ? 'LOAD YOUR JOURNEY' : 'BEGIN A NEW JOURNEY', 80, 9, 'gold');
+    textC('CHOOSE A SAVE SLOT', 80, 17, 2);
+    for (let i = 0; i < 3; i++) {
+      const y = 27 + i * 32, info = slotInfo(i), selected = i === this.i;
+      fill(7, y, 146, 28, selected ? '#392747' : '#15142b');
+      frame(6, y - 1, 148, 30, selected ? 1 : 0);
+      if (selected) { fill(8, y + 3, 2, 20, '#ffd16b'); text('>', 11, y + 3, 'gold'); }
+      text(`SLOT 0${i + 1}`, 17, y + 3, selected ? 'gold' : 2);
+      if (info) {
+        const portrait = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls);
+        if (portrait) blit(sprFit(portrait, 20), 126, y + 4);
+        text(String(info.name || 'ADVENTURER').slice(0, 15), 17, y + 12, 0);
+        text(`LV${info.lvl}  ${CLASSES[info.cls].name}`, 17, y + 20, 2);
+        textR(String(info.zone || 'UNKNOWN').slice(0, 12), 119, y + 20, 2);
+      } else {
+        text('- EMPTY SLOT -', 17, y + 14, 1);
+        text(this.mode === 'load' ? 'NO DATA TO LOAD' : 'READY FOR A NEW HERO', 17, y + 21, 2);
+      }
+    }
+    fill(8, 126, 144, 10, '#100d22');
+    text('UP/DOWN: CHOOSE   A: CONFIRM', 11, 128, 2);
+    text('B: BACK', 11, 136, 'gold');
   }
-}
+}}
 
 // ================================================================ PROLOGUE
 class Prologue {
