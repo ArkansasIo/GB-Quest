@@ -228,6 +228,71 @@ body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a
 .pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
 .game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
 #dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
+
+/* GAME-BOUNDS FIX: keep every gameplay overlay aligned to the 160:144 LCD.
+   The desktop chat is a separate side panel; it must not shrink or offset the HUD. */
+@media (min-width: 901px) and (pointer: fine) {
+  .game-client { display:flex; align-items:center; justify-content:center; }
+  .game-viewport {
+    position:relative;
+    flex:0 1 auto;
+    width:min(100%, calc((100dvh - 104px) * 160 / 144));
+    height:auto;
+    max-height:calc(100dvh - 104px);
+    aspect-ratio:160 / 144;
+    margin:0 auto;
+    overflow:hidden;
+  }
+  .game-viewport #lcd {
+    display:block;
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100%;
+    aspect-ratio:160 / 144;
+    object-fit:contain;
+  }
+  .game-viewport > .gbq-player-hud {
+    position:absolute;
+    inset:0 !important;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+  }
+  body.chat-on .game-viewport > .gbq-player-hud { right:0 !important; }
+  .game-viewport > .chat {
+    position:fixed !important;
+    z-index:30;
+    top:48px !important;
+    right:10px !important;
+    bottom:36px !important;
+    left:auto !important;
+    width:284px !important;
+    max-width:calc(34vw - 16px) !important;
+    max-height:none !important;
+    display:flex;
+  }
+  .game-viewport > .chat .chatlog { flex:1; min-height:0; height:auto; }
+  .game-viewport > #chatShow {
+    position:fixed;
+    z-index:31;
+    right:10px;
+    bottom:12px;
+  }
+  body.full-window-mode .game-client,
+  body.fullscreen-mode .game-client {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 314px 12px 12px;
+  }
+  body.full-window-mode .game-viewport,
+  body.fullscreen-mode .game-viewport {
+    width:min(100%, calc((100dvh - 24px) * 160 / 144));
+    max-height:calc(100dvh - 24px);
+  }
+}
+
 </style>
 <link rel="stylesheet" href="theme-citadel.css">
 <link rel="stylesheet" href="client/player-hud.css">
