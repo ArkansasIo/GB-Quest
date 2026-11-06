@@ -32,3 +32,13 @@ The HUD is read-only with respect to player progression. It polls the live state
 - Zoom controls scale the visible tile window around the player; the center control resets to the default player-centered view.
 - Clicking a tile inspects its coordinates; clicking a marker reports its name/type and coordinates. Markers are sourced from the current field's live entity list and remain informational; gameplay interactions continue through the existing world controls.
 - Marker snapshots include display names where the world entity provides them. The HUD does not teleport the player or mutate world state from map clicks.
+
+
+## HUD hardening — November 2026
+
+- Quest rail now excludes completed, inactive, and done entries before selecting the visible objectives.
+- XP progress normalizes the level-threshold values returned by the progression helper before calculating the bar.
+- Scene navigation catches constructor/push failures and gives the player a visible, non-blocking unavailable-menu message rather than interrupting the game loop.
+- Hotbar activation validates the live combat entries before dispatch and preserves the authoritative combat bridge as the only activation path.
+- Responsive keyboard focus is retained when a hotbar refresh rebuilds its button markup; focus is not moved when the user was interacting elsewhere.
+- Added visible keyboard focus treatment and minimum touch targets for minimap controls.
