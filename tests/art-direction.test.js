@@ -50,7 +50,7 @@ test('classic Pokémon interface is the default across gameplay and release buil
   assert.ok(build.includes("rd('client/theme-pokemon.css')"));
   assert.ok(build.includes('body class="theme-shadows theme-pokemon"'));
   assert.ok(build.includes('<!doctype html>'));
-  assert.match(pythonBuild, /tools.*build\\.cjs/);
+  assert.ok(pythonBuild.includes('"build.cjs"'));
   assert.ok(itchBuild.includes("'POKEMON CLASSIC'"));
   assert.ok(gameTheme.includes("mmo: 'POKEMON CLASSIC'"));
   assert.ok(gameTheme.includes("S.uiTheme = 'mmo'"));
@@ -58,4 +58,17 @@ test('classic Pokémon interface is the default across gameplay and release buil
   assert.ok(theme.includes('body.theme-pokemon .round'));
   assert.ok(world.includes('LANTERNS OF AELMOOR'));
   assert.ok(!world.includes('LATNTERNS OF AELMOOR'));
+});
+
+
+test('Python compatibility build and full-source package instructions stay valid', () => {
+  const pythonBuild = read('tools/build.py');
+  const sourcePackage = read('tools/package-itch-source.py');
+  const buildDocs = read('docs/BUILD.md');
+  assert.ok(pythonBuild.includes('"build_atlas.py"'));
+  assert.ok(pythonBuild.includes('"build.cjs"'));
+  assert.match(buildDocs, /canonical runtime bundler/);
+  assert.doesNotMatch(sourcePackage, /npm ci/);
+  assert.match(sourcePackage, /npm install/);
+  assert.doesNotMatch(sourcePackage, /using the lockfile/);
 });
