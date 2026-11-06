@@ -75,6 +75,15 @@ function drawItemCell(it, x, y, sel, opts = {}) {
   fill(x + 2, y + 2, S - 4, S - 4, 0);
   }
   if (!it) return;
+  // Compact condition meter: damaged equipment remains readable in the bag grid.
+  const maxDur = Number(it.maxDur ?? it.maxDurability);
+  const durability = Number(it.dur ?? it.durability);
+  if (Number.isFinite(maxDur) && maxDur > 0 && Number.isFinite(durability)) {
+    const ratio = Math.max(0, Math.min(1, durability / maxDur));
+    fill(x + 2, y + 15, 14, 2, '#24202a');
+    fill(x + 2, y + 15, Math.round(14 * ratio), 2,
+      ratio <= 0.2 ? '#e34b54' : ratio <= 0.5 ? '#e6a33b' : '#83c76b');
+  }
   const icon = opts.icon || itemIcon(it); if (icon) blit(sprFit(icon, 13), x + 3, y + 3);
   if (opts.count != null) textR(String(opts.count), x + S - 1, y + 10, 3);
   if (it.junk) text('x', x + 2, y + 1, 'red');
