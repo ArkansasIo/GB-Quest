@@ -38,14 +38,14 @@ test('auction gear preview includes rarity, item level, set, durability, sockets
 
 test('inspection and vendor previews normalize legacy and current durability fields', () => {
   const inspectStart = menu.indexOf('function itemInspectText(it)');
-  const inspectEnd = menu.indexOf('\\nfunction itemDesc(it)', inspectStart);
+  const inspectEnd = menu.indexOf('\nfunction itemDesc(it)', inspectStart);
   const inspect = menu.slice(inspectStart, inspectEnd);
-  assert.match(inspect, /it\.maxDur \\?\\? it\.maxDurability/);
-  assert.match(inspect, /it\.dur \\?\\? it\.durability/);
+  assert.ok(inspect.includes('it.maxDur ?? it.maxDurability'));
+  assert.ok(inspect.includes('it.dur ?? it.durability'));
   const vendorStart = vendor.indexOf('function previewVendorGear(item, price, onBuy)');
-  const vendorEnd = vendor.indexOf('\\nfunction vendorMenu()', vendorStart);
+  const vendorEnd = vendor.indexOf('\nfunction vendorMenu()', vendorStart);
   const preview = vendor.slice(vendorStart, vendorEnd);
-  assert.match(preview, /item\.maxDur \\?\\? item\.maxDurability/);
-  assert.match(preview, /item\.dur \\?\\? item\.durability/);
-  assert.match(preview, /Math\.max\\(0, Math\.min\\(100/);
+  assert.ok(preview.includes('item.maxDur ?? item.maxDurability'));
+  assert.ok(preview.includes('item.dur ?? item.durability'));
+  assert.ok(preview.includes('Math.max(0, Math.min(100'));
 });
