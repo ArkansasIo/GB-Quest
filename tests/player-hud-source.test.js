@@ -59,3 +59,18 @@ test('player HUD minimap supports zoom, player centering, and marker inspection'
   assert.match(source, /mapZoom=mode==='center'\?1/);
   assert.match(styles, /\.gbq-hud-map-tools button/);
 });
+
+
+test('player HUD hardens navigation, quest filtering, and progression values', () => {
+  assert.match(source, /questSource\.filter\(q => q && \(q\.active !== false\) && !q\.done && !q\.completed\)/);
+  assert.match(source, /Number\(window\.xpForLevel\(level\)\) \|\| 0/);
+  assert.match(source, /That menu is unavailable right now/);
+  assert.match(source, /typeof combat\.entries === 'function'/);
+  assert.match(source, /focusHadHotbar/);
+});
+
+test('player HUD controls expose visible keyboard focus and touch sizing', () => {
+  assert.match(styles, /\.gbq-hud-map-art:focus-visible/);
+  assert.match(styles, /min-width:25px/);
+  assert.match(styles, /\.gbq-hud-hotbar button:focus-visible/);
+});
