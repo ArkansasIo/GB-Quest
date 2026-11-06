@@ -54,3 +54,11 @@ body.chat-on .gbq-player-hud { right:300px; }
 .gbq-hud-stat-grid>div { display:flex; align-items:center; justify-content:space-between; gap:5px; padding:5px 6px; border:1px solid #ffffff12; background:#05080dbb; min-width:0; }
 .gbq-hud-stat-grid small { color:#9da8b0; font-size:8px; letter-spacing:.07em; }
 .gbq-hud-stat-grid strong { color:#f0d28e; font:700 12px Cinzel,Georgia,serif; font-variant-numeric:tabular-nums; }
+
+/* Nine live attributes: authoritative ability scores plus derived modifiers. */
+.gbq-hud-attribute-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
+.gbq-hud-attribute-grid>div { min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 2px; border:1px solid #ffffff12; background:#05080dbb; }
+.gbq-hud-attribute-grid small { color:#9da8b0; font-size:8px; letter-spacing:.08em; }
+.gbq-hud-attribute-grid strong { color:#f0d28e; font:700 12px Cinzel,Georgia,serif; font-variant-numeric:tabular-nums; }
+.gbq-hud-attribute-grid i { color:#9bc5a1; font:600 9px Inter,Arial,sans-serif; font-style:normal; }
+@media(max-width:620px) { .gbq-hud-attributes { display:none; } }
