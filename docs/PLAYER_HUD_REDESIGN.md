@@ -103,3 +103,8 @@ Bag gear now offers a COMPARE action alongside equip, sell, auction and drop. Th
 ## Vendor and auction gear purchase previews — November 2026
 
 Vendor-generated gear and blacksmith/armorsmith purchases now display a character-stat comparison and gold-after-purchase estimate before the final BUY confirmation. Auction-house gear listings show the same comparison, seller, and asking price before the purchase action is invoked. These previews calculate the candidate item against a copied equipment map and do not equip it. Consumable/material auction listings retain their existing direct purchase confirmation because they do not occupy an equipment slot. Existing purchase validation (including available gold, bag capacity, listing availability, and server-side market checks) remains authoritative.
+
+
+## Unified gear inspection metadata — November 2026
+
+Inventory gear descriptions now include the equipment slot, rarity/item level, upgrade score context, set identity and equipped-piece count, durability when durability data exists, gem/rune socket occupancy versus capacity, attunement, and armor-class metadata when present. Vendor-generated gear and auction gear previews expose the same item identity, set, condition, socket, and attunement details before purchase confirmation. Socket capacity is obtained from the existing gem/rune systems; absent durability is shown as unavailable rather than inferred. Existing stat previews and purchase validation remain unchanged.
