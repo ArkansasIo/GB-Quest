@@ -1866,7 +1866,8 @@ class Credits {
       if (y > 23 && y < 132) textC(line, 80, y, index === 2 || index === 3 || index === 7 ? 'gold' : 0);
     });
     textC('A / B / START: RETURN', 80, 135, 2);
-  }}}
+  }
+}
 
 // ---------------------------------------------------------------- stairs, exits and safe arrival
 // never arrive inside a wall, water or an NPC: step to the nearest free tile (rings out to 4 tiles)
