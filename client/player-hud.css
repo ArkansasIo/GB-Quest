@@ -48,3 +48,9 @@ body.chat-on .gbq-player-hud { right:300px; }
 .gbq-hud-map-art:focus-visible { outline:2px solid #e7c477; outline-offset:2px; }
 .gbq-hud-map-tools button:focus-visible,.gbq-hud-nav:focus-visible,.gbq-hud-hotbar button:focus-visible { outline:2px solid #f2d18b; outline-offset:2px; }
 @media (max-width:620px) { .gbq-hud-map-tools button { min-width:25px; min-height:24px; } }
+
+/* Compact live combat profile, sourced from derive(G) and the equipped loadout. */
+.gbq-hud-stat-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+.gbq-hud-stat-grid>div { display:flex; align-items:center; justify-content:space-between; gap:5px; padding:5px 6px; border:1px solid #ffffff12; background:#05080dbb; min-width:0; }
+.gbq-hud-stat-grid small { color:#9da8b0; font-size:8px; letter-spacing:.07em; }
+.gbq-hud-stat-grid strong { color:#f0d28e; font:700 12px Cinzel,Georgia,serif; font-variant-numeric:tabular-nums; }
