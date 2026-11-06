@@ -68,3 +68,8 @@ The character sheet now has a dedicated sixth **COMBAT** page. It reads directly
 ## Bag gear inspection and comparison — November 2026
 
 Selecting a gear item in the inventory now previews its item level, equipment slot, rarity/affix description, and a comparison against the item currently equipped in that slot. The comparison reuses the existing `itemScore` heuristic and labels the candidate as an upgrade, downgrade, sidegrade, or empty-slot fit. This is an informational preview only; equipment changes still occur through the existing equip action.
+
+
+## Equipment condition and set progress — November 2026
+
+The equipment paper-doll view now reports set-piece progress for the selected equipped item when its item data carries a `setId`/`set` (including template metadata). It also displays durability as a percentage when both current and maximum durability are available, otherwise it explicitly shows that durability is not tracked for that item. Attunement remains visible. These are read-only summaries; existing equip and item rules are unchanged.
