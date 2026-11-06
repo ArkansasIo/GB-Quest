@@ -74,3 +74,13 @@ test('player HUD controls expose visible keyboard focus and touch sizing', () =>
   assert.match(styles, /min-width:25px/);
   assert.match(styles, /\.gbq-hud-hotbar button:focus-visible/);
 });
+
+test('player HUD shows live derived combat and equipped gear metrics', () => {
+  for (const key of ['data-hud-ac', 'data-hud-attack', 'data-hud-hit', 'data-hud-ilvl', 'data-hud-gear-count']) {
+    assert.ok(source.includes(key), `missing combat profile binding: ${key}`);
+  }
+  assert.match(source, /const equipped = g\.eq && typeof g\.eq === 'object'/);
+  assert.match(source, /derived\.weapon/);
+  assert.match(source, /averageItemLevel/);
+  assert.match(styles, /\.gbq-hud-stat-grid/);
+});
