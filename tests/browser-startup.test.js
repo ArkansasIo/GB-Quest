@@ -34,5 +34,5 @@ test('the HTML boot fallback is hidden only after a successful canvas render', (
   const engine = read('src/engine.js');
   const shell = read('client/shell.html');
   assert.match(engine, /function render\(\)[\s\S]*document\.body\.classList\.add\('game-rendered'\)/);
-  assert.match(shell, /body\.game-rendered \.game-start-fallback \{ display:none; \}/);
+  assert.match(shell, /body\.game-rendered \.game-start-fallback \{ display: none; \}/);
 });
