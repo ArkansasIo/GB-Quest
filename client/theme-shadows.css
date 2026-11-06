@@ -11,8 +11,8 @@ body.theme-shadows {
     radial-gradient(ellipse at 50% 100%,rgba(173,139,82,.10),transparent 55%),var(--abyss-black);
 }
 .theme-shadows .device {
-  background:linear-gradient(145deg,rgba(35,42,40,.96),rgba(15,19,19,.98) 58%,rgba(8,10,11,.99)),
-    url("../assets/gbq_master_catalog.png") center/cover no-repeat;
+  background-image:linear-gradient(145deg,rgba(35,42,40,.96),rgba(15,19,19,.98) 58%,rgba(8,10,11,.99)),url("GBQ_MASTER_CATALOG");
+  background-position:center; background-size:cover; background-repeat:no-repeat;
   border:1px solid rgba(200,173,118,.72); border-radius:14px;
   box-shadow:0 24px 72px rgba(0,0,0,.8),inset 0 1px rgba(255,235,190,.12),0 0 28px rgba(113,134,106,.12);
 }
