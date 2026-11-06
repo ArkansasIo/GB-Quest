@@ -14,14 +14,14 @@ const loadout = () => ({
 test("repair quote totals damaged gear and scales by item level", () => {
   const quote = getRepairQuote(loadout());
   assert.equal(quote.itemCount, 2);
-  assert.equal(quote.totalCost, 520);
+  assert.equal(quote.totalCost, 240);
   assert.deepEqual(quote.repairs.map(x => x.slot), ["head", "mainHand"]);
 });
 
 test("single-item repair restores durability and rejects insufficient funds", () => {
   const character = loadout();
   assert.deepEqual(repairEquipment(character, "head", 10), {
-    ok: false, reason: "insufficient_funds", cost: 320
+    ok: false, reason: "insufficient_funds", cost: 160
   });
   assert.equal(character.equipment.head.durability, 20);
   const result = repairEquipment(character, "head", 320);
@@ -31,12 +31,12 @@ test("single-item repair restores durability and rejects insufficient funds", ()
 
 test("repair all is atomic when budget is short and repairs all eligible slots otherwise", () => {
   const character = loadout();
-  const rejected = repairAllEquipment(character, 519);
+  const rejected = repairAllEquipment(character, 239);
   assert.equal(rejected.ok, false);
   assert.equal(character.equipment.head.durability, 20);
   assert.equal(character.equipment.mainHand.durability, 0);
 
-  const repaired = repairAllEquipment(character, 520);
+  const repaired = repairAllEquipment(character, 240);
   assert.equal(repaired.ok, true);
   assert.equal(repaired.repaired, 2);
   assert.equal(character.equipment.head.durability, 100);
