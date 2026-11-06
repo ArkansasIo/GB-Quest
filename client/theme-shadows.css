@@ -32,3 +32,14 @@ body.theme-shadows {
 .theme-shadows .round:focus-visible,.theme-shadows .pill:focus-visible,.theme-shadows .atlas-btn:focus-visible { outline:2px solid var(--abyss-gold-bright); outline-offset:3px; }
 .theme-shadows .led { background:#873c32; } .theme-shadows.ready .led { background:#78bd82; box-shadow:0 0 10px #78bd82; }
 @media(max-width:520px) { .theme-shadows .device { border-radius:10px; } }
+
+
+/* The new UI mockup sheet is embedded as a low-opacity bezel finish in release builds. */
+.theme-shadows .bezel { position:relative; overflow:hidden; }
+.theme-shadows .bezel::after {
+  content:""; position:absolute; inset:0;
+  background:url("GBQ_UI_MOCKUP") center/cover no-repeat;
+  opacity:.075; mix-blend-mode:screen; pointer-events:none;
+}
+.theme-shadows #lcd { position:relative; z-index:1; }
+.theme-shadows .bezel-top { position:relative; z-index:2; }
