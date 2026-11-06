@@ -671,9 +671,11 @@ class CraftScene extends ListScene {
   update() { if (P('select')) { SFX.page(); push(new BlueprintScene(this.pf)); return; } if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(this.items()[this.i]); SFX[/^(Made|Forged)/.test(r) ? 'craft' : 'error'](); this.msg = r; } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 21, 158, 122, '#090b0e'); fill(2, 22, 156, 1, '#8c744b'); fill(2, 22, 1, 120, '#6f5b3d'); fill(157, 22, 1, 120, '#292d32'); fill(3, 24, 154, 80, '#171a1f'); fill(3, 108, 154, 33, '#101317'); fill(3, 108, 154, 1, '#b09258'); }
     { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; text(`<${k === 'ALL' ? 'ALL' : PROFS[k].slice(0, 9)} ${k === 'ALL' ? '' : G.prof[k]}> SEL:BLUEPRINT`, 2, 14, 2); }
-    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 16), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
-    const r = this.items()[this.i]; if (!r) return; frame(2, 108, 156, 34);
+    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, blackbird ? '#51432f' : 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 16), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    const r = this.items()[this.i]; if (!r) return; if (!blackbird) if (!blackbird) frame(2, 108, 156, 34); else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); } else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); }
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
     text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
@@ -692,10 +694,13 @@ class BlueprintScene extends ListScene {
     SFX[result.startsWith('Learned') ? 'craft' : 'error'](); this.msg = result;
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; textC(`< ${k === 'ALL' ? 'ALL BLUEPRINTS' : PROFS[k]} >`, 80, 14, 'gold'); }
+    fill(0, 0, W, H, 0); hdr();
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 21, 158, 122, '#090b0e'); fill(2, 22, 156, 1, '#8c744b'); fill(2, 22, 1, 120, '#6f5b3d'); fill(157, 22, 1, 120, '#292d32'); fill(3, 24, 154, 80, '#171a1f'); fill(3, 108, 154, 33, '#101317'); fill(3, 108, 154, 1, '#b09258'); }
+    { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; textC(`< ${k === 'ALL' ? 'ALL BLUEPRINTS' : PROFS[k]} >`, 80, 14, 'gold'); }
     this.items().slice(this.top, this.top + this.rows).forEach((recipe, row) => {
       const index = this.top + row, y = 25 + row * 10, learned = G.blueprints.includes(recipe.id);
-      if (index === this.i) fill(2, y - 1, 152, 10, 1);
+      if (index === this.i) fill(2, y - 1, 152, 10, blackbird ? '#51432f' : 1);
       blit(sprFit(ITEMS[recipe.makes].icon, 9), 4, y);
       text((learned ? `KNOWN ${recipe.name}` : recipe.name).slice(0, 17), 16, y, learned ? 3 : 2);
       textR(`${recipe.skill}/${PROFS[recipe.prof].slice(0, 3)}`, 154, y, 2);
@@ -1027,9 +1032,12 @@ class AuctionHouse extends ListScene {
     G.gold -= e.price; addGear(e.it); this.list.splice(this.i, 1); SFX.buy();
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); text('AUCTION HOUSE', 4, 14, 'gold'); textR(`MY LISTINGS ${G.ah.length}`, 156, 14, 2);
-    this.list.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 25 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); blit(sprFit(itemIcon(e.it), 9), 4, y); text(e.it.name.slice(0, 14), 16, y, rarityCol(e.it.rarity)); textR(fmt(e.price), 154, y, 2); });
-    const e = this.list[this.i]; frame(2, 104, 156, 38);
+    fill(0, 0, W, H, 0); hdr();
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 10, 158, 134, '#090b0e'); fill(2, 11, 156, 1, '#8c744b'); fill(2, 11, 1, 132, '#6f5b3d'); fill(157, 11, 1, 132, '#292d32'); fill(3, 23, 154, 78, '#171a1f'); fill(3, 104, 154, 38, '#101317'); fill(3, 104, 154, 1, '#b09258'); }
+    text('AUCTION HOUSE', 4, 14, 'gold'); textR(`MY LISTINGS ${G.ah.length}`, 156, 14, 2);
+    this.list.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 25 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, blackbird ? '#51432f' : 1); blit(sprFit(itemIcon(e.it), 9), 4, y); text(e.it.name.slice(0, 14), 16, y, rarityCol(e.it.rarity)); textR(fmt(e.price), 154, y, 2); });
+    const e = this.list[this.i]; if (!blackbird) frame(2, 104, 156, 38); else { fill(4, 105, 152, 36, '#171a1f'); fill(4, 105, 152, 1, '#343941'); }
     if (e) { text(`SELLER ${e.seller}`, 6, 107, 2); text(wrap(itemDesc(e.it), 24).slice(0, 2).join('\n'), 6, 117); }
     text('SEL: sell from bag', 6, 136, 1);
   }
