@@ -11,7 +11,7 @@ test('bag gear inspection compares a candidate against its currently equipped sl
   assert.match(source, /const slot = itemSlot\(it\), equipped = G\.eq\[slot\]/);
   assert.match(source, /itemScore\(G, it\) - itemScore\(G, equipped\)/);
   assert.match(source, /UPGRADE \+\$\{delta\}/);
-  assert.match(source, /DOWNGRADE \\$\{delta\}/);
+  assert.match(source, /DOWNGRADE \$\{delta\}/);
   assert.match(source, /SIDEGRADE/);
   assert.match(source, /this\.tab === 0 \? itemInspectText\(e\) : ITEMS\[e\]\.desc/);
 });
