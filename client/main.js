@@ -28,10 +28,36 @@
   const start = data => {
     const desktop = location.protocol === 'file:' && !!window.gbqLauncher?.getGameSession;
     if (!desktop) {
-      push(new Title()); render();
-      if (data && data.G) loading.then(() => { G = data.G; fixupState(); enterWorld(); });
+      // The browser game must always leave the HTML boot fallback and start
+      // its frame loop, even when optional audio or the realm connection fails.
+      try {
+        push(new Title());
+        render();
+      } catch (error) {
+        console.error('GB Quest title startup failed:', error);
+        chatLog('System', 'Startup', 'The title screen encountered an error: ' + String(error.message || error));
+        // Retry without the scene enter hook (music is optional at boot).
+        try {
+          scenes.length = 0;
+          const fallbackTitle = new Title();
+          fallbackTitle.enter = () => {};
+          push(fallbackTitle);
+          render();
+        } catch (fallbackError) {
+          console.error('GB Quest fallback render failed:', fallbackError);
+        }
+      }
       requestAnimationFrame(loop);
-      NET.init();
+      Promise.resolve().then(() => NET.init()).catch(error => {
+        console.warn('Realm connection unavailable; continuing offline:', error);
+        chatLog('System', 'Realm connection', 'Offline mode: ' + String(error.message || error));
+      });
+      if (data && data.G) loading.then(() => {
+        G = data.G; fixupState(); enterWorld();
+      }).catch(error => {
+        console.error('Saved session restore failed:', error);
+        chatLog('System', 'Saved session', 'Could not restore the previous session.');
+      });
       return;
     }
     (async () => {
