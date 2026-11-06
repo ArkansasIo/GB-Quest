@@ -22,6 +22,14 @@ test('loadout preview reports unavailable pieces and does not apply until confir
   assert.ok(source.includes("'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'"));
   assert.ok(source.includes("'ELEMENTS F' + current.elem.fire"));
   assert.ok(source.includes("'SUBSTATS HIT ' + (current.sub.hit || 0)"));
+  assert.ok(source.includes("const sourceLines = []"));
+  assert.ok(source.includes("mods.push(k.toUpperCase() + ' '"));
+  assert.ok(source.includes("gemAffixes(it)"));
+  assert.ok(source.includes("runeAffixes(it)"));
+  assert.ok(source.includes("tierImplicit(it)"));
+  assert.ok(source.includes("'--- EQUIPPED ITEM BONUS SOURCES ---'"));
+  assert.ok(source.includes("SLOT_NAME[slot] || slot"));
+
 
   assert.ok(source.includes("if (action !== 0) return setsMenu()"));
   assert.ok(source.includes('applySet(set, preview.plan)'));
