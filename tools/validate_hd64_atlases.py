@@ -10,7 +10,7 @@ from pathlib import Path
 def png_size(path):
     with path.open("rb") as stream:
         header = stream.read(24)
-    if len(header) != 24 or header[:8] != b"\\x89PNG\\r\\n\\x1a\\n" or header[12:16] != b"IHDR":
+    if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
         raise ValueError(f"not a valid PNG header: {path}")
     return struct.unpack(">II", header[16:24])
 
