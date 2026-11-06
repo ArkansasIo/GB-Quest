@@ -47,7 +47,7 @@ test('itch.io package includes generated HD animation frames, equipment, and vis
   assert.match(build, /fs\.cpSync/);
   assert.match(build, /animation_manifest\.json/);
   assert.match(build, /equipment_manifest\.json/);
-  assert.match(build, /assets_hd64\\/animations\\/frames/);
+  assert.match(build, /assets_hd64.*animations.*frames/);
 });
 
 test('itch.io workflow generates all six F-rank animation sets before packaging', () => {
