@@ -102,3 +102,17 @@ test('player HUD displays weapon damage dice plus its signed additive modifier',
   assert.match(source, /setText\('\[data-hud-attack\]', weaponDamage\)/);
   assert.match(source, /WEAPON DMG/);
 });
+
+
+test('standalone release includes runtime HD64 artwork in the player HUD', async () => {
+  const [build, shell] = await Promise.all([
+    readFile(new URL('../tools/build.cjs', import.meta.url), 'utf8'),
+    readFile(new URL('../client/shell.html', import.meta.url), 'utf8')
+  ]);
+  assert.match(build, /'main', 'player_hud', 'debug'/);
+  assert.match(shell, /client\/player-hud\.css/);
+  assert.match(source, /function hudSpriteData\(name\)/);
+  assert.match(source, /np_class_/);
+  assert.match(source, /au_menu_icons_/);
+  assert.match(source, /au_skill_icons_/);
+});
