@@ -26,3 +26,9 @@ The HUD is read-only with respect to player progression. It polls the live state
 - The bridge functions are read-only except for the explicit hotbar `use(index)` action. They do not add a parallel combat or map state model.
 
 - In real-time combat, hotbar entries expose remaining cooldown and global-cooldown ticks from the active battle. The HUD shows a seconds overlay and disables unavailable or paused actions; the battle engine remains authoritative for activation.
+
+## Interactive minimap
+
+- Zoom controls scale the visible tile window around the player; the center control resets to the default player-centered view.
+- Clicking a tile inspects its coordinates; clicking a marker reports its name/type and coordinates. Markers are sourced from the current field's live entity list and remain informational; gameplay interactions continue through the existing world controls.
+- Marker snapshots include display names where the world entity provides them. The HUD does not teleport the player or mutate world state from map clicks.
