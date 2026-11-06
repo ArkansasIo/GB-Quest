@@ -211,3 +211,143 @@ body.chat-on .gbq-player-hud { right:300px; }
 .gbq-hud-glyph .gbq-hud-art { width:22px; height:22px; object-fit:contain; image-rendering:pixelated; }
 .gbq-hud-hotbar button > span.has-art { display:grid; place-items:center; width:100%; height:100%; font-size:0; }
 .gbq-hud-hotbar button > span .gbq-hud-art { width:26px; height:26px; max-width:100%; max-height:100%; object-fit:contain; image-rendering:pixelated; }
+
+
+/* ================================================================
+   RESPONSIVE GAME-FRAME LAYOUT
+   Reserve real canvas space for the HUD.  Panels live in the side
+   rails; the 160:144 game viewport scales into the remaining stage.
+   ================================================================ */
+body.full-window-mode .game-viewport,
+body.fullscreen-mode .game-viewport {
+  display:grid !important;
+  place-items:center !important;
+  overflow:hidden;
+}
+body.full-window-mode .game-viewport > #lcd,
+body.fullscreen-mode .game-viewport > #lcd {
+  width:min(calc(100vw - 344px), calc((100dvh - 126px) * 160 / 144)) !important;
+  height:auto !important;
+  max-width:none !important;
+  max-height:none !important;
+  aspect-ratio:160 / 144;
+  justify-self:center;
+  align-self:center;
+}
+body.full-window-mode .gbq-player-hud,
+body.fullscreen-mode .gbq-player-hud {
+  position:absolute;
+  inset:0;
+  right:0 !important;
+  display:block;
+  overflow:visible;
+  pointer-events:none;
+}
+body.full-window-mode .gbq-hud-top,
+body.fullscreen-mode .gbq-hud-top {
+  inset:8px 12px auto;
+  min-height:38px;
+  padding:5px 9px;
+  border:1px solid rgba(190,160,103,.62);
+  background:linear-gradient(180deg,rgba(12,18,15,.96),rgba(5,9,7,.94));
+  box-shadow:0 5px 16px #0009;
+}
+body.full-window-mode .gbq-hud-compass,
+body.fullscreen-mode .gbq-hud-compass { min-width:0; padding:4px 12px; }
+body.full-window-mode .gbq-hud-left,
+body.fullscreen-mode .gbq-hud-left {
+  top:58px; left:8px; bottom:72px;
+  width:158px; max-width:calc((100vw - 344px)/2 - 12px);
+  overflow-y:auto; overflow-x:hidden; align-content:start;
+  scrollbar-width:thin; pointer-events:auto;
+}
+body.full-window-mode .gbq-hud-right,
+body.fullscreen-mode .gbq-hud-right {
+  top:58px; right:8px; bottom:72px;
+  width:158px; max-width:calc((100vw - 344px)/2 - 12px);
+  overflow-y:auto; overflow-x:hidden; align-content:start;
+  scrollbar-width:thin; pointer-events:auto;
+}
+body.full-window-mode .gbq-hud-panel,
+body.fullscreen-mode .gbq-hud-panel { padding:6px; }
+body.full-window-mode .gbq-hud-player,
+body.fullscreen-mode .gbq-hud-player { min-height:64px; gap:7px; }
+body.full-window-mode .gbq-hud-avatar,
+body.fullscreen-mode .gbq-hud-avatar { flex-basis:38px; height:38px; font-size:18px; }
+body.full-window-mode .gbq-hud-player-name,
+body.fullscreen-mode .gbq-hud-player-name { font-size:12px; }
+body.full-window-mode .gbq-hud-level,
+body.fullscreen-mode .gbq-hud-level { font-size:8px; }
+body.full-window-mode .gbq-hud-attributes,
+body.fullscreen-mode .gbq-hud-attributes,
+body.full-window-mode .gbq-hud-party,
+body.fullscreen-mode .gbq-hud-party { display:none !important; }
+body.full-window-mode .gbq-hud-map-art,
+body.fullscreen-mode .gbq-hud-map-art { height:88px; }
+body.full-window-mode .gbq-hud-bottom,
+body.fullscreen-mode .gbq-hud-bottom {
+  left:8px; right:8px; bottom:7px;
+  min-height:52px; align-items:center; justify-content:center;
+  padding:5px;
+  border:1px solid rgba(190,160,103,.58);
+  background:linear-gradient(180deg,rgba(18,27,22,.97),rgba(5,9,7,.98));
+  box-shadow:0 5px 18px #000a;
+  pointer-events:none;
+}
+body.full-window-mode .gbq-hud-shortcuts,
+body.fullscreen-mode .gbq-hud-shortcuts { display:none !important; }
+body.full-window-mode .gbq-hud-action-area,
+body.fullscreen-mode .gbq-hud-action-area { flex:0 1 auto; min-width:0; gap:7px; }
+body.full-window-mode .gbq-hud-hotbar,
+body.fullscreen-mode .gbq-hud-hotbar { padding:3px; gap:3px; pointer-events:auto; }
+body.full-window-mode .gbq-hud-hotbar button,
+body.fullscreen-mode .gbq-hud-hotbar button { width:38px; height:40px; }
+body.full-window-mode .gbq-hud-quick,
+body.fullscreen-mode .gbq-hud-quick,
+body.full-window-mode .gbq-hud-potions,
+body.fullscreen-mode .gbq-hud-potions { display:flex; pointer-events:auto; }
+body.full-window-mode .gbq-hud-toast,
+body.fullscreen-mode .gbq-hud-toast { bottom:78px; }
+
+/* Tablet and portrait: reclaim the width for the actual game canvas.
+   Secondary data panels are removed from the play surface; the core
+   status and action controls remain in compact, reserved bands. */
+@media (max-width:900px), (max-height:620px) {
+  body.full-window-mode .game-viewport > #lcd,
+  body.fullscreen-mode .game-viewport > #lcd {
+    width:min(100vw, calc((100dvh - 104px) * 160 / 144)) !important;
+    max-width:100vw !important;
+  }
+  body.full-window-mode .gbq-hud-left,
+  body.fullscreen-mode .gbq-hud-left,
+  body.full-window-mode .gbq-hud-right,
+  body.fullscreen-mode .gbq-hud-right { display:none !important; }
+  body.full-window-mode .gbq-hud-top,
+  body.fullscreen-mode .gbq-hud-top { inset:4px 5px auto; min-height:32px; }
+  body.full-window-mode .gbq-hud-brand,
+  body.fullscreen-mode .gbq-hud-brand { font-size:12px; gap:6px; }
+  body.full-window-mode .gbq-hud-crest,
+  body.fullscreen-mode .gbq-hud-crest { width:25px; height:25px; font-size:15px; }
+  body.full-window-mode .gbq-hud-brand small,
+  body.fullscreen-mode .gbq-hud-brand small,
+  body.full-window-mode .gbq-hud-compass,
+  body.fullscreen-mode .gbq-hud-compass { display:none !important; }
+  body.full-window-mode .gbq-hud-wallet span,
+  body.fullscreen-mode .gbq-hud-wallet span { padding:4px 6px; font-size:9px; }
+  body.full-window-mode .gbq-hud-bottom,
+  body.fullscreen-mode .gbq-hud-bottom { left:4px; right:4px; bottom:4px; min-height:48px; padding:3px; }
+  body.full-window-mode .gbq-hud-hotbar button,
+  body.fullscreen-mode .gbq-hud-hotbar button { width:clamp(27px,6vw,38px); height:34px; }
+  body.full-window-mode .gbq-hud-quick,
+  body.fullscreen-mode .gbq-hud-quick { display:none; }
+}
+@media (max-width:480px) {
+  body.full-window-mode .gbq-hud-wallet span:nth-child(2),
+  body.fullscreen-mode .gbq-hud-wallet span:nth-child(2) { display:none; }
+  body.full-window-mode .gbq-hud-potions,
+  body.fullscreen-mode .gbq-hud-potions { display:none; }
+  body.full-window-mode .gbq-hud-hotbar,
+  body.fullscreen-mode .gbq-hud-hotbar { gap:2px; }
+  body.full-window-mode .gbq-hud-hotbar button,
+  body.fullscreen-mode .gbq-hud-hotbar button { width:29px; height:32px; }
+}
