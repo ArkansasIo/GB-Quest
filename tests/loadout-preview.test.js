@@ -9,11 +9,20 @@ test('loadout selection previews defensive and offensive stats before confirmati
   assert.doesNotThrow(() => new vm.Script(source));
   for (const label of ['AC ', 'ATTACK ', 'DAMAGE ', 'HP ']) assert.ok(source.includes(label));
   assert.ok(source.includes("choose(['APPLY LOADOUT', 'CANCEL']"));
-  assert.ok(source.includes("preview.lines.join(' · ').slice(0, 120)"));
+  assert.ok(source.includes('return say(preview.lines, () => choose'));
 });
 
 test('loadout preview reports unavailable pieces and does not apply until confirmed', () => {
   assert.ok(source.includes("if (missing.length) lines.push(('MISSING: ' + missing.join(', '))"));
+  assert.ok(source.includes("'CRIT ' + current.crit + '% → ' + target.crit + '%'"));
+  assert.ok(source.includes("'DODGE ' + current.dodge + '% → ' + target.dodge + '%'"));
+  assert.ok(source.includes("'BLOCK ' + current.block + '% → ' + target.block + '%'"));
+  assert.ok(source.includes("'LEECH ' + current.leech + '% → ' + target.leech + '%'"));
+  assert.ok(source.includes("'HASTE ' + current.haste + '% → ' + target.haste + '%'"));
+  assert.ok(source.includes("'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'"));
+  assert.ok(source.includes("'ELEMENTS F' + current.elem.fire"));
+  assert.ok(source.includes("'SUBSTATS HIT ' + (current.sub.hit || 0)"));
+
   assert.ok(source.includes("if (action !== 0) return setsMenu()"));
   assert.ok(source.includes('applySet(set, preview.plan)'));
   assert.ok(source.indexOf("if (action !== 0) return setsMenu()") < source.indexOf('applySet(set, preview.plan)'));
