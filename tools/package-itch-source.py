@@ -18,7 +18,7 @@ OUTPUT = BUILD / "gbquest-itch-full-source.zip"
 EXCLUDED_DIRS = {
     ".git", ".github-cache", "node_modules", "__pycache__", ".pytest_cache",
     ".mypy_cache", ".ruff_cache", ".venv", "venv", "build", "release",
-    "coverage", ".next", ".turbo", "packs",
+    "coverage", ".next", ".turbo",
 }
 EXCLUDED_PREFIXES = ("server/data/", "assets_hd64/gbq_6000/", "assets_hd64/gbq_6000_hd/")
 EXCLUDED_NAMES = {".DS_Store", "Thumbs.db"}
@@ -55,7 +55,10 @@ the lockfile and each component's documented build instructions.
 
 def excluded(path: Path) -> bool:
     rel = path.relative_to(ROOT).as_posix()
-    if any(part in EXCLUDED_DIRS for part in path.relative_to(ROOT).parts):
+    parts = path.relative_to(ROOT).parts
+    if any(part in EXCLUDED_DIRS for part in parts):
+        return True
+    if parts[:2] == ("art_source", "packs"):
         return True
     if any(rel.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
         return True
