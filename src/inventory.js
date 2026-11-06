@@ -332,11 +332,23 @@ class StashScene {
       fill(1, 115, 158, 28, '#080a0c');
       fill(1, 115, 158, 1, '#b09258');
       fill(2, 116, 156, 26, '#171a1f');
+      fill(2, 130, 156, 1, '#343941');
+      fill(2, 142, 156, 1, '#51432f');
     } else frame(1, 115, 158, 28);
     const e = L[this.cy * INV_COLS + this.cx];
-    if (e) { text(e.name.slice(0, 18), 5, 117, rarityCol(e.rarity)); text(`${itemKeyStat(e)} IL${e.ilvl}`.slice(0, 25), 5, 126, 2); }
-    else text(this.pane ? `${st.names[this.tab]} ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`, 5, 118, 2);
-    text(this.pane ? 'A:TAKE  SEL:BAG  START:TABS' : 'A:STORE  SEL:VAULT', 5, 135, 1);
+    if (e) {
+      text(e.name.slice(0, 18), 5, 117, rarityCol(e.rarity));
+      text(`${itemKeyStat(e)} IL${e.ilvl}`.slice(0, 25), 5, 126, 2);
+    } else {
+      const label = this.pane ? `${st.names[this.tab]} ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`;
+      text(label.slice(0, 25), 5, 119, 2);
+    }
+    if (S.uiTheme === 'blackbird') {
+      const paneLabel = this.pane ? `VAULT ${this.tab + 1}/${st.unlocked}` : 'CARRYING PACK';
+      text(paneLabel, 5, 133, 'gold');
+      textR(this.pane ? 'A:TAKE  SEL:PACK' : 'A:STORE  SEL:VAULT', 156, 133, 1);
+      text('START: VAULT OPTIONS', 5, 140, 1);
+    } else text(this.pane ? 'A:TAKE  SEL:BAG  START:TABS' : 'A:STORE  SEL:VAULT', 5, 135, 1);
   }
 }
 // ---------------------------------------------------------------- EQUIPMENT (paper doll)
