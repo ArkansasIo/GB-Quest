@@ -88,3 +88,8 @@ Selecting a saved equipment set now opens a comparison before applying it. The p
 ## Expanded loadout comparison — November 2026
 
 The equipment-set preview now presents its full comparison as a readable message before the separate APPLY LOADOUT / CANCEL prompt, rather than truncating the comparison inside a short menu description. In addition to AC, attack, weapon damage, and maximum HP, it compares critical chance, dodge, block, lifesteal, haste, total resistance, fire/cold/lightning elemental values, and the HIT/DMG gear substats. Preview values are derived from the target equipment map without changing the live character; existing equip restrictions remain authoritative when applying.
+
+
+## Per-item loadout bonus sources — November 2026
+
+The saved-loadout review now includes an equipped-item source breakdown. Each occupied target slot reports the item's ordinary affixes and, when available in the current game build, its gem bonuses, rune bonuses, and tier implicit modifiers. Each entry is labelled by source so players can identify which item supplies a stat. This is an item-level modifier breakdown; character-wide ascension, companion bond, talent, buff, and armor-set contributions are not attributed to individual gear pieces.
