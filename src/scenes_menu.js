@@ -138,11 +138,12 @@ class BagScene extends ListScene {
     const e = L[this.i];
     if (this.tab === 0) {
       if (this.mode === 'sell') { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); return this.flash(`Sold for ${e.value} G.`); }
-      choose(['EQUIP', 'SELL ' + e.value + 'G', 'LIST ON AUCTION', 'DROP', 'BACK'], k => {
+      choose(['EQUIP', 'COMPARE', 'SELL ' + e.value + 'G', 'LIST ON AUCTION', 'DROP', 'BACK'], k => {
         if (k === 0) { const why = equipItem(G, e, G.bag); SFX[why ? 'error' : 'equip'](); this.flash(why || `Equipped ${e.name}.`); }
-        if (k === 1) { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
-        if (k === 2) { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err); } else { SFX.auction(); this.flash('Listed at 4x value.'); } }).catch(er => this.flash(String(er.message || er))); }
-        if (k === 3) { G.bag.splice(G.bag.indexOf(e), 1); SFX.back(); }
+        if (k === 1) { showGearComparison(e); }
+        if (k === 2) { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
+        if (k === 3) { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err); } else { SFX.auction(); this.flash('Listed at 4x value.'); } }).catch(er => this.flash(String(er.message || er))); }
+        if (k === 4) { G.bag.splice(G.bag.indexOf(e), 1); SFX.back(); }
       }, e.name);
     } else {
       const it = ITEMS[e];
@@ -179,6 +180,32 @@ class BagScene extends ListScene {
     text('SEL:TAB', 120, 102, 1);
   }
 }
+function showGearComparison(it) {
+  const slot = itemSlot(it), current = derive(G), eq = { ...G.eq, [slot]: it };
+  const target = derive({ ...G, eq });
+  const fmt = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+  const rows = [
+    (SLOT_NAME[slot] || slot).toUpperCase() + ': ' + (it.name || it.base || 'ITEM'),
+    'AC ' + current.ac + ' → ' + target.ac + ' (' + fmt(current.ac, target.ac) + ')',
+    'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + fmt(current.weapon.hit, target.weapon.hit) + ')',
+    'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+    'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + fmt(current.hpMax, target.hpMax) + ')',
+    'CRIT ' + current.crit + '% → ' + target.crit + '%',
+    'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+    'BLOCK ' + current.block + '% → ' + target.block + '%',
+    'LEECH ' + current.leech + '% → ' + target.leech + '%',
+    'HASTE ' + current.haste + '% → ' + target.haste + '%',
+    'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'
+  ];
+  const mods = [];
+  for (const [k, v] of it.affixes || []) mods.push('AFFIX ' + k.toUpperCase() + ' +' + v);
+  if (typeof gemAffixes === 'function') for (const [k, v] of Object.entries(gemAffixes(it))) mods.push('GEM ' + k.toUpperCase() + ' +' + v);
+  if (typeof runeAffixes === 'function') for (const [k, v] of Object.entries(runeAffixes(it))) mods.push('RUNE ' + k.toUpperCase() + ' +' + v);
+  if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) mods.push('TIER ' + k.toUpperCase() + ' +' + v);
+  rows.push(...(mods.length ? mods : ['NO ITEM MODIFIERS']));
+  say(rows, () => {});
+}
+
 function itemInspectText(it) {
   const slot = itemSlot(it), equipped = G.eq[slot];
   let comparison = 'EMPTY SLOT';
