@@ -128,7 +128,28 @@
     const combatEntries = window.GBQCombatHotbar && typeof window.GBQCombatHotbar.entries === 'function' ? window.GBQCombatHotbar.entries() : [];
     const arts = combatEntries.length ? combatEntries : (Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : []);
     const hotbar = root.querySelector('[data-hud-hotbar]');
-    if (hotbar) hotbar.innerHTML = Array.from({length:8},(_,i)=>{const a=arts[i], remaining=Number(a?.remaining||0), cooling=remaining>0, blocked=(a && a.ok===false)||cooling||!!a?.paused, label=cooling?`${Math.ceil(remaining/60)}s`:a?.paused?'PAUSE':'';return `<button type="button" data-hud-action="slot${i+1}" ${blocked?'disabled':''} title="${esc(a && (a.name || a.id) || 'Action slot '+(i+1))}${cooling?' · '+label:a?.paused?' · Paused':''}"><span>${a?'✧':'+'}</span>${cooling?`<i class="gbq-hud-cooldown">${label}</i>`:''}<small>${i+1}</small></button>`;}).join('');
+    if (hotbar) {
+      const markup = Array.from({length:8},(_,i)=>{
+        const a=arts[i], remaining=Number(a?.remaining||0), cooling=remaining>0;
+        const blocked=(a && a.ok===false)||cooling||!!a?.paused;
+        const label=cooling?Math.ceil(remaining/60)+'s':a?.paused?'PAUSE':'';
+        const name=a && (a.name || a.id) || 'Action slot '+(i+1);
+        const status=cooling?' · Cooldown '+label:a?.paused?' · Paused':blocked?' · Unavailable':'';
+        return '<button type="button" data-hud-action="slot'+(i+1)+'" aria-label="'+esc(name+status)+'" '+(blocked?'disabled':'')+' title="'+esc(name+status)+'"><span>'+(a?'✧':'+')+'</span>'+(cooling?'<i class="gbq-hud-cooldown" aria-hidden="true">'+label+'</i>':'')+'<small>'+(i+1)+'</small></button>';
+      }).join('');
+      if (hotbar.dataset.renderedMarkup !== markup) {
+        const focusedAction = hotbar.contains(document.activeElement) ? document.activeElement.dataset.hudAction : '';
+        hotbar.innerHTML = markup;
+        hotbar.dataset.renderedMarkup = markup;
+        if (focusedAction) {
+          const buttons = [...hotbar.querySelectorAll('button:not(:disabled)')];
+          const same = hotbar.querySelector('[data-hud-action="'+focusedAction+'"]:not(:disabled)');
+          const focusedIndex = Number(focusedAction.slice(4)) - 1;
+          const next = same || buttons.find(button => Number(button.dataset.hudAction.slice(4)) - 1 >= focusedIndex) || buttons[buttons.length-1];
+          next?.focus({preventScroll:true});
+        }
+      }
+    }
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
