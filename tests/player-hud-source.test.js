@@ -112,8 +112,8 @@ test('standalone release includes runtime HD64 artwork in the player HUD', async
   assert.match(build, /'main', 'player_hud', 'debug'/);
   assert.match(shell, /client\/player-hud\.css/);
   assert.match(source, /function hudSpriteData\(name\)/);
-  assert.match(source, /np_class_/);
-  assert.match(source, /au_menu_icons_/);
+  assert.match(source, /ap_portraits_\\d{3}/);
+  assert.match(source, /ap_ui_icons_\\d{3}/);
   assert.match(source, /au_skill_icons_/);
 });
 
