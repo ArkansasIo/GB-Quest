@@ -26,12 +26,14 @@ function walkCitadel(dir) {
 }
 walkCitadel(path.join(ROOT, 'assets_citadel'));
 const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fromEntries(citadelFiles)) + ';</script>\n';
+const themePokemon = rd('client/theme-pokemon.css');
 const themeShadows = rd('client/theme-shadows.css')
   .replaceAll('url("GBQ_MASTER_CATALOG")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_master_catalog.png')).toString('base64') + '")')
   .replaceAll('url("GBQ_UI_MOCKUP")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_ui_mockup_catalog.png')).toString('base64') + '")');
 const shell = rd('client/shell.html')
   .replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + themeShadows + '\n</style>')
-  .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>');
+  .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>')
+  .replace('<link rel="stylesheet" href="client/theme-pokemon.css">', '<style>\n' + themePokemon + '\n</style>');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
   .filter(f => f.endsWith('.png') && !f.startsWith('device_mockup') && !f.startsWith('bg_patterns'))
@@ -41,7 +43,7 @@ const names = files.map(f => f.slice(0, -4));
 fs.writeFileSync(path.join(ROOT, 'assets', 'index.json'), JSON.stringify(names));
 
 const dev = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-  + shell.replace('<aside', '</head><body class="theme-shadows">\n<aside') + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n'
+  + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside') + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n'
   + ORDER.map(n => `<script src="${clientFile(n)}"></script>\n`).join('') + '</body></html>\n';
 fs.writeFileSync(path.join(ROOT, 'index.html'), dev);
 
