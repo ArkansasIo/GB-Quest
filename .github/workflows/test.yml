@@ -87,7 +87,9 @@ jobs:
         run: python tools/gen_pack6000_hd.py --output assets_hd64/gbq_6000
       - name: Validate HD64 6,000 asset pack
         run: python tools/validate_pack6000_hd.py --root assets_hd64/gbq_6000
-      - name: Build browser and desktop game bundles
+      - name: Build through the Python compatibility entry point
+        run: python tools/build.py
+      - name: Rebuild through the canonical Node entry point
         run: node tools/build.cjs
       - name: Upload generated art package
         uses: actions/upload-artifact@v7
