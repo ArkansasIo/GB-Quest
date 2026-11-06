@@ -84,3 +84,13 @@ test('player HUD shows live derived combat and equipped gear metrics', () => {
   assert.match(source, /averageItemLevel/);
   assert.match(styles, /\.gbq-hud-stat-grid/);
 });
+
+test('player HUD renders all nine live attributes and their derived modifiers', () => {
+  for (const attribute of ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA', 'LCK', 'WIL', 'SPD']) {
+    assert.match(source, new RegExp('data-hud-attr="' + attribute + '"'));
+  }
+  assert.match(source, /derived\.A && typeof derived\.A === 'object'/);
+  assert.match(source, /derived\.M && typeof derived\.M === 'object'/);
+  assert.match(source, /data-hud-attr/);
+  assert.match(styles, /\.gbq-hud-attribute-grid/);
+});
