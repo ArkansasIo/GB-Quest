@@ -1086,6 +1086,7 @@ function previewVendorGear(item, price, onBuy) {
     'ILVL ' + (item.ilvl || 1) + ' · ' + (RARITY[item.rarity]?.name || 'COMMON') + ' · ' + (SLOT_NAME[slot] || slot).toUpperCase(),
     'SET ' + (setId || 'NONE') + ' · ' + durability,
     'GEMS ' + (item.sockets || []).filter(Boolean).length + '/' + gemSlots + ' · RUNES ' + (item.runeSockets || []).filter(Boolean).length + '/' + runeSlots + ' · ' + (item.attune ? 'ATTUNE' : 'NO ATTUNE'),
+    ...legendarySetPreview(G, item).flatMap(set => set.thresholds.map(t => set.name + ' ' + t.pieces + 'PC ' + (t.newlyUnlocked ? 'NEW' : t.active ? 'ACTIVE' : 'LOCKED') + ': ' + t.stats.map(([k, v]) => k.toUpperCase() + ' +' + v).join(', '))),
     'CURRENT GOLD ' + fmt(G.gold) + ' · AFTER ' + fmt(G.gold - price),
     'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
     'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
