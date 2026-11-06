@@ -62,3 +62,143 @@ body.chat-on .gbq-player-hud { right:300px; }
 .gbq-hud-attribute-grid strong { color:#f0d28e; font:700 12px Cinzel,Georgia,serif; font-variant-numeric:tabular-nums; }
 .gbq-hud-attribute-grid i { color:#9bc5a1; font:600 9px Inter,Arial,sans-serif; font-style:normal; }
 @media(max-width:620px) { .gbq-hud-attributes { display:none; } }
+
+
+/* SHADOWS OF THE ABYSS — dark-fantasy HUD finish.
+   The palette and bevel language follow the supplied stone, moss and brass boards;
+   all surfaces remain CSS-rendered so the gameplay canvas and HD64 atlas stay untouched. */
+.gbq-player-hud {
+  --hud-stone-0:#090d0d;
+  --hud-stone-1:#131b19;
+  --hud-stone-2:#202a25;
+  --hud-brass:#b99a61;
+  --hud-brass-hi:#ead39a;
+  --hud-parchment:#e7dfc8;
+  --hud-moss:#71836a;
+  --hud-line:rgba(190,160,103,.62);
+  color:var(--hud-parchment);
+}
+.gbq-player-hud .gbq-hud-panel {
+  position:relative;
+  isolation:isolate;
+  border:1px solid var(--hud-line);
+  border-radius:3px;
+  padding:9px;
+  background:
+    linear-gradient(135deg,rgba(48,62,52,.26),transparent 38%),
+    repeating-linear-gradient(0deg,rgba(224,211,177,.018) 0 1px,transparent 1px 4px),
+    linear-gradient(145deg,rgba(26,36,31,.97),rgba(8,13,13,.97) 72%);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.75),inset 0 1px rgba(255,238,190,.08),0 7px 18px rgba(0,0,0,.55);
+}
+.gbq-player-hud .gbq-hud-panel::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:3px;
+  border:1px solid rgba(220,194,139,.10);
+  pointer-events:none;
+}
+.gbq-player-hud .gbq-hud-section-title {
+  color:var(--hud-brass-hi);
+  padding:0 0 5px;
+  border-bottom:1px solid rgba(185,154,97,.34);
+  text-shadow:0 1px 4px #000;
+  letter-spacing:.11em;
+}
+.gbq-player-hud .gbq-hud-section-title span {
+  color:#a9b19b;
+  letter-spacing:.08em;
+}
+.gbq-player-hud .gbq-hud-brand { color:var(--hud-brass-hi); text-shadow:0 2px 8px #000; }
+.gbq-player-hud .gbq-hud-crest {
+  border:1px solid #c5a66b;
+  border-radius:3px;
+  background:linear-gradient(145deg,#344238,#111a16 65%,#080c0b);
+  box-shadow:inset 0 0 0 2px #090e0c,0 0 12px rgba(185,154,97,.22);
+}
+.gbq-player-hud .gbq-hud-avatar {
+  border:2px solid var(--hud-brass);
+  border-radius:4px;
+  background:
+    linear-gradient(135deg,rgba(111,131,106,.35),transparent 52%),
+    radial-gradient(circle at 45% 35%,#536454,#1a2721 68%,#090e0c);
+  box-shadow:0 0 0 2px #080c0b,0 0 0 4px rgba(185,154,97,.28);
+}
+.gbq-player-hud .gbq-hud-player-name,
+.gbq-player-hud .gbq-hud-map-meta strong,
+.gbq-player-hud .gbq-hud-quest strong { color:#f0dfb7; }
+.gbq-player-hud .gbq-hud-level { color:#b6a47d; }
+.gbq-player-hud .gbq-hud-meter { border-color:#766342; border-radius:2px; background:#050908; }
+.gbq-player-hud .gbq-hud-meter.hp em { background:linear-gradient(90deg,#681a1c,#c94c3f); }
+.gbq-player-hud .gbq-hud-meter.mp em { background:linear-gradient(90deg,#244b68,#5794b1); }
+.gbq-player-hud .gbq-hud-meter.xp em { background:linear-gradient(90deg,#596d43,#b9a05b); }
+.gbq-player-hud .gbq-hud-stat-grid>div,
+.gbq-player-hud .gbq-hud-attribute-grid>div {
+  border:1px solid rgba(185,154,97,.22);
+  background:linear-gradient(135deg,rgba(49,63,52,.30),rgba(4,8,7,.76));
+}
+.gbq-player-hud .gbq-hud-stat-grid strong,
+.gbq-player-hud .gbq-hud-attribute-grid strong { color:#e6ca8d; }
+.gbq-player-hud .gbq-hud-map-art {
+  border:1px solid #9b8050;
+  outline:1px solid rgba(0,0,0,.8);
+  outline-offset:-3px;
+  background-color:#1a2a22;
+}
+.gbq-player-hud .gbq-hud-map-tools button,
+.gbq-player-hud .gbq-hud-nav,
+.gbq-player-hud .gbq-hud-hotbar button,
+.gbq-player-hud .gbq-hud-quick button,
+.gbq-player-hud .gbq-hud-potions button {
+  border:1px solid rgba(190,160,103,.72);
+  border-radius:3px;
+  background:linear-gradient(180deg,#35443a 0%,#1b2821 48%,#0b110e 100%);
+  color:#eee0bd;
+  box-shadow:inset 0 1px rgba(255,242,204,.10),0 3px 0 #030605,0 5px 9px #0008;
+}
+.gbq-player-hud .gbq-hud-nav { min-height:44px; }
+.gbq-player-hud .gbq-hud-glyph { color:#d6b978; text-shadow:0 1px 4px #000; }
+.gbq-player-hud .gbq-hud-hotbar {
+  border:1px solid #b5965c;
+  border-radius:3px;
+  background:linear-gradient(180deg,rgba(40,52,44,.97),rgba(6,11,9,.98));
+  box-shadow:inset 0 0 0 2px #080d0a,0 5px 16px #000a;
+}
+.gbq-player-hud .gbq-hud-hotbar button { position:relative; }
+.gbq-player-hud .gbq-hud-hotbar button::before {
+  content:"";
+  position:absolute;
+  inset:2px;
+  border:1px solid rgba(231,210,160,.14);
+  pointer-events:none;
+}
+.gbq-player-hud .gbq-hud-quest { border-top-color:rgba(185,154,97,.20); }
+.gbq-player-hud .gbq-hud-quest>b { color:#d6b978; }
+.gbq-player-hud .gbq-hud-toast {
+  border:1px solid #d1b477;
+  border-radius:3px;
+  background:linear-gradient(145deg,#26362b,#080d0b);
+  color:#f1dfb8;
+  box-shadow:0 8px 26px #000c,inset 0 0 0 2px #080d0b;
+}
+.gbq-player-hud button:focus-visible,
+.gbq-player-hud canvas:focus-visible {
+  outline:2px solid #f0d99e;
+  outline-offset:3px;
+}
+@media(max-width:620px) {
+  .gbq-player-hud .gbq-hud-panel { padding:6px; }
+  .gbq-player-hud .gbq-hud-nav { min-height:38px; }
+}
+@media(prefers-reduced-motion:no-preference) {
+  .gbq-player-hud .gbq-hud-nav,
+  .gbq-player-hud .gbq-hud-hotbar button {
+    transition:filter .14s ease,border-color .14s ease,transform .14s ease;
+  }
+  .gbq-player-hud .gbq-hud-nav:hover,
+  .gbq-player-hud .gbq-hud-hotbar button:hover:not(:disabled) {
+    filter:brightness(1.2);
+    border-color:#f0d99e;
+    transform:translateY(-1px);
+  }
+}
