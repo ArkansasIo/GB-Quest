@@ -52,7 +52,7 @@
           <div class="gbq-hud-section-title">COMBAT PROFILE <span data-hud-gear-count>0 / 14 GEAR</span></div>
           <div class="gbq-hud-stat-grid">
             <div><small>ARMOR</small><strong data-hud-ac>0</strong></div>
-            <div><small>ATTACK</small><strong data-hud-attack>0</strong></div>
+            <div><small>WEAPON DMG</small><strong data-hud-attack>1d1</strong></div>
             <div><small>HIT BONUS</small><strong data-hud-hit>0</strong></div>
             <div><small>AVG ITEM LVL</small><strong data-hud-ilvl>0</strong></div>
           </div>
@@ -170,7 +170,10 @@
     const equipped = g.eq && typeof g.eq === 'object' ? Object.values(g.eq).filter(Boolean) : [];
     const gearLevels = equipped.map(item => Number(item?.ilvl) || 0).filter(value => value > 0);
     const averageItemLevel = gearLevels.length ? Math.round(gearLevels.reduce((sum, value) => sum + value, 0) / gearLevels.length) : 0;
-    const weaponDamage = derived.weapon && Number.isFinite(Number(derived.weapon.dmg)) ? Number(derived.weapon.dmg) : 0;
+    const weaponDice = String(derived.weapon?.dice || '1d1');
+    const weaponModifier = Number(derived.weapon?.dmg) || 0;
+    const weaponDamage = weaponModifier > 0 ? weaponDice + ' + ' + weaponModifier
+      : weaponModifier < 0 ? weaponDice + ' − ' + Math.abs(weaponModifier) : weaponDice;
     const attributes = derived.A && typeof derived.A === 'object' ? derived.A : (g.base || {});
     const modifiers = derived.M && typeof derived.M === 'object' ? derived.M : {};
     root.querySelectorAll('[data-hud-attr]').forEach(node => {
@@ -181,7 +184,7 @@
       node.innerHTML = esc(fmt(score)) + ' <i>' + esc(sign + modifier) + '</i>';
     });
     setText('[data-hud-ac]', fmt(derived.ac || 0));
-    setText('[data-hud-attack]', fmt(weaponDamage));
+    setText('[data-hud-attack]', weaponDamage);
     setText('[data-hud-hit]', (Number(derived.weapon?.hit) > 0 ? '+' : '') + fmt(derived.weapon?.hit || 0));
     setText('[data-hud-ilvl]', fmt(averageItemLevel));
     setText('[data-hud-gear-count]', equipped.length + ' / 14 GEAR');
