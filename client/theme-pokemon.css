@@ -209,3 +209,79 @@ body.theme-pokemon .gbq-player-hud .gbq-hud-toast {
   body.theme-pokemon .gbq-player-hud { font-size:7px !important; }
   body.theme-pokemon .gbq-player-hud .gbq-hud-panel { padding:4px !important; }
 }
+
+/* Physical shell: classic grey handheld with a charcoal screen bezel and red/blue controls. */
+body.theme-pokemon {
+  --room:#9ba58f;
+  --shell:#c8cec2;
+  --shell-hi:#e2e6dc;
+  --shell-lo:#9da69a;
+  --bezel:#242832;
+  --ring:#285da8;
+  --ink:#202028;
+  --ink-dim:#626775;
+  --btn:#30343b;
+  color-scheme:light;
+  background:radial-gradient(ellipse at 50% 15%,#d6ddcc 0%,#aab49e 55%,#7d8877 100%) !important;
+}
+body.theme-pokemon .device {
+  background:linear-gradient(145deg,#e2e6dc 0%,#c6ccc0 48%,#a8b0a5 100%) !important;
+  border:2px solid #333842 !important;
+  border-radius:20px 20px 54px 20px !important;
+  box-shadow:inset 0 2px 0 #fff, inset 0 -4px 0 #8b9489, 0 18px 38px #1b251b66 !important;
+}
+body.theme-pokemon .bezel {
+  background:linear-gradient(160deg,#20242b,#343b45 55%,#171b22) !important;
+  border:2px solid #20242b !important;
+  border-radius:8px !important;
+  box-shadow:inset 0 0 0 2px #11151a,0 3px 0 #737b70 !important;
+}
+body.theme-pokemon .bezel::after { display:none !important; }
+body.theme-pokemon .bezel-top { color:#d9e2d3 !important; font:7px var(--pixel) !important; letter-spacing:.08em !important; }
+body.theme-pokemon .bezel-top span { background:#6f8e50 !important; }
+body.theme-pokemon .brand {
+  color:#202028 !important;
+  font:700 14px/1.2 var(--pixel) !important;
+  letter-spacing:.04em !important;
+  text-shadow:1px 1px 0 #fff !important;
+}
+body.theme-pokemon .brand em { color:#285da8 !important; }
+body.theme-pokemon .brand small { color:#626775 !important; font:6px var(--pixel) !important; letter-spacing:.05em !important; }
+body.theme-pokemon .round {
+  background:radial-gradient(circle at 32% 25%,#ed7771,#bd343d 62%,#79212b) !important;
+  color:#fff !important;
+  border:2px solid #252832 !important;
+  box-shadow:0 3px 0 #202028, inset 0 1px 0 #ffb1a8 !important;
+  font:9px var(--pixel) !important;
+}
+body.theme-pokemon .pill {
+  background:linear-gradient(#e6e9e1,#aeb7ab) !important;
+  color:#202028 !important;
+  border:1px solid #343a42 !important;
+  box-shadow:0 2px 0 #555d55 !important;
+  font:7px var(--pixel) !important;
+}
+body.theme-pokemon #dpad::before,
+body.theme-pokemon #dpad::after {
+  background:#30343b !important;
+  box-shadow:inset 1px 1px 0 #666d72,0 2px 0 #15181d !important;
+}
+body.theme-pokemon #lcd {
+  image-rendering:pixelated !important;
+  border:3px solid #171b20 !important;
+  box-shadow:0 0 0 2px #e6e9e1,0 0 0 4px #343a42,4px 4px 0 #0004 !important;
+}
+body.theme-pokemon .speaker b { background:#717a70 !important; }
+body.theme-pokemon .keys { color:#30343b !important; font:7px var(--pixel) !important; }
+body.theme-pokemon .keys kbd { color:#285da8 !important; background:#f8f8ef !important; border:1px solid #747d72 !important; }
+body.theme-pokemon .led { background:#8d3636 !important; }
+body.theme-pokemon.ready .led { background:#75a84d !important; box-shadow:0 0 8px #75a84d !important; }
+body.theme-pokemon .build-info { background:#285da8 !important; border:2px solid #202028 !important; color:#fff !important; }
+body.theme-pokemon .build-info strong { color:#fff !important; }
+body.theme-pokemon button:focus-visible,
+body.theme-pokemon input:focus-visible,
+body.theme-pokemon select:focus-visible { outline:2px solid #285da8 !important; outline-offset:2px !important; }
+@media(max-width:520px) {
+  body.theme-pokemon .device { border-radius:14px 14px 38px 14px !important; padding:12px !important; }
+  body.theme-pokemon .brand { font-size:11px !important; }
+}
