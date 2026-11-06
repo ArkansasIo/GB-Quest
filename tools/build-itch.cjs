@@ -37,8 +37,9 @@ function collectPngs(dir) {
   }
 }
 collectPngs(path.join(hdAnimations, 'frames'));
-if (frameFiles.length < 408) {
-  throw new Error('HD animation pack is incomplete: expected at least 408 generated PNG frames, found ' + frameFiles.length);
+const expectedFrameCount = 2448;
+if (frameFiles.length !== expectedFrameCount) {
+  throw new Error('HD animation pack is incomplete: expected exactly ' + expectedFrameCount + ' generated PNG frames, found ' + frameFiles.length);
 }
 
 fs.rmSync(out, { recursive: true, force: true });
@@ -97,8 +98,9 @@ with zipfile.ZipFile(target) as archive:
     names = set(archive.namelist())
     assert all(str(p) in names for p in required), names
     assert archive.getinfo("index.html").file_size > 100_000
-    assert any(name.startswith("assets_hd64/animations/frames/") and name.endswith(".png") for name in names)
-print(f"Created {target} ({target.stat().st_size / 1024 / 1024:.2f} MiB, {len(files)} files)")`;
+    frame_names = [name for name in names if name.startswith("assets_hd64/animations/frames/") and name.endswith(".png")]
+    assert len(frame_names) == 2448, f"Expected 2448 packaged animation frames, found {len(frame_names)}"
+print(f"Created {target} ({target.stat().st_size / 1024 / 1024:.2f} MiB, {len(files)} files, 2448 animation frames)")`;
 const candidates = process.platform === 'win32'
   ? [['py', ['-3', '-c', py, out, zip]], ['python', ['-c', py, out, zip]]]
   : [['python3', ['-c', py, out, zip]], ['python', ['-c', py, out, zip]]];
