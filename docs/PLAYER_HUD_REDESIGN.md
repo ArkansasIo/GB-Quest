@@ -83,3 +83,8 @@ The existing loadout manager now supports overwriting a saved equipment set with
 ## Loadout stat preview — November 2026
 
 Selecting a saved equipment set now opens a comparison before applying it. The preview calculates current versus planned AC, weapon attack modifier, weapon damage expression/modifier, and maximum HP using a separate equipment-map copy. It reports how many saved pieces are found and lists missing pieces. Players must explicitly choose APPLY LOADOUT; CANCEL leaves the live equipment unchanged. This is a preview, not a guarantee that every item will equip: the existing equip validation remains authoritative during application and rejected pieces are reported.
+
+
+## Expanded loadout comparison — November 2026
+
+The equipment-set preview now presents its full comparison as a readable message before the separate APPLY LOADOUT / CANCEL prompt, rather than truncating the comparison inside a short menu description. In addition to AC, attack, weapon damage, and maximum HP, it compares critical chance, dodge, block, lifesteal, haste, total resistance, fire/cold/lightning elemental values, and the HIT/DMG gear substats. Preview values are derived from the target equipment map without changing the live character; existing equip restrictions remain authoritative when applying.
