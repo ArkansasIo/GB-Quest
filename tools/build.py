@@ -1,38 +1,34 @@
 #!/usr/bin/env python3
-"""Build Lost Kingdom of Shadowbane Chronicles.
-  index.html          -> dev version: loads src/*.js and assets/*.png (serve the folder over http)
-  dist/gbquest.html   -> single self-contained file, every asset inlined as a data: URI
-  dist/gbquest-fullscreen.html -> same game, LCD fills the window (full-screen toggle, overlay pad + chat)
-  assets/index.json   -> list of asset names for the dev build
+"""Compatibility entry point for the canonical GB Quest build.
+
+The Node builder owns the ordered runtime bundle, classic handheld theme,
+HD64/Citadel artwork embedding, player HUD integration, and standalone HTML
+output. Keep this Python command as a stable entry point for existing docs and
+scripts, but delegate final assembly to tools/build.cjs so both build paths
+cannot silently drift apart.
 """
-import base64, glob, json, os
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORDER = ['data_rules', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'hd_character_art', 'mmorpg/systems/pvp', 'systems', 'art', 'scenes_menu', 'scenes_world', 'inventory', 'items', 'armory', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'towns', 'ui_dark', 'battlebg', 'mount_data', 'mounts', 'chatwow', 'admin', 'chatbox', 'identity', 'main', 'debug']
+from __future__ import annotations
+
+import os
+from pathlib import Path
 import subprocess
-subprocess.run(['python3', os.path.join(ROOT, 'tools', 'build_atlas.py')], check=True)
-rd = lambda p: open(os.path.join(ROOT, p), encoding='utf8').read()
-nes = '<script>window.NES_INDEX=' + json.dumps(json.load(open(os.path.join(ROOT, 'assets', 'nes_index.json')))) + ';</script>\n'
-theme_shadows = rd('client/theme-shadows.css').replace('url("GBQ_MASTER_CATALOG")', 'url("data:image/png;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'gbq_master_catalog.png'), 'rb').read()).decode() + '")').replace('url("GBQ_UI_MOCKUP")', 'url("data:image/png;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'gbq_ui_mockup_catalog.png'), 'rb').read()).decode() + '")')
-theme_pokemon = rd('client/theme-pokemon.css')
-shell = (rd('client/shell.html')
-         .replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + theme_shadows + '\n</style>')
-         .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>')
-         .replace('<link rel="stylesheet" href="client/theme-pokemon.css">', '<style>\n' + theme_pokemon + '\n</style>'))
-client_file = lambda n: 'client/main.js' if n == 'main' else f'src/{n}.js'
-names = sorted(os.path.basename(f)[:-4] for f in glob.glob(os.path.join(ROOT, 'assets', '*.png')) if not os.path.basename(f).startswith(('device_mockup', 'bg_patterns')))
-json.dump(names, open(os.path.join(ROOT, 'assets', 'index.json'), 'w'))
-dev = ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-       + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside', 1) + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n' + ''.join(f'<script src="{client_file(n)}"></script>\n' for n in ORDER) + '</body></html>\n')
-open(os.path.join(ROOT, 'index.html'), 'w').write(dev)
-assets = {n: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', n + '.png'), 'rb').read()).decode() for n in names}
-os.makedirs(os.path.join(ROOT, 'dist'), exist_ok=True)
-atlas = '<script>window.ATLAS_HTML=' + json.dumps(rd('dist/atlas.html')).replace('</', '<\\/') + ';</script>\n'
-single = ('<!doctype html>\n<html lang="en"><head>\n' + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside', 1)
-         + '\n<script>window.GB_ASSETS=' + json.dumps(assets) + ';</script>\n' + nes + atlas
-         + ''.join(f'<script>\n{rd(client_file(n))}\n</script>\n' for n in ORDER) + '\n</body></html>\n')
-open(os.path.join(ROOT, 'dist', 'gbquest.html'), 'w').write(single)
-fs = rd('client/fullscreen.html')
-full = single.replace('<title>Lost Kingdom of Shadowbane Chronicles</title>', '<title>Lost Kingdom of Shadowbane Chronicles Full Screen</title>', 1).replace('</style>', '</style>\n' + fs.split('<div class="fsbar"')[0], 1)
-full = full.replace('<section class="chat"', '<div class="fsbar"' + fs.split('<div class="fsbar"')[1] + '\n<section class="chat"', 1)
-open(os.path.join(ROOT, 'dist', 'gbquest-fullscreen.html'), 'w').write(full)
-print('index.html + dist/gbquest.html (%d KB, %d assets)' % (len(single) // 1024, len(assets)))
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def run(command: list[str]) -> None:
+    subprocess.run(command, cwd=ROOT, check=True)
+
+
+def main() -> int:
+    # The atlas builder exports live game data and writes dist/atlas.html,
+    # which the canonical HTML builder embeds into the standalone game.
+    run([sys.executable, str(ROOT / "tools" / "build_atlas.py")])
+    node = os.environ.get("NODE", "node")
+    run([node, str(ROOT / "tools" / "build.cjs")])
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
