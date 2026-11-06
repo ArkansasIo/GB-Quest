@@ -114,10 +114,10 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
       if (k < l.sets.length) {
         if (inBattle()) return say('Not during a battle.');
         const set = l.sets[k], preview = previewSet(set);
-        return choose(['APPLY LOADOUT', 'CANCEL'], action => {
+        return say(preview.lines, () => choose(['APPLY LOADOUT', 'CANCEL'], action => {
           if (action !== 0) return setsMenu();
           applySet(set, preview.plan);
-        }, preview.lines.join(' · ').slice(0, 120));
+        }, 'Review comparison before changing gear.'));
       }
     }, `EQUIPMENT SETS ${l.sets.length}/${MAX_SETS}`);
   }
