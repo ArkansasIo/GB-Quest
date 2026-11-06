@@ -86,8 +86,8 @@ function titleExtras() {
 }
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
-  enter() { Music.play('title'); }
-  resume() { Music.play('title'); }
+  enter() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
+  resume() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
   opts() { const o = ['NEW GAME']; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('LOAD GAME', 'OPTIONS', 'CREDITS', 'QUIT'); return o; }
   update() {
     this.t++;
