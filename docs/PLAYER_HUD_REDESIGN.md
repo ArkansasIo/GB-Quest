@@ -93,3 +93,8 @@ The equipment-set preview now presents its full comparison as a readable message
 ## Per-item loadout bonus sources — November 2026
 
 The saved-loadout review now includes an equipped-item source breakdown. Each occupied target slot reports the item's ordinary affixes and, when available in the current game build, its gem bonuses, rune bonuses, and tier implicit modifiers. Each entry is labelled by source so players can identify which item supplies a stat. This is an item-level modifier breakdown; character-wide ascension, companion bond, talent, buff, and armor-set contributions are not attributed to individual gear pieces.
+
+
+## Inventory item comparison — November 2026
+
+Bag gear now offers a COMPARE action alongside equip, sell, auction and drop. The comparison derives the character's current stats and a target stat sheet using a copied equipment map with the selected item placed in its slot. It reports changes to AC, attack, weapon damage, maximum HP, critical chance, dodge, block, lifesteal, haste and total resistance, then lists the selected item's ordinary affixes, socketed gem bonuses, rune bonuses and tier implicit modifiers. The comparison is read-only: it does not equip, remove, sell or otherwise mutate the selected item or character equipment. Existing actions retain their own menu positions after COMPARE is inserted.
