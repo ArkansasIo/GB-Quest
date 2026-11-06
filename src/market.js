@@ -161,8 +161,7 @@ class MarketScene {
     const e = V[this.i]; if (!e) return;
     if (this.tab === 0) {
       if (!e.stack && e.item) {
-        const item = e.item, slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item };
-        const target = derive({ ...G, eq });
+        const item = e.item, slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item }, target = derive({ ...G, eq });
         const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
         const setId = item.setId || item.set || item.template?.setId || item.template?.set;
         const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(item) : 0;
