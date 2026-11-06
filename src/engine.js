@@ -677,7 +677,8 @@ class Choice { // scrolling list with optional prompt
       if (this.top > 0) text('^', x + w - 9, y + 2, 2);
       if (this.top + this.rows < this.o.length) text('v', x + w - 9, y + h - 10, 2);
     }
-  }}
+  }
+}
 function choose(opts, cb, prompt, o) { push(new Choice(opts, cb, prompt, o)); }
 
 class Fade {
