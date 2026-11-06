@@ -53,7 +53,7 @@ test('itch.io package includes generated HD animation frames, equipment, and vis
 test('itch.io workflow generates all six F-rank animation sets before packaging', () => {
   const workflow = read('.github/workflows/itch-html5.yml');
   for (const archetype of ['warrior', 'mage', 'ranger', 'rogue', 'cleric', 'summoner']) {
-    assert.match(workflow, new RegExp('\\\\b' + archetype + '\\\\b'));
+    assert.match(workflow, new RegExp('\\b' + archetype + '\\b'));
   }
   assert.match(workflow, /report\["total_frames"\] == 2448/);
   assert.match(workflow, /pip install Pillow/);
