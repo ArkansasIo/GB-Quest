@@ -378,10 +378,25 @@ class PaperDoll {
     const D = derive(G);
     SLOT_COLS.forEach((col, c) => col.forEach((s, r) => {
       const x = c === 2 ? 110 : c ? 140 : 2, y = 13 + r * 17, it = G.eq[s], sel = c === this.col && r === Math.min(this.row, this.rows() - 1);
-      fill(x, y, 18, 16, sel ? 'gold' : 3); fill(x + 1, y + 1, 16, 14, it ? rarityCol(it.rarity) : 1); fill(x + 2, y + 2, 14, 12, 0);
+      if (S.uiTheme === 'blackbird') {
+        fill(x, y, 18, 16, sel ? '#d0ad68' : '#51432f');
+        fill(x + 1, y + 1, 16, 14, '#080a0c');
+        fill(x + 2, y + 2, 14, 12, it ? rarityCol(it.rarity) : '#171a1f');
+        fill(x + 3, y + 3, 12, 10, '#090b0e');
+      } else {
+        fill(x, y, 18, 16, sel ? 'gold' : 3);
+        fill(x + 1, y + 1, 16, 14, it ? rarityCol(it.rarity) : 1);
+        fill(x + 2, y + 2, 14, 12, 0);
+      }
       blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 11), x + 3, y + 2);
     }));
     // hero in the middle
+    if (S.uiTheme === 'blackbird') {
+      fill(55, 13, 50, 1, '#b09258');
+      fill(55, 13, 1, 99, '#51432f');
+      fill(104, 13, 1, 99, '#080a0c');
+      fill(55, 111, 50, 1, '#51432f');
+    }
     const por = heroPortrait(G); blit(por ? sprFit(por, 46) : sprH(`c_${G.cls}_0`, 42), 57, 14);
     text(G.name.slice(0, 10), 24, 64, 3); text(`LV${G.lvl}`, 110, 64, 2);
     text(`AC ${D.ac}`, 24, 74); text(`HP ${D.hpMax}`, 82, 74);
