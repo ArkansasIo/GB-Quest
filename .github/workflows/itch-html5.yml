@@ -69,7 +69,8 @@ jobs:
 
   publish:
     needs: build
-    if: github.repository == 'ArkansasIo/GB-Quest' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # Publish from main automatically, or allow an explicit manual release from any branch.
+    if: github.repository == 'ArkansasIo/GB-Quest' && ((github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -99,7 +100,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: itch-latest
-          target_commitish: main
+          target_commitish: ${{ github.sha }}
           name: GB Quest - Latest itch.io HTML5 Build
           body: |
             Automated browser build for the GB Quest itch.io project.
