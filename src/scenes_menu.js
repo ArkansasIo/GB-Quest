@@ -221,15 +221,25 @@ class EquipScene extends ListScene {
     const D = derive(G);
     blit(heroPortrait(G) ? sprFit(heroPortrait(G), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
     text(`AC ${D.ac}`, 6, 70); text(`ATK ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 6, 80); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`, 6, 90); text(`x${D.attacks}`, 6, 100, 2);
-    const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 112, 2);
+    const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 108, 2);
+    const selected = G.eq[SLOTS[this.i]];
+    const setId = selected && (selected.setId || selected.set || selected.template?.setId || selected.template?.set);
+    const setPieces = setId ? Object.values(G.eq).filter(item => item && (item.setId || item.set || item.template?.setId || item.template?.set) === setId).length : 0;
+    const setLabel = setId ? `SET ${String(setId).replace(/_/g, ' ').slice(0, 10)} ${setPieces}PC` : 'NO SET BONUS';
+    text(setLabel, 6, 118, 1);
     SLOTS.slice(this.top, this.top + this.rows).forEach((s, j) => {
       const i = this.top + j, y = 29 + j * 9, it = G.eq[s];
       if (i === this.i) fill(52, y - 1, 106, 8, 1);
       blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 7), 54, y);
       text(SLOT_NAME[s].slice(0, 8), 64, y, 2); text(it ? it.name.slice(0, 11) : '-', 112, y, it ? rarityCol(it.rarity) : 1);
     });
-    frame(2, 114, 156, 28);
-    const it = G.eq[SLOTS[this.i]]; text(wrap(it ? itemDesc(it) : 'Empty slot. A: equip from bag.', 24).slice(0, 2).join('\n'), 6, 118);
+    frame(2, 124, 156, 18);
+    const it = G.eq[SLOTS[this.i]];
+    const durability = it && Number.isFinite(it.durability) && Number.isFinite(it.maxDurability) && it.maxDurability > 0
+      ? `DUR ${Math.max(0, Math.min(100, Math.round(it.durability / it.maxDurability * 100)))}%`
+      : 'DURABILITY N/A';
+    text(`${durability}  ${it?.attune ? 'ATTUNED' : ''}`, 6, 126, 2);
+    text(wrap(it ? itemDesc(it) : 'Empty slot. A: equip from bag.', 24)[0] || '', 6, 135);
   }
 }
 
