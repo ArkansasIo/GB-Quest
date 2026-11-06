@@ -38,3 +38,25 @@ test('classic Pokemon-era interface is embedded in browser and itch.io builds', 
   assert.match(theme, /gbq-hud-panel/);
   assert.match(theme, /image-rendering:pixelated/);
 });
+
+
+test('classic Pokémon interface is the default across gameplay and release builders', () => {
+  const build = read('tools/build.cjs');
+  const pythonBuild = read('tools/build.py');
+  const itchBuild = read('tools/build-itch.cjs');
+  const gameTheme = read('src/ui_mmo.js');
+  const theme = read('client/theme-pokemon.css');
+  const world = read('src/scenes_world.js');
+  assert.ok(build.includes("rd('client/theme-pokemon.css')"));
+  assert.ok(build.includes('body class="theme-shadows theme-pokemon"'));
+  assert.ok(build.includes('<!doctype html>'));
+  assert.ok(pythonBuild.includes('theme-pokemon.css'));
+  assert.ok(pythonBuild.includes('theme-shadows theme-pokemon'));
+  assert.ok(itchBuild.includes("'POKEMON CLASSIC'"));
+  assert.ok(gameTheme.includes("mmo: 'POKEMON CLASSIC'"));
+  assert.ok(gameTheme.includes("S.uiTheme = 'mmo'"));
+  assert.ok(theme.includes('body.theme-pokemon .device'));
+  assert.ok(theme.includes('body.theme-pokemon .round'));
+  assert.ok(world.includes('LANTERNS OF AELMOOR'));
+  assert.ok(!world.includes('LATNTERNS OF AELMOOR'));
+});
