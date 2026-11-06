@@ -9,7 +9,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 test('release builder embeds the Shadows of the Abyss theme', () => {
   const build = read('tools/build.cjs');
   assert.match(build, /rd\('client\/theme-shadows\.css'\)/);
-  assert.match(build, /<body class="theme-shadows">/);
+  assert.match(build, /<body class="theme-shadows theme-pokemon">/);
 });
 
 test('dark-fantasy theme defines accessible focus and responsive states', () => {
@@ -25,4 +25,16 @@ test('asset migration manifest preserves production asset contracts', () => {
   assert.equal(manifest.migrationRules.preserveExistingAssetIds, true);
   assert.equal(manifest.migrationRules.preserveAtlasCoordinatesAndFrameOrder, true);
   assert.equal(manifest.sourceSheets.length, 4);
+});
+
+test('classic Pokemon-era interface is embedded in browser and itch.io builds', () => {
+  const build = read('tools/build.cjs');
+  const theme = read('client/theme-pokemon.css');
+  const shell = read('client/shell.html');
+  assert.match(build, /rd\('client\/theme-pokemon\.css'\)/);
+  assert.match(build, /theme-shadows theme-pokemon/);
+  assert.match(shell, /client\/theme-pokemon\.css/);
+  assert.match(theme, /--pk-paper:#f8f8ef/);
+  assert.match(theme, /gbq-hud-panel/);
+  assert.match(theme, /image-rendering:pixelated/);
 });
