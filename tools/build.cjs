@@ -43,7 +43,7 @@ const names = files.map(f => f.slice(0, -4));
 fs.writeFileSync(path.join(ROOT, 'assets', 'index.json'), JSON.stringify(names));
 
 const dev = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-  + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside') + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n'
+  + shell.replace('<aside', '</head><body class="theme-pokemon">\n<aside') + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n'
   + ORDER.map(n => `<script src="${clientFile(n)}"></script>\n`).join('') + '</body></html>\n';
 fs.writeFileSync(path.join(ROOT, 'index.html'), dev);
 
@@ -55,7 +55,7 @@ for (const n of names) {
 
 fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
 const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
-const single = '<!doctype html>\n<html lang="en"><head>\n' + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside')
+const single = '<!doctype html>\n<html lang="en"><head>\n' + shell.replace('<aside', '</head><body class="theme-pokemon">\n<aside')
   + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\n' + nes + atlas
   + hd64 + citadel + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('') + '\n</body></html>\n';
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);

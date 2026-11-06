@@ -112,7 +112,34 @@ test('standalone release includes runtime HD64 artwork in the player HUD', async
   assert.match(build, /'main', 'player_hud', 'debug'/);
   assert.match(shell, /client\/player-hud\.css/);
   assert.match(source, /function hudSpriteData\(name\)/);
-  assert.match(source, /np_class_/);
-  assert.match(source, /au_menu_icons_/);
+  assert.match(source, /ap_portraits_\\d{3}/);
+  assert.match(source, /ap_ui_icons_\\d{3}/);
   assert.match(source, /au_skill_icons_/);
+});
+
+
+test('expanded HUD reserves a separate gameplay canvas and collapses on compact screens', () => {
+  assert.match(styles, /width:min\(calc\(100vw - 344px\), calc\(\(100dvh - 126px\) \* 160 \/ 144\)\)/);
+  assert.match(styles, /body\.full-window-mode \.gbq-hud-left/);
+  assert.match(styles, /body\.full-window-mode \.gbq-hud-right/);
+  assert.match(styles, /@media \(max-width:900px\), \(max-height:620px\)/);
+  assert.match(styles, /body:not\(\.full-window-mode\):not\(\.fullscreen-mode\) \.gbq-player-hud/);
+});
+
+
+test('full-window HUD layers the game canvas independently from HUD and chat', () => {
+  assert.match(styles, /body\.full-window-mode \.game-viewport,[\s\S]*?display:block !important/);
+  assert.match(styles, /body\.full-window-mode \.game-viewport > #lcd,[\s\S]*?position:absolute !important/);
+  assert.match(styles, /left:50% !important/);
+  assert.match(styles, /transform:translate\(-50%,-50%\)/);
+  assert.match(styles, /game-viewport > \.game-start-fallback[\s\S]*?display:none !important/);
+});
+
+
+test('player HUD prefers assets_pack portrait and navigation icon PNGs with HD64 fallback', () => {
+  assert.match(source, /ap_ui_icons/);
+  assert.match(source, /ap_portraits/);
+  assert.match(source, /assets\/' \+ name \+ '.png/);
+  assert.match(source, /GBQ_HD64_INDEXES/);
+  assert.match(source, /% 30/);
 });

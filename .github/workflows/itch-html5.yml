@@ -27,6 +27,7 @@ on:
       - '.github/workflows/itch-html5.yml'
   workflow_dispatch:
 
+# Build and PR jobs use read-only permissions. Only the publish job can write releases.
 permissions:
   contents: read
 
@@ -43,10 +44,78 @@ jobs:
           python-version: '3.x'
       - name: Build and validate itch.io ZIP
         run: npm run build:itch
-      - name: Upload itch.io HTML5 package
+      - name: Verify ZIP has a single root-level itch.io entry point
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          archive_path = "build/gbquest-itch-html5.zip"
+          with ZipFile(archive_path) as archive:
+              names = archive.namelist()
+              if names != ["index.html"]:
+                  raise SystemExit(f"Invalid itch.io ZIP contents: {names}")
+              if archive.testzip() is not None:
+                  raise SystemExit("ZIP integrity check failed")
+              if archive.getinfo("index.html").file_size < 100_000:
+                  raise SystemExit("index.html is unexpectedly small")
+          print("Validated: one root-level index.html; ZIP integrity OK.")
+          PY
+      - name: Upload itch.io HTML5 package as workflow artifact
         uses: actions/upload-artifact@v7
         with:
           name: gbquest-itch-html5
           path: build/gbquest-itch-html5.zip
           if-no-files-found: error
           retention-days: 30
+
+  publish:
+    needs: build
+    # Publish from main automatically, or allow an explicit manual release from any branch.
+    if: github.repository == 'ArkansasIo/GB-Quest' && ((github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download validated itch.io package
+        uses: actions/download-artifact@v7
+        with:
+          name: gbquest-itch-html5
+          path: build
+      - name: Verify downloaded package before publishing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          archive_path = Path("build/gbquest-itch-html5.zip")
+          if not archive_path.is_file():
+              raise SystemExit(f"Missing release package: {archive_path}")
+          with ZipFile(archive_path) as archive:
+              names = archive.namelist()
+              if names != ["index.html"]:
+                  raise SystemExit(f"Invalid itch.io ZIP contents: {names}")
+              if archive.testzip() is not None:
+                  raise SystemExit("ZIP integrity check failed")
+          print(f"Release package verified: {archive_path.stat().st_size} bytes")
+          PY
+      - name: Publish stable public download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: itch-latest
+          target_commitish: ${{ github.sha }}
+          name: GB Quest - Latest itch.io HTML5 Build
+          body: |
+            Automated browser build for the GB Quest itch.io project.
+
+            Upload `gbquest-itch-html5.zip` to itch.io as an HTML game.
+            The archive contains a single root-level `index.html`.
+
+            This release asset is public and does not require GitHub sign-in.
+          prerelease: true
+          make_latest: false
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          files: build/gbquest-itch-html5.zip
+      - name: Add public download URL to workflow summary
+        run: |
+          echo "## GB Quest itch.io build" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download the latest itch.io ZIP](https://github.com/ArkansasIo/GB-Quest/releases/download/itch-latest/gbquest-itch-html5.zip)" >> "$GITHUB_STEP_SUMMARY"

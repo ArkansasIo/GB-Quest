@@ -93,3 +93,21 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
     };
   }
 }
+
+// Equipment icons from assets_pack: use dedicated weapon and armour panels
+// instead of generic placeholders. Stable hashes keep item art consistent.
+const AP_GEAR_COUNTS = { weapons: 42, armor: 52 };
+function apGearIcon(it) {
+  if (!it || !artOn()) return null;
+  const panel = it.kind === 'weapon' ? 'weapons' : it.kind === 'armor' ? 'armor' : null;
+  if (!panel) return null;
+  const count = AP_GEAR_COUNTS[panel];
+  const rarity = Math.max(0, Number(it.rarity) || 0);
+  const index = apHash(panel + '|' + String(it.base || it.id || it.name || 'gear') + '|' + rarity) % count;
+  const name = `ap_${panel}_${String(index).padStart(3, '0')}`;
+  return IMG[name] ? name : null;
+}
+if (typeof window !== 'undefined' && typeof itemIcon === 'function') {
+  const apItemIconBase = itemIcon;
+  itemIcon = function (it) { return apGearIcon(it) || apItemIconBase.apply(this, arguments); };
+}
