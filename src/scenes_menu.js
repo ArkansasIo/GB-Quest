@@ -1187,13 +1187,38 @@ class SettingsScene extends ListScene {
     saveSettings(); SFX.toggle();
   }
   draw() {
-    fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
-    if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
-    textC('SETTINGS', 80, 13, 'gold');
+    // Aelmoor's title-page visual language: ink-violet panels, gold rules,
+    // lantern accents and a readable 11-row settings viewport.
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#090d26'); bg.addColorStop(.58, '#211b42'); bg.addColorStop(1, '#39294d');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    for (let n = 0; n < 18; n++) {
+      ctx.globalAlpha = .22 + (n % 3) * .1;
+      fill((n * 41 + 9) % W, (n * 17 + 8) % 130, 1, 1, n % 4 ? '#b7a9ed' : '#ffd17a');
+    }
+    ctx.globalAlpha = 1;
+    frame(2, 2, 156, 139, 1);
+    fill(5, 5, 150, 15, '#17112d');
+    textC('AELMOOR  •  OPTIONS', 80, 9, 'gold');
+    fill(7, 22, 146, 2, '#9a672e');
     const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
-    this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
+    this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
+    this.items().slice(this.top, this.top + 11).forEach((label, j) => {
+      const index = this.top + j, y = 25 + j * 9;
+      if (index === this.i) {
+        fill(8, y - 2, 144, 9, '#49301f');
+        frame(7, y - 3, 146, 10, 1);
+        fill(9, y - 1, 2, 6, '#ffd36b');
+      }
+      text(label, 13, y, index === this.i ? 'gold' : 2);
+      if (typeof v[index] === 'number') segBar(111, y, v[index], 6);
+      else textR(String(v[index]), 147, y, index === this.i ? 'gold' : 2);
+    });
+    fill(8, 127, 144, 9, '#100d22');
+    text('UP/DOWN: MOVE   LEFT/RIGHT: CHANGE', 11, 129, 2);
+    text('A: SELECT   B: SAVE & BACK', 11, 136, 'gold');
   }
-}
+}}
 class KeybindScene extends ListScene {
   constructor() { super(8); this.actions = [['up', 'MOVE UP'], ['down', 'MOVE DOWN'], ['left', 'MOVE LEFT'], ['right', 'MOVE RIGHT'], ['a', 'CONFIRM / ATTACK'], ['b', 'BACK / CANCEL'], ['start', 'MENU'], ['select', 'SECONDARY']]; this.capture = null; }
   items() { return this.actions.map(([, label]) => label).concat(['RESTORE DEFAULTS']); }
