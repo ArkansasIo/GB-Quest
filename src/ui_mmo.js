@@ -1,6 +1,6 @@
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: BLACKBIRD / 8-BIT MMO / CRIMSON / CLASSIC / SANCTUM / DIABLO IV.
+// SETTINGS > UI THEME: POKEMON CLASSIC / CRIMSON / CLASSIC / SANCTUM / DIABLO IV / BLACKBIRD.
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -13,7 +13,7 @@
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
 const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEME_NAME = { mmo: 'POKEMON CLASSIC', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -24,14 +24,19 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
-  // One-time upgrade from the prior default to the newly imported BlackBird skin.
-  if (!S.blackbirdUiDefaulted) { if (!S.uiTheme || S.uiTheme === 'mmo' || S.uiTheme === 'sanctum') S.uiTheme = 'blackbird'; S.blackbirdUiDefaulted = true; try { saveSettings(); } catch (e) {} }
+  // One-time migration: use the classic blue-and-cream handheld interface as the default.
+  // Preserve a deliberately selected non-default theme; replace only the prior automatic Blackbird default.
+  if (!S.pokemonUiDefaulted) {
+    if (!S.uiTheme || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'mmo';
+    S.pokemonUiDefaulted = true;
+    try { saveSettings(); } catch (e) {}
+  }
   window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
   let blackbirdPanelPattern = null;
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
-  // colours per theme: 8-BIT MMO (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
+  // colours per theme: POKEMON CLASSIC (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
   const PALETTE = {
     mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
