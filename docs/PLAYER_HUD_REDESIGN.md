@@ -98,3 +98,8 @@ The saved-loadout review now includes an equipped-item source breakdown. Each oc
 ## Inventory item comparison — November 2026
 
 Bag gear now offers a COMPARE action alongside equip, sell, auction and drop. The comparison derives the character's current stats and a target stat sheet using a copied equipment map with the selected item placed in its slot. It reports changes to AC, attack, weapon damage, maximum HP, critical chance, dodge, block, lifesteal, haste and total resistance, then lists the selected item's ordinary affixes, socketed gem bonuses, rune bonuses and tier implicit modifiers. The comparison is read-only: it does not equip, remove, sell or otherwise mutate the selected item or character equipment. Existing actions retain their own menu positions after COMPARE is inserted.
+
+
+## Vendor and auction gear purchase previews — November 2026
+
+Vendor-generated gear and blacksmith/armorsmith purchases now display a character-stat comparison and gold-after-purchase estimate before the final BUY confirmation. Auction-house gear listings show the same comparison, seller, and asking price before the purchase action is invoked. These previews calculate the candidate item against a copied equipment map and do not equip it. Consumable/material auction listings retain their existing direct purchase confirmation because they do not occupy an equipment slot. Existing purchase validation (including available gold, bag capacity, listing availability, and server-side market checks) remains authoritative.
