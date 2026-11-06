@@ -1,0 +1,35 @@
+name: itch.io Full Source Package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**'
+      - '!README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-full-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Build playable HTML5 release
+        run: npm run build:itch
+      - name: Package complete project source with playable build
+        run: python3 tools/package-itch-source.py
+      - name: Upload full source package
+        uses: actions/upload-artifact@v7
+        with:
+          name: gbquest-itch-full-source
+          path: build/gbquest-itch-full-source.zip
+          if-no-files-found: error
+          retention-days: 30
