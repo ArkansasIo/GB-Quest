@@ -150,7 +150,8 @@
           const img = new Image();
           img.onload = () => resolve(img);
           img.onerror = () => reject(new Error(`Unable to load HD character asset: ${url}`));
-          img.src = url;
+          const packedUrl = root.GBQ_HD64_PACK && root.GBQ_HD64_PACK.images && root.GBQ_HD64_PACK.images[url];
+          img.src = packedUrl || url;
         });
         imageCache.set(url, pending);
         pending.catch(() => { if (imageCache.get(url) === pending) imageCache.delete(url); });
@@ -159,7 +160,8 @@
     };
     const getVisualMap = () => {
       if (!visualMapPromise) {
-        const pending = typeof fetch === 'function'
+        const packed = root.GBQ_HD64_PACK && root.GBQ_HD64_PACK.visualMap;
+        const pending = packed ? Promise.resolve(packed) : typeof fetch === 'function'
           ? fetch(visualMapUrl).then(r => { if (!r.ok) throw new Error(`Equipment visual map HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
         visualMapPromise = pending;
@@ -169,7 +171,8 @@
     };
     const getManifest = () => {
       if (!manifestPromise) {
-        const pending = typeof fetch === 'function'
+        const packed = root.GBQ_HD64_PACK && root.GBQ_HD64_PACK.equipmentManifest;
+        const pending = packed ? Promise.resolve(packed) : typeof fetch === 'function'
           ? fetch(manifestUrl).then(r => { if (!r.ok) throw new Error(`Equipment manifest HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
         manifestPromise = pending;
