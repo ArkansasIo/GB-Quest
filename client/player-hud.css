@@ -357,3 +357,34 @@ body.fullscreen-mode .gbq-hud-toast { bottom:78px; }
 body:not(.full-window-mode):not(.fullscreen-mode) .gbq-player-hud {
   display:none !important;
 }
+
+
+/* Explicitly layer the canvas and HUD inside the viewport. The viewport
+   itself must not grid-flow the fallback/chat/HUD as extra game tiles. */
+body.full-window-mode .game-viewport,
+body.fullscreen-mode .game-viewport {
+  display:block !important;
+  position:absolute !important;
+  inset:0 !important;
+}
+body.full-window-mode .game-viewport > #lcd,
+body.fullscreen-mode .game-viewport > #lcd {
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%,-50%);
+}
+body.full-window-mode .game-viewport > .game-start-fallback,
+body.fullscreen-mode .game-viewport > .game-start-fallback {
+  display:none !important;
+}
+body.full-window-mode .game-viewport > .chat,
+body.fullscreen-mode .game-viewport > .chat {
+  position:absolute !important;
+  z-index:16;
+}
+body.full-window-mode .game-viewport > #chatShow,
+body.fullscreen-mode .game-viewport > #chatShow {
+  position:absolute;
+  z-index:17;
+}
