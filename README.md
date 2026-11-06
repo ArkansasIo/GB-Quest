@@ -11,7 +11,7 @@ It combines:
 - An MMO shell modelled on World of Warcraft: quests, loot rarity, dungeons, raids, an auction house, guilds, mounts and live players.
 - A Diablo-style campaign: acts, chapters, waypoints and renown.
 
-All art comes from the original asset sheet in `src_sheet/sheet.png`, or is generated from it.
+Runtime art is assembled from repository-managed PNG/SVG assets and generated sprite atlases. The release builder embeds the active game assets, HD64 atlases, Citadel artwork and UI catalog images into the standalone browser build.
 
 
 ## Art, ranks, and world tiles
