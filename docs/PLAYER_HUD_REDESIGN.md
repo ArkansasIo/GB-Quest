@@ -73,3 +73,8 @@ Selecting a gear item in the inventory now previews its item level, equipment sl
 ## Equipment condition and set progress — November 2026
 
 The equipment paper-doll view now reports set-piece progress for the selected equipped item when its item data carries a `setId`/`set` (including template metadata). It also displays durability as a percentage when both current and maximum durability are available, otherwise it explicitly shows that durability is not tracked for that item. Attunement remains visible. These are read-only summaries; existing equip and item rules are unchanged.
+
+
+## Equipment set management — November 2026
+
+The existing loadout manager now supports overwriting a saved equipment set with the currently equipped items and renaming saved sets using role/activity presets (Damage, Tank, Healer, Dungeon, Raid, PvP, Farm, and custom labels). Existing five-set capacity, stable item-UID snapshots, bank/bag lookup, missing-piece reporting, and battle equip restrictions are retained. Regression tests cover UID snapshots, locating pieces across equipped/bag/bank inventories, and the management actions.
