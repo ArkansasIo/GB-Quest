@@ -23,7 +23,53 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 fs.copyFileSync(source, index);
 
-const html = fs.readFileSync(index, 'utf8');
+// Embed generated HD64 PNGs as data URIs inside the one-file HTML release.
+// This preserves runtime URL semantics while keeping the ZIP entry count at one.
+function collectPngs(directory, archiveRoot) {
+  if (!fs.existsSync(directory)) throw new Error('Missing generated HD64 asset directory: ' + directory);
+  const result = {};
+  function walk(current) {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile() && entry.name.toLowerCase().endsWith('.png')) {
+        const relative = path.relative(directory, full).split(path.sep).join('/');
+        result[archiveRoot + '/' + relative] = 'data:image/png;base64,' + fs.readFileSync(full).toString('base64');
+      }
+    }
+  }
+  walk(directory);
+  return result;
+}
+const animationRoot = 'assets_hd64/animations/frames';
+const equipmentRoot = 'assets_hd64/equipment';
+const images = {
+  ...collectPngs(path.join(root, animationRoot), animationRoot),
+  ...collectPngs(path.join(root, equipmentRoot), equipmentRoot)
+};
+if (!Object.keys(images).some(name => name.startsWith(animationRoot + '/'))) {
+  throw new Error('No generated character animation frames were found.');
+}
+if (!Object.keys(images).some(name => name.startsWith(equipmentRoot + '/'))) {
+  throw new Error('No generated equipment overlay PNGs were found.');
+}
+const animationManifestPath = path.join(root, 'assets_hd64', 'animations', 'animation_manifest.json');
+const equipmentManifestPath = path.join(root, equipmentRoot, 'equipment_manifest.json');
+const visualMapPath = path.join(root, 'data', 'visuals', 'equipment-catalog-visual-map.json');
+for (const requiredPath of [animationManifestPath, equipmentManifestPath, visualMapPath]) {
+  if (!fs.existsSync(requiredPath)) throw new Error('Missing required HD64 manifest or visual mapping: ' + requiredPath);
+}
+const hd64Pack = {
+  images,
+  animationManifest: JSON.parse(fs.readFileSync(animationManifestPath, 'utf8')),
+  equipmentManifest: JSON.parse(fs.readFileSync(equipmentManifestPath, 'utf8')),
+  visualMap: JSON.parse(fs.readFileSync(visualMapPath, 'utf8'))
+};
+let html = fs.readFileSync(index, 'utf8');
+const injectionPoint = '<script>window.NES_INDEX=';
+if (!html.includes(injectionPoint)) throw new Error('Could not locate safe HD64 pack injection point.');
+html = html.replace(injectionPoint, '<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\\n' + injectionPoint);
+fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');
 }
@@ -49,10 +95,9 @@ if (/src=["'](?:\.\.\/|\.\/)?(?:src|assets)\//i.test(html)) {
   throw new Error('The itch.io HTML still references loose source or asset files.');
 }
 
-// The browser build is deliberately self-contained. HD64 animation/equipment
-// prototype PNGs are not shipped individually: they are optional, not wired
-// as required game content, and would exceed itch.io's 1,000-file limit.
-// The existing game sprites, UI art and HD64 atlases are already embedded.
+// All generated F-rank HD64 animation frames, equipment layers, manifests and
+// visual mappings are embedded in GBQ_HD64_PACK above. The runtime resolves its
+// normal asset paths against that map, so the ZIP remains a single HTML file.
 fs.mkdirSync(path.dirname(zip), { recursive: true });
 fs.rmSync(zip, { force: true });
 const py = String.raw`import pathlib, sys, zipfile
