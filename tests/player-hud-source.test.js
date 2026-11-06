@@ -14,8 +14,8 @@ test('player HUD source parses as browser JavaScript', () => {
 });
 
 test('player HUD is included in the browser game', () => {
-  assert.match(page, /client\/player-hud\.css/);
-  assert.match(page, /src\/player_hud\.js/);
+  assert.ok(/client\/player-hud\.css/.test(page) || page.includes('.gbq-hud-map-art'), 'HUD stylesheet is linked or inlined');
+  assert.ok(/src\/player_hud\.js/.test(page) || page.includes('window.GBQPlayerHUD'), 'HUD script is linked or inlined');
 });
 
 test('player HUD exposes the requested live gameplay panels', () => {

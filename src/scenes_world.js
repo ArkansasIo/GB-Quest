@@ -112,6 +112,12 @@ class Title {
     // Aelmoor title scene: deep violet moonlight, layered mountains and a warm
     // lantern-lit citadel, rendered at the native 160x144 canvas resolution.
     ctx.save();
+    const packBackdrop = typeof artOn === 'function' && artOn() && IMG.ap_scene_wilderness
+      ? spr('ap_scene_wilderness', W, H, { clean: true }) : null;
+    if (packBackdrop) {
+      blit(packBackdrop, 0, 0);
+      fill(0, 0, W, H, 'rgba(8,10,18,0.18)');
+    } else {
     const sky = ctx.createLinearGradient(0, 0, 0, H);
     sky.addColorStop(0, '#234b70'); sky.addColorStop(.52, '#6d9bb0'); sky.addColorStop(1, '#b8d8a0');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
@@ -136,6 +142,7 @@ class Title {
     // Pixel-art canopy framing the upper-left corner.
     ctx.fillStyle = '#315d45'; ctx.fillRect(0,0,13,46); ctx.fillRect(8,0,24,7); ctx.fillRect(20,4,18,7);
     for (let i=0;i<16;i++){ const x=(i*13)%43, y=(i*7)%22; ctx.fillStyle=i%3===0?'#a3a34a':i%2?'#587b42':'#315d45'; ctx.fillRect(x,y,5,4); }
+    }
     // Small adventurer silhouettes, using the existing class portraits.
     const bob = Math.round(Math.sin(this.t/12));
     const hero = classPortrait('warden'), mage = classPortrait('arcanist');
@@ -143,15 +150,15 @@ class Title {
     if (mage) { const p=sprFit(mage,29); blit(p,5,113-p.height-bob); }
     // Ornate title plaque and subtitle.
     fill(17,3,126,39,'#f8f8ef'); frame(3,2,154,43);
-    textC('GB QUEST',80,5,3); textC('LOST KINGDOM OF SHADOWBANE',80,17,1);
-    textC('CHRONICLES',80,24,2); textC('LANTERNS OF AELMOOR',80,34,3);
+    textC('GB QUEST',80,5,3); textC('LOST KINGDOM',80,14,1);
+    textC('OF SHADOWBANE',80,21,2); textC('CHRONICLES',80,28,2); textC('LANTERNS OF AELMOOR',80,36,3);
     // Menu plaque; keep every command visible and selectable.
     const o=this.opts(), rowH=9, h=o.length*rowH+7, y0=57;
     frame(48,y0,64,h,1);
     o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,'#285da8'); frame(51,y-2,58,9,1); text('>',54,y,'white'); } textC(label,82,y,j===this.i?'white':3); });
     // Footer and version.
     fill(0,134,W,10,'#285da8'); text('v'+BUILD.version,3,136,'white');
-    textC('© 2026 GB QUEST STUDIO  •  ALL RIGHTS RESERVED',83,136,'white');
+    textC('GB QUEST STUDIO',80,136,'white');
     ctx.restore();
   }
 }

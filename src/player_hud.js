@@ -75,13 +75,13 @@
     root.setAttribute('aria-label', 'Player heads-up display');
     root.innerHTML = `
       <header class="gbq-hud-top">
-        <div class="gbq-hud-brand"><span class="gbq-hud-crest">✦</span><span>GB-QUEST<small>REALM OF SHADOWBANE</small></span></div>
+        <div class="gbq-hud-brand"><span class="gbq-hud-crest" aria-hidden="true"></span><span>GB-QUEST<small>REALM OF SHADOWBANE</small></span></div>
         <div class="gbq-hud-compass" aria-label="Compass"><span>W</span><i></i><b>NW</b><i></i><strong>N</strong><i></i><b>NE</b><i></i><span>E</span></div>
-        <div class="gbq-hud-wallet"><span>◉ <b data-hud-gold>0</b></span><span>◆ <b data-hud-gems>0</b></span></div>
+        <div class="gbq-hud-wallet"><span>G <b data-hud-gold>0</b></span><span>GEM <b data-hud-gems>0</b></span></div>
       </header>
       <aside class="gbq-hud-left">
         <section class="gbq-hud-panel gbq-hud-player">
-          <div class="gbq-hud-avatar" data-hud-avatar>⚔</div>
+          <div class="gbq-hud-avatar" data-hud-avatar aria-label="Trainer portrait">P</div>
           <div class="gbq-hud-player-info"><div class="gbq-hud-player-name" data-hud-name>Adventurer</div><div class="gbq-hud-level" data-hud-level>LEVEL 1 · WANDERER</div>
             <div class="gbq-hud-meter hp"><span>HP</span><b data-hud-hp-text>0 / 0</b><i><em data-hud-hp></em></i></div>
             <div class="gbq-hud-meter mp"><span>MP</span><b data-hud-mp-text>0 / 0</b><i><em data-hud-mp></em></i></div>
@@ -115,15 +115,15 @@
       </aside>
       <aside class="gbq-hud-right">
         <section class="gbq-hud-panel gbq-hud-map"><div class="gbq-hud-map-tools"><span>LOCAL MAP</span><button type="button" data-map-zoom="out" aria-label="Zoom out">−</button><button type="button" data-map-zoom="in" aria-label="Zoom in">+</button><button type="button" data-map-zoom="center" aria-label="Center on player">◎</button></div><canvas class="gbq-hud-map-art" data-hud-minimap width="180" height="112" aria-label="Interactive local map; click a marker to inspect it"></canvas><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
-        <section class="gbq-hud-panel gbq-hud-quests"><div class="gbq-hud-section-title">✧ QUESTS <span>⌃</span></div><div data-hud-quests><div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Continue your journey</small></span></div></div></section>
+        <section class="gbq-hud-panel gbq-hud-quests"><div class="gbq-hud-section-title">QUESTS <span>^</span></div><div data-hud-quests><div class="gbq-hud-quest"><b>*</b><span><strong>Explore the Realm</strong><small>Continue your journey</small></span></div></div></section>
       </aside>
       <div class="gbq-hud-bottom">
         <div class="gbq-hud-shortcuts">
-          ${button('Character','character','♙')} ${button('Inventory','inventory','▣')} ${button('Skills','skills','⚔')} ${button('Talents','talents','✧')} ${button('Crafting','crafting','⚒')}
+          ${button('Character','character','C')} ${button('Inventory','inventory','B')} ${button('Skills','skills','M')} ${button('Talents','talents','T')} ${button('Crafting','crafting','C')}
         </div>
-        <div class="gbq-hud-action-area"><div class="gbq-hud-quick"><button type="button" data-hud-action="quick1">Q</button><button type="button" data-hud-action="quick2">E</button></div><div class="gbq-hud-hotbar" data-hud-hotbar></div><div class="gbq-hud-potions"><button type="button" data-hud-action="potion">♥ <small data-hud-potions>0</small></button><button type="button" data-hud-action="mana">✧</button></div></div>
+        <div class="gbq-hud-action-area"><div class="gbq-hud-quick"><button type="button" data-hud-action="quick1">Q</button><button type="button" data-hud-action="quick2">E</button></div><div class="gbq-hud-hotbar" data-hud-hotbar></div><div class="gbq-hud-potions"><button type="button" data-hud-action="potion">HP <small data-hud-potions>0</small></button><button type="button" data-hud-action="mana">MP</button></div></div>
         <div class="gbq-hud-shortcuts gbq-hud-shortcuts-right">
-          ${button('Map','map','⌖')} ${button('Journal','journal','▤')} ${button('Guild','guild','⚑')} ${button('Market','market','◈')} ${button('Collection','collection','❖')}
+          ${button('Map','map','M')} ${button('Journal','journal','J')} ${button('Guild','guild','G')} ${button('Market','market','$')} ${button('Collection','collection','C')}
         </div>
       </div>
       <div class="gbq-hud-toast" role="status" aria-live="polite"></div>`;
@@ -205,7 +205,10 @@
   function update() {
     if (!root || !root.isConnected) { if (timer) window.clearInterval(timer); timer = null; return; }
     const g = getGame();
-    if (!g) { root.classList.remove('is-live'); return; }
+    const stack = window.GBQ && window.GBQ.scenes;
+    const activeScene = Array.isArray(stack) && stack.length ? stack[stack.length - 1] : null;
+    const onField = !!(activeScene && activeScene.constructor && activeScene.constructor.name === 'Field');
+    if (!g || !onField) { root.classList.remove('is-live'); return; }
     root.classList.add('is-live');
     const derived = typeof window.derive === 'function' ? window.derive(g) : {};
     const hpMax = Number(derived.hpMax || g.hpMax || g.hp || 1), mpMax = Number(derived.mpMax || g.mpMax || g.mp || 1);
@@ -253,11 +256,11 @@
     setText('[data-hud-party-count]', (companions.length + 1) + ' / 4');
     const party = [{name:g.name || 'You',hp,max:hpMax,cls:g.cls || 'Hero'}, ...companions.map(c=>({name:c.name || 'Ally',hp:Number(c.hp||0),max:Number((typeof window.derive==='function' && window.derive(c).hpMax)||c.hpMax||c.hp||1),cls:c.cls||'Companion'}))];
     const partyNode = root.querySelector('[data-hud-party-list]');
-    if (partyNode) partyNode.innerHTML = party.map((p,i)=>`<div class="gbq-hud-party-member"><span class="gbq-hud-party-icon">${i===0?'♜':'♟'}</span><span class="gbq-hud-party-data"><b>${esc(p.name)}</b><small>${esc(p.cls)}</small><i><em style="width:${pct(p.hp,p.max)}%"></em></i></span><strong>${Math.round(p.hp/p.max*100)}%</strong></div>`).join('');
+    if (partyNode) partyNode.innerHTML = party.map((p,i)=>`<div class="gbq-hud-party-member"><span class="gbq-hud-party-icon">${i+1}</span><span class="gbq-hud-party-data"><b>${esc(p.name)}</b><small>${esc(p.cls)}</small><i><em style="width:${pct(p.hp,p.max)}%"></em></i></span><strong>${Math.round(p.hp/p.max*100)}%</strong></div>`).join('');
     const questSource = Array.isArray(g.quests) ? g.quests : Array.isArray(g.activeQuests) ? g.activeQuests : [];
     const quests = questSource.filter(q => q && (q.active !== false) && !q.done && !q.completed);
     const questNode = root.querySelector('[data-hud-quests]');
-    if (questNode) questNode.innerHTML = quests.length ? quests.slice(0,3).map((q,i)=>`<div class="gbq-hud-quest"><b>${i===0?'✦':'◇'}</b><span><strong>${esc(q.name || q.title || 'Active Quest')}</strong><small>${esc(q.objective || q.description || q.progressText || 'Quest in progress')}</small></span></div>`).join('') : '<div class="gbq-hud-quest"><b>✦</b><span><strong>Explore the Realm</strong><small>Open Journal to review your quests</small></span></div>';
+    if (questNode) questNode.innerHTML = quests.length ? quests.slice(0,3).map((q,i)=>`<div class="gbq-hud-quest"><b>${i===0?'*':'>'}</b><span><strong>${esc(q.name || q.title || 'Active Quest')}</strong><small>${esc(q.objective || q.description || q.progressText || 'Quest in progress')}</small></span></div>`).join('') : '<div class="gbq-hud-quest"><b>*</b><span><strong>Explore the Realm</strong><small>Open Journal to review your quests</small></span></div>';
     const combatEntries = window.GBQCombatHotbar && typeof window.GBQCombatHotbar.entries === 'function' ? window.GBQCombatHotbar.entries() : [];
     const arts = combatEntries.length ? combatEntries : (Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : []);
     const hotbar = root.querySelector('[data-hud-hotbar]');
@@ -268,7 +271,7 @@
         const label=cooling?Math.ceil(remaining/60)+'s':a?.paused?'PAUSE':'';
         const name=a && (a.name || a.id) || 'Action slot '+(i+1);
         const status=cooling?' · Cooldown '+label:a?.paused?' · Paused':blocked?' · Unavailable':'';
-        return '<button type="button" data-hud-action="slot'+(i+1)+'" aria-label="'+esc(name+status)+'" '+(blocked?'disabled':'')+' title="'+esc(name+status)+'"><span>'+(a?'✧':'+')+'</span>'+(cooling?'<i class="gbq-hud-cooldown" aria-hidden="true">'+label+'</i>':'')+'<small>'+(i+1)+'</small></button>';
+        return '<button type="button" data-hud-action="slot'+(i+1)+'" aria-label="'+esc(name+status)+'" '+(blocked?'disabled':'')+' title="'+esc(name+status)+'"><span>'+(a?'A':'+')+'</span>'+(cooling?'<i class="gbq-hud-cooldown" aria-hidden="true">'+label+'</i>':'')+'<small>'+(i+1)+'</small></button>';
       }).join('');
       if (hotbar.dataset.renderedMarkup !== markup) {
         const focusedAction = hotbar.contains(document.activeElement) ? document.activeElement.dataset.hudAction : '';

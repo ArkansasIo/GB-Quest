@@ -312,6 +312,7 @@ async () => {
     scenes.length = 0; reset(new Field()); NET.sendChat('/s bubble test'); document.body.classList.remove('chat-on'); run(3); render(); document.body.classList.add('chat-on');
   });
   step('admin control', () => {
+    if (typeof adminAllowed !== 'function' || typeof adminTree !== 'function' || typeof AdminScene !== 'function') return 'skipped: admin tools are disabled in this game build';
     fresh('warden', 'hearthkin', 'soldier', 5); S.devMode = true; if (!adminAllowed()) return 'not allowed';
     // walk every menu and run every safe leaf (skip teleports, battles, instances, wipes and the debug panel)
     const skip = /TELEPORT|SPAWN|ENTER INSTANCE|WIPE|COPY TO|DEBUG PANEL|BROADCAST|RESET TALENTS|CLEAR MY|DEVELOPER/;

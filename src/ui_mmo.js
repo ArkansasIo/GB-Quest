@@ -32,13 +32,14 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     try { saveSettings(); } catch (e) {}
   }
   window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  const isPokemon = () => S.uiTheme === 'mmo';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
   let blackbirdPanelPattern = null;
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
   // colours per theme: POKEMON CLASSIC (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
   const PALETTE = {
-    mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
+    mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [82, 170, 68], hpLow: [216, 72, 48], mp: [48, 104, 224], xp: [72, 142, 204], gold: [200, 150, 30], title: [24, 28, 48] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
     blackbird: { ink: [5, 6, 9], edge: [92, 100, 111], panel: [16, 18, 22], panel2: [42, 46, 52], shade: [72, 78, 86], hp: [184, 44, 44], hpLow: [250, 94, 48], mp: [58, 110, 183], xp: [189, 147, 62], gold: [224, 188, 104], title: [12, 14, 17] },
   };
@@ -80,7 +81,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   { const f0 = frame; frame = function (x, y, w, h, bg = 0) { if (!hudMmo() || w < 6 || h < 6) return f0(x, y, w, h, bg); panel(x, y, w, h, bg); }; }
 
   function hbar(x, y, w, h, frac, c, k) {
-    fill(x, y, w, h, rgb(C.ink, 3)); fill(x + 1, y + 1, w - 2, h - 2, rgb([40, 44, 60], 0));
+    fill(x, y, w, h, rgb(C.ink, 3)); fill(x + 1, y + 1, w - 2, h - 2, isPokemon() ? rgb([255, 255, 255], 0) : rgb([40, 44, 60], 0));
     const f = Math.round((w - 2) * Math.max(0, Math.min(1, frac)));
     if (f > 0) { fill(x + 1, y + 1, f, h - 2, rgb(c, k)); if (h > 3) fill(x + 1, y + 1, f, 1, 'rgba(255,255,255,0.35)'); }
   }
@@ -134,6 +135,25 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
+    if (isPokemon()) {
+      const y = Hd.y;
+      panel(0, y, W, H - y, 0);
+      fill(2, y + 2, W - 4, 1, rgb(C.edge, 2));
+      panel(2, y + 4, 29, 14);
+      text('HP', 4, y + 5, 3);
+      hbar(4, y + 11, 25, 5, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 ? C.hpLow : C.hp, 'green');
+      panel(W - 31, y + 4, 29, 14);
+      text('MP', W - 29, y + 5, 3);
+      hbar(W - 29, y + 11, 25, 5, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, C.mp, 'blue');
+      const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
+      for (let i = 0; i < 5; i++) {
+        const x = 33 + i * 19, sy = y + 5;
+        panel(x, sy, 17, 13, 0);
+        if (i < 4) { const a = arts[i]; if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 4, sy + 1); } }
+        else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 2, sy + 1); textR(String(Math.min(99, n)), x + 16, sy + 4, n ? 3 : 2); }
+      }
+      return;
+    }
     if (isBlackbird()) panel(0, Hd.y + 2, W, H - Hd.y - 2);
     else { fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2)); }
     if (isBlackbird() && IMG.bb_tab) ctx.drawImage(IMG.bb_tab, 0, Hd.y + 2, W, 2);

@@ -71,6 +71,8 @@ function spellArt(sp) {
 // heroes & species
 const CITADEL_CLASS_ALIASES = { fighter: 'warrior', warden: 'warrior', barbarian: 'berserker', wizard: 'mage', sorcerer: 'mage', warlock: 'necromancer', druid: 'mage', monk: 'rogue', bard: 'bard', artificer: 'artificer', cleric: 'cleric', paladin: 'paladin', ranger: 'ranger', rogue: 'rogue', warrior: 'warrior', summoner: 'summoner', necromancer: 'necromancer', berserker: 'berserker', alchemist: 'alchemist' };
 const classPortrait = cls => {
+  const pack = artOn() && globalThis.GBQAssetPack && globalThis.GBQAssetPack.characterFor({ cls });
+  if (pack && IMG[pack]) return pack;
   const id = CITADEL_CLASS_ALIASES[String(cls || '').toLowerCase()] || String(cls || '').toLowerCase();
   const citadel = 'citadel_class_' + id;
   return S.citadelArt !== false && IMG[citadel] ? citadel : artOn() && IMG[`np_class_${cls}`] ? `np_class_${cls}` : null;
@@ -80,8 +82,10 @@ const racePortrait = (sp, i = 0) => {
   const raw = String(sp || '').toLowerCase();
   const id = CITADEL_RACE_ALIASES[raw] || raw;
   const citadel = 'citadel_race_' + id;
-  if (S.citadelArt !== false && IMG[citadel]) return citadel;
   if (!artOn()) return null;
+  const pack = globalThis.GBQAssetPack && globalThis.GBQAssetPack.portraitFor(`${raw}|${i}`);
+  if (pack && IMG[pack]) return pack;
+  if (S.citadelArt !== false && IMG[citadel]) return citadel;
   const n = `np_race_${sp}_${i}`; return IMG[n] ? n : IMG[`np_race_${sp}_0`] ? `np_race_${sp}_0` : null;
 };
 // battle backdrops: plains, forest, mountains, cave, castle
