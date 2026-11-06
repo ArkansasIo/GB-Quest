@@ -34,7 +34,16 @@
             <div class="gbq-hud-meter xp"><span>XP</span><b data-hud-xp-text>0%</b><i><em data-hud-xp></em></i></div>
           </div>
         </section>
-        <section class="gbq-hud-panel gbq-hud-party"><div class="gbq-hud-section-title">PARTY <span data-hud-party-count>1 / 4</span></div><div data-hud-party-list></div></section>
+        <section class="gbq-hud-panel gbq-hud-combat-stats" aria-label="Live combat statistics">
+          <div class="gbq-hud-section-title">COMBAT PROFILE <span data-hud-gear-count>0 / 14 GEAR</span></div>
+          <div class="gbq-hud-stat-grid">
+            <div><small>ARMOR</small><strong data-hud-ac>0</strong></div>
+            <div><small>ATTACK</small><strong data-hud-attack>0</strong></div>
+            <div><small>HIT BONUS</small><strong data-hud-hit>0</strong></div>
+            <div><small>AVG ITEM LVL</small><strong data-hud-ilvl>0</strong></div>
+          </div>
+        </section>
+                <section class="gbq-hud-panel gbq-hud-party"><div class="gbq-hud-section-title">PARTY <span data-hud-party-count>1 / 4</span></div><div data-hud-party-list></div></section>
       </aside>
       <aside class="gbq-hud-right">
         <section class="gbq-hud-panel gbq-hud-map"><div class="gbq-hud-map-tools"><span>LOCAL MAP</span><button type="button" data-map-zoom="out" aria-label="Zoom out">−</button><button type="button" data-map-zoom="in" aria-label="Zoom in">+</button><button type="button" data-map-zoom="center" aria-label="Center on player">◎</button></div><canvas class="gbq-hud-map-art" data-hud-minimap width="180" height="112" aria-label="Interactive local map; click a marker to inspect it"></canvas><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
@@ -144,6 +153,15 @@
     setText('[data-hud-hp-text]', fmt(hp) + ' / ' + fmt(hpMax)); setBar('[data-hud-hp]', pct(hp,hpMax));
     setText('[data-hud-mp-text]', fmt(mp) + ' / ' + fmt(mpMax)); setBar('[data-hud-mp]', pct(mp,mpMax));
     setText('[data-hud-xp-text]', xpPct + '%'); setBar('[data-hud-xp]', xpPct);
+    const equipped = g.eq && typeof g.eq === 'object' ? Object.values(g.eq).filter(Boolean) : [];
+    const gearLevels = equipped.map(item => Number(item?.ilvl) || 0).filter(value => value > 0);
+    const averageItemLevel = gearLevels.length ? Math.round(gearLevels.reduce((sum, value) => sum + value, 0) / gearLevels.length) : 0;
+    const weaponDamage = derived.weapon && Number.isFinite(Number(derived.weapon.dmg)) ? Number(derived.weapon.dmg) : 0;
+    setText('[data-hud-ac]', fmt(derived.ac || 0));
+    setText('[data-hud-attack]', fmt(weaponDamage));
+    setText('[data-hud-hit]', (Number(derived.weapon?.hit) > 0 ? '+' : '') + fmt(derived.weapon?.hit || 0));
+    setText('[data-hud-ilvl]', fmt(averageItemLevel));
+    setText('[data-hud-gear-count]', equipped.length + ' / 14 GEAR');
     setText('[data-hud-gold]', fmt(g.gold)); setText('[data-hud-gems]', fmt(g.gems || g.crystals || 0));
     const mapData = typeof window.GBQWorldMapMini === 'function' ? window.GBQWorldMapMini() : null;
     latestMapData = mapData;
