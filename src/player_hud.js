@@ -34,6 +34,20 @@
             <div class="gbq-hud-meter xp"><span>XP</span><b data-hud-xp-text>0%</b><i><em data-hud-xp></em></i></div>
           </div>
         </section>
+        <section class="gbq-hud-panel gbq-hud-attributes" aria-label="Live character attributes">
+          <div class="gbq-hud-section-title">ATTRIBUTES <span>BASE + MOD</span></div>
+          <div class="gbq-hud-attribute-grid">
+            <div><small>STR</small><strong data-hud-attr="STR">10 <i>+0</i></strong></div>
+            <div><small>DEX</small><strong data-hud-attr="DEX">10 <i>+0</i></strong></div>
+            <div><small>CON</small><strong data-hud-attr="CON">10 <i>+0</i></strong></div>
+            <div><small>INT</small><strong data-hud-attr="INT">10 <i>+0</i></strong></div>
+            <div><small>WIS</small><strong data-hud-attr="WIS">10 <i>+0</i></strong></div>
+            <div><small>CHA</small><strong data-hud-attr="CHA">10 <i>+0</i></strong></div>
+            <div><small>LCK</small><strong data-hud-attr="LCK">10 <i>+0</i></strong></div>
+            <div><small>WIL</small><strong data-hud-attr="WIL">10 <i>+0</i></strong></div>
+            <div><small>SPD</small><strong data-hud-attr="SPD">10 <i>+0</i></strong></div>
+          </div>
+        </section>
         <section class="gbq-hud-panel gbq-hud-combat-stats" aria-label="Live combat statistics">
           <div class="gbq-hud-section-title">COMBAT PROFILE <span data-hud-gear-count>0 / 14 GEAR</span></div>
           <div class="gbq-hud-stat-grid">
@@ -157,6 +171,15 @@
     const gearLevels = equipped.map(item => Number(item?.ilvl) || 0).filter(value => value > 0);
     const averageItemLevel = gearLevels.length ? Math.round(gearLevels.reduce((sum, value) => sum + value, 0) / gearLevels.length) : 0;
     const weaponDamage = derived.weapon && Number.isFinite(Number(derived.weapon.dmg)) ? Number(derived.weapon.dmg) : 0;
+    const attributes = derived.A && typeof derived.A === 'object' ? derived.A : (g.base || {});
+    const modifiers = derived.M && typeof derived.M === 'object' ? derived.M : {};
+    root.querySelectorAll('[data-hud-attr]').forEach(node => {
+      const key = node.dataset.hudAttr;
+      const score = Number(attributes[key] ?? 10);
+      const modifier = Number(modifiers[key] ?? Math.floor((score - 10) / 2));
+      const sign = modifier > 0 ? '+' : '';
+      node.innerHTML = esc(fmt(score)) + ' <i>' + esc(sign + modifier) + '</i>';
+    });
     setText('[data-hud-ac]', fmt(derived.ac || 0));
     setText('[data-hud-attack]', fmt(weaponDamage));
     setText('[data-hud-hit]', (Number(derived.weapon?.hit) > 0 ? '+' : '') + fmt(derived.weapon?.hit || 0));
