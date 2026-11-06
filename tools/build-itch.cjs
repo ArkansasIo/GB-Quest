@@ -74,8 +74,8 @@ const packedJson = JSON.stringify(hd64Pack)
   .replace(/</g, '\\u003c')
   .replace(/>/g, '\\u003e')
   .replace(/&/g, '\\u0026')
-  .replace(/\\u2028/g, '\\u2028')
-  .replace(/\\u2029/g, '\\u2029');
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
 html = html.replace(injectionPoint, '<script>window.GBQ_HD64_PACK=' + packedJson + ';</script>\n' + injectionPoint);
 fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
