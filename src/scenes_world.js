@@ -1074,13 +1074,35 @@ class SideQuestBoard {
     const q = qs[this.i]; frame(4, 98, 152, 42); text(wrap(q.text, 24).slice(0, 3).join('\n'), 8, 102); text(`${fmt(q.xp)}XP ${q.gold}G`, 8, 131, 2);
   }
 }
+function previewVendorGear(item, price, onBuy) {
+  const slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item }, target = derive({ ...G, eq });
+  const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+  const rows = [
+    item.name + ' · ' + fmt(price) + ' G',
+    'CURRENT GOLD ' + fmt(G.gold) + ' · AFTER ' + fmt(G.gold - price),
+    'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
+    'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
+    'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+    'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
+    'CRIT ' + current.crit + '% → ' + target.crit + '% · DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+    'BLOCK ' + current.block + '% → ' + target.block + '% · LEECH ' + current.leech + '% → ' + target.leech + '%',
+    'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
+    'A: CONFIRM PURCHASE · B: CANCEL'
+  ];
+  say(rows, () => choose(['BUY ' + fmt(price) + 'G', 'CANCEL'], k => {
+    if (k !== 0) return;
+    if (G.gold < price) return say('Not enough gold.');
+    onBuy();
+  }, 'Review the proposed gear before spending gold.'));
+}
+
 function vendorMenu() {
   const stock = ['potion', 'greater', 'antitoxin', 'ration', 'campkit', 'ether', 'scroll_mend', 'scroll_flame'].concat(ITEMS.repair_kit ? ['repair_kit'] : []).concat(G.lvl >= 10 ? ['superior', 'might', 'scroll_dawn'] : []).concat(G.lvl >= 30 ? ['supreme'] : []);
   const disc = G.daily.discount === new Date().toDateString() ? 0.9 : 1;
   choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'GEM CUTTER', 'LEAVE'], k => {
     if (k === 7 && typeof gemCutterMenu === 'function') return gemCutterMenu();
     if (k === 0) choose(stock.map(s => `${ITEMS[s].name.slice(0, 14)} ${Math.round(ITEMS[s].price * disc)}G`), i => { if (i < 0) return; const s = stock[i], p = Math.round(ITEMS[s].price * disc); if (G.gold < p) { SFX.error(); return say('Not enough gold.'); } G.gold -= p; addItem(s); SFX.buy(); vendorMenu(); }, `Gold: ${fmt(G.gold)}`);
-    if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i]; if (G.gold < it.value * 2) return say('Not enough gold.'); G.gold -= it.value * 2; addGear(it); SFX.buy(); }, 'Fresh stock from the forge.'); }
+    if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i], price = it.value * 2; previewVendorGear(it, price, () => { G.gold -= price; addGear(it); SFX.buy(); say(`Purchased ${it.name}.`); }); }, 'Fresh stock from the forge.'); }
     if (k === 2) push(new InventoryScene('sell'));
     if (k === 5 && typeof HeirloomScene === 'function') push(new HeirloomScene({ vendor: true }));
     if (k === 6 && typeof repairMenu === 'function') repairMenu();
@@ -1112,7 +1134,7 @@ function smithBuyMenu(kind) {
     if (index < 0) return;
     const item = stock[index], price = item.value * 2;
     if (G.gold < price) return say('Not enough gold.');
-    G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`);
+    previewVendorGear(item, price, () => { G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`); });
   }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
 }
 function smithSellMenu(kind) {
