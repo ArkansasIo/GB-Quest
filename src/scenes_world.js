@@ -1849,11 +1849,24 @@ class Credits {
   enter() { Music.play('credits'); if (this.ending) saveGame(); }
   update() { this.t++; if (this.t > 60 && (P('a') || P('b') || P('start'))) { removeScene(this); if (this.ending) { const f = currentField(); if (f) f.resume(); } } }
   draw() {
-    fill(0, 0, W, H, 3);
-    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
-    lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 3 || i === 7 ? 'gold' : 0); });
-  }
-}
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#080c27'); bg.addColorStop(.6, '#211b40'); bg.addColorStop(1, '#3d2a4b');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    for (let n = 0; n < 24; n++) {
+      ctx.globalAlpha = .2 + (n % 4) * .1;
+      fill((n * 29 + 3) % W, (n * 17 + 6) % H, n % 8 === 0 ? 2 : 1, 1, n % 5 ? '#d5c6ff' : '#ffd17b');
+    }
+    ctx.globalAlpha = 1;
+    frame(5, 4, 150, 136, 1);
+    fill(8, 7, 144, 14, '#17112d');
+    textC(this.ending ? 'THE LANTERNS OF AELMOOR' : 'GB QUEST  •  CREDITS', 80, 12, 'gold');
+    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'Original pixel-art direction', 'and generated game assets', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version}  ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
+    lines.forEach((line, index) => {
+      const y = 150 + index * 12 - this.t * .5 + (this.t > 520 ? this.t * .5 - 260 : 0);
+      if (y > 23 && y < 132) textC(line, 80, y, index === 2 || index === 3 || index === 7 ? 'gold' : 0);
+    });
+    textC('A / B / START: RETURN', 80, 135, 2);
+  }}}
 
 // ---------------------------------------------------------------- stairs, exits and safe arrival
 // never arrive inside a wall, water or an NPC: step to the nearest free tile (rings out to 4 tiles)
