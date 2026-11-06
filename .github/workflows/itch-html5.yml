@@ -9,8 +9,13 @@ on:
       - 'assets/**'
       - 'assets_hd64/**'
       - 'assets_citadel/**'
+      - 'data/visuals/**'
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
+      - 'tools/build_animation_manifest.py'
+      - 'tools/generate_character_sprite_pack.py'
+      - 'tools/generate_warrior_f_sprite.py'
+      - 'tools/generate_equipment_layers.py'
       - 'package.json'
       - 'game-metadata.json'
       - '.github/workflows/itch-html5.yml'
@@ -21,8 +26,13 @@ on:
       - 'assets/**'
       - 'assets_hd64/**'
       - 'assets_citadel/**'
+      - 'data/visuals/**'
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
+      - 'tools/build_animation_manifest.py'
+      - 'tools/generate_character_sprite_pack.py'
+      - 'tools/generate_warrior_f_sprite.py'
+      - 'tools/generate_equipment_layers.py'
       - 'package.json'
       - '.github/workflows/itch-html5.yml'
   workflow_dispatch:
@@ -41,6 +51,42 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
+      - name: Install artwork generator dependency
+        run: python -m pip install Pillow
+      - name: Generate all six F-rank character animation sets
+        run: |
+          python tools/build_animation_manifest.py --output assets_hd64/animations --frame-size 128
+          python tools/generate_character_sprite_pack.py \
+            --output assets_hd64/animations/frames \
+            --size 128 \
+            --archetypes warrior mage ranger rogue cleric summoner \
+            --ranks F
+      - name: Generate F-rank equipment overlays
+        run: |
+          python tools/generate_equipment_layers.py \
+            --output assets_hd64/equipment \
+            --size 128 \
+            --ranks F
+          python tools/validate_equipment_visual_map.py \
+            --catalog src/mmorpg/data/equipment.json \
+            --mapping data/visuals/equipment-catalog-visual-map.json \
+            --manifest assets_hd64/equipment/equipment_manifest.json \
+            --rank F
+      - name: Validate generated character frames
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("assets_hd64/animations/character_variant_generation_report.json").read_text())
+          assert report["total_frames"] == 2448, report
+          assert len(report["sets"]) == 6, report
+          assert all(item["frame_count"] == 408 for item in report["sets"]), report
+          frames = list(Path("assets_hd64/animations/frames").rglob("frame_*.png"))
+          assert len(frames) == 2448, f"Expected 2448 PNG frames, found {len(frames)}"
+          manifest = json.loads(Path("assets_hd64/equipment/equipment_manifest.json").read_text())
+          assert manifest["items"], "Equipment manifest is empty"
+          print(f"Validated {len(frames)} character frames and {len(manifest['items'])} equipment layers")
+          PY
       - name: Build and validate itch.io ZIP
         run: npm run build:itch
       - name: Upload itch.io HTML5 package
