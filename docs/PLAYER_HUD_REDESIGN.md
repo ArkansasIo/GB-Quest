@@ -58,3 +58,8 @@ The player HUD now renders STR, DEX, CON, INT, WIS, CHA, LCK, WIL, and SPD with 
 ## Weapon damage display correction — November 2026
 
 The combat profile now displays the equipped weapon's damage dice and its signed additive damage modifier together (for example, `1d8 + 4`). The value is sourced directly from `derive(G).weapon`; the HUD does not roll damage or change combat resolution.
+
+
+## Full combat character sheet — November 2026
+
+The character sheet now has a dedicated sixth **COMBAT** page. It reads directly from the existing `derive(G)` combat profile and presents weapon name, weapon damage dice, flat damage bonus, attack hit modifier, attacks per turn, armor class, initiative, critical range/chance/damage, dodge, block, lifesteal, and haste. The page uses the existing up/down scrolling behavior to expose all 14 values on the compact game viewport. The previous FEATURES page remains intact as page five.
