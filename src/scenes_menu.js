@@ -1218,7 +1218,7 @@ class SettingsScene extends ListScene {
     text('UP/DOWN: MOVE   LEFT/RIGHT: CHANGE', 11, 129, 2);
     text('A: SELECT   B: SAVE & BACK', 11, 136, 'gold');
   }
-}}
+}
 class KeybindScene extends ListScene {
   constructor() { super(8); this.actions = [['up', 'MOVE UP'], ['down', 'MOVE DOWN'], ['left', 'MOVE LEFT'], ['right', 'MOVE RIGHT'], ['a', 'CONFIRM / ATTACK'], ['b', 'BACK / CANCEL'], ['start', 'MENU'], ['select', 'SECONDARY']]; this.capture = null; }
   items() { return this.actions.map(([, label]) => label).concat(['RESTORE DEFAULTS']); }
