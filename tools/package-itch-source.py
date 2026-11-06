@@ -97,7 +97,9 @@ def main() -> None:
         archive.writestr("README-ITCH-SOURCE.md", PACKAGE_README)
         for path, arcname in entries:
             data = path.read_bytes()
-            archive.writestr(arcname, data)
+            media_suffixes = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".zip", ".mp3", ".ogg", ".mp4", ".woff2"}
+            compression = zipfile.ZIP_STORED if path.suffix.lower() in media_suffixes else zipfile.ZIP_DEFLATED
+            archive.writestr(arcname, data, compress_type=compression, compresslevel=6 if compression == zipfile.ZIP_DEFLATED else None)
             digest_lines.append(f"{hashlib.sha256(data).hexdigest()}  {arcname}")
         archive.writestr("SOURCE-MANIFEST.sha256", "\n".join(digest_lines) + "\n")
     with zipfile.ZipFile(OUTPUT) as archive:
