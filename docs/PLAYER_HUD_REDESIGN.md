@@ -113,3 +113,13 @@ Inventory gear descriptions now include the equipment slot, rarity/item level, u
 ## Legendary set progression and activation previews — November 2026
 
 Added `legendarySetPreview` to the armory rules. It compares equipped set counts with the projected equipment after replacing the candidate item's slot, and reports the 2-piece and 3-piece thresholds, bonus stats, current activation, and newly unlocked thresholds. Inventory inspection and gear comparison display the progression; vendor/blacksmith and auction purchase previews show the same thresholds before purchase confirmation. The preview is read-only and does not equip items or change character stats. Existing set effects continue to be applied by `armorSetBonus` through the gear-affix derivation path.
+
+
+## Shadows of the Abyss visual pass — November 2026
+
+- Applied a dark stone, moss, and aged-brass visual treatment to the DOM HUD in `client/player-hud.css`, based on the supplied GB Quest dark-fantasy boards.
+- Reworked panel surfaces with layered stone-like gradients, inset bevels, fine borders, and restrained brass highlights.
+- Updated the crest, player portrait frame, vitals meters, minimap frame, stat cells, navigation controls, hotbar, and toast treatment as one consistent visual system.
+- Preserved the existing HUD DOM structure, data bindings, game-scene navigation, minimap bridge, combat hotbar bridge, and 160×144 gameplay renderer.
+- Added visible keyboard focus styling and hover feedback while respecting reduced-motion preferences.
+- This pass uses CSS-rendered finishes; it does not claim that individual sprites have been extracted from the supplied catalog boards or installed as runtime assets.
