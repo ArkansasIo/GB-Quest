@@ -55,8 +55,9 @@ for (const n of names) {
 
 fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
 const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
-const single = shell + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\n' + nes + atlas
-  + hd64 + citadel + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('');
+const single = '<!doctype html>\\n<html lang="en"><head>\\n' + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\\n<aside')
+  + '\\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\\n' + nes + atlas
+  + hd64 + citadel + ORDER.map(n => `<script>\\n${rd(clientFile(n))}\n</script>\n`).join('') + '\\n</body></html>\\n';
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);
 
 const fsHtml = rd('client/fullscreen.html');
