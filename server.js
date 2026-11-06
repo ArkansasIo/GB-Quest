@@ -74,6 +74,7 @@ function staticFile(requestPath) {
   if (!relative || relative.split(/[\\/]/).some(part => part.startsWith("."))) return null;
   const file = path.resolve(root, relative);
   const allowedRoots = ["src", "client", "assets", "assets_citadel", "dist", "legacy"].map(dir => path.join(root, dir) + path.sep);
+  allowedRoots.push(path.join(root, "data", "visuals") + path.sep);
   if (file !== path.join(root, "index.html") && !allowedRoots.some(dir => file.startsWith(dir))) return null;
   return file;
 }
@@ -155,6 +156,10 @@ export function createGameServer() {
       response.writeHead(405).end();
       return;
     }
+    if (url.pathname === "/api/health") {
+      sendJson(response, 200, { ok: false, service: "game-static-server" });
+      return;
+    }
     const file = staticFile(url.pathname);
     if (!file) {
       response.writeHead(404).end();
@@ -177,13 +182,15 @@ export function createGameServer() {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 8000);
+  const host = process.env.HOST || "127.0.0.1";
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     console.error("PORT must be an integer from 1 to 65535");
     process.exitCode = 1;
   } else {
     const server = createGameServer();
-    server.listen(port, "127.0.0.1", () => {
-      console.log(`Lost Kingdom of Shadowbane Chronicles running at http://127.0.0.1:${port}`);
+    server.listen(port, host, () => {
+      const displayHost = host === "0.0.0.0" ? "127.0.0.1" : host;
+      console.log(`Lost Kingdom of Shadowbane Chronicles running at http://${displayHost}:${port}`);
       if (!nativeExecutable()) console.log("Native core is not built; run npm run native:build.");
     });
   }
