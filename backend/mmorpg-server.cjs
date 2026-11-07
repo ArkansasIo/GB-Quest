@@ -69,6 +69,18 @@ function broadcastZone(zoneId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.zoneId === zoneId && ws !== except) send(ws, type, payload);
 }
 const activeSockets = new Map();
+const authFailures = new Map();
+function authThrottled(ip) {
+  const item = authFailures.get(ip);
+  if (!item || Date.now() - item.startedAt > 600000) { authFailures.delete(ip); return false; }
+  return item.count >= 10;
+}
+function recordAuthFailure(ip) {
+  const item = authFailures.get(ip);
+  if (!item || Date.now() - item.startedAt > 600000) authFailures.set(ip, { count: 1, startedAt: Date.now() });
+  else item.count++;
+}
+setInterval(() => { for (const [ip, item] of authFailures) if (Date.now() - item.startedAt > 600000) authFailures.delete(ip); }, 600000).unref();
 function attachSocket(ws) {
   const state = { authenticated: false, account: null, character: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0 };
   socketState.set(ws, state); activeSockets.set(ws, state);
@@ -181,6 +193,7 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (url.pathname === '/api/register' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
       const username = String(body.username || '').trim();
       const password = String(body.password || '');
@@ -192,13 +205,15 @@ const server = http.createServer(async (req, res) => {
       return json(res, 201, { token: issueToken(id), account: { id, username } });
     }
     if (url.pathname === '/api/login' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
       const username = String(body.username || '').trim();
       const password = String(body.password || '');
       const result = await pool.query('SELECT id,username,password_salt,password_hash,disabled FROM accounts WHERE lower(username)=lower($1)', [username]);
-      if (!result.rowCount || result.rows[0].disabled) { await scrypt(password.slice(0, 72), crypto.randomBytes(16)); return json(res, 401, { error: 'invalid_credentials' }); }
+      if (!result.rowCount || result.rows[0].disabled) { await scrypt(password.slice(0, 72), crypto.randomBytes(16)); recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' }); }
       const acct = result.rows[0], candidate = await scrypt(password, acct.password_salt);
-      if (candidate.length !== acct.password_hash.length || !crypto.timingSafeEqual(candidate, acct.password_hash)) return json(res, 401, { error: 'invalid_credentials' });
+      if (candidate.length !== acct.password_hash.length || !crypto.timingSafeEqual(candidate, acct.password_hash)) { recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' }); }
+      authFailures.delete(ip);
       return json(res, 200, { token: issueToken(acct.id), account: { id: acct.id, username: acct.username } });
     }
     if (url.pathname === '/api/me' && req.method === 'GET') {
