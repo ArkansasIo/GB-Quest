@@ -23,3 +23,12 @@ test('all generated terrain, dungeon, prop and character art uses shared high-re
   assert.match(source, /for fr in HERO: save\(/);
   assert.match(source, /HI_MANIFEST\[name\]/);
 });
+
+test('browser renderer resolves high-resolution generated pixel aliases', () => {
+  const engine = fs.readFileSync(path.join(root, 'src/engine.js'), 'utf8');
+  const build = fs.readFileSync(path.join(root, 'tools/build.cjs'), 'utf8');
+  assert.match(engine, /\^\(\?:gt\|gd\|go\|gh\)_/);
+  assert.match(engine, /gb_hi_/);
+  assert.match(build, /assets_hd', 'gbtiles', '4x'/);
+  assert.match(build, /assets\[key\]\s*=\s*'data:image\/png;base64,'/);
+});
