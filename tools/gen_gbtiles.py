@@ -18,12 +18,34 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 A = os.path.join(ROOT, "assets")
+HD_ROOT = os.path.join(ROOT, "assets_hd", "gbtiles")
 N = 16
 count = 0
+hi_count = 0
+HI_SCALES = (4, 6)  # 64px and 96px exports from the 16px logical pixel grid
+HI_MANIFEST = {}
 
 def save(name, img):
-    global count
-    Image.fromarray(img.astype(np.uint8), "RGBA").save(os.path.join(A, name + ".png")); count += 1
+    global count, hi_count
+    source = Image.fromarray(img.astype(np.uint8), "RGBA")
+    source.save(os.path.join(A, name + ".png"), optimize=True)
+    count += 1
+    variants = {}
+    for scale in HI_SCALES:
+        target_dir = os.path.join(HD_ROOT, f"{scale}x")
+        os.makedirs(target_dir, exist_ok=True)
+        target = source.resize((N * scale, N * scale), Image.Resampling.NEAREST)
+        relative = f"assets_hd/gbtiles/{scale}x/{name}.png"
+        target.save(os.path.join(target_dir, name + ".png"), optimize=True)
+        variants[str(scale)] = {"file": relative, "width": N * scale, "height": N * scale}
+        hi_count += 1
+    HI_MANIFEST[name] = {
+        "source": f"assets/{name}.png",
+        "logical_size": [N, N],
+        "format": "RGBA",
+        "scaling": "nearest-neighbor",
+        "variants": variants
+    }
 
 def blank(): return np.zeros((N, N, 4), np.uint8)
 def px(img, x, y, rgb):
@@ -472,4 +494,17 @@ for k, img in {'herb': obj_herb(), 'wp0': obj_waypoint(0), 'wp1': obj_waypoint(1
 for i, look in enumerate(LOOKS):
     skin = SKINS[i % len(SKINS)]
     for fr in HERO: save(f"gh_{look}_{fr}", sprite(look, fr, skin))
-print(f"generated {count} Game Boy tiles and sprites")
+manifest_path = os.path.join(HD_ROOT, "manifest.json")
+os.makedirs(HD_ROOT, exist_ok=True)
+with open(manifest_path, "w", encoding="utf-8") as manifest_file:
+    import json
+    json.dump({
+        "schema": "gbq-hires-pixel-assets-v1",
+        "logical_tile_size": [N, N],
+        "scales": list(HI_SCALES),
+        "resampling": "nearest-neighbor",
+        "alpha": "preserved",
+        "assets": HI_MANIFEST
+    }, manifest_file, indent=2)
+    manifest_file.write("\\n")
+print(f"generated {count} Game Boy tiles and sprites; exported {hi_count} crisp HD variants (64px and 96px) to assets_hd/gbtiles")
