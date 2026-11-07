@@ -6,7 +6,7 @@
 |---|---|---|
 | **VIDEO** | GAME BOY · 64-BIT | presentation: 160×144 1:1, or 640×576 Scale4x with lighting (see below) |
 | **PALETTE** | GBC, DMG, POCKET, SUNSET, AMBER, OCEAN, FULL COLOR | how sprites are reduced to colours |
-| **TILES** | PIXEL · PAINTED | crisp 16×16 Game Boy tiles (`gt_*`), or the painted biome tilesets from the original sheet |
+| **TILES** | PIXEL · PAINTED | crisp 16×16 logical Game Boy tiles (`gt_*`), or painted biome tilesets from the original sheet; full-detail mode can use generated 64×64 variants |
 | **ART** | NES · CLASSIC | NES-style monster, item and portrait art (`nm_ ne_ np_`), or the original sheet sprites |
 | **BRIGHTNESS / CONTRAST** | 0–6 | CSS filter on the LCD |
 
@@ -20,7 +20,7 @@ asset PNG ──▶ scale to w×h ──▶ palette mode?
                         ──▶ flip / rotate / ghost ──▶ cache
 ```
 
-## 64-bit video mode (`src/video64.js`)
+## High-resolution 8-bit tile exports (`assets_hd/gbtiles/`)\n\n`python tools/gen_gbtiles.py` writes the native 16×16 RGBA tile/sprite sources and nearest-neighbour 4× (64×64) and 6× (96×96) variants. `manifest.json` records each logical source, scale, dimensions, and file path. The browser build embeds the 4× variants as `gb_hi_*` aliases; `src/engine.js` selects them in full-detail art mode while preserving the logical tile dimensions and pixel edges. The 6× set remains available for zoomed/desktop use. Alpha is preserved and smoothing is disabled by the pixel renderer.\n\n## 64-bit video mode (`src/video64.js`)
 
 Per frame, after the scenes draw the 160×144 framebuffer:
 
