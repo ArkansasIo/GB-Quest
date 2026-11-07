@@ -63,3 +63,21 @@ test('itch.io workflow generates all six F-rank animation sets before packaging'
   assert.match(workflow, /pip install Pillow/);
   assert.match(workflow, /npm run build:itch/);
 });
+
+test('asset repair workflow persists generated HD64 character frames and equipment into source assets', () => {
+  const workflow = read('.github/workflows/repair-game-assets.yml');
+  assert.match(workflow, /build_animation_manifest\.py/);
+  assert.match(workflow, /generate_character_sprite_pack\.py/);
+  assert.match(workflow, /generate_equipment_layers\.py/);
+  assert.match(workflow, /validate_equipment_visual_map\.py/);
+  assert.match(workflow, /total_frames.*2448/);
+  assert.match(workflow, /git add assets assets_pack assets_hd assets_hd64/);
+});
+
+test('world renderer consumes asynchronous HD character frames with classic fallback', () => {
+  const world = read('src/scenes_world.js');
+  assert.match(world, /function hdWorldFrame\(/);
+  assert.match(world, /presenter\.request\(character/);
+  assert.match(world, /const portrait = hdFrame \|\| packFrame \|\| gearWalker \|\| worldPortrait/);
+  assert.match(world, /HD character frame unavailable; using classic sprite/);
+});
