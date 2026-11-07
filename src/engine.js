@@ -81,6 +81,7 @@ let HD64_INDEX = null, HD64_INDEX_PROMISE = null;
 const HD64_ATLASES = new Map();
 const HD64_REQUESTED = new Set();
 function assetPackHiResName(name) {
+  if (/^(?:gt|gd|go|gh)_/.test(name)) return `gb_hi_${name}`;
   let m = /^ap_scene_(.+)$/.exec(name);
   if (m) return `ap_hi_scene_${m[1]}`;
   m = /^ap_(.+)$/.exec(name);
