@@ -39,7 +39,7 @@ jobs:
       - name: Install asset pipeline dependencies
         run: |
           python -m pip install --disable-pip-version-check Pillow numpy
-          npm ci
+          npm install --no-audit --no-fund
       - name: Regenerate native-resolution world, character, UI and item art
         run: |
           python3 tools/gen_gbtiles.py
