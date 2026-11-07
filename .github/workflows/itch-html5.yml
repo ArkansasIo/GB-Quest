@@ -7,7 +7,9 @@ on:
       - 'client/**'
       - 'src/**'
       - 'assets/**'
-      - 'assets_hd64/**'\n      - 'assets_hd/gbtiles/**'\n      - 'tools/gen_gbtiles.py'
+      - 'assets_hd64/**'
+      - 'assets_hd/gbtiles/**'
+      - 'tools/gen_gbtiles.py'
       - 'assets_citadel/**'
       - 'data/visuals/**'
       - 'tools/build.cjs'
@@ -26,6 +28,8 @@ on:
       - 'src/**'
       - 'assets/**'
       - 'assets_hd64/**'
+      - 'assets_hd/gbtiles/**'
+      - 'tools/gen_gbtiles.py'
       - 'assets_citadel/**'
       - 'data/visuals/**'
       - 'tools/build.cjs'
@@ -54,8 +58,10 @@ jobs:
           python-version: '3.x'
       - name: Run repository regression tests
         run: npm test
-      - name: Install artwork generator dependency
-        run: python -m pip install Pillow
+      - name: Install artwork generator dependencies
+        run: python -m pip install Pillow numpy
+      - name: Generate high-resolution 8-bit world assets
+        run: python tools/gen_gbtiles.py
       - name: Generate all six F-rank character animation sets
         run: |
           python tools/build_animation_manifest.py --output assets_hd64/animations --frame-size 128
