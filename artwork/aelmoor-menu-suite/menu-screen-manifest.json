@@ -1,0 +1,69 @@
+{
+  "project": "GB Quest — Lanterns of Aelmoor",
+  "reference": "GB Quest: Aelmoor Menu Suite.png",
+  "sourceDimensions": [
+    1536,
+    1024
+  ],
+  "screens": [
+    {
+      "id": "title",
+      "file": "screens/title-screen.png",
+      "destination": "Title"
+    },
+    {
+      "id": "options",
+      "file": "screens/options-screen.png",
+      "destination": "SettingsScene"
+    },
+    {
+      "id": "graphics",
+      "file": "screens/graphics-screen.png",
+      "destination": "SettingsScene graphics"
+    },
+    {
+      "id": "new-game",
+      "file": "screens/new-game-character.png",
+      "destination": "SlotPicker / character creator"
+    },
+    {
+      "id": "class-selection",
+      "file": "screens/class-selection.png",
+      "destination": "Character creator class step"
+    },
+    {
+      "id": "character-summary",
+      "file": "screens/character-summary.png",
+      "destination": "Character creator final step"
+    },
+    {
+      "id": "load-game",
+      "file": "screens/load-game.png",
+      "destination": "SlotPicker load"
+    },
+    {
+      "id": "credits",
+      "file": "screens/credits.png",
+      "destination": "Credits"
+    },
+    {
+      "id": "quit",
+      "file": "screens/quit-confirmation.png",
+      "destination": "Title quit confirmation"
+    }
+  ],
+  "status": "visual reference only; PNGs not yet committed or runtime-integrated",
+  "designTokens": {
+    "palette": [
+      "#090B22",
+      "#17102D",
+      "#2A174A",
+      "#70451F",
+      "#DDAA36",
+      "#FFF0C4"
+    ],
+    "pixelFilter": "nearest-neighbour",
+    "framebuffer": "160x144",
+    "scale": "preserve aspect ratio; integer scale when possible"
+  }
+}
