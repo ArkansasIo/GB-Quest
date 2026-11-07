@@ -212,7 +212,10 @@ const sprCache = new Map(), groupTh = {};
 function mkCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 function scaled(img, w, h) {
   const c = mkCanvas(w, h), x = c.getContext('2d');
-  x.imageSmoothingEnabled = (w !== img.width || h !== img.height); x.imageSmoothingQuality = 'high';
+  // Preserve hard pixel edges in classic mode; reserve interpolation for HD/painted art.
+  const smooth = S.video === 'hd64' || S.tiles === 'painted';
+  x.imageSmoothingEnabled = smooth && (w !== img.width || h !== img.height);
+  if (x.imageSmoothingEnabled) x.imageSmoothingQuality = 'high';
   x.drawImage(img, 0, 0, w, h); return c;
 }
 const lum = (d, i) => d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
