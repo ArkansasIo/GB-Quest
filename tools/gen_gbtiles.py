@@ -27,7 +27,7 @@ HI_MANIFEST = {}
 
 def save(name, img):
     global count, hi_count
-    source = Image.fromarray(img.astype(np.uint8), "RGBA")
+    source = Image.fromarray(img.astype(np.uint8))
     source.save(os.path.join(A, name + ".png"), optimize=True)
     count += 1
     variants = {}
