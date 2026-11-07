@@ -17,7 +17,7 @@ Runtime art is assembled from repository-managed PNG/SVG assets and generated sp
 ## Art, ranks, and world tiles
 
 - Adventurer progression: **F → E → D → C → B → A → S → SS → SSS**; independent of item rarity and character levels.
-- World tile contract: layered 16×16 tiles, 16-way cardinal autotiling, animated shorelines, nine biome palettes, and six dungeon themes.
+- World tile contract: layered 16×16 tiles, 16-way cardinal autotiling, animated shorelines, 25 biome families, and six dungeon themes.
 - Asset generation and build instructions: [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md).
 - Equipment progression: [docs/GEAR_PROGRESSION.md](docs/GEAR_PROGRESSION.md) (4-digit gear level, 6-digit power, item levels 1–720, F–SSS × 12 stars).
 
