@@ -54,13 +54,29 @@ const monsterArt = b => {
 const WEAPON_ART = { knife: 'dagger', crescent: 'dagger', longbrand: 'sword', needleblade: 'sword', widesword: 'sword', hatchet: 'axe', cleaver: 'axe',
   cudgel: 'mace', knobmace: 'mace', ironhammer: 'mace', stonemaul: 'mace', shortspear: 'polearm', poleblade: 'polearm', huntbow: 'bow', greatbow: 'bow', boltcaster: 'crossbow', walkstaff: 'staff' };
 const WONDROUS_ART = { ring: 'ring', band: 'ring', charm: 'ring', amulet: 'amulet', pendant: 'amulet', boots: 'boots', sabatons: 'boots', circlet: 'magicitem', helm: 'heavyarmor', mask: 'relic', cloak: 'lightarmor', mantle: 'mediumarmor', gloves: 'glove', gauntlets: 'glove', belt: 'belt', girdle: 'belt', leggings: 'lightarmor', greaves: 'heavyarmor' };
-function tierPick(cat, rarity, salt) { const L = NES[cat] || []; if (!L.length) return null; const i = Math.min(L.length - 1, Math.max(0, rarity * 2 - 1 + (hashStr(String(salt)) % 2))); return L[i]; }
+function tierPick(cat, rarity, salt) {
+  const L = NES[cat] || [];
+  if (!L.length) return null;
+  const tier = Number.isFinite(Number(rarity)) ? Number(rarity) : 1;
+  const i = Math.min(L.length - 1, Math.max(0, Math.floor(tier) * 2 - 1 + (hashStr(String(salt)) % 2)));
+  return L[i] || L[0] || null;
+}
+function armorArtCategory(item) {
+  const armor = typeof ARMORS !== 'undefined' && ARMORS ? ARMORS[item.base] : null;
+  const type = String((armor && (armor.type || armor.aclass)) || item.type || '').toLowerCase();
+  if (type === 'shield') return 'shield';
+  if (['light', 'leather', 'cloth', 'robe'].includes(type)) return 'lightarmor';
+  if (['heavy', 'plate'].includes(type)) return 'heavyarmor';
+  if (['medium', 'mail', 'chain'].includes(type)) return 'mediumarmor';
+  return 'mediumarmor';
+}
 function nesItemIcon(it) {
-  if (!artOn()) return null;
+  if (!it || !artOn()) return null;
   if (it.kind === 'weapon') return tierPick(WEAPON_ART[it.base] || 'sword', it.rarity, it.base);
-  if (it.kind === 'armor') { const t = ARMORS[it.base].type; return tierPick(t === 'shield' ? 'shield' : t + 'armor', it.rarity, it.base); }
+  if (it.kind === 'armor') return tierPick(armorArtCategory(it), it.rarity, it.base);
   return tierPick(WONDROUS_ART[it.base] || 'ring', it.rarity, it.base);
 }
+if (typeof globalThis !== 'undefined') globalThis.GBQArtAssetSafety = { armorArtCategory, tierPick };
 const ITEM_ART = { potion: ['potion', 0], greater: ['potion', 1], superior: ['potion', 3], supreme: ['potion', 5], ether: ['potion', 2], antitoxin: ['potion', 4], might: ['potion', 7],
   ration: ['food', 0], grilled: ['food', 4], feast: ['food', 6], campkit: ['tool', 3], scroll_flame: ['scroll', 1], scroll_mend: ['scroll', 2], scroll_dawn: ['scroll', 5],
   hearthstone: ['magicitem', 2], peacebloom: ['reagent', 0], sandroot: ['reagent', 3], frostbloom: ['reagent', 5], small_fish: ['food', 9], big_fish: ['food', 10], eel: ['food', 11],
