@@ -157,6 +157,8 @@ function applyGameBoyWorldPalette(x = 0, y = 0, width = W, height = H) {
 }
 
 
+const WORLD_TERRAIN_PALETTE = ['#527b70', '#355c50', '#5c9fc4'];
+
 // ================================================================ SAVE SLOTS
 class SlotPicker {
   constructor(mode) { this.opaque = true; this.mode = mode; this.i = 0; }
@@ -786,6 +788,7 @@ class Field {
   draw() {
     // Draw the world pass first; quantize it to four Game Boy greens before the HUD.
     const m = this.m, cols = m.rows[0].length, rows = m.rows.length;
+    const worldPalette = S.palette === 'dmg' || S.palette === 'gameboy';
     const px = G.x * T + this.ox, py = G.y * T + this.oy;
     const cx = Math.max(0, Math.min(cols * T - W, px - 72)), cy = Math.max(0, Math.min(rows * T - H, py - 64));
     this.cam = [cx, cy];
@@ -866,6 +869,7 @@ class Field {
       else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
+    if (worldPalette) applyGameBoyWorldPalette(0, 0, W, H);
     const mmo = typeof hudMmo === 'function' && hudMmo(), by = mmo ? MMO_LAYOUT.bannerY : 4;
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, by, n.length * 6 + 12, 15); textC(n, 80, by + 3); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, by + 17, 'gold'); }
     if (this.zone && !G.inst && !mmo) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
@@ -1806,6 +1810,7 @@ class WorldMap {
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
+    if (S.palette === 'dmg' || S.palette === 'gameboy') applyGameBoyWorldPalette(0, 12, W, 97);
     fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'VALENDRIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
