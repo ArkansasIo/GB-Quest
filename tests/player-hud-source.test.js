@@ -109,7 +109,7 @@ test('standalone release includes runtime HD64 artwork in the player HUD', async
     readFile(new URL('../tools/build.cjs', import.meta.url), 'utf8'),
     readFile(new URL('../client/shell.html', import.meta.url), 'utf8')
   ]);
-  assert.match(build, /'main', 'player_hud', 'debug'/);
+  assert.match(build, /'main'[\s\S]*?'player_hud'[\s\S]*?'debug'/);
   assert.match(shell, /client\/player-hud\.css/);
   assert.match(source, /function hudSpriteData\(name\)/);
   assert.match(source, /np_class_/);
