@@ -116,3 +116,21 @@ test('standalone release includes runtime HD64 artwork in the player HUD', async
   assert.match(source, /au_menu_icons_/);
   assert.match(source, /au_skill_icons_/);
 });
+
+
+test('player HUD text remains readable and long labels do not clip', () => {
+  assert.match(styles, /font-size:clamp\(10px/);
+  assert.match(styles, /overflow-wrap:anywhere/);
+  assert.match(styles, /max-height:calc\(100% - 154px\)/);
+  assert.match(styles, /max-width:100%/);
+  assert.match(source, /Character portrait/);
+  assert.match(source, /GOLD/);
+  assert.match(source, /GEMS/);
+});
+
+test('player HUD avoids narrow-screen shortcut collisions and honors reduced motion', () => {
+  assert.match(styles, /@media \(max-width:1100px\)/);
+  assert.match(styles, /\.gbq-hud-shortcuts \{ display:none; \}/);
+  assert.match(styles, /prefers-reduced-motion:reduce/);
+  assert.match(styles, /image-rendering:pixelated/);
+});
