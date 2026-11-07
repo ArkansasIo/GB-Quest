@@ -1,0 +1,215 @@
+{
+  "frame_size": 128,
+  "directions": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE",
+    "E",
+    "SE"
+  ],
+  "animations": [
+    "idle",
+    "walk",
+    "run",
+    "attack",
+    "cast",
+    "block",
+    "hit",
+    "death"
+  ],
+  "total_frames": 2448,
+  "sets": [
+    {
+      "archetype": "warrior",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          74,
+          91,
+          125,
+          255
+        ],
+        "cloth_hi": [
+          111,
+          135,
+          174,
+          255
+        ],
+        "steel": [
+          112,
+          132,
+          151,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "mage",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          72,
+          55,
+          126,
+          255
+        ],
+        "cloth_hi": [
+          132,
+          111,
+          190,
+          255
+        ],
+        "steel": [
+          105,
+          116,
+          158,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "ranger",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          55,
+          105,
+          77,
+          255
+        ],
+        "cloth_hi": [
+          105,
+          153,
+          104,
+          255
+        ],
+        "steel": [
+          111,
+          128,
+          111,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "rogue",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          54,
+          61,
+          76,
+          255
+        ],
+        "cloth_hi": [
+          91,
+          99,
+          119,
+          255
+        ],
+        "steel": [
+          103,
+          110,
+          126,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "cleric",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          135,
+          128,
+          91,
+          255
+        ],
+        "cloth_hi": [
+          190,
+          177,
+          119,
+          255
+        ],
+        "steel": [
+          155,
+          157,
+          151,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "summoner",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          91,
+          55,
+          111,
+          255
+        ],
+        "cloth_hi": [
+          145,
+          91,
+          164,
+          255
+        ],
+        "steel": [
+          126,
+          102,
+          143,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    }
+  ],
+  "generated_by": "procedural-pillow",
+  "production_status": "prototype_placeholder_art",
+  "note": "Archetype/rank palettes are variants of a shared warrior-derived silhouette; redraw class-specific anatomy, weapons, and gear before release."
+}

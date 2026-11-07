@@ -1,0 +1,5364 @@
+{
+  "schema_version": 1,
+  "canvas": {
+    "width": 128,
+    "height": 128
+  },
+  "coordinate_space": "character_frame_pixels",
+  "origin": "top_left",
+  "pivot": {
+    "x": 64,
+    "y": 112
+  },
+  "directions": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE",
+    "E",
+    "SE"
+  ],
+  "slots": {
+    "head": {
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "draw_order": 0
+    },
+    "chest": {
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "draw_order": 1
+    },
+    "legs": {
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "draw_order": 2
+    },
+    "hands": {
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "draw_order": 3
+    },
+    "main_hand": {
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "draw_order": 4
+    },
+    "off_hand": {
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "draw_order": 5
+    },
+    "back": {
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "draw_order": 6
+    },
+    "accessory": {
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "draw_order": 7
+    }
+  },
+  "items": [
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/head/iron_helm/F/S.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/head/iron_helm/F/SW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/head/iron_helm/F/W.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/head/iron_helm/F/NW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/head/iron_helm/F/N.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/head/iron_helm/F/NE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/head/iron_helm/F/E.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_helm",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/head/iron_helm/F/SE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/head/mage_hood/F/S.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/head/mage_hood/F/SW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/head/mage_hood/F/W.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/head/mage_hood/F/NW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/head/mage_hood/F/N.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/head/mage_hood/F/NE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/head/mage_hood/F/E.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mage_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/head/mage_hood/F/SE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/head/ranger_hood/F/S.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/head/ranger_hood/F/SW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/head/ranger_hood/F/W.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/head/ranger_hood/F/NW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/head/ranger_hood/F/N.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/head/ranger_hood/F/NE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/head/ranger_hood/F/E.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_hood",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/head/ranger_hood/F/SE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/head/rogue_mask/F/S.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/head/rogue_mask/F/SW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/head/rogue_mask/F/W.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/head/rogue_mask/F/NW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/head/rogue_mask/F/N.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/head/rogue_mask/F/NE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/head/rogue_mask/F/E.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rogue_mask",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/head/rogue_mask/F/SE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/head/cleric_circlet/F/S.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/head/cleric_circlet/F/SW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/head/cleric_circlet/F/W.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/head/cleric_circlet/F/NW.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/head/cleric_circlet/F/N.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/head/cleric_circlet/F/NE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/head/cleric_circlet/F/E.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cleric_circlet",
+      "slot": "head",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/head/cleric_circlet/F/SE.png",
+      "anchor": [
+        64.0,
+        29.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/chest/iron_plate/F/S.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/chest/iron_plate/F/SW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/chest/iron_plate/F/W.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/chest/iron_plate/F/NW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/chest/iron_plate/F/N.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/chest/iron_plate/F/NE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/chest/iron_plate/F/E.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_plate",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/chest/iron_plate/F/SE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/chest/traveler_tunic/F/S.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/chest/traveler_tunic/F/SW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/chest/traveler_tunic/F/W.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/chest/traveler_tunic/F/NW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/chest/traveler_tunic/F/N.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/chest/traveler_tunic/F/NE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/chest/traveler_tunic/F/E.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "traveler_tunic",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/chest/traveler_tunic/F/SE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/chest/arcane_robe/F/S.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/chest/arcane_robe/F/SW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/chest/arcane_robe/F/W.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/chest/arcane_robe/F/NW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/chest/arcane_robe/F/N.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/chest/arcane_robe/F/NE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/chest/arcane_robe/F/E.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_robe",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/chest/arcane_robe/F/SE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/chest/shadow_leathers/F/S.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/chest/shadow_leathers/F/SW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/chest/shadow_leathers/F/W.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/chest/shadow_leathers/F/NW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/chest/shadow_leathers/F/N.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/chest/shadow_leathers/F/NE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/chest/shadow_leathers/F/E.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "shadow_leathers",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/chest/shadow_leathers/F/SE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/chest/sanctified_mail/F/S.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/chest/sanctified_mail/F/SW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/chest/sanctified_mail/F/W.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/chest/sanctified_mail/F/NW.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/chest/sanctified_mail/F/N.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/chest/sanctified_mail/F/NE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/chest/sanctified_mail/F/E.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sanctified_mail",
+      "slot": "chest",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/chest/sanctified_mail/F/SE.png",
+      "anchor": [
+        64.0,
+        61.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/legs/iron_greaves/F/S.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/legs/iron_greaves/F/SW.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/legs/iron_greaves/F/W.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/legs/iron_greaves/F/NW.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/legs/iron_greaves/F/N.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/legs/iron_greaves/F/NE.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/legs/iron_greaves/F/E.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_greaves",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/legs/iron_greaves/F/SE.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/legs/travel_trousers/F/S.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/legs/travel_trousers/F/SW.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/legs/travel_trousers/F/W.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/legs/travel_trousers/F/NW.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/legs/travel_trousers/F/N.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/legs/travel_trousers/F/NE.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/legs/travel_trousers/F/E.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "travel_trousers",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/legs/travel_trousers/F/SE.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/legs/arcane_lower_robe/F/S.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/legs/arcane_lower_robe/F/SW.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/legs/arcane_lower_robe/F/W.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/legs/arcane_lower_robe/F/NW.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/legs/arcane_lower_robe/F/N.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/legs/arcane_lower_robe/F/NE.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/legs/arcane_lower_robe/F/E.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "arcane_lower_robe",
+      "slot": "legs",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/legs/arcane_lower_robe/F/SE.png",
+      "anchor": [
+        64.0,
+        91.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/hands/iron_gauntlets/F/S.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/hands/iron_gauntlets/F/SW.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/hands/iron_gauntlets/F/W.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/hands/iron_gauntlets/F/NW.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/hands/iron_gauntlets/F/N.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/hands/iron_gauntlets/F/NE.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/hands/iron_gauntlets/F/E.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_gauntlets",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/hands/iron_gauntlets/F/SE.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/hands/leather_gloves/F/S.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/hands/leather_gloves/F/SW.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/hands/leather_gloves/F/W.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/hands/leather_gloves/F/NW.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/hands/leather_gloves/F/N.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/hands/leather_gloves/F/NE.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/hands/leather_gloves/F/E.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/hands/leather_gloves/F/SE.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/hands/spell_gloves/F/S.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/hands/spell_gloves/F/SW.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/hands/spell_gloves/F/W.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/hands/spell_gloves/F/NW.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/hands/spell_gloves/F/N.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/hands/spell_gloves/F/NE.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/hands/spell_gloves/F/E.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_gloves",
+      "slot": "hands",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/hands/spell_gloves/F/SE.png",
+      "anchor": [
+        43.0,
+        63.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/main_hand/iron_sword/F/S.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/main_hand/iron_sword/F/SW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/main_hand/iron_sword/F/W.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/main_hand/iron_sword/F/NW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/main_hand/iron_sword/F/N.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/main_hand/iron_sword/F/NE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/main_hand/iron_sword/F/E.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_sword",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/main_hand/iron_sword/F/SE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/main_hand/oak_staff/F/S.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/main_hand/oak_staff/F/SW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/main_hand/oak_staff/F/W.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/main_hand/oak_staff/F/NW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/main_hand/oak_staff/F/N.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/main_hand/oak_staff/F/NE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/main_hand/oak_staff/F/E.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "oak_staff",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/main_hand/oak_staff/F/SE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/main_hand/short_bow/F/S.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/main_hand/short_bow/F/SW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/main_hand/short_bow/F/W.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/main_hand/short_bow/F/NW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/main_hand/short_bow/F/N.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/main_hand/short_bow/F/NE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/main_hand/short_bow/F/E.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_bow",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/main_hand/short_bow/F/SE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/main_hand/paired_daggers/F/S.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/main_hand/paired_daggers/F/SW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/main_hand/paired_daggers/F/W.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/main_hand/paired_daggers/F/NW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/main_hand/paired_daggers/F/N.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/main_hand/paired_daggers/F/NE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/main_hand/paired_daggers/F/E.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "paired_daggers",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/main_hand/paired_daggers/F/SE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/main_hand/holy_mace/F/S.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/main_hand/holy_mace/F/SW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/main_hand/holy_mace/F/W.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/main_hand/holy_mace/F/NW.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/main_hand/holy_mace/F/N.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/main_hand/holy_mace/F/NE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/main_hand/holy_mace/F/E.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "holy_mace",
+      "slot": "main_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/main_hand/holy_mace/F/SE.png",
+      "anchor": [
+        88.0,
+        65.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/off_hand/iron_shield/F/S.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/off_hand/iron_shield/F/SW.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/off_hand/iron_shield/F/W.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/off_hand/iron_shield/F/NW.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/off_hand/iron_shield/F/N.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/off_hand/iron_shield/F/NE.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/off_hand/iron_shield/F/E.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "iron_shield",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/off_hand/iron_shield/F/SE.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/off_hand/spell_focus/F/S.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/off_hand/spell_focus/F/SW.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/off_hand/spell_focus/F/W.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/off_hand/spell_focus/F/NW.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/off_hand/spell_focus/F/N.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/off_hand/spell_focus/F/NE.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/off_hand/spell_focus/F/E.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spell_focus",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/off_hand/spell_focus/F/SE.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/off_hand/quiver/F/S.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/off_hand/quiver/F/SW.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/off_hand/quiver/F/W.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/off_hand/quiver/F/NW.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/off_hand/quiver/F/N.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/off_hand/quiver/F/NE.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/off_hand/quiver/F/E.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quiver",
+      "slot": "off_hand",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/off_hand/quiver/F/SE.png",
+      "anchor": [
+        39.0,
+        70.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/back/short_cloak/F/S.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/back/short_cloak/F/SW.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/back/short_cloak/F/W.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/back/short_cloak/F/NW.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/back/short_cloak/F/N.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/back/short_cloak/F/NE.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/back/short_cloak/F/E.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "short_cloak",
+      "slot": "back",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/back/short_cloak/F/SE.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/back/ranger_cape/F/S.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/back/ranger_cape/F/SW.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/back/ranger_cape/F/W.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/back/ranger_cape/F/NW.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/back/ranger_cape/F/N.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/back/ranger_cape/F/NE.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/back/ranger_cape/F/E.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ranger_cape",
+      "slot": "back",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/back/ranger_cape/F/SE.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/back/summoner_mantle/F/S.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/back/summoner_mantle/F/SW.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/back/summoner_mantle/F/W.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/back/summoner_mantle/F/NW.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/back/summoner_mantle/F/N.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/back/summoner_mantle/F/NE.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/back/summoner_mantle/F/E.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "summoner_mantle",
+      "slot": "back",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/back/summoner_mantle/F/SE.png",
+      "anchor": [
+        64.0,
+        64.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/accessory/gold_amulet/F/S.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/accessory/gold_amulet/F/SW.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/accessory/gold_amulet/F/W.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/accessory/gold_amulet/F/NW.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/accessory/gold_amulet/F/N.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/accessory/gold_amulet/F/NE.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/accessory/gold_amulet/F/E.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gold_amulet",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/accessory/gold_amulet/F/SE.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/accessory/rune_pendant/F/S.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/accessory/rune_pendant/F/SW.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/accessory/rune_pendant/F/W.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/accessory/rune_pendant/F/NW.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/accessory/rune_pendant/F/N.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/accessory/rune_pendant/F/NE.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/accessory/rune_pendant/F/E.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rune_pendant",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/accessory/rune_pendant/F/SE.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "S",
+      "path": "layers/accessory/guild_medallion/F/S.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "SW",
+      "path": "layers/accessory/guild_medallion/F/SW.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "W",
+      "path": "layers/accessory/guild_medallion/F/W.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "NW",
+      "path": "layers/accessory/guild_medallion/F/NW.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "N",
+      "path": "layers/accessory/guild_medallion/F/N.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "NE",
+      "path": "layers/accessory/guild_medallion/F/NE.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "E",
+      "path": "layers/accessory/guild_medallion/F/E.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "guild_medallion",
+      "slot": "accessory",
+      "rank": "F",
+      "direction": "SE",
+      "path": "layers/accessory/guild_medallion/F/SE.png",
+      "anchor": [
+        72.0,
+        53.0
+      ],
+      "tint_rgba": [
+        145,
+        151,
+        160,
+        255
+      ],
+      "blend": "normal",
+      "offset": [
+        0,
+        0
+      ]
+    }
+  ],
+  "production_status": "prototype_placeholder_art"
+}
