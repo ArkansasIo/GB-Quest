@@ -127,6 +127,36 @@ class Title {
     textC('A  SELECT     B  BACK', 81, 136, '#fff0c2');
   }
 }
+// ================================================================ ORIGINAL GAME BOY WORLD PALETTE
+// Quantize only the world-art pass to the four native-style LCD greens.
+// The HUD and menus are drawn afterward and retain their regular palette.
+function applyGameBoyWorldPalette(x = 0, y = 0, width = W, height = H) {
+  try {
+    const frame = ctx.getImageData(x, y, width, height);
+    const pixels = frame.data;
+    const shades = [
+      [15, 56, 15],    // darkest green
+      [48, 98, 48],
+      [139, 172, 15],
+      [155, 188, 15],  // lightest green
+    ];
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i + 3] === 0) continue;
+      const luminance = pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722;
+      const shade = luminance < 64 ? 0 : luminance < 128 ? 1 : luminance < 192 ? 2 : 3;
+      pixels[i] = shades[shade][0];
+      pixels[i + 1] = shades[shade][1];
+      pixels[i + 2] = shades[shade][2];
+    }
+    ctx.putImageData(frame, x, y);
+    return true;
+  } catch (_) {
+    // A tainted canvas must never interrupt gameplay; leave its source colors intact.
+    return false;
+  }
+}
+
+
 // ================================================================ SAVE SLOTS
 class SlotPicker {
   constructor(mode) { this.opaque = true; this.mode = mode; this.i = 0; }
