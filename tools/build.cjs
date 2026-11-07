@@ -52,6 +52,15 @@ for (const n of names) {
   const b64 = fs.readFileSync(path.join(ROOT, 'assets', n + '.png')).toString('base64');
   assets[n] = 'data:image/png;base64,' + b64;
 }
+// Embed 4x nearest-neighbour tile variants under the engine's hi-res alias.
+// The 6x variants remain on disk for future zoom/desktop exports.
+const hiTileDir = path.join(ROOT, 'assets_hd', 'gbtiles', '4x');
+if (fs.existsSync(hiTileDir)) {
+  for (const file of fs.readdirSync(hiTileDir).filter(f => f.toLowerCase().endsWith('.png')).sort()) {
+    const key = 'gb_hi_' + file.slice(0, -4);
+    assets[key] = 'data:image/png;base64,' + fs.readFileSync(path.join(hiTileDir, file)).toString('base64');
+  }
+}
 
 fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
 const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
