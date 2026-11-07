@@ -123,20 +123,31 @@ function attachSocket(ws) {
         const t = Date.now(); if (t - state.lastAttack < 650) return send(ws, 'error', { code: 'action_rate_limited' });
         state.lastAttack = t;
         const targetId = String(msg.payload.targetId || '');
-        const target = await pool.query('SELECT id,name,hp,max_hp,level,zone_id FROM world_mobs WHERE id=$1 AND zone_id=$2 AND alive=true FOR UPDATE', [targetId, state.zoneId]);
-        if (!target.rowCount) return send(ws, 'error', { code: 'target_unavailable' });
-        const mob = target.rows[0];
-        if (Math.abs(state.x - Number(msg.payload.targetX ?? state.x)) + Math.abs(state.y - Number(msg.payload.targetY ?? state.y)) > 3) return send(ws, 'error', { code: 'target_out_of_range' });
-        const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + crypto.randomInt(0, 7)));
-        const hp = Math.max(0, mob.hp - damage);
-        await pool.query('UPDATE world_mobs SET hp=$1,alive=$2 WHERE id=$3', [hp, hp > 0, mob.id]);
-        const event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
+        const tx = await pool.connect();
+        let event, reward = null;
+        try {
+          await tx.query('BEGIN');
+          const target = await tx.query('SELECT id,name,hp,max_hp,level,zone_id,x,y FROM world_mobs WHERE id=$1 AND zone_id=$2 AND alive=true FOR UPDATE', [targetId, state.zoneId]);
+          if (!target.rowCount) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_unavailable' }); }
+          const mob = target.rows[0];
+          const distance = Math.abs(state.x - Number(mob.x)) + Math.abs(state.y - Number(mob.y));
+          if (distance > 3) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_out_of_range' }); }
+          const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + crypto.randomInt(0, 7)));
+          const hp = Math.max(0, mob.hp - damage);
+          await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
+          event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
+          if (hp === 0) {
+            const xp = Math.max(1, Number(mob.level) * 12);
+            await tx.query('UPDATE characters SET xp=xp+$1,updated_at=now() WHERE id=$2', [xp, state.character.id]);
+            reward = { xp, gold: 0, source: mob.id };
+          }
+          await tx.query('COMMIT');
+        } catch (error) {
+          await tx.query('ROLLBACK').catch(() => {});
+          throw error;
+        } finally { tx.release(); }
         broadcastZone(state.zoneId, 'combat.resolved', event);
-        if (hp === 0) {
-          const xp = Math.max(1, Number(mob.level) * 12);
-          await pool.query('UPDATE characters SET xp=xp+$1,updated_at=now() WHERE id=$2', [xp, state.character.id]);
-          send(ws, 'loot.reward', { xp, gold: 0, source: mob.id });
-        }
+        if (reward) send(ws, 'loot.reward', reward);
         return;
       }
       if (msg.type === 'chat.send') {
