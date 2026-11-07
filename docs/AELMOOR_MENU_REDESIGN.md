@@ -44,6 +44,13 @@
 - `src/ui_dark.js`: existing Sanctum theme; use as a foundation for the gold/plum palette rather than introducing a competing drawing system.
 - `tools/build-itch.cjs`: standalone HTML5 packaging.
 
+## Implemented in this branch
+
+- Updated the shared Sanctum palette in `src/ui_dark.js` to midnight violet, lavender, warm gold and ivory.
+- Restyled the title-screen fallback scene in `src/scenes_world.js` with a darker moonlit sky, violet mountains/castle, gold selection treatment and dark footer.
+- Restyled the save-slot screen with plum panels, gold selection markers and ivory text.
+- Existing title navigation, save-slot loading, deletion and overwrite confirmation logic were retained.
+
 ## Asset integration status
 
 The nine uploaded screen crops and source sheet are currently a **conversation-side reference pack**. This specification does not claim that those PNGs have been committed to Git, loaded by the game, or included in the itch.io ZIP. Before runtime integration, add the PNGs under `assets/aelmoor_menu/`, add them to the standalone builder's asset manifest, and verify each path in both the development and embedded HTML5 builds.
