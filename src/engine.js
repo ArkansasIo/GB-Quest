@@ -349,6 +349,55 @@ function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
   fill(x + 2, y + 2, w - 4, 1, 1); fill(x + 2, y + 2, 1, h - 4, 1);
 }
+function drawMenuBackdrop(scene = 'ap_scene_wilderness') {
+  const art = IMG[scene] && spr(scene, W, H, { clean: true });
+  if (art) blit(art, 0, 0);
+  else {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#11132d'); sky.addColorStop(0.58, '#302346'); sky.addColorStop(1, '#5a3541');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#17172d'; ctx.beginPath(); ctx.moveTo(0, 98); ctx.lineTo(28, 58); ctx.lineTo(52, 92); ctx.lineTo(82, 47); ctx.lineTo(112, 91); ctx.lineTo(142, 54); ctx.lineTo(W, 90); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+  }
+  ctx.save();
+  const shade = ctx.createLinearGradient(0, 0, 0, H);
+  shade.addColorStop(0, 'rgba(5,7,21,.42)'); shade.addColorStop(.52, 'rgba(8,7,20,.24)'); shade.addColorStop(1, 'rgba(6,7,17,.72)');
+  ctx.fillStyle = shade; ctx.fillRect(0, 0, W, H);
+  const moonGlow = ctx.createRadialGradient(126, 24, 2, 126, 24, 37);
+  moonGlow.addColorStop(0, 'rgba(255,220,156,.2)'); moonGlow.addColorStop(1, 'rgba(151,118,228,0)');
+  ctx.fillStyle = moonGlow; ctx.fillRect(88, 0, 72, 64);
+  ctx.restore();
+}
+function drawOrnatePanel(x, y, w, h, title) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(8,9,22,.88)'; ctx.fillRect(x, y, w, h);
+  ctx.lineWidth = 2; ctx.strokeStyle = '#100b18'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+  ctx.lineWidth = 1; ctx.strokeStyle = '#e1ae52'; ctx.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
+  ctx.strokeStyle = 'rgba(255,222,139,.58)'; ctx.strokeRect(x + 5.5, y + 5.5, w - 11, h - 11);
+  ctx.fillStyle = '#f1c76d';
+  ctx.fillRect(x + 4, y + 4, 4, 1); ctx.fillRect(x + 4, y + 4, 1, 4);
+  ctx.fillRect(x + w - 8, y + 4, 4, 1); ctx.fillRect(x + w - 5, y + 4, 1, 4);
+  ctx.fillRect(x + 4, y + h - 5, 4, 1); ctx.fillRect(x + 4, y + h - 8, 1, 4);
+  ctx.fillRect(x + w - 8, y + h - 5, 4, 1); ctx.fillRect(x + w - 5, y + h - 8, 1, 4);
+  ctx.restore();
+  if (title) {
+    const tw = Math.min(w - 18, String(title).length * 6 + 16), tx = x + (w - tw) / 2;
+    fill(tx, y - 3, tw, 11, '#110d1d');
+    ctx.save(); ctx.strokeStyle = '#e1ae52'; ctx.lineWidth = 1; ctx.strokeRect(tx + .5, y - 2.5, tw - 1, 10); ctx.restore();
+    textC(title, x + w / 2, y - 1, '#ffe3a0');
+  }
+}
+function drawMenuButton(x, y, w, h, label, selected = false) {
+  if (selected) {
+    fill(x + 2, y + 1, w - 4, h - 2, 'rgba(157,91,33,.58)');
+    ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.shadowColor = '#ffb738'; ctx.shadowBlur = 4; ctx.strokeRect(x + 1.5, y + .5, w - 3, h - 1); ctx.restore();
+    text('>', x + 5, y + Math.max(0, (h - 9) >> 1), '#fff0c2');
+  }
+  textC(label, x + w / 2 + (selected ? 2 : 0), y + Math.max(0, (h - 9) >> 1), selected ? '#fff0c2' : '#e3deeb');
+}
+function drawMenuHeader(title, subtitle = '') {
+  textC(title, 80, 4, '#ffe2a0');
+  if (subtitle) textC(subtitle, 80, 14, '#ddd3e6');
+}
 function bar(x, y, w, h, v, max, c = 2) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, 0);
   const f = Math.round((w - 2) * Math.max(0, Math.min(1, max ? v / max : 0)));
@@ -660,8 +709,8 @@ class Dialog {
   draw() {
     const y = H - 44, blackbird = S.uiTheme === 'blackbird';
     if (blackbird) { fill(1, y - 1, W - 2, 43, '#b09258'); fill(2, y, W - 4, 41, '#080a0c'); fill(3, y + 1, W - 6, 39, '#171a1f'); fill(4, y + 2, W - 8, 1, '#343941'); }
-    else frame(2, y, W - 4, 42);
-    if (this.who) { const w = this.who.length * 6 + 8; if (blackbird) { fill(3, y - 12, w + 2, 13, '#b09258'); fill(4, y - 11, w, 11, '#171a1f'); } else frame(4, y - 11, w, 12); text(this.who, 8, y - 9, blackbird ? '#e1c78f' : 2); }
+    else drawOrnatePanel(2, y, W - 4, 42);
+    if (this.who) { const w = this.who.length * 6 + 8; if (blackbird) { fill(3, y - 12, w + 2, 13, '#b09258'); fill(4, y - 11, w, 11, '#171a1f'); } else drawOrnatePanel(4, y - 11, w, 12); text(this.who, 8, y - 9, blackbird ? '#e1c78f' : '#ffe3a0'); }
     const L = this.p[this.i]; if (!L) return;
     text(L.slice(0, Math.floor(this.c)), 8, y + 6);
     if (this.c >= L.length && (frameN >> 4) % 2) text('v', W - 14, y + 31);
@@ -687,8 +736,8 @@ class Choice { // scrolling list with optional prompt
         fill(2, H - 44, W - 4, 42, '#080a0c');
         fill(2, H - 44, W - 4, 1, '#b09258');
         fill(2, H - 3, W - 4, 1, '#51432f');
-      } else frame(2, H - 44, W - 4, 42);
-      text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38, blackbird ? '#e1c78f' : undefined);
+      } else drawOrnatePanel(2, H - 44, W - 4, 42);
+      text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38, blackbird ? '#e1c78f' : '#fff0c2');
       bottom = H - 46;
     }
     const vis = this.o.slice(this.top, this.top + this.rows);
@@ -699,15 +748,18 @@ class Choice { // scrolling list with optional prompt
       fill(x + 1, y + 1, w - 2, h - 2, '#080a0c');
       fill(x + 2, y + 2, w - 4, h - 4, '#171a1f');
       fill(x + 4, y + 4, w - 8, 1, '#343941');
-    } else frame(x, y, w, h);
+    } else drawOrnatePanel(x, y, w, h);
     vis.forEach((s, j) => {
       const i = this.top + j, rowY = y + 5 + j * 11;
       if (blackbird && i === this.i) {
         fill(x + 3, rowY - 2, w - 6, 10, '#51432f');
         fill(x + 4, rowY - 1, w - 8, 8, '#29231a');
+      } else if (i === this.i) {
+        fill(x + 3, rowY - 2, w - 6, 10, 'rgba(157,91,33,.58)');
+        ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + 3.5, rowY - 1.5, w - 7, 9); ctx.restore();
       }
-      text(String(s).slice(0, 24), x + 13, rowY, blackbird ? (i === this.i ? '#f2d99f' : '#d1d0ca') : undefined);
-      if (i === this.i) text('>', x + 5, rowY, blackbird ? '#e0bd78' : undefined);
+      text(String(s).slice(0, 24), x + 13, rowY, blackbird ? (i === this.i ? '#f2d99f' : '#d1d0ca') : (i === this.i ? '#fff0c2' : '#e3deeb'));
+      if (i === this.i) text('>', x + 5, rowY, blackbird ? '#e0bd78' : '#ffe3a0');
     });
     if (this.o.length > this.rows) {
       if (this.top > 0) text('^', x + w - 9, y + 2, 2);

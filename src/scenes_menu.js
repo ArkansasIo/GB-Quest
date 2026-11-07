@@ -1193,34 +1193,25 @@ class SettingsScene extends ListScene {
   draw() {
     // Aelmoor's title-page visual language: ink-violet panels, gold rules,
     // lantern accents and a readable 11-row settings viewport.
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#090d26'); bg.addColorStop(.58, '#211b42'); bg.addColorStop(1, '#39294d');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    for (let n = 0; n < 18; n++) {
-      ctx.globalAlpha = .22 + (n % 3) * .1;
-      fill((n * 41 + 9) % W, (n * 17 + 8) % 130, 1, 1, n % 4 ? '#b7a9ed' : '#ffd17a');
-    }
-    ctx.globalAlpha = 1;
-    frame(2, 2, 156, 139, 1);
-    fill(5, 5, 150, 15, '#17112d');
-    textC('AELMOOR  •  OPTIONS', 80, 9, 'gold');
+    drawMenuBackdrop();
+    drawOrnatePanel(2, 7, 156, 134, 'OPTIONS');
+    textC('REALM SETTINGS', 80, 12, '#ddd3e6');
     fill(7, 22, 146, 2, '#9a672e');
     const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
     this.items().slice(this.top, this.top + 11).forEach((label, j) => {
       const index = this.top + j, y = 25 + j * 9;
       if (index === this.i) {
-        fill(8, y - 2, 144, 9, '#49301f');
-        frame(7, y - 3, 146, 10, 1);
-        fill(9, y - 1, 2, 6, '#ffd36b');
+        fill(8, y - 2, 144, 9, 'rgba(157,91,33,.52)');
+        ctx.save(); ctx.strokeStyle = '#e8b95a'; ctx.lineWidth = 1; ctx.strokeRect(8.5, y - 1.5, 143, 8); ctx.restore();
       }
-      text(label, 13, y, index === this.i ? 'gold' : 2);
+      text(label, 13, y, index === this.i ? '#ffe3a0' : '#ddd3e6');
       if (typeof v[index] === 'number') segBar(111, y, v[index], 6);
-      else textR(String(v[index]), 147, y, index === this.i ? 'gold' : 2);
+      else textR(String(v[index]), 147, y, index === this.i ? '#ffe3a0' : '#cbb9ed');
     });
-    fill(8, 127, 144, 9, '#100d22');
-    text('UP/DOWN: MOVE   LEFT/RIGHT: CHANGE', 11, 129, 2);
-    text('A: SELECT   B: SAVE & BACK', 11, 136, 'gold');
+    fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
+    text('UP/DOWN MOVE   LEFT/RIGHT CHANGE', 9, 127, '#ddd3e6');
+    text('A SELECT   B SAVE & BACK', 9, 135, '#ffe3a0');
   }
 }
 class GraphicsScene extends ListScene {
@@ -1279,20 +1270,18 @@ class GraphicsScene extends ListScene {
     saveSettings(); SFX.toggle();
   }
   draw() {
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#090d26'); bg.addColorStop(.58, '#211b42'); bg.addColorStop(1, '#39294d');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    frame(2, 2, 156, 139, 1); fill(5, 5, 150, 15, '#17112d');
-    textC('AELMOOR  •  GRAPHICS', 80, 9, 'gold');
+    drawMenuBackdrop();
+    drawOrnatePanel(2, 6, 156, 135, 'GRAPHICS');
+    textC('DISPLAY & PICTURE', 80, 11, '#ddd3e6');
     this.items().forEach((label, j) => {
       const y = 23 + j * 10, selected = j === this.i;
-      if (selected) { fill(7, y - 2, 146, 10, '#49301f'); frame(6, y - 3, 148, 11, 1); }
-      text(label, 11, y, selected ? 'gold' : 2);
-      textR(this.value(label), 148, y, selected ? 'gold' : 2);
+      if (selected) { fill(7, y - 2, 146, 10, 'rgba(157,91,33,.52)'); ctx.save(); ctx.strokeStyle = '#e8b95a'; ctx.lineWidth = 1; ctx.strokeRect(7.5, y - 1.5, 145, 9); ctx.restore(); }
+      text(label, 11, y, selected ? '#ffe3a0' : '#ddd3e6');
+      textR(this.value(label), 148, y, selected ? '#ffe3a0' : '#cbb9ed');
     });
-    fill(8, 127, 144, 10, '#100d22');
-    text('UP/DOWN: MOVE  LEFT/RIGHT: CHANGE', 10, 129, 2);
-    text('A: CHANGE  B: SAVE & BACK', 10, 136, 'gold');
+    fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
+    text('UP/DOWN MOVE  LEFT/RIGHT CHANGE', 8, 127, '#ddd3e6');
+    text('A CHANGE  B SAVE & BACK', 8, 135, '#ffe3a0');
   }
 }
 class KeybindScene extends ListScene {
