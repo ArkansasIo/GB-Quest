@@ -125,6 +125,7 @@ jobs:
             assets/*.png
             assets_hd64/*.png
             assets_hd64/*.json
+            assets_hd/gbtiles/**
             assets/index.json
             dist/gbquest.html
             dist/gbquest-fullscreen.html
