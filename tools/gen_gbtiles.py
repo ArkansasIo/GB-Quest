@@ -506,5 +506,5 @@ with open(manifest_path, "w", encoding="utf-8") as manifest_file:
         "alpha": "preserved",
         "assets": HI_MANIFEST
     }, manifest_file, indent=2)
-    manifest_file.write("\\n")
+    manifest_file.write("\n")
 print(f"generated {count} Game Boy tiles and sprites; exported {hi_count} crisp HD variants (64px and 96px) to assets_hd/gbtiles")
