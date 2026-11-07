@@ -113,6 +113,8 @@ jobs:
             echo "Generated assets already match the repository."
           else
             git commit -m "Regenerate and repair GB Quest game assets"
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
       - uses: actions/upload-artifact@v7
