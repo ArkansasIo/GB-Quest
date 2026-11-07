@@ -26,7 +26,19 @@ const citadelCreatureFor = b => {
   return IMG[image] ? image : null;
 };
 const CITADEL_BOSSES = ['ember-ancient','frost-tyrant','void-oracle','dread-colossus','storm-seraph','hollow-king'];
+let AP_PACK_ENEMIES = null;
+function assetPackEnemyFor(b) {
+  if (S.art !== 'packs' || !b) return null;
+  AP_PACK_ENEMIES ||= Object.keys(IMG).filter(name => /^ap_enemies_\d+$/.test(name)).sort();
+  if (!AP_PACK_ENEMIES.length) return null;
+  const familyIndex = { ooze: 0, beast: 4, humanoid: 2, undead: 3, fiend: 13, dragon: 7, giant: 10, plant: 12, aberration: 8, monstrosity: 10, fey: 12 };
+  const index = familyIndex[b.fam] ?? hashStr(`${b.fam}|${b.sub}|${b.variant}|${b.id}`) % AP_PACK_ENEMIES.length;
+  const preferred = `ap_enemies_${String(index).padStart(3, '0')}`;
+  return IMG[preferred] ? preferred : AP_PACK_ENEMIES[index % AP_PACK_ENEMIES.length];
+}
 const monsterArt = b => {
+  const supplied = assetPackEnemyFor(b);
+  if (supplied) return supplied;
   if (b && (b.boss || b.cat === 'raid' || b.cat === 'world') && S.citadelArt !== false) {
     const boss = 'citadel_boss_' + CITADEL_BOSSES[hashStr(String(b.id || b.name || b.sub)) % CITADEL_BOSSES.length];
     if (IMG[boss]) return boss;

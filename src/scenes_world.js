@@ -220,7 +220,17 @@ class Prologue {
     flare.addColorStop(0, this.expansion ? `hsla(${hue}, 90%, 65%, .4)` : 'rgba(255,172,90,.34)');
     flare.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = flare; ctx.fillRect(34, 17, 92, 88);
-    blit(sprFit(scene.art || 'px_waypoint', 48), 56 + Math.round(Math.sin(this.t / 21) * 3), 34 + Math.round(Math.sin(this.t / 15) * 2));
+    const suppliedScene = !this.expansion && IMG.ap_scene_shadowbane;
+    if (suppliedScene) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(suppliedScene, 0, 0, suppliedScene.width, suppliedScene.height, 0, 18, W, 60);
+      ctx.restore();
+      fill(0, 18, W, 60, 'rgba(7,8,22,.18)');
+    } else {
+      blit(sprFit(scene.art || 'px_waypoint', 48), 56 + Math.round(Math.sin(this.t / 21) * 3), 34 + Math.round(Math.sin(this.t / 15) * 2));
+    }
     fill(0, 0, W, 17, 0); fill(0, 17, W, 1, 2);
     textC(this.expansion ? `EXPANSION ${this.story.n}` : 'AELMOOR - THE BEGINNING', 80, 4, 'gold');
     textC(scene.title || this.story.name, 80, 79, 'gold');
@@ -510,6 +520,44 @@ const blacksmithTier = level => BLACKSMITH_TIERS.filter(t => level >= t.level).a
 const TILE_SVC = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', a: 'bank' };
 let FIELD = null;
 const currentField = () => FIELD;
+const WOODS_SPRITES = new Map();
+const WOODS_CROPS = {
+  broad: [264, 0, 88, 88], round: [128, 0, 88, 88], leafy: [8, 8, 88, 88], rooted: [128, 96, 96, 88], pine: [308, 84, 44, 56],
+};
+const WOODS_PALETTES = {
+  meadow: ['#20513a', '#317a3d', '#48a84b', '#80c959', '#cae07a'], coast: ['#1f4f58', '#267a6c', '#429e7b', '#82bd85', '#c9d995'],
+  marsh: ['#233d2d', '#356534', '#4e8537', '#7e9e49', '#bbc16b'], jungle: ['#154b36', '#1e773d', '#319d43', '#58c95a', '#a4e66b'],
+  snow: ['#465b69', '#66889a', '#8fb1bd', '#c4dce0', '#f1f4e6'], badlands: ['#5c3f2d', '#8a5b31', '#b77a38', '#dba84c', '#eed18a'],
+  volcanic: ['#3b2728', '#70402b', '#a9502d', '#d56b2b', '#ffb64d'], dusk: ['#35273f', '#5d3c70', '#80549b', '#ad77bd', '#e0afd4'],
+  crystal: ['#20495a', '#307988', '#4aaab3', '#80d1cc', '#d3f2d8'],
+};
+function woodsSprite(name, biome = 'meadow') {
+  if (!IMG.woods_pixels || !WOODS_CROPS[name]) return null;
+  const key = `${biome}:${name}`;
+  if (!WOODS_SPRITES.has(key)) {
+    const [x, y, w, h] = WOODS_CROPS[name], canvas = mkCanvas(w, h), draw = canvas.getContext('2d');
+    draw.imageSmoothingEnabled = false;
+    draw.drawImage(IMG.woods_pixels, x, y, w, h, 0, 0, w, h);
+    const palette = WOODS_PALETTES[biome] || WOODS_PALETTES.meadow, image = draw.getImageData(0, 0, w, h);
+    for (let i = 0; i < image.data.length; i += 4) {
+      const r = image.data[i], g = image.data[i + 1], b = image.data[i + 2];
+      if (image.data[i + 3] && g > r * 1.12 && g > b * 1.05) {
+        const light = Math.round((r * 0.2126 + g * 0.7152 + b * 0.0722) / 51);
+        const hex = palette[Math.max(0, Math.min(4, light))];
+        image.data[i] = parseInt(hex.slice(1, 3), 16); image.data[i + 1] = parseInt(hex.slice(3, 5), 16); image.data[i + 2] = parseInt(hex.slice(5, 7), 16);
+      }
+    }
+    draw.putImageData(image, 0, 0);
+    WOODS_SPRITES.set(key, canvas);
+  }
+  return WOODS_SPRITES.get(key);
+}
+function woodsVariant(tile, x, y, map) {
+  let hash = 2166136261;
+  for (const ch of `${map}:${x}:${y}`) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619);
+  const variants = tile === 'F' ? ['pine', 'pine', 'broad'] : tile === 'D' ? ['broad', 'rooted', 'round'] : ['leafy', 'round', 'rooted', 'broad'];
+  return variants[(hash >>> 0) % variants.length];
+}
 window.GBQWorldMapMini = () => {
   if (!G || !FIELD || !FIELD.m || !Array.isArray(FIELD.m.rows)) return null;
   const rows = FIELD.m.rows;
@@ -522,6 +570,13 @@ class Field {
   reload() {
     if (G.inst) { this.m = G.inst.map; this.zone = null; }
     else { this.m = buildZoneCached(G.map); this.zone = ZONE_BY_ID[G.map]; }
+    this.woods = [];
+    if (this.zone && !this.zone.town && WOODS_PALETTES[this.zone.biome]) {
+      for (let y = 1; y < this.m.rows.length - 1; y++) for (let x = 1; x < this.m.rows[y].length - 1; x++) {
+        const tile = this.m.rows[y][x];
+        if ('TFD'.includes(tile)) this.woods.push({ kind: 'woods', x, y, biome: this.zone.biome, variant: woodsVariant(tile, x, y, G.map), sy: y * T + T });
+      }
+    }
     this.toast = 90; this.trail = []; Physics.clear();
     window.SOLID_AT = null;
     Music.play(this.m.music);
@@ -713,6 +768,7 @@ class Field {
         else blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
       }
     const list = this.entities().map(e => Object.assign(e, { sy: e.y * T }));
+    if (S.art !== 'classic' && IMG.woods_pixels) list.push(...this.woods);
     list.push({ kind: 'player', sy: py });
     G.companions.slice(0, 3).forEach((c, i) => { const tr = this.trail[(i + 1) * 2 - 1]; if (tr) list.push({ kind: 'follower', c, x: tr[0], y: tr[1], dir: tr[2], sy: tr[1] * T - 1 }); });
     if (G.pet) { const tr = this.trail[G.companions.length ? 7 : 1]; if (tr) list.push({ kind: 'pet', x: tr[0], y: tr[1], sy: tr[1] * T - 2 }); }
@@ -742,6 +798,13 @@ class Field {
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
+      else if (e.kind === 'woods') {
+        const tree = woodsSprite(e.variant, e.biome);
+        if (tree) {
+          const pine = e.variant === 'pine', w = pine ? 22 : 34, h = pine ? 30 : 36;
+          ctx.drawImage(tree, ex + (T - w) / 2, ey + T - h, w, h);
+        }
+      }
       else if (e.kind === 'npc') {
         if (PIX) {
           const c = typeof npcSprite === 'function' ? npcSprite(e) : walker(npcLook(e.spr), 'down', 0);

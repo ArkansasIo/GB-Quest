@@ -4,7 +4,7 @@
 
 The interactive version is `dist/atlas.html` (pan, zoom, roads, sea lanes, route planner). In game, press **M** or the **ATLAS** button.
 
-## Regions (28)
+## Regions (52)
 
 | Region | Land | Biome | Levels | Act / Exp | Description |
 |---|---|---|---|---|---|
@@ -21,23 +21,47 @@ The interactive version is `dist/atlas.html` (pan, zoom, roads, sea lanes, route
 | Ashen Barrows | Dread Wastes | dusk | 20–26 | Act 10 | Tombs of the old kings, stirring. |
 | Silverhaven | Tel'Layl | crystal | 24–30 | Act 11 | Crystal towers of the far elves. |
 | Duskmoor | Swamp Of Sorrow | dusk | 28–40 | Act 12 | The shadowed land where the sun forgot to rise. |
-| Coral Strand | Northern Isles | coast | 40–67 | Exp 1 | Islands torn from the sea floor. |
-| Wreckwood | Western Isles | jungle | 67–93 | Exp 1 | Islands torn from the sea floor. |
-| Mangrove Maze | Southern Isles | marsh | 93–120 | Exp 1 | Islands torn from the sea floor. |
-| Pearl Trench | Crystal Lake | marsh | 120–160 | Exp 2 | Cities beneath the waves. |
-| Glimmer Reef | Crystal River | crystal | 160–200 | Exp 2 | Cities beneath the waves. |
-| Black Fathom | Hatchery | dusk | 200–240 | Exp 2 | Cities beneath the waves. |
-| Cloudholm | Estate Thornhaart | snow | 240–280 | Exp 3 | Floating isles above the clouds. |
-| Glass Peaks | Reothian Glades | crystal | 280–320 | Exp 3 | Floating isles above the clouds. |
-| Windmeadow | Creek Of Life | meadow | 320–360 | Exp 3 | Floating isles above the clouds. |
-| Cinder Rift | Ashlands | volcanic | 360–420 | Exp 4 | A wound in the world, bleeding fiends. |
-| Howling Gap | Redrock | dusk | 420–480 | Exp 4 | A wound in the world, bleeding fiends. |
-| Scar Plains | Kron'Mar | badlands | 480–540 | Exp 4 | A wound in the world, bleeding fiends. |
-| Dawnshore | Desert Of Esrah N | crystal | 540–600 | Exp 5 | Beyond the sunrise, the gods wait. |
-| Halo Fields | Desert Of Esrah S | coast | 600–660 | Exp 5 | Beyond the sunrise, the gods wait. |
-| Last Peak | Draenin | snow | 660–720 | Exp 5 | Beyond the sunrise, the gods wait. |
+| Coral Strand | Northern Isles | coast | 40–67 | Exp 1 | Sail the Shattered Isles and reclaim the throne below the waves. |
+| Wreckwood | Western Isles | jungle | 67–93 | Exp 1 | Sail the Shattered Isles and reclaim the throne below the waves. |
+| Mangrove Maze | Southern Isles | marsh | 93–120 | Exp 1 | Sail the Shattered Isles and reclaim the throne below the waves. |
+| Pearl Trench | Crystal Lake | marsh | 120–160 | Exp 2 | Cities beneath the waves answer the call of an ancient dragon. |
+| Glimmer Reef | Crystal River | crystal | 160–200 | Exp 2 | Cities beneath the waves answer the call of an ancient dragon. |
+| Black Fathom | Hatchery | dusk | 200–240 | Exp 2 | Cities beneath the waves answer the call of an ancient dragon. |
+| Cloudholm | Estate Thornhaart | snow | 240–280 | Exp 3 | A kingdom above the clouds faces a storm without end. |
+| Glass Peaks | Reothian Glades | crystal | 280–320 | Exp 3 | A kingdom above the clouds faces a storm without end. |
+| Windmeadow | Creek Of Life | meadow | 320–360 | Exp 3 | A kingdom above the clouds faces a storm without end. |
+| Cinder Rift | Ashlands | volcanic | 360–420 | Exp 4 | Cross the Emberfell frontier and seal its burning rift. |
+| Howling Gap | Redrock | dusk | 420–480 | Exp 4 | Cross the Emberfell frontier and seal its burning rift. |
+| Scar Plains | Kron'Mar | badlands | 480–540 | Exp 4 | Cross the Emberfell frontier and seal its burning rift. |
+| Dawnshore | Desert Of Esrah N | crystal | 540–600 | Exp 5 | The last light falters; seek the dawn beyond the known world. |
+| Halo Fields | Desert Of Esrah S | coast | 600–660 | Exp 5 | The last light falters; seek the dawn beyond the known world. |
+| Last Peak | Draenin | snow | 660–720 | Exp 5 | The last light falters; seek the dawn beyond the known world. |
+| Prism Coast | Prism Coast | crystal | 100–140 | Exp 6 | A living crystal repeats the dead. |
+| Glasswater Bay | Glasswater | coast | 140–180 | Exp 6 | A living crystal repeats the dead. |
+| Echo Mire | Echo Mire | dusk | 180–220 | Exp 6 | A living crystal repeats the dead. |
+| Rimehold | Rimehold | snow | 160–207 | Exp 7 | An old crown wakes under the ice. |
+| Shardwind Pass | Shardwind | crystal | 207–253 | Exp 7 | An old crown wakes under the ice. |
+| Frostscar Waste | Frostscar | badlands | 253–300 | Exp 7 | An old crown wakes under the ice. |
+| Spellgrove | Spellgrove | crystal | 220–273 | Exp 8 | Floating isles of spell-light. |
+| Leymeadow | Leymeadow | meadow | 273–327 | Exp 8 | Floating isles of spell-light. |
+| Cinder Arcanum | Arcanum | volcanic | 327–380 | Exp 8 | Floating isles of spell-light. |
+| Crimson Moor | Crimson Moor | dusk | 300–353 | Exp 9 | Under a red moon, allies vanish. |
+| Leech Fen | Leech Fen | marsh | 353–407 | Exp 9 | Under a red moon, allies vanish. |
+| Red Dunes | Red Dunes | badlands | 407–460 | Exp 9 | Under a red moon, allies vanish. |
+| Wyrmfire Caldera | Caldera | volcanic | 380–433 | Exp 10 | A dragon guards the cloud city. |
+| Skypeak | Skypeak | snow | 433–487 | Exp 10 | A dragon guards the cloud city. |
+| Scorched Plains | Scorchlands | badlands | 487–540 | Exp 10 | A dragon guards the cloud city. |
+| Fjordholm | Fjordholm | snow | 460–513 | Exp 11 | Old heroes wake to a northern song. |
+| Shield Coast | Shield Coast | coast | 513–567 | Exp 11 | Old heroes wake to a northern song. |
+| Mead Halls | Mead Halls | meadow | 567–620 | Exp 11 | Old heroes wake to a northern song. |
+| Gloomhaven Woods | Gloomhaven | dusk | 540–593 | Exp 12 | Shadows move before their owners. |
+| Nightvine Jungle | Nightvine | jungle | 593–647 | Exp 12 | Shadows move before their owners. |
+| Shade Marsh | Shade Marsh | marsh | 647–700 | Exp 12 | Shadows move before their owners. |
+| Greenheart Vale | Greenheart | meadow | 600–640 | Exp 13 | A wild green world, left to grow. |
+| Wildroot Jungle | Wildroot | jungle | 640–680 | Exp 13 | A wild green world, left to grow. |
+| Sunshore | Sunshore | coast | 680–720 | Exp 13 | A wild green world, left to grow. |
 
-## Zones (90)
+## Zones (154)
 
 | Zone | Region | Continent | Sub-biome | Levels | Roads to |
 |---|---|---|---|---|---|
@@ -125,12 +149,76 @@ The interactive version is `dist/atlas.html` (pan, zoom, roads, sea lanes, route
 | Scar Plains East | Scar Plains | South Karra | Bone Dunes | 510–540 | Howling Gap East, Scar Plains |
 | Dawnshore | Dawnshore | South Karra | Prism Grove | 540–560 | Cinder Rift South, Dawnshore East, Halo Fields |
 | Dawnshore East | Dawnshore | South Karra | Glass Shore | 560–580 | Dawnshore, Dawnshore South, Halo Fields East |
-| Dawnshore South | Dawnshore | South Karra | Shard Fields | 580–600 | Dawnshore East, Halo Fields South |
+| Dawnshore South | Dawnshore | South Karra | Shard Fields | 580–600 | Dawnshore East, Halo Fields South, Prism Coast |
 | Halo Fields | Halo Fields | South Karra | Salt Flats | 600–620 | Howling Gap South, Dawnshore, Halo Fields East, Last Peak |
 | Halo Fields East | Halo Fields | South Karra | Tide Caves | 620–640 | Dawnshore East, Halo Fields, Halo Fields South, Last Peak East |
-| Halo Fields South | Halo Fields | South Karra | Dune Beach | 640–660 | Dawnshore South, Halo Fields East |
+| Halo Fields South | Halo Fields | South Karra | Dune Beach | 640–660 | Dawnshore South, Halo Fields East, Glasswater Bay |
 | Last Peak | Last Peak | The West Isles | Tundra | 660–690 | Halo Fields, Last Peak East |
 | Last Peak East | Last Peak | The West Isles | Glacier | 690–720 | Halo Fields East, Last Peak |
+| Prism Coast | Prism Coast | Crystalized Realms | Prism Grove | 100–113 | Dawnshore South, Prism Coast East, Glasswater Bay |
+| Prism Coast East | Prism Coast | Crystalized Realms | Glass Shore | 113–127 | Prism Coast, Prism Coast South, Glasswater Bay East |
+| Prism Coast South | Prism Coast | Crystalized Realms | Shard Fields | 127–140 | Prism Coast East, Glasswater Bay South, Rimehold |
+| Glasswater Bay | Glasswater Bay | Crystalized Realms | Salt Flats | 140–153 | Halo Fields South, Prism Coast, Glasswater Bay East, Echo Mire |
+| Glasswater Bay East | Glasswater Bay | Crystalized Realms | Tide Caves | 153–167 | Prism Coast East, Glasswater Bay, Glasswater Bay South, Echo Mire East |
+| Glasswater Bay South | Glasswater Bay | Crystalized Realms | Dune Beach | 167–180 | Prism Coast South, Glasswater Bay East, Shardwind Pass |
+| Echo Mire | Echo Mire | Crystalized Realms | Gloom Moor | 180–200 | Glasswater Bay, Echo Mire East |
+| Echo Mire East | Echo Mire | Crystalized Realms | Grave Hills | 200–220 | Glasswater Bay East, Echo Mire |
+| Rimehold | Rimehold | Frostsong Dynasty | Tundra | 160–176 | Prism Coast South, Rimehold East, Shardwind Pass |
+| Rimehold East | Rimehold | Frostsong Dynasty | Glacier | 176–191 | Rimehold, Rimehold South, Shardwind Pass East |
+| Rimehold South | Rimehold | Frostsong Dynasty | Pine Taiga | 191–207 | Rimehold East, Shardwind Pass South, Spellgrove |
+| Shardwind Pass | Shardwind Pass | Frostsong Dynasty | Prism Grove | 207–222 | Glasswater Bay South, Rimehold, Shardwind Pass East, Frostscar Waste |
+| Shardwind Pass East | Shardwind Pass | Frostsong Dynasty | Glass Shore | 222–238 | Rimehold East, Shardwind Pass, Shardwind Pass South, Frostscar Waste East |
+| Shardwind Pass South | Shardwind Pass | Frostsong Dynasty | Shard Fields | 238–253 | Rimehold South, Shardwind Pass East, Leymeadow |
+| Frostscar Waste | Frostscar Waste | Frostsong Dynasty | Red Mesa | 253–277 | Shardwind Pass, Frostscar Waste East |
+| Frostscar Waste East | Frostscar Waste | Frostsong Dynasty | Bone Dunes | 277–300 | Shardwind Pass East, Frostscar Waste |
+| Spellgrove | Spellgrove | Arcane Ascension | Prism Grove | 220–238 | Rimehold South, Spellgrove East, Leymeadow |
+| Spellgrove East | Spellgrove | Arcane Ascension | Glass Shore | 238–255 | Spellgrove, Spellgrove South, Leymeadow East |
+| Spellgrove South | Spellgrove | Arcane Ascension | Shard Fields | 255–273 | Spellgrove East, Leymeadow South, Crimson Moor |
+| Leymeadow | Leymeadow | Arcane Ascension | Rolling Hills | 273–291 | Shardwind Pass South, Spellgrove, Leymeadow East, Cinder Arcanum |
+| Leymeadow East | Leymeadow | Arcane Ascension | Flower Fields | 291–309 | Spellgrove East, Leymeadow, Leymeadow South, Cinder Arcanum East |
+| Leymeadow South | Leymeadow | Arcane Ascension | Old Orchard | 309–327 | Spellgrove South, Leymeadow East, Leech Fen |
+| Cinder Arcanum | Cinder Arcanum | Arcane Ascension | Ash Plains | 327–354 | Leymeadow, Cinder Arcanum East |
+| Cinder Arcanum East | Cinder Arcanum | Arcane Ascension | Lava Fields | 354–380 | Leymeadow East, Cinder Arcanum |
+| Crimson Moor | Crimson Moor | Bloodmoon Conspiracy | Gloom Moor | 300–318 | Spellgrove South, Crimson Moor East, Leech Fen |
+| Crimson Moor East | Crimson Moor | Bloodmoon Conspiracy | Grave Hills | 318–335 | Crimson Moor, Crimson Moor South, Leech Fen East |
+| Crimson Moor South | Crimson Moor | Bloodmoon Conspiracy | Shade Wood | 335–353 | Crimson Moor East, Leech Fen South, Wyrmfire Caldera |
+| Leech Fen | Leech Fen | Bloodmoon Conspiracy | Peat Bog | 353–371 | Leymeadow South, Crimson Moor, Leech Fen East, Red Dunes |
+| Leech Fen East | Leech Fen | Bloodmoon Conspiracy | Mist Fen | 371–389 | Crimson Moor East, Leech Fen, Leech Fen South, Red Dunes East |
+| Leech Fen South | Leech Fen | Bloodmoon Conspiracy | Sunken Wood | 389–407 | Crimson Moor South, Leech Fen East, Skypeak |
+| Red Dunes | Red Dunes | Bloodmoon Conspiracy | Red Mesa | 407–434 | Leech Fen, Red Dunes East |
+| Red Dunes East | Red Dunes | Bloodmoon Conspiracy | Bone Dunes | 434–460 | Leech Fen East, Red Dunes |
+| Wyrmfire Caldera | Wyrmfire Caldera | Dragonspire Odyssey | Ash Plains | 380–398 | Crimson Moor South, Wyrmfire Caldera East, Skypeak |
+| Wyrmfire Caldera East | Wyrmfire Caldera | Dragonspire Odyssey | Lava Fields | 398–415 | Wyrmfire Caldera, Wyrmfire Caldera South, Skypeak East |
+| Wyrmfire Caldera South | Wyrmfire Caldera | Dragonspire Odyssey | Cinder Cones | 415–433 | Wyrmfire Caldera East, Skypeak South, Fjordholm |
+| Skypeak | Skypeak | Dragonspire Odyssey | Tundra | 433–451 | Leech Fen South, Wyrmfire Caldera, Skypeak East, Scorched Plains |
+| Skypeak East | Skypeak | Dragonspire Odyssey | Glacier | 451–469 | Wyrmfire Caldera East, Skypeak, Skypeak South, Scorched Plains East |
+| Skypeak South | Skypeak | Dragonspire Odyssey | Pine Taiga | 469–487 | Wyrmfire Caldera South, Skypeak East, Shield Coast |
+| Scorched Plains | Scorched Plains | Dragonspire Odyssey | Red Mesa | 487–514 | Skypeak, Scorched Plains East |
+| Scorched Plains East | Scorched Plains | Dragonspire Odyssey | Bone Dunes | 514–540 | Skypeak East, Scorched Plains |
+| Fjordholm | Fjordholm | Whispers Of Valhalla | Tundra | 460–478 | Wyrmfire Caldera South, Fjordholm East, Shield Coast |
+| Fjordholm East | Fjordholm | Whispers Of Valhalla | Glacier | 478–495 | Fjordholm, Fjordholm South, Shield Coast East |
+| Fjordholm South | Fjordholm | Whispers Of Valhalla | Pine Taiga | 495–513 | Fjordholm East, Shield Coast South, Gloomhaven Woods |
+| Shield Coast | Shield Coast | Whispers Of Valhalla | Salt Flats | 513–531 | Skypeak South, Fjordholm, Shield Coast East, Mead Halls |
+| Shield Coast East | Shield Coast | Whispers Of Valhalla | Tide Caves | 531–549 | Fjordholm East, Shield Coast, Shield Coast South, Mead Halls East |
+| Shield Coast South | Shield Coast | Whispers Of Valhalla | Dune Beach | 549–567 | Fjordholm South, Shield Coast East, Nightvine Jungle |
+| Mead Halls | Mead Halls | Whispers Of Valhalla | Rolling Hills | 567–594 | Shield Coast, Mead Halls East |
+| Mead Halls East | Mead Halls | Whispers Of Valhalla | Flower Fields | 594–620 | Shield Coast East, Mead Halls |
+| Gloomhaven Woods | Gloomhaven Woods | Nightshade Chronicles | Gloom Moor | 540–558 | Fjordholm South, Gloomhaven Woods East, Nightvine Jungle |
+| Gloomhaven Woods East | Gloomhaven Woods | Nightshade Chronicles | Grave Hills | 558–575 | Gloomhaven Woods, Gloomhaven Woods South, Nightvine Jungle East |
+| Gloomhaven Woods South | Gloomhaven Woods | Nightshade Chronicles | Shade Wood | 575–593 | Gloomhaven Woods East, Nightvine Jungle South, Greenheart Vale |
+| Nightvine Jungle | Nightvine Jungle | Nightshade Chronicles | Canopy | 593–611 | Shield Coast South, Gloomhaven Woods, Nightvine Jungle East, Shade Marsh |
+| Nightvine Jungle East | Nightvine Jungle | Nightshade Chronicles | Vine Tangle | 611–629 | Gloomhaven Woods East, Nightvine Jungle, Nightvine Jungle South, Shade Marsh East |
+| Nightvine Jungle South | Nightvine Jungle | Nightshade Chronicles | Fern Gully | 629–647 | Gloomhaven Woods South, Nightvine Jungle East, Wildroot Jungle |
+| Shade Marsh | Shade Marsh | Nightshade Chronicles | Peat Bog | 647–674 | Nightvine Jungle, Shade Marsh East |
+| Shade Marsh East | Shade Marsh | Nightshade Chronicles | Mist Fen | 674–700 | Nightvine Jungle East, Shade Marsh |
+| Greenheart Vale | Greenheart Vale | Mythical Meadowlands | Rolling Hills | 600–613 | Gloomhaven Woods South, Greenheart Vale East, Wildroot Jungle |
+| Greenheart Vale East | Greenheart Vale | Mythical Meadowlands | Flower Fields | 613–627 | Greenheart Vale, Greenheart Vale South, Wildroot Jungle East |
+| Greenheart Vale South | Greenheart Vale | Mythical Meadowlands | Old Orchard | 627–640 | Greenheart Vale East, Wildroot Jungle South |
+| Wildroot Jungle | Wildroot Jungle | Mythical Meadowlands | Canopy | 640–653 | Nightvine Jungle South, Greenheart Vale, Wildroot Jungle East, Sunshore |
+| Wildroot Jungle East | Wildroot Jungle | Mythical Meadowlands | Vine Tangle | 653–667 | Greenheart Vale East, Wildroot Jungle, Wildroot Jungle South, Sunshore East |
+| Wildroot Jungle South | Wildroot Jungle | Mythical Meadowlands | Fern Gully | 667–680 | Greenheart Vale South, Wildroot Jungle East |
+| Sunshore | Sunshore | Mythical Meadowlands | Salt Flats | 680–700 | Wildroot Jungle, Sunshore East |
+| Sunshore East | Sunshore | Mythical Meadowlands | Tide Caves | 700–720 | Wildroot Jungle East, Sunshore |
 
 ## Biomes
 

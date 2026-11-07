@@ -32,8 +32,10 @@ function assetPackCharacter(character, dir = 'down', ghost = false) {
 function assetPackNpc(e) {
   if (S.art !== 'packs') return null;
   AP_WORLD_NPCS ||= Object.keys(IMG).filter(name => /^ap_npcs_\d+$/.test(name)).sort();
-  if (!AP_WORLD_NPCS.length) return null;
-  const name = AP_WORLD_NPCS[npcHash(e && (e.name || e.spr) || '') % AP_WORLD_NPCS.length];
+  AP_WORLD_CHARACTERS ||= Object.keys(IMG).filter(name => /^ap_characters_\d+$/.test(name)).sort();
+  const pool = AP_WORLD_NPCS.length ? AP_WORLD_NPCS : AP_WORLD_CHARACTERS;
+  if (!pool.length) return null;
+  const name = pool[npcHash(e && (e.name || e.spr) || '') % pool.length];
   return IMG[name] ? spr(name, 16, 32) : null;
 }
 function npcRole(e) {

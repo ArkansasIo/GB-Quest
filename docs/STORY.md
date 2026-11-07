@@ -111,11 +111,19 @@ Every non-town zone generates 6 side quests from these templates (seeded by the 
 
 | # | Expansion | Levels | Biomes | Raid | Premise |
 |---|---|---|---|---|---|
-| 1 | Shattered Isles | 40–120 | Coast, Jungle, Marsh | The Drowned Throne | Islands torn from the sea floor. |
-| 2 | The Sunken Depths | 120–240 | Marsh, Crystal, Dusk | Abyssal Choir | Cities beneath the waves. |
-| 3 | Skyreach | 240–360 | Snow, Crystal, Meadow | Throne Of Winds | Floating isles above the clouds. |
-| 4 | The Abyssal Rift | 360–540 | Volcanic, Dusk, Badlands | Heart Of The Rift | A wound in the world, bleeding fiends. |
-| 5 | Eternal Dawn | 540–720 | Crystal, Coast, Snow | The First Lantern | Beyond the sunrise, the gods wait. |
+| 1 | Eternal Odyssey | 40–120 | Coast, Jungle, Marsh | The Drowned Throne | Sail the Shattered Isles and reclaim the throne below the waves. |
+| 2 | Dragonfire Realm | 120–240 | Marsh, Crystal, Dusk | Abyssal Choir | Cities beneath the waves answer the call of an ancient dragon. |
+| 3 | Emberfell Saga | 240–360 | Snow, Crystal, Meadow | Throne Of Winds | A kingdom above the clouds faces a storm without end. |
+| 4 | Wizard'S Dominion | 360–540 | Volcanic, Dusk, Badlands | Heart Of The Rift | Cross the Emberfell frontier and seal its burning rift. |
+| 5 | Plagueborn Legacy | 540–720 | Crystal, Coast, Snow | The First Lantern | The last light falters; seek the dawn beyond the known world. |
+| 6 | Crystalized Realms | 100–220 | Crystal, Coast, Dusk | The Mirror Crown | A living crystal repeats the dead. |
+| 7 | Frostsong Dynasty | 160–300 | Snow, Crystal, Badlands | The Rime Dynasty | An old crown wakes under the ice. |
+| 8 | Arcane Ascension | 220–380 | Crystal, Meadow, Volcanic | The Spell-Light Spire | Floating isles of spell-light. |
+| 9 | Bloodmoon Conspiracy | 300–460 | Dusk, Marsh, Badlands | The Eclipse Court | Under a red moon, allies vanish. |
+| 10 | Dragonspire Odyssey | 380–540 | Volcanic, Snow, Badlands | The Dragonspire | A dragon guards the cloud city. |
+| 11 | Whispers Of Valhalla | 460–620 | Snow, Coast, Meadow | Hall Of Echoing Shields | Old heroes wake to a northern song. |
+| 12 | Nightshade Chronicles | 540–700 | Dusk, Jungle, Marsh | The First Shade | Shadows move before their owners. |
+| 13 | Mythical Meadowlands | 600–720 | Meadow, Jungle, Coast | The Green Horizon | A wild green world, left to grow. |
 
 ## Factions
 

@@ -478,8 +478,10 @@ class Spellbook extends ListScene {
         const i = this.top + j, y = 35 + j * 10;
         const isKnown = D.spell && D.spell.known && D.spell.known.some(k => k.id === s.id);
         if (i === this.i) fill(2, y - 1, 152, 10, 1);
-        text(s.lvl ? `L${s.lvl}` : 'C', 4, y, isKnown ? 'gold' : 2);
-        text((isKnown ? '*' : ' ') + s.name.slice(0, 15), 14, y, isKnown ? 3 : 1);
+        const uiIcon = S.art === 'packs' && globalThis.GBQAssetPack && globalThis.GBQAssetPack.apUiIconForSpell(s);
+        if (uiIcon && IMG[uiIcon]) blit(spr(uiIcon, 8, 8), 4, y + 1);
+        text(s.lvl ? `L${s.lvl}` : 'C', 14, y, isKnown ? 'gold' : 2);
+        text((isKnown ? '*' : ' ') + s.name.slice(0, 13), 24, y, isKnown ? 3 : 1);
         textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2);
       });
       this.scrollbar(156, 35, 58);

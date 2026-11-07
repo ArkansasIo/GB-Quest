@@ -37,3 +37,8 @@ The ZIP is available as a conversation download attachment. The connected GitHub
 ## Copyright
 GB Quest: Lost Kingdom of ShadowBane Chronicles — Lanterns of Aelmoor  
 © 2026 GB Quest Studio. Proprietary — All Rights Reserved.
+
+
+## Runtime Asset Names
+
+See the [complete in-game asset name inventory](../../docs/IN_GAME_ASSET_NAMES.md) for PNG IDs, classic sprite aliases, HD64 atlas IDs, and Citadel vector IDs loaded by the game.

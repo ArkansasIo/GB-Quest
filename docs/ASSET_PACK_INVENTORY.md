@@ -50,9 +50,10 @@ The UI kit contains **151 pieces**: rarity frames, socket gems, consumables, pan
 
 ## Runtime integration
 
-- `src/asset_pack.js` maps items, gems, monster families, battle scenes, rarity borders and NPC portraits to installed asset names.
+- `src/asset_pack.js` maps items, gems, monster families, battle scenes, spellbook icons, rarity borders and NPC portraits to installed asset names.
 - `src/pack_index.js` and `src/pack_art.js` provide the separate classic pixel-pack mode.
 - `assets/index.json` is the runtime image catalog used by `loadAssets()`.
+- The full runtime identifier list is in [In-Game Asset Names](IN_GAME_ASSET_NAMES.md); regenerate it with `node tools/gen_asset_catalog.cjs`.
 - `tools/build.cjs` embeds the runtime PNG catalog in the standalone browser build.
 - `tools/build-itch.cjs` creates the one-file `index.html` upload archive so the itch.io 1,000-file limit is not exceeded.
 

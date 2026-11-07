@@ -77,6 +77,7 @@ function apFieldArtFor(name) {
 const apMonsterArt = (fam, key) => { const L = AP_MONSTERS[fam]; if (!L) return null; const h = apHash('ap|' + key); return h % 2 ? L[(h >>> 1) % L.length] : null; };
 const apPortraitFor = name => name ? AP_PORTRAITS[apHash('face|' + name) % AP_PORTRAITS.length] : null;
 const apAssetForSpell = spell => spell ? apPick('particles', `${spell.dt || ''}|${spell.school || ''}|${spell.id || spell.name || ''}`) : null;
+const apUiIconForSpell = spell => spell ? apPick('ui_icons', `${spell.school || ''}|${spell.dt || ''}|${spell.id || spell.name || ''}`) : null;
 // which painted scene a battle uses
 function apSceneFor(kind, foes, inDungeon, inTown) {
   if ((foes || []).some(f => f && f.boss)) return 'ap_scene_boss_fight';
@@ -89,7 +90,7 @@ const nextBattleBg = cur => BATTLE_BG_MODES[(BATTLE_BG_MODES.indexOf(cur) + 1) %
 
 if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
   AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
-  apPick, apAsset, apAssetForSpell, worldTile: apFieldArtFor,
+  apPick, apAsset, apAssetForSpell, apUiIconForSpell, worldTile: apFieldArtFor,
   characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
   apMonsterArt, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
