@@ -42,3 +42,12 @@ test('equipment fallbacks select a family-appropriate visual without changing it
     slot: 'off_hand', visualItemId: 'iron_shield'
   });
 });
+
+test('HD rendering falls back to the highest available generated rank instead of missing higher-rank files', () => {
+  const manifest = { items: [{ rank: 'F' }, { rank: 'F' }] };
+  assert.equal(art.availableRank(manifest, 'F'), 'F');
+  assert.equal(art.availableRank(manifest, 'E'), 'F');
+  assert.equal(art.availableRank(manifest, 'SSS'), 'F');
+  assert.equal(art.availableRank({ items: [{ rank: 'A' }] }, 'E'), 'A');
+  assert.equal(art.availableRank({ items: [] }, 'E'), 'F');
+});
