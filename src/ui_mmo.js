@@ -12,8 +12,8 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: 'POKEMON CLASSIC', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
+const MMO_THEME_NAME = { mmo: 'POKEMON CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -23,17 +23,17 @@ if (typeof globalThis !== 'undefined') globalThis.GBQUiMmo = { MMO_THEMES, MMO_T
 if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
-  if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
+  if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'tnl'; try { saveSettings(); } catch (e) {} }
   // One-time migration: use the classic blue-and-cream handheld interface as the default.
   // Move saved Sanctum gameplay menus to the requested handheld theme while
   // preserving other deliberately selected themes.
   if (!S.pokemonUiDefaulted || S.uiTheme === 'sanctum') {
-    if (!S.uiTheme || S.uiTheme === 'sanctum' || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'mmo';
+    if (!S.uiTheme || S.uiTheme === 'sanctum' || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'tnl';
     S.pokemonUiDefaulted = true;
     try { saveSettings(); } catch (e) {}
   }
-  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
-  const isPokemon = () => S.uiTheme === 'mmo';
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  const isPokemon = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
   let blackbirdPanelPattern = null;
@@ -41,6 +41,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // colours per theme: POKEMON CLASSIC (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
   const PALETTE = {
     mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [82, 170, 68], hpLow: [216, 72, 48], mp: [48, 104, 224], xp: [72, 142, 204], gold: [200, 150, 30], title: [24, 28, 48] },
+    tnl: { ink: [12, 22, 42], edge: [44, 82, 126], panel: [232, 239, 238], panel2: [196, 216, 222], shade: [112, 142, 158], hp: [58, 166, 112], hpLow: [216, 72, 48], mp: [52, 132, 206], xp: [68, 162, 194], gold: [210, 174, 92], title: [14, 34, 58] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
     blackbird: { ink: [5, 6, 9], edge: [92, 100, 111], panel: [16, 18, 22], panel2: [42, 46, 52], shade: [72, 78, 86], hp: [184, 44, 44], hpLow: [250, 94, 48], mp: [58, 110, 183], xp: [189, 147, 62], gold: [224, 188, 104], title: [12, 14, 17] },
   };
