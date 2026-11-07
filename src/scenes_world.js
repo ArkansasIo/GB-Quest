@@ -119,20 +119,20 @@ class Title {
       fill(0, 0, W, H, 'rgba(8,10,18,0.18)');
     } else {
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#234b70'); sky.addColorStop(.52, '#6d9bb0'); sky.addColorStop(1, '#b8d8a0');
+    sky.addColorStop(0, '#090b25'); sky.addColorStop(.52, '#24154a'); sky.addColorStop(1, '#49305d');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
     const moon = ctx.createRadialGradient(132, 24, 2, 132, 24, 30);
-    moon.addColorStop(0, 'rgba(255,255,235,.95)'); moon.addColorStop(.55, 'rgba(216,232,198,.5)'); moon.addColorStop(1, 'rgba(184,216,160,0)');
+    moon.addColorStop(0, 'rgba(255,244,220,.98)'); moon.addColorStop(.55, 'rgba(185,130,255,.52)'); moon.addColorStop(1, 'rgba(94,53,160,0)');
     ctx.fillStyle = moon; ctx.fillRect(98, 0, 62, 58);
     ctx.fillStyle = '#f8f8ef'; ctx.beginPath(); ctx.arc(132, 23, 13, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#c9dcb6'; [[126,17,3,2],[135,20,4,3],[129,28,5,2],[138,29,2,2]].forEach(([x,y,w,h]) => ctx.fillRect(x,y,w,h));
     for (let i = 0; i < 42; i++) { const x = (i * 37 + 11) % W, y = (i * 19 + 5) % 76; ctx.globalAlpha = .35 + ((i + (this.t >> 3)) % 4) * .13; ctx.fillStyle = i % 4 ? '#e8f0dc' : '#fff0a8'; ctx.fillRect(x,y,i%9===0?2:1,1); }
     ctx.globalAlpha = 1;
     const ridge = (pts, color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H); pts.forEach(([x,y])=>ctx.lineTo(x,y)); ctx.lineTo(W,H); ctx.closePath(); ctx.fill(); };
-    ridge([[0,65],[17,43],[30,65],[48,39],[66,65],[84,48],[105,70],[126,42],[146,64],[160,51]], '#527b70');
-    ridge([[0,88],[20,67],[40,83],[61,60],[83,87],[106,65],[128,84],[148,62],[160,75]], '#355c50');
+    ridge([[0,65],[17,43],[30,65],[48,39],[66,65],[84,48],[105,70],[126,42],[146,64],[160,51]], '#332b61');
+    ridge([[0,88],[20,67],[40,83],[61,60],[83,87],[106,65],[128,84],[148,62],[160,75]], '#211b49');
     // Castle towers and warm windows.
-    ctx.fillStyle = '#294a43'; ctx.fillRect(111,58,42,47); ctx.fillRect(119,48,8,57); ctx.fillRect(137,43,7,62); ctx.fillRect(106,68,8,37);
+    ctx.fillStyle = '#17162f'; ctx.fillRect(111,58,42,47); ctx.fillRect(119,48,8,57); ctx.fillRect(137,43,7,62); ctx.fillRect(106,68,8,37);
     ctx.beginPath(); ctx.moveTo(117,49); ctx.lineTo(123,37); ctx.lineTo(129,49); ctx.moveTo(135,44); ctx.lineTo(140,31); ctx.lineTo(146,44); ctx.fill();
     ctx.fillStyle = '#f4d56a'; [[115,75],[123,67],[133,78],[141,62],[121,88],[145,90]].forEach(([x,y],i)=>{ if ((this.t+i*9)%90<82) ctx.fillRect(x,y,2,3); });
     // Foreground cliff path and river glints.
@@ -149,16 +149,16 @@ class Title {
     if (hero) { const p=sprFit(hero,34); blit(p,28,103-p.height+bob); }
     if (mage) { const p=sprFit(mage,29); blit(p,5,113-p.height-bob); }
     // Ornate title plaque and subtitle.
-    fill(17,3,126,39,'#f8f8ef'); frame(3,2,154,43);
+    fill(17,3,126,39,'#170f2e'); frame(3,2,154,43);
     textC('GB QUEST',80,5,3); textC('LOST KINGDOM',80,14,1);
     textC('OF SHADOWBANE',80,21,2); textC('CHRONICLES',80,28,2); textC('LANTERNS OF AELMOOR',80,36,3);
     // Menu plaque; keep every command visible and selectable.
     const o=this.opts(), rowH=9, h=o.length*rowH+7, y0=57;
     frame(48,y0,64,h,1);
-    o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,'#285da8'); frame(51,y-2,58,9,1); text('>',54,y,'white'); } textC(label,82,y,j===this.i?'white':3); });
+    o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,'#8c5a20'); frame(51,y-2,58,9,1); text('>',54,y,'#fff0c4'); } textC(label,82,y,j===this.i?'#fff0c4':3); });
     // Footer and version.
-    fill(0,134,W,10,'#285da8'); text('v'+BUILD.version,3,136,'white');
-    textC('GB QUEST STUDIO',80,136,'white');
+    fill(0,134,W,10,'#100b24'); fill(0,134,W,1,'#d9a83f'); text('v'+BUILD.version,3,136,'#fff0c4');
+    textC('GB QUEST STUDIO',80,136,'#fff0c4');
     ctx.restore();
   }
 }
@@ -184,23 +184,23 @@ class SlotPicker {
   }
   draw() {
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#b8d8a0'); bg.addColorStop(.62, '#dce8d1'); bg.addColorStop(1, '#a9c4a0');
+    bg.addColorStop(0, '#090b25'); bg.addColorStop(.62, '#24154a'); bg.addColorStop(1, '#49305d');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     for (let n = 0; n < 22; n++) {
       ctx.globalAlpha = .28 + (n % 3) * .12;
-      fill((n * 31 + 7) % W, (n * 17 + 4) % 130, n % 7 === 0 ? 2 : 1, 1, n % 4 ? '#edf4e5' : '#fff0a8');
+      fill((n * 31 + 7) % W, (n * 17 + 4) % 130, n % 7 === 0 ? 2 : 1, 1, n % 4 ? '#a995dc' : '#ffd878');
     }
     ctx.globalAlpha = 1;
     frame(2, 2, 156, 139, 1);
-    fill(5, 5, 150, 17, '#285da8');
+    fill(5, 5, 150, 17, '#17102f');
     textC(this.mode === 'load' ? 'LOAD YOUR JOURNEY' : 'BEGIN A NEW JOURNEY', 80, 9, 'gold');
     textC('CHOOSE A SAVE SLOT', 80, 17, 2);
     for (let i = 0; i < 3; i++) {
       const y = 27 + i * 32, info = slotInfo(i), selected = i === this.i;
-      fill(7, y, 146, 28, selected ? '#dce8f7' : '#f8f8ef');
+      fill(7, y, 146, 28, selected ? '#39234f' : '#160f2c');
       frame(6, y - 1, 148, 30, selected ? 1 : 0);
-      if (selected) { fill(8, y + 3, 2, 20, '#285da8'); text('>', 11, y + 3, '#285da8'); }
-      text(`SLOT 0${i + 1}`, 17, y + 3, selected ? '#285da8' : 3);
+      if (selected) { fill(8, y + 3, 2, 20, '#ffd36b'); text('>', 11, y + 3, '#ffd36b'); }
+      text(`SLOT 0${i + 1}`, 17, y + 3, selected ? '#fff0c4' : 3);
       if (info) {
         const portrait = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls);
         if (portrait) blit(sprFit(portrait, 20), 126, y + 4);
@@ -212,9 +212,9 @@ class SlotPicker {
         text(this.mode === 'load' ? 'NO DATA TO LOAD' : 'READY FOR A NEW HERO', 17, y + 21, 2);
       }
     }
-    fill(8, 126, 144, 10, '#285da8');
-    text('UP/DOWN: CHOOSE   A: CONFIRM', 11, 128, 'white');
-    text('B: BACK', 11, 136, 'white');
+    fill(8, 126, 144, 10, '#100b24'); frame(7,125,146,12,1);
+    text('UP/DOWN: CHOOSE   A: CONFIRM', 11, 128, '#fff0c4');
+    text('B: BACK', 11, 136, '#fff0c4');
   }
 }
 
@@ -1872,20 +1872,20 @@ class Credits {
   update() { this.t++; if (this.t > 60 && (P('a') || P('b') || P('start'))) { removeScene(this); if (this.ending) { const f = currentField(); if (f) f.resume(); } } }
   draw() {
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#080c27'); bg.addColorStop(.6, '#211b40'); bg.addColorStop(1, '#3d2a4b');
+    bg.addColorStop(0, '#09091f'); bg.addColorStop(.6, '#21113e'); bg.addColorStop(1, '#39204f');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     for (let n = 0; n < 24; n++) {
       ctx.globalAlpha = .2 + (n % 4) * .1;
-      fill((n * 29 + 3) % W, (n * 17 + 6) % H, n % 8 === 0 ? 2 : 1, 1, n % 5 ? '#d5c6ff' : '#ffd17b');
+      fill((n * 29 + 3) % W, (n * 17 + 6) % H, n % 8 === 0 ? 2 : 1, 1, n % 5 ? '#c5a9ff' : '#ffd36b');
     }
     ctx.globalAlpha = 1;
     frame(5, 4, 150, 136, 1);
-    fill(8, 7, 144, 14, '#17112d');
-    textC(this.ending ? 'THE LANTERNS OF AELMOOR' : 'GB QUEST  •  CREDITS', 80, 12, 'gold');
+    fill(8, 7, 144, 14, '#160d2d');
+    textC(this.ending ? 'THE LANTERNS OF AELMOOR' : 'GB QUEST  •  CREDITS', 80, 12, '#ffe2a0');
     const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'Original pixel-art direction', 'and generated game assets', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version}  ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
     lines.forEach((line, index) => {
       const y = 150 + index * 12 - this.t * .5 + (this.t > 520 ? this.t * .5 - 260 : 0);
-      if (y > 23 && y < 132) textC(line, 80, y, index === 2 || index === 3 || index === 7 ? 'gold' : 0);
+      if (y > 23 && y < 132) textC(line, 80, y, index === 2 || index === 3 || index === 7 ? '#ffe2a0' : 0);
     });
     textC('A / B / START: RETURN', 80, 135, 2);
   }

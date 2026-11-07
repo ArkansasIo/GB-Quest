@@ -8,8 +8,8 @@
 // remapped, so every existing screen follows without changes. Single-tone palettes (DMG, POCKET, ...)
 // keep their classic look.
 
-const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
-const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
+const SANCTUM = [[12, 9, 27], [68, 48, 101], [165, 130, 185], [255, 239, 199]];
+const SAN = { trim: [205, 151, 49], trimDark: [91, 57, 30], stud: [255, 218, 103], panel: [13, 9, 31], panel2: [28, 17, 54] };
 if (S.uiTheme == null) S.uiTheme = 'sanctum';
 const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird') && !MONO(S.palette);
 {
