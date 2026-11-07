@@ -3476,12 +3476,17 @@ function font(c) {
   return fontC[key];
 }
 // characters the pixel font lacks become their plain-ASCII look-alikes (instead of '?')
-const TEXT_ASCII = { '\u00b7': '-', '\u2022': '-', '\u2013': '-', '\u2014': '-', '\u2019': "'", '\u2018': "'", '\u201c': '"', '\u201d': '"', '\u2026': '...', '\u00d7': 'x', '\u2192': '>', '\u2190': '<', '\u2191': '^', '\u2193': 'v', '\u25b6': '>', '\u2605': '*', '\u2606': '*', '\u00e9': 'e', '\u00f6': 'o', '\u00fc': 'u' };
+const TEXT_ASCII = { '\u00b7': '-', '\u2022': '-', '\u2013': '-', '\u2014': '-', '\u2019': "'", '\u2018': "'", '\u201c': '"', '\u201d': '"', '\u2026': '...', '\u00d7': 'x', '\u2192': '>', '\u2190': '<', '\u2191': '^', '\u2193': 'v', '\u25b6': '>', '\u2605': '*', '\u2606': '*', '\u00df': 'ss', '\u00e6': 'ae', '\u00c6': 'AE', '\u0153': 'oe', '\u0152': 'OE', '\u00f8': 'o', '\u00d8': 'O', '\u0142': 'l', '\u0141': 'L', '\u00de': 'Th', '\u00fe': 'th' };
+function gameText(s) {
+  let value = String(s);
+  if (typeof value.normalize === 'function') value = value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return value.replace(/[^\x20-\x7e\n]/g, ch => TEXT_ASCII[ch] || '?');
+}
 // a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
 const HILITE = { frame: -1, rects: [] };
 function text(s, x, y, c = 3, sc = 1) {
   if (!IMG.font_6x9) return;
-  s = String(s); if (/[^\x20-\x7e\n]/.test(s)) s = s.replace(/[^\x20-\x7e\n]/g, ch => TEXT_ASCII[ch] || '?');
+  s = gameText(s);
   if (c === 1 && HILITE.frame === frameN && HILITE.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3])) c = 3;
   const f = font(c); let cx = x;
   for (const ch of s) {
@@ -3491,8 +3496,8 @@ function text(s, x, y, c = 3, sc = 1) {
     cx += 6 * sc;
   }
 }
-const textR = (s, rx, y, c, sc = 1) => text(s, rx - String(s).length * 6 * sc, y, c, sc);
-const textC = (s, cx, y, c, sc = 1) => text(s, Math.round(cx - String(s).length * 3 * sc), y, c, sc);
+const textR = (s, rx, y, c, sc = 1) => { const value = gameText(s); text(value, rx - value.length * 6 * sc, y, c, sc); };
+const textC = (s, cx, y, c, sc = 1) => { const value = gameText(s); text(value, Math.round(cx - value.length * 3 * sc), y, c, sc); };
 function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); if (c === 1 && h >= 8 && h <= 14 && w >= 30) { if (HILITE.frame !== frameN) { HILITE.frame = frameN; HILITE.rects = []; } HILITE.rects.push([x, y, w, h]); } }
 function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
@@ -3558,9 +3563,15 @@ function icon(name, x, y, size = 10) { blit(sprFit(name, size), x + (size - Math
 const pad2 = n => String(n).padStart(2, '0');
 const fmt = n => n >= 1e9 ? (n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'K' : String(n);
 function wrap(s, n = 23) {
-  const out = []; for (const para of String(s).split('\n')) {
+  n = Math.max(1, Math.floor(Number(n) || 23));
+  const out = []; for (const para of gameText(s).split('\n')) {
     let line = '';
-    for (const word of para.split(' ')) {
+    for (let word of para.trim().split(/\s+/)) {
+      if (!word) continue;
+      while (word.length > n) {
+        if (line) { out.push(line); line = ''; }
+        out.push(word.slice(0, n)); word = word.slice(n);
+      }
       if ((line + (line ? ' ' : '') + word).length > n) { if (line) out.push(line); line = word; }
       else line += (line ? ' ' : '') + word;
     }
