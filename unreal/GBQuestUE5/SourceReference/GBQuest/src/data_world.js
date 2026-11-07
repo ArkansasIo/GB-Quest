@@ -163,6 +163,22 @@ const BIOMES = {
   volcanic: { tiles: 'b_volcanic', fam: ['fiend', 'elemental', 'dragon', 'construct'], water: 0.22, forest: 0.08, mount: 0.25 },
   dusk: { tiles: 'b_dusk', fam: ['undead', 'fiend', 'aberration'], water: 0.15, forest: 0.25, mount: 0.18 },
   crystal: { tiles: 'b_crystal', fam: ['fey', 'celestial', 'construct', 'elemental'], water: 0.25, forest: 0.2, mount: 0.15 },
+  forest: { tiles: 'b_forest', fam: ['beast', 'plant', 'fey', 'humanoid'], water: 0.16, forest: 0.58, mount: 0.12 },
+  deepforest: { tiles: 'b_deepforest', fam: ['beast', 'plant', 'fey', 'aberration'], water: 0.22, forest: 0.72, mount: 0.08 },
+  hills: { tiles: 'b_hills', fam: ['beast', 'humanoid', 'giant'], water: 0.12, forest: 0.22, mount: 0.28 },
+  mountains: { tiles: 'b_mountains', fam: ['giant', 'dragon', 'elemental', 'construct'], water: 0.08, forest: 0.06, mount: 0.72 },
+  desert: { tiles: 'b_desert', fam: ['beast', 'monstrosity', 'undead', 'elemental'], water: 0.02, forest: 0.02, mount: 0.2, sand: 0.78 },
+  oasis: { tiles: 'b_oasis', fam: ['beast', 'plant', 'fey'], water: 0.48, forest: 0.3, mount: 0.04, sand: 0.28 },
+  savanna: { tiles: 'b_savanna', fam: ['beast', 'humanoid', 'monstrosity'], water: 0.08, forest: 0.12, mount: 0.16 },
+  steppe: { tiles: 'b_steppe', fam: ['beast', 'humanoid', 'giant'], water: 0.06, forest: 0.08, mount: 0.18 },
+  ruins: { tiles: 'b_ruins', fam: ['undead', 'construct', 'aberration'], water: 0.08, forest: 0.16, mount: 0.12 },
+  corruption: { tiles: 'b_corruption', fam: ['undead', 'fiend', 'aberration'], water: 0.18, forest: 0.28, mount: 0.2 },
+  aether: { tiles: 'b_aether', fam: ['celestial', 'fey', 'elemental'], water: 0.24, forest: 0.18, mount: 0.22 },
+  mushroom: { tiles: 'b_mushroom', fam: ['plant', 'ooze', 'fey'], water: 0.28, forest: 0.46, mount: 0.06 },
+  ocean: { tiles: 'b_ocean', fam: ['beast', 'elemental', 'monstrosity'], water: 0.76, forest: 0, mount: 0.04 },
+  river: { tiles: 'b_river', fam: ['beast', 'plant', 'monstrosity'], water: 0.52, forest: 0.2, mount: 0.08 },
+  frozen: { tiles: 'b_frozen', fam: ['giant', 'dragon', 'undead', 'elemental'], water: 0.24, forest: 0.08, mount: 0.42 },
+  sky: { tiles: 'b_sky', fam: ['celestial', 'dragon', 'elemental', 'aberration'], water: 0.18, forest: 0.16, mount: 0.5 },
 };
 const ZONE_AREAS = ['GLADE', 'CROSSING', 'HOLLOW', 'RIDGE', 'RUINS', 'WATCH', 'FORD', 'BARROW', 'SPRING', 'CAMP', 'SHRINE', 'GATE'];
 
