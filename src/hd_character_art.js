@@ -76,6 +76,14 @@
     return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
       rank: safe(rank, RANKS) || 'F', equipment: result };
   };
+  const availableRank = (manifest, requested = 'F') => {
+    const ranks = new Set((manifest && Array.isArray(manifest.items) ? manifest.items : [])
+      .map(item => item && String(item.rank || '')).filter(rank => RANKS.includes(rank)));
+    const preferred = safe(requested, RANKS) || 'F';
+    if (ranks.has(preferred)) return preferred;
+    if (ranks.has('F')) return 'F';
+    return RANKS.find(rank => ranks.has(rank)) || 'F';
+  };
   const createFramePresenter = (runtime, options = {}) => {
     if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
     const maxEntries = Math.max(2, Math.min(128, Number(options.maxEntries) || 24));
@@ -181,12 +189,15 @@
       return manifestPromise;
     };
     const renderCharacter = async (character, spec = {}) => {
-      const [visualMap] = await Promise.all([getVisualMap()]);
+      const [visualMap, manifest] = await Promise.all([getVisualMap(), getManifest()]);
       const resolved = resolveEquipment(character, visualMap, spec.rank || character && character.rank || 'F');
+      // The shipped source pack currently contains F-rank art. Reuse that
+      // complete set for higher gameplay ranks instead of dropping to classic sprites.
+      const renderRank = availableRank(manifest, resolved.rank);
       return render({
         ...spec, archetype: spec.archetype || resolved.archetype,
         direction: directionForInput(spec.direction), animation: spec.animation || animationForState(spec.state || spec.action),
-        rank: resolved.rank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
+        rank: renderRank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
       });
     };
     const render = spec => {
@@ -222,7 +233,7 @@
     };
     return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size, compositeCacheSize: () => compositeCache.size };
   };
-  const api = { createRuntime, createFramePresenter, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  const api = { createRuntime, createFramePresenter, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, availableRank, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.GBQHDCharacterArt = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
