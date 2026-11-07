@@ -77,11 +77,11 @@
       <header class="gbq-hud-top">
         <div class="gbq-hud-brand"><span class="gbq-hud-crest" aria-hidden="true"></span><span>GB-QUEST<small>REALM OF SHADOWBANE</small></span></div>
         <div class="gbq-hud-compass" aria-label="Compass"><span>W</span><i></i><b>NW</b><i></i><strong>N</strong><i></i><b>NE</b><i></i><span>E</span></div>
-        <div class="gbq-hud-wallet"><span>G <b data-hud-gold>0</b></span><span>GEM <b data-hud-gems>0</b></span></div>
+        <div class="gbq-hud-wallet"><span aria-label="Gold"><b data-hud-gold>0</b> GOLD</span><span aria-label="Gems"><b data-hud-gems>0</b> GEMS</span></div>
       </header>
       <aside class="gbq-hud-left">
         <section class="gbq-hud-panel gbq-hud-player">
-          <div class="gbq-hud-avatar" data-hud-avatar aria-label="Trainer portrait">P</div>
+          <div class="gbq-hud-avatar" data-hud-avatar aria-label="Character portrait">P</div>
           <div class="gbq-hud-player-info"><div class="gbq-hud-player-name" data-hud-name>Adventurer</div><div class="gbq-hud-level" data-hud-level>LEVEL 1 · WANDERER</div>
             <div class="gbq-hud-meter hp"><span>HP</span><b data-hud-hp-text>0 / 0</b><i><em data-hud-hp></em></i></div>
             <div class="gbq-hud-meter mp"><span>MP</span><b data-hud-mp-text>0 / 0</b><i><em data-hud-mp></em></i></div>
