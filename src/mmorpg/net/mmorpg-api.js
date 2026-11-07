@@ -36,7 +36,7 @@ export class GBQuestMMOApi {
     if (!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl = new URL('/ws', this.baseUrl);
     wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-    if (wsUrl.protocol !== 'wss:' && location.protocol === 'https:') throw new Error('Secure WSS is required for the hosted game');
+    if (wsUrl.protocol !== 'wss:' && globalThis.location?.protocol === 'https:') throw new Error('Secure WSS is required for the hosted game');
     this.multiplayer.connect(wsUrl.toString(), this.token);
   }
   selectCharacter(characterId) {
