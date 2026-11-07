@@ -78,8 +78,27 @@ jobs:
           python-version: "3.12"
       - name: Install art generator dependencies
         run: python -m pip install --upgrade Pillow numpy
-      - name: Generate native 16x16 world and dungeon tiles
+      - name: Generate native 16x16 tiles and 4x/6x HD exports
         run: python tools/gen_gbtiles.py
+      - name: Validate high-resolution pixel asset manifest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("assets_hd/gbtiles")
+          manifest = json.loads((root / "manifest.json").read_text())
+          assert manifest["scales"] == [4, 6], manifest["scales"]
+          assets = manifest["assets"]
+          assert assets, "High-resolution tile manifest is empty"
+          for name, entry in assets.items():
+              assert entry["logical_size"] == [16, 16], (name, entry)
+              for scale in ("4", "6"):
+                  variant = entry["variants"][scale]
+                  image = Path(variant["file"])
+                  assert image.is_file(), f"Missing {scale}x image: {image}"
+                  assert (variant["width"], variant["height"]) == (16 * int(scale),) * 2
+          print(f"Validated {len(assets)} pixel assets with {len(assets) * 2} HD variants")
+          PY
       - name: Generate rank badges, equipment and UI sprites
         run: python tools/gen_newart.py
       - name: Build enhanced 64-bit atlas pages
