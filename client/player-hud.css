@@ -211,3 +211,56 @@ body.chat-on .gbq-player-hud { right:300px; }
 .gbq-hud-glyph .gbq-hud-art { width:22px; height:22px; object-fit:contain; image-rendering:pixelated; }
 .gbq-hud-hotbar button > span.has-art { display:grid; place-items:center; width:100%; height:100%; font-size:0; }
 .gbq-hud-hotbar button > span .gbq-hud-art { width:26px; height:26px; max-width:100%; max-height:100%; object-fit:contain; image-rendering:pixelated; }
+
+
+/* Accessibility: restore readable foreground contrast across the live HUD. */
+.gbq-player-hud {
+  color:#f4efdf;
+  text-shadow:0 1px 2px #000;
+}
+.gbq-player-hud .gbq-hud-section-title,
+.gbq-player-hud .gbq-hud-brand,
+.gbq-player-hud .gbq-hud-player-name,
+.gbq-player-hud .gbq-hud-map-meta strong,
+.gbq-player-hud .gbq-hud-quest strong {
+  color:#fff0c8;
+}
+.gbq-player-hud .gbq-hud-section-title span,
+.gbq-player-hud .gbq-hud-level,
+.gbq-player-hud .gbq-hud-party-data small,
+.gbq-player-hud .gbq-hud-map-meta span,
+.gbq-player-hud .gbq-hud-quest small,
+.gbq-player-hud .gbq-hud-stat-grid small,
+.gbq-player-hud .gbq-hud-attribute-grid small {
+  color:#d0d8d2;
+}
+.gbq-player-hud .gbq-hud-party-member>strong,
+.gbq-player-hud .gbq-hud-stat-grid strong,
+.gbq-player-hud .gbq-hud-attribute-grid strong,
+.gbq-player-hud .gbq-hud-attribute-grid i {
+  color:#ffe2a0;
+}
+.gbq-player-hud .gbq-hud-meter,
+.gbq-player-hud .gbq-hud-meter span,
+.gbq-player-hud .gbq-hud-meter b {
+  color:#fff;
+  text-shadow:0 1px 2px #000,0 0 3px #000;
+}
+.gbq-player-hud .gbq-hud-nav,
+.gbq-player-hud .gbq-hud-hotbar button,
+.gbq-player-hud .gbq-hud-quick button,
+.gbq-player-hud .gbq-hud-potions button,
+.gbq-player-hud .gbq-hud-map-tools button {
+  color:#fff2d3;
+}
+.gbq-player-hud .gbq-hud-glyph,
+.gbq-player-hud .gbq-hud-quest>b {
+  color:#ffe09a;
+}
+.gbq-player-hud .gbq-hud-toast {
+  color:#fff3d5;
+}
+.gbq-player-hud button:disabled {
+  color:#d5d0c4;
+  opacity:.62;
+}
