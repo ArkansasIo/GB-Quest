@@ -8,6 +8,7 @@ let CB_HD_RUNTIME = null;
 const CB_HD_PRESENTERS = new WeakMap();
 function battleHDFrame(character, state = 'idle', frame = 0, direction = 'east') {
   if (!character || !character.eq || typeof globalThis === 'undefined') return null;
+  if (globalThis.GBQ_HD64_PACK && globalThis.GBQ_HD64_PACK.available === false) return null;
   const api = globalThis.GBQHDCharacterArt;
   if (!api) return null;
   try {

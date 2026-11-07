@@ -333,6 +333,13 @@ function gameText(s) {
   if (typeof value.normalize === 'function') value = value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
   return value.replace(/[^\x20-\x7e\n]/g, ch => TEXT_ASCII[ch] || '?');
 }
+function fitText(s, maxChars) {
+  const value = gameText(s).replace(/\n/g, ' ');
+  const limit = Math.max(0, Math.floor(maxChars));
+  if (value.length <= limit) return value;
+  if (limit <= 3) return '.'.repeat(limit);
+  return value.slice(0, limit - 3).trimEnd() + '...';
+}
 // a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
 const HILITE = { frame: -1, rects: [] };
 function text(s, x, y, c = 3, sc = 1) {
@@ -385,13 +392,16 @@ function drawOrnatePanel(x, y, w, h, title) {
   ctx.fillRect(x + w - 8, y + h - 5, 4, 1); ctx.fillRect(x + w - 5, y + h - 8, 1, 4);
   ctx.restore();
   if (title) {
-    const tw = Math.min(w - 18, String(title).length * 6 + 16), tx = x + (w - tw) / 2;
+    const maxChars = Math.max(1, Math.floor((w - 28) / 6));
+    title = fitText(title, maxChars);
+    const tw = Math.min(w - 18, title.length * 6 + 16), tx = x + (w - tw) / 2;
     fill(tx, y - 3, tw, 11, '#110d1d');
     ctx.save(); ctx.strokeStyle = '#e1ae52'; ctx.lineWidth = 1; ctx.strokeRect(tx + .5, y - 2.5, tw - 1, 10); ctx.restore();
     textC(title, x + w / 2, y - 1, '#ffe3a0');
   }
 }
 function drawMenuButton(x, y, w, h, label, selected = false) {
+  label = fitText(label, Math.max(1, Math.floor((w - (selected ? 16 : 8)) / 6)));
   if (selected) {
     fill(x + 2, y + 1, w - 4, h - 2, 'rgba(157,91,33,.58)');
     ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.shadowColor = '#ffb738'; ctx.shadowBlur = 4; ctx.strokeRect(x + 1.5, y + .5, w - 3, h - 1); ctx.restore();

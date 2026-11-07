@@ -898,6 +898,7 @@ let HD_WORLD_RUNTIME = null;
 const HD_WORLD_PRESENTERS = new WeakMap(), HD_WORLD_SCALED = new WeakMap();
 function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost = false) {
   if (ghost || !character || !character.eq || typeof globalThis === 'undefined') return null;
+  if (globalThis.GBQ_HD64_PACK && globalThis.GBQ_HD64_PACK.available === false) return null;
   const api = globalThis.GBQHDCharacterArt;
   if (!api) return null;
   try {
