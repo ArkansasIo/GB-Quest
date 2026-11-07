@@ -7,7 +7,7 @@ on:
       - 'client/**'
       - 'src/**'
       - 'assets/**'
-      - 'assets_hd64/**'
+      - 'assets_hd64/**'\n      - 'assets_hd/gbtiles/**'\n      - 'tools/gen_gbtiles.py'
       - 'assets_citadel/**'
       - 'data/visuals/**'
       - 'tools/build.cjs'
