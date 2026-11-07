@@ -279,6 +279,15 @@ body.theme-pokemon .led { background:#8d3636 !important; }
 body.theme-pokemon.ready .led { background:#75a84d !important; box-shadow:0 0 8px #75a84d !important; }
 body.theme-pokemon .build-info { background:#285da8 !important; border:2px solid #202028 !important; color:#fff !important; }
 body.theme-pokemon .build-info strong { color:#fff !important; }
+
+/* The classic theme stays crisp, while full-detail pack art uses smooth sampling. */
+body.theme-pokemon.full-detail-art #lcd,
+body.theme-pokemon.full-detail-art .gbq-hud-map-art,
+body.theme-pokemon.full-detail-art .gbq-hud-avatar .gbq-hud-art,
+body.theme-pokemon.full-detail-art .gbq-hud-glyph .gbq-hud-art,
+body.theme-pokemon.full-detail-art .gbq-hud-hotbar button > span .gbq-hud-art {
+  image-rendering:auto !important;
+}
 body.theme-pokemon button:focus-visible,
 body.theme-pokemon input:focus-visible,
 body.theme-pokemon select:focus-visible { outline:2px solid #285da8 !important; outline-offset:2px !important; }

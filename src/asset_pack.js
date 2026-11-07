@@ -39,6 +39,12 @@ function apPick(category, identity, prefix = 'ap_') {
   const name = `${prefix}${category}_${String(apHash(`${category}|${identity}`) % count).padStart(3, '0')}`;
   return typeof IMG === 'undefined' || IMG[name] ? name : null;
 }
+function apAsset(category, index, prefix = 'ap_') {
+  const counts = prefix === 'au_' ? AU_COUNTS : AP_COUNTS, count = counts[category] || 0;
+  if (!count) return null;
+  const name = `${prefix}${category}_${String(((Number(index) || 0) % count + count) % count).padStart(3, '0')}`;
+  return typeof IMG === 'undefined' || IMG[name] ? name : null;
+}
 const apCharacterFor = character => apPick('characters', typeof character === 'object' && character ? `${character.name || ''}|${character.cls || ''}|${character.species || character.race || ''}` : character);
 const apNpcFor = entity => apPick('npcs', typeof entity === 'object' && entity ? `${entity.name || ''}|${entity.svc || ''}|${entity.prof || ''}|${entity.spr || ''}` : entity);
 const apMountFor = mount => apPick('mounts', typeof mount === 'object' && mount ? `${mount.id || ''}|${mount.family || ''}|${mount.variant || ''}` : mount);
@@ -70,6 +76,7 @@ function apFieldArtFor(name) {
 // A bestiary subtype gets pack art about half the time (stable per subtype).
 const apMonsterArt = (fam, key) => { const L = AP_MONSTERS[fam]; if (!L) return null; const h = apHash('ap|' + key); return h % 2 ? L[(h >>> 1) % L.length] : null; };
 const apPortraitFor = name => name ? AP_PORTRAITS[apHash('face|' + name) % AP_PORTRAITS.length] : null;
+const apAssetForSpell = spell => spell ? apPick('particles', `${spell.dt || ''}|${spell.school || ''}|${spell.id || spell.name || ''}`) : null;
 // which painted scene a battle uses
 function apSceneFor(kind, foes, inDungeon, inTown) {
   if ((foes || []).some(f => f && f.boss)) return 'ap_scene_boss_fight';
@@ -82,12 +89,15 @@ const nextBattleBg = cur => BATTLE_BG_MODES[(BATTLE_BG_MODES.indexOf(cur) + 1) %
 
 if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
   AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
-  apPick, characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
+  apPick, apAsset, apAssetForSpell, worldTile: apFieldArtFor,
+  characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
   apMonsterArt, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
 };
 
 if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
+  window.assetPackWorldTile = apFieldArtFor;
+  window.assetPackSpellArt = apAssetForSpell;
   window.gemArt = type => (typeof artOn !== 'function' || artOn()) && AP_GEM_ART[type] && IMG[AP_GEM_ART[type]] ? AP_GEM_ART[type] : null;
 
   // Route item/gear icons through the matching item, weapon, or armour collection.
@@ -177,7 +187,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
     const spellArtBase = spellArt;
     spellArt = function (spell) {
       if (artOn() && spell) {
-        const packed = apPick('particles', `${spell.dt || ''}|${spell.school || ''}|${spell.id || spell.name || ''}`);
+        const packed = apAssetForSpell(spell);
         if (packed && IMG[packed]) return packed;
       }
       return spellArtBase.apply(this, arguments);

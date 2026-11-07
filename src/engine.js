@@ -14,8 +14,10 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'hd64', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'full', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
+const applySmoothArtDefaults = !S.smoothArtDefaultsApplied;
+if (applySmoothArtDefaults) { S.video = 'hd64'; S.palette = 'full'; S.smoothArtDefaultsApplied = true; }
 // The former 8K option was capped at 1080p and wasted memory. Keep saved users
 // on the largest supported, real output size instead.
 if (S.hdRes === '8k') S.hdRes = '4k';
@@ -45,6 +47,7 @@ document.addEventListener('fullscreenchange', () => {
 function applyFilter() { LCD.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
 applyFilter();
+if (applySmoothArtDefaults) saveSettings();
 
 // ================================================================ palettes
 // UI shades 0 (lightest) .. 3 (darkest) per palette mode; extra named colours for GBC/FULL
@@ -107,7 +110,7 @@ async function hd64Atlas(family, page) {
   const key = `${family}_${page}`;
   if (!HD64_ATLASES.has(key)) HD64_ATLASES.set(key, new Promise((resolve, reject) => {
     const im = new Image();
-    im.onload = () => { HD64_ATLASES.set(key, im); clearCaches(); resolve(im); };
+    im.onload = () => { HD64_ATLASES.set(key, im); clearHd64AtlasCache(family, page); resolve(im); };
     im.onerror = () => { HD64_ATLASES.delete(key); reject(new Error(`HD64 atlas unavailable: ${key}`)); };
     im.src = window.GBQ_HD64_ATLASES && window.GBQ_HD64_ATLASES[key] || `assets_hd64/${key}.png`;
   }));
@@ -120,6 +123,15 @@ function requestHd64Sprite(name) {
     const entry = index && index.get(name);
     if (entry) hd64Atlas(entry.family, entry.rect[0]).catch(() => {});
   });
+}
+function clearHd64AtlasCache(family, page) {
+  if (!HD64_INDEX) return;
+  const names = new Set();
+  for (const [name, entry] of HD64_INDEX) if (entry.family === family && entry.rect[0] === page) names.add(name);
+  for (const key of sprCache.keys()) {
+    const name = key.slice(0, key.indexOf('|'));
+    if (names.has(name)) sprCache.delete(key);
+  }
 }
 async function loadCitadelAssets() {
   const catalogs = [

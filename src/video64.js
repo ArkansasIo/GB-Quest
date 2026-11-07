@@ -97,22 +97,27 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
     V64.stage = mkCanvas(BW, BH); V64.sx = V64.stage.getContext('2d');
   }
   const screen = V64.sx;
+  let src;
   // Full-detail pack mode smooth-scales the rendered scene; retro modes keep Scale4x.
   if (S.art === 'packs') {
-    screen.save(); screen.imageSmoothingEnabled = true; screen.drawImage(cv, 0, 0, BW, BH);
+    src = new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer);
+    V64.bx.imageSmoothingEnabled = true;
+    V64.bx.clearRect(0, 0, BW, BH);
+    V64.bx.drawImage(cv, 0, 0, BW, BH);
   } else {
-    const src = grade(new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer));
+    src = grade(new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer));
     const s4 = scale2x(scale2x(src, W, H), W * 2, H * 2);
     new Uint32Array(V64.img.data.buffer).set(s4);
-    screen.save(); screen.imageSmoothingEnabled = false;
+    V64.bx.putImageData(V64.img, 0, 0);
   }
   const z = Cam.zoom;
-  if (Math.abs(z - 1) < 0.001) screen.putImageData(V64.img, 0, 0);
-  else { V64.bx.putImageData(V64.img, 0, 0); screen.translate(BW / 2, BH / 2); screen.scale(z, z); screen.translate(-BW / 2, -BH / 2); screen.drawImage(V64.big, 0, 0); }
+  screen.save(); screen.imageSmoothingEnabled = S.art === 'packs';
+  if (Math.abs(z - 1) < 0.001) screen.drawImage(V64.big, 0, 0);
+  else { screen.translate(BW / 2, BH / 2); screen.scale(z, z); screen.translate(-BW / 2, -BH / 2); screen.drawImage(V64.big, 0, 0); }
   // 2. lighting (field scenes only)
   const base = scenes.findLast ? scenes.findLast(s => s.opaque) : scenes.slice().reverse().find(s => s.opaque);
   if (base instanceof Field && Light64.dark > 0.01) {
-    const lx = V64.lx; lx.globalCompositeOperation = 'source-over'; lx.fillStyle = `rgba(${Light64.tint},${Light64.dark})`; lx.fillRect(0, 0, BW, BH);
+    const lx = V64.lx; lx.clearRect(0, 0, BW, BH); lx.globalCompositeOperation = 'source-over'; lx.fillStyle = `rgba(${Light64.tint},${Light64.dark})`; lx.fillRect(0, 0, BW, BH);
     lx.globalCompositeOperation = 'destination-out';
     for (const L of Light64.list) { const g = lx.createRadialGradient(L.x * SC, L.y * SC, 0, L.x * SC, L.y * SC, L.r * SC); g.addColorStop(0, `rgba(0,0,0,${L.a})`); g.addColorStop(0.55, `rgba(0,0,0,${L.a * 0.6})`); g.addColorStop(1, 'rgba(0,0,0,0)'); lx.fillStyle = g; lx.fillRect(L.x * SC - L.r * SC, L.y * SC - L.r * SC, L.r * SC * 2, L.r * SC * 2); }
     screen.drawImage(V64.light, 0, 0);
