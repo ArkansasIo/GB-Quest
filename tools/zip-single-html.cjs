@@ -1,10 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { deflateRawSync, inflateRawSync } = require('node:zlib');
+const { spawnSync } = require('node:child_process');
+const { inflateRawSync } = require('node:zlib');
 
 const [sourceDir, targetPath, maxFilesText] = process.argv.slice(2);
 const maxFiles = Number(maxFilesText);
-const source = path.join(sourceDir, 'index.html');
+const source = path.join(sourceDir || '', 'index.html');
 const files = [];
 
 function walk(dir) {
@@ -13,6 +14,14 @@ function walk(dir) {
     if (entry.isDirectory()) walk(full);
     else if (entry.isFile()) files.push(path.relative(sourceDir, full).split(path.sep).join('/'));
   }
+}
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
 }
 
 if (!sourceDir || !targetPath || !Number.isInteger(maxFiles) || maxFiles < 1) {
@@ -23,54 +32,60 @@ if (!files.includes('index.html')) throw new Error('Missing index.html in itch.i
 if (files.length > maxFiles) throw new Error('itch.io file limit exceeded: ' + files.length + ' > ' + maxFiles);
 if (files.length !== 1 || files[0] !== 'index.html') throw new Error('Standalone release must contain only index.html: ' + files.join(', '));
 
-const data = fs.readFileSync(source, 'utf8');
-if (Buffer.byteLength(data, 'utf8') <= 100_000) throw new Error('Standalone game HTML is unexpectedly small.');
-const uncompressed = Buffer.from(data, 'utf8');
-const compressed = deflateRawSync(uncompressed, { level: 9 });
-let crc = 0xffffffff;
-for (const byte of uncompressed) {
-  crc ^= byte;
-  for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+const data = fs.readFileSync(source);
+if (data.length <= 100_000 || data.length > 200 * 1024 * 1024) {
+  throw new Error('Standalone HTML size is outside itch.io limits: ' + data.length + ' bytes.');
 }
-crc = (crc ^ 0xffffffff) >>> 0;
-
-const name = Buffer.from('index.html');
-const date = new Date();
-const dosTime = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
-const dosDate = ((Math.max(1980, date.getFullYear()) - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
-const local = Buffer.alloc(30 + name.length);
-local.writeUInt32LE(0x04034b50, 0); local.writeUInt16LE(20, 4); local.writeUInt16LE(8, 8);
-local.writeUInt16LE(dosTime, 10); local.writeUInt16LE(dosDate, 12); local.writeUInt32LE(crc, 14);
-local.writeUInt32LE(compressed.length, 18); local.writeUInt32LE(uncompressed.length, 22);
-local.writeUInt16LE(name.length, 26); name.copy(local, 30);
-
-const central = Buffer.alloc(46 + name.length);
-central.writeUInt32LE(0x02014b50, 0); central.writeUInt16LE(20, 4); central.writeUInt16LE(20, 6);
-central.writeUInt16LE(8, 10); central.writeUInt16LE(dosTime, 12); central.writeUInt16LE(dosDate, 14);
-central.writeUInt32LE(crc, 16); central.writeUInt32LE(compressed.length, 20);
-central.writeUInt32LE(uncompressed.length, 24); central.writeUInt16LE(name.length, 28); name.copy(central, 46);
-
-const end = Buffer.alloc(22);
-end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(1, 8); end.writeUInt16LE(1, 10);
-end.writeUInt32LE(central.length, 12); end.writeUInt32LE(local.length + compressed.length, 16);
-const archive = Buffer.concat([local, compressed, central, end]);
-
-const endOffset = archive.length - 22;
-const centralOffset = archive.readUInt32LE(endOffset + 16);
-if (archive.readUInt32LE(endOffset) !== 0x06054b50 || archive.readUInt32LE(centralOffset) !== 0x02014b50) {
-  throw new Error('Generated ZIP directory is invalid.');
-}
-const localOffset = archive.readUInt32LE(centralOffset + 42);
-const nameLength = archive.readUInt16LE(localOffset + 26);
-const extraLength = archive.readUInt16LE(localOffset + 28);
-const compressedLength = archive.readUInt32LE(localOffset + 18);
-const bodyOffset = localOffset + 30 + nameLength + extraLength;
-const extracted = inflateRawSync(archive.subarray(bodyOffset, bodyOffset + compressedLength));
-if (archive.toString('utf8', centralOffset + 46, centralOffset + 46 + archive.readUInt16LE(centralOffset + 28)) !== 'index.html' ||
-    extracted.length !== uncompressed.length || Buffer.compare(extracted, uncompressed) !== 0) {
-  throw new Error('Generated ZIP integrity check failed.');
-}
-
 fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-fs.writeFileSync(targetPath, archive);
-console.log('Created ' + targetPath + ' (' + (archive.length / 1024 / 1024).toFixed(2) + ' MiB, ' + files.length + ' file; limit ' + maxFiles + ')');
+
+if (process.platform === 'win32') {
+  const quote = value => "'" + value.replace(/'/g, "''") + "'";
+  const command = "$ErrorActionPreference='Stop'; Compress-Archive -LiteralPath " + quote(source) +
+    ' -DestinationPath ' + quote(targetPath) + ' -CompressionLevel Optimal -Force';
+  const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], { stdio: 'inherit' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error('PowerShell ZIP packaging failed with status ' + result.status);
+} else {
+  const script = String.raw`import pathlib, sys, zipfile
+source = pathlib.Path(sys.argv[1])
+target = pathlib.Path(sys.argv[2])
+with zipfile.ZipFile(target, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+    archive.write(source, 'index.html')
+with zipfile.ZipFile(target) as archive:
+    assert archive.namelist() == ['index.html'], f'unexpected ZIP entries: {archive.namelist()}'
+    assert archive.testzip() is None, 'ZIP CRC check failed'`;
+  let result;
+  for (const command of ['python3', 'python']) {
+    result = spawnSync(command, ['-c', script, source, targetPath], { stdio: 'inherit' });
+    if (!result.error && result.status === 0) break;
+    if (command === 'python' || result.error && result.error.code !== 'ENOENT') {
+      throw result.error || new Error(command + ' ZIP packaging failed with status ' + result.status);
+    }
+  }
+  if (!result || result.error || result.status !== 0) throw new Error('Python 3 is required to create the itch.io ZIP.');
+}
+
+const archive = fs.readFileSync(targetPath);
+let endOffset = -1;
+for (let offset = archive.length - 22; offset >= Math.max(0, archive.length - 65_557); offset--) {
+  if (archive.readUInt32LE(offset) === 0x06054b50) { endOffset = offset; break; }
+}
+if (endOffset < 0 || archive.readUInt16LE(endOffset + 10) !== 1) throw new Error('ZIP must contain exactly one central-directory entry.');
+const centralOffset = archive.readUInt32LE(endOffset + 16);
+if (archive.readUInt32LE(centralOffset) !== 0x02014b50) throw new Error('ZIP central directory is invalid.');
+const entryNameLength = archive.readUInt16LE(centralOffset + 28);
+const entryName = archive.toString('utf8', centralOffset + 46, centralOffset + 46 + entryNameLength);
+if (entryName !== 'index.html') throw new Error('Unexpected ZIP entry: ' + entryName);
+const method = archive.readUInt16LE(centralOffset + 10);
+const compressedSize = archive.readUInt32LE(centralOffset + 20);
+const uncompressedSize = archive.readUInt32LE(centralOffset + 24);
+const localOffset = archive.readUInt32LE(centralOffset + 42);
+const localNameLength = archive.readUInt16LE(localOffset + 26);
+const localExtraLength = archive.readUInt16LE(localOffset + 28);
+const bodyOffset = localOffset + 30 + localNameLength + localExtraLength;
+const body = archive.subarray(bodyOffset, bodyOffset + compressedSize);
+const extracted = method === 8 ? inflateRawSync(body) : method === 0 ? body : null;
+if (!extracted || extracted.length !== uncompressedSize || !extracted.equals(data) || crc32(extracted) !== archive.readUInt32LE(centralOffset + 16)) {
+  throw new Error('ZIP entry failed decompression or CRC validation.');
+}
+console.log('Created and verified ' + targetPath + ' (' + (archive.length / 1024 / 1024).toFixed(2) + ' MiB; root entry index.html).');
