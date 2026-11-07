@@ -49,7 +49,7 @@ async function readBody(req, max = 16384) {
 function originAllowed(req) {
   const origin = req.headers.origin;
   if (!origin) return true;
-  try { const u = new URL(origin); return u.protocol === 'https:' && (ALLOWED_ORIGINS.size === 0 || ALLOWED_ORIGINS.has(u.origin)); }
+  try { const u = new URL(origin); const local = u.protocol === 'http:' && ['localhost','127.0.0.1'].includes(u.hostname); return local || (u.protocol === 'https:' && (ALLOWED_ORIGINS.size === 0 || ALLOWED_ORIGINS.has(u.origin))); }
   catch { return false; }
 }
 async function accountFor(req) {
