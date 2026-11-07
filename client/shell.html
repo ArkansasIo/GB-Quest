@@ -156,7 +156,7 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; bac
 .game-client { position: relative; width: 100%; height: 100%; box-sizing: border-box; padding: 8px 314px 30px 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .game-viewport { width: 100%; height: 100%; display: grid; place-items: center; }
 .bezel-top, .brand, .speaker { display: none; }
-#lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
+#lcd { width: min(100%, calc(100dvh * 160 / 144)); height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
 .controls, .foot { display: none; }
 .chat { position: fixed; z-index: 16; top: 48px; right: 10px; bottom: 36px; width: 284px; max-width: calc(34vw - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #39434e; border-radius: 4px; background: linear-gradient(160deg, #171e26ee, #0c1117ee); box-shadow: 0 8px 24px #0007; }
 .chatlog { flex: 1; min-height: 0; height: auto; font: 12px/1.5 Arial, sans-serif; }
@@ -295,7 +295,6 @@ body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a
 
 </style>
 <link rel="stylesheet" href="theme-citadel.css">
-<link rel="stylesheet" href="client/player-hud.css">
 <link rel="stylesheet" href="client/theme-pokemon.css">
 
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>

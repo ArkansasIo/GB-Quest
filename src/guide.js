@@ -89,7 +89,7 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['MEMORY', ['NPCs remember how often you talk to them: stranger, regular, old friend. They greet you by name and notice strong heroes.']],
     ],
     'SETTINGS': () => [
-      ['THEMES', ['UI THEME: 8-BIT MMO, CRIMSON, CLASSIC, SANCTUM, DIABLO IV. ART: PIXEL PACKS, NES, CLASSIC. BATTLE BG: CLEAN, PAINTED, SCENES.']],
+      ['THEMES', ['UI THEME: 8-BIT MMO, CRIMSON, CLASSIC, SANCTUM, DIABLO IV. ART: FULL DETAIL, NES, CLASSIC. BATTLE BG: CLEAN, PAINTED, SCENES.']],
       ['CHAT', ['The chat panel starts closed (C opens it). CHAT SETTINGS turns screen chat, bubbles, name tags and NPC chatter on or off.']],
       ['ACCESSIBILITY', ['PALETTE includes HIGH CONTRAST for colour-blind players. TEXT SPEED, BRIGHTNESS, CONTRAST and KEY BINDINGS are in SETTINGS.']],
     ],

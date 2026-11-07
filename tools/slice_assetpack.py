@@ -184,13 +184,16 @@ def main():
         bd.save(os.path.join(OUT, 'scenes', f'{k}_px.png'))
         manifest.append({'panel': 'scenes', 'name': k, 'file': f'scenes/{k}.png', 'px': f'scenes/{k}_px.png', 'w': im.width, 'h': im.height, 'box': list(b)})
     json.dump(manifest, open(os.path.join(OUT, 'manifest.json'), 'w'), indent=1)
-    # install the 8-bit versions into the game's assets (ap_ = asset pack, au_ = UI kit), loaded by name like all game art
+    # Install both the 8-bit runtime versions and full-detail source versions. The
+    # latter use separate names so HD64 can select them without replacing pixel art.
     prefix = 'au_' if OUT.endswith('ui') else 'ap_'; game = os.path.join(ROOT, 'assets')
     for f in os.listdir(game):
         if f.startswith(prefix): os.remove(os.path.join(game, f))
     for e in manifest:
         dst = f"{prefix}scene_{e['name']}.png" if e['panel'] == 'scenes' else f"{prefix}{e['name']}.png"
         Image.open(os.path.join(OUT, e['px'])).save(os.path.join(game, dst))
+        hi = f"{prefix}hi_scene_{e['name']}.png" if e['panel'] == 'scenes' else f"{prefix}hi_{e['name']}.png"
+        Image.open(os.path.join(OUT, e['file'])).save(os.path.join(game, hi))
     print(f'installed {len(manifest)} images as assets/{prefix}*.png')
     if prefix == 'au_': make_rarity_rings(game)
 

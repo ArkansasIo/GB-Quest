@@ -163,8 +163,10 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
       const name = apSceneFor(battle.kind, battle.foes, !!(G && G.inst && G.inst.kind !== 'raid'), !!(zone && zone.town));
       const im = IMG[name];
       if (!im) return d0.apply(this, arguments);
-      const band = BBG_BOT - BBG_TOP, sy = Math.max(0, Math.round(im.height * 0.5 - band / 2));
-      ctx.drawImage(spr(name, im.width, im.height), 0, sy, im.width, band, 0, BBG_TOP, W, band);
+      const hi = S.art === 'packs' && IMG[`ap_hi_${name.slice(3)}`];
+      const source = hi || im;
+      const band = BBG_BOT - BBG_TOP, sy = Math.max(0, Math.round(source.height * 0.5 - band / 2));
+      ctx.drawImage(spr(name, source.width, source.height), 0, sy, source.width, band, 0, BBG_TOP, W, band);
       ctx.fillStyle = 'rgba(10,8,16,0.38)'; ctx.fillRect(0, BBG_TOP, W, band);
       fill(0, BBG_BOT - 1, W, 1, 3);
     };

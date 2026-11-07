@@ -16,6 +16,10 @@ const store = {
 };
 const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
+// The former 8K option was capped at 1080p and wasted memory. Keep saved users
+// on the largest supported, real output size instead.
+if (S.hdRes === '8k') S.hdRes = '4k';
+if (!['native', '2k', '4k'].includes(S.hdRes)) S.hdRes = 'native';
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
 if (S.displayMode === 'windowed' && !S.displayModeUserSet) S.displayMode = 'full-window';
 function syncDisplayMode() {
@@ -73,6 +77,18 @@ let ASSET_NAMES = [];
 let HD64_INDEX = null, HD64_INDEX_PROMISE = null;
 const HD64_ATLASES = new Map();
 const HD64_REQUESTED = new Set();
+function assetPackHiResName(name) {
+  let m = /^ap_scene_(.+)$/.exec(name);
+  if (m) return `ap_hi_scene_${m[1]}`;
+  m = /^ap_(.+)$/.exec(name);
+  if (m) return `ap_hi_${m[1]}`;
+  m = /^au_scene_(.+)$/.exec(name);
+  if (m) return `au_hi_scene_${m[1]}`;
+  m = /^au_rframe_(\d+)$/.exec(name);
+  if (m) return `au_hi_rarity_frames_${String(Number(m[1])).padStart(3, '0')}`;
+  m = /^au_(.+)$/.exec(name);
+  return m ? `au_hi_${m[1]}` : null;
+}
 async function hd64Index() {
   if (HD64_INDEX) return HD64_INDEX;
   if (!HD64_INDEX_PROMISE) HD64_INDEX_PROMISE = (async () => {
@@ -219,17 +235,23 @@ function medianCut4(d) {
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 function spr(name, w, h, opt) {
   const img = IMG[name]; if (!img) return null;
+  const hiName = assetPackHiResName(name), packImage = hiName && IMG[hiName];
+  const source = S.art === 'packs' && packImage ? packImage : img;
   requestHd64Sprite(name);
   opt = opt || {};
-  w = w || img.width; h = h || Math.round(img.height * w / img.width);
+  w = w || source.width; h = h || Math.round(source.height * w / source.width);
   const key = `${name}|${w}|${h}|${S.palette}|${opt.flip ? 1 : 0}|${opt.rot ? 1 : 0}|${opt.ghost ? 1 : 0}|${opt.clean ? 1 : 0}`;
   let c = sprCache.get(key); if (c) return c;
-  c = scaled(img, w, h);
+  c = scaled(source, w, h);
   let hdReady = false;
-  if (S.video === 'hd64' && HD64_INDEX) {
-    const hd = HD64_INDEX.get(name);
+  if (S.video === 'hd64') {
+    const hd = HD64_INDEX && HD64_INDEX.get(name);
     const atlas = hd && HD64_ATLASES.get(`${hd.family}_${hd.rect[0]}`);
-    if (hd && atlas && atlas.width) {
+    if (packImage && packImage.width) {
+      const hdc = mkCanvas(w, h), hdx = hdc.getContext('2d');
+      hdx.imageSmoothingEnabled = true; hdx.drawImage(packImage, 0, 0, w, h);
+      c = hdc; hdReady = true;
+    } else if (hd && atlas && atlas.width) {
       const [page, sx, sy, sw, sh] = hd.rect;
       const hdc = mkCanvas(w, h), hdx = hdc.getContext('2d');
       hdx.imageSmoothingEnabled = true; hdx.drawImage(atlas, sx, sy, sw, sh, 0, 0, w, h);
@@ -276,8 +298,8 @@ function spr(name, w, h, opt) {
   }
   sprCache.set(key, c); return c;
 }
-function sprH(name, h, opt) { const img = IMG[name]; if (!img) return null; return spr(name, Math.max(1, Math.round(img.width * h / img.height)), h, opt); }
-function sprFit(name, box, opt) { const img = IMG[name]; if (!img) return null; const s = box / Math.max(img.width, img.height); return spr(name, Math.max(1, Math.round(img.width * s)), Math.max(1, Math.round(img.height * s)), opt); }
+function sprH(name, h, opt) { const img = IMG[name]; if (!img) return null; const hiName = assetPackHiResName(name), source = S.art === 'packs' && hiName && IMG[hiName] || img; return spr(name, Math.max(1, Math.round(source.width * h / source.height)), h, opt); }
+function sprFit(name, box, opt) { const img = IMG[name]; if (!img) return null; const hiName = assetPackHiResName(name), source = S.art === 'packs' && hiName && IMG[hiName] || img; const s = box / Math.max(source.width, source.height); return spr(name, Math.max(1, Math.round(source.width * s)), Math.max(1, Math.round(source.height * s)), opt); }
 function blit(c, x, y) { if (c) ctx.drawImage(c, Math.round(x), Math.round(y)); }
 function clearCaches() { sprCache.clear(); for (const k in fontC) delete fontC[k]; }
 
@@ -737,15 +759,14 @@ function render() {
   document.body.classList.add('game-rendered');
 }
 function present() {
-  const requestedW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
   const sourceW = S.video === 'hd64' ? W * 4 : W, sourceH = S.video === 'hd64' ? H * 4 : H;
-  // 4K/8K are display upscales; allocating those full backing stores every
-  // frame can exhaust browser canvas memory without adding source detail.
-  const outW = Math.min(requestedW, Math.max(sourceW, 1920));
+  // Keep output sizes honest and bounded: 2K is 1920 px wide, 4K is 3840.
+  const requestedW = S.hdRes === '4k' ? 3840 : S.hdRes === '2k' ? 1920 : sourceW;
+  const outW = Math.max(sourceW, requestedW);
   const outH = Math.round(sourceH * outW / sourceW);
   if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, outW, outH);
   if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
-  lctx.imageSmoothingEnabled = false; lctx.drawImage(cv, 0, 0, outW, outH);
+  lctx.imageSmoothingEnabled = S.art === 'packs'; lctx.drawImage(cv, 0, 0, outW, outH);
 }
 function loop(t) {
   requestAnimationFrame(loop);

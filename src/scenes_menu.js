@@ -1169,11 +1169,11 @@ class SettingsScene extends ListScene {
     if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum', 'diablo']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
     if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
-    if (o === 'HD RESOLUTION') { const options = ['native', '4k', '8k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
+    if (o === 'HD RESOLUTION') { const options = ['native', '2k', '4k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
     if (o === 'FRAME RATE') { const options = [12, 60, 240], k = options.indexOf(Number(S.fps)); S.fps = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
     if (o === 'AUDIO') { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; const c = Music.cur; Music.cur = null; Music.step = 0; if (c) Music.play(c); }
     if (o === 'VIDEO') { if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; } else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; } UI = PALS[S.palette]; clearCaches(); }
-    if (o === 'ART') { S.art = ({ classic: 'nes', nes: 'packs', packs: 'classic' })[S.art] || 'nes'; if (typeof applyPackArt === 'function') applyPackArt(); applyArt(); clearCaches(); }
+    if (o === 'ART') { S.art = ({ classic: 'nes', nes: 'packs', packs: 'classic' })[S.art] || 'nes'; if (typeof applyPackArt === 'function') applyPackArt(); applyArt(); if (typeof window.applyAssetPackArt === 'function') window.applyAssetPackArt(); clearCaches(); }
     if (o === 'CITADEL ART') { S.citadelArt = S.citadelArt === false; clearCaches(); }
     if (o === 'TILES') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
     if (o === 'SFX VOLUME') S.vol = clamp(S.vol + d);
@@ -1205,7 +1205,7 @@ class SettingsScene extends ListScene {
     fill(5, 5, 150, 15, '#17112d');
     textC('AELMOOR  •  OPTIONS', 80, 9, 'gold');
     fill(7, 22, 146, 2, '#9a672e');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
     this.items().slice(this.top, this.top + 11).forEach((label, j) => {
       const index = this.top + j, y = 25 + j * 9;
@@ -1230,7 +1230,7 @@ class GraphicsScene extends ListScene {
     const values = {
       'DISPLAY MODE': ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED',
       'VIDEO PROFILE': S.video === 'hd64' ? 'HD 64-BIT' : 'GAME BOY',
-      'UPSCALE RESOLUTION': ({ native: 'NATIVE', '4k': '4K', '8k': '8K' })[S.hdRes] || 'NATIVE',
+      'UPSCALE RESOLUTION': ({ native: 'NATIVE', '2k': '2K', '4k': '4K' })[S.hdRes] || 'NATIVE',
       'FRAME RATE': `${S.fps} FPS`,
       'COLOR PALETTE': PALS[S.palette]?.name || String(S.palette).toUpperCase(),
       'BRIGHTNESS': String(S.bright),
@@ -1264,7 +1264,7 @@ class GraphicsScene extends ListScene {
       else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; }
       UI = PALS[S.palette]; clearCaches();
     } else if (label === 'UPSCALE RESOLUTION') {
-      const values = ['native', '4k', '8k'], k = values.indexOf(S.hdRes);
+      const values = ['native', '2k', '4k'], k = values.indexOf(S.hdRes);
       S.hdRes = values[(k + (dir > 0 ? 1 : values.length - 1)) % values.length];
     } else if (label === 'FRAME RATE') {
       const values = [12, 60, 240], k = values.indexOf(Number(S.fps));

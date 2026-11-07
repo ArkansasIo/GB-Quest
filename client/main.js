@@ -8,7 +8,16 @@
     document.body.classList.toggle('chat-on', visible);
     try { localStorage.setItem('gbq.fs.chatpanel', visible ? '1' : '0'); } catch (e) {}
   };
-  const loading = loadAssets(p => { progress = p; }).then(() => { progress = 1; document.body.classList.add('ready'); });
+  const loading = loadAssets(p => { progress = p; }).then(() => {
+    // Pack art can be selected before its images finish loading. Reapply every
+    // alias after the complete asset batch so world tiles and objects are ready
+    // before the first playable frame.
+    if (typeof window.applyPackArt === 'function') window.applyPackArt();
+    else if (typeof applyArt === 'function') applyArt();
+    if (typeof window.applyAssetPackArt === 'function') window.applyAssetPackArt();
+    progress = 1;
+    document.body.classList.add('ready');
+  });
   // In-game chat overlay inside the game viewport.
   const input = document.getElementById('chatinput');
   const form = document.getElementById('chatform');

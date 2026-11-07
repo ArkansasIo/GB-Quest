@@ -25,9 +25,10 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
   // One-time migration: use the classic blue-and-cream handheld interface as the default.
-  // Preserve a deliberately selected non-default theme; replace only the prior automatic Blackbird default.
-  if (!S.pokemonUiDefaulted) {
-    if (!S.uiTheme || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'mmo';
+  // Move saved Sanctum gameplay menus to the requested handheld theme while
+  // preserving other deliberately selected themes.
+  if (!S.pokemonUiDefaulted || S.uiTheme === 'sanctum') {
+    if (!S.uiTheme || S.uiTheme === 'sanctum' || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'mmo';
     S.pokemonUiDefaulted = true;
     try { saveSettings(); } catch (e) {}
   }
@@ -225,8 +226,13 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
     RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
     ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
-    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS', SoundTest: 'SOUND TEST' };
-  const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; if (WIN_TITLE[n]) return WIN_TITLE[n]; } return null; };
+    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS', SoundTest: 'SOUND TEST',
+    ArmoryScene: 'ARMOURY', ArtsScene: 'COMBAT ARTS', ArtGalleryScene: 'ART GALLERY', CompanionScene: 'COMPANIONS', IdentityScene: 'IDENTITY', MarketScene: 'MARKET', TradeScene: 'TRADE', MountScene: 'MOUNTS', AccountScene: 'ACCOUNT', PerkTreeScene: 'PERKS', AdminScene: 'ADMIN', TitleScene: 'TITLES', ExpansionMapsScene: 'EXPANSION MAPS', WaypointMenu: 'WAYPOINTS', SideQuestBoard: 'QUEST BOARD', LevelUpScene: 'LEVEL UP', MultiplayerScene: 'MULTIPLAYER' };
+  const derivedPageTitle = name => {
+    if (!name || !/(Scene|Menu|Board)$/.test(name)) return null;
+    return name.replace(/(Scene|Menu|Board)$/, '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2').toUpperCase().slice(0, 15);
+  };
+  const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; const title = WIN_TITLE[n] || derivedPageTitle(n); if (title) return title; } return null; };
   window.mmoPageTitle = pageTitle;
   if (typeof hdr === 'function') {
     const h0 = hdr;

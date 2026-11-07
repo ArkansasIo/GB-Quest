@@ -64,6 +64,9 @@ test("realm server rejects prototype names, junk ids, oversized presence and bad
     let last;
     for (let i = 0; i < 11; i++) last = await call("/api/password", { method: "POST", token: fresh, body: { oldPassword: "wrong-pass", newPassword: "newpassword1" } });
     assert.equal(last.status, 429);
+    // The realm batches disk writes on a one-second timer. Windows terminates a
+    // child process directly on kill(), so it cannot run the SIGTERM flush hook.
+    await new Promise(resolve => setTimeout(resolve, 1100));
   } finally { await stop(server); }
 
   const db = JSON.parse(fs.readFileSync(path.join(data, "realm.json"), "utf8"));

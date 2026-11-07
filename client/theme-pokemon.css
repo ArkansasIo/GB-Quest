@@ -93,6 +93,7 @@ body.theme-pokemon .game-start-fallback {
 }
 body.theme-pokemon .game-start-fallback span { color:var(--pk-muted) !important; font:8px/1.7 var(--pixel) !important; }
 body.theme-pokemon #lcd { image-rendering:pixelated !important; box-shadow:0 0 0 3px var(--pk-paper),0 0 0 5px var(--pk-ink),5px 5px 0 #0004 !important; }
+body.theme-pokemon.full-detail-art #lcd { image-rendering:auto !important; }
 
 /* Pokémon-era menu panels: square corners, high-contrast double frames, no glass or gradients. */
 body.theme-pokemon .gbq-player-hud {
@@ -281,6 +282,33 @@ body.theme-pokemon .build-info strong { color:#fff !important; }
 body.theme-pokemon button:focus-visible,
 body.theme-pokemon input:focus-visible,
 body.theme-pokemon select:focus-visible { outline:2px solid #285da8 !important; outline-offset:2px !important; }
+/* Browser shell controls: keep the frame, chat and touch buttons readable around the game canvas. */
+body.theme-pokemon .build-info {
+  flex-wrap:nowrap;
+  gap:8px;
+  overflow:hidden;
+}
+body.theme-pokemon .build-info > span:first-child { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+body.theme-pokemon .build-info > span:not(:first-child) { flex:0 0 auto; white-space:nowrap; }
+body.theme-pokemon .game-client { color:var(--pk-ink); }
+body.theme-pokemon .chat { font-family:var(--pixel) !important; }
+body.theme-pokemon .chat-tabs button:hover,
+body.theme-pokemon .atlas-btn:hover,
+body.theme-pokemon .chatform button:hover,
+body.theme-pokemon .round:hover,
+body.theme-pokemon .pill:hover {
+  filter:brightness(1.08);
+  border-color:var(--pk-blue) !important;
+}
+body.theme-pokemon .controls .round:active,
+body.theme-pokemon .foot .pill:active { transform:translateY(2px); }
+body.theme-pokemon #chatHide { min-width:24px; min-height:24px; }
+@media(max-width:760px) {
+  body.theme-pokemon .build-info { padding-inline:8px; gap:5px; }
+  body.theme-pokemon .build-info > span:not(:first-child) { display:none; }
+  body.theme-pokemon .build-info .atlas-btn { padding-inline:5px; }
+  body.theme-pokemon .controls .round { width:48px; height:48px; }
+}
 @media(max-width:520px) {
   body.theme-pokemon .device { border-radius:14px 14px 38px 14px !important; padding:12px !important; }
   body.theme-pokemon .brand { font-size:11px !important; }

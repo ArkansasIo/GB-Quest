@@ -97,11 +97,15 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
     V64.stage = mkCanvas(BW, BH); V64.sx = V64.stage.getContext('2d');
   }
   const screen = V64.sx;
-  // 1. scale4x
-  const src = grade(new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer));
-  const s4 = scale2x(scale2x(src, W, H), W * 2, H * 2);
-  new Uint32Array(V64.img.data.buffer).set(s4);
-  screen.save(); screen.imageSmoothingEnabled = false;
+  // Full-detail pack mode smooth-scales the rendered scene; retro modes keep Scale4x.
+  if (S.art === 'packs') {
+    screen.save(); screen.imageSmoothingEnabled = true; screen.drawImage(cv, 0, 0, BW, BH);
+  } else {
+    const src = grade(new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer));
+    const s4 = scale2x(scale2x(src, W, H), W * 2, H * 2);
+    new Uint32Array(V64.img.data.buffer).set(s4);
+    screen.save(); screen.imageSmoothingEnabled = false;
+  }
   const z = Cam.zoom;
   if (Math.abs(z - 1) < 0.001) screen.putImageData(V64.img, 0, 0);
   else { V64.bx.putImageData(V64.img, 0, 0); screen.translate(BW / 2, BH / 2); screen.scale(z, z); screen.translate(-BW / 2, -BH / 2); screen.drawImage(V64.big, 0, 0); }
@@ -131,6 +135,6 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
   screen.restore();
   Profiler.frame(performance.now() - t0); Profiler.draw(screen);
   if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
-  lctx.save(); lctx.imageSmoothingEnabled = false; lctx.drawImage(V64.stage, 0, 0, outW, outH); lctx.restore();
+  lctx.save(); lctx.imageSmoothingEnabled = S.art === 'packs'; lctx.drawImage(V64.stage, 0, 0, outW, outH); lctx.restore();
 }
 Events.on('sfx', k => { if (S.video === 'hd64' && ['crit', 'nat20', 'levelup', 'boss_appear', 'storm_hit', 'boss_die', 'world_boss'].includes(k)) Cam.pulse(k === 'levelup' ? 1.04 : 1.07, 24); });
