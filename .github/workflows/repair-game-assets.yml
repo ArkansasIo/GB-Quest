@@ -12,6 +12,10 @@ on:
       - 'tools/gen_jobs.py'
       - 'tools/slice_assetpack.py'
       - 'tools/gen_hd64.py'
+      - 'tools/build_animation_manifest.py'
+      - 'tools/generate_character_sprite_pack.py'
+      - 'tools/generate_equipment_layers.py'
+      - 'tools/validate_equipment_visual_map.py'
       - 'tools/gen_expansion_icons.cjs'
   workflow_dispatch:
 
@@ -49,6 +53,10 @@ jobs:
           python3 tools/slice_assetpack.py
           python3 tools/slice_assetpack.py --sheet ui
           python3 tools/gen_hd64.py
+          python3 tools/build_animation_manifest.py --output assets_hd64/animations --frame-size 128
+          python3 tools/generate_character_sprite_pack.py --output assets_hd64/animations/frames --size 128 --archetypes warrior mage ranger rogue cleric summoner --ranks F
+          python3 tools/generate_equipment_layers.py --output assets_hd64/equipment --size 128 --ranks F
+          python3 tools/validate_equipment_visual_map.py --catalog src/mmorpg/data/equipment.json --mapping data/visuals/equipment-catalog-visual-map.json --manifest assets_hd64/equipment/equipment_manifest.json --rank F
           node tools/gen_expansion_icons.cjs
       - name: Validate generated PNG files
         run: |
@@ -70,6 +78,17 @@ jobs:
               except Exception as exc:
                   failures.append(f'{path}: {exc}')
           print(f'Validated {len(files)} PNG files across {len(roots)} asset roots')
+          report = Path('assets_hd64/animations/character_variant_generation_report.json')
+          if not report.exists():
+              raise SystemExit('HD64 character generation report is missing')
+          import json
+          summary = json.loads(report.read_text())
+          if summary.get('total_frames') != 2448 or len(summary.get('sets', [])) != 6:
+              raise SystemExit(f'Unexpected HD64 animation output: {summary}')
+          equipment = json.loads(Path('assets_hd64/equipment/equipment_manifest.json').read_text())
+          if not equipment.get('items'):
+              raise SystemExit('HD64 equipment manifest is empty')
+          print(f"Validated {summary['total_frames']} HD64 character frames and {len(equipment['items'])} equipment layers")
           if failures:
               print('\n'.join(failures[:100]))
               raise SystemExit(f'{len(failures)} invalid PNG files')
