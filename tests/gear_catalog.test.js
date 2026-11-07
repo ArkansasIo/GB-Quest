@@ -28,7 +28,7 @@ test('armour weight classes map to the existing armory classes', () => {
   const expected = {
     dawnforged: 'plate', graveveil: 'cloth', frostbound: 'mail',
     ashentyrant: 'plate', voidstalker: 'leather', stormcaller: 'cloth',
-    thornheart: 'leather', ironclad: 'plate', starfall: 'cloth',
+    thornheart: 'leather', ironclad: 'plate', starfall_robe: 'cloth',
     eclipse: 'plate', emberguard: 'mail', moonwoven: 'cloth'
   };
   for (const [id, aclass] of Object.entries(expected)) {
