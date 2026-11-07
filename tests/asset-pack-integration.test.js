@@ -61,7 +61,7 @@ test('every declared asset-pack and UI-kit sprite exists in the shipped PNG cata
   for (const [constant, prefix] of [['AP_COUNTS', 'ap'], ['AU_COUNTS', 'au']]) {
     const match = source.match(new RegExp('const ' + constant + ' = Object\\.freeze\\(\\{([\\s\\S]*?)\\}\\);'));
     assert.ok(match, constant + ' declaration is missing');
-    const counts = [...match[1].matchAll(/([a-z0-9_]+):\\s*(\\d+)/g)];
+    const counts = [...match[1].matchAll(/([a-z0-9_]+):\s*(\d+)/g)];
     assert.ok(counts.length > 0, constant + ' has no declared image families');
     for (const [, category, rawCount] of counts) {
       const count = Number(rawCount);
