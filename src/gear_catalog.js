@@ -30,7 +30,7 @@ const AELMOOR_ARMOUR_EXPANSION = {
   stormcaller: { name: 'STORMCALLER VESTMENTS', ac: 13, dexMax: null, type: 'cloth', icon: 'ne_lightarmor_3', cost: 1500 },
   thornheart: { name: 'THORNHEART HIDE', ac: 13, dexMax: null, type: 'light', icon: 'ne_lightarmor_2', cost: 1480 },
   ironclad: { name: 'IRONCLAD BULWARK', ac: 18, dexMax: 0, type: 'heavy', icon: 'ne_heavyarmor_3', cost: 2050 },
-  starfall: { name: 'STARFALL BATTLE ROBE', ac: 12, dexMax: null, type: 'cloth', icon: 'ne_lightarmor_1', cost: 1720 },
+  starfall_robe: { name: 'STARFALL BATTLE ROBE', ac: 12, dexMax: null, type: 'cloth', icon: 'ne_lightarmor_1', cost: 1720 },
   eclipse: { name: 'ECLIPSE REAVER ARMOUR', ac: 17, dexMax: 0, type: 'heavy', icon: 'ne_heavyarmor_2', cost: 2100 },
   emberguard: { name: 'EMBERGUARD SCALE', ac: 15, dexMax: 2, type: 'medium', icon: 'ne_mediumarmor_4', cost: 1580 },
   moonwoven: { name: 'MOONWOVEN SILKS', ac: 11, dexMax: null, type: 'cloth', icon: 'ne_lightarmor_0', cost: 1380 }
