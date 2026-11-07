@@ -99,7 +99,8 @@ function attachSocket(ws) {
         state.character = result.rows[0]; state.zoneId = state.character.zone_id; state.x = state.character.x; state.y = state.character.y;
         if (previous) broadcastZone(previous, 'presence.left', { characterId: state.character.id }, ws);
         const players = [...activeSockets.entries()].filter(([other, s]) => other !== ws && s.authenticated && s.zoneId === state.zoneId && s.character).map(([, s]) => ({ id: s.character.id, name: s.character.name, level: s.character.level, x: s.x, y: s.y }));
-        send(ws, 'zone.snapshot', { zoneId: state.zoneId, self: { ...state.character, x: state.x, y: state.y }, players });
+        const mobs = await pool.query('SELECT id,name,level,x,y,hp,max_hp FROM world_mobs WHERE zone_id=$1 AND alive=true ORDER BY id', [state.zoneId]);
+        send(ws, 'zone.snapshot', { zoneId: state.zoneId, self: { ...state.character, x: state.x, y: state.y }, players, mobs: mobs.rows });
         broadcastZone(state.zoneId, 'presence.joined', { id: state.character.id, name: state.character.name, level: state.character.level, x: state.x, y: state.y }, ws);
         return;
       }
@@ -134,12 +135,13 @@ function attachSocket(ws) {
           if (distance > 3) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_out_of_range' }); }
           const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + crypto.randomInt(0, 7)));
           const hp = Math.max(0, mob.hp - damage);
-          await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
+          await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
           if (hp === 0) {
             const xp = Math.max(1, Number(mob.level) * 12);
-            await tx.query('UPDATE characters SET xp=xp+$1,updated_at=now() WHERE id=$2', [xp, state.character.id]);
-            reward = { xp, gold: 0, source: mob.id };
+            const progress = await tx.query('UPDATE characters SET xp=xp+$1,level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now() WHERE id=$2 RETURNING xp,level', [xp, state.character.id]);
+            state.character.level = progress.rows[0].level;
+            reward = { xp, totalXp: Number(progress.rows[0].xp), level: progress.rows[0].level, gold: 0, source: mob.id };
           }
           await tx.query('COMMIT');
         } catch (error) {
@@ -228,5 +230,12 @@ server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => { wss.emit('connection', ws, req); });
 });
 wss.on('connection', attachSocket);
+const respawnTimer = setInterval(async () => {
+  try {
+    const result = await pool.query("UPDATE world_mobs SET hp=max_hp,alive=true,respawn_at=NULL,updated_at=now() WHERE alive=false AND respawn_at IS NOT NULL AND respawn_at<=now() RETURNING id,zone_id,name,level,x,y,hp,max_hp");
+    for (const mob of result.rows) broadcastZone(mob.zone_id, 'world.mob_spawned', { mob });
+  } catch (error) { console.error('Mob respawn worker failed:', error.message); }
+}, 10000);
+respawnTimer.unref();
 server.listen(PORT, HOST, () => console.log('GB Quest authoritative MMO service listening on ' + HOST + ':' + PORT));
 for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });
