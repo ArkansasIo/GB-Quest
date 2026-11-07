@@ -52,3 +52,10 @@ CREATE TABLE IF NOT EXISTS world_events (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS world_events_zone_created_idx ON world_events(zone_id, created_at DESC);
+
+INSERT INTO world_mobs(id,zone_id,name,level,x,y,hp,max_hp,alive)
+VALUES
+ ('00000000-0000-4000-8000-000000000001','aelmoor_fields','Training Slime',1,11,8,24,24,true),
+ ('00000000-0000-4000-8000-000000000002','aelmoor_fields','Wild Goblin',2,14,9,48,48,true),
+ ('00000000-0000-4000-8000-000000000003','aelmoor_fields','Forest Wolf',3,18,12,72,72,true)
+ON CONFLICT (id) DO NOTHING;
