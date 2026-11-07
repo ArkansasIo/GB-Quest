@@ -250,7 +250,7 @@ function buildZone(z) {
   const areas = [[1, 1, 15, 11], [16, 1, 15, 11], [1, 12, 15, 11], [16, 12, 15, 11]].map((rc, i) => ({ id: `${z.id}_a${i}`, r: rc, name: `${z.name.split(' ')[0]} ${names[i]}` }));
   return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field'), lvl: z.lvl, biome: z.biome };
 }
-const MUSIC_BY_BIOME = { meadow: 'field', coast: 'coast', marsh: 'marsh', jungle: 'jungle', snow: 'snow', badlands: 'desert', volcanic: 'volcano', dusk: 'dusk', crystal: 'crystal' };
+const MUSIC_BY_BIOME = { meadow: 'field', coast: 'coast', marsh: 'marsh', jungle: 'jungle', snow: 'snow', badlands: 'desert', desert: 'desert', oasis: 'coast', savanna: 'field', steppe: 'field', forest: 'field', deepforest: 'jungle', hills: 'field', mountains: 'snow', volcanic: 'volcano', dusk: 'dusk', ruins: 'dungeon', corruption: 'dusk', aether: 'crystal', crystal: 'crystal', mushroom: 'jungle', ocean: 'coast', river: 'coast', frozen: 'snow', sky: 'crystal' };
 function buildHarbor(r) {
   const g = Array.from({ length: ZH }, () => Array(ZW).fill('"'));
   for (let x = 0; x < ZW; x++) { g[0][x] = 'M'; g[1][x] = 'A'; }
