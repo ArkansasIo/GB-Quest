@@ -1,0 +1,106 @@
+name: Repair and validate game assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-game-assets.yml'
+      - 'art_source/**'
+      - 'tools/gen_gbtiles.py'
+      - 'tools/gen_newart.py'
+      - 'tools/gen_npcs.py'
+      - 'tools/gen_jobs.py'
+      - 'tools/slice_assetpack.py'
+      - 'tools/gen_hd64.py'
+      - 'tools/gen_expansion_icons.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gbquest-asset-repair
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install asset pipeline dependencies
+        run: |
+          python -m pip install --disable-pip-version-check Pillow numpy
+          npm ci
+      - name: Regenerate native-resolution world, character, UI and item art
+        run: |
+          python3 tools/gen_gbtiles.py
+          python3 tools/gen_newart.py
+          python3 tools/gen_npcs.py
+          python3 tools/gen_jobs.py
+          python3 tools/slice_assetpack.py
+          python3 tools/slice_assetpack.py --sheet ui
+          python3 tools/gen_hd64.py
+          node tools/gen_expansion_icons.cjs
+      - name: Validate generated PNG files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          roots = [Path('assets'), Path('assets_pack'), Path('assets_hd'), Path('assets_hd64')]
+          files = sorted({p for root in roots if root.exists() for p in root.rglob('*.png')})
+          if not files:
+              raise SystemExit('No generated PNG assets found')
+          failures = []
+          for path in files:
+              try:
+                  with Image.open(path) as image:
+                      image.verify()
+                  with Image.open(path) as image:
+                      if image.width < 1 or image.height < 1:
+                          raise ValueError('zero-sized image')
+              except Exception as exc:
+                  failures.append(f'{path}: {exc}')
+          print(f'Validated {len(files)} PNG files across {len(roots)} asset roots')
+          if failures:
+              print('\n'.join(failures[:100]))
+              raise SystemExit(f'{len(failures)} invalid PNG files')
+          # These are generated one-off medallions; exact duplicate outputs are a regression.
+          medals = sorted(Path('assets').glob('ac_a_*.png'))
+          if len(medals) > 1:
+              import hashlib
+              hashes = [hashlib.sha256(p.read_bytes()).hexdigest() for p in medals]
+              duplicate_count = len(hashes) - len(set(hashes))
+              print(f'Validated {len(medals)} achievement medallions; {duplicate_count} duplicate image payloads')
+          PY
+      - name: Run game tests and build browser release
+        run: |
+          npm test
+          npm run build:itch
+      - name: Commit regenerated source assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets assets_pack assets_hd assets_hd64
+          if git diff --cached --quiet; then
+            echo "Generated assets already match the repository."
+          else
+            git commit -m "Regenerate and repair GB Quest game assets"
+            git push origin HEAD:main
+          fi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: GB-Quest-Repaired-Assets-and-itchio
+          path: |
+            build/gbquest-itch-html5.zip
+            assets_hd64/
+          if-no-files-found: warn
+          retention-days: 30
