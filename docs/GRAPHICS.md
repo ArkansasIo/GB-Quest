@@ -57,7 +57,7 @@ Each family has `<family>_<page>.png` pages and `<family>.json` (`{ name: [page,
 |---|---|
 | `tools/extract_assets.py` | slices `src_sheet/sheet.png` into `assets/*.png` |
 | `tools/gen_assets.py` | biome tilesets, monster variants, class looks, pixel icons |
-| `tools/gen_gbtiles.py` | 16×16 Game Boy terrain for 9 biomes (auto-tiled roads and shores, animated water), buildings, 6 dungeon themes, objects, walkers for 12 classes and 8 NPC looks |
+| `tools/gen_gbtiles.py` | 16×16 Game Boy terrain for 25 biome families (including forest, deep forest, hills, mountains, snow, desert, oasis, swamp, jungle, savanna, steppe, volcanic, ruins, corruption, aether, crystal, mushroom, coast, ocean, river, frozen and sky), 16-way auto-tiled roads and shores, animated water, buildings, 6 dungeon themes, objects and walkers |
 | `tools/make_font.py` | 6×9 bitmap font |
 | `tools/make_worldmap.py` | VALENDRIA map at 320 px and 160 px, 32 colours |
 | `tools/slice_sheets.py` | NES-style monster, equipment and portrait sheets, plus `assets/nes_index.json` |
