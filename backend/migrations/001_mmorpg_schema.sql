@@ -94,3 +94,34 @@ INSERT INTO item_catalog(id,name,description,item_type,equip_slot,max_stack,leve
  ('traveler_tunic','Traveler Tunic','Simple padded travel clothing.','armor','chest',1,1,'{"defense":2}'::jsonb),
  ('minor_potion','Minor Potion','A small restorative potion.','consumable',NULL,20,1,'{"heal":30}'::jsonb)
 ON CONFLICT (id) DO NOTHING;
+
+
+-- Server-owned currency, repeatable quest definitions and per-character quest state.
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS gold bigint NOT NULL DEFAULT 0 CHECK (gold >= 0);
+CREATE TABLE IF NOT EXISTS quest_catalog (
+  id varchar(48) PRIMARY KEY,
+  name varchar(80) NOT NULL,
+  description varchar(300) NOT NULL DEFAULT '',
+  objective_type varchar(24) NOT NULL CHECK (objective_type IN ('kill_mob')),
+  objective_target_id uuid NOT NULL REFERENCES world_mobs(id),
+  objective_required integer NOT NULL DEFAULT 1 CHECK (objective_required BETWEEN 1 AND 1000),
+  reward_xp integer NOT NULL DEFAULT 0 CHECK (reward_xp >= 0),
+  reward_gold integer NOT NULL DEFAULT 0 CHECK (reward_gold >= 0),
+  active boolean NOT NULL DEFAULT true
+);
+CREATE TABLE IF NOT EXISTS character_quests (
+  character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  quest_id varchar(48) NOT NULL REFERENCES quest_catalog(id),
+  status varchar(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active','completed')),
+  objective_progress integer NOT NULL DEFAULT 0 CHECK (objective_progress >= 0),
+  accepted_at timestamptz NOT NULL DEFAULT now(),
+  completed_at timestamptz,
+  PRIMARY KEY(character_id, quest_id)
+);
+CREATE INDEX IF NOT EXISTS character_quests_status_idx ON character_quests(character_id,status);
+INSERT INTO item_catalog(id,name,description,item_type,max_stack,level_required,stats)
+VALUES ('slime_gel','Slime Gel','A sticky alchemical crafting material.','material',99,1,'{}'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO quest_catalog(id,name,description,objective_type,objective_target_id,objective_required,reward_xp,reward_gold)
+VALUES ('first_slime','A Slime in the Fields','Defeat the Training Slime near the Aelmoor road.','kill_mob','00000000-0000-4000-8000-000000000001',1,35,25)
+ON CONFLICT (id) DO NOTHING;
