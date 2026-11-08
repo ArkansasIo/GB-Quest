@@ -7,7 +7,7 @@ This deployment runs the PostgreSQL-backed service in `mmorpg-server.cjs`. It is
 - PostgreSQL accounts with scrypt password hashes and disabled-account checks.
 - Signed, expiring bearer tokens (HMAC-SHA256).
 - Character creation and account-scoped character queries, with an account-row lock enforcing the three-character limit under concurrent requests.
-- Persistent item catalogue, starter inventory, character inventory queries, equipment slot validation, and equip/unequip transactions.
+- Persistent item catalogue, starter inventory, character inventory queries, equipment slot validation, equip/unequip transactions, and transactional consumable use with server-applied HP/MP restoration.
 - Authenticated WebSocket sessions.
 - Server-authoritative movement coordinates and persisted character positions.
 - Zone presence and snapshots.
@@ -49,7 +49,7 @@ Do not expose PostgreSQL publicly. Keep `.env` out of version control, rotate se
 
 This is a real database-backed, authoritative **single service instance**, not 85 deployed game worlds. The current implementation keeps connected sockets and zone broadcasts in process memory. Do not run multiple replicas behind a load balancer yet: players in different replicas would not share presence, zone broadcasts, or consistent live-zone state. Horizontal scaling requires a shared pub/sub layer (for example Redis), zone ownership/partitioning, distributed rate limits, and reconnect/session coordination.
 
-The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but consumable use, item stacking/loot drops, vendor transactions, trading and an economy ledger are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
+The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but item stacking/loot drops, vendor transactions, trading and an economy ledger are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
 
 ## Local development without Docker
 
