@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
-import { Pool } from 'pg';
 
 const enabled = !!process.env.GBQ_TEST_DATABASE_URL;
 
 test('PostgreSQL MMO service supports accounts, characters, authenticated zones and authoritative play', { skip: !enabled }, async () => {
   const { WebSocket } = await import('ws');
+  const { Pool } = await import('pg');
   const port = 18788;
   const base = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['backend/mmorpg-server.cjs'], {
