@@ -4,12 +4,12 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const [source, styles, hud, build, shell, page] = await Promise.all([
-  readFile(new URL('../client/mmorpg-trade.js', import.meta.url), 'utf8'),
-  readFile(new URL('../client/trade-panel.css', import.meta.url), 'utf8'),
-  readFile(new URL('../src/player_hud.js', import.meta.url), 'utf8'),
-  readFile(new URL('../tools/build.cjs', import.meta.url), 'utf8'),
-  readFile(new URL('../client/shell.html', import.meta.url), 'utf8'),
-  readFile(new URL('../index.html', import.meta.url), 'utf8')
+  readFile(new URL('../../client/mmorpg-trade.js', import.meta.url), 'utf8'),
+  readFile(new URL('../../client/trade-panel.css', import.meta.url), 'utf8'),
+  readFile(new URL('../../src/player_hud.js', import.meta.url), 'utf8'),
+  readFile(new URL('../../tools/build.cjs', import.meta.url), 'utf8'),
+  readFile(new URL('../../client/shell.html', import.meta.url), 'utf8'),
+  readFile(new URL('../../index.html', import.meta.url), 'utf8')
 ]);
 
 test('MMO trading overlay parses as standalone browser JavaScript', () => {
