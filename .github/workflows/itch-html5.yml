@@ -35,6 +35,7 @@ on:
       - 'data/visuals/**'
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
+      - 'tests/**'
       - 'tools/build_animation_manifest.py'
       - 'tools/generate_character_sprite_pack.py'
       - 'tools/generate_warrior_f_sprite.py'
