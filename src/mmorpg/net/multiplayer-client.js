@@ -9,7 +9,7 @@ export class MultiplayerClient {
   }
   connect(url, token) {
     if (!this.WebSocketImpl) throw new Error("WebSocket is not available in this runtime");
-    if (!/^wss:\/\//.test(url) && !(/^ws:\/\//.test(url) && /^(localhost|127\\.0\\.0\\.1|\\[::1\\])(?::\\d+)?$/i.test(new URL(url).host))) throw new TypeError("Multiplayer requires wss://, or ws:// on localhost for development");
+    if (!/^wss:\/\//.test(url) && !(/^ws:\/\//.test(url) && /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(new URL(url).host))) throw new TypeError("Multiplayer requires wss://, or ws:// on localhost for development");
     if (!token || typeof token !== "string") throw new TypeError("An authentication token is required");
     this.disconnect();
     const socket = new this.WebSocketImpl(url);
