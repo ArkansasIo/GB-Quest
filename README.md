@@ -259,3 +259,6 @@ These are local PvE-driven simulations using the game's combat system and simula
 This applies to the game's original source code, game design, story, characters, original artwork, audio, animations, UI, branding, and other original materials. Public repository access does not grant a reuse license. See [LICENSE](LICENSE).
 
 Third-party software and content remain under their respective licenses. In particular, any SRD material identified in the project remains subject to the applicable Creative Commons Attribution 4.0 terms and attribution requirements; this proprietary notice does not override those rights. See [docs/SRD_ATTRIBUTION.md](docs/SRD_ATTRIBUTION.md) and each dependency's license.
+
+
+The authoritative backend includes PostgreSQL-backed inventory, equipment, consumables, quest progression and character gold. See [backend deployment and operations](backend/DEPLOYMENT.md).
