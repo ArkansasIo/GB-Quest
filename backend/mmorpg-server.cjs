@@ -295,6 +295,40 @@ const server = http.createServer(async (req, res) => {
       if (!result.rowCount) return json(res, 404, { error: 'equipped_item_not_found' });
       return json(res, 200, { unequipped: result.rows[0].slot });
     }
+    const useItemMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/use-item$/i);
+    if (useItemMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), inventoryId = String(body.inventoryId || '');
+      if (!/^[0-9a-f-]{36}$/i.test(inventoryId)) return json(res, 400, { error: 'invalid_inventory_id' });
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const character = await tx.query('SELECT id,hp,max_hp,mp,max_mp FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [useItemMatch[1], acct.id]);
+        if (!character.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
+        const item = await tx.query(`SELECT ci.id,ci.item_id,ci.quantity,ic.item_type,ic.stats
+          FROM character_inventory ci JOIN item_catalog ic ON ic.id=ci.item_id
+          WHERE ci.id=$1 AND ci.character_id=$2 FOR UPDATE OF ci`, [inventoryId, character.rows[0].id]);
+        if (!item.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'inventory_item_not_found' }); }
+        const entry = item.rows[0];
+        if (entry.item_type !== 'consumable') { await tx.query('ROLLBACK'); return json(res, 400, { error: 'item_not_consumable' }); }
+        const heal = Math.max(0, Math.min(1000, Number(entry.stats?.heal) || 0));
+        const restoreMp = Math.max(0, Math.min(1000, Number(entry.stats?.restoreMp) || 0));
+        if (!heal && !restoreMp) { await tx.query('ROLLBACK'); return json(res, 400, { error: 'item_has_no_usable_effect' }); }
+        const current = character.rows[0];
+        if ((!heal || Number(current.hp) >= Number(current.max_hp)) && (!restoreMp || Number(current.mp) >= Number(current.max_mp))) {
+          await tx.query('ROLLBACK'); return json(res, 409, { error: 'resources_already_full' });
+        }
+        const updated = await tx.query(`UPDATE characters SET hp=LEAST(max_hp,hp+$1),mp=LEAST(max_mp,mp+$2),updated_at=now()
+          WHERE id=$3 RETURNING hp,max_hp,mp,max_mp`, [heal, restoreMp, current.id]);
+        if (entry.quantity === 1) await tx.query('DELETE FROM character_inventory WHERE id=$1', [entry.id]);
+        else await tx.query('UPDATE character_inventory SET quantity=quantity-1 WHERE id=$1', [entry.id]);
+        await tx.query('COMMIT');
+        return json(res, 200, { consumed: entry.item_id, remaining: entry.quantity - 1, resources: updated.rows[0] });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
     return json(res, 404, { error: 'not_found' });
   } catch (error) { console.error('MMO HTTP error:', error.message); return json(res, error.status || 500, { error: error.status ? error.message : 'internal_server_error' }); }
 });
