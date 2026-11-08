@@ -126,5 +126,5 @@ test('6,000-image runtime asset helpers use the global catalog without window-on
   assert.match(pack, /asset6000For:/);
   assert.match(pack, /get6000:/);
   assert.match(pack, /warm6000:/);
-  assert.match(pack, /globalThis\\.GBQ6000Assets/);
+  assert.ok(pack.includes('globalThis.GBQ6000Assets'));
 });
