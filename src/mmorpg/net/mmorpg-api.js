@@ -55,7 +55,7 @@ export class GBQuestMMOApi {
   }
   createTrade(characterId, toCharacterId, offer = {}) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades', {
-      method: 'POST', body: { toCharacterId, ...offer }
+      method: 'POST', body: { ...offer, toCharacterId }
     });
   }
   acceptTrade(tradeId) {
