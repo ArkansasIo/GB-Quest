@@ -350,6 +350,64 @@ textarea { width:100%; min-height:84px; resize:vertical; overflow:auto; }
   .chatlog { min-height:42px; }
 }
 
+/* TITLE SCREEN: hide browser-shell chrome and give the title scene the full viewport.
+   The title artwork and menu remain rendered inside the game's 160:144 canvas. */
+body.title-screen {
+  padding:0 !important;
+  overflow:hidden !important;
+  background:#050608 !important;
+}
+body.title-screen::before { display:none !important; content:none !important; }
+body.title-screen .build-info,
+body.title-screen .keys,
+body.title-screen .game-viewport > .chat,
+body.title-screen .game-viewport > #chatShow { display:none !important; }
+body.title-screen .game-client {
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:#050608 !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body.title-screen .game-viewport {
+  position:relative !important;
+  flex:0 1 auto !important;
+  width:min(100vw, calc(100dvh * 160 / 144)) !important;
+  height:auto !important;
+  max-height:100dvh !important;
+  aspect-ratio:160 / 144 !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  display:grid !important;
+  place-items:center !important;
+  background:#050608 !important;
+}
+body.title-screen .game-viewport > #lcd {
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  aspect-ratio:160 / 144 !important;
+  object-fit:contain !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+@media (max-width:900px) {
+  body.title-screen .game-client { padding:0 !important; }
+  body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
+}
 </style>
 <link rel="stylesheet" href="theme-citadel.css">
 <link rel="stylesheet" href="client/player-hud.css">
