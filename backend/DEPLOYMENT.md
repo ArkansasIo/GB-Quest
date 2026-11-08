@@ -8,6 +8,8 @@ This deployment runs the PostgreSQL-backed service in `mmorpg-server.cjs`. It is
 - Signed, expiring bearer tokens (HMAC-SHA256).
 - Character creation and account-scoped character queries, with an account-row lock enforcing the three-character limit under concurrent requests.
 - Persistent item catalogue, starter inventory, character inventory queries, equipment slot validation, equip/unequip transactions, and transactional consumable use with server-applied HP/MP restoration.
+- Persistent quest catalogue and character quest acceptance/progress/completion, with rewards granted inside the monster-defeat transaction.
+- Persistent character gold wallet, server-calculated monster gold rewards, and a seeded slime-gel drop with inventory stack limits.
 - Authenticated WebSocket sessions.
 - Server-authoritative movement coordinates and persisted character positions.
 - Zone presence and snapshots.
@@ -49,7 +51,7 @@ Do not expose PostgreSQL publicly. Keep `.env` out of version control, rotate se
 
 This is a real database-backed, authoritative **single service instance**, not 85 deployed game worlds. The current implementation keeps connected sockets and zone broadcasts in process memory. Do not run multiple replicas behind a load balancer yet: players in different replicas would not share presence, zone broadcasts, or consistent live-zone state. Horizontal scaling requires a shared pub/sub layer (for example Redis), zone ownership/partitioning, distributed rate limits, and reconnect/session coordination.
 
-The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but item stacking/loot drops, vendor transactions, trading and an economy ledger are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
+The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but general loot tables beyond the seeded slime-gel drop, vendor transactions, player trading, auction house and an economy ledger are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
 
 ## Local development without Docker
 
@@ -61,3 +63,12 @@ npm run mmorpg:server
 ```
 
 The service listens on `0.0.0.0:8788` by default. Set `HOST=127.0.0.1` for local-only development.
+
+
+## Quest and wallet API
+
+- `GET /api/characters/:id/quests` lists active quests and the character's current status/progress.
+- `POST /api/characters/:id/quests` accepts a quest using JSON `{"questId":"first_slime"}`. Acceptance is account-scoped and cannot be duplicated.
+- `GET /api/characters/:id/wallet` returns the character's persisted gold balance.
+- Monster defeats advance matching active quest objectives inside the same PostgreSQL transaction as combat rewards. Quest completion is one-time; XP and gold rewards are applied by the server.
+- The seeded `first_slime` quest asks the player to defeat the Training Slime. Monster defeat also awards server-calculated gold and has a 35% chance to award one Slime Gel, with inventory stack quantity capped.
