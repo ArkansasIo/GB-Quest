@@ -21,6 +21,10 @@ Runtime art is assembled from repository-managed PNG/SVG assets and generated sp
 - Asset generation and build instructions: [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md).
 - Equipment progression: [docs/GEAR_PROGRESSION.md](docs/GEAR_PROGRESSION.md) (4-digit gear level, 6-digit power, item levels 1–720, F–SSS × 12 stars).
 
+## Authoritative MMORPG server
+
+The PostgreSQL-backed HTTP/WebSocket service is documented in [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md). It includes account authentication, character persistence, zone presence, authoritative movement, basic mob combat/XP, and zone chat. Start the single-node Docker deployment with `cp .env.example .env`, set the database password, token secret and exact HTTPS origin allowlist, then run `docker compose up -d --build`. This is a single live service instance; distributed multi-world scaling is not yet implemented.
+
 ## itch.io browser release
 
 Build a self-contained HTML5 upload ZIP with:
