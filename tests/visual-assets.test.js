@@ -171,3 +171,18 @@ test('HUD shortcuts open detailed tabbed submenu pages with safe live game data'
   assert.match(styles, /@media\(max-width:620px\)/);
   assert.match(styles, /\.gbq-detail-page\[hidden\]/);
 });
+
+
+test('expanded HUD submenu pages cover armoury, heirlooms, mounts, bestiary, reputation and settings', () => {
+  const hud = read('src/player_hud.js');
+  for (const key of ['armoury','heirlooms','mounts','bestiary','reputation','settings']) {
+    assert.match(hud, new RegExp(key + ':\\{title:'));
+    assert.match(hud, new RegExp("action==='" + key + "'"));
+  }
+  assert.match(hud, /button\('Armoury','armoury'/);
+  assert.match(hud, /button\('Heirlooms','heirlooms'/);
+  assert.match(hud, /button\('Mounts','mounts'/);
+  assert.match(hud, /button\('Bestiary','bestiary'/);
+  assert.match(hud, /button\('Reputation','reputation'/);
+  assert.match(hud, /button\('Settings','settings'/);
+});
