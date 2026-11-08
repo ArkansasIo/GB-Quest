@@ -266,3 +266,8 @@ Third-party software and content remain under their respective licenses. In part
 
 
 The authoritative backend includes PostgreSQL-backed inventory, equipment, consumables, quest progression and character gold. See [backend deployment and operations](backend/DEPLOYMENT.md).
+
+
+### In-game character bank
+
+The MMO Trading panel includes a **Bank** tab. It loads the selected character's wallet and persistent bank balance from the authenticated PostgreSQL API and supports server-validated deposits and withdrawals. Each transfer is committed with the character balance update and a `bank_transactions` audit entry in one database transaction. Transfers accept whole-gold amounts from 1 to 1,000,000,000; insufficient funds and safe-integer balance limits are enforced by the server.
