@@ -52,7 +52,7 @@ class GBQuestMMOApi {
   'use strict';
   if (window.GBQMMOTrade) return;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], bank:null, status:'disconnected', busy:false, error:'', tab:'trade', seenOfferIds:new Set(), offersInitialized:false, pollHandle:null, refreshing:false };
+  const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], bank:null, status:'disconnected', busy:false, error:'', tab:'trade', seenOfferIds:new Set(), offersInitialized:false, pollHandle:null, refreshing:false, offerFilter:'all' };
   const storageKey = 'gbq.mmo.trade.realm';
   function apiBase() {
     try { return localStorage.getItem(storageKey) || window.GBQ_MMO_REALM_URL || location.origin; }
@@ -187,11 +187,20 @@ class GBQuestMMOApi {
       return;
     }
     if(state.tab==='offers') {
-      target.innerHTML='<h3>TRADE OFFERS</h3>'+(state.offers.length?state.offers.map(o=>{
+      const filters=['all','incoming','outgoing','pending','completed','closed'];
+      const filtered=state.offers.filter(o=>{
+        const incoming=o.to_character_id===state.selected.id;
+        if(state.offerFilter==='incoming') return incoming;
+        if(state.offerFilter==='outgoing') return !incoming;
+        if(state.offerFilter==='pending'||state.offerFilter==='completed') return o.status===state.offerFilter;
+        if(state.offerFilter==='closed') return o.status==='cancelled'||o.status==='expired';
+        return true;
+      });
+      target.innerHTML='<h3>TRADE HISTORY <small>'+state.offers.length+' RECORDS</small></h3><div class="gbq-trade-filterbar">'+filters.map(filter=>'<button type="button" data-offer-filter="'+filter+'" aria-pressed="'+(state.offerFilter===filter)+'">'+filter.toUpperCase()+'</button>').join('')+'</div>'+(filtered.length?filtered.map(o=>{
         const incoming=o.to_character_id===state.selected.id, action=incoming&&o.status==='pending'?'<button data-accept="'+esc(o.id)+'">ACCEPT</button>':'';
         const cancel=(o.status==='pending'&&(incoming||o.from_character_id===state.selected.id))?'<button data-cancel="'+esc(o.id)+'">CANCEL</button>':'';
         return '<article class="gbq-trade-offer"><b>'+esc(incoming?'INCOMING':'OUTGOING')+' · '+esc(o.status)+'</b><span>'+esc(o.from_name)+' → '+esc(o.to_name)+'</span><span>'+esc(o.item_name||'Gold')+' × '+esc(o.quantity||0)+' · '+esc(o.gold_amount||0)+' gold</span><div>'+action+cancel+'</div></article>';
-      }).join(''):'<p class="gbq-trade-empty">No offers yet.</p>');
+      }).join(''):'<p class="gbq-trade-empty">No offers match this history filter.</p>');
       return;
     }
     const players=state.players.filter(p=>p.id!==state.selected.id);
@@ -225,6 +234,7 @@ class GBQuestMMOApi {
         const select=panel().querySelector('[data-character]'); select.innerHTML=state.characters.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+' · Lv '+esc(c.level||1)+'</option>').join(''); select.value=(result.character||result).id; toast('Character created. Connect to enter the zone.'); return;
       }
       if(b.hasAttribute('data-connect')) { await selectCharacter(); return; }
+      if(b.dataset.offerFilter) { state.offerFilter=b.dataset.offerFilter; renderContent(); return; }
       if(b.dataset.tab) { state.tab=b.dataset.tab; renderContent(); return; }
       if(b.hasAttribute('data-send-offer')) {
         const root=panel(),item=root.querySelector('[data-item]'),option=item.selectedOptions[0],itemId=item.value||null;
