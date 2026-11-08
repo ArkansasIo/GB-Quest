@@ -119,11 +119,11 @@
       </aside>
       <div class="gbq-hud-bottom">
         <div class="gbq-hud-shortcuts">
-          ${button('Character','character','C')} ${button('Inventory','inventory','B')} ${button('Skills','skills','M')} ${button('Talents','talents','T')} ${button('Crafting','crafting','C')}
+          ${button('Character','character','C')} ${button('Inventory','inventory','B')} ${button('Skills','skills','M')} ${button('Talents','talents','T')} ${button('Crafting','crafting','C')} ${button('Armoury','armoury','⚔')} ${button('Heirlooms','heirlooms','✧')}
         </div>
         <div class="gbq-hud-action-area"><div class="gbq-hud-quick"><button type="button" data-hud-action="quick1">Q</button><button type="button" data-hud-action="quick2">E</button></div><div class="gbq-hud-hotbar" data-hud-hotbar></div><div class="gbq-hud-potions"><button type="button" data-hud-action="potion">HP <small data-hud-potions>0</small></button><button type="button" data-hud-action="mana">MP</button></div></div>
         <div class="gbq-hud-shortcuts gbq-hud-shortcuts-right">
-          ${button('Map','map','M')} ${button('Journal','journal','J')} ${button('Guild','guild','G')} ${button('Market','market','$')} ${button('Collection','collection','C')}
+          ${button('Map','map','M')} ${button('Journal','journal','J')} ${button('Guild','guild','G')} ${button('Market','market','$')} ${button('Collection','collection','C')} ${button('Mounts','mounts','♞')} ${button('Bestiary','bestiary','☠')} ${button('Reputation','reputation','★')} ${button('Settings','settings','⚙')}
         </div>
       </div>
       <div class="gbq-hud-toast" role="status" aria-live="polite"></div>
@@ -155,7 +155,7 @@
     const target = event.target.closest('[data-hud-action]');
     if (!target) return;
     const action = target.dataset.hudAction, api = window.GBQ;
-    if (['character','inventory','skills','talents','crafting','journal','guild','market','collection'].includes(action)) {
+    if (['character','inventory','skills','talents','crafting','journal','guild','market','collection','armoury','heirlooms','mounts','bestiary','reputation','settings'].includes(action)) {
       openDetailPage(action);
       return;
     }
@@ -206,7 +206,13 @@
     journal:{title:'Quest Journal',tabs:['Active','Completed','Discoveries'],icon:'▤'},
     guild:{title:'Guild & Social',tabs:['Party','Guild','Friends'],icon:'♟'},
     market:{title:'Marketplace',tabs:['Browse','Sell','Orders'],icon:'¤'},
-    collection:{title:'Collection',tabs:['Achievements','Titles','Companions'],icon:'★'}
+    collection:{title:'Collection',tabs:['Achievements','Titles','Companions'],icon:'★'},
+    armoury:{title:'Armoury',tabs:['Weapons','Armour','Accessories'],icon:'⚔'},
+    heirlooms:{title:'Heirlooms',tabs:['Relics','Artifacts','Set Bonuses'],icon:'✧'},
+    mounts:{title:'Mounts & Travel',tabs:['Mounts','Companions','Travel'],icon:'♞'},
+    bestiary:{title:'Bestiary',tabs:['Creatures','Bosses','Records'],icon:'☠'},
+    reputation:{title:'Reputation',tabs:['Factions','Standing','Rewards'],icon:'★'},
+    settings:{title:'Game Settings',tabs:['Display','Audio','Controls'],icon:'⚙'}
   };
   let detailAction='character', detailTab=0;
   function detailRows(action, tab, game) {
@@ -256,6 +262,34 @@
       if(tab===0){const achievements=entries(game.achievements);add('Achievements',achievements.length);achievements.forEach(item=>add(item.name||item.title||'Achievement',item.unlocked?'Unlocked':'In progress',item.description||''));}
       if(tab===1){const titles=entries(game.titles);add('Titles',titles.length);titles.forEach(item=>add(item.name||item.title||'Title',item.active?'Active':'Collected'));}
       if(tab===2){add('Companions collected',companions.length);companions.forEach(item=>add(item.name||'Companion',item.cls||'Companion'));}
+    }
+    else if(action==='armoury'){
+      const gear=inventory.filter(item=>/weapon|sword|bow|staff|axe|dagger|armor|armour|shield|helm|boots|gloves|chest/i.test((item.kind||'')+' '+(item.type||'')+' '+(item.name||'')));
+      const equippedGear=equipment.filter(([slot,item])=>tab===0?/weapon|hand|bow|staff|sword/i.test(slot+' '+(item.type||'')):tab===1?/armor|armour|helm|chest|boot|glove|shield/i.test(slot+' '+(item.type||'')):!/weapon|hand|bow|staff|sword|armor|armour|helm|chest|boot|glove|shield/i.test(slot+' '+(item.type||'')));
+      add(tab===0?'Weapons owned':tab===1?'Armour equipped':'Accessories equipped',tab===0?gear.filter(i=>/weapon|sword|bow|staff|axe|dagger/i.test((i.kind||'')+' '+(i.type||'')+' '+(i.name||''))).length:equippedGear.length);
+      (tab===0?gear.filter(i=>/weapon|sword|bow|staff|axe|dagger/i.test((i.kind||'')+' '+(i.type||'')+' '+(i.name||''))):equippedGear.map(([,item])=>item)).forEach(item=>add(item.name||item.id||'Gear',item.rarity||item.ilvl||'Owned',item.description||item.type||'Equipment'));
+    } else if(action==='heirlooms'){
+      const relics=entries(game.heirlooms||game.relics||game.artifacts);
+      if(tab===0||tab===1){add(tab===0?'Relics':'Artifacts',relics.length);relics.forEach(item=>add(item.name||item.title||'Unknown relic',item.rarity||item.rank||'Collected',item.description||'Ancient item'));}
+      if(tab===2){const sets=entries(game.setBonuses||game.gearSets);add('Known set bonuses',sets.length);sets.forEach(item=>add(item.name||item.set||'Gear set',item.active?'Active':'Incomplete',item.description||''));}
+    } else if(action==='mounts'){
+      const mounts=entries(game.mounts||game.mountCollection);
+      if(tab===0||tab===1){add(tab===0?'Mounts collected':'Travel companions',mounts.length);mounts.forEach(item=>add(item.name||item.title||'Mount',item.unlocked===false?'Locked':item.active?'Active':'Available',item.description||item.type||'Mount'));}
+      if(tab===2){add('Travel mode',game.travelMode||'On foot');add('Current region',game.map||'The Frontier');add('Coordinates',(game.x??0)+', '+(game.y??0));}
+    } else if(action==='bestiary'){
+      const creatures=entries(game.bestiary||game.discoveredCreatures||game.monsterLog);
+      const list=tab===1?creatures.filter(item=>item.boss||item.rank==='boss'):creatures;
+      add(tab===1?'Bosses recorded':tab===2?'Bestiary records':'Creatures discovered',list.length);
+      list.forEach(item=>add(item.name||item.species||'Unknown creature',item.level?'Level '+item.level:item.rank||'Recorded',item.description||item.notes||'Field observation'));
+      if(tab===2){add('Defeats recorded',game.monstersDefeated??game.bossesDefeated??0);add('Rare encounters',game.rareEncounters??0);}
+    } else if(action==='reputation'){
+      const factions=entries(game.reputation||game.factions);
+      if(tab===0||tab===1){add(tab===0?'Factions encountered':'Standing records',factions.length);factions.forEach(item=>add(item.name||item.faction||'Faction',item.rank||item.standing||item.reputation||'Neutral',item.description||'Faction relationship'));}
+      if(tab===2){const rewards=entries(game.reputationRewards);add('Reputation rewards',rewards.length);rewards.forEach(item=>add(item.name||item.title||'Reward',item.unlocked?'Unlocked':'Locked',item.description||''));}
+    } else if(action==='settings'){
+      if(tab===0){add('Display scale','Responsive','The interface adjusts to the available screen size');add('Pixel rendering','Sharp','Pixel-art smoothing is disabled for game sprites');add('Screen mode',document.fullscreenElement?'Fullscreen':'Windowed');}
+      if(tab===1){add('Music','Use the game audio control','Audio settings depend on the active game audio engine');add('Sound effects','Use the game audio control');}
+      if(tab===2){add('Movement','W A S D / Arrow keys');add('Interact','Enter / Space');add('Menu','Escape');add('Quick slots','Q / E / R / F');}
     }
     if(!rows.length)add('Nothing recorded yet','—','This section will fill as you discover, collect and unlock content in the game.');
     return rows;
