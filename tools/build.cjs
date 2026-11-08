@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['data_rules', 'jobs_data', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'art_gallery', 'scenes_menu', 'hd_character_art', 'scenes_world', 'npc_art', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'dread', 'polish', 'durability', 'guild_prog', 'world_quests', 'loadouts', 'jobs', 'necro_army', 'towns', 'npc_ai', 'ui_dark', 'ui_mmo', 'battlebg', 'asset_pack', 'pack_index', 'pack_art', 'mount_data', 'mounts', 'tnl_systems', 'tnl_extras', 'guild_war', 'extras', 'aspects_data', 'd4_gear', 'totems', 'awakening', 'guide', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'main', 'player_hud', 'debug'];
+const ORDER = ['data_rules', 'jobs_data', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'art_gallery', 'scenes_menu', 'hd_character_art', 'scenes_world', 'npc_art', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'dread', 'polish', 'durability', 'guild_prog', 'world_quests', 'loadouts', 'jobs', 'necro_army', 'towns', 'npc_ai', 'ui_dark', 'ui_mmo', 'battlebg', 'asset_pack', 'pack_index', 'pack_art', 'mount_data', 'mounts', 'tnl_systems', 'tnl_extras', 'guild_war', 'extras', 'aspects_data', 'd4_gear', 'totems', 'awakening', 'guide', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'main', 'player_hud', 'mmorpg-trade', 'debug'];
 
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
-const clientFile = (name) => name === 'main' ? 'client/main.js' : `src/${name}.js`;
+const clientFile = (name) => name === 'main' ? 'client/main.js' : name === 'mmorpg-trade' ? 'client/mmorpg-trade.js' : `src/${name}.js`;
 
 const nes = '<script>window.NES_INDEX=' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'nes_index.json'), 'utf8'))) + ';</script>\n';
 const hd64Files = fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.endsWith('.png')).sort();
@@ -33,6 +33,7 @@ const themeShadows = rd('client/theme-shadows.css')
 const shell = rd('client/shell.html')
   .replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + themeShadows + '\n</style>')
   .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>')
+  .replace('<link rel="stylesheet" href="client/trade-panel.css">', '<style>\\n' + rd('client/trade-panel.css') + '\\n</style>')
   .replace('<link rel="stylesheet" href="client/theme-pokemon.css">', '<style>\n' + themePokemon + '\n</style>');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
