@@ -30,3 +30,7 @@
 .gbq-trade-bank-actions form{display:grid;gap:10px;padding:13px;border:1px solid #51432f;background:#0a1119}
 .gbq-trade-bank-actions button{width:100%}
 @media(max-width:560px){.gbq-trade-bank-balances,.gbq-trade-bank-actions{grid-template-columns:1fr}}
+
+.gbq-trade-filterbar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+.gbq-trade-filterbar button{padding:7px 9px;font-size:9px;letter-spacing:.07em}
+.gbq-trade-filterbar button[aria-pressed="true"]{border-color:#d2ad6e;background:#554126;color:#fff0c9}
