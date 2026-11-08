@@ -333,6 +333,24 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal(cancelResponse.status, 200);
     assert.equal((await cancelResponse.json()).status, 'cancelled');
+    const expiringOfferResponse = await fetch(base + `/api/characters/${character.id}/trades`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ toCharacterId: recipientCharacter.id, goldAmount: 2 })
+    });
+    assert.equal(expiringOfferResponse.status, 201);
+    const expiringOfferId = (await expiringOfferResponse.json()).trade.id;
+    const expirePool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try {
+      await expirePool.query("UPDATE player_trade_offers SET expires_at=now()-interval '1 second' WHERE id=$1", [expiringOfferId]);
+    } finally { await expirePool.end(); }
+    const expiredAccept = await fetch(base + `/api/trades/${expiringOfferId}/accept`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({})
+    });
+    assert.equal(expiredAccept.status, 410);
+
     const tradeAuditPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
     try {
       const audit = await tradeAuditPool.query(
