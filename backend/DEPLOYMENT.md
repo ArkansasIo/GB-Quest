@@ -74,6 +74,14 @@ The service listens on `0.0.0.0:8788` by default. Set `HOST=127.0.0.1` for local
 - The seeded `first_slime` quest asks the player to defeat the Training Slime. Monster defeat also awards server-calculated gold and has a 35% chance to award one Slime Gel, with inventory stack quantity capped.
 
 
+## Character bank
+
+- `GET /api/characters/:id/bank` returns the wallet and bank balances.
+- `POST /api/characters/:id/bank/deposit` accepts JSON `{"amount":10}` and moves gold from the character wallet into the bank.
+- `POST /api/characters/:id/bank/withdraw` accepts JSON `{"amount":10}` and moves gold from the bank into the character wallet.
+- Amounts must be positive whole numbers from 1 to 1,000,000,000 per request. The server locks the character row, rejects overdrafts and balance overflow, and writes an immutable `bank_transactions` audit record in the same PostgreSQL transaction.
+- Balances are returned as decimal strings to preserve 64-bit integer precision.
+
 ## NPC vendor economy
 
 - `GET /api/vendors` lists active vendors.
