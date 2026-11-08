@@ -9,7 +9,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 test('release builder embeds the Shadows of the Abyss theme', () => {
   const build = read('tools/build.cjs');
   assert.match(build, /rd\('client\/theme-shadows\.css'\)/);
-  assert.match(build, /<body class="theme-shadows theme-pokemon">/);
+  assert.match(build, /<body class="theme-shadows">/);
 });
 
 test('dark-fantasy theme defines accessible focus and responsive states', () => {
@@ -27,39 +27,22 @@ test('asset migration manifest preserves production asset contracts', () => {
   assert.equal(manifest.sourceSheets.length, 4);
 });
 
-test('classic Pokemon-era interface is embedded in browser and itch.io builds', () => {
+test('Pokémon branding and theme assets are excluded from browser and itch.io builds', () => {
   const build = read('tools/build.cjs');
-  const theme = read('client/theme-pokemon.css');
-  const shell = read('client/shell.html');
-  assert.match(build, /rd\('client\/theme-pokemon\.css'\)/);
-  assert.match(build, /theme-shadows theme-pokemon/);
-  assert.match(shell, /client\/theme-pokemon\.css/);
-  assert.match(theme, /--pk-paper:#f8f8ef/);
-  assert.match(theme, /gbq-hud-panel/);
-  assert.match(theme, /image-rendering:pixelated/);
-});
-
-
-test('classic Pokémon interface is the default across gameplay and release builders', () => {
-  const build = read('tools/build.cjs');
-  const pythonBuild = read('tools/build.py');
   const itchBuild = read('tools/build-itch.cjs');
   const gameTheme = read('src/ui_mmo.js');
-  const theme = read('client/theme-pokemon.css');
-  const world = read('src/scenes_world.js');
-  assert.ok(build.includes("rd('client/theme-pokemon.css')"));
-  assert.ok(build.includes('body class="theme-shadows theme-pokemon"'));
-  assert.ok(build.includes('<!doctype html>'));
-  assert.ok(pythonBuild.includes('"build.cjs"'));
-  assert.ok(itchBuild.includes("'POKEMON CLASSIC'"));
-  assert.ok(gameTheme.includes("mmo: 'POKEMON CLASSIC'"));
-  assert.ok(gameTheme.includes("S.uiTheme = 'tnl'"));
-  assert.ok(theme.includes('body.theme-pokemon .device'));
-  assert.ok(theme.includes('body.theme-pokemon .round'));
-  assert.ok(world.includes('LANTERNS OF AELMOOR'));
-  assert.ok(!world.includes('LATNTERNS OF AELMOOR'));
+  const shell = read('client/shell.html');
+  const menu = read('src/scenes_menu.js');
+  assert.doesNotMatch(build, /pokemon/i);
+  assert.doesNotMatch(itchBuild, /pokemon/i);
+  assert.doesNotMatch(gameTheme, /pokemon/i);
+  assert.doesNotMatch(shell, /pokemon/i);
+  assert.doesNotMatch(menu, /pokemon/i);
+  assert.match(gameTheme, /mmo: 'HANDHELD CLASSIC'/);
+  assert.match(gameTheme, /tnl: 'TNL HANDHELD'/);
+  assert.match(build, /body class="theme-shadows"/);
+  assert.ok(!fs.existsSync(path.join(root, 'client/theme-pokemon.css')));
 });
-
 
 test('Python compatibility build and full-source package instructions stay valid', () => {
   const pythonBuild = read('tools/build.py');

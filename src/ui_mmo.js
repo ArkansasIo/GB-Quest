@@ -1,6 +1,6 @@
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: POKEMON CLASSIC / CRIMSON / CLASSIC / SANCTUM / DIABLO IV / BLACKBIRD.
+// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / DIABLO IV / BLACKBIRD.
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -13,7 +13,7 @@
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
 const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: 'POKEMON CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -27,18 +27,18 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // One-time migration: use the classic blue-and-cream handheld interface as the default.
   // Move saved Sanctum gameplay menus to the requested handheld theme while
   // preserving other deliberately selected themes.
-  if (!S.pokemonUiDefaulted || S.uiTheme === 'sanctum') {
+  if (!S.handheldUiDefaulted || S.uiTheme === 'sanctum') {
     if (!S.uiTheme || S.uiTheme === 'sanctum' || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'tnl';
-    S.pokemonUiDefaulted = true;
+    S.handheldUiDefaulted = true;
     try { saveSettings(); } catch (e) {}
   }
   window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
-  const isPokemon = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl';
+  const isHandheld = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
   let blackbirdPanelPattern = null;
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
-  // colours per theme: POKEMON CLASSIC (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
+  // colours per theme: HANDHELD CLASSIC (blue-and-cream handheld palette) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
   const PALETTE = {
     mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [82, 170, 68], hpLow: [216, 72, 48], mp: [48, 104, 224], xp: [72, 142, 204], gold: [200, 150, 30], title: [24, 28, 48] },
     tnl: { ink: [12, 22, 42], edge: [44, 82, 126], panel: [232, 239, 238], panel2: [196, 216, 222], shade: [112, 142, 158], hp: [58, 166, 112], hpLow: [216, 72, 48], mp: [52, 132, 206], xp: [68, 162, 194], gold: [210, 174, 92], title: [14, 34, 58] },
@@ -83,7 +83,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   { const f0 = frame; frame = function (x, y, w, h, bg = 0) { if (!hudMmo() || w < 6 || h < 6) return f0(x, y, w, h, bg); panel(x, y, w, h, bg); }; }
 
   function hbar(x, y, w, h, frac, c, k) {
-    fill(x, y, w, h, rgb(C.ink, 3)); fill(x + 1, y + 1, w - 2, h - 2, isPokemon() ? rgb([255, 255, 255], 0) : rgb([40, 44, 60], 0));
+    fill(x, y, w, h, rgb(C.ink, 3)); fill(x + 1, y + 1, w - 2, h - 2, isHandheld() ? rgb([255, 255, 255], 0) : rgb([40, 44, 60], 0));
     const f = Math.round((w - 2) * Math.max(0, Math.min(1, frac)));
     if (f > 0) { fill(x + 1, y + 1, f, h - 2, rgb(c, k)); if (h > 3) fill(x + 1, y + 1, f, 1, 'rgba(255,255,255,0.35)'); }
   }
@@ -137,7 +137,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
-    if (isPokemon()) {
+    if (isHandheld()) {
       const y = Hd.y;
       panel(0, y, W, H - y, 0);
       fill(2, y + 2, W - 4, 1, rgb(C.edge, 2));

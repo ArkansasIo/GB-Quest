@@ -35,7 +35,7 @@ The game already includes 14 weapon subclasses, four armour weight classes, clas
 
 ## Interface direction
 
-src/ui_mmo.js now defaults new installs to TNL HANDHELD, a Pokémon Classic handheld layout with a deep navy, steel-blue and brass palette. POKEMON CLASSIC remains selectable: a compact handheld-style 160×144 HUD, portrait and vitals frame, minimap, five-slot action strip, roomy choice panels, triangle selection cursor, and a right-side main menu. The separate TNL systems are loaded by src/tnl_systems.js; they provide weapon mastery, Amitoi expeditions, day/night and morph progression. The catalog load is placed after src/armory.js so it extends the same registries used by the live gear rules.
+src/ui_mmo.js now defaults new installs to TNL HANDHELD, an original compact handheld interface with a deep navy, steel-blue and brass palette. HANDHELD CLASSIC remains selectable: a 160×144 HUD, portrait and vitals frame, minimap, five-slot action strip, roomy choice panels, triangle selection cursor, and a right-side main menu. The separate TNL systems are loaded by src/tnl_systems.js; they provide weapon mastery, Amitoi expeditions, day/night and morph progression. The catalog load is placed after src/armory.js so it extends the same registries used by the live gear rules.
 
 ## Validation notes
 

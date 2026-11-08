@@ -77,9 +77,7 @@ for (const required of [
   'gbq_ui_mockup_catalog',
   'GBQ_HD64_ATLASES',
   'theme-shadows',
-  'theme-pokemon',
-  'POKEMON CLASSIC',
-  'class="theme-shadows theme-pokemon"'
+  'class="theme-shadows"'
 ]) {
   if (!html.includes(required)) throw new Error('Release is missing integrated artwork/runtime marker: ' + required);
 }
