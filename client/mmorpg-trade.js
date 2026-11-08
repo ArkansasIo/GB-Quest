@@ -1,4 +1,48 @@
-import { GBQuestMMOApi } from '../src/mmorpg/net/mmorpg-api.js';
+class GBQuestMMOApi {
+  constructor({baseUrl,onStatus=()=>{},onMessage=()=>{}}={}) {
+    if(!baseUrl) throw new TypeError('baseUrl is required');
+    const parsed=new URL(baseUrl);
+    if(!['https:','http:'].includes(parsed.protocol)) throw new TypeError('Realm URL must use HTTP or HTTPS');
+    this.baseUrl=parsed.origin; this.token=null; this.onStatus=onStatus; this.onMessage=onMessage; this.socket=null; this.sequence=0;
+  }
+  async request(path,{method='GET',body,auth=true}={}) {
+    const headers={accept:'application/json'};
+    if(body!==undefined) headers['content-type']='application/json';
+    if(auth&&this.token) headers.authorization='Bearer '+this.token;
+    const response=await fetch(this.baseUrl+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),credentials:'omit'});
+    const data=await response.json();
+    if(!response.ok) throw Object.assign(new Error(data.error||'request_failed'),{status:response.status,code:data.error});
+    return data;
+  }
+  async register(username,password) { const result=await this.request('/api/register',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
+  async login(username,password) { const result=await this.request('/api/login',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
+  me() { return this.request('/api/me'); }
+  characters() { return this.request('/api/characters'); }
+  createCharacter(name,characterClass) { return this.request('/api/characters',{method:'POST',body:{name,class:characterClass}}); }
+  inventory(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/inventory'); }
+  trades(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades'); }
+  createTrade(id,toCharacterId,offer={}) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades',{method:'POST',body:{...offer,toCharacterId}}); }
+  acceptTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/accept',{method:'POST',body:{}}); }
+  cancelTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/cancel',{method:'POST',body:{}}); }
+  wallet(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/wallet'); }
+  connect() {
+    if(!this.token) throw new Error('Log in before connecting to the realm');
+    const wsUrl=new URL('/ws',this.baseUrl); wsUrl.protocol=wsUrl.protocol==='https:'?'wss:':'ws:';
+    const local=/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(new URL(this.baseUrl).host);
+    if(wsUrl.protocol!=='wss:'&&!local) throw new Error('Secure WSS is required for remote realms');
+    this.disconnect(); const socket=new WebSocket(wsUrl.toString()); this.socket=socket; this.onStatus('connecting');
+    const current=()=>this.socket===socket;
+    socket.addEventListener('open',()=>{if(!current())return;this.onStatus('connected');this.send('authenticate',{token:this.token});});
+    socket.addEventListener('message',event=>{if(!current())return;let message;try{message=JSON.parse(event.data);}catch{this.onStatus('invalid_message');return;}if(message&&typeof message.type==='string')this.onMessage(message);});
+    socket.addEventListener('close',()=>{if(current()){this.socket=null;this.onStatus('disconnected');}});
+    socket.addEventListener('error',()=>{if(current())this.onStatus('error');});
+  }
+  send(type,payload={}) { if(!this.socket||this.socket.readyState!==1)return false;this.socket.send(JSON.stringify({type,sequence:++this.sequence,payload}));return true; }
+  selectCharacter(characterId) { if(!this.send('character.select',{characterId})) throw new Error('Connect to the realm before selecting a character'); }
+  disconnect() { const socket=this.socket;if(!socket)return;this.socket=null;socket.close();this.onStatus('disconnected'); }
+  logout() { this.disconnect();this.token=null; }
+}
+
 
 (() => {
   'use strict';
