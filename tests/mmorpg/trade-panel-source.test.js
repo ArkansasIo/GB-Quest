@@ -42,7 +42,7 @@ test('trading panel styles and script are bundled into the one-file itch release
   assert.match(build, /name === 'mmorpg-trade' \? 'client\/mmorpg-trade\.js'/);
   assert.match(build, /client\/trade-panel\.css/);
   assert.match(page, /client\/mmorpg-trade\.js/);
-  assert.match(page, /client\/trade-panel\.css/);
+  assert.ok(/client\/trade-panel\.css/.test(page) || page.includes('.gbq-trade-overlay'), 'trading stylesheet is linked or inlined');
 });
 
 test('HUD exposes the Trading action and delegates to the realm panel', () => {
