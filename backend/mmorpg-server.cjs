@@ -49,12 +49,16 @@ async function readBody(req, max = 16384) {
 }
 function originAllowed(req) { return isAllowedOrigin(req.headers.origin, ALLOWED_ORIGINS); }
 async function accountFor(req) {
+  const ip = req.socket?.remoteAddress || 'unknown';
+  if (authThrottled(ip)) return null;
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   const claims = verifyToken(token);
-  if (!claims) return null;
+  if (!claims) { recordAuthFailure(ip); return null; }
   const result = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
-  return result.rowCount ? { ...result.rows[0], token } : null;
+  if (!result.rowCount) { recordAuthFailure(ip); return null; }
+  authLimiter.clear(ip);
+  return { ...result.rows[0], token };
 }
 const sessions = new Map(); // accountId -> Set<WebSocket>
 const socketState = new WeakMap();
