@@ -162,6 +162,7 @@ class GBQuestMMOApi {
     const character=state.characters.find(c=>c.id===id);
     if(!character) throw new Error('Select a character first.');
     state.selected=character;
+    state.seenOfferIds=new Set(); state.offersInitialized=false;
     state.api.connect();
     await new Promise((resolve,reject)=>{
       const timeout=window.setTimeout(()=>{state.authResolve=null;state.authReject=null;reject(new Error('Timed out authenticating with the realm.'));},12000);
@@ -170,6 +171,7 @@ class GBQuestMMOApi {
     });
     state.api.selectCharacter(id);
     await refresh();
+    startPolling();
     renderContent();
   }
   function renderContent() {
