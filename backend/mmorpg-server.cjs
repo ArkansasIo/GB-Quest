@@ -490,7 +490,7 @@ const server = http.createServer(async (req, res) => {
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
       return json(res, 404, { error: 'quest_not_found' });
     }
-    const characterTradesMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/trades$/i);
+    const characterTradesMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/trades$/i);
     if (characterTradesMatch && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const characterId = characterTradesMatch[1];
@@ -507,7 +507,7 @@ const server = http.createServer(async (req, res) => {
         ORDER BY t.created_at DESC LIMIT 50`, [characterId]);
       return json(res, 200, { trades: result.rows });
     }
-    const tradeActionMatch = url.pathname.match(/^\\/api\\/trades\\/([0-9a-f-]{36})\\/(accept|cancel)$/i);
+    const tradeActionMatch = url.pathname.match(/^\/api\/trades\/([0-9a-f-]{36})\/(accept|cancel)$/i);
     if (tradeActionMatch && req.method === 'POST') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const action = tradeActionMatch[2].toLowerCase(), tradeId = tradeActionMatch[1];
@@ -587,7 +587,7 @@ const server = http.createServer(async (req, res) => {
         throw error;
       } finally { tx.release(); }
     }
-    const createTradeMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/trades$/i);
+    const createTradeMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/trades$/i);
     if (createTradeMatch && req.method === 'POST') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const body = await readBody(req), senderId = createTradeMatch[1];
