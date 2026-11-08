@@ -14,7 +14,7 @@ python -m pip install -r requirements-assets.txt
 npm run assets:build:6000
 ```
 
-The command generates **6,000 individual 64×64 RGBA PNG files** across 18 art categories, builds category preview atlases, writes JSON and CSV manifests, and runs the read-only integrity validator.
+The command generates **6,000 individual 64×64 RGBA PNG files** across 18 art categories, builds full 10×10 atlas pages covering every image (not only previews), writes JSON/CSV manifests and an atlas index, then runs the read-only integrity validator.
 
 Generated source assets and metadata are placed under:
 
@@ -46,7 +46,7 @@ assets_hd64/gbq_6000/
     category_summary.json
 ```
 
-## Export to the Godot/Summer game port
+## Runtime integration\n\nThe browser game loads the small atlas index at startup and keeps image pages lazy-loaded. The runtime API is exposed as `window.GBQ6000Assets`:\n\n- `load()` — load the index without decoding every sprite.\n- `get('GBQ-0001')` — decode and return one 64×64 canvas.\n- `pick('weapons', 'iron-sword')` — deterministically choose a stable ID from a category.\n- `draw(ctx, id, x, y, width, height)` — draw an already-loaded sprite, or request it for the next frame.\n- `info(id)` — retrieve category, atlas and source-path metadata.\n\nThe game asset-pack module also exposes `GBQAssetPack.asset6000For(category, identity)` and `GBQAssetPack.get6000(id)`. The standalone browser and itch.io builders embed the generated atlas pages and index when present; the normal game continues to fall back to its existing art if the optional pack has not been generated.\n\n## Export to the Godot/Summer game port
 
 ```bash
 npm run assets:export:godot
