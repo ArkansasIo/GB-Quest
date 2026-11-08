@@ -1,4 +1,4 @@
-# Lost Kingdom of Shadowbane Chronicles
+# Lost Kingdoms of Shadowbane Chronicles
 
 **A Game Boy–style MMORPG with d20 rules — by ArkansasIo**
 Version 2.1.1 (build B2026.11.01) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
