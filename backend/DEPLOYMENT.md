@@ -74,7 +74,11 @@ The service listens on `0.0.0.0:8788` by default. Set `HOST=127.0.0.1` for local
 - The seeded `first_slime` quest asks the player to defeat the Training Slime. Monster defeat also awards server-calculated gold and has a 35% chance to award one Slime Gel, with inventory stack quantity capped.
 
 
-## In-game trading client\n\nThe game HUD includes a Trading action backed by `client/mmorpg-trade.js` and `client/trade-panel.css`. The panel authenticates directly against the dedicated PostgreSQL MMO service, loads the account's characters and inventory, opens the authenticated WebSocket, and offers only characters currently present in the selected character's zone. Set `window.GBQ_MMO_REALM_URL` before the trading script loads if the MMO service is on a separate HTTPS origin; the reverse proxy must forward `/api/*` and `/ws` to the MMO service. The client has its own MMO account registration/login because legacy local-save accounts are not shared with this service. The build pipeline embeds the panel script and styles in the standalone itch.io HTML file.\n\n## Player-to-player trading
+## In-game trading client
+
+The game HUD includes a Trading action backed by `client/mmorpg-trade.js` and `client/trade-panel.css`. The panel authenticates directly against the dedicated PostgreSQL MMO service, loads the account's characters and inventory, opens the authenticated WebSocket, and offers only characters currently present in the selected character's zone. Set `window.GBQ_MMO_REALM_URL` before the trading script loads if the MMO service is on a separate HTTPS origin; the reverse proxy must forward `/api/*` and `/ws` to the MMO service. The client has its own MMO account registration/login because legacy local-save accounts are not shared with this service. The build pipeline embeds the panel script and styles in the standalone itch.io HTML file.
+
+## Player-to-player trading
 
 - `GET /api/characters/:id/trades` lists the character's recent incoming and outgoing offers.
 - `POST /api/characters/:id/trades` creates an offer with `toCharacterId` and either an item (`itemId`, `quantity`), gold (`goldAmount`), or both.
