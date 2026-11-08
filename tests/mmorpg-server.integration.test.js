@@ -79,6 +79,12 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal(equip.status, 200);
     assert.equal((await equip.json()).equipped[0].slot, 'main_hand');
+    const equippedTrade = await fetch(base + `/api/characters/${character.id}/trades`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ toCharacterId: recipientCharacter.id, itemId: 'rusty_sword', quantity: 1 })
+    });
+    assert.equal(equippedTrade.status, 409);
     const potion = inventory.items.find(item => item.item_id === 'minor_potion');
     const rejectPotion = await fetch(base + `/api/characters/${character.id}/equip`, {
       method: 'POST',
@@ -271,12 +277,6 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ vendorId: 'unknown_vendor', itemId: 'minor_potion', quantity: 1 })
     });
     assert.equal(invalidZone.status, 404);
-    const equippedTrade = await fetch(base + `/api/characters/${character.id}/trades`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-      body: JSON.stringify({ toCharacterId: recipientCharacter.id, itemId: 'rusty_sword', quantity: 1 })
-    });
-    assert.equal(equippedTrade.status, 409);
     const senderWalletBeforeTrade = await (await fetch(base + `/api/characters/${character.id}/wallet`, {
       headers: { authorization: 'Bearer ' + token }
     })).json();
