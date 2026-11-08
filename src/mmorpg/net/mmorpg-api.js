@@ -50,6 +50,20 @@ export class GBQuestMMOApi {
   acceptQuest(characterId, questId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/quests', { method: 'POST', body: { questId } });
   }
+  trades(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades');
+  }
+  createTrade(characterId, toCharacterId, offer = {}) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades', {
+      method: 'POST', body: { toCharacterId, ...offer }
+    });
+  }
+  acceptTrade(tradeId) {
+    return this.request('/api/trades/' + encodeURIComponent(tradeId) + '/accept', { method: 'POST', body: {} });
+  }
+  cancelTrade(tradeId) {
+    return this.request('/api/trades/' + encodeURIComponent(tradeId) + '/cancel', { method: 'POST', body: {} });
+  }
   bank(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/bank');
   }
