@@ -27,7 +27,9 @@ class FakeWebSocket {
 
 test("client requires secure transport and a token", () => {
   const client = new MultiplayerClient({ WebSocketImpl: FakeWebSocket });
-  assert.doesNotThrow(() => client.connect("ws://localhost", "token"));\n  client.disconnect();\n  assert.throws(() => client.connect("ws://example.test", "token"), /wss/);
+  assert.doesNotThrow(() => client.connect("ws://localhost", "token"));
+  client.disconnect();
+  assert.throws(() => client.connect("ws://example.test", "token"), /wss/);
   assert.throws(() => client.connect("wss://example.test", ""), /token/);
 });
 
