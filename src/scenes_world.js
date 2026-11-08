@@ -110,21 +110,32 @@ class Title {
   }
   draw() {
     drawMenuBackdrop('ap_scene_wilderness');
-    drawOrnatePanel(17, 2, 126, 39);
-    textC('GB QUEST', 80, 5, '#ffe3a0', 1);
-    textC('LOST KINGDOM OF SHADOWBANE', 80, 15, '#e9e0f2');
-    textC('CHRONICLES', 80, 24, '#cbb9ed');
-    textC('LANTERNS OF AELMOOR', 80, 32, '#ffd16d');
+
+    // ── Title card ────────────────────────────────────────────────
+    drawOrnatePanel(10, 2, 140, 44);
+    textC('GB QUEST', 80, 6, '#ffe080', 2);          // big gold title
+    textC('LOST KINGDOM OF SHADOWBANE', 80, 21, '#e8ddf5');  // subtitle
+    textC('CHRONICLES', 80, 31, '#c9b4f0');            // subtitle
+    textC('LANTERNS OF AELMOOR', 80, 39, '#ffd16d');   // tagline
+
+    // ── Floating character portraits ──────────────────────────────
     const bob = Math.round(Math.sin(this.t / 12));
     const hero = classPortrait('warden'), mage = classPortrait('arcanist');
-    if (hero) { const p = sprFit(hero, 25); blit(p, 5, 112 - p.height + bob); }
-    if (mage) { const p = sprFit(mage, 23); blit(p, 132, 115 - p.height - bob); }
-    const o = this.opts(), rowH = 11, panelY = 48;
-    drawOrnatePanel(31, panelY, 98, 79, 'AELMOOR');
-    o.forEach((label, j) => drawMenuButton(39, panelY + 9 + j * rowH, 82, 10, label, j === this.i));
-    fill(0, 135, W, 9, 'rgba(5,6,15,.74)');
-    text(`v${BUILD.version}`, 4, 136, '#e6d6aa');
-    textC('A  SELECT     B  BACK', 81, 136, '#fff0c2');
+    if (hero) { const p = sprFit(hero, 26); blit(p, 2, 108 - p.height + bob); }
+    if (mage) { const p = sprFit(mage, 24); blit(p, 134, 111 - p.height - bob); }
+
+    // ── Menu panel ────────────────────────────────────────────────
+    const o = this.opts(), rowH = 12, panelH = 14 + o.length * rowH;
+    const panelY = 50, panelX = 28, panelW = 104;
+    drawOrnatePanel(panelX, panelY, panelW, panelH, 'AELMOOR');
+    o.forEach((label, j) => drawMenuButton(panelX + 8, panelY + 10 + j * rowH, panelW - 16, 11, label, j === this.i));
+
+    // ── Footer bar ────────────────────────────────────────────────
+    fill(0, 136, W, 8, '#05060f');
+    // left border accent
+    ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
+    text(`v${BUILD.version}`, 4, 137, '#c8a84a');
+    textC('A  SELECT   B  BACK', 80, 137, '#e8dab8');
   }
 }
 // ================================================================ ORIGINAL GAME BOY WORLD PALETTE

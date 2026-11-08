@@ -101,7 +101,7 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
   // Full-detail pack mode smooth-scales the rendered scene; retro modes keep Scale4x.
   if (S.art === 'packs') {
     src = new Uint32Array(ctx.getImageData(0, 0, W, H).data.buffer);
-    V64.bx.imageSmoothingEnabled = true;
+    V64.bx.imageSmoothingEnabled = false;
     V64.bx.clearRect(0, 0, BW, BH);
     V64.bx.drawImage(cv, 0, 0, BW, BH);
   } else {
@@ -111,7 +111,7 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
     V64.bx.putImageData(V64.img, 0, 0);
   }
   const z = Cam.zoom;
-  screen.save(); screen.imageSmoothingEnabled = S.art === 'packs';
+  screen.save(); screen.imageSmoothingEnabled = false;
   if (Math.abs(z - 1) < 0.001) screen.drawImage(V64.big, 0, 0);
   else { screen.translate(BW / 2, BH / 2); screen.scale(z, z); screen.translate(-BW / 2, -BH / 2); screen.drawImage(V64.big, 0, 0); }
   // 2. lighting (field scenes only)

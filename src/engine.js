@@ -367,8 +367,12 @@ function frame(x, y, w, h, bg = 0) {
 }
 function drawMenuBackdrop(scene = 'ap_scene_wilderness') {
   const art = IMG[scene] && spr(scene, W, H, { clean: true });
-  if (art) blit(art, 0, 0);
-  else {
+  if (art) {
+    const smooth = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    blit(art, 0, 0);
+    ctx.imageSmoothingEnabled = smooth;
+  } else {
     const sky = ctx.createLinearGradient(0, 0, 0, H);
     sky.addColorStop(0, '#11132d'); sky.addColorStop(0.58, '#302346'); sky.addColorStop(1, '#5a3541');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
@@ -385,23 +389,34 @@ function drawMenuBackdrop(scene = 'ap_scene_wilderness') {
 }
 function drawOrnatePanel(x, y, w, h, title) {
   ctx.save();
-  ctx.fillStyle = 'rgba(8,9,22,.88)'; ctx.fillRect(x, y, w, h);
-  ctx.lineWidth = 2; ctx.strokeStyle = '#100b18'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
-  ctx.lineWidth = 1; ctx.strokeStyle = '#e1ae52'; ctx.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
-  ctx.strokeStyle = 'rgba(255,222,139,.58)'; ctx.strokeRect(x + 5.5, y + 5.5, w - 11, h - 11);
-  ctx.fillStyle = '#f1c76d';
-  ctx.fillRect(x + 4, y + 4, 4, 1); ctx.fillRect(x + 4, y + 4, 1, 4);
-  ctx.fillRect(x + w - 8, y + 4, 4, 1); ctx.fillRect(x + w - 5, y + 4, 1, 4);
-  ctx.fillRect(x + 4, y + h - 5, 4, 1); ctx.fillRect(x + 4, y + h - 8, 1, 4);
-  ctx.fillRect(x + w - 8, y + h - 5, 4, 1); ctx.fillRect(x + w - 5, y + h - 8, 1, 4);
+  // Panel fill: slightly lighter so text inside is readable at small sizes
+  ctx.fillStyle = 'rgba(10,11,28,.92)'; ctx.fillRect(x, y, w, h);
+  // Subtle inner gradient to give depth
+  const grad = ctx.createLinearGradient(x, y, x, y + h);
+  grad.addColorStop(0, 'rgba(255,220,140,.06)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
+  // Outer dark border
+  ctx.lineWidth = 2; ctx.strokeStyle = '#08060f'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+  // Gold inner frame
+  ctx.lineWidth = 1; ctx.strokeStyle = '#c9952e'; ctx.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
+  // Bright inner highlight line
+  ctx.strokeStyle = 'rgba(255,222,139,.45)'; ctx.strokeRect(x + 4.5, y + 4.5, w - 9, h - 9);
+  // Corner ornaments
+  ctx.fillStyle = '#e8b84a';
+  ctx.fillRect(x + 3, y + 3, 5, 1); ctx.fillRect(x + 3, y + 3, 1, 5);
+  ctx.fillRect(x + w - 8, y + 3, 5, 1); ctx.fillRect(x + w - 4, y + 3, 1, 5);
+  ctx.fillRect(x + 3, y + h - 4, 5, 1); ctx.fillRect(x + 3, y + h - 8, 1, 5);
+  ctx.fillRect(x + w - 8, y + h - 4, 5, 1); ctx.fillRect(x + w - 4, y + h - 8, 1, 5);
   ctx.restore();
   if (title) {
-    const maxChars = Math.max(1, Math.floor((w - 28) / 6));
+    const maxChars = Math.max(1, Math.floor((w - 24) / 6));
     title = fitText(title, maxChars);
-    const tw = Math.min(w - 18, title.length * 6 + 16), tx = x + (w - tw) / 2;
-    fill(tx, y - 3, tw, 11, '#110d1d');
-    ctx.save(); ctx.strokeStyle = '#e1ae52'; ctx.lineWidth = 1; ctx.strokeRect(tx + .5, y - 2.5, tw - 1, 10); ctx.restore();
-    textC(title, x + w / 2, y - 1, '#ffe3a0');
+    const tw = Math.min(w - 14, title.length * 6 + 14), tx = Math.round(x + (w - tw) / 2);
+    // Badge background sits centred on the top border
+    fill(tx, y - 4, tw, 10, '#0e0a1c');
+    ctx.save(); ctx.strokeStyle = '#c9952e'; ctx.lineWidth = 1;
+    ctx.strokeRect(tx + .5, y - 3.5, tw - 1, 9); ctx.restore();
+    textC(title, x + w / 2, y - 2, '#ffd878');
   }
 }
 function drawMenuButton(x, y, w, h, label, selected = false) {
@@ -855,7 +870,7 @@ function present() {
   const outH = Math.round(sourceH * outW / sourceW);
   if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, outW, outH);
   if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
-  lctx.imageSmoothingEnabled = S.art === 'packs'; lctx.drawImage(cv, 0, 0, outW, outH);
+  lctx.imageSmoothingEnabled = false; lctx.drawImage(cv, 0, 0, outW, outH);
 }
 function loop(t) {
   requestAnimationFrame(loop);

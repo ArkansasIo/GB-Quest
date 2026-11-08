@@ -76,6 +76,7 @@ function bbgCanvas(key, foes) {
 function drawBattleBackdrop(b) {
   const hd = hd64BattleBackdrop(b.kind);
   if (hd) {
+    // HD64 scenes are high-res source art — use smooth downscaling to 160px
     const smooth = ctx.imageSmoothingEnabled, quality = ctx.imageSmoothingQuality;
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(hd, 0, 38, W, 56);
@@ -84,7 +85,7 @@ function drawBattleBackdrop(b) {
     fill(0, BBG_BOT - 1, W, 1, 3);
     return;
   }
-  // CITADEL vector environment art is the default painted scene layer.
+  // CITADEL vector environment art — smooth scale from its native size
   const citadel = S.battleBg === 'painted' && S.citadelArt !== false && battleBackdrop(b.kind);
   if (citadel && IMG[citadel]) {
     const smooth = ctx.imageSmoothingEnabled, quality = ctx.imageSmoothingQuality;
@@ -97,13 +98,25 @@ function drawBattleBackdrop(b) {
   }
   if (S.battleBg === 'painted') {
     const bgn = battleBackdrop(b.kind);
-    if (bgn && IMG[bgn]) { const im = IMG[bgn], sh = Math.round(im.width * 56 / 160); const bs = spr(bgn, im.width, im.height); ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56); }
+    if (bgn && IMG[bgn]) {
+      // Painted pixel scenes: keep them crisp with no interpolation
+      const im = IMG[bgn], sh = Math.round(im.width * 56 / 160);
+      const bs = spr(bgn, im.width, im.height);
+      const smooth = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(bs, 0, Math.max(0, Math.round(im.height * 0.45 - sh / 2)), im.width, sh, 0, 38, W, 56);
+      ctx.imageSmoothingEnabled = smooth;
+    }
     fill(0, 93, W, 1, 2); for (let x = 0; x < W; x += 8) fill(x + ((frameN >> 4) % 8), 92, 3, 1, 1);
     return;
   }
+  // CLEAN procedural backdrop — canvas already at pixel scale, no smoothing needed
   const key = bbgKind(b.kind), cv = bbgCanvas(key, Math.min(4, b.foes.length));
+  const smooth = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = false;
   ctx.drawImage(cv, 0, BBG_TOP);
-  // a little life: drifting clouds over open-sky biomes
+  ctx.imageSmoothingEnabled = smooth;
+  // drifting clouds over open-sky biomes
   if (!['dungeon', 'volcanic', 'dusk'].includes(key)) { const cx = ((frameN >> 2) % (W + 40)) - 20; fill(cx, BBG_TOP + 4, 14, 2, '#f4f8fc'); fill(cx + 3, BBG_TOP + 3, 7, 1, '#f4f8fc'); }
   fill(0, BBG_BOT - 1, W, 1, 3);
 }
