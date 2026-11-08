@@ -2,7 +2,7 @@ class GBQuestMMOApi {
   constructor({baseUrl,onStatus=()=>{},onMessage=()=>{}}={}) {
     if(!baseUrl) throw new TypeError('baseUrl is required');
     const parsed=new URL(baseUrl);
-    const localDevelopmentHost=/^(localhost|127\\.0\\.0\\.1|\\[::1\\])(?::\\d+)?$/i.test(parsed.host);\n    if(parsed.protocol!=='https:'&&!(parsed.protocol==='http:'&&localDevelopmentHost)) throw new TypeError('Remote MMO realms must use HTTPS; HTTP is allowed only on localhost');
+    const localDevelopmentHost=/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(parsed.host);\n    if(parsed.protocol!=='https:'&&!(parsed.protocol==='http:'&&localDevelopmentHost)) throw new TypeError('Remote MMO realms must use HTTPS; HTTP is allowed only on localhost');
     this.baseUrl=parsed.origin; this.token=null; this.onStatus=onStatus; this.onMessage=onMessage; this.socket=null; this.sequence=0;
   }
   async request(path,{method='GET',body,auth=true}={}) {
