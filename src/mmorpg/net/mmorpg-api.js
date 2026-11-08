@@ -53,6 +53,22 @@ export class GBQuestMMOApi {
   wallet(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/wallet');
   }
+  vendors() {
+    return this.request('/api/vendors');
+  }
+  vendor(vendorId) {
+    return this.request('/api/vendors/' + encodeURIComponent(vendorId));
+  }
+  buyFromVendor(characterId, vendorId, itemId, quantity = 1) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/vendor/buy', {
+      method: 'POST', body: { vendorId, itemId, quantity }
+    });
+  }
+  sellToVendor(characterId, vendorId, itemId, inventoryId, quantity = 1) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/vendor/sell', {
+      method: 'POST', body: { vendorId, itemId, inventoryId, quantity }
+    });
+  }
   connect() {
     if (!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl = new URL('/ws', this.baseUrl);
