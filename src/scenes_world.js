@@ -62,6 +62,7 @@ class MultiplayerScene {
     if (c.k === 'join') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); NET.joinServer(c.sv.peer); }
     if (c.k === 'leave') { NET.hostOf = null; SFX.close(); }
     if (c.k === 'play') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); fadeTo(() => { scenes.length = 0; enterWorld(); }); }
+    if (c.k === 'realm') { push(new RealmSelect()); }
     if (c.k === 'back') { SFX.back(); removeScene(this); }
   }
   draw() {
