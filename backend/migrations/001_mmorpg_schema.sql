@@ -125,3 +125,40 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO quest_catalog(id,name,description,objective_type,objective_target_id,objective_required,reward_xp,reward_gold)
 VALUES ('first_slime','A Slime in the Fields','Defeat the Training Slime near the Aelmoor road.','kill_mob','00000000-0000-4000-8000-000000000001',1,35,25)
 ON CONFLICT (id) DO NOTHING;
+
+
+-- NPC vendor catalogue and auditable character economy transactions.
+CREATE TABLE IF NOT EXISTS npc_vendors (
+  id varchar(48) PRIMARY KEY,
+  name varchar(80) NOT NULL,
+  zone_id varchar(48) NOT NULL,
+  active boolean NOT NULL DEFAULT true
+);
+CREATE TABLE IF NOT EXISTS vendor_stock (
+  vendor_id varchar(48) NOT NULL REFERENCES npc_vendors(id) ON DELETE CASCADE,
+  item_id varchar(48) NOT NULL REFERENCES item_catalog(id),
+  buy_price bigint NOT NULL CHECK (buy_price >= 0),
+  sell_price bigint NOT NULL CHECK (sell_price >= 0 AND sell_price <= buy_price),
+  stock integer CHECK (stock IS NULL OR stock >= 0),
+  PRIMARY KEY(vendor_id,item_id)
+);
+CREATE TABLE IF NOT EXISTS economy_transactions (
+  id bigserial PRIMARY KEY,
+  character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  vendor_id varchar(48) NOT NULL REFERENCES npc_vendors(id),
+  item_id varchar(48) NOT NULL REFERENCES item_catalog(id),
+  action varchar(8) NOT NULL CHECK (action IN ('buy','sell')),
+  quantity integer NOT NULL CHECK (quantity BETWEEN 1 AND 999),
+  unit_price bigint NOT NULL CHECK (unit_price >= 0),
+  gold_delta bigint NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS economy_transactions_character_idx ON economy_transactions(character_id,created_at DESC);
+INSERT INTO npc_vendors(id,name,zone_id) VALUES
+ ('aelmoor_general','Mira''s Field Supplies','aelmoor_fields')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO vendor_stock(vendor_id,item_id,buy_price,sell_price,stock) VALUES
+ ('aelmoor_general','minor_potion',18,6,250),
+ ('aelmoor_general','rusty_sword',75,24,30),
+ ('aelmoor_general','traveler_tunic',60,20,30)
+ON CONFLICT (vendor_id,item_id) DO NOTHING;
