@@ -402,7 +402,7 @@ const server = http.createServer(async (req, res) => {
       const tx = await pool.connect();
       try {
         await tx.query('BEGIN');
-        const character = await tx.query('SELECT id,gold,zone_id FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [characterId, acct.id]);
+        const character = await tx.query('SELECT id,gold,zone_id,level FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [characterId, acct.id]);
         if (!character.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
         const vendor = await tx.query('SELECT id,zone_id FROM npc_vendors WHERE id=$1 AND active=true FOR SHARE', [vendorId]);
         if (!vendor.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'vendor_not_found' }); }
@@ -419,12 +419,13 @@ const server = http.createServer(async (req, res) => {
         if (action === 'buy') {
           const item = listing.rows[0];
           if (item.stock !== null && Number(item.stock) < quantity) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'vendor_out_of_stock' }); }
-          if (Number(character.rows[0].gold) < Number(total)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'insufficient_gold' }); }
+          if (total > BigInt(Number.MAX_SAFE_INTEGER) || BigInt(character.rows[0].gold) < total) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'insufficient_gold' }); }
+          if (Number(character.rows[0].level) < Number(item.level_required)) { await tx.query('ROLLBACK'); return json(res, 403, { error: 'level_requirement_not_met' }); }
           const existing = await tx.query('SELECT id,quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE', [characterId,itemId]);
           if (existing.rowCount && Number(existing.rows[0].quantity)+quantity > Number(item.max_stack)) {
             await tx.query('ROLLBACK'); return json(res, 409, { error: 'inventory_stack_limit' });
           }
-          if (Number(item.level_required) > 100) { await tx.query('ROLLBACK'); return json(res, 400, { error: 'invalid_item_level' }); }
+          
           if (item.stock !== null) await tx.query('UPDATE vendor_stock SET stock=stock-$1 WHERE vendor_id=$2 AND item_id=$3', [quantity,vendorId,itemId]);
           if (existing.rowCount) await tx.query('UPDATE character_inventory SET quantity=quantity+$1 WHERE id=$2', [quantity,existing.rows[0].id]);
           else await tx.query('INSERT INTO character_inventory(character_id,item_id,quantity) VALUES($1,$2,$3)', [characterId,itemId,quantity]);
