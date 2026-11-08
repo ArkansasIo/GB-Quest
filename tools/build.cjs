@@ -55,7 +55,7 @@ const files = fs.readdirSync(path.join(ROOT, 'assets'))
 const names = files.map(f => f.slice(0, -4));
 fs.writeFileSync(path.join(ROOT, 'assets', 'index.json'), JSON.stringify(names));
 
-const dev = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
+const dev = '<!doctype html>\n<html lang="en"><head>\n'
   + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside') + '\n' + nes + '<script>fetch("dist/atlas.html").then(r => r.text()).then(t => window.ATLAS_HTML = t).catch(() => {});</script>\n'
   + ORDER.map(n => `<script src="${clientFile(n)}"></script>\n`).join('') + '</body></html>\n';
 fs.writeFileSync(path.join(ROOT, 'index.html'), dev);
