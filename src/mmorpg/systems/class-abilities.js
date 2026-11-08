@@ -21,7 +21,8 @@ export function createClassAbilityCatalog(records = []) {
     validateClassAbility(record);
     const classDefinition = classById.get(record.classId);
     if (!classDefinition) throw new RangeError(`Unknown class for ability ${record.id}: ${record.classId}`);
-    if (record.subclassId && classDefinition.subclass?.id !== record.subclassId) {
+    const subclassIds = classDefinition.subclasses?.map(sub => sub.id) ?? (classDefinition.subclass ? [classDefinition.subclass.id] : []);
+    if (record.subclassId && !subclassIds.includes(record.subclassId)) {
       throw new RangeError(`Unknown subclass for ability ${record.id}: ${record.subclassId}`);
     }
     if (!Number.isInteger(record.level) || record.level < 1 || record.level > 20) {

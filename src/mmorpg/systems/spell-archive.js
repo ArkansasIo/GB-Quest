@@ -38,7 +38,7 @@ export function configureCharacterSpellbook(character, { classId, subclassId = n
     throw new TypeError("A character with spellState and a valid classId is required");
   }
   const classDefinition = classes.classes.find(entry => entry.id === classId);
-  if (subclassId && classDefinition.subclass?.id !== subclassId) {
+  if (subclassId && classDefinition.subclass?.id !== subclassId && !classDefinition.subclasses?.some(sub => sub.id === subclassId)) {
     throw new RangeError("Subclass does not belong to the selected class");
   }
   const allowedSpellIds = EXPANSION_SPELLS.filter(spell =>

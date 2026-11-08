@@ -1,19 +1,19 @@
 {
   "ruleset":"SRD-5.2.1",
   "classes":[
-    {"id":"barbarian","name":"Barbarian","hitDie":12,"primaryAbilities":["str"],"subclass":{"level":3,"id":"berserker","name":"Path of the Berserker"}},
-    {"id":"bard","name":"Bard","hitDie":8,"primaryAbilities":["cha"],"subclass":{"level":3,"id":"lore","name":"College of Lore"},"spellcasting":"full"},
-    {"id":"cleric","name":"Cleric","hitDie":8,"primaryAbilities":["wis"],"subclass":{"level":3,"id":"life","name":"Life Domain"},"spellcasting":"full"},
-    {"id":"druid","name":"Druid","hitDie":8,"primaryAbilities":["wis"],"subclass":{"level":3,"id":"land","name":"Circle of the Land"},"spellcasting":"full"},
-    {"id":"fighter","name":"Fighter","hitDie":10,"primaryAbilities":["str","dex"],"subclass":{"level":3,"id":"champion","name":"Champion"}},
-    {"id":"monk","name":"Monk","hitDie":8,"primaryAbilities":["dex","wis"],"subclass":{"level":3,"id":"open-hand","name":"Warrior of the Open Hand"}},
-    {"id":"paladin","name":"Paladin","hitDie":10,"primaryAbilities":["str","cha"],"subclass":{"level":3,"id":"devotion","name":"Oath of Devotion"},"spellcasting":"half"},
-    {"id":"ranger","name":"Ranger","hitDie":10,"primaryAbilities":["dex","wis"],"subclass":{"level":3,"id":"hunter","name":"Hunter"},"spellcasting":"half"},
-    {"id":"rogue","name":"Rogue","hitDie":8,"primaryAbilities":["dex"],"subclass":{"level":3,"id":"thief","name":"Thief"}},
-    {"id":"sorcerer","name":"Sorcerer","hitDie":6,"primaryAbilities":["cha"],"subclass":{"level":3,"id":"draconic","name":"Draconic Sorcery"},"spellcasting":"full"},
-    {"id":"warlock","name":"Warlock","hitDie":8,"primaryAbilities":["cha"],"subclass":{"level":3,"id":"fiend","name":"Fiend Patron"},"spellcasting":"pact"},
-    {"id":"wizard","name":"Wizard","hitDie":6,"primaryAbilities":["int"],"subclass":{"level":3,"id":"evoker","name":"Evoker"},"spellcasting":"full"}
+    {"id":"barbarian","name":"Barbarian","hitDie":12,"primaryAbilities":["str"],"subclasses":[{"level":3,"id":"berserker","name":"Path of the Berserker"},{"level":3,"id":"totem-warrior","name":"Path of the Totem Warrior"}]},
+    {"id":"bard","name":"Bard","hitDie":8,"primaryAbilities":["cha"],"subclasses":[{"level":3,"id":"lore","name":"College of Lore"},{"level":3,"id":"valor","name":"College of Valor"}],"spellcasting":"full"},
+    {"id":"cleric","name":"Cleric","hitDie":8,"primaryAbilities":["wis"],"subclasses":[{"level":3,"id":"life","name":"Life Domain"},{"level":3,"id":"light","name":"Light Domain"},{"level":3,"id":"trickery","name":"Trickery Domain"},{"level":3,"id":"war","name":"War Domain"}],"spellcasting":"full"},
+    {"id":"druid","name":"Druid","hitDie":8,"primaryAbilities":["wis"],"subclasses":[{"level":3,"id":"land","name":"Circle of the Land"},{"level":3,"id":"moon","name":"Circle of the Moon"}],"spellcasting":"full"},
+    {"id":"fighter","name":"Fighter","hitDie":10,"primaryAbilities":["str","dex"],"subclasses":[{"level":3,"id":"champion","name":"Champion"},{"level":3,"id":"battle-master","name":"Battle Master"},{"level":3,"id":"eldritch-knight","name":"Eldritch Knight"}]},
+    {"id":"monk","name":"Monk","hitDie":8,"primaryAbilities":["dex","wis"],"subclasses":[{"level":3,"id":"open-hand","name":"Warrior of the Open Hand"},{"level":3,"id":"shadow","name":"Way of Shadow"},{"level":3,"id":"four-elements","name":"Way of the Four Elements"}]},
+    {"id":"paladin","name":"Paladin","hitDie":10,"primaryAbilities":["str","cha"],"subclasses":[{"level":3,"id":"devotion","name":"Oath of Devotion"},{"level":3,"id":"ancients","name":"Oath of the Ancients"},{"level":3,"id":"vengeance","name":"Oath of Vengeance"}],"spellcasting":"half"},
+    {"id":"ranger","name":"Ranger","hitDie":10,"primaryAbilities":["dex","wis"],"subclasses":[{"level":3,"id":"hunter","name":"Hunter"},{"level":3,"id":"beast-master","name":"Beast Master"}],"spellcasting":"half"},
+    {"id":"rogue","name":"Rogue","hitDie":8,"primaryAbilities":["dex"],"subclasses":[{"level":3,"id":"thief","name":"Thief"},{"level":3,"id":"assassin","name":"Assassin"},{"level":3,"id":"arcane-trickster","name":"Arcane Trickster"}]},
+    {"id":"sorcerer","name":"Sorcerer","hitDie":6,"primaryAbilities":["cha"],"subclasses":[{"level":3,"id":"draconic","name":"Draconic Sorcery"},{"level":3,"id":"wild-magic","name":"Wild Magic"}],"spellcasting":"full"},
+    {"id":"warlock","name":"Warlock","hitDie":8,"primaryAbilities":["cha"],"subclasses":[{"level":3,"id":"fiend","name":"Fiend Patron"},{"level":3,"id":"great-old-one","name":"The Great Old One"}],"spellcasting":"pact"},
+    {"id":"wizard","name":"Wizard","hitDie":6,"primaryAbilities":["int"],"subclasses":[{"level":3,"id":"evoker","name":"Evoker"},{"level":3,"id":"abjurer","name":"School of Abjuration"},{"level":3,"id":"diviner","name":"School of Divination"}],"spellcasting":"full"}
   ],
   "levelCap":20,
-  "note":"This catalog identifies SRD class chassis and one SRD subclass per class. Class feature tables, spell preparation rules and level-by-level resources must be added as structured records from SRD-5.2.1."
+  "note":"SRD-5.2.1 class chassis with all core subclasses. Each subclass has a level-3 unlock. Class feature tables and spell lists are authored separately in class-abilities.js and spell-content.js."
 }

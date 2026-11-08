@@ -118,5 +118,119 @@ export const CLASS_ABILITY_RECORDS = Object.freeze([
     id: "wizard-evoker-prismatic-surge", name: "Prismatic Surge", classId: "wizard", subclassId: "evoker", level: 3,
     description: "Focus an elemental surge into a precise strike.",
     effects: [{ type: "damage", dice: "2d8", damageType: "force", save: { ability: "dex", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Barbarian: Path of the Totem Warrior
+  {
+    id: "barbarian-totem-warrior-totemic-spirit", name: "Totemic Spirit", classId: "barbarian", subclassId: "totem-warrior", level: 3,
+    description: "Call a totem spirit that grants resistance while raging.",
+    effects: [{ type: "damage", dice: "2d6", damageType: "slashing", attackAbility: "str", proficient: true }]
+  },
+  // ---- Bard: College of Valor
+  {
+    id: "bard-valor-combat-inspiration", name: "Combat Inspiration", classId: "bard", subclassId: "valor", level: 3, actionCost: "bonusAction",
+    description: "Inspire an ally to add a die to an attack, save, or ability check.",
+    effects: [{ type: "healing", dice: "1d8", abilityModifier: "cha" }]
+  },
+  // ---- Cleric: Light Domain
+  {
+    id: "cleric-light-radiance-of-the-dawn", name: "Radiance of the Dawn", classId: "cleric", subclassId: "light", level: 3,
+    description: "Channel radiant light that harms undead and heals allies.",
+    effects: [{ type: "damage", dice: "2d8", damageType: "radiant", save: { ability: "con", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Cleric: Trickery Domain
+  {
+    id: "cleric-trickery-tricksters-blessing", name: "Trickster's Blessing", classId: "cleric", subclassId: "trickery", level: 3, actionCost: "bonusAction",
+    description: "Grant advantage on a Dexterity check or saving throw.",
+    effects: [{ type: "damage", dice: "1d8", damageType: "psychic", save: { ability: "wis", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Cleric: War Domain
+  {
+    id: "cleric-war-war-priests-strike", name: "War Priest's Strike", classId: "cleric", subclassId: "war", level: 3,
+    description: "Strike with a weapon and divine power.",
+    effects: [{ type: "damage", dice: "2d8", damageType: "radiant", attackAbility: "str", proficient: true }]
+  },
+  // ---- Druid: Circle of the Moon
+  {
+    id: "druid-moon-moon-beast-form", name: "Moon Beast Form", classId: "druid", subclassId: "moon", level: 3,
+    description: "Assume a powerful beast form with temporary hit points.",
+    effects: [{ type: "damage", dice: "1d10", damageType: "piercing", attackAbility: "str", proficient: true }]
+  },
+  // ---- Fighter: Battle Master
+  {
+    id: "fighter-battle-master-maneuver-strike", name: "Maneuver Strike", classId: "fighter", subclassId: "battle-master", level: 3,
+    description: "Spend a superiority die to add a tactical effect to an attack.",
+    effects: [{ type: "damage", dice: "1d10", damageType: "slashing", attackAbility: "str", proficient: true }]
+  },
+  // ---- Fighter: Eldritch Knight
+  {
+    id: "fighter-eldritch-knight-bonded-weapon", name: "Bonded Weapon", classId: "fighter", subclassId: "eldritch-knight", level: 3,
+    description: "Bond with a weapon and summon it as a bonus action.",
+    effects: [{ type: "damage", dice: "2d6", damageType: "force", attackAbility: "str", proficient: true }]
+  },
+  // ---- Monk: Way of Shadow
+  {
+    id: "monk-shadow-shadow-step", name: "Shadow Step", classId: "monk", subclassId: "shadow", level: 3, actionCost: "bonusAction",
+    description: "Step between shadows and strike from concealment.",
+    effects: [{ type: "damage", dice: "1d8", damageType: "necrotic", attackAbility: "dex", proficient: true }]
+  },
+  // ---- Monk: Way of the Four Elements
+  {
+    id: "monk-four-elements-elemental-strike", name: "Elemental Strike", classId: "monk", subclassId: "four-elements", level: 3,
+    description: "Channel elemental energy into an unarmed strike.",
+    effects: [{ type: "damage", dice: "1d10", damageType: "fire", attackAbility: "dex", proficient: true }]
+  },
+  // ---- Paladin: Oath of the Ancients
+  {
+    id: "paladin-ancients-nature-s-wrath", name: "Nature's Wrath", classId: "paladin", subclassId: "ancients", level: 3,
+    description: "Entangle foes with spectral vines of primal power.",
+    effects: [{ type: "damage", dice: "2d6", damageType: "poison", save: { ability: "str", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Paladin: Oath of Vengeance
+  {
+    id: "paladin-vengeance-vow-of-enmity", name: "Vow of Enmity", classId: "paladin", subclassId: "vengeance", level: 3, actionCost: "bonusAction",
+    description: "Swear vengeance on a foe and gain advantage against them.",
+    effects: [{ type: "damage", dice: "1d8", damageType: "radiant", attackAbility: "str", proficient: true }]
+  },
+  // ---- Ranger: Beast Master
+  {
+    id: "ranger-beast-master-primal-companion", name: "Primal Companion", classId: "ranger", subclassId: "beast-master", level: 3,
+    description: "Call a beast to fight beside you.",
+    effects: [{ type: "damage", dice: "1d8", damageType: "piercing", attackAbility: "dex", proficient: true }]
+  },
+  // ---- Rogue: Assassin
+  {
+    id: "rogue-assassin-assassinate", name: "Assassinate", classId: "rogue", subclassId: "assassin", level: 3,
+    description: "Auto-crit foes that have not yet acted in combat.",
+    effects: [{ type: "damage", dice: "2d6", damageType: "piercing", attackAbility: "dex", proficient: true, advantage: 1 }]
+  },
+  // ---- Rogue: Arcane Trickster
+  {
+    id: "rogue-arcane-trickster-spell-thief", name: "Spell Thief", classId: "rogue", subclassId: "arcane-trickster", level: 3,
+    description: "Steal a spell from a caster and use it once.",
+    effects: [{ type: "damage", dice: "1d8", damageType: "force", save: { ability: "wis", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Sorcerer: Wild Magic
+  {
+    id: "sorcerer-wild-magic-wild-surge", name: "Wild Surge", classId: "sorcerer", subclassId: "wild-magic", level: 3,
+    description: "Unleash wild magic with an unpredictable effect.",
+    effects: [{ type: "damage", dice: "2d6", damageType: "force", save: { ability: "dex", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Warlock: The Great Old One
+  {
+    id: "warlock-great-old-one-awakened-mind", name: "Awakened Mind", classId: "warlock", subclassId: "great-old-one", level: 3,
+    description: "Telepathically contact a creature and probe its thoughts.",
+    effects: [{ type: "damage", dice: "1d10", damageType: "psychic", save: { ability: "wis", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Wizard: School of Abjuration
+  {
+    id: "wizard-abjurer-arcane-ward", name: "Arcane Ward", classId: "wizard", subclassId: "abjurer", level: 3,
+    description: "Create a magical ward that absorbs incoming damage.",
+    effects: [{ type: "damage", dice: "1d10", damageType: "force", save: { ability: "dex", dc: 13, onSuccess: "half" } }]
+  },
+  // ---- Wizard: School of Divination
+  {
+    id: "wizard-diviner-portent", name: "Portent", classId: "wizard", subclassId: "diviner", level: 3,
+    description: "Foresee and replace a d20 roll with a portent die.",
+    effects: [{ type: "damage", dice: "1d8", damageType: "force", save: { ability: "wis", dc: 13, onSuccess: "half" } }]
   }
 ]);

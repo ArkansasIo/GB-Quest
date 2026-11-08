@@ -1,19 +1,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import classes from "../../src/mmorpg/data/classes.json" with { type: "json" };
 import { CLASS_ABILITY_CATALOG } from "../../src/mmorpg/systems/class-abilities.js";
 import { useClassAbility } from "../../src/mmorpg/rules/class-ability-runtime.js";
 
-test("original class ability catalog covers all twelve classes and their catalogued subclasses", () => {
-  assert.equal(CLASS_ABILITY_CATALOG.size, 24);
-  for (const classId of [
-    "barbarian", "bard", "cleric", "druid", "fighter", "monk",
-    "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"
-  ]) {
+const expectedSubclassIds = Object.fromEntries(
+  classes.classes.map(c => [c.id, new Set(c.subclasses.map(s => s.id))])
+);
+
+test("class ability catalog covers all twelve classes, each with base + every SRD subclass ability", () => {
+  let total = 0;
+  for (const classId of Object.keys(expectedSubclassIds)) {
     const records = CLASS_ABILITY_CATALOG.list({ classId });
-    assert.equal(records.length, 2, `${classId} should have a base and subclass ability`);
-    assert.equal(records.filter(record => !record.subclassId).length, 1);
-    assert.equal(records.filter(record => record.subclassId).length, 1);
+    const base = records.filter(record => !record.subclassId);
+    assert.equal(base.length, 1, `${classId} should have exactly one base ability`);
+    total += base.length;
+    const subIds = new Set(records.filter(record => record.subclassId).map(record => record.subclassId));
+    for (const subId of expectedSubclassIds[classId]) {
+      assert.ok(subIds.has(subId), `${classId} missing ability for subclass ${subId}`);
+    }
+    total += records.filter(record => record.subclassId).length;
   }
+  assert.ok(total >= 24, `catalog should have at least 24 abilities, got ${total}`);
 });
 
 test("character ability list respects class, subclass and level", () => {
@@ -22,6 +30,12 @@ test("character ability list respects class, subclass and level", () => {
 
   const evoker = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "evoker" });
   assert.deepEqual(evoker.map(ability => ability.id), ["wizard-arcane-burst", "wizard-evoker-prismatic-surge"]);
+
+  const abjurer = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "abjurer" });
+  assert.deepEqual(abjurer.map(ability => ability.id), ["wizard-arcane-burst", "wizard-abjurer-arcane-ward"]);
+
+  const diviner = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "diviner" });
+  assert.deepEqual(diviner.map(ability => ability.id), ["wizard-arcane-burst", "wizard-diviner-portent"]);
 
   const otherSubclass = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "unknown" });
   assert.deepEqual(otherSubclass.map(ability => ability.id), ["wizard-arcane-burst"]);
