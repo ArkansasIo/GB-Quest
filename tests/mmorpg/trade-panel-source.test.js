@@ -68,3 +68,12 @@ test('trade offers poll for incoming notifications and stop when panel closes', 
   assert.match(source, /function stopPolling\(\)/);
   assert.match(source, /function close\(\) \{ stopPolling\(\)/);
 });
+
+test('trade history supports direction and outcome filters', () => {
+  assert.match(source, /data-offer-filter=/);
+  assert.match(source, /state\.offerFilter==='incoming'/);
+  assert.match(source, /state\.offerFilter==='outgoing'/);
+  assert.match(source, /state\.offerFilter==='pending'/);
+  assert.match(source, /state\.offerFilter==='completed'/);
+  assert.match(source, /state\.offerFilter==='closed'/);
+});
