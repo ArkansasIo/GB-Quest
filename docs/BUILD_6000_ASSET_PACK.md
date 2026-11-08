@@ -48,7 +48,7 @@ assets_hd64/gbq_6000/
 
 ## Runtime integration
 
-The browser game loads the small atlas index at startup and keeps image pages lazy-loaded. The GitHub Actions workflow `.github/workflows/asset-catalog-6000.yml` generates, validates, and publishes the complete source-image pack as the `GB-Quest-6000-HD64-Asset-Pack` workflow artifact (30-day retention). Because a pull-request workflow must already exist on the base branch to run for that pull request, this newly added workflow will become runnable after it is merged; it can then be manually dispatched and will also run for future matching pull requests. The runtime API is exposed as `window.GBQ6000Assets`:
+The browser game loads the small atlas index at startup and keeps image pages lazy-loaded. The existing `.github/workflows/itch-html5.yml` pull-request workflow now runs syntax checks and regression tests, generates and validates the complete 6,000-image catalog, creates the separate asset ZIP, builds the self-contained itch.io HTML5 game with the atlas catalog embedded, and uploads both artifacts for 30 days. The additional `.github/workflows/asset-catalog-6000.yml` workflow provides a focused catalog-only workflow after it reaches the base branch. The runtime API is exposed as `window.GBQ6000Assets`:
 
 - `load()` — load the index without decoding every sprite.
 - `get('GBQ-0001')` — decode and return one 64×64 canvas.
