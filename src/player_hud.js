@@ -432,7 +432,12 @@
     }
     updateHudArtwork(g, hotbar);
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
-    if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
+    if (signature !== lastSignature) {
+      root.dataset.updated = String(Date.now());
+      lastSignature = signature;
+      const detailPanel = root.querySelector('[data-gbq-detail]');
+      if (detailPanel && !detailPanel.hidden) renderDetailPage();
+    }
   }
   function init() { mount(); if (!root) window.setTimeout(init, 250); }
   window.GBQPlayerHUD = { mount:init, refresh:update, destroy(){ if(timer)window.clearInterval(timer);timer=null;root?.remove();root=null; } };
