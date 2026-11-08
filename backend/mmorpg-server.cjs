@@ -490,7 +490,7 @@ const server = http.createServer(async (req, res) => {
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
       return json(res, 404, { error: 'quest_not_found' });
     }
-    const bankMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/bank(?:\\/(deposit|withdraw))?$/i);
+    const bankMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/bank(?:\/(deposit|withdraw))?$/i);
     if (bankMatch && req.method === 'GET' && !bankMatch[2]) {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const result = await pool.query('SELECT id,gold,bank_gold FROM characters WHERE id=$1 AND account_id=$2', [bankMatch[1], acct.id]);
