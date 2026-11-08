@@ -220,12 +220,70 @@ const server = http.createServer(async (req, res) => {
       if (count.rows[0].n >= 3) return json(res, 409, { error: 'character_limit_reached' });
       const id = crypto.randomUUID();
       const result = await pool.query('INSERT INTO characters(id,account_id,name,class) VALUES($1,$2,$3,$4) RETURNING id,name,class,level,zone_id,x,y,hp,max_hp,mp,max_mp,xp', [id, acct.id, name, cls]);
+      await pool.query(`INSERT INTO character_inventory(character_id,item_id,quantity)
+        VALUES ($1,'rusty_sword',1),($1,'traveler_tunic',1),($1,'minor_potion',5)
+        ON CONFLICT (character_id,item_id) DO NOTHING`, [id]);
       return json(res, 201, { character: result.rows[0] });
     }
     if (url.pathname === '/api/characters' && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const result = await pool.query('SELECT id,name,class,level,zone_id,x,y,hp,max_hp,mp,max_mp,xp FROM characters WHERE account_id=$1 ORDER BY created_at', [acct.id]);
       return json(res, 200, { characters: result.rows });
+    }
+    const inventoryMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/inventory$/i);
+    if (inventoryMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = inventoryMatch[1];
+      const owned = await pool.query('SELECT 1 FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const result = await pool.query(`
+        SELECT ci.id AS inventory_id, ci.item_id, ic.name, ic.description, ic.item_type,
+               ic.equip_slot, ic.level_required, ic.stats, ci.quantity,
+               (ce.inventory_id IS NOT NULL) AS equipped
+        FROM character_inventory ci
+        JOIN item_catalog ic ON ic.id=ci.item_id
+        LEFT JOIN character_equipment ce ON ce.inventory_id=ci.id AND ce.character_id=ci.character_id
+        WHERE ci.character_id=$1 ORDER BY ic.item_type, ic.name`, [characterId]);
+      return json(res, 200, { characterId, items: result.rows });
+    }
+    const equipMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/equip$/i);
+    if (equipMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req);
+      const characterId = equipMatch[1], inventoryId = String(body.inventoryId || '');
+      if (!/^[0-9a-f-]{36}$/i.test(inventoryId)) return json(res, 400, { error: 'invalid_inventory_id' });
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const owned = await tx.query('SELECT level FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [characterId, acct.id]);
+        if (!owned.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
+        const item = await tx.query(`SELECT ci.id,ic.equip_slot,ic.level_required
+          FROM character_inventory ci JOIN item_catalog ic ON ic.id=ci.item_id
+          WHERE ci.id=$1 AND ci.character_id=$2 FOR UPDATE OF ci`, [inventoryId, characterId]);
+        if (!item.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'inventory_item_not_found' }); }
+        const entry = item.rows[0];
+        if (!entry.equip_slot) { await tx.query('ROLLBACK'); return json(res, 400, { error: 'item_not_equippable' }); }
+        if (owned.rows[0].level < entry.level_required) { await tx.query('ROLLBACK'); return json(res, 403, { error: 'level_requirement_not_met' }); }
+        await tx.query(`INSERT INTO character_equipment(character_id,slot,inventory_id)
+          VALUES($1,$2,$3) ON CONFLICT(character_id,slot)
+          DO UPDATE SET inventory_id=EXCLUDED.inventory_id,equipped_at=now()`, [characterId, entry.equip_slot, inventoryId]);
+        const equipped = await tx.query('SELECT slot,inventory_id FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId]);
+        await tx.query('COMMIT');
+        return json(res, 200, { equipped: equipped.rows });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
+    const unequipMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/unequip$/i);
+    if (unequipMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), slot = String(body.slot || '');
+      if (!['main_hand','off_hand','head','chest','legs','feet','hands','accessory'].includes(slot)) return json(res, 400, { error: 'invalid_equipment_slot' });
+      const result = await pool.query(`DELETE FROM character_equipment ce USING characters c
+        WHERE ce.character_id=c.id AND c.id=$1 AND c.account_id=$2 AND ce.slot=$3 RETURNING ce.slot`, [unequipMatch[1], acct.id, slot]);
+      if (!result.rowCount) return json(res, 404, { error: 'equipped_item_not_found' });
+      return json(res, 200, { unequipped: result.rows[0].slot });
     }
     return json(res, 404, { error: 'not_found' });
   } catch (error) { console.error('MMO HTTP error:', error.message); return json(res, error.status || 500, { error: error.status ? error.message : 'internal_server_error' }); }
