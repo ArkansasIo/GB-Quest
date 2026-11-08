@@ -138,3 +138,17 @@ test('existing itch.io pull-request workflow generates and uploads the 6,000-ima
   assert.match(workflow, /GB-Quest-6000-HD64-Asset-Pack/);
   assert.match(workflow, /actions\/upload-artifact@v7/);
 });
+
+test('game shell has one metadata set and readable responsive text and viewport sizing', () => {
+  const shell = read('client/shell.html');
+  const build = read('tools/build.cjs');
+  const pokemon = read('client/theme-pokemon.css');
+  assert.equal((shell.match(/<meta charset=/g) || []).length, 1);
+  assert.equal((shell.match(/name="viewport"/g) || []).length, 1);
+  assert.doesNotMatch(build, /<head><meta charset=/);
+  assert.match(shell, /--gbq-sidebar-width/);
+  assert.match(shell, /max-height:min\(42dvh,340px\)/);
+  assert.match(shell, /overflow-wrap:anywhere/);
+  assert.match(pokemon, /FINAL GAME TEXT \+ HUD SCALE/);
+  assert.match(pokemon, /font:700 10px\/1\.25 Arial,sans-serif !important/);
+});
