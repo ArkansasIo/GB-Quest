@@ -72,3 +72,14 @@ The service listens on `0.0.0.0:8788` by default. Set `HOST=127.0.0.1` for local
 - `GET /api/characters/:id/wallet` returns the character's persisted gold balance.
 - Monster defeats advance matching active quest objectives inside the same PostgreSQL transaction as combat rewards. Quest completion is one-time; XP and gold rewards are applied by the server.
 - The seeded `first_slime` quest asks the player to defeat the Training Slime. Monster defeat also awards server-calculated gold and has a 35% chance to award one Slime Gel, with inventory stack quantity capped.
+
+
+## NPC vendor economy
+
+- `GET /api/vendors` lists active vendors.
+- `GET /api/vendors/:vendorId` returns the vendor's current catalogue, prices and stock.
+- `POST /api/characters/:id/vendor/buy` accepts `{"vendorId":"aelmoor_general","itemId":"minor_potion","quantity":1}`.
+- `POST /api/characters/:id/vendor/sell` accepts `{"vendorId":"aelmoor_general","itemId":"minor_potion","inventoryId":"<owned-inventory-uuid>","quantity":1}`.
+- Trades lock the character wallet and vendor listing in a PostgreSQL transaction, verify the character is in the vendor's zone, enforce stock and stack limits, and write an economy transaction record.
+- Equipped items cannot be sold. Prices are controlled by the server catalogue; clients cannot submit a price.
+- Seed vendor: Mira's Field Supplies in Aelmoor Fields. Current stock includes Minor Potions, Rusty Swords and Traveler Tunics.
