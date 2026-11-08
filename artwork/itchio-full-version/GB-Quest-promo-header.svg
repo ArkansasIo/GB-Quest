@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc" shape-rendering="crispEdges">
+<title id="title">GB Quest — Lanterns of Aelmoor promotional header</title><desc id="desc">Wide fantasy pixel-inspired banner with a violet moon, shadow castle, and gold-framed game title.</desc>
+<defs><linearGradient id="s" x2="0" y2="1"><stop stop-color="#070b25"/><stop offset="1" stop-color="#57355f"/></linearGradient><radialGradient id="m"><stop stop-color="#f5e5ff"/><stop offset=".5" stop-color="#c89cff"/><stop offset="1" stop-color="#a56bff" stop-opacity="0"/></radialGradient><linearGradient id="g" x2="0" y2="1"><stop stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffc24d"/><stop offset="1" stop-color="#a54b17"/></linearGradient></defs>
+<rect width="1200" height="675" fill="url(#s)"/><circle cx="1000" cy="160" r="230" fill="url(#m)"/><circle cx="1000" cy="160" r="105" fill="#e7d0ff"/>
+<path d="M0 430 110 280 220 390 360 250 500 410 650 275 790 420 930 265 1060 405 1200 300V675H0Z" fill="#222349"/>
+<path d="M0 520 160 400 290 480 450 360 600 500 760 390 900 495 1050 370 1200 475V675H0Z" fill="#111a36"/>
+<g fill="#100e29" stroke="#4b2a6b" stroke-width="8"><path d="M790 430V240h70v190M860 430V170h90v260M950 430V220h70v210M1020 430V135h95v295M1115 430V240h65v190"/><path d="m850 242 45-90 45 90m65-72 58-120 58 120"/></g>
+<g fill="#ffd071"><path d="M820 300h16v24h-16zm58-70h18v28h-18zm62 92h17v26h-17zm82-115h18v27h-18zm59 110h18v27h-18z"/></g>
+<rect x="90" y="95" width="770" height="300" rx="16" fill="#0b0c22" fill-opacity=".88" stroke="#f0b849" stroke-width="9"/><rect x="108" y="113" width="734" height="264" rx="10" fill="none" stroke="#8f4e22" stroke-width="4"/>
+<text x="475" y="228" text-anchor="middle" font-family="Georgia,serif" font-size="125" font-weight="bold" fill="#190d1b" stroke="#170b1b" stroke-width="14" paint-order="stroke">GB QUEST</text><text x="475" y="220" text-anchor="middle" font-family="Georgia,serif" font-size="125" font-weight="bold" fill="url(#g)" stroke="#6b321b" stroke-width="4" paint-order="stroke">GB QUEST</text>
+<text x="475" y="275" text-anchor="middle" font-family="Georgia,serif" font-size="27" fill="#fff0ca">LOST KINGDOM OF SHADOWBANE CHRONICLES</text><path d="M210 298H740" stroke="#d58b38" stroke-width="4"/><text x="475" y="350" text-anchor="middle" font-family="Georgia,serif" font-size="49" font-weight="bold" fill="#ffd36b">LANTERNS OF AELMOOR</text>
+<text x="600" y="570" text-anchor="middle" font-family="Georgia,serif" font-size="28" fill="#fff0d1">EXPLORE • FORGE • FIGHT • RESTORE THE LIGHT</text>
+<text x="600" y="638" text-anchor="middle" font-family="monospace" font-size="18" fill="#f3dfc1">© 2026 GB QUEST STUDIO • PROPRIETARY — ALL RIGHTS RESERVED</text>
+</svg>

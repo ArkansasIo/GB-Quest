@@ -1,0 +1,67 @@
+{
+  "name": "Lost Kingdom of Shadowbane Chronicles",
+  "applicationId": "io.arkansasio.gbquest",
+  "version": "0.3.0",
+  "runtime": "html5",
+  "language": "javascript",
+  "entryPoint": "index.html",
+  "browser": {
+    "defaultEntryPoint": "dist/gbquest-fullscreen.html",
+    "windowedEntryPoint": "dist/gbquest.html",
+    "fullscreenEntryPoint": "dist/gbquest-fullscreen.html",
+    "displayMode": "viewport",
+    "fullscreenApi": true,
+    "fullscreenRequiresUserGesture": true
+  },
+  "java": {
+    "jarRequired": true,
+    "jarClassName": "io.arkansasio.gbquest.Main",
+    "launcherProject": "java-launcher/",
+    "buildCommand": "cd java-launcher && mvn clean package",
+    "artifact": "java-launcher/target/gbquest-java-0.4.0.jar",
+    "minimumJavaVersion": 17,
+    "description": "Native Java desktop edition using Swing/AWT. The HTML5 edition remains available through the --browser launcher option.",
+    "runtime": "native-desktop",
+    "language": "java"
+  },
+  "viewport": {
+    "width": 160,
+    "height": 144,
+    "aspectRatio": "10:9",
+    "scaling": "integer-pixel-preferred",
+    "fit": "contain",
+    "allowResponsiveResize": true
+  },
+  "rendering": {
+    "renderer": "Canvas 2D",
+    "canvasId": "lcd"
+  },
+  "nativeJava": {
+    "status": "initial-playable-port",
+    "entryPoint": "io.arkansasio.gbquest.Main",
+    "sourceRoot": "java-launcher/src/main/java",
+    "features": [
+      "tile-world-and-camera",
+      "keyboard-movement-and-collision",
+      "enemy-pursuit-and-contact-combat",
+      "directional-melee",
+      "xp-and-level-progression",
+      "gold-and-potion-pickups",
+      "versioned-local-save"
+    ]
+  },
+  "itchIo": {
+    "projectType": "HTML",
+    "uploadArtifact": "build/gbquest-itch-html5.zip",
+    "zipEntryPoint": "index.html",
+    "buildCommand": "npm run build:itch",
+    "embedViewport": {
+      "width": 960,
+      "height": 864,
+      "aspectRatio": "10:9"
+    },
+    "browserPlayable": true,
+    "fullscreenApi": true,
+    "note": "Build package is ready for manual upload; publishing to an itch.io account requires authenticated account access."
+  }
+}

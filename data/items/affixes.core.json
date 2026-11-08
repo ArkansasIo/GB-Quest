@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 1,
+  "description": "Original GB-Quest affix definitions. Values are balance placeholders; rarity, rank, stars and item level are independent dimensions.",
+  "categories": [
+    "offensive",
+    "defensive",
+    "resistance",
+    "resource",
+    "mobility",
+    "skill",
+    "summon",
+    "profession",
+    "special"
+  ],
+  "affixes": [
+    {
+      "id": "affix.physical_attack",
+      "name": "Physical Attack",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 100
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.spell_power",
+      "name": "Spell Power",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "focus"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 100
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.attack_speed",
+      "name": "Attack Speed",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "gloves"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 20
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.critical_chance",
+      "name": "Critical Chance",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 15
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.critical_damage",
+      "name": "Critical Damage",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 50
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.armor_penetration",
+      "name": "Armor Penetration",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 30
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.fire_damage",
+      "name": "Fire Damage",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.frost_damage",
+      "name": "Frost Damage",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.lightning_damage",
+      "name": "Lightning Damage",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.poison_damage",
+      "name": "Poison Damage",
+      "category": "offensive",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.max_health",
+      "name": "Maximum Health",
+      "category": "defensive",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 10,
+        "max": 1000
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.armor",
+      "name": "Armor",
+      "category": "defensive",
+      "allowedSlots": [
+        "armor",
+        "shield"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 100
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.block_chance",
+      "name": "Block Chance",
+      "category": "defensive",
+      "allowedSlots": [
+        "shield"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 15
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.evasion",
+      "name": "Evasion",
+      "category": "defensive",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 20
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.healing_received",
+      "name": "Healing Received",
+      "category": "defensive",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 25
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.fire_resistance",
+      "name": "Fire Resistance",
+      "category": "resistance",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.frost_resistance",
+      "name": "Frost Resistance",
+      "category": "resistance",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.lightning_resistance",
+      "name": "Lightning Resistance",
+      "category": "resistance",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.poison_resistance",
+      "name": "Poison Resistance",
+      "category": "resistance",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.status_resistance",
+      "name": "Status Resistance",
+      "category": "resistance",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 30
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.max_mana",
+      "name": "Maximum Mana",
+      "category": "resource",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 5,
+        "max": 500
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.mana_regeneration",
+      "name": "Mana Regeneration",
+      "category": "resource",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 20
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.cooldown_reduction",
+      "name": "Cooldown Reduction",
+      "category": "skill",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 20
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.skill_rank",
+      "name": "Eligible Skill Rank",
+      "category": "skill",
+      "allowedSlots": [
+        "weapon",
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 5
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.movement_speed",
+      "name": "Movement Speed",
+      "category": "mobility",
+      "allowedSlots": [
+        "boots",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 20
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.dodge_cooldown",
+      "name": "Dodge Cooldown Reduction",
+      "category": "mobility",
+      "allowedSlots": [
+        "boots",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 15
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.summon_damage",
+      "name": "Summon Damage",
+      "category": "summon",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.summon_health",
+      "name": "Summon Health",
+      "category": "summon",
+      "allowedSlots": [
+        "armor",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 40
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.gathering_yield",
+      "name": "Gathering Yield",
+      "category": "profession",
+      "allowedSlots": [
+        "tool",
+        "accessory"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 25
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.crafting_quality",
+      "name": "Crafting Quality",
+      "category": "profession",
+      "allowedSlots": [
+        "tool",
+        "accessory"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 25
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.life_steal",
+      "name": "Life Steal",
+      "category": "special",
+      "allowedSlots": [
+        "weapon",
+        "jewelry"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 0.1,
+        "max": 8
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    },
+    {
+      "id": "affix.thorns",
+      "name": "Thorns",
+      "category": "special",
+      "allowedSlots": [
+        "armor",
+        "shield"
+      ],
+      "minItemLevel": 1,
+      "maxItemLevel": 720,
+      "value": {
+        "min": 1,
+        "max": 100
+      },
+      "exclusiveGroup": null,
+      "rerollable": true
+    }
+  ]
+}

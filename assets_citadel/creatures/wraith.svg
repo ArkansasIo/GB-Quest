@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc"><title id="title">Wraith — GB Quest bestiary</title><desc id="desc">Original bestiary emblem depicting tattered spectral mantle.</desc><defs><radialGradient id="bg"><stop stop-color="#31465a"/><stop offset="1" stop-color="#090f18"/></radialGradient><linearGradient id="hide" x2=".8" y2="1"><stop stop-color="#e0d5bd"/><stop offset=".25" stop-color="#9cb9ce"/><stop offset="1" stop-color="#35445e"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff0c2"/><stop offset=".5" stop-color="#c39a58"/><stop offset="1" stop-color="#60401e"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="16"/></filter></defs><rect width="1024" height="1024" rx="42" fill="url(#bg)"/><circle cx="512" cy="460" r="340" fill="#c8e78a" opacity=".1" filter="url(#glow)"/><circle cx="512" cy="460" r="380" fill="none" stroke="url(#gold)" stroke-width="16"/><circle cx="512" cy="460" r="355" fill="none" stroke="#d9c28f" stroke-opacity=".4" stroke-width="4"/>
+<g stroke="#35445e" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" fill="url(#hide)">
+
+
+
+
+
+
+
+<path d="M330 300Q500 160 700 300L760 650 590 820 350 760 230 560Z"/><path d="M340 350Q120 360 180 720L380 600M680 350Q900 360 840 720L640 600"/>
+
+
+
+
+</g><path d="M370 460q60-55 120 0m44 0q60-55 120 0" fill="none" stroke="#35445e" stroke-width="24"/><ellipse cx="430" cy="465" rx="20" ry="27" fill="#c8e78a"/><ellipse cx="594" cy="465" rx="20" ry="27" fill="#c8e78a"/><path d="M470 570 512 600 554 570" fill="none" stroke="#1b1a1a" stroke-width="20"/><path d="M512 80v110M512 730v150M132 460h110M782 460h110" stroke="url(#gold)" stroke-width="12"/><text x="512" y="955" text-anchor="middle" fill="#f0dfb8" font-family="Georgia,serif" font-size="52" letter-spacing="7">WRAITH</text></svg>

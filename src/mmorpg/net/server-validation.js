@@ -1,0 +1,4 @@
+/** Minimal server-side command validation. Never trust client-calculated rewards or combat outcomes. */
+const ALLOWED=new Set(["move","interact","attack","cast_spell","equip","use_item","accept_quest","loot"]);
+export function validateClientCommand(command,{maxPayloadBytes=4096}={}){if(!command||typeof command!=="object"||Array.isArray(command))return {ok:false,reason:"invalid_command"};if(!ALLOWED.has(command.type))return {ok:false,reason:"unsupported_command"};const bytes=new TextEncoder().encode(JSON.stringify(command)).length;if(bytes>maxPayloadBytes)return {ok:false,reason:"payload_too_large"};if(typeof command.requestId!=="string"||command.requestId.length>80)return {ok:false,reason:"invalid_request_id"};return {ok:true};}
+export function makeServerEvent(type,payload,sequence){return {type,payload,sequence,serverTimestamp:Date.now()};}

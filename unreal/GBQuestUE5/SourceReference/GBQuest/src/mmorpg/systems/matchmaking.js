@@ -1,0 +1,3 @@
+export function createQueue(){return {entries:[]};}
+export function enqueue(queue,player,{mode="dungeon",role="damage",rating=0}={}){if(queue.entries.some(e=>e.playerId===player.id))return false;queue.entries.push({playerId:player.id,mode,role,rating,queuedAt:Date.now()});return true;}
+export function formRoleBalancedGroup(queue,{tank=1,healer=1,damage=3}={}){const need={tank,healer,damage},chosen=[];for(const role of Object.keys(need)){for(let i=0;i<need[role];i++){const index=queue.entries.findIndex(e=>e.role===role);if(index<0)return null;chosen.push(queue.entries.splice(index,1)[0]);}}return chosen;}

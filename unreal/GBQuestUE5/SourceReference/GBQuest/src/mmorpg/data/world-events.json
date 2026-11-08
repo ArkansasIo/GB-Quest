@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "id": "greenreach-lantern-watch",
+      "name": "Lantern Watch",
+      "description": "Defend the road lanterns while scouts clear the brush.",
+      "zoneId": "westreach-01",
+      "levelRange": [1, 36],
+      "periodMinutes": 180,
+      "offsetMinutes": 25,
+      "durationMinutes": 35,
+      "partySize": [1, 5],
+      "objectives": [
+        { "id": "light-beacons", "type": "interact", "target": "road-beacon", "required": 3 },
+        { "id": "clear-ambush", "type": "kill", "target": "road-raider", "required": 5 }
+      ],
+      "rewards": { "reputation": 25, "currencyCopper": 150 }
+    },
+    {
+      "id": "mosswood-rootwake",
+      "name": "Rootwake",
+      "description": "Keep the old grove paths clear as the roots shift.",
+      "zoneId": "westreach-02",
+      "levelRange": [19, 54],
+      "periodMinutes": 240,
+      "offsetMinutes": 65,
+      "durationMinutes": 40,
+      "partySize": [1, 5],
+      "objectives": [
+        { "id": "gather-sap", "type": "collect", "target": "bright-sap", "required": 4 },
+        { "id": "calm-thicket", "type": "kill", "target": "thornbound-sentinel", "required": 3 }
+      ],
+      "rewards": { "reputation": 30, "currencyCopper": 220 }
+    },
+    {
+      "id": "highcrown-falling-stars",
+      "name": "Falling Stars",
+      "description": "Recover the star-metal fragments before the storm returns.",
+      "zoneId": "highcrown-01",
+      "levelRange": [91, 126],
+      "periodMinutes": 360,
+      "offsetMinutes": 115,
+      "durationMinutes": 45,
+      "partySize": [1, 5],
+      "objectives": [
+        { "id": "recover-fragments", "type": "collect", "target": "star-metal", "required": 6 },
+        { "id": "defeat-sky-warden", "type": "kill", "target": "sky-warden", "required": 1 }
+      ],
+      "rewards": { "reputation": 40, "currencyCopper": 400 }
+    },
+    {
+      "id": "sunscar-glass-tide",
+      "name": "Glass Tide",
+      "description": "Guide travelers through the shifting dunes and find the marked caches.",
+      "zoneId": "sunscar-01",
+      "levelRange": [181, 216],
+      "periodMinutes": 300,
+      "offsetMinutes": 45,
+      "durationMinutes": 35,
+      "partySize": [1, 5],
+      "objectives": [
+        { "id": "mark-caches", "type": "discover", "target": "glass-cache", "required": 3 },
+        { "id": "drive-off-stalkers", "type": "kill", "target": "dune-stalker", "required": 4 }
+      ],
+      "rewards": { "reputation": 35, "currencyCopper": 350 }
+    },
+    {
+      "id": "umbraldeep-drowned-bell",
+      "name": "The Drowned Bell",
+      "description": "Silence the drowned bell and escort the salvage crew home.",
+      "zoneId": "umbraldeep-01",
+      "levelRange": [271, 306],
+      "periodMinutes": 420,
+      "offsetMinutes": 175,
+      "durationMinutes": 50,
+      "partySize": [1, 5],
+      "objectives": [
+        { "id": "silence-bell", "type": "interact", "target": "drowned-bell", "required": 1 },
+        { "id": "protect-salvagers", "type": "kill", "target": "deep-hollow", "required": 6 }
+      ],
+      "rewards": { "reputation": 50, "currencyCopper": 600 }
+    },
+    {
+      "id": "crossroads-waystone-repair",
+      "name": "Waystone Repair",
+      "description": "Collect charged fragments and restore a damaged travel waystone.",
+      "zoneId": "westreach-03",
+      "levelRange": [37, 72],
+      "periodMinutes": 180,
+      "offsetMinutes": 100,
+      "durationMinutes": 30,
+      "partySize": [1, 5],
+      "objectives": [
+        { "id": "collect-charged-stone", "type": "collect", "target": "charged-shard", "required": 5 },
+        { "id": "activate-waystone", "type": "interact", "target": "crossroads-waystone", "required": 1 }
+      ],
+      "rewards": { "reputation": 20, "currencyCopper": 175 }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "category": "props",
+  "format": "image/svg+xml",
+  "masterViewBox": "0 0 512 512",
+  "entries": [
+    {
+      "id": "ancient-oak",
+      "name": "Ancient Oak",
+      "src": "assets_citadel/props/ancient-oak.svg",
+      "status": "concept-prop",
+      "alt": "Original Ancient Oak environment prop"
+    },
+    {
+      "id": "moonwillow",
+      "name": "Moonwillow",
+      "src": "assets_citadel/props/moonwillow.svg",
+      "status": "concept-prop",
+      "alt": "Original Moonwillow environment prop"
+    },
+    {
+      "id": "waystone",
+      "name": "Runed Waystone",
+      "src": "assets_citadel/props/waystone.svg",
+      "status": "concept-prop",
+      "alt": "Original Runed Waystone environment prop"
+    },
+    {
+      "id": "woodland-shrine",
+      "name": "Woodland Shrine",
+      "src": "assets_citadel/props/woodland-shrine.svg",
+      "status": "concept-prop",
+      "alt": "Original Woodland Shrine environment prop"
+    },
+    {
+      "id": "watchtower",
+      "name": "Forest Watchtower",
+      "src": "assets_citadel/props/watchtower.svg",
+      "status": "concept-prop",
+      "alt": "Original Forest Watchtower environment prop"
+    },
+    {
+      "id": "stone-bridge",
+      "name": "Moss Stone Bridge",
+      "src": "assets_citadel/props/stone-bridge.svg",
+      "status": "concept-prop",
+      "alt": "Original Moss Stone Bridge environment prop"
+    },
+    {
+      "id": "campfire",
+      "name": "Adventurer Campfire",
+      "src": "assets_citadel/props/campfire.svg",
+      "status": "concept-prop",
+      "alt": "Original Adventurer Campfire environment prop"
+    },
+    {
+      "id": "crystal-cluster",
+      "name": "Arcane Crystal Cluster",
+      "src": "assets_citadel/props/crystal-cluster.svg",
+      "status": "concept-prop",
+      "alt": "Original Arcane Crystal Cluster environment prop"
+    },
+    {
+      "id": "iron-gate",
+      "name": "Kingdom Iron Gate",
+      "src": "assets_citadel/props/iron-gate.svg",
+      "status": "concept-prop",
+      "alt": "Original Kingdom Iron Gate environment prop"
+    },
+    {
+      "id": "herbalist-cart",
+      "name": "Herbalist Cart",
+      "src": "assets_citadel/props/herbalist-cart.svg",
+      "status": "concept-prop",
+      "alt": "Original Herbalist Cart environment prop"
+    }
+  ],
+  "note": "Scalable concept prop art for world-building and UI previews. Not yet production 3D meshes or collision-ready world objects."
+}

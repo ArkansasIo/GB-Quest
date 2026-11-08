@@ -1,0 +1,4589 @@
+{
+  "schemaVersion": "1.0.0",
+  "worldId": "gbq-seven-continents",
+  "name": "The Sevenfold World — 90 Map Atlas",
+  "mapCount": 90,
+  "counts": {
+    "overworld": 56,
+    "dungeons": 20,
+    "raids": 14
+  },
+  "coordinateSystem": {
+    "origin": "north-west",
+    "units": "tiles",
+    "tileSizePixels": 16,
+    "chunkSizeTiles": 32,
+    "zoneDimensionsTiles": [
+      512,
+      512
+    ]
+  },
+  "maps": [
+    {
+      "id": "map-asia-zone-01",
+      "name": "Jadewind Basin",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-01",
+      "levelRange": [
+        1,
+        15
+      ],
+      "biomeId": "temperate_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-01-sub-1",
+        "asia-zone-01-sub-2",
+        "asia-zone-01-sub-3",
+        "asia-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-01-city",
+        "asia-zone-01-town-1",
+        "asia-zone-01-town-2",
+        "asia-zone-01-village-1",
+        "asia-zone-01-village-2",
+        "asia-zone-01-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-01-poi-1",
+        "asia-zone-01-poi-2",
+        "asia-zone-01-poi-3",
+        "asia-zone-01-poi-4",
+        "asia-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-01-road-gate",
+        "asia-zone-01-caravan-post",
+        "asia-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-02",
+      "name": "Dragonspine Range",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-02",
+      "levelRange": [
+        6,
+        20
+      ],
+      "biomeId": "alpine",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-02-sub-1",
+        "asia-zone-02-sub-2",
+        "asia-zone-02-sub-3",
+        "asia-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-02-city",
+        "asia-zone-02-town-1",
+        "asia-zone-02-town-2",
+        "asia-zone-02-village-1",
+        "asia-zone-02-village-2",
+        "asia-zone-02-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-02-poi-1",
+        "asia-zone-02-poi-2",
+        "asia-zone-02-poi-3",
+        "asia-zone-02-poi-4",
+        "asia-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-02-road-gate",
+        "asia-zone-02-caravan-post",
+        "asia-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-03",
+      "name": "Saffron Coast",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-03",
+      "levelRange": [
+        11,
+        25
+      ],
+      "biomeId": "tropical_monsoon_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-03-sub-1",
+        "asia-zone-03-sub-2",
+        "asia-zone-03-sub-3",
+        "asia-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-03-city",
+        "asia-zone-03-town-1",
+        "asia-zone-03-town-2",
+        "asia-zone-03-village-1",
+        "asia-zone-03-village-2",
+        "asia-zone-03-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-03-poi-1",
+        "asia-zone-03-poi-2",
+        "asia-zone-03-poi-3",
+        "asia-zone-03-poi-4",
+        "asia-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-03-road-gate",
+        "asia-zone-03-caravan-post",
+        "asia-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-04",
+      "name": "Whispering Steppe",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-04",
+      "levelRange": [
+        16,
+        30
+      ],
+      "biomeId": "grassland_steppe",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-04-sub-1",
+        "asia-zone-04-sub-2",
+        "asia-zone-04-sub-3",
+        "asia-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-04-city",
+        "asia-zone-04-town-1",
+        "asia-zone-04-town-2",
+        "asia-zone-04-village-1",
+        "asia-zone-04-village-2",
+        "asia-zone-04-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-04-poi-1",
+        "asia-zone-04-poi-2",
+        "asia-zone-04-poi-3",
+        "asia-zone-04-poi-4",
+        "asia-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-04-road-gate",
+        "asia-zone-04-caravan-post",
+        "asia-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-05",
+      "name": "Lotus Delta",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-05",
+      "levelRange": [
+        21,
+        35
+      ],
+      "biomeId": "river_wetland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-05-sub-1",
+        "asia-zone-05-sub-2",
+        "asia-zone-05-sub-3",
+        "asia-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-05-city",
+        "asia-zone-05-town-1",
+        "asia-zone-05-town-2",
+        "asia-zone-05-village-1",
+        "asia-zone-05-village-2",
+        "asia-zone-05-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-05-poi-1",
+        "asia-zone-05-poi-2",
+        "asia-zone-05-poi-3",
+        "asia-zone-05-poi-4",
+        "asia-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-05-road-gate",
+        "asia-zone-05-caravan-post",
+        "asia-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-06",
+      "name": "Obsidian Highlands",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-06",
+      "levelRange": [
+        26,
+        40
+      ],
+      "biomeId": "highland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-06-sub-1",
+        "asia-zone-06-sub-2",
+        "asia-zone-06-sub-3",
+        "asia-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-06-city",
+        "asia-zone-06-town-1",
+        "asia-zone-06-town-2",
+        "asia-zone-06-village-1",
+        "asia-zone-06-village-2",
+        "asia-zone-06-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-06-poi-1",
+        "asia-zone-06-poi-2",
+        "asia-zone-06-poi-3",
+        "asia-zone-06-poi-4",
+        "asia-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-06-road-gate",
+        "asia-zone-06-caravan-post",
+        "asia-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-07",
+      "name": "Moonlit Archipelago",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-07",
+      "levelRange": [
+        31,
+        45
+      ],
+      "biomeId": "tropical_island",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-07-sub-1",
+        "asia-zone-07-sub-2",
+        "asia-zone-07-sub-3",
+        "asia-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-07-city",
+        "asia-zone-07-town-1",
+        "asia-zone-07-town-2",
+        "asia-zone-07-village-1",
+        "asia-zone-07-village-2",
+        "asia-zone-07-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-07-poi-1",
+        "asia-zone-07-poi-2",
+        "asia-zone-07-poi-3",
+        "asia-zone-07-poi-4",
+        "asia-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-07-road-gate",
+        "asia-zone-07-caravan-post",
+        "asia-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-asia-zone-08",
+      "name": "Celestial Desert",
+      "kind": "overworld",
+      "continentId": "asia",
+      "zoneId": "asia-zone-08",
+      "levelRange": [
+        36,
+        50
+      ],
+      "biomeId": "cold_desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "asia-zone-08-sub-1",
+        "asia-zone-08-sub-2",
+        "asia-zone-08-sub-3",
+        "asia-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "asia-zone-08-city",
+        "asia-zone-08-town-1",
+        "asia-zone-08-town-2",
+        "asia-zone-08-village-1",
+        "asia-zone-08-village-2",
+        "asia-zone-08-village-3"
+      ],
+      "poiIds": [
+        "asia-zone-08-poi-1",
+        "asia-zone-08-poi-2",
+        "asia-zone-08-poi-3",
+        "asia-zone-08-poi-4",
+        "asia-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "asia-zone-08-road-gate",
+        "asia-zone-08-caravan-post",
+        "asia-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-01",
+      "name": "Golden Dune Sea",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-01",
+      "levelRange": [
+        21,
+        35
+      ],
+      "biomeId": "hot_desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-01-sub-1",
+        "africa-zone-01-sub-2",
+        "africa-zone-01-sub-3",
+        "africa-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-01-city",
+        "africa-zone-01-town-1",
+        "africa-zone-01-town-2",
+        "africa-zone-01-village-1",
+        "africa-zone-01-village-2",
+        "africa-zone-01-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-01-poi-1",
+        "africa-zone-01-poi-2",
+        "africa-zone-01-poi-3",
+        "africa-zone-01-poi-4",
+        "africa-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-01-road-gate",
+        "africa-zone-01-caravan-post",
+        "africa-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-02",
+      "name": "Emerald Rift",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-02",
+      "levelRange": [
+        26,
+        40
+      ],
+      "biomeId": "tropical_rainforest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-02-sub-1",
+        "africa-zone-02-sub-2",
+        "africa-zone-02-sub-3",
+        "africa-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-02-city",
+        "africa-zone-02-town-1",
+        "africa-zone-02-town-2",
+        "africa-zone-02-village-1",
+        "africa-zone-02-village-2",
+        "africa-zone-02-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-02-poi-1",
+        "africa-zone-02-poi-2",
+        "africa-zone-02-poi-3",
+        "africa-zone-02-poi-4",
+        "africa-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-02-road-gate",
+        "africa-zone-02-caravan-post",
+        "africa-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-03",
+      "name": "Thunder Savannah",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-03",
+      "levelRange": [
+        31,
+        45
+      ],
+      "biomeId": "savanna",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-03-sub-1",
+        "africa-zone-03-sub-2",
+        "africa-zone-03-sub-3",
+        "africa-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-03-city",
+        "africa-zone-03-town-1",
+        "africa-zone-03-town-2",
+        "africa-zone-03-village-1",
+        "africa-zone-03-village-2",
+        "africa-zone-03-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-03-poi-1",
+        "africa-zone-03-poi-2",
+        "africa-zone-03-poi-3",
+        "africa-zone-03-poi-4",
+        "africa-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-03-road-gate",
+        "africa-zone-03-caravan-post",
+        "africa-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-04",
+      "name": "Redstone Escarpment",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-04",
+      "levelRange": [
+        36,
+        50
+      ],
+      "biomeId": "rocky_badlands",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-04-sub-1",
+        "africa-zone-04-sub-2",
+        "africa-zone-04-sub-3",
+        "africa-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-04-city",
+        "africa-zone-04-town-1",
+        "africa-zone-04-town-2",
+        "africa-zone-04-village-1",
+        "africa-zone-04-village-2",
+        "africa-zone-04-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-04-poi-1",
+        "africa-zone-04-poi-2",
+        "africa-zone-04-poi-3",
+        "africa-zone-04-poi-4",
+        "africa-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-04-road-gate",
+        "africa-zone-04-caravan-post",
+        "africa-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-05",
+      "name": "Crescent Oasis",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-05",
+      "levelRange": [
+        41,
+        55
+      ],
+      "biomeId": "oasis",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-05-sub-1",
+        "africa-zone-05-sub-2",
+        "africa-zone-05-sub-3",
+        "africa-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-05-city",
+        "africa-zone-05-town-1",
+        "africa-zone-05-town-2",
+        "africa-zone-05-village-1",
+        "africa-zone-05-village-2",
+        "africa-zone-05-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-05-poi-1",
+        "africa-zone-05-poi-2",
+        "africa-zone-05-poi-3",
+        "africa-zone-05-poi-4",
+        "africa-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-05-road-gate",
+        "africa-zone-05-caravan-post",
+        "africa-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-06",
+      "name": "Baobab Wilds",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-06",
+      "levelRange": [
+        46,
+        60
+      ],
+      "biomeId": "woodland_savanna",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-06-sub-1",
+        "africa-zone-06-sub-2",
+        "africa-zone-06-sub-3",
+        "africa-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-06-city",
+        "africa-zone-06-town-1",
+        "africa-zone-06-town-2",
+        "africa-zone-06-village-1",
+        "africa-zone-06-village-2",
+        "africa-zone-06-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-06-poi-1",
+        "africa-zone-06-poi-2",
+        "africa-zone-06-poi-3",
+        "africa-zone-06-poi-4",
+        "africa-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-06-road-gate",
+        "africa-zone-06-caravan-post",
+        "africa-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-07",
+      "name": "Ashen Caldera",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-07",
+      "levelRange": [
+        51,
+        65
+      ],
+      "biomeId": "volcanic",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-07-sub-1",
+        "africa-zone-07-sub-2",
+        "africa-zone-07-sub-3",
+        "africa-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-07-city",
+        "africa-zone-07-town-1",
+        "africa-zone-07-town-2",
+        "africa-zone-07-village-1",
+        "africa-zone-07-village-2",
+        "africa-zone-07-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-07-poi-1",
+        "africa-zone-07-poi-2",
+        "africa-zone-07-poi-3",
+        "africa-zone-07-poi-4",
+        "africa-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-07-road-gate",
+        "africa-zone-07-caravan-post",
+        "africa-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-africa-zone-08",
+      "name": "Ivory Coast",
+      "kind": "overworld",
+      "continentId": "africa",
+      "zoneId": "africa-zone-08",
+      "levelRange": [
+        56,
+        70
+      ],
+      "biomeId": "coastal_mangrove",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "africa-zone-08-sub-1",
+        "africa-zone-08-sub-2",
+        "africa-zone-08-sub-3",
+        "africa-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "africa-zone-08-city",
+        "africa-zone-08-town-1",
+        "africa-zone-08-town-2",
+        "africa-zone-08-village-1",
+        "africa-zone-08-village-2",
+        "africa-zone-08-village-3"
+      ],
+      "poiIds": [
+        "africa-zone-08-poi-1",
+        "africa-zone-08-poi-2",
+        "africa-zone-08-poi-3",
+        "africa-zone-08-poi-4",
+        "africa-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "africa-zone-08-road-gate",
+        "africa-zone-08-caravan-post",
+        "africa-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-01",
+      "name": "Frostpine Frontier",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01",
+      "levelRange": [
+        41,
+        55
+      ],
+      "biomeId": "boreal_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-01-sub-1",
+        "north-america-zone-01-sub-2",
+        "north-america-zone-01-sub-3",
+        "north-america-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-01-city",
+        "north-america-zone-01-town-1",
+        "north-america-zone-01-town-2",
+        "north-america-zone-01-village-1",
+        "north-america-zone-01-village-2",
+        "north-america-zone-01-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-01-poi-1",
+        "north-america-zone-01-poi-2",
+        "north-america-zone-01-poi-3",
+        "north-america-zone-01-poi-4",
+        "north-america-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-01-road-gate",
+        "north-america-zone-01-caravan-post",
+        "north-america-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-02",
+      "name": "Thunderbird Prairie",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02",
+      "levelRange": [
+        46,
+        60
+      ],
+      "biomeId": "temperate_grassland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-02-sub-1",
+        "north-america-zone-02-sub-2",
+        "north-america-zone-02-sub-3",
+        "north-america-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-02-city",
+        "north-america-zone-02-town-1",
+        "north-america-zone-02-town-2",
+        "north-america-zone-02-village-1",
+        "north-america-zone-02-village-2",
+        "north-america-zone-02-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-02-poi-1",
+        "north-america-zone-02-poi-2",
+        "north-america-zone-02-poi-3",
+        "north-america-zone-02-poi-4",
+        "north-america-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-02-road-gate",
+        "north-america-zone-02-caravan-post",
+        "north-america-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-03",
+      "name": "Red Canyonlands",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03",
+      "levelRange": [
+        51,
+        65
+      ],
+      "biomeId": "canyon_badlands",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-03-sub-1",
+        "north-america-zone-03-sub-2",
+        "north-america-zone-03-sub-3",
+        "north-america-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-03-city",
+        "north-america-zone-03-town-1",
+        "north-america-zone-03-town-2",
+        "north-america-zone-03-village-1",
+        "north-america-zone-03-village-2",
+        "north-america-zone-03-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-03-poi-1",
+        "north-america-zone-03-poi-2",
+        "north-america-zone-03-poi-3",
+        "north-america-zone-03-poi-4",
+        "north-america-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-03-road-gate",
+        "north-america-zone-03-caravan-post",
+        "north-america-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-04",
+      "name": "Silverlake Country",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04",
+      "levelRange": [
+        56,
+        70
+      ],
+      "biomeId": "freshwater_lakes",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-04-sub-1",
+        "north-america-zone-04-sub-2",
+        "north-america-zone-04-sub-3",
+        "north-america-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-04-city",
+        "north-america-zone-04-town-1",
+        "north-america-zone-04-town-2",
+        "north-america-zone-04-village-1",
+        "north-america-zone-04-village-2",
+        "north-america-zone-04-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-04-poi-1",
+        "north-america-zone-04-poi-2",
+        "north-america-zone-04-poi-3",
+        "north-america-zone-04-poi-4",
+        "north-america-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-04-road-gate",
+        "north-america-zone-04-caravan-post",
+        "north-america-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-05",
+      "name": "Misty Redwood Coast",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05",
+      "levelRange": [
+        61,
+        75
+      ],
+      "biomeId": "temperate_rainforest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-05-sub-1",
+        "north-america-zone-05-sub-2",
+        "north-america-zone-05-sub-3",
+        "north-america-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-05-city",
+        "north-america-zone-05-town-1",
+        "north-america-zone-05-town-2",
+        "north-america-zone-05-village-1",
+        "north-america-zone-05-village-2",
+        "north-america-zone-05-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-05-poi-1",
+        "north-america-zone-05-poi-2",
+        "north-america-zone-05-poi-3",
+        "north-america-zone-05-poi-4",
+        "north-america-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-05-road-gate",
+        "north-america-zone-05-caravan-post",
+        "north-america-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-06",
+      "name": "Sunstone Mesa",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-06",
+      "levelRange": [
+        66,
+        80
+      ],
+      "biomeId": "semi_arid_desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-06-sub-1",
+        "north-america-zone-06-sub-2",
+        "north-america-zone-06-sub-3",
+        "north-america-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-06-city",
+        "north-america-zone-06-town-1",
+        "north-america-zone-06-town-2",
+        "north-america-zone-06-village-1",
+        "north-america-zone-06-village-2",
+        "north-america-zone-06-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-06-poi-1",
+        "north-america-zone-06-poi-2",
+        "north-america-zone-06-poi-3",
+        "north-america-zone-06-poi-4",
+        "north-america-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-06-road-gate",
+        "north-america-zone-06-caravan-post",
+        "north-america-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-07",
+      "name": "Great Bear Mountains",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-07",
+      "levelRange": [
+        71,
+        85
+      ],
+      "biomeId": "alpine",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-07-sub-1",
+        "north-america-zone-07-sub-2",
+        "north-america-zone-07-sub-3",
+        "north-america-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-07-city",
+        "north-america-zone-07-town-1",
+        "north-america-zone-07-town-2",
+        "north-america-zone-07-village-1",
+        "north-america-zone-07-village-2",
+        "north-america-zone-07-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-07-poi-1",
+        "north-america-zone-07-poi-2",
+        "north-america-zone-07-poi-3",
+        "north-america-zone-07-poi-4",
+        "north-america-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-07-road-gate",
+        "north-america-zone-07-caravan-post",
+        "north-america-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-north-america-zone-08",
+      "name": "Azure Gulf",
+      "kind": "overworld",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-08",
+      "levelRange": [
+        76,
+        90
+      ],
+      "biomeId": "subtropical_coast",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "north-america-zone-08-sub-1",
+        "north-america-zone-08-sub-2",
+        "north-america-zone-08-sub-3",
+        "north-america-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "north-america-zone-08-city",
+        "north-america-zone-08-town-1",
+        "north-america-zone-08-town-2",
+        "north-america-zone-08-village-1",
+        "north-america-zone-08-village-2",
+        "north-america-zone-08-village-3"
+      ],
+      "poiIds": [
+        "north-america-zone-08-poi-1",
+        "north-america-zone-08-poi-2",
+        "north-america-zone-08-poi-3",
+        "north-america-zone-08-poi-4",
+        "north-america-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "north-america-zone-08-road-gate",
+        "north-america-zone-08-caravan-post",
+        "north-america-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-01",
+      "name": "Emerald Canopy",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01",
+      "levelRange": [
+        61,
+        75
+      ],
+      "biomeId": "tropical_rainforest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-01-sub-1",
+        "south-america-zone-01-sub-2",
+        "south-america-zone-01-sub-3",
+        "south-america-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-01-city",
+        "south-america-zone-01-town-1",
+        "south-america-zone-01-town-2",
+        "south-america-zone-01-village-1",
+        "south-america-zone-01-village-2",
+        "south-america-zone-01-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-01-poi-1",
+        "south-america-zone-01-poi-2",
+        "south-america-zone-01-poi-3",
+        "south-america-zone-01-poi-4",
+        "south-america-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-01-road-gate",
+        "south-america-zone-01-caravan-post",
+        "south-america-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-02",
+      "name": "Skyfang Andes",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-02",
+      "levelRange": [
+        66,
+        80
+      ],
+      "biomeId": "alpine",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-02-sub-1",
+        "south-america-zone-02-sub-2",
+        "south-america-zone-02-sub-3",
+        "south-america-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-02-city",
+        "south-america-zone-02-town-1",
+        "south-america-zone-02-town-2",
+        "south-america-zone-02-village-1",
+        "south-america-zone-02-village-2",
+        "south-america-zone-02-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-02-poi-1",
+        "south-america-zone-02-poi-2",
+        "south-america-zone-02-poi-3",
+        "south-america-zone-02-poi-4",
+        "south-america-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-02-road-gate",
+        "south-america-zone-02-caravan-post",
+        "south-america-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-03",
+      "name": "Serpent River Basin",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-03",
+      "levelRange": [
+        71,
+        85
+      ],
+      "biomeId": "tropical_river",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-03-sub-1",
+        "south-america-zone-03-sub-2",
+        "south-america-zone-03-sub-3",
+        "south-america-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-03-city",
+        "south-america-zone-03-town-1",
+        "south-america-zone-03-town-2",
+        "south-america-zone-03-village-1",
+        "south-america-zone-03-village-2",
+        "south-america-zone-03-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-03-poi-1",
+        "south-america-zone-03-poi-2",
+        "south-america-zone-03-poi-3",
+        "south-america-zone-03-poi-4",
+        "south-america-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-03-road-gate",
+        "south-america-zone-03-caravan-post",
+        "south-america-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-04",
+      "name": "Glasssalt Desert",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-04",
+      "levelRange": [
+        76,
+        90
+      ],
+      "biomeId": "cold_desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-04-sub-1",
+        "south-america-zone-04-sub-2",
+        "south-america-zone-04-sub-3",
+        "south-america-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-04-city",
+        "south-america-zone-04-town-1",
+        "south-america-zone-04-town-2",
+        "south-america-zone-04-village-1",
+        "south-america-zone-04-village-2",
+        "south-america-zone-04-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-04-poi-1",
+        "south-america-zone-04-poi-2",
+        "south-america-zone-04-poi-3",
+        "south-america-zone-04-poi-4",
+        "south-america-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-04-road-gate",
+        "south-america-zone-04-caravan-post",
+        "south-america-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-05",
+      "name": "Jaguar Marshes",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05",
+      "levelRange": [
+        81,
+        95
+      ],
+      "biomeId": "tropical_wetland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-05-sub-1",
+        "south-america-zone-05-sub-2",
+        "south-america-zone-05-sub-3",
+        "south-america-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-05-city",
+        "south-america-zone-05-town-1",
+        "south-america-zone-05-town-2",
+        "south-america-zone-05-village-1",
+        "south-america-zone-05-village-2",
+        "south-america-zone-05-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-05-poi-1",
+        "south-america-zone-05-poi-2",
+        "south-america-zone-05-poi-3",
+        "south-america-zone-05-poi-4",
+        "south-america-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-05-road-gate",
+        "south-america-zone-05-caravan-post",
+        "south-america-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-06",
+      "name": "Cloudveil Highlands",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-06",
+      "levelRange": [
+        86,
+        100
+      ],
+      "biomeId": "cloud_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-06-sub-1",
+        "south-america-zone-06-sub-2",
+        "south-america-zone-06-sub-3",
+        "south-america-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-06-city",
+        "south-america-zone-06-town-1",
+        "south-america-zone-06-town-2",
+        "south-america-zone-06-village-1",
+        "south-america-zone-06-village-2",
+        "south-america-zone-06-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-06-poi-1",
+        "south-america-zone-06-poi-2",
+        "south-america-zone-06-poi-3",
+        "south-america-zone-06-poi-4",
+        "south-america-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-06-road-gate",
+        "south-america-zone-06-caravan-post",
+        "south-america-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-07",
+      "name": "Parrot Isles",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-07",
+      "levelRange": [
+        91,
+        105
+      ],
+      "biomeId": "tropical_island",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-07-sub-1",
+        "south-america-zone-07-sub-2",
+        "south-america-zone-07-sub-3",
+        "south-america-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-07-city",
+        "south-america-zone-07-town-1",
+        "south-america-zone-07-town-2",
+        "south-america-zone-07-village-1",
+        "south-america-zone-07-village-2",
+        "south-america-zone-07-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-07-poi-1",
+        "south-america-zone-07-poi-2",
+        "south-america-zone-07-poi-3",
+        "south-america-zone-07-poi-4",
+        "south-america-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-07-road-gate",
+        "south-america-zone-07-caravan-post",
+        "south-america-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-south-america-zone-08",
+      "name": "Southern Fjordlands",
+      "kind": "overworld",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-08",
+      "levelRange": [
+        96,
+        110
+      ],
+      "biomeId": "temperate_fjord",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "south-america-zone-08-sub-1",
+        "south-america-zone-08-sub-2",
+        "south-america-zone-08-sub-3",
+        "south-america-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "south-america-zone-08-city",
+        "south-america-zone-08-town-1",
+        "south-america-zone-08-town-2",
+        "south-america-zone-08-village-1",
+        "south-america-zone-08-village-2",
+        "south-america-zone-08-village-3"
+      ],
+      "poiIds": [
+        "south-america-zone-08-poi-1",
+        "south-america-zone-08-poi-2",
+        "south-america-zone-08-poi-3",
+        "south-america-zone-08-poi-4",
+        "south-america-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "south-america-zone-08-road-gate",
+        "south-america-zone-08-caravan-post",
+        "south-america-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-01",
+      "name": "Whiteout Plateau",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01",
+      "levelRange": [
+        81,
+        95
+      ],
+      "biomeId": "polar_ice",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-01-sub-1",
+        "antarctica-zone-01-sub-2",
+        "antarctica-zone-01-sub-3",
+        "antarctica-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-01-city",
+        "antarctica-zone-01-town-1",
+        "antarctica-zone-01-town-2",
+        "antarctica-zone-01-village-1",
+        "antarctica-zone-01-village-2",
+        "antarctica-zone-01-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-01-poi-1",
+        "antarctica-zone-01-poi-2",
+        "antarctica-zone-01-poi-3",
+        "antarctica-zone-01-poi-4",
+        "antarctica-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-01-road-gate",
+        "antarctica-zone-01-caravan-post",
+        "antarctica-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-02",
+      "name": "Blue Glacier Reach",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-02",
+      "levelRange": [
+        86,
+        100
+      ],
+      "biomeId": "glacier",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-02-sub-1",
+        "antarctica-zone-02-sub-2",
+        "antarctica-zone-02-sub-3",
+        "antarctica-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-02-city",
+        "antarctica-zone-02-town-1",
+        "antarctica-zone-02-town-2",
+        "antarctica-zone-02-village-1",
+        "antarctica-zone-02-village-2",
+        "antarctica-zone-02-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-02-poi-1",
+        "antarctica-zone-02-poi-2",
+        "antarctica-zone-02-poi-3",
+        "antarctica-zone-02-poi-4",
+        "antarctica-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-02-road-gate",
+        "antarctica-zone-02-caravan-post",
+        "antarctica-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-03",
+      "name": "Aurora Shelf",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-03",
+      "levelRange": [
+        91,
+        105
+      ],
+      "biomeId": "ice_shelf",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-03-sub-1",
+        "antarctica-zone-03-sub-2",
+        "antarctica-zone-03-sub-3",
+        "antarctica-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-03-city",
+        "antarctica-zone-03-town-1",
+        "antarctica-zone-03-town-2",
+        "antarctica-zone-03-village-1",
+        "antarctica-zone-03-village-2",
+        "antarctica-zone-03-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-03-poi-1",
+        "antarctica-zone-03-poi-2",
+        "antarctica-zone-03-poi-3",
+        "antarctica-zone-03-poi-4",
+        "antarctica-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-03-road-gate",
+        "antarctica-zone-03-caravan-post",
+        "antarctica-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-04",
+      "name": "Black Ice Mountains",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-04",
+      "levelRange": [
+        96,
+        110
+      ],
+      "biomeId": "polar_mountains",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-04-sub-1",
+        "antarctica-zone-04-sub-2",
+        "antarctica-zone-04-sub-3",
+        "antarctica-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-04-city",
+        "antarctica-zone-04-town-1",
+        "antarctica-zone-04-town-2",
+        "antarctica-zone-04-village-1",
+        "antarctica-zone-04-village-2",
+        "antarctica-zone-04-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-04-poi-1",
+        "antarctica-zone-04-poi-2",
+        "antarctica-zone-04-poi-3",
+        "antarctica-zone-04-poi-4",
+        "antarctica-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-04-road-gate",
+        "antarctica-zone-04-caravan-post",
+        "antarctica-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-05",
+      "name": "The Buried Sea",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05",
+      "levelRange": [
+        101,
+        115
+      ],
+      "biomeId": "subglacial_lake",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-05-sub-1",
+        "antarctica-zone-05-sub-2",
+        "antarctica-zone-05-sub-3",
+        "antarctica-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-05-city",
+        "antarctica-zone-05-town-1",
+        "antarctica-zone-05-town-2",
+        "antarctica-zone-05-village-1",
+        "antarctica-zone-05-village-2",
+        "antarctica-zone-05-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-05-poi-1",
+        "antarctica-zone-05-poi-2",
+        "antarctica-zone-05-poi-3",
+        "antarctica-zone-05-poi-4",
+        "antarctica-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-05-road-gate",
+        "antarctica-zone-05-caravan-post",
+        "antarctica-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-06",
+      "name": "Crystal Crevasse",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-06",
+      "levelRange": [
+        106,
+        120
+      ],
+      "biomeId": "ice_caves",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-06-sub-1",
+        "antarctica-zone-06-sub-2",
+        "antarctica-zone-06-sub-3",
+        "antarctica-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-06-city",
+        "antarctica-zone-06-town-1",
+        "antarctica-zone-06-town-2",
+        "antarctica-zone-06-village-1",
+        "antarctica-zone-06-village-2",
+        "antarctica-zone-06-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-06-poi-1",
+        "antarctica-zone-06-poi-2",
+        "antarctica-zone-06-poi-3",
+        "antarctica-zone-06-poi-4",
+        "antarctica-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-06-road-gate",
+        "antarctica-zone-06-caravan-post",
+        "antarctica-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-07",
+      "name": "Southern Lights Basin",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-07",
+      "levelRange": [
+        111,
+        125
+      ],
+      "biomeId": "polar_tundra",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-07-sub-1",
+        "antarctica-zone-07-sub-2",
+        "antarctica-zone-07-sub-3",
+        "antarctica-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-07-city",
+        "antarctica-zone-07-town-1",
+        "antarctica-zone-07-town-2",
+        "antarctica-zone-07-village-1",
+        "antarctica-zone-07-village-2",
+        "antarctica-zone-07-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-07-poi-1",
+        "antarctica-zone-07-poi-2",
+        "antarctica-zone-07-poi-3",
+        "antarctica-zone-07-poi-4",
+        "antarctica-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-07-road-gate",
+        "antarctica-zone-07-caravan-post",
+        "antarctica-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-antarctica-zone-08",
+      "name": "Hollow Earth Gate",
+      "kind": "overworld",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-08",
+      "levelRange": [
+        116,
+        130
+      ],
+      "biomeId": "geothermal_icefield",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "antarctica-zone-08-sub-1",
+        "antarctica-zone-08-sub-2",
+        "antarctica-zone-08-sub-3",
+        "antarctica-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "antarctica-zone-08-city",
+        "antarctica-zone-08-town-1",
+        "antarctica-zone-08-town-2",
+        "antarctica-zone-08-village-1",
+        "antarctica-zone-08-village-2",
+        "antarctica-zone-08-village-3"
+      ],
+      "poiIds": [
+        "antarctica-zone-08-poi-1",
+        "antarctica-zone-08-poi-2",
+        "antarctica-zone-08-poi-3",
+        "antarctica-zone-08-poi-4",
+        "antarctica-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "antarctica-zone-08-road-gate",
+        "antarctica-zone-08-caravan-post",
+        "antarctica-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-01",
+      "name": "Kingsroad Heartlands",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-01",
+      "levelRange": [
+        101,
+        115
+      ],
+      "biomeId": "temperate_mixed_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-01-sub-1",
+        "europe-zone-01-sub-2",
+        "europe-zone-01-sub-3",
+        "europe-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-01-city",
+        "europe-zone-01-town-1",
+        "europe-zone-01-town-2",
+        "europe-zone-01-village-1",
+        "europe-zone-01-village-2",
+        "europe-zone-01-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-01-poi-1",
+        "europe-zone-01-poi-2",
+        "europe-zone-01-poi-3",
+        "europe-zone-01-poi-4",
+        "europe-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-01-road-gate",
+        "europe-zone-01-caravan-post",
+        "europe-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-02",
+      "name": "Silverpine Marches",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-02",
+      "levelRange": [
+        106,
+        120
+      ],
+      "biomeId": "boreal_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-02-sub-1",
+        "europe-zone-02-sub-2",
+        "europe-zone-02-sub-3",
+        "europe-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-02-city",
+        "europe-zone-02-town-1",
+        "europe-zone-02-town-2",
+        "europe-zone-02-village-1",
+        "europe-zone-02-village-2",
+        "europe-zone-02-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-02-poi-1",
+        "europe-zone-02-poi-2",
+        "europe-zone-02-poi-3",
+        "europe-zone-02-poi-4",
+        "europe-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-02-road-gate",
+        "europe-zone-02-caravan-post",
+        "europe-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-03",
+      "name": "Crown of Peaks",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-03",
+      "levelRange": [
+        111,
+        125
+      ],
+      "biomeId": "alpine",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-03-sub-1",
+        "europe-zone-03-sub-2",
+        "europe-zone-03-sub-3",
+        "europe-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-03-city",
+        "europe-zone-03-town-1",
+        "europe-zone-03-town-2",
+        "europe-zone-03-village-1",
+        "europe-zone-03-village-2",
+        "europe-zone-03-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-03-poi-1",
+        "europe-zone-03-poi-2",
+        "europe-zone-03-poi-3",
+        "europe-zone-03-poi-4",
+        "europe-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-03-road-gate",
+        "europe-zone-03-caravan-post",
+        "europe-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-04",
+      "name": "Violet Coast",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-04",
+      "levelRange": [
+        116,
+        130
+      ],
+      "biomeId": "mediterranean",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-04-sub-1",
+        "europe-zone-04-sub-2",
+        "europe-zone-04-sub-3",
+        "europe-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-04-city",
+        "europe-zone-04-town-1",
+        "europe-zone-04-town-2",
+        "europe-zone-04-village-1",
+        "europe-zone-04-village-2",
+        "europe-zone-04-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-04-poi-1",
+        "europe-zone-04-poi-2",
+        "europe-zone-04-poi-3",
+        "europe-zone-04-poi-4",
+        "europe-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-04-road-gate",
+        "europe-zone-04-caravan-post",
+        "europe-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-05",
+      "name": "Old Empire Vale",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-05",
+      "levelRange": [
+        121,
+        135
+      ],
+      "biomeId": "temperate_valley",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-05-sub-1",
+        "europe-zone-05-sub-2",
+        "europe-zone-05-sub-3",
+        "europe-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-05-city",
+        "europe-zone-05-town-1",
+        "europe-zone-05-town-2",
+        "europe-zone-05-village-1",
+        "europe-zone-05-village-2",
+        "europe-zone-05-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-05-poi-1",
+        "europe-zone-05-poi-2",
+        "europe-zone-05-poi-3",
+        "europe-zone-05-poi-4",
+        "europe-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-05-road-gate",
+        "europe-zone-05-caravan-post",
+        "europe-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-06",
+      "name": "Misty Moorlands",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-06",
+      "levelRange": [
+        126,
+        140
+      ],
+      "biomeId": "moorland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-06-sub-1",
+        "europe-zone-06-sub-2",
+        "europe-zone-06-sub-3",
+        "europe-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-06-city",
+        "europe-zone-06-town-1",
+        "europe-zone-06-town-2",
+        "europe-zone-06-village-1",
+        "europe-zone-06-village-2",
+        "europe-zone-06-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-06-poi-1",
+        "europe-zone-06-poi-2",
+        "europe-zone-06-poi-3",
+        "europe-zone-06-poi-4",
+        "europe-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-06-road-gate",
+        "europe-zone-06-caravan-post",
+        "europe-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-07",
+      "name": "Amber Riverlands",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-07",
+      "levelRange": [
+        131,
+        145
+      ],
+      "biomeId": "river_floodplain",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-07-sub-1",
+        "europe-zone-07-sub-2",
+        "europe-zone-07-sub-3",
+        "europe-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-07-city",
+        "europe-zone-07-town-1",
+        "europe-zone-07-town-2",
+        "europe-zone-07-village-1",
+        "europe-zone-07-village-2",
+        "europe-zone-07-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-07-poi-1",
+        "europe-zone-07-poi-2",
+        "europe-zone-07-poi-3",
+        "europe-zone-07-poi-4",
+        "europe-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-07-road-gate",
+        "europe-zone-07-caravan-post",
+        "europe-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-europe-zone-08",
+      "name": "Stormwall Isles",
+      "kind": "overworld",
+      "continentId": "europe",
+      "zoneId": "europe-zone-08",
+      "levelRange": [
+        136,
+        150
+      ],
+      "biomeId": "temperate_island",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "europe-zone-08-sub-1",
+        "europe-zone-08-sub-2",
+        "europe-zone-08-sub-3",
+        "europe-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "europe-zone-08-city",
+        "europe-zone-08-town-1",
+        "europe-zone-08-town-2",
+        "europe-zone-08-village-1",
+        "europe-zone-08-village-2",
+        "europe-zone-08-village-3"
+      ],
+      "poiIds": [
+        "europe-zone-08-poi-1",
+        "europe-zone-08-poi-2",
+        "europe-zone-08-poi-3",
+        "europe-zone-08-poi-4",
+        "europe-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "europe-zone-08-road-gate",
+        "europe-zone-08-caravan-post",
+        "europe-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-01",
+      "name": "Redglass Outback",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-01",
+      "levelRange": [
+        121,
+        135
+      ],
+      "biomeId": "red_desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-01-sub-1",
+        "australia-zone-01-sub-2",
+        "australia-zone-01-sub-3",
+        "australia-zone-01-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-01-city",
+        "australia-zone-01-town-1",
+        "australia-zone-01-town-2",
+        "australia-zone-01-village-1",
+        "australia-zone-01-village-2",
+        "australia-zone-01-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-01-poi-1",
+        "australia-zone-01-poi-2",
+        "australia-zone-01-poi-3",
+        "australia-zone-01-poi-4",
+        "australia-zone-01-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-01-road-gate",
+        "australia-zone-01-caravan-post",
+        "australia-zone-01-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-02",
+      "name": "Coral Crown Reef",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-02",
+      "levelRange": [
+        126,
+        140
+      ],
+      "biomeId": "coral_reef",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-02-sub-1",
+        "australia-zone-02-sub-2",
+        "australia-zone-02-sub-3",
+        "australia-zone-02-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-02-city",
+        "australia-zone-02-town-1",
+        "australia-zone-02-town-2",
+        "australia-zone-02-village-1",
+        "australia-zone-02-village-2",
+        "australia-zone-02-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-02-poi-1",
+        "australia-zone-02-poi-2",
+        "australia-zone-02-poi-3",
+        "australia-zone-02-poi-4",
+        "australia-zone-02-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-02-road-gate",
+        "australia-zone-02-caravan-post",
+        "australia-zone-02-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-03",
+      "name": "Eucalyptus Kingdom",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-03",
+      "levelRange": [
+        131,
+        145
+      ],
+      "biomeId": "eucalyptus_woodland",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-03-sub-1",
+        "australia-zone-03-sub-2",
+        "australia-zone-03-sub-3",
+        "australia-zone-03-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-03-city",
+        "australia-zone-03-town-1",
+        "australia-zone-03-town-2",
+        "australia-zone-03-village-1",
+        "australia-zone-03-village-2",
+        "australia-zone-03-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-03-poi-1",
+        "australia-zone-03-poi-2",
+        "australia-zone-03-poi-3",
+        "australia-zone-03-poi-4",
+        "australia-zone-03-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-03-road-gate",
+        "australia-zone-03-caravan-post",
+        "australia-zone-03-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-04",
+      "name": "Whispering Monsoon",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-04",
+      "levelRange": [
+        136,
+        150
+      ],
+      "biomeId": "tropical_savanna",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-04-sub-1",
+        "australia-zone-04-sub-2",
+        "australia-zone-04-sub-3",
+        "australia-zone-04-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-04-city",
+        "australia-zone-04-town-1",
+        "australia-zone-04-town-2",
+        "australia-zone-04-village-1",
+        "australia-zone-04-village-2",
+        "australia-zone-04-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-04-poi-1",
+        "australia-zone-04-poi-2",
+        "australia-zone-04-poi-3",
+        "australia-zone-04-poi-4",
+        "australia-zone-04-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-04-road-gate",
+        "australia-zone-04-caravan-post",
+        "australia-zone-04-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-05",
+      "name": "Spiral Stone Desert",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-05",
+      "levelRange": [
+        141,
+        155
+      ],
+      "biomeId": "rocky_desert",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-05-sub-1",
+        "australia-zone-05-sub-2",
+        "australia-zone-05-sub-3",
+        "australia-zone-05-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-05-city",
+        "australia-zone-05-town-1",
+        "australia-zone-05-town-2",
+        "australia-zone-05-village-1",
+        "australia-zone-05-village-2",
+        "australia-zone-05-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-05-poi-1",
+        "australia-zone-05-poi-2",
+        "australia-zone-05-poi-3",
+        "australia-zone-05-poi-4",
+        "australia-zone-05-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-05-road-gate",
+        "australia-zone-05-caravan-post",
+        "australia-zone-05-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-06",
+      "name": "Great Southern Forest",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-06",
+      "levelRange": [
+        146,
+        160
+      ],
+      "biomeId": "temperate_forest",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-06-sub-1",
+        "australia-zone-06-sub-2",
+        "australia-zone-06-sub-3",
+        "australia-zone-06-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-06-city",
+        "australia-zone-06-town-1",
+        "australia-zone-06-town-2",
+        "australia-zone-06-village-1",
+        "australia-zone-06-village-2",
+        "australia-zone-06-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-06-poi-1",
+        "australia-zone-06-poi-2",
+        "australia-zone-06-poi-3",
+        "australia-zone-06-poi-4",
+        "australia-zone-06-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-06-road-gate",
+        "australia-zone-06-caravan-post",
+        "australia-zone-06-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-07",
+      "name": "Sunken Blue Trench",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-07",
+      "levelRange": [
+        151,
+        165
+      ],
+      "biomeId": "deep_ocean",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-07-sub-1",
+        "australia-zone-07-sub-2",
+        "australia-zone-07-sub-3",
+        "australia-zone-07-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-07-city",
+        "australia-zone-07-town-1",
+        "australia-zone-07-town-2",
+        "australia-zone-07-village-1",
+        "australia-zone-07-village-2",
+        "australia-zone-07-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-07-poi-1",
+        "australia-zone-07-poi-2",
+        "australia-zone-07-poi-3",
+        "australia-zone-07-poi-4",
+        "australia-zone-07-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-07-road-gate",
+        "australia-zone-07-caravan-post",
+        "australia-zone-07-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-australia-zone-08",
+      "name": "Stormbird Archipelago",
+      "kind": "overworld",
+      "continentId": "australia",
+      "zoneId": "australia-zone-08",
+      "levelRange": [
+        156,
+        170
+      ],
+      "biomeId": "tropical_island",
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "roads",
+        "rivers",
+        "settlements",
+        "poi",
+        "encounters",
+        "gathering"
+      ],
+      "subZoneIds": [
+        "australia-zone-08-sub-1",
+        "australia-zone-08-sub-2",
+        "australia-zone-08-sub-3",
+        "australia-zone-08-sub-4"
+      ],
+      "settlementIds": [
+        "australia-zone-08-city",
+        "australia-zone-08-town-1",
+        "australia-zone-08-town-2",
+        "australia-zone-08-village-1",
+        "australia-zone-08-village-2",
+        "australia-zone-08-village-3"
+      ],
+      "poiIds": [
+        "australia-zone-08-poi-1",
+        "australia-zone-08-poi-2",
+        "australia-zone-08-poi-3",
+        "australia-zone-08-poi-4",
+        "australia-zone-08-poi-5"
+      ],
+      "travelNodes": [
+        "australia-zone-08-road-gate",
+        "australia-zone-08-caravan-post",
+        "australia-zone-08-flight-beacon"
+      ],
+      "streaming": {
+        "loadRadiusChunks": 3,
+        "unloadRadiusChunks": 5
+      },
+      "seedPolicy": "world-seed+map-id"
+    },
+    {
+      "id": "map-instance-01",
+      "name": "Forgotten Catacombs of Jadewind Basin",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-01",
+      "poiId": "asia-zone-01-poi-1",
+      "levelRange": [
+        1,
+        15
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-02",
+      "name": "Forgotten Catacombs of Dragonspine Range",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-02",
+      "poiId": "asia-zone-02-poi-1",
+      "levelRange": [
+        6,
+        20
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-03",
+      "name": "Forgotten Catacombs of Saffron Coast",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-03",
+      "poiId": "asia-zone-03-poi-1",
+      "levelRange": [
+        11,
+        25
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-04",
+      "name": "Forgotten Catacombs of Whispering Steppe",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-04",
+      "poiId": "asia-zone-04-poi-1",
+      "levelRange": [
+        16,
+        30
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-05",
+      "name": "Forgotten Catacombs of Lotus Delta",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-05",
+      "poiId": "asia-zone-05-poi-1",
+      "levelRange": [
+        21,
+        35
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-06",
+      "name": "Forgotten Catacombs of Obsidian Highlands",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-06",
+      "poiId": "asia-zone-06-poi-1",
+      "levelRange": [
+        26,
+        40
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-07",
+      "name": "Forgotten Catacombs of Moonlit Archipelago",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-07",
+      "poiId": "asia-zone-07-poi-1",
+      "levelRange": [
+        31,
+        45
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-08",
+      "name": "Forgotten Catacombs of Celestial Desert",
+      "kind": "dungeon",
+      "continentId": "asia",
+      "zoneId": "asia-zone-08",
+      "poiId": "asia-zone-08-poi-1",
+      "levelRange": [
+        36,
+        50
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-09",
+      "name": "Forgotten Catacombs of Golden Dune Sea",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-01",
+      "poiId": "africa-zone-01-poi-1",
+      "levelRange": [
+        21,
+        35
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-10",
+      "name": "Forgotten Catacombs of Emerald Rift",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-02",
+      "poiId": "africa-zone-02-poi-1",
+      "levelRange": [
+        26,
+        40
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-11",
+      "name": "Forgotten Catacombs of Thunder Savannah",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-03",
+      "poiId": "africa-zone-03-poi-1",
+      "levelRange": [
+        31,
+        45
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-12",
+      "name": "Forgotten Catacombs of Redstone Escarpment",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-04",
+      "poiId": "africa-zone-04-poi-1",
+      "levelRange": [
+        36,
+        50
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-13",
+      "name": "Forgotten Catacombs of Crescent Oasis",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-05",
+      "poiId": "africa-zone-05-poi-1",
+      "levelRange": [
+        41,
+        55
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-14",
+      "name": "Forgotten Catacombs of Baobab Wilds",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-06",
+      "poiId": "africa-zone-06-poi-1",
+      "levelRange": [
+        46,
+        60
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-15",
+      "name": "Forgotten Catacombs of Ashen Caldera",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-07",
+      "poiId": "africa-zone-07-poi-1",
+      "levelRange": [
+        51,
+        65
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-16",
+      "name": "Forgotten Catacombs of Ivory Coast",
+      "kind": "dungeon",
+      "continentId": "africa",
+      "zoneId": "africa-zone-08",
+      "poiId": "africa-zone-08-poi-1",
+      "levelRange": [
+        56,
+        70
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-17",
+      "name": "Forgotten Catacombs of Frostpine Frontier",
+      "kind": "dungeon",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01",
+      "poiId": "north-america-zone-01-poi-1",
+      "levelRange": [
+        41,
+        55
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-18",
+      "name": "Forgotten Catacombs of Thunderbird Prairie",
+      "kind": "dungeon",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-02",
+      "poiId": "north-america-zone-02-poi-1",
+      "levelRange": [
+        46,
+        60
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-19",
+      "name": "Forgotten Catacombs of Red Canyonlands",
+      "kind": "dungeon",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-03",
+      "poiId": "north-america-zone-03-poi-1",
+      "levelRange": [
+        51,
+        65
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-instance-20",
+      "name": "Forgotten Catacombs of Silverlake Country",
+      "kind": "dungeon",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-04",
+      "poiId": "north-america-zone-04-poi-1",
+      "levelRange": [
+        56,
+        70
+      ],
+      "dimensionsTiles": [
+        256,
+        256
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "rooms",
+        "corridors",
+        "doors",
+        "traps",
+        "encounters",
+        "bosses",
+        "treasure"
+      ],
+      "instance": {
+        "partySize": [
+          1,
+          5
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "resettable": true
+      },
+      "seedPolicy": "instance-seed"
+    },
+    {
+      "id": "map-raid-01",
+      "name": "Citadel of the Starfall",
+      "kind": "raid",
+      "continentId": "asia",
+      "zoneId": "asia-zone-01",
+      "levelRange": [
+        1,
+        15
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 3
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-02",
+      "name": "Vault of the Deep Kings",
+      "kind": "raid",
+      "continentId": "asia",
+      "zoneId": "asia-zone-05",
+      "levelRange": [
+        21,
+        35
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 4
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-03",
+      "name": "The Ember Crown",
+      "kind": "raid",
+      "continentId": "africa",
+      "zoneId": "africa-zone-01",
+      "levelRange": [
+        21,
+        35
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 5
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-04",
+      "name": "Throne of the Hollow Storm",
+      "kind": "raid",
+      "continentId": "africa",
+      "zoneId": "africa-zone-05",
+      "levelRange": [
+        41,
+        55
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 6
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-05",
+      "name": "Obsidian Heart",
+      "kind": "raid",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-01",
+      "levelRange": [
+        41,
+        55
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 3
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-06",
+      "name": "The Sunken Oracle",
+      "kind": "raid",
+      "continentId": "north-america",
+      "zoneId": "north-america-zone-05",
+      "levelRange": [
+        61,
+        75
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 4
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-07",
+      "name": "Frostveil Bastion",
+      "kind": "raid",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-01",
+      "levelRange": [
+        61,
+        75
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 5
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-08",
+      "name": "Temple of the First Flame",
+      "kind": "raid",
+      "continentId": "south-america",
+      "zoneId": "south-america-zone-05",
+      "levelRange": [
+        81,
+        95
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 6
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-09",
+      "name": "The Verdant Maw",
+      "kind": "raid",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-01",
+      "levelRange": [
+        81,
+        95
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 3
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-10",
+      "name": "Skyspire Sanctum",
+      "kind": "raid",
+      "continentId": "antarctica",
+      "zoneId": "antarctica-zone-05",
+      "levelRange": [
+        101,
+        115
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 4
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-11",
+      "name": "The Ashen Crucible",
+      "kind": "raid",
+      "continentId": "europe",
+      "zoneId": "europe-zone-01",
+      "levelRange": [
+        101,
+        115
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 5
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-12",
+      "name": "Caverns of the Worldroot",
+      "kind": "raid",
+      "continentId": "europe",
+      "zoneId": "europe-zone-05",
+      "levelRange": [
+        121,
+        135
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 6
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-13",
+      "name": "The Eternal Observatory",
+      "kind": "raid",
+      "continentId": "australia",
+      "zoneId": "australia-zone-01",
+      "levelRange": [
+        121,
+        135
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 3
+      },
+      "seedPolicy": "raid-instance-seed"
+    },
+    {
+      "id": "map-raid-14",
+      "name": "Nexus of the Last Dawn",
+      "kind": "raid",
+      "continentId": "australia",
+      "zoneId": "australia-zone-05",
+      "levelRange": [
+        141,
+        155
+      ],
+      "dimensionsTiles": [
+        512,
+        512
+      ],
+      "chunkSize": 32,
+      "layers": [
+        "terrain",
+        "raid-wings",
+        "boss-arenas",
+        "hazards",
+        "checkpoints",
+        "treasure",
+        "exit"
+      ],
+      "instance": {
+        "partySize": [
+          10,
+          20,
+          25,
+          40
+        ],
+        "difficultyModes": [
+          "normal",
+          "heroic",
+          "mythic"
+        ],
+        "lockout": "weekly",
+        "bossCount": 4
+      },
+      "seedPolicy": "raid-instance-seed"
+    }
+  ]
+}

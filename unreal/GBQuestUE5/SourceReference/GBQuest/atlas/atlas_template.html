@@ -1,0 +1,379 @@
+<meta charset="utf-8">
+<title>Atlas of Valendria</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Silkscreen&display=swap">
+<style>
+:root{
+  --ink:#16120d; --ink2:#221b13; --panel:#1d1710ee; --line:#5a4a33; --parch:#efe2c2; --parch2:#c9b48a; --muted:#9c8a68;
+  --gold:#e0b04a; --road:#d9b878; --roadcase:#3b2a17; --sea:#7fb8d8; --ship:#b6e0f2; --route:#ff6a3d;
+  --dun:#c98a3d; --raid:#c0485a; --boss:#ff7d3b; --wp:#8fd3ff; --town:#f3d28b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+html,body{height:100%}
+body{background:var(--ink);color:var(--parch);font-family:"IM Fell English",Georgia,"Times New Roman",serif;overflow:hidden;font-size:15px}
+.px{font-family:Silkscreen,ui-monospace,"Courier New",monospace;letter-spacing:.04em}
+#stage{position:fixed;inset:0;touch-action:none;cursor:grab;background:radial-gradient(ellipse at 50% 40%,#2a3d4c 0,#14202a 70%)}
+#stage.drag{cursor:grabbing}
+svg{width:100%;height:100%;display:block}
+/* top bar */
+#bar{position:fixed;left:0;right:0;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(var(--ink) 0,#16120dcc 70%,transparent);pointer-events:none}
+#bar>*{pointer-events:auto}
+.brand{display:flex;flex-direction:column;line-height:1;margin-right:6px}
+.brand b{font-family:"IM Fell English SC",serif;font-weight:400;font-size:24px;color:var(--gold);letter-spacing:.06em}
+.brand small{font-size:9px;color:var(--muted)}
+.search{position:relative;flex:1 1 220px;max-width:340px;min-width:0}
+.search input{width:100%;background:#0e0b07;border:1px solid var(--line);color:var(--parch);padding:8px 10px;border-radius:3px;font:inherit;font-size:15px}
+.search input:focus{outline:1px solid var(--gold)}
+#results{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:#120e09f5;border:1px solid var(--line);max-height:50vh;overflow:auto;border-radius:3px}
+#results button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #2c2318;color:var(--parch);padding:7px 10px;font:inherit;cursor:pointer}
+#results button:hover,#results button.on{background:#2b2115}
+#results em{color:var(--muted);font-size:12px;font-style:normal;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:1px solid var(--line);background:#0e0b07cc;color:var(--muted);padding:5px 8px;border-radius:2px;font-size:10px;cursor:pointer;display:flex;gap:5px;align-items:center}
+.chip i{width:9px;height:9px;display:inline-block;border-radius:50%}
+.chip[aria-pressed="true"]{color:var(--parch);border-color:var(--parch2);background:#2b2115cc}
+/* zoom buttons */
+#zoom{position:fixed;z-index:5;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);display:flex;flex-direction:column;gap:4px}
+#zoom button,.btn{background:#0e0b07e6;border:1px solid var(--line);color:var(--parch);width:38px;height:38px;font-size:18px;cursor:pointer;border-radius:2px}
+#zoom button:hover,.btn:hover{border-color:var(--gold);color:var(--gold)}
+/* compass + scale */
+#legend{position:fixed;z-index:4;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:var(--panel);border:1px solid var(--line);padding:10px 12px;font-size:10px;display:grid;grid-template-columns:repeat(3,auto);gap:4px 12px;max-width:calc(100vw - 100px)}
+#legend h4{grid-column:1/-1;margin:0 0 2px;font:400 15px "IM Fell English SC",serif;color:var(--gold)}
+#legend span{display:flex;gap:6px;align-items:center;white-space:nowrap}
+#legend i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #0008}
+#legend .k{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;border-top:1px solid #3a2e1f;padding-top:6px;margin-top:3px}
+#legend svg{width:26px;height:8px;display:inline}
+#legendToggle{display:none}
+/* details */
+#info{position:fixed;z-index:6;top:calc(var(--barH,62px) + 8px);right:max(16px,env(safe-area-inset-right,0px));width:360px;max-height:calc(100vh - var(--barH,62px) - 80px);overflow:auto;background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 40px #000a;padding:16px 18px 18px;backdrop-filter:blur(3px)}
+#info .x{position:absolute;right:8px;top:8px;width:30px;height:30px;font-size:16px}
+#info h2{font:400 26px/1.05 "IM Fell English SC",serif;color:var(--gold);margin:0 34px 4px 0;text-wrap:balance}
+#info .sub{color:var(--parch2);font-style:italic;margin-bottom:10px}
+#info h3{font-size:10px;color:var(--muted);margin:14px 0 6px;border-bottom:1px solid #3a2e1f;padding-bottom:3px;font-weight:400}
+#info .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#info .stat{background:#0e0b0799;border:1px solid #3a2e1f;padding:6px 8px}
+#info .stat b{display:block;font-size:17px;font-weight:400;color:var(--parch)}
+#info .stat small{font-size:9px;color:var(--muted)}
+#info ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+#info li{line-height:1.3}
+#info .tag{font-size:9px;padding:1px 5px;border:1px solid currentColor;border-radius:2px;margin-left:4px;white-space:nowrap}
+#info a.go{color:var(--road);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+#info a.go:hover{color:var(--gold)}
+#info .q{font-size:14px;color:var(--parch2)}
+#info .q b{color:var(--parch);font-weight:400}
+#info .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+#info .row button{width:auto;height:auto;padding:7px 10px;font-size:10px}
+#routeBar{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:var(--panel);border:1px solid var(--route);padding:8px 12px;font-size:14px;display:flex;gap:10px;align-items:center;max-width:calc(100vw - 32px)}
+#routeBar button{width:auto;height:30px;padding:0 10px;font-size:10px}
+#tip{position:fixed;z-index:7;pointer-events:none;background:#0e0b07f0;border:1px solid var(--line);padding:5px 8px;font-size:13px;white-space:nowrap}
+#tip small{display:block;color:var(--muted);font-size:9px}
+/* svg styling */
+.road{fill:none;stroke:var(--road);stroke-width:2.2;opacity:.95;stroke-dasharray:7 4;stroke-linecap:round}
+.roadcase{fill:none;stroke:var(--roadcase);stroke-width:4.5;stroke-linecap:round;opacity:.85}
+.sea{fill:none;stroke:var(--sea);stroke-width:2;stroke-dasharray:1.5 5;stroke-linecap:round;opacity:.9}
+.ship{fill:none;stroke:var(--ship);stroke-width:2.2;stroke-dasharray:10 5 2 5;opacity:.9}
+.route{fill:none;stroke:var(--route);stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--route))}
+.zone{cursor:pointer}
+.zone circle.pin{stroke:#1a1208;stroke-width:1.6}
+.zone:hover circle.pin,.zone.sel circle.pin{stroke:var(--gold);stroke-width:3}
+.zone.dim{opacity:.22}
+.here{fill:none;stroke:#ff3b3b;stroke-width:3;animation:pulse 1.4s ease-in-out infinite;pointer-events:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.zone.unk circle.pin{filter:saturate(.25) brightness(.8)}
+#closeAtlas{display:none}
+body.embedded #closeAtlas{display:block}
+svg{--k:1}
+.zlabel{font-size:calc(12px*var(--k))!important;stroke-width:calc(3px*var(--k))!important}
+.zlv{font-size:calc(7px*var(--k))!important;stroke-width:calc(2.5px*var(--k))!important}
+.rlabel{font-size:calc(19px*var(--k))!important;stroke-width:calc(4px*var(--k))!important}
+.clabel{font-size:calc(30px*var(--k))!important}
+.zlabel{font:400 11px "IM Fell English SC",serif;fill:var(--parch);paint-order:stroke;stroke:#1a1208;stroke-width:3px;pointer-events:none}
+.zlv{font:7px Silkscreen,monospace;fill:var(--gold);paint-order:stroke;stroke:#1a1208;stroke-width:2.5px;pointer-events:none}
+.rlabel{font:400 22px "IM Fell English SC",serif;fill:#fff3d0;paint-order:stroke;stroke:#1a1208cc;stroke-width:5px;letter-spacing:.12em;pointer-events:none;opacity:.92}
+.clabel{font:italic 400 40px "IM Fell English",serif;fill:#fff3d0;opacity:.55;letter-spacing:.35em;paint-order:stroke;stroke:#0008;stroke-width:3px;pointer-events:none}
+.ico{pointer-events:none}
+svg.z0 .zlabel,svg.z0 .zlv,svg.z1 .zlv{display:none}
+svg.z2 .rlabel{opacity:.35}
+svg.z2 .clabel{display:none}
+.hide-roads .road,.hide-roads .roadcase{display:none}
+.hide-sea .sea,.hide-sea .ship{display:none}
+.hide-labels .zlabel,.hide-labels .zlv,.hide-labels .rlabel,.hide-labels .clabel{display:none}
+.hide-dungeon .i-dungeon,.hide-raid .i-raid,.hide-boss .i-boss,.hide-wp .i-wp{display:none}
+@media (max-width:720px){
+  .brand b{font-size:19px}
+  #bar{gap:6px}
+  .chips{order:3;flex-basis:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  .chip{flex:none}
+  #info{left:0;right:0;width:auto;top:auto;bottom:0;max-height:58vh;border-left:0;border-right:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}
+  #info .x{right:max(8px,env(safe-area-inset-right,0px))}
+  #legend{display:none}
+  #legend.open{display:grid;bottom:calc(env(safe-area-inset-bottom,0px) + 64px)}
+  #legendToggle{display:block;position:fixed;z-index:5;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}
+  #zoom button{width:42px;height:42px}
+  #routeBar{top:calc(env(safe-area-inset-top,0px) + 128px);bottom:auto;width:calc(100vw - 32px);justify-content:space-between}
+}
+/* compact layout when the atlas is fitted into the game screen */
+@media (max-height:560px){
+  .brand{display:none}
+  #bar{padding-top:calc(env(safe-area-inset-top,0px) + 6px);padding-bottom:4px;gap:4px}
+  .search input{padding:5px 8px;font-size:13px}
+  .chip{padding:3px 6px;font-size:8px}
+  #closeAtlas{font-size:8px!important;height:28px;padding:0 8px!important}
+  #info{max-height:62vh;padding-top:10px}
+  #info h2{font-size:20px}
+  #zoom{bottom:calc(env(safe-area-inset-bottom,0px) + 44px)}
+  #zoom button{width:30px;height:30px;font-size:15px}
+  #routeBar{top:auto;bottom:6px;font-size:12px}
+  #legend.open{bottom:44px}
+}
+@media (min-width:721px){body.info-open #zoom{right:calc(max(16px,env(safe-area-inset-right,0px)) + 372px)}body.info-open #legend{display:none}}
+body.embedded #zoom{bottom:calc(env(safe-area-inset-bottom,0px) + 44px)}
+</style>
+
+<div id="stage">
+<svg id="map" viewBox="0 0 1592 988" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of Valendria with zones and roads">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <radialGradient id="vig" cx="50%" cy="50%" r="70%"><stop offset="70%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".55"/></radialGradient>
+  </defs>
+  <g id="world">
+    <image href="__MAP__" x="0" y="0" width="1592" height="988" preserveAspectRatio="none"/>
+    <rect width="1592" height="988" fill="url(#vig)" pointer-events="none"/>
+    <g id="gCont"></g>
+    <g id="gEdges"></g>
+    <g id="gRoute"></g>
+    <g id="gRegions"></g>
+    <g id="gZones"></g>
+  </g>
+</svg>
+</div>
+
+<header id="bar">
+  <div class="brand"><b>ATLAS OF VALENDRIA</b><small class="px">LOST KINGDOM OF SHADOWBANE CHRONICLES · <span id="ver"></span></small></div>
+  <div class="search">
+    <input id="q" type="search" placeholder="Find a zone, boss, dungeon…" autocomplete="off" aria-label="Search the atlas">
+    <div id="results" hidden></div>
+  </div>
+  <div class="chips px" id="chips"></div>
+  <button id="closeAtlas" class="btn px" style="width:auto;padding:0 12px;font-size:10px;margin-left:auto" aria-label="Back to game">BACK TO GAME ✕</button>
+</header>
+
+<div id="legend" class="px"></div>
+<button id="legendToggle" class="btn px" aria-label="Legend" title="Legend">?</button>
+
+<div id="zoom">
+  <button id="zin" aria-label="Zoom in" title="Zoom in">+</button>
+  <button id="zout" aria-label="Zoom out" title="Zoom out">−</button>
+  <button id="zreset" aria-label="Show whole map" title="Whole map">⌂</button>
+</div>
+
+<aside id="info" hidden></aside>
+<div id="routeBar" hidden></div>
+<div id="tip" hidden></div>
+
+<script>
+const DATA = __DATA__;
+const W=1592,H=988, NS='http://www.w3.org/2000/svg';
+const BIOME={meadow:['#8bc34a','Meadow'],marsh:['#6b8e4e','Marsh'],snow:['#e8f4ff','Snow'],badlands:['#d08a4a','Badlands'],coast:['#4fc3c7','Coast'],crystal:['#b48cff','Crystal'],volcanic:['#ff5a36','Volcanic'],jungle:['#2fae5f','Jungle'],dusk:['#7a5c9e','Dusk']};
+const Z={}; DATA.zones.forEach(z=>Z[z.id]=z);
+{const g={};DATA.zones.forEach(z=>(g[z.region]=g[z.region]||[]).push(z));
+ for(const k in g){const zs=g[k];if(zs.length<2)continue;const cx=zs.reduce((a,z)=>a+z.x,0)/zs.length,cy=zs.reduce((a,z)=>a+z.y,0)/zs.length;
+  zs.forEach(z=>{z.x=Math.round(cx+(z.x-cx)*1.55);z.y=Math.round(cy+(z.y-cy)*1.55)})}}
+const R={}; DATA.regions.forEach(r=>R[r.id]=r);
+const $=s=>document.querySelector(s);
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const title=s=>String(s||'').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+const lv=l=>l[0]===l[1]?`${l[0]}`:`${l[0]}–${l[1]}`;
+$('#ver').textContent='v'+DATA.build.version;
+
+/* adjacency for the route planner */
+const ADJ={}; DATA.zones.forEach(z=>ADJ[z.id]=[]);
+DATA.edges.forEach(e=>{if(ADJ[e.a]&&ADJ[e.b]){ADJ[e.a].push(e.b);ADJ[e.b].push(e.a)}});
+
+/* curved path between two pins; sea routes bow more */
+function hash(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0}
+function curve(a,b,bow){const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;
+  const s=((hash(a.id+b.id)%2)?1:-1)*bow*Math.min(len,400);const cx=mx-dy/len*s,cy=my+dx/len*s;
+  return `M${a.x},${a.y} Q${cx.toFixed(1)},${cy.toFixed(1)} ${b.x},${b.y}`}
+
+/* continent names */
+const CONT={};DATA.zones.forEach(z=>{(CONT[z.continent]=CONT[z.continent]||[]).push(z)});
+for(const c in CONT){const zs=CONT[c];const x=zs.reduce((s,z)=>s+z.x,0)/zs.length,y=Math.min(...zs.map(z=>z.y))-48;
+  el('text',{x,y:Math.max(60,y),'text-anchor':'middle',class:'clabel'},$('#gCont')).textContent=title(c)}
+
+/* edges */
+const gE=$('#gEdges');
+const cases=el('g',{},gE), roads=el('g',{},gE), seas=el('g',{},gE);
+DATA.edges.forEach(e=>{const a=Z[e.a],b=Z[e.b];if(!a||!b)return;
+  const ve={'vector-effect':'non-scaling-stroke'};
+  if(e.sea){el('path',{d:curve(a,b,.22),class:e.ship?'ship':'sea',...ve},seas)}
+  else{const d=curve(a,b,.08);el('path',{d,class:'roadcase',...ve},cases);el('path',{d,class:'road',...ve},roads)}});
+
+/* region labels */
+const regC={};DATA.zones.forEach(z=>{(regC[z.region]=regC[z.region]||[]).push(z)});
+for(const id in regC){const zs=regC[id];const x=zs.reduce((s,z)=>s+z.x,0)/zs.length,y=zs.reduce((s,z)=>s+z.y,0)/zs.length;
+  const t=el('text',{x,y:y-22,'text-anchor':'middle',class:'rlabel'},$('#gRegions'));t.textContent=title(R[id]?.name||id)}
+
+/* icons */
+const ICO={
+  dungeon:(g,x,y)=>{el('path',{d:`M${x-5},${y+5}v-6a5,5 0 0 1 10,0v6z`,fill:'var(--dun)',stroke:'#1a1208','stroke-width':1.2},g);el('rect',{x:x-1.5,y:y,width:3,height:5,fill:'#1a1208'},g)},
+  raid:(g,x,y)=>{el('path',{d:`M${x-6},${y+4}l1.5-8 3 4 1.5-6 1.5 6 3-4 1.5 8z`,fill:'var(--raid)',stroke:'#1a1208','stroke-width':1.2},g)},
+  boss:(g,x,y)=>{el('path',{d:`M${x},${y-6}c4,4 5,7 3,10a4,4 0 0 1 -6,0c-2,-3 0,-5 1,-6c0,2 1,3 2,3c0,-3 -1,-5 0,-7z`,fill:'var(--boss)',stroke:'#1a1208','stroke-width':1.1},g)},
+  wp:(g,x,y)=>{el('path',{d:`M${x},${y-5}l4,5-4,5-4-5z`,fill:'var(--wp)',stroke:'#1a1208','stroke-width':1.1},g)},
+};
+/* zones */
+const gZ=$('#gZones'), zoneEl={};
+DATA.zones.forEach(z=>{
+  const g=el('g',{class:'zone',tabindex:0,role:'button','aria-label':title(z.name)},gZ); g.dataset.id=z.id; zoneEl[z.id]=g;
+  const tier=Math.min(4,Math.floor(Math.log10(Math.max(1,z.lvl[1]))*1.6));
+  if(z.town){el('rect',{x:z.x-8,y:z.y-8,width:16,height:16,transform:`rotate(45 ${z.x} ${z.y})`,fill:'var(--town)',stroke:'#1a1208','stroke-width':1.8},g);
+    el('circle',{cx:z.x,cy:z.y,r:3,fill:'#1a1208'},g);el('circle',{cx:z.x,cy:z.y,r:11,fill:'transparent',class:'pin',stroke:'none'},g)}
+  else{el('circle',{cx:z.x,cy:z.y,r:6.5+tier*.6,fill:BIOME[z.biome][0],class:'pin'},g);
+    if(z.exp)el('circle',{cx:z.x,cy:z.y,r:2.2,fill:'#1a1208'},g)}
+  const icons=[];if(z.dungeon)icons.push('dungeon');if(z.raid)icons.push('raid');if(z.bosses.some(b=>b.cat==='world'||b.cat==='arc'))icons.push('boss');if(z.waypoint)icons.push('wp');
+  icons.forEach((k,i)=>{const ig=el('g',{class:'ico i-'+k},g);ICO[k](ig,z.x+13+i*12,z.y-11)});
+  const t=el('text',{x:z.x,y:z.y+19,'text-anchor':'middle',class:'zlabel'},g);t.textContent=title(z.name);
+  const l=el('text',{x:z.x,y:z.y+27,'text-anchor':'middle',class:'zlv'},g);l.textContent='LV '+lv(z.lvl);
+  g.addEventListener('click',ev=>{ev.stopPropagation();if(!moved)select(z.id)});
+  g.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(z.id)}});
+  g.addEventListener('pointerenter',ev=>showTip(z,ev));g.addEventListener('pointermove',ev=>moveTip(ev));g.addEventListener('pointerleave',()=>$('#tip').hidden=true);
+});
+function showTip(z,ev){if(ev.pointerType==='touch')return;const t=$('#tip');t.innerHTML=`${esc(title(z.name))}<small class="px">LV ${lv(z.lvl)} · ${esc(z.sub||BIOME[z.biome][1])}</small>`;t.hidden=false;moveTip(ev)}
+function moveTip(ev){const t=$('#tip');t.style.left=(ev.clientX+14)+'px';t.style.top=(ev.clientY+14)+'px'}
+
+/* layers */
+const LAYERS=[['roads','Roads','var(--road)'],['sea','Sea lanes','var(--sea)'],['dungeon','Dungeons','var(--dun)'],['raid','Raids','var(--raid)'],['boss','Bosses','var(--boss)'],['wp','Waypoints','var(--wp)'],['labels','Labels','var(--parch)']];
+let hidden={}; try{hidden=JSON.parse(localStorage.getItem('atlas.hidden')||'{}')}catch(e){}
+const chips=$('#chips');
+LAYERS.forEach(([k,n,c])=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<i style="background:${c}"></i>${n}`;
+  const set=()=>{b.setAttribute('aria-pressed',!hidden[k]);$('#stage').classList.toggle('hide-'+k,!!hidden[k])};set();
+  b.onclick=()=>{hidden[k]=!hidden[k];set();try{localStorage.setItem('atlas.hidden',JSON.stringify(hidden))}catch(e){}};chips.appendChild(b)});
+/* level filter chip */
+const lvBtn=document.createElement('button');lvBtn.className='chip';const BANDS=[null,[1,20],[21,60],[61,200],[201,720]];let band=0;
+const setBand=()=>{const b=BANDS[band];lvBtn.textContent=b?`LV ${b[0]}–${b[1]}`:'ALL LEVELS';lvBtn.setAttribute('aria-pressed',!!b);
+  DATA.zones.forEach(z=>zoneEl[z.id].classList.toggle('dim',!!b&&(z.lvl[1]<b[0]||z.lvl[0]>b[1])))};
+lvBtn.onclick=()=>{band=(band+1)%BANDS.length;setBand()};setBand();chips.appendChild(lvBtn);
+
+/* legend */
+$('#legend').innerHTML='<h4>Legend</h4>'+Object.values(BIOME).map(([c,n])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')+
+ `<div class="k"><span><svg viewBox="0 0 26 8"><path d="M1 4H25" stroke="#3b2a17" stroke-width="5"/><path d="M1 4H25" stroke="#d9b878" stroke-width="2.4" stroke-dasharray="6 3"/></svg>Road</span>
+ <span><svg viewBox="0 0 26 8"><path d="M1 4H25" stroke="#7fb8d8" stroke-width="2" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>Sea lane</span>
+ <span><svg viewBox="0 0 26 8"><path d="M1 4H25" stroke="#b6e0f2" stroke-width="2" stroke-dasharray="8 3 2 3"/></svg>Ship</span>
+ <span><i style="background:var(--town);border-radius:0;transform:rotate(45deg)"></i>Town</span>
+ <span><i style="background:var(--dun)"></i>Dungeon</span><span><i style="background:var(--raid)"></i>Raid</span><span><i style="background:var(--boss)"></i>Boss</span><span><i style="background:var(--wp)"></i>Waypoint</span></div>
+ <div class="k" style="color:var(--muted)">${DATA.counts.zones} zones · ${DATA.edges.length} routes · ${DATA.counts.bosses} bosses</div>`;
+$('#legendToggle').onclick=()=>$('#legend').classList.toggle('open');
+
+/* ---------- pan / zoom (viewBox) ---------- */
+const svg=$('#map'), stage=$('#stage');
+let vb={x:0,y:0,w:W,h:H};
+function clampVB(){const minW=180;vb.w=Math.max(minW,Math.min(W*1.15,vb.w));vb.h=vb.w*H/W;
+  vb.x=Math.max(-vb.w*.4,Math.min(W-vb.w*.6,vb.x));vb.y=Math.max(-vb.h*.4,Math.min(H-vb.h*.6,vb.y))}
+function apply(){clampVB();svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);const r=svg.getBoundingClientRect();const ppu=Math.max(r.width/vb.w,r.height/vb.h)||1;svg.style.setProperty('--k',(1/ppu).toFixed(4));
+  svg.classList.toggle('z0',ppu<1.5);svg.classList.toggle('z1',ppu>=1.5&&ppu<2.4);svg.classList.toggle('z2',ppu>=2.4)}
+addEventListener('resize',()=>{apply();barH()});
+function barH(){document.documentElement.style.setProperty('--barH',$('#bar').offsetHeight+'px')}
+function toSvg(cx,cy){const r=svg.getBoundingClientRect();const sc=Math.max(r.width/vb.w,r.height/vb.h);const ox=(r.width-vb.w*sc)/2,oy=(r.height-vb.h*sc)/2;
+  return {x:vb.x+(cx-r.left-ox)/sc,y:vb.y+(cy-r.top-oy)/sc}}
+function zoomAt(f,cx,cy){const p=toSvg(cx,cy);vb.x=p.x-(p.x-vb.x)/f;vb.y=p.y-(p.y-vb.y)/f;vb.w/=f;vb.h/=f;apply()}
+let anim=null;
+function flyTo(x,y,w){cancelAnimationFrame(anim);const from={...vb},to={w,h:w*H/W};to.x=x-to.w/2;to.y=y-to.h/2;const t0=performance.now();
+  const step=t=>{const k=Math.min(1,(t-t0)/450),e=1-Math.pow(1-k,3);for(const p of['x','y','w','h'])vb[p]=from[p]+(to[p]-from[p])*e;apply();if(k<1)anim=requestAnimationFrame(step)};anim=requestAnimationFrame(step)}
+stage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(-e.deltaY*0.0015),e.clientX,e.clientY)},{passive:false});
+const ptrs=new Map();let moved=false,last=null,pinch=null;
+stage.addEventListener('pointerdown',e=>{if(e.target.closest('.zone')&&e.pointerType!=='touch'){moved=false;return}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});stage.setPointerCapture(e.pointerId);moved=false;cancelAnimationFrame(anim);
+  if(ptrs.size===1)last={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y};
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),w:vb.w}};stage.classList.add('drag')});
+stage.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2&&pinch){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);const f=(pinch.w/vb.w)*(d/pinch.d);zoomAt(f,(a.x+b.x)/2,(a.y+b.y)/2);moved=true;return}
+  if(ptrs.size===1&&last){const r=svg.getBoundingClientRect();const sc=Math.max(r.width/vb.w,r.height/vb.h);const dx=e.clientX-last.x,dy=e.clientY-last.y;
+    if(Math.abs(dx)+Math.abs(dy)>4)moved=true;vb.x=last.vx-dx/sc;vb.y=last.vy-dy/sc;apply()}});
+const up=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(ptrs.size===1){const p=[...ptrs.values()][0];last={x:p.x,y:p.y,vx:vb.x,vy:vb.y}}
+  if(!ptrs.size){stage.classList.remove('drag');
+    if(!moved&&e.type==='pointerup'){const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.zone');if(hit)select(hit.dataset.id);else closeInfo()}}};
+stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+$('#zin').onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1.5,r.left+r.width/2,r.top+r.height/2)};
+$('#zout').onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1/1.5,r.left+r.width/2,r.top+r.height/2)};
+$('#zreset').onclick=()=>flyTo(W/2,H/2,W);
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const s=vb.w*.08;
+  if(e.key==='+'||e.key==='=')$('#zin').click();else if(e.key==='-')$('#zout').click();else if(e.key==='Escape')closeInfo();
+  else if(e.key==='ArrowLeft'){vb.x-=s;apply()}else if(e.key==='ArrowRight'){vb.x+=s;apply()}else if(e.key==='ArrowUp'){vb.y-=s;apply()}else if(e.key==='ArrowDown'){vb.y+=s;apply()}});
+
+/* ---------- details ---------- */
+let sel=null, routeFrom=null;
+const info=$('#info');
+function closeInfo(){info.hidden=true;document.body.classList.remove('info-open');if(sel)zoneEl[sel]?.classList.remove('sel');sel=null;setHash('')}
+function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search)}catch(e){}}
+const catName={world:'World',arc:'Arc',dungeon:'Dungeon',raid:'Raid',trial:'Trial',tower:'Tower'};
+function select(id,fly){const z=Z[id];if(!z)return;if(sel)zoneEl[sel]?.classList.remove('sel');sel=id;zoneEl[id].classList.add('sel');setHash(id.replace(/_/g,'-'));
+  const r=R[z.region]||{};const nb=[...new Set(ADJ[id])].map(n=>Z[n]).filter(Boolean);
+  const exp=z.exp?DATA.expansions.find(x=>x.n===z.exp):null;
+  info.innerHTML=`<button class="btn x" aria-label="Close">×</button>
+  <h2>${esc(title(z.name))}</h2>
+  <div class="sub">${esc(title(z.sub||''))} · ${esc(title(r.name))}, ${esc(title(z.place||''))} — ${esc(title(z.continent))}</div>
+  <div class="stats px"><div class="stat"><b>${lv(z.lvl)}</b><small>LEVEL</small></div><div class="stat"><b style="color:${BIOME[z.biome][0]}">${BIOME[z.biome][1]}</b><small>BIOME</small></div>
+  <div class="stat"><b>${z.town?'TOWN':exp?'EXP '+exp.n:'ACT '+(z.act||'—')}</b><small>${z.town?'SAFE ZONE':exp?esc(exp.name):'STORY'}</small></div></div>
+  ${r.desc?`<p class="q" style="margin:10px 0 0"><i>${esc(r.desc)}</i></p>`:''}
+  <h3 class="px">ROADS LEAD TO</h3><ul>${nb.map(n=>`<li><a class="go" data-id="${n.id}">${esc(title(n.name))}</a> <span class="px" style="font-size:9px;color:var(--muted)">LV ${lv(n.lvl)}${n.continent!==z.continent?' · BY SEA':''}</span></li>`).join('')||'<li>—</li>'}</ul>
+  ${(z.dungeon||z.raid)?`<h3 class="px">INSTANCES</h3><ul>${z.dungeon?`<li><span style="color:var(--dun)">◆</span> ${esc(title(z.dungeon))} <span class="tag px" style="color:var(--dun)">DUNGEON · 4P</span></li>`:''}${z.raid?`<li><span style="color:var(--raid)">♛</span> ${esc(title(z.raid))} <span class="tag px" style="color:var(--raid)">RAID · 12P</span></li>`:''}</ul>`:''}
+  ${z.bosses.length?`<h3 class="px">BOSSES</h3><ul>${z.bosses.map(b=>`<li>${esc(title(b.name))}${b.title?` <i style="color:var(--muted)">— ${esc(title(b.title))}</i>`:''}<br><span class="tag px" style="color:${b.cat==='arc'?'var(--raid)':'var(--boss)'};margin:0">${catName[b.cat]||b.cat} · LV ${b.lvl}</span> <span class="px" style="font-size:9px;color:var(--muted)">${b.mechs.map(m=>m.toUpperCase()).join(' · ')}</span></li>`).join('')}</ul>`:''}
+  ${z.areas?.length?`<h3 class="px">AREAS</h3><p class="q" style="margin:0">${z.areas.map(a=>esc(title(a))).join(' · ')}</p>`:''}
+  ${z.quests.length?`<h3 class="px">SIDE QUESTS</h3><ul>${z.quests.map(q=>`<li class="q"><b>${esc(title(q.name))}</b> — ${esc(q.text)} <span class="px" style="font-size:9px;color:var(--gold)">${q.xp} XP · ${q.gold}G</span></li>`).join('')}</ul>`:''}
+  ${z.herb?`<h3 class="px">GATHERING</h3><p class="q" style="margin:0">Herb: ${esc(title(z.herb))}${z.waypoint?' · Waypoint shrine':''}</p>`:''}
+  ${r.chapters?.length&&!z.town?`<h3 class="px">STORY — ACT ${r.act}</h3><ul>${r.chapters.map(c=>`<li class="q"><b>Ch. ${c.n} ${esc(title(c.title))}</b> — ${esc(c.line)}</li>`).join('')}</ul>`:''}
+  <div class="row px">${ST?`<button class="btn" data-act="game">SHOW ON GAME MAP</button>`:''}<button class="btn" data-act="from">ROUTE FROM HERE</button>${routeFrom&&routeFrom!==id?`<button class="btn" data-act="to">ROUTE TO HERE</button>`:''}</div>`;
+  info.hidden=false;info.scrollTop=0;document.body.classList.add('info-open');
+  info.querySelector('.x').onclick=closeInfo;
+  info.querySelectorAll('a.go').forEach(a=>a.onclick=()=>select(a.dataset.id,true));
+  info.querySelector('[data-act=from]').onclick=()=>{routeFrom=id;clearRoute();showRouteBar(`From <b>${esc(title(z.name))}</b> — pick a destination and press ROUTE TO HERE`);select(id)};
+  const gm=info.querySelector('[data-act=game]');if(gm)gm.onclick=()=>parent.postMessage({gbqAtlas:'show',zone:id},'*');
+  const to=info.querySelector('[data-act=to]');if(to)to.onclick=()=>route(routeFrom,id);
+  if(fly){const narrow=innerWidth<=720;const w=Math.min(vb.w,520);flyTo(z.x+(narrow?0:w*.18),z.y+(narrow?w*H/W*.22:0),w)}}
+
+/* ---------- route planner (BFS over roads + sea lanes) ---------- */
+function clearRoute(){$('#gRoute').innerHTML=''}
+function showRouteBar(html){const b=$('#routeBar');b.innerHTML=`<span>${html}</span><button class="btn px">CLEAR</button>`;b.hidden=false;b.querySelector('button').onclick=()=>{routeFrom=null;clearRoute();b.hidden=true;if(sel)select(sel)}}
+function route(a,b){const prev={[a]:null},q=[a];while(q.length){const c=q.shift();if(c===b)break;for(const n of ADJ[c])if(!(n in prev)){prev[n]=c;q.push(n)}}
+  if(!(b in prev))return showRouteBar('No road connects these places.');
+  const path=[];for(let c=b;c;c=prev[c])path.unshift(c);clearRoute();
+  for(let i=1;i<path.length;i++){const p=Z[path[i-1]],n=Z[path[i]];el('path',{d:curve(p,n,p.continent!==n.continent?.22:.08),class:'route','vector-effect':'non-scaling-stroke'},$('#gRoute'))}
+  const sea=path.slice(1).filter((p,i)=>Z[p].continent!==Z[path[i]].continent).length;
+  showRouteBar(`<b>${esc(title(Z[a].name))}</b> → <b>${esc(title(Z[b].name))}</b>: ${path.length-1} legs${sea?` (${sea} by sea)`:''}`);
+  const xs=path.map(p=>Z[p].x),ys=path.map(p=>Z[p].y);const w=Math.max(300,(Math.max(...xs)-Math.min(...xs))*1.4,(Math.max(...ys)-Math.min(...ys))*1.4*W/H);
+  flyTo((Math.max(...xs)+Math.min(...xs))/2,(Math.max(...ys)+Math.min(...ys))/2,w);select(b)}
+
+/* ---------- search ---------- */
+const IDX=[];DATA.zones.forEach(z=>{IDX.push({t:z.name,k:'Zone · LV '+lv(z.lvl),id:z.id});
+  if(z.dungeon)IDX.push({t:z.dungeon,k:'Dungeon',id:z.id});if(z.raid)IDX.push({t:z.raid,k:'Raid',id:z.id});
+  z.bosses.forEach(b=>IDX.push({t:b.name,k:(catName[b.cat]||'')+' boss',id:z.id}))});
+DATA.regions.forEach(r=>{const first=DATA.zones.find(z=>z.region===r.id);if(first){IDX.push({t:r.name,k:'Region',id:first.id});if(r.place)IDX.push({t:r.place,k:'Land',id:first.id})}});
+const qi=$('#q'),res=$('#results');let hits=[],hi=0;
+function render(){res.innerHTML=hits.map((h,i)=>`<button class="${i===hi?'on':''}" data-i="${i}"><span>${esc(title(h.t))}</span><em class="px">${esc(h.k)}</em></button>`).join('');res.hidden=!hits.length;
+  res.querySelectorAll('button').forEach(b=>b.onclick=()=>pickHit(+b.dataset.i))}
+function pickHit(i){const h=hits[i];if(!h)return;res.hidden=true;qi.value=title(h.t);qi.blur();select(h.id,true)}
+qi.addEventListener('input',()=>{const s=qi.value.trim().toUpperCase();hi=0;const seen=new Set();
+  hits=s.length<2?[]:IDX.filter(h=>h.t.includes(s)).sort((a,b)=>a.t.indexOf(s)-b.t.indexOf(s)).filter(h=>{const k=h.t+h.k;if(seen.has(k))return false;seen.add(k);return true}).slice(0,12);render()});
+qi.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){hi=Math.min(hits.length-1,hi+1);render();e.preventDefault()}else if(e.key==='ArrowUp'){hi=Math.max(0,hi-1);render();e.preventDefault()}
+  else if(e.key==='Enter'){pickHit(hi)}else if(e.key==='Escape'){res.hidden=true}});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.search'))res.hidden=true});
+
+const ST=window.ATLAS_STATE||null;
+if(ST){document.body.classList.add('embedded');
+  $('#closeAtlas').onclick=()=>parent.postMessage({gbqAtlas:'close'},'*');
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&info.hidden&&e.target.tagName!=='INPUT')parent.postMessage({gbqAtlas:'close'},'*')});
+  DATA.zones.forEach(z=>{if(!(ST.visited||{})[z.id])zoneEl[z.id].classList.add('unk')});
+  const h=Z[ST.here];if(h){el('circle',{cx:h.x,cy:h.y,r:15,class:'here','vector-effect':'non-scaling-stroke'},zoneEl[h.id]);
+    const t=el('text',{x:h.x,y:h.y-20,'text-anchor':'middle',class:'zlabel',style:'fill:#ff6b6b'},zoneEl[h.id]);t.textContent='YOU ARE HERE'}}
+apply();barH();
+const hz=()=>location.hash.slice(1).replace(/-/g,'_');const h0=hz();if(Z[h0])select(h0,true);else if(ST&&Z[ST.here]){if(innerHeight>560)select(ST.here,true);else flyTo(Z[ST.here].x,Z[ST.here].y,Math.min(W,520))}
+addEventListener('hashchange',()=>{const h=hz();if(Z[h]&&h!==sel)select(h,true)});
+</script>

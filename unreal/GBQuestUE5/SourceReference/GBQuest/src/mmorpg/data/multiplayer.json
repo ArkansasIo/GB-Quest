@@ -1,0 +1,79 @@
+{
+  "id": "gbquest-multiplayer-v1",
+  "status": "protocol-foundation",
+  "modes": [
+    "solo",
+    "party-coop",
+    "dungeon-party",
+    "raid",
+    "guild"
+  ],
+  "party": {
+    "min": 1,
+    "max": 5,
+    "raidMax": 20,
+    "roles": [
+      "tank",
+      "healer",
+      "damage",
+      "support"
+    ]
+  },
+  "features": [
+    "account-authentication",
+    "character-presence",
+    "party-invites",
+    "ready-check",
+    "zone-instance",
+    "chat",
+    "quest-sharing",
+    "loot-rules",
+    "guilds",
+    "raid-encounters",
+    "reconnect"
+  ],
+  "transport": {
+    "preferred": "wss",
+    "messageFormat": "JSON",
+    "authoritativeServer": true,
+    "clientPrediction": "movement-only",
+    "serverValidation": [
+      "movement",
+      "combat",
+      "inventory",
+      "currency",
+      "quest-progress",
+      "loot",
+      "trading"
+    ]
+  },
+  "messageTypes": [
+    "hello",
+    "authenticate",
+    "session.resume",
+    "presence.update",
+    "party.invite",
+    "party.join",
+    "party.leave",
+    "party.ready",
+    "chat.send",
+    "zone.enter",
+    "zone.snapshot",
+    "movement.input",
+    "combat.intent",
+    "quest.share",
+    "quest.progress",
+    "loot.roll",
+    "ping",
+    "pong",
+    "error"
+  ],
+  "security": [
+    "Never trust client damage or rewards",
+    "Validate every inventory and currency transaction server-side",
+    "Rate-limit chat, movement and action messages",
+    "Use per-character ownership checks",
+    "Keep authentication secrets server-side"
+  ],
+  "note": "This is a protocol and data contract. It is not a deployed multiplayer server; live online play requires an authenticated WebSocket service, database and authoritative simulation."
+}

@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "format": "png",
+  "nativeTileSize": [
+    16,
+    16
+  ],
+  "renderScale": "nearest-neighbour integer scale",
+  "layers": [
+    {
+      "id": "base",
+      "order": 0,
+      "collision": "terrain",
+      "description": "Ground base: grass, dirt, sand, stone, snow, ash, water and biome-specific surfaces"
+    },
+    {
+      "id": "transition",
+      "order": 10,
+      "collision": "terrain",
+      "description": "Autotile edges, corners, coastlines, cliffs and biome blending"
+    },
+    {
+      "id": "path",
+      "order": 20,
+      "collision": "walkable",
+      "description": "Roads, trails, bridges, stairs and dungeon passages"
+    },
+    {
+      "id": "decal",
+      "order": 30,
+      "collision": "none",
+      "description": "Flowers, cracks, puddles, debris, tracks, runes and ground detail"
+    },
+    {
+      "id": "object",
+      "order": 40,
+      "collision": "per-object",
+      "description": "Trees, rocks, ore, herbs, chests, signs, doors, furniture and harvest nodes"
+    },
+    {
+      "id": "structure",
+      "order": 50,
+      "collision": "per-object",
+      "description": "Houses, inns, shops, temples, keeps, walls, gates and dungeon architecture"
+    },
+    {
+      "id": "actor",
+      "order": 60,
+      "collision": "dynamic",
+      "description": "Players, NPCs, monsters, pets, mounts and boss sprites"
+    },
+    {
+      "id": "effect",
+      "order": 70,
+      "collision": "none",
+      "description": "Water animation, fire, magic, weather, portals, combat telegraphs and impact effects"
+    },
+    {
+      "id": "roof",
+      "order": 80,
+      "collision": "none",
+      "description": "Roof and canopy overlays with indoor cutaway support"
+    },
+    {
+      "id": "foreground",
+      "order": 90,
+      "collision": "none",
+      "description": "Foreground foliage, arches, cave lips and depth framing"
+    }
+  ],
+  "autotile": {
+    "scheme": "4-bit cardinal bitmask",
+    "bits": {
+      "north": 1,
+      "east": 2,
+      "south": 4,
+      "west": 8
+    },
+    "variants": 16,
+    "roads": "gt_<biome>_road<mask>.png",
+    "shoreline": "gt_<biome>_water<mask>_<frame>.png",
+    "shorelineFrames": 2,
+    "diagonalRule": "diagonal corners are filled only when both adjacent cardinal edges connect"
+  },
+  "biomes": [
+    "meadow",
+    "coast",
+    "marsh",
+    "jungle",
+    "snow",
+    "badlands",
+    "volcanic",
+    "dusk",
+    "crystal"
+  ],
+  "dungeonThemes": [
+    "dungeon",
+    "crypt",
+    "lava",
+    "ice",
+    "temple",
+    "void"
+  ],
+  "families": {
+    "terrain": "gt_<biome>_<key>.png",
+    "dungeon": "gd_<theme>_<key>.png",
+    "objects": "go_<key>.png",
+    "walkers": "gh_<look>_<direction><frame>.png"
+  },
+  "directions": [
+    "north",
+    "east",
+    "south",
+    "west"
+  ],
+  "animationFrames": [
+    0,
+    1
+  ],
+  "requiredCategories": [
+    "terrain",
+    "water",
+    "shoreline",
+    "roads",
+    "bridges",
+    "cliffs",
+    "caves",
+    "dungeon floors",
+    "dungeon walls",
+    "doors",
+    "stairs",
+    "traps",
+    "hazards",
+    "buildings",
+    "interiors",
+    "furniture",
+    "vegetation",
+    "harvest nodes",
+    "resources",
+    "portals",
+    "waypoints",
+    "signs",
+    "props",
+    "weather",
+    "lighting",
+    "magic effects",
+    "combat effects",
+    "spawn markers",
+    "world markers",
+    "ui map markers"
+  ],
+  "collisionLegend": {
+    "0": "non-blocking",
+    "1": "solid",
+    "2": "water",
+    "3": "hazard",
+    "4": "interactable",
+    "5": "one-way/ledge"
+  },
+  "chunking": {
+    "chunkTiles": [
+      32,
+      32
+    ],
+    "streaming": "load chunks around active players; keep collision and nav data in sync with tile revisions"
+  },
+  "rules": [
+    "Tile IDs are stable and never reused for unrelated art.",
+    "Each tile manifest entry records biome, layer, collision, animation and source asset.",
+    "Use nearest-neighbour scaling; do not blur pixel-art atlases.",
+    "All transition tiles must be tested against all 16 cardinal masks.",
+    "Do not use decorative overlay tiles as authoritative collision."
+  ],
+  "note": "Catalog describes the existing 16x16 Game Boy tile pipeline and expands it into a consistent layered tile system. It does not claim every category already has finished artwork."
+}

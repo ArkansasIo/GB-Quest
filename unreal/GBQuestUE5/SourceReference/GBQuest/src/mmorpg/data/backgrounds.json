@@ -1,0 +1,83 @@
+{
+  "ruleset": "GBQ-original",
+  "backgrounds": [
+    {
+      "id": "wanderer",
+      "name": "Wanderer",
+      "description": "You learned to read trails, weather and the needs of a long road.",
+      "skillProficiencies": ["perception", "survival"],
+      "toolProficiencies": ["tool:cartographer-s-tools"],
+      "startingEquipment": ["gear:torch", "tool:cartographer-s-tools"],
+      "feature": {
+        "id": "wanderer-trail-sense",
+        "name": "Trail Sense",
+        "detail": "You can identify the safest visible route through familiar wilderness."
+      }
+    },
+    {
+      "id": "apothecary",
+      "name": "Apothecary's Helper",
+      "description": "You prepared remedies and learned the names of useful plants.",
+      "skillProficiencies": ["medicine", "nature"],
+      "toolProficiencies": ["tool:herbalism-kit"],
+      "startingEquipment": ["gear:torch", "tool:herbalism-kit"],
+      "feature": {
+        "id": "apothecary-field-notes",
+        "name": "Field Notes",
+        "detail": "You can recognize common medicinal plants and preserve a safe sample."
+      }
+    },
+    {
+      "id": "harborhand",
+      "name": "Harbor Hand",
+      "description": "You worked among ropes, cargo and changing tides.",
+      "skillProficiencies": ["athletics", "perception"],
+      "toolProficiencies": ["tool:navigator-s-tools"],
+      "startingEquipment": ["gear:torch", "tool:navigator-s-tools"],
+      "feature": {
+        "id": "harborhand-steady-haul",
+        "name": "Steady Haul",
+        "detail": "You know practical ways to secure cargo and judge a safe passage."
+      }
+    },
+    {
+      "id": "archivist",
+      "name": "Archive Apprentice",
+      "description": "You copied records and learned how to find a useful fact.",
+      "skillProficiencies": ["arcana", "history"],
+      "toolProficiencies": ["tool:cartographer-s-tools"],
+      "startingEquipment": ["gear:torch", "tool:cartographer-s-tools"],
+      "feature": {
+        "id": "archivist-cross-reference",
+        "name": "Cross-reference",
+        "detail": "You can quickly organize notes and identify gaps in a written account."
+      }
+    },
+    {
+      "id": "envoy",
+      "name": "Road Envoy",
+      "description": "You carried messages between people who did not always agree.",
+      "skillProficiencies": ["insight", "persuasion"],
+      "toolProficiencies": ["tool:disguise-kit"],
+      "startingEquipment": ["gear:torch", "tool:disguise-kit"],
+      "feature": {
+        "id": "envoy-neutral-introduction",
+        "name": "Neutral Introduction",
+        "detail": "You know how to open a conversation without claiming authority."
+      }
+    },
+    {
+      "id": "provisioner",
+      "name": "Camp Provisioner",
+      "description": "You kept a traveling group supplied, fed and ready to move.",
+      "skillProficiencies": ["animalHandling", "survival"],
+      "toolProficiencies": ["tool:cook-s-utensils"],
+      "startingEquipment": ["gear:torch", "tool:cook-s-utensils"],
+      "feature": {
+        "id": "provisioner-measured-rations",
+        "name": "Measured Rations",
+        "detail": "You can estimate ordinary travel provisions for a known group."
+      }
+    }
+  ]
+}

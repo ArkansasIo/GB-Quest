@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "rarityOrder": [
+    "common",
+    "uncommon",
+    "set",
+    "rare",
+    "epic",
+    "exotic",
+    "legendary",
+    "mythical"
+  ],
+  "rarities": {
+    "common": {
+      "displayName": "Common",
+      "uiColor": "white",
+      "globalEquipLimit": null
+    },
+    "uncommon": {
+      "displayName": "Uncommon",
+      "uiColor": "green",
+      "globalEquipLimit": null
+    },
+    "set": {
+      "displayName": "Set",
+      "uiColor": "green",
+      "globalEquipLimit": null,
+      "setBonusEnabled": true
+    },
+    "rare": {
+      "displayName": "Rare",
+      "uiColor": "blue",
+      "globalEquipLimit": null
+    },
+    "epic": {
+      "displayName": "Epic",
+      "uiColor": "purple",
+      "globalEquipLimit": null
+    },
+    "exotic": {
+      "displayName": "Exotic",
+      "uiColor": "special",
+      "globalEquipLimit": 1,
+      "limitScope": "character"
+    },
+    "legendary": {
+      "displayName": "Legendary",
+      "uiColor": "orange",
+      "globalEquipLimit": null,
+      "uniquePowerDuplicateRules": true
+    },
+    "mythical": {
+      "displayName": "Mythical",
+      "uiColor": "mythical",
+      "globalEquipLimit": null,
+      "minEquippedByClassification": {
+        "weapon": 1,
+        "armor": 1,
+        "jewelry": 1
+      }
+    }
+  },
+  "notes": [
+    "Rarity is independent from rank F–SSS, stars 1–12 and item level 1–720.",
+    "The Mythical minimum is an allowance target across major classifications, not an equip requirement; enforce slot compatibility.",
+    "Set is a distinct rarity identifier even though its UI colour is green."
+  ]
+}

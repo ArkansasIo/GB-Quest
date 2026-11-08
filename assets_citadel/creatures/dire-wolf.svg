@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc"><title id="title">Dire Wolf — GB Quest bestiary</title><desc id="desc">Original bestiary emblem depicting fangs and raised hackles.</desc><defs><radialGradient id="bg"><stop stop-color="#31465a"/><stop offset="1" stop-color="#090f18"/></radialGradient><linearGradient id="hide" x2=".8" y2="1"><stop stop-color="#e0d5bd"/><stop offset=".25" stop-color="#9eabb9"/><stop offset="1" stop-color="#344252"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff0c2"/><stop offset=".5" stop-color="#c39a58"/><stop offset="1" stop-color="#60401e"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="16"/></filter></defs><rect width="1024" height="1024" rx="42" fill="url(#bg)"/><circle cx="512" cy="460" r="340" fill="#f2c16b" opacity=".1" filter="url(#glow)"/><circle cx="512" cy="460" r="380" fill="none" stroke="url(#gold)" stroke-width="16"/><circle cx="512" cy="460" r="355" fill="none" stroke="#d9c28f" stroke-opacity=".4" stroke-width="4"/>
+<g stroke="#344252" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" fill="url(#hide)">
+<path d="M270 420 230 230 390 330 510 270 660 330 800 210 740 470 680 620 540 710 360 650Z"/><path d="M300 570 210 760 360 700 420 850 490 700 640 820 650 650 790 750 710 550Z"/>
+
+
+
+
+
+
+
+
+
+
+
+</g><path d="M370 460q60-55 120 0m44 0q60-55 120 0" fill="none" stroke="#344252" stroke-width="24"/><ellipse cx="430" cy="465" rx="20" ry="27" fill="#f2c16b"/><ellipse cx="594" cy="465" rx="20" ry="27" fill="#f2c16b"/><path d="M470 570 512 600 554 570" fill="none" stroke="#1b1a1a" stroke-width="20"/><path d="M512 80v110M512 730v150M132 460h110M782 460h110" stroke="url(#gold)" stroke-width="12"/><text x="512" y="955" text-anchor="middle" fill="#f0dfb8" font-family="Georgia,serif" font-size="52" letter-spacing="7">DIRE WOLF</text></svg>

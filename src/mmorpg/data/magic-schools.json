@@ -1,0 +1,13 @@
+{
+  "ruleset":"SRD-5.2.1",
+  "schools":[
+    {"id":"abjuration","name":"Abjuration","theme":"Protection, prevention and reversal of harmful effects"},
+    {"id":"conjuration","name":"Conjuration","theme":"Transporting creatures or objects"},
+    {"id":"divination","name":"Divination","theme":"Revealing information"},
+    {"id":"enchantment","name":"Enchantment","theme":"Influencing minds"},
+    {"id":"evocation","name":"Evocation","theme":"Channeling energy into effects"},
+    {"id":"illusion","name":"Illusion","theme":"Deceiving minds or senses"},
+    {"id":"necromancy","name":"Necromancy","theme":"Manipulating life and death"},
+    {"id":"transmutation","name":"Transmutation","theme":"Transforming creatures or objects"}
+  ]
+}

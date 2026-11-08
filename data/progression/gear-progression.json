@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "itemLevel": {
+    "min": 1,
+    "max": 720,
+    "source": "generated item level; clamped on creation and save migration"
+  },
+  "gearLevel": {
+    "digits": 4,
+    "min": 1,
+    "max": 9999,
+    "display": "zero-padded four digits",
+    "formula": "round(1 + ((itemLevel - 1) / 719) * 9998)"
+  },
+  "powerLevel": {
+    "digits": 6,
+    "min": 1,
+    "max": 999999,
+    "display": "zero-padded six digits",
+    "formula": "round((1 + ((itemLevel - 1) / 719) * 999998) * (1 + rarityIndex * 0.003 + (starLevel - 1) * 0.001)), capped at 999999"
+  },
+  "ranks": [
+    "F",
+    "E",
+    "D",
+    "C",
+    "B",
+    "A",
+    "S",
+    "SS",
+    "SSS"
+  ],
+  "starsPerRank": 12,
+  "rankStarMapping": {
+    "method": "linear-item-level-bands",
+    "totalCombinations": 108,
+    "itemLevelBandsPerCombination": "6 or 7",
+    "formula": "step = min(107, floor(((itemLevel - 1) * 108) / 720)); rankIndex = floor(step / 12); starLevel = (step % 12) + 1",
+    "rankBands": "Each adventurer rank spans 80 item levels."
+  },
+  "starEnhancement": {
+    "statScalePerStar": 0.01,
+    "formula": "implicitStats * (1 + (starLevel - 1) * 0.01)",
+    "firstStarBonus": 0,
+    "lastStarBonus": 0.11
+  },
+  "compatibility": {
+    "legacyItemRank": "Preserved as the existing 1-23 gear-material tier used for base stat steps.",
+    "rarity": "Preserved as the existing 1-9 item rarity tier.",
+    "migration": "Existing equipment receives gearLevel, powerLevel, adventurerRank and starLevel when retierGear runs."
+  },
+  "examples": [
+    {
+      "itemLevel": 1,
+      "rank": "F",
+      "star": 1
+    },
+    {
+      "itemLevel": 80,
+      "rank": "F",
+      "star": 12
+    },
+    {
+      "itemLevel": 81,
+      "rank": "E",
+      "star": 1
+    },
+    {
+      "itemLevel": 720,
+      "rank": "SSS",
+      "star": 12
+    }
+  ]
+}

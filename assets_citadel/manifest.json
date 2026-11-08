@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 2,
+  "artDirection": "CITADEL original cinematic fantasy",
+  "legacyPolicy": "Do not delete or overwrite legacy assets; migrate by stable asset ID and scene-level feature flag.",
+  "assetQuality": {
+    "rasterMaster": "PNG RGBA 8-bit/channel or 16-bit/channel where supported",
+    "vectorMaster": "SVG viewBox scalable",
+    "colourSpace": "sRGB",
+    "environment": {
+      "target": "4096x2304"
+    },
+    "character": {
+      "target": "2048x3072"
+    },
+    "portrait": {
+      "target": "1024x1024"
+    },
+    "creatureBoss": {
+      "target": "2048x2048"
+    },
+    "item": {
+      "target": "1024x1024"
+    },
+    "ui": {
+      "target": "512x512 or SVG"
+    },
+    "map": {
+      "target": "8192px long edge"
+    }
+  },
+  "assetFamilies": {
+    "keyArt": 30,
+    "characters": 420,
+    "creatures": 650,
+    "bosses": 350,
+    "environments": 900,
+    "terrainMaterials": 700,
+    "props": 650,
+    "equipment": 900,
+    "items": 500,
+    "ui": 500,
+    "vfx": 300,
+    "mapsAndSymbols": 100
+  },
+  "initialVectorAssets": [
+    {
+      "id": "citadel_heraldic_crest",
+      "path": "assets_citadel/ui/citadel_crest.svg",
+      "format": "SVG",
+      "status": "created"
+    },
+    {
+      "id": "citadel_ui_ornaments",
+      "path": "assets_citadel/ui/citadel_ornaments.svg",
+      "format": "SVG",
+      "status": "created"
+    },
+    {
+      "id": "race_portraits_8",
+      "path": "assets_citadel/races/",
+      "format": "SVG",
+      "count": 8,
+      "status": "created"
+    },
+    {
+      "id": "class_insignia_12",
+      "path": "assets_citadel/classes/",
+      "format": "SVG",
+      "count": 12,
+      "status": "created"
+    },
+    {
+      "id": "bestiary_creatures_12",
+      "path": "assets_citadel/creatures/",
+      "format": "SVG",
+      "count": 12,
+      "status": "created"
+    },
+    {
+      "id": "raid_boss_banners_6",
+      "path": "assets_citadel/bosses/",
+      "format": "SVG",
+      "count": 6,
+      "status": "created"
+    },
+    {
+      "id": "biome_backdrops_10",
+      "path": "assets_citadel/environments/",
+      "format": "SVG",
+      "count": 10,
+      "status": "created-and-runtime-integrated"
+    },
+    {
+      "id": "world_environment_props_10",
+      "path": "assets_citadel/props/",
+      "format": "SVG",
+      "count": 10,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "terrain_materials_8",
+      "path": "assets_citadel/terrain/",
+      "format": "SVG",
+      "count": 8,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "medieval_buildings_8",
+      "path": "assets_citadel/buildings/",
+      "format": "SVG",
+      "count": 8,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "road_tiles_6",
+      "path": "assets_citadel/roads/",
+      "format": "SVG",
+      "count": 6,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "weapon_concepts_6",
+      "path": "assets_citadel/weapons/",
+      "format": "SVG",
+      "count": 6,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "armor_concepts_6",
+      "path": "assets_citadel/armor/",
+      "format": "SVG",
+      "count": 6,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "shield_concepts_4",
+      "path": "assets_citadel/shields/",
+      "format": "SVG",
+      "count": 4,
+      "status": "created-and-runtime-loaded"
+    }
+  ],
+  "provenance": "Original project artwork; no third-party game assets.",
+  "batches": [
+    {
+      "id": "02",
+      "name": "Races and classes",
+      "racePortraits": 8,
+      "classInsignia": 12,
+      "status": "created"
+    },
+    {
+      "id": "03",
+      "name": "Bestiary creatures",
+      "creatureEmblems": 12,
+      "status": "created"
+    },
+    {
+      "id": "04",
+      "name": "Raid bosses",
+      "bossBanners": 6,
+      "status": "created"
+    },
+    {
+      "id": "05",
+      "name": "Biome environment backdrops",
+      "environmentBackdrops": 10,
+      "status": "created-and-runtime-integrated"
+    },
+    {
+      "id": "06",
+      "name": "World environment props",
+      "props": 10,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "07",
+      "name": "Terrain material concepts",
+      "terrainMaterials": 8,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "08",
+      "name": "Medieval buildings",
+      "buildings": 8,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "09",
+      "name": "Road tiles",
+      "roadVariants": 6,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "10",
+      "name": "Weapons",
+      "items": 6,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "11",
+      "name": "Armor",
+      "items": 6,
+      "status": "created-and-runtime-loaded"
+    },
+    {
+      "id": "12",
+      "name": "Shields",
+      "items": 4,
+      "status": "created-and-runtime-loaded"
+    }
+  ],
+  "runtimeIntegration": {
+    "loader": "src/engine.js loadCitadelAssets",
+    "portraitRouting": "src/art.js",
+    "battleBackdropRouting": "src/battlebg.js",
+    "standaloneEmbedding": "tools/build.cjs",
+    "toggle": "SETTINGS > CITADEL ART",
+    "legacyFallback": "Set CITADEL ART to OFF; existing art packs remain available",
+    "propCatalog": "assets_citadel/prop_catalog.json",
+    "terrainCatalog": "assets_citadel/terrain_catalog.json",
+    "buildingCatalog": "assets_citadel/building_catalog.json",
+    "roadCatalog": "assets_citadel/road_catalog.json",
+    "weaponCatalog": "assets_citadel/weapons_catalog.json",
+    "armorCatalog": "assets_citadel/armor_catalog.json",
+    "shieldCatalog": "assets_citadel/shields_catalog.json"
+  }
+}

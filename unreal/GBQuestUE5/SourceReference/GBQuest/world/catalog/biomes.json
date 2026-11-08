@@ -1,0 +1,1492 @@
+{
+  "biomes": [
+    {
+      "id": "temperate_forest",
+      "name": "Temperate Forest",
+      "description": "Temperate Forest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "tropical_rainforest",
+      "name": "Tropical Rainforest",
+      "description": "Tropical Rainforest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "boreal_forest",
+      "name": "Boreal Forest",
+      "description": "Boreal Forest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "alpine",
+      "name": "Alpine",
+      "description": "Alpine biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "hot_desert",
+      "name": "Hot Desert",
+      "description": "Hot Desert biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "cold_desert",
+      "name": "Cold Desert",
+      "description": "Cold Desert biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "savanna",
+      "name": "Savanna",
+      "description": "Savanna biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "grassland_steppe",
+      "name": "Grassland Steppe",
+      "description": "Grassland Steppe biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "wetland",
+      "name": "Wetland",
+      "description": "Wetland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "river_wetland",
+      "name": "River Wetland",
+      "description": "River Wetland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "coastal_mangrove",
+      "name": "Coastal Mangrove",
+      "description": "Coastal Mangrove biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "volcanic",
+      "name": "Volcanic",
+      "description": "Volcanic biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "cloud_forest",
+      "name": "Cloud Forest",
+      "description": "Cloud Forest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "moorland",
+      "name": "Moorland",
+      "description": "Moorland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "mediterranean",
+      "name": "Mediterranean",
+      "description": "Mediterranean biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "temperate_grassland",
+      "name": "Temperate Grassland",
+      "description": "Temperate Grassland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "tropical_island",
+      "name": "Tropical Island",
+      "description": "Tropical Island biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "polar_ice",
+      "name": "Polar Ice",
+      "description": "Polar Ice biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "glacier",
+      "name": "Glacier",
+      "description": "Glacier biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "ice_caves",
+      "name": "Ice Caves",
+      "description": "Ice Caves biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "subglacial_lake",
+      "name": "Subglacial Lake",
+      "description": "Subglacial Lake biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "geothermal_icefield",
+      "name": "Geothermal Icefield",
+      "description": "Geothermal Icefield biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "coral_reef",
+      "name": "Coral Reef",
+      "description": "Coral Reef biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "deep_ocean",
+      "name": "Deep Ocean",
+      "description": "Deep Ocean biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "freshwater_lakes",
+      "name": "Freshwater Lakes",
+      "description": "Freshwater Lakes biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "canyon_badlands",
+      "name": "Canyon Badlands",
+      "description": "Canyon Badlands biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "rocky_badlands",
+      "name": "Rocky Badlands",
+      "description": "Rocky Badlands biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "oasis",
+      "name": "Oasis",
+      "description": "Oasis biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "woodland_savanna",
+      "name": "Woodland Savanna",
+      "description": "Woodland Savanna biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "subtropical_coast",
+      "name": "Subtropical Coast",
+      "description": "Subtropical Coast biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "tropical_monsoon_forest",
+      "name": "Tropical Monsoon Forest",
+      "description": "Tropical Monsoon Forest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "highland",
+      "name": "Highland",
+      "description": "Highland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "tropical_river",
+      "name": "Tropical River",
+      "description": "Tropical River biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "tropical_wetland",
+      "name": "Tropical Wetland",
+      "description": "Tropical Wetland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "temperate_fjord",
+      "name": "Temperate Fjord",
+      "description": "Temperate Fjord biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "temperate_mixed_forest",
+      "name": "Temperate Mixed Forest",
+      "description": "Temperate Mixed Forest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "temperate_valley",
+      "name": "Temperate Valley",
+      "description": "Temperate Valley biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "river_floodplain",
+      "name": "River Floodplain",
+      "description": "River Floodplain biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "temperate_island",
+      "name": "Temperate Island",
+      "description": "Temperate Island biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "red_desert",
+      "name": "Red Desert",
+      "description": "Red Desert biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "eucalyptus_woodland",
+      "name": "Eucalyptus Woodland",
+      "description": "Eucalyptus Woodland biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "tropical_savanna",
+      "name": "Tropical Savanna",
+      "description": "Tropical Savanna biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "rocky_desert",
+      "name": "Rocky Desert",
+      "description": "Rocky Desert biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "temperate_rainforest",
+      "name": "Temperate Rainforest",
+      "description": "Temperate Rainforest biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "polar_tundra",
+      "name": "Polar Tundra",
+      "description": "Polar Tundra biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "ice_shelf",
+      "name": "Ice Shelf",
+      "description": "Ice Shelf biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "polar_mountains",
+      "name": "Polar Mountains",
+      "description": "Polar Mountains biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    },
+    {
+      "id": "semi_arid_desert",
+      "name": "Semi-Arid Desert",
+      "description": "Semi-Arid Desert biome with region-specific terrain, weather, native flora, fauna and resources.",
+      "flora": [
+        "native_grass",
+        "native_shrub",
+        "native_tree"
+      ],
+      "fauna": [
+        "wolves",
+        "boars",
+        "bandits",
+        "goblins"
+      ],
+      "resourceTypes": [
+        "wood",
+        "stone",
+        "ore",
+        "herbs",
+        "food",
+        "rare_crystal"
+      ],
+      "weather": [
+        "clear",
+        "rain",
+        "fog",
+        "storm",
+        "wind"
+      ]
+    }
+  ]
+}

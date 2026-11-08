@@ -1,0 +1,3 @@
+export function createInstance({id,templateId,partyIds=[],difficulty="normal",seed}){if(!id||!templateId)throw new TypeError("Instance id and template are required");return {id,templateId,partyIds,difficulty,seed,encounters:{},bosses:{},state:"active",createdAt:Date.now()};}
+export function setEncounterState(instance,encounterId,state){if(!["locked","available","in_progress","completed","failed"].includes(state))throw new RangeError("Invalid encounter state");instance.encounters[encounterId]=state;return instance;}
+export function completeBoss(instance,bossId,loot=[]){instance.bosses[bossId]={defeated:true,lootClaimed:false,loot};return instance;}

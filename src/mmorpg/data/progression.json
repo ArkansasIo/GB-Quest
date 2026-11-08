@@ -1,0 +1,18 @@
+{
+  "id":"gbquest-hybrid-720",
+  "classRuleset":"SRD-5.2.1",
+  "classLevelCap":20,
+  "characterLevelCap":720,
+  "tracks":[
+    {"id":"d20","levels":[1,20],"purpose":"D20 class features, proficiency, spell progression and core character rules"},
+    {"id":"paragon","levels":[21,720],"purpose":"MMORPG horizontal progression: mastery, specialization choices, crafting, collection, exploration and cosmetics"}
+  ],
+  "designRules":[
+    "Do not extend class proficiency or spell progression beyond the selected D20 ruleset.",
+    "Do not grant unlimited attack bonuses or ability-score inflation from Paragon ranks.",
+    "Use item tiers, encounter scaling, mastery choices and horizontal progression to support long-term play.",
+    "Keep PvP normalized by bracket and item power budget.",
+    "All XP thresholds are game-specific after level 20 and must be tuned with telemetry."
+  ],
+  "paragonMilestones":{"masteryPointEvery":5,"cosmeticOrTitleEvery":10,"specializationPerkEvery":20,"worldRenownEvery":50}
+}
