@@ -28,21 +28,21 @@
       "frame_count": 408,
       "palette": {
         "cloth": [
-          74,
-          91,
-          125,
+          48,
+          89,
+          154,
           255
         ],
         "cloth_hi": [
-          111,
-          135,
-          174,
+          93,
+          151,
+          219,
           255
         ],
         "steel": [
-          112,
-          132,
-          151,
+          142,
+          164,
+          190,
           255
         ]
       },
@@ -59,21 +59,21 @@
       "frame_count": 408,
       "palette": {
         "cloth": [
-          72,
-          55,
-          126,
+          91,
+          53,
+          157,
           255
         ],
         "cloth_hi": [
-          132,
+          164,
           111,
-          190,
+          220,
           255
         ],
         "steel": [
-          105,
-          116,
-          158,
+          122,
+          144,
+          193,
           255
         ]
       },
@@ -90,21 +90,21 @@
       "frame_count": 408,
       "palette": {
         "cloth": [
-          55,
-          105,
-          77,
+          39,
+          119,
+          70,
           255
         ],
         "cloth_hi": [
-          105,
-          153,
-          104,
+          112,
+          183,
+          91,
           255
         ],
         "steel": [
-          111,
-          128,
-          111,
+          126,
+          151,
+          113,
           255
         ]
       },
@@ -121,21 +121,21 @@
       "frame_count": 408,
       "palette": {
         "cloth": [
-          54,
-          61,
-          76,
+          48,
+          55,
+          83,
           255
         ],
         "cloth_hi": [
-          91,
-          99,
-          119,
+          104,
+          112,
+          151,
           255
         ],
         "steel": [
-          103,
-          110,
-          126,
+          139,
+          148,
+          168,
           255
         ]
       },
@@ -152,21 +152,21 @@
       "frame_count": 408,
       "palette": {
         "cloth": [
-          135,
-          128,
-          91,
+          193,
+          174,
+          79,
           255
         ],
         "cloth_hi": [
-          190,
-          177,
-          119,
+          247,
+          222,
+          127,
           255
         ],
         "steel": [
-          155,
-          157,
-          151,
+          190,
+          199,
+          205,
           255
         ]
       },
@@ -183,21 +183,21 @@
       "frame_count": 408,
       "palette": {
         "cloth": [
-          91,
-          55,
-          111,
+          117,
+          47,
+          105,
           255
         ],
         "cloth_hi": [
-          145,
-          91,
-          164,
+          202,
+          89,
+          156,
           255
         ],
         "steel": [
-          126,
-          102,
-          143,
+          147,
+          105,
+          169,
           255
         ]
       },
@@ -209,7 +209,8 @@
       ]
     }
   ],
-  "generated_by": "procedural-pillow",
-  "production_status": "prototype_placeholder_art",
-  "note": "Archetype/rank palettes are variants of a shared warrior-derived silhouette; redraw class-specific anatomy, weapons, and gear before release."
+  "generated_by": "procedural-pillow-class-specific",
+  "production_status": "class_distinct_pixel_art_prototype",
+  "style": "Game Boy Color-inspired limited palette, crisp pixel edges, transparent PNG",
+  "note": "Original class-specific starter sprites; validate animation silhouettes in-game before release."
 }
