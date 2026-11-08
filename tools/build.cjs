@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['data_rules', 'jobs_data', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'art_gallery', 'scenes_menu', 'hd_character_art', 'scenes_world', 'npc_art', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'dread', 'polish', 'durability', 'guild_prog', 'world_quests', 'loadouts', 'jobs', 'necro_army', 'towns', 'npc_ai', 'ui_dark', 'ui_mmo', 'battlebg', 'asset_pack', 'pack_index', 'pack_art', 'mount_data', 'mounts', 'tnl_systems', 'tnl_extras', 'guild_war', 'extras', 'aspects_data', 'd4_gear', 'totems', 'awakening', 'guide', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'main', 'player_hud', 'debug'];
+const ORDER = ['data_rules', 'jobs_data', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'art_gallery', 'scenes_menu', 'hd_character_art', 'scenes_world', 'npc_art', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'dread', 'polish', 'durability', 'guild_prog', 'world_quests', 'loadouts', 'jobs', 'necro_army', 'towns', 'npc_ai', 'ui_dark', 'ui_mmo', 'battlebg', 'asset_pack', 'pack_index', 'pack_art', 'mount_data', 'mounts', 'tnl_systems', 'tnl_extras', 'guild_war', 'extras', 'aspects_data', 'd4_gear', 'totems', 'awakening', 'guide', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'hd64_catalog', 'main', 'player_hud', 'debug'];
 
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const clientFile = (name) => name === 'main' ? 'client/main.js' : `src/${name}.js`;
@@ -12,6 +12,19 @@ const hd64Files = fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.e
 const hd64Atlases = Object.fromEntries(hd64Files.map(f => [f.slice(0, -4), 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets_hd64', f)).toString('base64')]));
 const hd64Indexes = Object.fromEntries(fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.endsWith('.json')).map(f => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(ROOT, 'assets_hd64', f), 'utf8'))]));
 const hd64 = '<script>window.GBQ_HD64_ATLASES=' + JSON.stringify(hd64Atlases) + ';window.GBQ_HD64_INDEXES=' + JSON.stringify(hd64Indexes) + ';</script>\n';
+const catalogRoot = path.join(ROOT, 'assets_hd64', 'gbq_6000');
+const catalogIndexPath = path.join(catalogRoot, 'metadata', 'atlas_index.json');
+let catalogIndex = null, catalogAtlases = {};
+if (fs.existsSync(catalogIndexPath)) {
+  catalogIndex = JSON.parse(fs.readFileSync(catalogIndexPath, 'utf8'));
+  for (const entry of catalogIndex.atlases || []) {
+    const fullPath = path.join(catalogRoot, entry.file);
+    if (!fs.existsSync(fullPath)) throw new Error('Missing 6,000-image atlas page: ' + fullPath);
+    catalogAtlases[entry.file] = 'data:image/png;base64,' + fs.readFileSync(fullPath).toString('base64');
+  }
+  if (Object.keys(catalogIndex.assets || {}).length !== 6000) throw new Error('Expected exactly 6,000 indexed HD64 assets.');
+}
+const catalogInline = '<script>window.GBQ_6000_ASSET_INDEX=' + JSON.stringify(catalogIndex) + ';window.GBQ_6000_ATLASES=' + JSON.stringify(catalogAtlases) + ';</script>\\n';
 const citadelFiles = [];
 function walkCitadel(dir) {
   if (!fs.existsSync(dir)) return;
@@ -66,7 +79,7 @@ fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
 const atlas = '<script>window.ATLAS_HTML=' + JSON.stringify(rd('dist/atlas.html')).replace(/<\//g, '<\\/') + ';</script>\n';
 const single = '<!doctype html>\n<html lang="en"><head>\n' + shell.replace('<aside', '</head><body class="theme-shadows theme-pokemon">\n<aside')
   + '\n<script>window.GB_ASSETS=' + JSON.stringify(assets) + ';</script>\n' + nes + atlas
-  + hd64 + citadel + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('') + '\n</body></html>\n';
+  + hd64 + catalogInline + citadel + ORDER.map(n => `<script>\n${rd(clientFile(n))}\n</script>\n`).join('') + '\n</body></html>\n';
 fs.writeFileSync(path.join(ROOT, 'dist', 'gbquest.html'), single);
 
 const fsHtml = rd('client/fullscreen.html');
