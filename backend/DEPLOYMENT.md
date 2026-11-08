@@ -106,3 +106,8 @@ The game HUD includes a Trading action backed by `client/mmorpg-trade.js` and `c
 - Trades lock the character wallet and vendor listing in a PostgreSQL transaction, verify the character is in the vendor's zone, enforce stock and stack limits, and write an economy transaction record.
 - Equipped items cannot be sold. Prices are controlled by the server catalogue; clients cannot submit a price.
 - Seed vendor: Mira's Field Supplies in Aelmoor Fields. Current stock includes Minor Potions, Rusty Swords and Traveler Tunics.
+
+
+### In-game bank interface
+
+The Trading panel's Bank tab uses the authenticated `GET /api/characters/:id/bank`, `POST /api/characters/:id/bank/deposit`, and `POST /api/characters/:id/bank/withdraw` endpoints. The client refreshes both wallet and bank balances after each successful transfer. The server validates whole-gold amounts, checks wallet/bank funds and safe-integer limits, locks the character row, updates balances and writes the `bank_transactions` audit row in the same PostgreSQL transaction. The interface is bundled into the single-file itch.io HTML build with the existing trade-panel stylesheet.
