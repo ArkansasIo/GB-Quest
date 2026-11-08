@@ -10,7 +10,7 @@ import { GBQuestMMOApi } from '../src/mmorpg/net/mmorpg-api.js';
     try { return localStorage.getItem(storageKey) || window.GBQ_MMO_REALM_URL || location.origin; }
     catch { return window.GBQ_MMO_REALM_URL || location.origin; }
   }
-  function setStatus(value) { state.status=value; const node=document.querySelector('[data-mmo-status]'); if(node) node.textContent=value.toUpperCase(); }
+  function setStatus(value) { state.status=value; const node=document.querySelector('[data-mmo-status]'); if(node) node.textContent=value.toUpperCase(); if(value==='error'||value==='disconnected') state.authReject?.(new Error('Realm connection '+value)); }
   function panel() { return document.getElementById('gbq-trade-panel'); }
   function toast(message) {
     const node=panel()?.querySelector('[data-mmo-message]');
@@ -26,6 +26,7 @@ import { GBQuestMMOApi } from '../src/mmorpg/net/mmorpg-api.js';
   }
   function handleMessage(message) {
     const p=message.payload||{};
+    if(message.type==='authenticated') { state.authResolve?.(); state.authResolve=null; state.authReject=null; if(Array.isArray(p.characters)) state.characters=p.characters; }
     if(message.type==='zone.snapshot') {
       state.players=Array.isArray(p.players)?p.players:[];
       if(p.self) state.selected={...(state.selected||{}),...p.self};
@@ -95,6 +96,11 @@ import { GBQuestMMOApi } from '../src/mmorpg/net/mmorpg-api.js';
     if(!character) throw new Error('Select a character first.');
     state.selected=character;
     state.api.connect();
+    await new Promise((resolve,reject)=>{
+      const timeout=window.setTimeout(()=>{state.authResolve=null;state.authReject=null;reject(new Error('Timed out authenticating with the realm.'));},12000);
+      state.authResolve=()=>{window.clearTimeout(timeout);resolve();};
+      state.authReject=error=>{window.clearTimeout(timeout);state.authResolve=null;state.authReject=null;reject(error);};
+    });
     state.api.selectCharacter(id);
     await refresh();
     renderContent();
@@ -115,7 +121,7 @@ import { GBQuestMMOApi } from '../src/mmorpg/net/mmorpg-api.js';
       return;
     }
     const players=state.players.filter(p=>p.id!==state.selected.id);
-    target.innerHTML='<div class="gbq-trade-balance">WALLET: '+esc(state.wallet?.gold??state.selected.gold??0)+' GOLD</div><h3>PLAYERS IN YOUR ZONE <small>'+players.length+'</small></h3>'+(players.length?'<label>Recipient<select data-recipient>'+players.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' · Lv '+esc(p.level||1)+'</option>').join('')+'</select></label>':'<p class="gbq-trade-empty">No other connected characters in this zone. Both players must be online in the same zone.</p>')+'<div class="gbq-trade-offer-form"><label>Offer item<select data-item><option value="">No item</option>'+state.inventory.map(i=>'<option value="'+esc(i.item_id)+'" data-inventory="'+esc(i.id)+'">'+esc(i.item_name||i.name||i.item_id)+' · '+esc(i.quantity)+'</option>').join('')+'</select></label><label>Quantity<input data-quantity type="number" min="1" max="99" value="1"></label><label>Gold offered<input data-gold type="number" min="0" max="1000000000" value="0"></label><button type="button" data-send-offer '+(!players.length?'disabled':'')+'>SEND OFFER</button></div>';
+    target.innerHTML='<div class="gbq-trade-balance">WALLET: '+esc(state.wallet?.gold??state.selected.gold??0)+' GOLD</div><h3>PLAYERS IN YOUR ZONE <small>'+players.length+'</small></h3>'+(players.length?'<label>Recipient<select data-recipient>'+players.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' · Lv '+esc(p.level||1)+'</option>').join('')+'</select></label>':'<p class="gbq-trade-empty">No other connected characters in this zone. Both players must be online in the same zone.</p>')+'<div class="gbq-trade-offer-form"><label>Offer item<select data-item><option value="">No item</option>'+state.inventory.map(i=>'<option value="'+esc(i.item_id)+'" data-inventory="'+esc(i.inventory_id)+'">'+esc(i.item_name||i.name||i.item_id)+' · '+esc(i.quantity)+'</option>').join('')+'</select></label><label>Quantity<input data-quantity type="number" min="1" max="99" value="1"></label><label>Gold offered<input data-gold type="number" min="0" max="1000000000" value="0"></label><button type="button" data-send-offer '+(!players.length?'disabled':'')+'>SEND OFFER</button></div>';
   }
   async function onClick(event) {
     const b=event.target.closest('button'); if(!b) return;
