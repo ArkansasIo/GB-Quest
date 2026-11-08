@@ -411,3 +411,24 @@ body.chat-on .gbq-player-hud { right:300px; }
  .gbq-detail-card p { font-size:10px; }
 }
 @media(max-width:360px) { .gbq-detail-grid { grid-template-columns:1fr; } }
+
+
+/* Keep expanded submenu navigation usable when the HUD has many destinations. */
+.gbq-hud-bottom { min-width:0; }
+.gbq-hud-shortcuts { min-width:0; display:flex; flex-wrap:wrap; align-content:center; justify-content:center; gap:4px; }
+.gbq-hud-nav { min-width:0; max-width:100%; }
+.gbq-hud-nav > span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gbq-hud-shortcuts-right { max-height:100%; overflow-y:auto; scrollbar-width:thin; }
+.gbq-detail-page button:focus-visible,.gbq-hud-nav:focus-visible { outline:2px solid #ffe09a; outline-offset:2px; }
+.gbq-detail-content { overscroll-behavior:contain; scrollbar-width:thin; }
+@media(max-width:900px) {
+ .gbq-hud-bottom { grid-template-columns:minmax(0,1fr); gap:5px; }
+ .gbq-hud-shortcuts,.gbq-hud-shortcuts-right { flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; overflow-y:hidden; padding:3px 2px; scrollbar-width:thin; }
+ .gbq-hud-nav { flex:0 0 auto; min-height:32px; }
+ .gbq-hud-action-area { order:2; }
+}
+@media(max-width:520px) {
+ .gbq-hud-nav { gap:4px; padding:5px 7px; font-size:9px; }
+ .gbq-hud-nav .gbq-hud-glyph { width:17px; height:17px; font-size:12px; }
+ .gbq-detail-footer { font-size:9px; }
+}
