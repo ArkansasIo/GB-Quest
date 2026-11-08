@@ -31,7 +31,27 @@ const ROOT_ACCOUNT_ID = String(process.env.GBQ_ROOT_ID || '').toLowerCase();
 const ADMIN_ACCOUNT_ID = String(process.env.GBQ_ADMIN_ID || '').toLowerCase();
 // Privileged realm administration is opt-in; public/default deployments keep it disabled.
 const ADMIN_ENABLED = process.env.GBQ_ENABLE_ADMIN === '1';
-const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 3, MAX_PRESENCE = 2048;
+const TOKEN_DAYS = 30, MAX_BODY = 64 * 1024, MAX_SAVE = 1024 * 1024, SLOTS = 5, MAX_PRESENCE = 2048;
+// FFXIV-style data centers (regions). Each region holds WoW-style realms; a player picks a
+// region, then a realm inside it. Character saves live per account per realm.
+const REGIONS = [
+  { id: 'hydaelyn', name: 'Hydaelyn', tag: 'NA', status: 'online', maxWorlds: 8 },
+  { id: 'lordeon',  name: 'Lordeon',  tag: 'EU', status: 'online', maxWorlds: 8 },
+  { id: 'aether',   name: 'Aether',   tag: 'AP', status: 'online', maxWorlds: 8 },
+];
+// WoW-style realms grouped under FFXIV regions. maxPlayers is the world's concurrent
+// capacity (1000 per world); population is the current live count.
+const REALMS = [
+  { id: 'ardenhold',  name: 'Ardenhold',  regionId: 'hydaelyn', type: 'Roleplay',   status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'ironreach',  name: 'Ironreach',  regionId: 'hydaelyn', type: 'PvE',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'moonfall',   name: 'Moonfall',   regionId: 'lordeon',  type: 'PvE',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'stormwake',  name: 'Stormwake',  regionId: 'lordeon',  type: 'PvP',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'dawnspire',  name: 'Dawnspire',  regionId: 'aether',   type: 'Roleplay',   status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'emberwild',  name: 'Emberwild',  regionId: 'aether',   type: 'PvE',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'frostmarch', name: 'Frostmarch', regionId: 'lordeon',  type: 'PvP',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'starhaven',  name: 'Starhaven',  regionId: 'hydaelyn', type: 'Seasonal',   status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'shadowfen',  name: 'Shadowfen',  regionId: 'aether',   type: 'Roleplay',   status: 'online', maxPlayers: 1000, population: 0 },
+];
 const TOPICS = new Set(['srv_join', 'srv_char', 'srv_battle', 'srv_turn', 'srv_act', 'srv_end', 'chat', 'trade']);
 
 // ---------------------------------------------------------------- storage
@@ -117,17 +137,6 @@ function addAdminAudit(ctx, action, target, details) {
   if (db.adminAudit.length > 1000) db.adminAudit.splice(0, db.adminAudit.length - 1000);
   audit.record({ ...ctx, action: 'admin.' + action, target, details });
 }
-const REALMS = [
-  { id: 'ardenhold', name: 'Ardenhold', type: 'Roleplay', status: 'online' },
-  { id: 'ironreach', name: 'Ironreach', type: 'PvE', status: 'online' },
-  { id: 'moonfall', name: 'Moonfall', type: 'PvE', status: 'online' },
-  { id: 'stormwake', name: 'Stormwake', type: 'PvP', status: 'online' },
-  { id: 'dawnspire', name: 'Dawnspire', type: 'Roleplay', status: 'online' },
-  { id: 'emberwild', name: 'Emberwild', type: 'PvE', status: 'online' },
-  { id: 'frostmarch', name: 'Frostmarch', type: 'PvP', status: 'online' },
-  { id: 'starhaven', name: 'Starhaven', type: 'Seasonal', status: 'online' },
-  { id: 'shadowfen', name: 'Shadowfen', type: 'Roleplay', status: 'online' },
-];
 function friendIds(uid) { return db.friendships[uid] || (db.friendships[uid] = []); }
 function accountById(id) { return Object.values(db.accounts).find(a => a.id === id); }
 function publicFriend(uid) {
@@ -198,8 +207,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
-    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: REALMS });
-    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: REALMS.map((realm, index) => index === 0 ? { ...realm, name: db.realmSettings.realmName } : realm) });
+    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: REALMS, regions: REGIONS, maxPlayersPerWorld: 1000 });
+    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length })) });
+    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: REALMS.map((realm, index) => ({ ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population: realm.population, online: realm.status === 'online' })) });
     if (p === '/api/store/catalog' && req.method === 'GET') return json(res, 200, require('../store/catalog.cjs').getCatalog());
 
     if (p === '/api/register' && req.method === 'POST') {
@@ -479,7 +489,7 @@ const server = http.createServer(async (req, res) => {
       const s = db.saves[uid] || {};
       return json(res, 200, { slots: Array.from({ length: SLOTS }, (_, i) => s[i] ? { slot: i, name: s[i].meta.name, lvl: s[i].meta.lvl, cls: s[i].meta.cls, saved: s[i].saved } : null) });
     }
-    const m = p.match(/^\/api\/saves\/([0-2])$/);
+    const m = p.match(/^\/api\/saves\/([0-4])$/);
     if (m) {
       const slot = +m[1], mine = db.saves[uid] || (db.saves[uid] = {});
       if (req.method === 'GET') return mine[slot] ? json(res, 200, { slot, state: mine[slot].state, saved: mine[slot].saved }) : json(res, 404, { error: 'Empty slot.' });
@@ -556,10 +566,22 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no', ...SEC });
       res.write('retry: 3000\n\n');
       clients.set(peer, { res, uid, name: sess.acct.name, presence: {} });
+      const realm = REALMS.find(r => r.id === (sess.acct.realm || 'ardenhold'));
+      if (realm && realm.maxPlayers && (realm.population || 0) >= realm.maxPlayers) {
+        res.writeHead(503, { ...SEC, 'Content-Type': 'text/plain' });
+        return res.end(`The world ${realm.name} is full (${realm.population}/${realm.maxPlayers}). Try another realm.`);
+      }
+      if (realm) realm.population = (realm.population || 0) + 1;
       send(res, 'hello', { peer, account: publicAcct(sess.acct) });
       broadcastPeers();
       log.debug('live stream opened', { reqId, peer, account: sess.acct.name, ip, online: clients.size });
-      req.on('close', () => { clients.delete(peer); broadcastPeers([peer]); log.debug('live stream closed', { peer, account: sess.acct.name, online: clients.size }); });
+      req.on('close', () => {
+        clients.delete(peer);
+        const realm = REALMS.find(r => r.id === (sess.acct.realm || 'ardenhold'));
+        if (realm && realm.population > 0) realm.population--;
+        broadcastPeers([peer]);
+        log.debug('live stream closed', { peer, account: sess.acct.name, online: clients.size });
+      });
       return;
     }
     if (p === '/api/presence' && req.method === 'POST') {

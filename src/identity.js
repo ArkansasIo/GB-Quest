@@ -36,7 +36,7 @@ function currentAccount() {
 }
 function slotHeroes() {
   const out = [];
-  for (let i = 0; i < 3; i++) { let s = null; try { s = store.get(SLOT_KEYS[i]); } catch (e) {} out.push(s); }
+  for (let i = 0; i < 5; i++) { let s = null; try { s = store.get(SLOT_KEYS[i]); } catch (e) {} out.push(s); }
   return out;
 }
 // give a hero its IDs (new heroes and old saves)
