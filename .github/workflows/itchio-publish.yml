@@ -1,0 +1,82 @@
+name: Publish itch.io HTML5
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: itch.io channel (normally html5)
+        required: true
+        default: html5
+        type: string
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: itchio-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check publishing configuration
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_USERNAME: ${{ vars.ITCH_USERNAME }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+        run: |
+          missing=0
+          for name in BUTLER_API_KEY ITCH_USERNAME ITCH_GAME; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub Actions secret/variable: $name"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Add secret BUTLER_API_KEY and repository variables ITCH_USERNAME and ITCH_GAME, then rerun this workflow."
+            exit 1
+          fi
+
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install artwork dependencies
+        run: python -m pip install --upgrade Pillow numpy
+
+      - name: Build and validate HTML5 package
+        run: node tools/build-itch.cjs
+
+      - name: Install itch.io Butler
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 \
+            https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default \
+            --output butler.zip
+          unzip -o butler.zip
+          chmod +x butler
+          sudo install butler /usr/local/bin/butler
+          butler --version
+
+      - name: Publish browser build
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_USERNAME: ${{ vars.ITCH_USERNAME }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+          CHANNEL: ${{ github.event.inputs.channel || 'html5' }}
+          BUILD_SHA: ${{ github.sha }}
+        run: |
+          butler push build/itch "${ITCH_USERNAME}/${ITCH_GAME}:${CHANNEL}" \
+            --userversion "${BUILD_SHA:0:12}"
