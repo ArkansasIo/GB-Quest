@@ -59,3 +59,38 @@ VALUES
  ('00000000-0000-4000-8000-000000000002','aelmoor_fields','Wild Goblin',2,14,9,48,48,true),
  ('00000000-0000-4000-8000-000000000003','aelmoor_fields','Forest Wolf',3,18,12,72,72,true)
 ON CONFLICT (id) DO NOTHING;
+
+-- Persistent item catalogue, per-character inventory and equipment.
+CREATE TABLE IF NOT EXISTS item_catalog (
+  id varchar(48) PRIMARY KEY,
+  name varchar(64) NOT NULL,
+  description varchar(240) NOT NULL DEFAULT '',
+  item_type varchar(20) NOT NULL CHECK (item_type IN ('weapon','armor','consumable','material','accessory')),
+  equip_slot varchar(20) CHECK (equip_slot IN ('main_hand','off_hand','head','chest','legs','feet','hands','accessory')),
+  max_stack integer NOT NULL DEFAULT 99 CHECK (max_stack BETWEEN 1 AND 999),
+  level_required integer NOT NULL DEFAULT 1 CHECK (level_required BETWEEN 1 AND 100),
+  stats jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS character_inventory (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  item_id varchar(48) NOT NULL REFERENCES item_catalog(id),
+  quantity integer NOT NULL DEFAULT 1 CHECK (quantity BETWEEN 1 AND 999),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(character_id, item_id)
+);
+CREATE INDEX IF NOT EXISTS character_inventory_character_idx ON character_inventory(character_id);
+CREATE TABLE IF NOT EXISTS character_equipment (
+  character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  slot varchar(20) NOT NULL CHECK (slot IN ('main_hand','off_hand','head','chest','legs','feet','hands','accessory')),
+  inventory_id uuid NOT NULL REFERENCES character_inventory(id) ON DELETE CASCADE,
+  equipped_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(character_id, slot),
+  UNIQUE(inventory_id)
+);
+INSERT INTO item_catalog(id,name,description,item_type,equip_slot,max_stack,level_required,stats) VALUES
+ ('rusty_sword','Rusty Sword','A dependable starter blade.','weapon','main_hand',1,1,'{"attack":3}'::jsonb),
+ ('traveler_tunic','Traveler Tunic','Simple padded travel clothing.','armor','chest',1,1,'{"defense":2}'::jsonb),
+ ('minor_potion','Minor Potion','A small restorative potion.','consumable',NULL,20,1,'{"heal":30}'::jsonb)
+ON CONFLICT (id) DO NOTHING;
