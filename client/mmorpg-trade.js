@@ -26,6 +26,9 @@ class GBQuestMMOApi {
   acceptTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/accept',{method:'POST',body:{}}); }
   cancelTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/cancel',{method:'POST',body:{}}); }
   wallet(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/wallet'); }
+  bank(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/bank'); }
+  depositBank(id,amount) { return this.request('/api/characters/'+encodeURIComponent(id)+'/bank/deposit',{method:'POST',body:{amount}}); }
+  withdrawBank(id,amount) { return this.request('/api/characters/'+encodeURIComponent(id)+'/bank/withdraw',{method:'POST',body:{amount}}); }
   connect() {
     if(!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl=new URL('/ws',this.baseUrl); wsUrl.protocol=wsUrl.protocol==='https:'?'wss:':'ws:';
@@ -49,7 +52,7 @@ class GBQuestMMOApi {
   'use strict';
   if (window.GBQMMOTrade) return;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], status:'disconnected', busy:false, error:'', tab:'trade' };
+  const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], bank:null, status:'disconnected', busy:false, error:'', tab:'trade' };
   const storageKey = 'gbq.mmo.trade.realm';
   function apiBase() {
     try { return localStorage.getItem(storageKey) || window.GBQ_MMO_REALM_URL || location.origin; }
@@ -103,9 +106,9 @@ class GBQuestMMOApi {
     if(panel()) return;
     const root=document.createElement('section');
     root.id='gbq-trade-panel'; root.className='gbq-trade-overlay'; root.setAttribute('role','dialog'); root.setAttribute('aria-modal','true'); root.setAttribute('aria-label','Realm trading');
-    root.innerHTML='<div class="gbq-trade-window"><header class="gbq-trade-header"><div><small>GB-QUEST · REALM ECONOMY</small><h2>PLAYER EXCHANGE</h2><span data-mmo-status>DISCONNECTED</span></div><button type="button" data-close aria-label="Close trading">×</button></header><div class="gbq-trade-message" data-mmo-message hidden></div><div class="gbq-trade-content"><section class="gbq-trade-auth" data-auth><label>MMO SERVER URL<input data-realm-url type="url" value="'+esc(apiBase())+'" placeholder="https://realm.example.com"></label><label>Account name<input data-username autocomplete="username" minlength="3" maxlength="24"></label><label>Password<input data-password type="password" autocomplete="current-password" minlength="10" maxlength="128"></label><div class="gbq-trade-actions"><button type="button" data-login>LOG IN</button><button type="button" data-register>CREATE MMO ACCOUNT</button></div><p>This is the dedicated PostgreSQL MMO realm account. It is separate from offline/local game saves.</p></section><section class="gbq-trade-characters" data-characters hidden><div class="gbq-trade-row"><label>Active character<select data-character></select></label><button type="button" data-connect>CONNECT</button></div><div class="gbq-trade-row"><label>New character name<input data-new-name maxlength="24" placeholder="Character name"></label><label>Class<select data-new-class><option value="ranger">Ranger</option><option value="warrior">Warrior</option><option value="mage">Mage</option><option value="cleric">Cleric</option></select></label><button type="button" data-create-character>CREATE</button></div><nav><button type="button" data-tab="trade">TRADE</button><button type="button" data-tab="offers">OFFERS</button></nav><div data-mmo-main></div></section></div><footer><span>Same-zone trading · 15-minute offer expiry</span><button type="button" data-logout>LOG OUT</button></footer></div>';
+    root.innerHTML='<div class="gbq-trade-window"><header class="gbq-trade-header"><div><small>GB-QUEST · REALM ECONOMY</small><h2>PLAYER EXCHANGE</h2><span data-mmo-status>DISCONNECTED</span></div><button type="button" data-close aria-label="Close trading">×</button></header><div class="gbq-trade-message" data-mmo-message hidden></div><div class="gbq-trade-content"><section class="gbq-trade-auth" data-auth><label>MMO SERVER URL<input data-realm-url type="url" value="'+esc(apiBase())+'" placeholder="https://realm.example.com"></label><label>Account name<input data-username autocomplete="username" minlength="3" maxlength="24"></label><label>Password<input data-password type="password" autocomplete="current-password" minlength="10" maxlength="128"></label><div class="gbq-trade-actions"><button type="button" data-login>LOG IN</button><button type="button" data-register>CREATE MMO ACCOUNT</button></div><p>This is the dedicated PostgreSQL MMO realm account. It is separate from offline/local game saves.</p></section><section class="gbq-trade-characters" data-characters hidden><div class="gbq-trade-row"><label>Active character<select data-character></select></label><button type="button" data-connect>CONNECT</button></div><div class="gbq-trade-row"><label>New character name<input data-new-name maxlength="24" placeholder="Character name"></label><label>Class<select data-new-class><option value="ranger">Ranger</option><option value="warrior">Warrior</option><option value="mage">Mage</option><option value="cleric">Cleric</option></select></label><button type="button" data-create-character>CREATE</button></div><nav><button type="button" data-tab="trade">TRADE</button><button type="button" data-tab="offers">OFFERS</button><button type="button" data-tab="bank">BANK</button></nav><div data-mmo-main></div></section></div><footer><span>Same-zone trading · 15-minute offer expiry</span><button type="button" data-logout>LOG OUT</button></footer></div>';
     document.body.appendChild(root);
-    root.addEventListener('click',onClick);
+    root.addEventListener('click',onClick);\n    root.addEventListener('submit',onSubmit);
     root.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
     root.querySelector('[data-realm-url]').value=apiBase();
     syncAuth();
@@ -157,6 +160,11 @@ class GBQuestMMOApi {
       target.innerHTML='<p class="gbq-trade-empty">Choose a character and connect to see players in your current zone.</p>';
       return;
     }
+    if(state.tab==='bank') {
+      const bank=state.bank||{};
+      target.innerHTML='<h3>CHARACTER BANK</h3><div class="gbq-trade-bank-balances"><div><small>AVAILABLE WALLET</small><b>'+esc(state.wallet?.gold??bank.gold??0)+' GOLD</b></div><div><small>SECURE BANK</small><b>'+esc(bank.bankGold??0)+' GOLD</b></div></div><div class="gbq-trade-bank-actions"><form data-bank-action="deposit"><label>Deposit gold<input data-bank-amount type="number" min="1" max="1000000000" step="1" value="100" required></label><button type="submit">DEPOSIT</button></form><form data-bank-action="withdraw"><label>Withdraw gold<input data-bank-amount type="number" min="1" max="1000000000" step="1" value="100" required></label><button type="submit">WITHDRAW</button></form></div><p class="gbq-trade-empty">Transfers are processed by the realm server and recorded in the persistent bank ledger.</p>';
+      return;
+    }
     if(state.tab==='offers') {
       target.innerHTML='<h3>TRADE OFFERS</h3>'+(state.offers.length?state.offers.map(o=>{
         const incoming=o.to_character_id===state.selected.id, action=incoming&&o.status==='pending'?'<button data-accept="'+esc(o.id)+'">ACCEPT</button>':'';
@@ -167,6 +175,21 @@ class GBQuestMMOApi {
     }
     const players=state.players.filter(p=>p.id!==state.selected.id);
     target.innerHTML='<div class="gbq-trade-balance">WALLET: '+esc(state.wallet?.gold??state.selected.gold??0)+' GOLD</div><h3>PLAYERS IN YOUR ZONE <small>'+players.length+'</small></h3>'+(players.length?'<label>Recipient<select data-recipient>'+players.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' · Lv '+esc(p.level||1)+'</option>').join('')+'</select></label>':'<p class="gbq-trade-empty">No other connected characters in this zone. Both players must be online in the same zone.</p>')+'<div class="gbq-trade-offer-form"><label>Offer item<select data-item><option value="">No item</option>'+state.inventory.map(i=>'<option value="'+esc(i.item_id)+'" data-inventory="'+esc(i.inventory_id)+'">'+esc(i.item_name||i.name||i.item_id)+' · '+esc(i.quantity)+'</option>').join('')+'</select></label><label>Quantity<input data-quantity type="number" min="1" max="99" value="1"></label><label>Gold offered<input data-gold type="number" min="0" max="1000000000" value="0"></label><button type="button" data-send-offer '+(!players.length?'disabled':'')+'>SEND OFFER</button></div>';
+  }
+  async function onSubmit(event) {
+    const form=event.target.closest('form[data-bank-action]');
+    if(!form) return;
+    event.preventDefault();
+    try {
+      hideMessage();
+      if(!state.selected||!state.api?.token) throw new Error('Connect a character before using the bank.');
+      const amount=Number(form.querySelector('[data-bank-amount]').value);
+      if(!Number.isSafeInteger(amount)||amount<1||amount>1000000000) throw new Error('Enter a whole gold amount between 1 and 1,000,000,000.');
+      const action=form.dataset.bankAction;
+      const result=action==='deposit'?await state.api.depositBank(state.selected.id,amount):await state.api.withdrawBank(state.selected.id,amount);
+      toast((action==='deposit'?'Deposited ':'Withdrew ')+Number(result.amount).toLocaleString()+' gold.');
+      await refresh();
+    } catch(error) { toast(error.message||'Bank transfer failed'); }
   }
   async function onClick(event) {
     const b=event.target.closest('button'); if(!b) return;
