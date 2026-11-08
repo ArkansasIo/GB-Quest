@@ -111,3 +111,12 @@ test('full 6,000-image build creates atlases before validation', () => {
   assert.ok(pkg.scripts['check:syntax'].includes('src/hd64_catalog.js'));
   assert.ok(pkg.scripts['check:syntax'].includes('tools/build_pack6000_atlases.py'));
 });
+
+test('GitHub Actions generates and uploads the complete 6,000-image source catalog', () => {
+  const workflow = read('.github/workflows/asset-catalog-6000.yml');
+  assert.match(workflow, /npm run assets:build:6000/);
+  assert.match(workflow, /npm run assets:zip:6000/);
+  assert.match(workflow, /actions\/upload-artifact@v4/);
+  assert.match(workflow, /GB-Quest-6000-HD64-Asset-Pack/);
+  assert.match(workflow, /retention-days: 30/);
+});
