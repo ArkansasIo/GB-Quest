@@ -20,6 +20,7 @@ jobs:
       - name: Validate Electron launcher JavaScript
         run: |
           node --check backend/mmorpg-server.cjs
+          node --check backend/mmorpg-security.cjs
           node --check backend/migrate.cjs
           node --check src/mmorpg/net/mmorpg-api.js
           node --check desktop/main.cjs
