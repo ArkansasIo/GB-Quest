@@ -860,6 +860,7 @@ function render() {
   drawToasts();
   if (window.DBG && DBG.overlay) DBG.overlay();
   present();
+  document.body.classList.toggle('title-screen', scenes.length > 0 && scenes[scenes.length - 1].constructor?.name === 'Title');
   document.body.classList.add('game-rendered');
 }
 function present() {
