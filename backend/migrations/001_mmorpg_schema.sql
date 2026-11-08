@@ -177,3 +177,38 @@ CREATE TABLE IF NOT EXISTS bank_transactions (
 );
 CREATE INDEX IF NOT EXISTS bank_transactions_character_idx
   ON bank_transactions(character_id, created_at DESC);
+
+
+-- Player-to-player trade offers and immutable settlement records.
+CREATE TABLE IF NOT EXISTS player_trade_offers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  to_character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  item_id varchar(48) REFERENCES item_catalog(id),
+  quantity integer NOT NULL DEFAULT 0 CHECK (quantity BETWEEN 0 AND 999),
+  gold_amount bigint NOT NULL DEFAULT 0 CHECK (gold_amount >= 0),
+  status varchar(12) NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending','completed','cancelled','expired')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '15 minutes'),
+  completed_at timestamptz,
+  CHECK (from_character_id <> to_character_id),
+  CHECK ((item_id IS NULL AND quantity = 0) OR (item_id IS NOT NULL AND quantity BETWEEN 1 AND 99)),
+  CHECK (item_id IS NOT NULL OR gold_amount > 0)
+);
+CREATE INDEX IF NOT EXISTS player_trade_offers_sender_idx
+  ON player_trade_offers(from_character_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS player_trade_offers_recipient_idx
+  ON player_trade_offers(to_character_id, status, created_at DESC);
+CREATE TABLE IF NOT EXISTS player_trade_transactions (
+  id bigserial PRIMARY KEY,
+  offer_id uuid NOT NULL UNIQUE REFERENCES player_trade_offers(id),
+  from_character_id uuid NOT NULL REFERENCES characters(id),
+  to_character_id uuid NOT NULL REFERENCES characters(id),
+  item_id varchar(48) REFERENCES item_catalog(id),
+  quantity integer NOT NULL CHECK (quantity BETWEEN 0 AND 99),
+  gold_amount bigint NOT NULL CHECK (gold_amount >= 0),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS player_trade_transactions_characters_idx
+  ON player_trade_transactions(from_character_id, to_character_id, created_at DESC);
