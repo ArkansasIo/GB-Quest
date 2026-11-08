@@ -271,3 +271,8 @@ The authoritative backend includes PostgreSQL-backed inventory, equipment, consu
 ### In-game character bank
 
 The MMO Trading panel includes a **Bank** tab. It loads the selected character's wallet and persistent bank balance from the authenticated PostgreSQL API and supports server-validated deposits and withdrawals. Each transfer is committed with the character balance update and a `bank_transactions` audit entry in one database transaction. Transfers accept whole-gold amounts from 1 to 1,000,000,000; insufficient funds and safe-integer balance limits are enforced by the server.
+
+
+### Incoming player-trade notifications
+
+While a character is connected to the realm, the Trading panel refreshes the persistent offer list every 15 seconds. Newly received pending offers are surfaced as an in-panel notification, and the Offers tab displays the current incoming pending-offer count. Polling is stopped when the panel closes or the player logs out. The initial offer load seeds the notification tracker so old offers are not announced as new.
