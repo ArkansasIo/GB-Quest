@@ -14,7 +14,11 @@ It combines:
 Runtime art is assembled from repository-managed PNG/SVG assets and generated sprite atlases. The release builder embeds the active game assets, HD64 atlases, Citadel artwork and UI catalog images into the standalone browser build.
 
 
-## In-game player trading\n\nThe Trading HUD opens a dedicated MMO realm account flow, lets players create/select a PostgreSQL character, connects to the authoritative WebSocket realm, discovers online characters in the same zone, and submits item/gold offers. Configure `window.GBQ_MMO_REALM_URL` before the trading script loads when the MMO API is hosted on a separate origin; remote realms must use HTTPS/WSS. Localhost HTTP/WS is permitted for development only. The dedicated MMO account is separate from the legacy local-save account. The trading panel and CSS are bundled into the single-file itch.io HTML export.\n\n## Art, ranks, and world tiles
+## In-game player trading
+
+The Trading HUD opens a dedicated MMO realm account flow, lets players create/select a PostgreSQL character, connects to the authoritative WebSocket realm, discovers online characters in the same zone, and submits item/gold offers. Configure `window.GBQ_MMO_REALM_URL` before the trading script loads when the MMO API is hosted on a separate origin; remote realms must use HTTPS/WSS. Localhost HTTP/WS is permitted for development only. The dedicated MMO account is separate from the legacy local-save account. The trading panel and CSS are bundled into the single-file itch.io HTML export.
+
+## Art, ranks, and world tiles
 
 - Adventurer progression: **F → E → D → C → B → A → S → SS → SSS**; independent of item rarity and character levels.
 - World tile contract: layered 16×16 tiles, generated 64×64 and 96×96 nearest-neighbour exports, 16-way cardinal autotiling, animated shorelines, 25 biome families, and six dungeon themes.
