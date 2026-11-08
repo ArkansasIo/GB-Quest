@@ -216,14 +216,24 @@ const server = http.createServer(async (req, res) => {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const body = await readBody(req), name = String(body.name || '').trim(), cls = String(body.class || 'adventurer');
       if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !['warrior','mage','ranger','cleric','rogue','adventurer'].includes(cls)) return json(res, 400, { error: 'invalid_character' });
-      const count = await pool.query('SELECT count(*)::int AS n FROM characters WHERE account_id=$1', [acct.id]);
-      if (count.rows[0].n >= 3) return json(res, 409, { error: 'character_limit_reached' });
-      const id = crypto.randomUUID();
-      const result = await pool.query('INSERT INTO characters(id,account_id,name,class) VALUES($1,$2,$3,$4) RETURNING id,name,class,level,zone_id,x,y,hp,max_hp,mp,max_mp,xp', [id, acct.id, name, cls]);
-      await pool.query(`INSERT INTO character_inventory(character_id,item_id,quantity)
-        VALUES ($1,'rusty_sword',1),($1,'traveler_tunic',1),($1,'minor_potion',5)
-        ON CONFLICT (character_id,item_id) DO NOTHING`, [id]);
-      return json(res, 201, { character: result.rows[0] });
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        // Serialize character creation per account so parallel requests cannot bypass the three-character cap.
+        const accountLock = await tx.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false FOR UPDATE', [acct.id]);
+        if (!accountLock.rowCount) { await tx.query('ROLLBACK'); return json(res, 401, { error: 'unauthorized' }); }
+        const count = await tx.query('SELECT count(*)::int AS n FROM characters WHERE account_id=$1', [acct.id]);
+        if (count.rows[0].n >= 3) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'character_limit_reached' }); }
+        const id = crypto.randomUUID();
+        const result = await tx.query('INSERT INTO characters(id,account_id,name,class) VALUES($1,$2,$3,$4) RETURNING id,name,class,level,zone_id,x,y,hp,max_hp,mp,max_mp,xp', [id, acct.id, name, cls]);
+        await tx.query(`INSERT INTO character_inventory(character_id,item_id,quantity)
+          VALUES ($1,'rusty_sword',1),($1,'traveler_tunic',1),($1,'minor_potion',5)`, [id]);
+        await tx.query('COMMIT');
+        return json(res, 201, { character: result.rows[0] });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
     }
     if (url.pathname === '/api/characters' && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
