@@ -128,3 +128,13 @@ test('6,000-image runtime asset helpers use the global catalog without window-on
   assert.match(pack, /warm6000:/);
   assert.ok(pack.includes('globalThis.GBQ6000Assets'));
 });
+
+test('existing itch.io pull-request workflow generates and uploads the 6,000-image pack', () => {
+  const workflow = read('.github/workflows/itch-html5.yml');
+  assert.match(workflow, /npm run check:syntax/);
+  assert.match(workflow, /npm run assets:build:6000/);
+  assert.match(workflow, /npm run assets:zip:6000/);
+  assert.match(workflow, /npm run build:itch/);
+  assert.match(workflow, /GB-Quest-6000-HD64-Asset-Pack/);
+  assert.match(workflow, /actions\/upload-artifact@v7/);
+});
