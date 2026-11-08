@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
+import { Pool } from 'pg';
 
 const enabled = !!process.env.GBQ_TEST_DATABASE_URL;
 
@@ -77,6 +78,18 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ inventoryId: potion.inventory_id })
     });
     assert.equal(rejectPotion.status, 400);
+    const testPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try { await testPool.query('UPDATE characters SET hp=50 WHERE id=$1', [character.id]); }
+    finally { await testPool.end(); }
+    const usePotion = await fetch(base + `/api/characters/${character.id}/use-item`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ inventoryId: potion.inventory_id })
+    });
+    assert.equal(usePotion.status, 200);
+    const potionResult = await usePotion.json();
+    assert.equal(potionResult.resources.hp, 80);
+    assert.equal(potionResult.remaining, 4);
     const unequip = await fetch(base + `/api/characters/${character.id}/unequip`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
