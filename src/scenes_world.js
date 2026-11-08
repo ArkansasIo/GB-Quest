@@ -2042,9 +2042,3 @@ function safeSpot() {
   };
 }
 
-class PokemonMenu extends ListScene {
-  constructor() { super(11); }
-  items() { const base = ['POKEMON', 'POKEMON DETAIL', 'POKEMON FRIENDS', 'TRAINING', 'STATISTICS']; if (G.pokemon && G.pokemon.length > 0) base.splice(base.indexOf('BESTIARY'), 1, 'POKEMON'); return base; }
-  update() { this.navList(); if (!P('a')) return; const index = this.i; const pokemon = G.pokemon || []; if (index === this.i) loadSlot(pokemon.slot ?? 0); else choose(['NO','OVERWRITE'], y => { if (y===1) go(); }, `Pokemon Slot ${this.i + 1}`); }
-}
-}
