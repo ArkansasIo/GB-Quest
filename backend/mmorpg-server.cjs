@@ -142,9 +142,48 @@ function attachSocket(ws, req) {
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
           if (hp === 0) {
             const xp = Math.max(1, Number(mob.level) * 12);
-            const progress = await tx.query('UPDATE characters SET xp=xp+$1,level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now() WHERE id=$2 RETURNING xp,level', [xp, state.character.id]);
+            const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
+            const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
+              level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
+              gold=gold+$2,updated_at=now() WHERE id=$3 RETURNING xp,level,gold`, [xp, baseGold, state.character.id]);
             state.character.level = progress.rows[0].level;
-            reward = { xp, totalXp: Number(progress.rows[0].xp), level: progress.rows[0].level, gold: 0, source: mob.id };
+            const questUpdates = await tx.query(`UPDATE character_quests cq
+              SET objective_progress=LEAST(q.objective_required,cq.objective_progress+1),
+                  status=CASE WHEN cq.objective_progress+1>=q.objective_required THEN 'completed' ELSE 'active' END,
+                  completed_at=CASE WHEN cq.objective_progress+1>=q.objective_required THEN now() ELSE NULL END
+              FROM quest_catalog q
+              WHERE cq.quest_id=q.id AND cq.character_id=$1 AND cq.status='active'
+                AND q.active=true AND q.objective_type='kill_mob' AND q.objective_target_id=$2
+              RETURNING q.id,q.name,q.reward_xp,q.reward_gold,cq.objective_progress,cq.status`,
+              [state.character.id, mob.id]);
+            let questXp = 0, questGold = 0;
+            const completedQuests = questUpdates.rows.filter(row => row.status === 'completed');
+            for (const quest of completedQuests) {
+              questXp += Number(quest.reward_xp);
+              questGold += Number(quest.reward_gold);
+            }
+            if (questXp || questGold) {
+              const questPayout = await tx.query(`UPDATE characters SET xp=xp+$1,gold=gold+$2,
+                level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now()
+                WHERE id=$3 RETURNING xp,level,gold`, [questXp, questGold, state.character.id]);
+              progress.rows[0] = questPayout.rows[0];
+              state.character.level = questPayout.rows[0].level;
+            }
+            const itemDrops = [];
+            if (mob.id === '00000000-0000-4000-8000-000000000001' && crypto.randomInt(100) < 35) {
+              const dropped = await tx.query(`INSERT INTO character_inventory(character_id,item_id,quantity)
+                VALUES($1,'slime_gel',1)
+                ON CONFLICT(character_id,item_id) DO UPDATE
+                SET quantity=LEAST(99,character_inventory.quantity+1)
+                RETURNING item_id,quantity`, [state.character.id]);
+              itemDrops.push({ itemId: 'slime_gel', quantity: 1, stackQuantity: dropped.rows[0].quantity });
+            }
+            reward = {
+              xp: xp + questXp, baseXp: xp, totalXp: Number(progress.rows[0].xp),
+              level: progress.rows[0].level, gold: baseGold + questGold,
+              totalGold: Number(progress.rows[0].gold), itemDrops, completedQuests,
+              questUpdates: questUpdates.rows, source: mob.id
+            };
           }
           await tx.query('COMMIT');
         } catch (error) {
@@ -328,6 +367,45 @@ const server = http.createServer(async (req, res) => {
         await tx.query('ROLLBACK').catch(() => {});
         throw error;
       } finally { tx.release(); }
+    }
+    const questMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/quests$/i);
+    if (questMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = questMatch[1];
+      const owned = await pool.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const result = await pool.query(`SELECT q.id,q.name,q.description,q.objective_type,q.objective_target_id,
+        m.name AS target_name,q.objective_required,COALESCE(cq.objective_progress,0) AS objective_progress,
+        COALESCE(cq.status,'available') AS status,q.reward_xp,q.reward_gold
+        FROM quest_catalog q JOIN world_mobs m ON m.id=q.objective_target_id
+        LEFT JOIN character_quests cq ON cq.quest_id=q.id AND cq.character_id=$1
+        WHERE q.active=true ORDER BY q.id`, [characterId]);
+      return json(res, 200, { characterId, quests: result.rows });
+    }
+    if (questMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), questId = String(body.questId || '');
+      if (!/^[a-z0-9_-]{1,48}$/i.test(questId)) return json(res, 400, { error: 'invalid_quest_id' });
+      const accepted = await pool.query(`INSERT INTO character_quests(character_id,quest_id,status)
+        SELECT c.id,q.id,'active' FROM characters c CROSS JOIN quest_catalog q
+        WHERE c.id=$1 AND c.account_id=$2 AND q.id=$3 AND q.active=true
+        ON CONFLICT(character_id,quest_id) DO NOTHING
+        RETURNING character_id,quest_id,status,objective_progress`, [questMatch[1], acct.id, questId]);
+      if (accepted.rowCount) return json(res, 201, { quest: accepted.rows[0] });
+      const existing = await pool.query(`SELECT cq.quest_id,cq.status,cq.objective_progress
+        FROM character_quests cq JOIN characters c ON c.id=cq.character_id
+        WHERE cq.character_id=$1 AND c.account_id=$2 AND cq.quest_id=$3`, [questMatch[1], acct.id, questId]);
+      if (existing.rowCount) return json(res, 409, { error: 'quest_already_accepted', quest: existing.rows[0] });
+      const owned = await pool.query('SELECT 1 FROM characters WHERE id=$1 AND account_id=$2', [questMatch[1], acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      return json(res, 404, { error: 'quest_not_found' });
+    }
+    const walletMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/wallet$/i);
+    if (walletMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const result = await pool.query('SELECT id,gold FROM characters WHERE id=$1 AND account_id=$2', [walletMatch[1], acct.id]);
+      if (!result.rowCount) return json(res, 404, { error: 'character_not_found' });
+      return json(res, 200, { characterId: result.rows[0].id, gold: Number(result.rows[0].gold) });
     }
     return json(res, 404, { error: 'not_found' });
   } catch (error) { console.error('MMO HTTP error:', error.message); return json(res, error.status || 500, { error: error.status ? error.message : 'internal_server_error' }); }
