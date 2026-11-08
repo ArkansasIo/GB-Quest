@@ -372,3 +372,42 @@ body.chat-on .gbq-player-hud { right:300px; }
     transition-duration:.01ms !important;
   }
 }
+
+
+/* Detailed submenu pages: full, readable panels rather than tiny HUD-only popovers. */
+.gbq-detail-page { position:absolute; z-index:40; inset:clamp(8px,3%,28px); display:grid; place-items:center; padding:clamp(6px,2vw,20px); background:#05080bd9; pointer-events:auto; }
+.gbq-detail-page[hidden] { display:none !important; }
+.gbq-detail-window { display:flex; flex-direction:column; width:min(820px,100%); max-height:min(88%,720px); min-height:260px; overflow:hidden; border:2px solid #a88751; border-radius:7px; background:linear-gradient(145deg,#182331,#090e15 70%); box-shadow:0 16px 50px #000c,inset 0 0 0 2px #2c2419; color:#f0e6d2; font:13px/1.45 Arial,system-ui,sans-serif; text-shadow:none; }
+.gbq-detail-header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid #78603c; background:linear-gradient(90deg,#28384b,#111923); }
+.gbq-detail-header small { color:#d6b879; font-size:9px; font-weight:700; letter-spacing:.16em; }
+.gbq-detail-header h2 { margin:3px 0 0; color:#fff0c9; font:700 clamp(18px,2.2vw,25px)/1.2 Georgia,serif; }
+.gbq-detail-header button { width:34px; height:34px; border:1px solid #9d7a48; border-radius:4px; background:#101720; color:#fff0c9; font:24px/1 Arial,sans-serif; cursor:pointer; }
+.gbq-detail-tabs { display:flex; flex-wrap:wrap; gap:5px; padding:10px 14px; border-bottom:1px solid #394958; background:#0b1119; }
+.gbq-detail-tabs button,.gbq-detail-footer button { min-height:34px; padding:7px 12px; border:1px solid #65543b; border-radius:3px; background:#1a2735; color:#d9d4c6; font:700 11px Arial,sans-serif; cursor:pointer; }
+.gbq-detail-tabs button[aria-selected="true"] { border-color:#e5bd70; background:#34485b; color:#ffe6aa; box-shadow:inset 0 -2px #d4ac60; }
+.gbq-detail-content { min-height:0; overflow:auto; padding:14px; }
+.gbq-detail-summary { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:10px; border:1px solid #3d4d5b; border-radius:4px; background:#111b26; }
+.gbq-detail-icon { display:grid; place-items:center; width:38px; height:38px; border:1px solid #b18b51; border-radius:4px; background:#263849; color:#f1cc80; font-size:23px; }
+.gbq-detail-summary strong,.gbq-detail-summary small { display:block; }
+.gbq-detail-summary strong { color:#fff0c9; font-size:14px; }
+.gbq-detail-summary small { margin-top:3px; color:#b8c5d0; font-size:10px; text-transform:capitalize; }
+.gbq-detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr)); gap:8px; }
+.gbq-detail-card { min-width:0; padding:10px 11px; border:1px solid #3c4c59; border-radius:4px; background:linear-gradient(145deg,#1b2a38,#101821); }
+.gbq-detail-card small { display:block; color:#d6b879; font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; overflow-wrap:anywhere; }
+.gbq-detail-card strong { display:block; margin-top:5px; color:#fff1d1; font-size:14px; overflow-wrap:anywhere; }
+.gbq-detail-card p { margin:5px 0 0; color:#b9c4ce; font-size:11px; line-height:1.4; overflow-wrap:anywhere; }
+.gbq-detail-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 14px; border-top:1px solid #394958; background:#0b1119; color:#aebdca; font-size:10px; }
+.gbq-detail-footer button { min-height:30px; padding:5px 14px; }
+@media(max-width:620px) {
+ .gbq-detail-page { position:fixed; inset:4px; padding:4px; }
+ .gbq-detail-window { max-height:94%; min-height:220px; }
+ .gbq-detail-header { padding:10px; }
+ .gbq-detail-tabs { padding:7px; gap:4px; }
+ .gbq-detail-tabs button { flex:1 1 auto; min-width:0; padding:6px 7px; font-size:10px; }
+ .gbq-detail-content { padding:9px; }
+ .gbq-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+ .gbq-detail-card { padding:8px; }
+ .gbq-detail-card strong { font-size:12px; }
+ .gbq-detail-card p { font-size:10px; }
+}
+@media(max-width:360px) { .gbq-detail-grid { grid-template-columns:1fr; } }
