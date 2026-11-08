@@ -21,3 +21,12 @@
 .gbq-trade-message{margin:12px 18px 0;padding:10px;border:1px solid #876b42;background:#332716;color:#ffe2a3}.gbq-trade-message[hidden]{display:none}
 .gbq-trade-window footer{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-top:1px solid #51432f;letter-spacing:.04em}
 @media(max-width:560px){.gbq-trade-overlay{padding:5px}.gbq-trade-window{max-height:96dvh}.gbq-trade-content{padding:12px}.gbq-trade-header{padding:12px}.gbq-trade-header h2{font-size:17px}}
+
+.gbq-trade-bank-balances{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.gbq-trade-bank-balances>div{display:grid;gap:7px;padding:14px;border:1px solid #705a39;background:linear-gradient(145deg,#1b252d,#0a1017)}
+.gbq-trade-bank-balances small{color:#b8c7cf;font-size:9px;letter-spacing:.12em}
+.gbq-trade-bank-balances b{color:#f5d48e;font:700 17px Cinzel,Georgia,serif;overflow-wrap:anywhere}
+.gbq-trade-bank-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gbq-trade-bank-actions form{display:grid;gap:10px;padding:13px;border:1px solid #51432f;background:#0a1119}
+.gbq-trade-bank-actions button{width:100%}
+@media(max-width:560px){.gbq-trade-bank-balances,.gbq-trade-bank-actions{grid-template-columns:1fr}}
