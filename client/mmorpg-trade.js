@@ -95,10 +95,10 @@ class GBQuestMMOApi {
   async function refresh() {
     if(!state.api?.token || !state.selected) return;
     try {
-      const [trades,inventory,wallet]=await Promise.all([
-        state.api.trades(state.selected.id),state.api.inventory(state.selected.id),state.api.wallet(state.selected.id)
+      const [trades,inventory,wallet,bank]=await Promise.all([
+        state.api.trades(state.selected.id),state.api.inventory(state.selected.id),state.api.wallet(state.selected.id),state.api.bank(state.selected.id)
       ]);
-      state.offers=trades.trades||[]; state.inventory=inventory.items||[]; state.wallet=wallet;
+      state.offers=trades.trades||[]; state.inventory=inventory.items||[]; state.wallet=wallet; state.bank=bank;
       renderContent();
     } catch(error) { toast(error.message||'Could not refresh trading data'); }
   }
