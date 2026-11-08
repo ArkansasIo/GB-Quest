@@ -52,7 +52,7 @@ class GBQuestMMOApi {
   'use strict';
   if (window.GBQMMOTrade) return;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], bank:null, status:'disconnected', busy:false, error:'', tab:'trade' };
+  const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], bank:null, status:'disconnected', busy:false, error:'', tab:'trade', seenOfferIds:new Set(), offersInitialized:false, pollHandle:null, refreshing:false };
   const storageKey = 'gbq.mmo.trade.realm';
   function apiBase() {
     try { return localStorage.getItem(storageKey) || window.GBQ_MMO_REALM_URL || location.origin; }
@@ -93,14 +93,32 @@ class GBQuestMMOApi {
     }
   }
   async function refresh() {
-    if(!state.api?.token || !state.selected) return;
+    if(!state.api?.token || !state.selected || state.refreshing) return;
+    state.refreshing=true;
     try {
       const [trades,inventory,wallet,bank]=await Promise.all([
         state.api.trades(state.selected.id),state.api.inventory(state.selected.id),state.api.wallet(state.selected.id),state.api.bank(state.selected.id)
       ]);
-      state.offers=trades.trades||[]; state.inventory=inventory.items||[]; state.wallet=wallet; state.bank=bank;
+      const nextOffers=trades.trades||[];
+      const incoming=nextOffers.filter(o=>o.to_character_id===state.selected.id&&o.status==='pending');
+      const unseen=state.offersInitialized?incoming.filter(o=>!state.seenOfferIds.has(o.id)):[];
+      for(const offer of nextOffers) state.seenOfferIds.add(offer.id);
+      state.offersInitialized=true;
+      state.offers=nextOffers; state.inventory=inventory.items||[]; state.wallet=wallet; state.bank=bank;
+      const badge=panel()?.querySelector('[data-tab="offers"]');
+      if(badge) badge.textContent='OFFERS'+(incoming.length?' ('+incoming.length+')':'');
+      if(unseen.length) toast('New trade offer from '+unseen.map(o=>o.from_name).filter(Boolean).join(', '));
       renderContent();
     } catch(error) { toast(error.message||'Could not refresh trading data'); }
+    finally { state.refreshing=false; }
+  }
+  function startPolling() {
+    if(state.pollHandle!==null) window.clearInterval(state.pollHandle);
+    state.pollHandle=window.setInterval(()=>{if(panel()&&state.selected) refresh();},15000);
+  }
+  function stopPolling() {
+    if(state.pollHandle!==null) window.clearInterval(state.pollHandle);
+    state.pollHandle=null;
   }
   function render() {
     if(panel()) return;
@@ -217,10 +235,10 @@ class GBQuestMMOApi {
       }
       if(b.dataset.accept) { await state.api.acceptTrade(b.dataset.accept); toast('Trade completed.'); await refresh(); return; }
       if(b.dataset.cancel) { await state.api.cancelTrade(b.dataset.cancel); toast('Offer cancelled.'); await refresh(); return; }
-      if(b.hasAttribute('data-logout')) { state.api?.logout(); state.api=null; state.selected=null; state.characters=[]; syncAuth(); setStatus('disconnected'); return; }
+      if(b.hasAttribute('data-logout')) { stopPolling(); state.api?.logout(); state.api=null; state.selected=null; state.characters=[]; syncAuth(); setStatus('disconnected'); return; }
     } catch(error) { toast(error.message||'Trading action failed'); }
   }
-  function close() { state.api?.disconnect(); panel()?.remove(); }
+  function close() { stopPolling(); state.api?.disconnect(); panel()?.remove(); }
   function open() {
     render();
     const token=(()=>{try{return localStorage.getItem('gbq.mmo.token');}catch{return null;}})();
