@@ -94,6 +94,8 @@ if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
   characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
   apMonsterArt, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
+  asset6000For: (category, identity) => window.GBQ6000Assets ? window.GBQ6000Assets.pick(category, identity) : Promise.resolve(null),
+  get6000: id => window.GBQ6000Assets ? window.GBQ6000Assets.get(id) : Promise.resolve(null),
 };
 
 if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
