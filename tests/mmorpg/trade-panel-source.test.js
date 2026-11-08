@@ -51,4 +51,12 @@ test('HUD exposes the Trading action and delegates to the realm panel', () => {
   assert.match(styles, /gbq-trade-overlay/);
   assert.match(styles, /@media\(max-width:560px\)/);
 });
-\ntest('bank tab exposes server-backed deposit and withdrawal forms', () => {\n  assert.match(source, /data-tab=\"bank\"/);\n  assert.match(source, /data-bank-action=\"deposit\"/);\n  assert.match(source, /data-bank-action=\"withdraw\"/);\n  assert.match(source, /state\.api\.bank\(state\.selected\.id\)/);\n  assert.match(source, /state\.api\.depositBank/);\n  assert.match(source, /state\.api\.withdrawBank/);\n});\n
+
+test('bank tab exposes server-backed deposit and withdrawal forms', () => {
+  assert.match(source, /data-tab=\"bank\"/);
+  assert.match(source, /data-bank-action=\"deposit\"/);
+  assert.match(source, /data-bank-action=\"withdraw\"/);
+  assert.match(source, /state\.api\.bank\(state\.selected\.id\)/);
+  assert.match(source, /state\.api\.depositBank/);
+  assert.match(source, /state\.api\.withdrawBank/);
+});
