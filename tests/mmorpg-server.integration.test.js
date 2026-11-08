@@ -55,6 +55,35 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const { character } = await create.json();
     assert.equal(character.class, 'ranger');
 
+    const inventoryResponse = await fetch(base + `/api/characters/${character.id}/inventory`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(inventoryResponse.status, 200);
+    const inventory = await inventoryResponse.json();
+    assert.equal(inventory.items.length, 3);
+    const sword = inventory.items.find(item => item.item_id === 'rusty_sword');
+    assert.ok(sword && sword.quantity === 1 && sword.equipped === false);
+    const equip = await fetch(base + `/api/characters/${character.id}/equip`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ inventoryId: sword.inventory_id })
+    });
+    assert.equal(equip.status, 200);
+    assert.equal((await equip.json()).equipped[0].slot, 'main_hand');
+    const potion = inventory.items.find(item => item.item_id === 'minor_potion');
+    const rejectPotion = await fetch(base + `/api/characters/${character.id}/equip`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ inventoryId: potion.inventory_id })
+    });
+    assert.equal(rejectPotion.status, 400);
+    const unequip = await fetch(base + `/api/characters/${character.id}/unequip`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ slot: 'main_hand' })
+    });
+    assert.equal(unequip.status, 200);
+
     socket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
     const messages = [];
     socket.addEventListener('message', event => {
