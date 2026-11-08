@@ -41,6 +41,9 @@ export class GBQuestMMOApi {
   unequipItem(characterId, slot) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/unequip', { method: 'POST', body: { slot } });
   }
+  useItem(characterId, inventoryId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/use-item', { method: 'POST', body: { inventoryId } });
+  }
   connect() {
     if (!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl = new URL('/ws', this.baseUrl);
