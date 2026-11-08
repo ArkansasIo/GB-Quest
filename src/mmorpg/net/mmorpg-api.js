@@ -44,6 +44,15 @@ export class GBQuestMMOApi {
   useItem(characterId, inventoryId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/use-item', { method: 'POST', body: { inventoryId } });
   }
+  quests(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/quests');
+  }
+  acceptQuest(characterId, questId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/quests', { method: 'POST', body: { questId } });
+  }
+  wallet(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/wallet');
+  }
   connect() {
     if (!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl = new URL('/ws', this.baseUrl);
