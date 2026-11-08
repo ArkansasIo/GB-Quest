@@ -22,7 +22,7 @@ test('MMORPG API authenticates and sends bearer credentials to character endpoin
 });
 
 test('MMORPG API rejects non-HTTPS remote origins and reports API errors', async () => {
-  assert.throws(() => new GBQuestMMOApi({ baseUrl: 'ftp://realm.example.test' }), /HTTPS/);
+  assert.throws(() => new GBQuestMMOApi({ baseUrl: 'ftp://realm.example.test' }), /HTTPS/);\n  assert.throws(() => new GBQuestMMOApi({ baseUrl: 'http://realm.example.test' }), /HTTPS/);\n  assert.doesNotThrow(() => new GBQuestMMOApi({ baseUrl: 'http://localhost:8788' }));
   const api = new GBQuestMMOApi({
     baseUrl: 'https://realm.example.test',
     fetchImpl: async () => ({ ok: false, status: 401, json: async () => ({ error: 'unauthorized' }) })
