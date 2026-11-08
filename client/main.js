@@ -8,7 +8,12 @@
     document.body.classList.toggle('chat-on', visible);
     try { localStorage.setItem('gbq.fs.chatpanel', visible ? '1' : '0'); } catch (e) {}
   };
-  const loading = loadAssets(p => { progress = p; }).then(() => {
+  const loading = loadAssets(p => { progress = p; }).then(async () => {
+    // Load only the compact atlas index at boot; individual 64px sprites remain lazy-loaded.
+    if (window.GBQ6000Assets) {
+      try { await window.GBQ6000Assets.load(); }
+      catch (error) { console.warn('Optional 6,000-image catalog unavailable; using standard art:', error); }
+    }
     // Pack art can be selected before its images finish loading. Reapply every
     // alias after the complete asset batch so world tiles and objects are ready
     // before the first playable frame.

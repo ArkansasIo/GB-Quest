@@ -538,3 +538,42 @@ body.theme-pokemon .gbq-player-hud .gbq-hud-toast {
   body.theme-pokemon .gbq-player-hud .gbq-hud-hotbar { gap:1px !important; padding:2px !important; }
   body.theme-pokemon .gbq-player-hud .gbq-hud-hotbar button { width:24px !important; height:29px !important; }
 }
+
+
+/* FINAL GAME TEXT + HUD SCALE: avoid micro-labels and preserve contrast. */
+body.theme-pokemon .gbq-player-hud.is-live {
+  font-family:Arial,system-ui,sans-serif !important;
+  font-size:10px !important;
+  line-height:1.35 !important;
+  text-shadow:0 1px 1px #0008 !important;
+}
+body.theme-pokemon .gbq-player-hud .gbq-hud-brand { font:700 12px/1.2 Arial,sans-serif !important; letter-spacing:.04em !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-brand small { font:700 8px/1.2 Arial,sans-serif !important; letter-spacing:.04em !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-player-name { font:700 12px/1.25 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-level,
+body.theme-pokemon .gbq-player-hud .gbq-hud-meter,
+body.theme-pokemon .gbq-player-hud .gbq-hud-section-title span,
+body.theme-pokemon .gbq-player-hud .gbq-hud-stat-grid small,
+body.theme-pokemon .gbq-player-hud .gbq-hud-attribute-grid small { font:700 9px/1.25 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-section-title { font:700 10px/1.25 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-stat-grid strong,
+body.theme-pokemon .gbq-player-hud .gbq-hud-attribute-grid strong { font:700 11px/1.2 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-map-meta strong,
+body.theme-pokemon .gbq-player-hud .gbq-hud-map-meta span,
+body.theme-pokemon .gbq-player-hud .gbq-hud-quest strong,
+body.theme-pokemon .gbq-player-hud .gbq-hud-quest small { font:700 9px/1.3 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-nav,
+body.theme-pokemon .gbq-player-hud .gbq-hud-hotbar button,
+body.theme-pokemon .gbq-player-hud .gbq-hud-potions button { font:700 9px/1.2 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-glyph { font:700 14px/1 Arial,sans-serif !important; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-panel { overflow:hidden; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-player-info { min-width:0; }
+body.theme-pokemon .gbq-player-hud .gbq-hud-player-name,
+body.theme-pokemon .gbq-player-hud .gbq-hud-level { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+body.theme-pokemon .game-start-fallback { font-family:Arial,sans-serif !important; letter-spacing:.04em !important; }
+@media(max-width:620px) {
+  body.theme-pokemon .gbq-player-hud .gbq-hud-brand { font-size:10px !important; }
+  body.theme-pokemon .gbq-player-hud .gbq-hud-meter { font-size:8px !important; }
+  body.theme-pokemon .gbq-player-hud .gbq-hud-section-title { font-size:9px !important; }
+}
+

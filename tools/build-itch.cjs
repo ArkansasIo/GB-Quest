@@ -76,6 +76,8 @@ for (const required of [
   'gbq_master_catalog',
   'gbq_ui_mockup_catalog',
   'GBQ_HD64_ATLASES',
+  'GBQ_6000_ASSET_INDEX',
+  'GBQ_6000_ATLASES',
   'theme-shadows',
   'theme-pokemon',
   'POKEMON CLASSIC',

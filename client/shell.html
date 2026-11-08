@@ -351,6 +351,70 @@ textarea { width:100%; min-height:84px; resize:vertical; overflow:auto; }
 }
 
 </style>
+<style>
+
+/* FINAL READABILITY + RESPONSIVE LAYOUT PATCH */
+html { min-width:320px; }
+body { text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; }
+.game-client, .game-viewport { min-width:0; min-height:0; }
+#lcd { image-rendering:pixelated; }
+body.full-detail-art #lcd { image-rendering:auto; }
+.chat-titlebar { min-height:28px; font-size:12px; }
+.chat-tabs button { min-height:30px; font-size:11px; }
+.chatlog { font:12px/1.55 Arial,sans-serif; color:#e1e6ed; }
+.chatlog b { color:#fff0c8; }
+.chatform input { min-height:42px; font:14px/1.35 Arial,sans-serif; }
+.chatform button { min-height:42px; font:700 12px/1 Arial,sans-serif; }
+.game-start-fallback { overflow-wrap:anywhere; }
+@media (min-width:901px) and (pointer:fine) {
+  :root { --gbq-sidebar-width:clamp(240px,25vw,300px); }
+  .game-client { padding:8px calc(var(--gbq-sidebar-width) + 24px) 30px 12px; }
+  .game-viewport {
+    width:min(100%,calc((100dvh - 104px)*160/144));
+    max-height:calc(100dvh - 104px);
+  }
+  .game-viewport > .chat {
+    width:var(--gbq-sidebar-width) !important;
+    max-width:var(--gbq-sidebar-width) !important;
+    right:12px !important;
+  }
+  body.full-window-mode .game-client, body.fullscreen-mode .game-client {
+    padding:12px calc(var(--gbq-sidebar-width) + 24px) 12px 12px;
+  }
+  body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport {
+    width:min(100%,calc((100dvh - 24px)*160/144));
+    max-height:calc(100dvh - 24px);
+  }
+  body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat {
+    width:var(--gbq-sidebar-width) !important;
+    max-width:var(--gbq-sidebar-width) !important;
+    right:12px !important;
+  }
+}
+@media (max-width:900px), (pointer:coarse) {
+  body { min-width:320px; overflow-x:hidden; }
+  .game-client { width:100%; max-width:100%; padding-inline:8px; }
+  .game-viewport { width:100%; max-width:100%; aspect-ratio:160/144; overflow:hidden; }
+  #lcd { width:100%; height:100%; max-width:100%; max-height:100%; object-fit:contain; }
+  .chat, .game-viewport > .chat {
+    left:8px !important; right:8px !important;
+    width:auto !important; max-width:none !important;
+    max-height:min(42dvh,340px) !important;
+  }
+}
+@media (max-width:480px) {
+  .game-client { padding-bottom:150px; }
+  .game-viewport { aspect-ratio:160/144; }
+  .chat-tabs button { min-height:32px; font-size:10px; }
+  .chatlog { font-size:12px; }
+}
+@media (max-height:520px) and (pointer:coarse) {
+  .game-client { padding-bottom:120px; }
+  .controls { bottom:38px !important; }
+  .foot { bottom:6px !important; }
+}
+
+</style>
 <link rel="stylesheet" href="theme-citadel.css">
 <link rel="stylesheet" href="client/player-hud.css">
 <link rel="stylesheet" href="client/theme-pokemon.css">

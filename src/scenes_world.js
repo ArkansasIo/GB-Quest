@@ -817,8 +817,9 @@ class Field {
         const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(G, G.dir, ghost) : null;
         const gearWalker = worldGearWalker(G, G.dir, walkFrame, ghost);
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(G, G.dir, ghost);
+        drawWorldShadow(px - cx + T / 2, py - cy + T - 1 - (G.mounted ? 4 : 0), 13);
         if (portrait) blit(portrait, px - cx + (T - portrait.width) / 2, py - cy + T - portrait.height - 1 - (G.mounted ? 6 : 0) - moveBob);
-        else if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
+        else if (PIX) blit(walker(heroLook(G), G.dir, walkFrame, ghost), px - cx + Math.floor((T - 16) / 2), py - cy - 3 - (G.mounted ? 5 : 0) - moveBob);
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
         const bob = (this.walk >> 3) % 2;
@@ -826,8 +827,9 @@ class Field {
         const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(e.c, e.dir) : null;
         const gearWalker = worldGearWalker(e.c, e.dir, bob);
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(e.c, e.dir);
+        drawWorldShadow(ex + T / 2, ey + T - 1, 11);
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1 - bob);
-        else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex, ey - 3);
+        else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex + Math.floor((T - 16) / 2), ey - 3 - bob);
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
@@ -865,8 +867,8 @@ class Field {
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'vault') blit(PIX ? spr(e.open ? 'go_chestopen' : 'go_chest', 16, 16) : sprFit(e.open ? 'item_chest_open' : 'item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
-      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
+      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = worldMonsterFrame(sprH(monsterArt(B), 28), 28); const bob = Math.round(Math.sin(frameN / 10)); drawWorldShadow(ex + T / 2, ey + T - 1, 17); blit(c, ex + (T - c.width) / 2, ey + T - c.height + bob); if ((frameN >> 4) % 2) { fill(ex + T / 2 - 5, ey - 8, 10, 7, 3); text(B.cat === 'arc' ? '!!' : '!', ex + T / 2 - 3, ey - 7, 'red'); } }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = worldMonsterFrame(sprH(s, p.boss ? 27 : 22), p.boss ? 27 : 22); const bob = Math.round(Math.sin(frameN / (p.boss ? 9 : 13)) * (p.boss ? 2 : 1)); drawWorldShadow(ex + T / 2, ey + T - 1, p.boss ? 16 : 12); blit(c, ex + (T - c.width) / 2, ey + T - c.height + bob); if (p.miniboss && (frameN >> 4) % 2) { fill(ex + T / 2 - 5, ey - 7, 10, 7, 3); text('M!', ex + T / 2 - 3, ey - 6, 'red'); } }
     }
     FX.draw(cx, cy);
     if (worldPalette) applyGameBoyWorldPalette(0, 0, W, H);
@@ -901,12 +903,48 @@ function worldGearWalker(character, dir = 'down', frame = 0, ghost = false) {
   if (!base) return null;
   const out = mkCanvas(24, 24), x = out.getContext('2d');
   x.imageSmoothingEnabled = false;
-  x.drawImage(base, 0, 0, 24, 24);
+  // Keep the original 16x16 walker crisp and centred; do not stretch it to 24x24.
+  x.drawImage(base, 4, 5, 16, 16);
   for (const v of visuals) {
-    const name = itemIcon(v.item), size = Math.max(1, Math.round(v.size * 1.5)), icon = spr(name, size, size, { ghost });
-    if (icon) x.drawImage(icon, Math.round(v.x * 1.5), Math.round(v.y * 1.5));
+    const name = itemIcon(v.item), size = Math.max(1, Math.round(v.size)), icon = spr(name, size, size, { ghost });
+    if (icon) x.drawImage(icon, 4 + Math.round(v.x), 5 + Math.round(v.y), size, size);
   }
   return out;
+}
+// Cache crisp, outlined monster frames so every world creature has a clear silhouette.
+const WORLD_MONSTER_FRAMES = new WeakMap();
+function worldMonsterFrame(sprite, size = 22) {
+  if (!sprite || typeof sprite !== 'object') return sprite;
+  let bySize = WORLD_MONSTER_FRAMES.get(sprite);
+  if (!bySize) { bySize = new Map(); WORLD_MONSTER_FRAMES.set(sprite, bySize); }
+  const key = Math.max(12, Math.min(30, Math.round(size)));
+  if (bySize.has(key)) return bySize.get(key);
+  const out = mkCanvas(32, 32), draw = out.getContext('2d');
+  draw.imageSmoothingEnabled = false;
+  const scale = Math.min(key / Math.max(1, sprite.width), key / Math.max(1, sprite.height));
+  const w = Math.max(1, Math.round(sprite.width * scale)), h = Math.max(1, Math.round(sprite.height * scale));
+  const x = Math.floor((32 - w) / 2), y = 30 - h;
+  const silhouette = mkCanvas(32, 32), mask = silhouette.getContext('2d');
+  mask.imageSmoothingEnabled = false;
+  mask.drawImage(sprite, x, y, w, h);
+  mask.globalCompositeOperation = 'source-in';
+  mask.fillStyle = '#111522';
+  mask.fillRect(0, 0, 32, 32);
+  draw.save();
+  draw.globalAlpha = 0.95;
+  for (const [ox, oy] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]]) draw.drawImage(silhouette, ox, oy);
+  draw.restore();
+  draw.drawImage(sprite, x, y, w, h);
+  bySize.set(key, out);
+  return out;
+}
+function drawWorldShadow(x, y, width = 12) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(5,8,15,.42)';
+  ctx.beginPath();
+  ctx.ellipse(x, y, width / 2, Math.max(2, width / 5), 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 function worldPortrait(character, dir = 'down', ghost = false) {
   const portrait = heroPortrait(character);

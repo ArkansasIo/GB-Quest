@@ -15,6 +15,7 @@ on:
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
       - 'tests/**'
+      - 'tests/**'
       - 'tools/build_animation_manifest.py'
       - 'tools/generate_character_sprite_pack.py'
       - 'tools/generate_warrior_f_sprite.py'
@@ -34,6 +35,7 @@ on:
       - 'data/visuals/**'
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
+      - 'tests/**'
       - 'tools/build_animation_manifest.py'
       - 'tools/generate_character_sprite_pack.py'
       - 'tools/generate_warrior_f_sprite.py'
@@ -56,6 +58,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
+      - name: Run source syntax checks
+        run: npm run check:syntax
       - name: Run repository regression tests
         run: npm test
       - name: Install artwork generator dependencies
@@ -96,8 +100,24 @@ jobs:
           assert manifest["items"], "Equipment manifest is empty"
           print(f"Validated {len(frames)} character frames and {len(manifest['items'])} equipment layers")
           PY
-      - name: Build and validate itch.io ZIP
+      - name: Install 6,000-image asset pipeline dependencies
+        run: python -m pip install -r requirements-assets.txt
+      - name: Generate and validate the complete 6,000-image HD64 catalog
+        run: npm run assets:build:6000
+      - name: Package the separate 6,000-image source asset ZIP
+        run: npm run assets:zip:6000
+      - name: Build and validate itch.io ZIP with embedded HD64 catalog
         run: npm run build:itch
+      - name: Upload complete 6,000-image HD64 source pack
+        uses: actions/upload-artifact@v7
+        with:
+          name: GB-Quest-6000-HD64-Asset-Pack
+          path: |
+            assets_hd64/gbq_6000/
+            build/GB-Quest-6000-HD64-Assets.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
       - name: Upload itch.io HTML5 package
         uses: actions/upload-artifact@v7
         with:

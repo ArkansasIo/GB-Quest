@@ -229,3 +229,8 @@ The frame presenter now keeps a bounded least-recently-used cache (24 entries by
 ### Battle scene animation integration
 
 The battle party renderer now requests the HD character compositor for party members that have equipment data. The battle renderer maps live presentation state to animation clips: attack actions request `attack`, spell actions request `cast`, damage flashes request `hit`, and defeated characters request `death`. Attack and cast poses expire using the battle frame counter, returning to idle instead of remaining stuck on an action frame. Prepared canvases are drawn into the existing battle-sprite footprint; if generated HD assets are absent or a frame fails, the existing portrait/sprite renderer remains active. Battle enemies continue using their existing creature sprites.
+
+
+## Redesigned overworld player and monster sprites
+
+The overworld renderer now preserves the native 16×16 player walker proportions instead of stretching the base frame to 24×24. The player and followers receive a small ground shadow and retain crisp, nearest-neighbour equipment overlays. Monster and boss sprites use a cached 32×32 presentation frame with a dark pixel outline, a ground shadow and a restrained idle bob. Regular encounters and bosses have separate display sizes so small creatures remain readable without losing the larger boss silhouette. The changes are presentation-only: encounter data, hit points, movement, collision and combat rules are unchanged.
