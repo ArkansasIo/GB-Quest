@@ -24,7 +24,7 @@ if (fs.existsSync(catalogIndexPath)) {
   }
   if (Object.keys(catalogIndex.assets || {}).length !== 6000) throw new Error('Expected exactly 6,000 indexed HD64 assets.');
 }
-const catalogInline = '<script>window.GBQ_6000_ASSET_INDEX=' + JSON.stringify(catalogIndex) + ';window.GBQ_6000_ATLASES=' + JSON.stringify(catalogAtlases) + ';</script>\\n';
+const catalogInline = '<script>window.GBQ_6000_ASSET_INDEX=' + JSON.stringify(catalogIndex) + ';window.GBQ_6000_ATLASES=' + JSON.stringify(catalogAtlases) + ';</script>\n';
 const citadelFiles = [];
 function walkCitadel(dir) {
   if (!fs.existsSync(dir)) return;
