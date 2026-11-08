@@ -50,6 +50,15 @@ export class GBQuestMMOApi {
   acceptQuest(characterId, questId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/quests', { method: 'POST', body: { questId } });
   }
+  bank(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/bank');
+  }
+  depositGold(characterId, amount) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/bank/deposit', { method: 'POST', body: { amount } });
+  }
+  withdrawGold(characterId, amount) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/bank/withdraw', { method: 'POST', body: { amount } });
+  }
   wallet(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/wallet');
   }
