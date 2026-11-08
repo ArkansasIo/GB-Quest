@@ -490,6 +490,146 @@ const server = http.createServer(async (req, res) => {
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
       return json(res, 404, { error: 'quest_not_found' });
     }
+    const characterTradesMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/trades$/i);
+    if (characterTradesMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = characterTradesMatch[1];
+      const owned = await pool.query('SELECT 1 FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const result = await pool.query(`SELECT t.id,t.from_character_id,t.to_character_id,t.item_id,ic.name AS item_name,
+        t.quantity,t.gold_amount,t.status,t.created_at,t.expires_at,
+        sf.name AS from_name,st.name AS to_name
+        FROM player_trade_offers t
+        JOIN characters sf ON sf.id=t.from_character_id
+        JOIN characters st ON st.id=t.to_character_id
+        LEFT JOIN item_catalog ic ON ic.id=t.item_id
+        WHERE t.from_character_id=$1 OR t.to_character_id=$1
+        ORDER BY t.created_at DESC LIMIT 50`, [characterId]);
+      return json(res, 200, { trades: result.rows });
+    }
+    const tradeActionMatch = url.pathname.match(/^\\/api\\/trades\\/([0-9a-f-]{36})\\/(accept|cancel)$/i);
+    if (tradeActionMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const action = tradeActionMatch[2].toLowerCase(), tradeId = tradeActionMatch[1];
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const offerResult = await tx.query('SELECT * FROM player_trade_offers WHERE id=$1 FOR UPDATE', [tradeId]);
+        if (!offerResult.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'trade_not_found' }); }
+        const offer = offerResult.rows[0];
+        const participant = await tx.query('SELECT id,account_id FROM characters WHERE id=ANY($1::uuid[]) AND account_id=$2',
+          [[offer.from_character_id,offer.to_character_id],acct.id]);
+        if (!participant.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'trade_not_found' }); }
+        if (offer.status !== 'pending') { await tx.query('ROLLBACK'); return json(res, 409, { error: 'trade_not_pending' }); }
+        if (action === 'cancel') {
+          await tx.query("UPDATE player_trade_offers SET status='cancelled' WHERE id=$1", [tradeId]);
+          await tx.query('COMMIT');
+          return json(res, 200, { tradeId,status:'cancelled' });
+        }
+        if (!participant.rows.some(row => row.id === offer.to_character_id)) {
+          await tx.query('ROLLBACK'); return json(res, 403, { error: 'only_recipient_can_accept' });
+        }
+        if (new Date(offer.expires_at).getTime() <= Date.now()) {
+          await tx.query("UPDATE player_trade_offers SET status='expired' WHERE id=$1", [tradeId]);
+          await tx.query('COMMIT');
+          return json(res, 410, { error: 'trade_expired' });
+        }
+        const locked = await tx.query('SELECT id,gold,zone_id FROM characters WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE',
+          [[offer.from_character_id,offer.to_character_id]]);
+        const sender = locked.rows.find(row => row.id === offer.from_character_id);
+        const recipient = locked.rows.find(row => row.id === offer.to_character_id);
+        if (!sender || !recipient) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
+        if (sender.zone_id !== recipient.zone_id) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'characters_not_in_same_zone' }); }
+        const goldAmount = BigInt(offer.gold_amount);
+        const senderGold = BigInt(sender.gold), recipientGold = BigInt(recipient.gold);
+        if (senderGold < goldAmount) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'sender_insufficient_gold' }); }
+        if (recipientGold + goldAmount > BigInt(Number.MAX_SAFE_INTEGER)) {
+          await tx.query('ROLLBACK'); return json(res, 409, { error: 'recipient_wallet_limit_exceeded' });
+        }
+        if (offer.item_id) {
+          const source = await tx.query('SELECT id,quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE',
+            [offer.from_character_id,offer.item_id]);
+          if (!source.rowCount || Number(source.rows[0].quantity) < Number(offer.quantity)) {
+            await tx.query('ROLLBACK'); return json(res, 409, { error: 'sender_insufficient_items' });
+          }
+          const equipped = await tx.query('SELECT 1 FROM character_equipment WHERE inventory_id=$1', [source.rows[0].id]);
+          if (equipped.rowCount) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'unequip_item_before_trading' }); }
+          const catalogue = await tx.query('SELECT max_stack FROM item_catalog WHERE id=$1', [offer.item_id]);
+          const destination = await tx.query('SELECT id,quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE',
+            [offer.to_character_id,offer.item_id]);
+          const currentQuantity = destination.rowCount ? Number(destination.rows[0].quantity) : 0;
+          if (currentQuantity + Number(offer.quantity) > Number(catalogue.rows[0].max_stack)) {
+            await tx.query('ROLLBACK'); return json(res, 409, { error: 'recipient_inventory_stack_limit' });
+          }
+          if (Number(source.rows[0].quantity) === Number(offer.quantity)) {
+            await tx.query('DELETE FROM character_inventory WHERE id=$1', [source.rows[0].id]);
+          } else {
+            await tx.query('UPDATE character_inventory SET quantity=quantity-$1 WHERE id=$2', [offer.quantity,source.rows[0].id]);
+          }
+          if (destination.rowCount) {
+            await tx.query('UPDATE character_inventory SET quantity=quantity+$1 WHERE id=$2', [offer.quantity,destination.rows[0].id]);
+          } else {
+            await tx.query('INSERT INTO character_inventory(character_id,item_id,quantity) VALUES($1,$2,$3)',
+              [offer.to_character_id,offer.item_id,offer.quantity]);
+          }
+        }
+        if (goldAmount > 0n) {
+          await tx.query('UPDATE characters SET gold=gold-$1,updated_at=now() WHERE id=$2', [goldAmount.toString(),offer.from_character_id]);
+          await tx.query('UPDATE characters SET gold=gold+$1,updated_at=now() WHERE id=$2', [goldAmount.toString(),offer.to_character_id]);
+        }
+        await tx.query("UPDATE player_trade_offers SET status='completed',completed_at=now() WHERE id=$1", [tradeId]);
+        await tx.query(`INSERT INTO player_trade_transactions(offer_id,from_character_id,to_character_id,item_id,quantity,gold_amount)
+          VALUES($1,$2,$3,$4,$5,$6)`, [tradeId,offer.from_character_id,offer.to_character_id,offer.item_id,offer.quantity,goldAmount.toString()]);
+        await tx.query('COMMIT');
+        return json(res, 200, { tradeId,status:'completed',itemId:offer.item_id,quantity:Number(offer.quantity),goldAmount:goldAmount.toString() });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
+    const createTradeMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/trades$/i);
+    if (createTradeMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), senderId = createTradeMatch[1];
+      const recipientId = String(body.toCharacterId || ''), itemId = body.itemId ? String(body.itemId) : null;
+      const quantity = itemId ? Number(body.quantity) : 0, goldAmount = body.goldAmount === undefined ? 0 : body.goldAmount;
+      if (!/^[0-9a-f-]{36}$/i.test(recipientId) || recipientId === senderId ||
+          (itemId && !/^[a-z0-9_-]{1,48}$/i.test(itemId)) ||
+          !Number.isSafeInteger(quantity) || quantity < 0 || quantity > 99 ||
+          !Number.isSafeInteger(goldAmount) || goldAmount < 0 || goldAmount > 1000000000 ||
+          (!itemId && quantity !== 0) || (!itemId && goldAmount === 0) || (itemId && quantity < 1)) {
+        return json(res, 400, { error: 'invalid_trade_offer' });
+      }
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const chars = await tx.query('SELECT id,account_id,gold,zone_id FROM characters WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE',
+          [[senderId,recipientId]]);
+        const sender = chars.rows.find(row => row.id === senderId && row.account_id === acct.id);
+        const recipient = chars.rows.find(row => row.id === recipientId);
+        if (!sender) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
+        if (!recipient) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'recipient_not_found' }); }
+        if (sender.zone_id !== recipient.zone_id) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'characters_not_in_same_zone' }); }
+        if (BigInt(sender.gold) < BigInt(goldAmount)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'sender_insufficient_gold' }); }
+        if (itemId) {
+          const item = await tx.query('SELECT ci.id,ci.quantity FROM character_inventory ci WHERE ci.character_id=$1 AND ci.item_id=$2 FOR UPDATE',
+            [senderId,itemId]);
+          if (!item.rowCount || Number(item.rows[0].quantity) < quantity) {
+            await tx.query('ROLLBACK'); return json(res, 409, { error: 'sender_insufficient_items' });
+          }
+          const equipped = await tx.query('SELECT 1 FROM character_equipment WHERE inventory_id=$1', [item.rows[0].id]);
+          if (equipped.rowCount) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'unequip_item_before_trading' }); }
+        }
+        const offer = await tx.query(`INSERT INTO player_trade_offers(from_character_id,to_character_id,item_id,quantity,gold_amount)
+          VALUES($1,$2,$3,$4,$5) RETURNING id,status,expires_at`, [senderId,recipientId,itemId,quantity,String(goldAmount)]);
+        await tx.query('COMMIT');
+        return json(res, 201, { trade: { id:offer.rows[0].id,fromCharacterId:senderId,toCharacterId:recipientId,
+          itemId,quantity,goldAmount:String(goldAmount),status:offer.rows[0].status,expiresAt:offer.rows[0].expires_at } });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
     const bankMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/bank(?:\/(deposit|withdraw))?$/i);
     if (bankMatch && req.method === 'GET' && !bankMatch[2]) {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
