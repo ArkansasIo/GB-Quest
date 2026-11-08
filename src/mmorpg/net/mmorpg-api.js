@@ -6,7 +6,8 @@ export class GBQuestMMOApi {
     if (!baseUrl) throw new TypeError('baseUrl is required');
     this.baseUrl = new URL(baseUrl).origin;
     const parsedBase = new URL(baseUrl);
-    const localDevelopmentHost = /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(parsedBase.host);\n    if (parsedBase.protocol !== 'https:' && !(parsedBase.protocol === 'http:' && localDevelopmentHost)) throw new TypeError('Remote MMO API must use HTTPS; HTTP is allowed only on localhost');
+    const localDevelopmentHost = /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(parsedBase.host);
+    if (parsedBase.protocol !== 'https:' && !(parsedBase.protocol === 'http:' && localDevelopmentHost)) throw new TypeError('Remote MMO API must use HTTPS; HTTP is allowed only on localhost');
     this.fetch = fetchImpl;
     this.token = null;
     this.multiplayer = new MultiplayerClient({ onMessage, onStatus, WebSocketImpl });
