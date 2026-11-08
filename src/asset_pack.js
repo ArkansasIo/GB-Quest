@@ -33,6 +33,13 @@ const AP_MONSTERS = {
 };
 const AP_PORTRAITS = Array.from({ length: AP_COUNTS.portraits }, (_, i) => `ap_portraits_${String(i).padStart(3, '0')}`);
 function apHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function itchPackPick(category, identity) {
+  if (typeof IMG === 'undefined' || !IMG) return null;
+  const prefix = 'itch_';
+  const matches = Object.keys(IMG).filter(name => name.startsWith(prefix) && name.includes(`_${category}_ready_`)).sort();
+  if (!matches.length) return null;
+  return matches[apHash(`itch|${category}|${identity}`) % matches.length];
+}
 function apPick(category, identity, prefix = 'ap_') {
   const counts = prefix === 'au_' ? AU_COUNTS : AP_COUNTS, count = counts[category] || 0;
   if (!count) return null;
@@ -52,9 +59,10 @@ function apEquipmentFor(item) {
   if (!item) return null;
   const id = String(item.base || item.id || item.name || item.kind || 'item');
   if (AP_ITEM_ART[id]) return AP_ITEM_ART[id];
-  if (item.kind === 'weapon') return apPick('weapons', `${id}|${item.name || ''}|${item.fam || ''}`);
-  if (item.kind === 'armor' || item.kind === 'armour') return apPick('armor', `${id}|${item.name || ''}|${item.slot || ''}`);
-  return apPick('items', `${id}|${item.name || ''}|${item.kind || ''}`);
+  const identity = `${id}|${item.name || ''}|${item.fam || item.slot || ''}`;
+  if (item.kind === 'weapon') return itchPackPick('weapons', identity) || apPick('weapons', identity);
+  if (item.kind === 'armor' || item.kind === 'armour') return itchPackPick('armor', identity) || apPick('armor', identity);
+  return itchPackPick('items', identity) || apPick('items', identity);
 }
 function apFieldArtFor(name) {
   if (!name || typeof name !== 'string' || name.startsWith('ap_') || name.startsWith('au_')) return null;
@@ -89,7 +97,7 @@ const BATTLE_BG_MODES = ['clean', 'painted', 'scenes'];
 const nextBattleBg = cur => BATTLE_BG_MODES[(BATTLE_BG_MODES.indexOf(cur) + 1) % BATTLE_BG_MODES.length];
 
 if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
-  AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
+  AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_PORTRAITS, AP_COUNTS, AU_COUNTS, itchPackPick,
   apPick, apAsset, apAssetForSpell, apUiIconForSpell, worldTile: apFieldArtFor,
   characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
