@@ -186,3 +186,16 @@ test('expanded HUD submenu pages cover armoury, heirlooms, mounts, bestiary, rep
   assert.match(hud, /button\('Reputation','reputation'/);
   assert.match(hud, /button\('Settings','settings'/);
 });
+
+
+test('world player and monster sprites use crisp proportions, outlines and grounded shadows', () => {
+  const world = read('src/scenes_world.js');
+  assert.match(world, /function worldMonsterFrame\(/);
+  assert.match(world, /function drawWorldShadow\(/);
+  assert.match(world, /WORLD_MONSTER_FRAMES = new WeakMap/);
+  assert.match(world, /Keep the original 16x16 walker crisp and centred/);
+  assert.match(world, /worldMonsterFrame\(sprH\(monsterArt\(B\), 28\), 28\)/);
+  assert.match(world, /worldMonsterFrame\(sprH\(s, p\.boss \? 27 : 22\)/);
+  assert.match(world, /drawWorldShadow\(px - cx/);
+  assert.match(world, /drawWorldShadow\(ex \+ T \/ 2/);
+});
