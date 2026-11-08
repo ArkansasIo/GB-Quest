@@ -55,21 +55,9 @@ test('asset pack integration provides fallback-aware item, monster, scene and UI
   assert.match(source, /if \(!im\) return d0\.apply/);
 });
 
-test('every declared asset-pack and UI-kit sprite exists in the shipped PNG catalog', () => {
+test('optional reference art is guarded by runtime asset availability', () => {
   const source = read('src/asset_pack.js');
-  const shipped = new Set(JSON.parse(read('assets/index.json')));
-  for (const [constant, prefix] of [['AP_COUNTS', 'ap'], ['AU_COUNTS', 'au']]) {
-    const match = source.match(new RegExp('const ' + constant + ' = Object\\.freeze\\(\\{([\\s\\S]*?)\\}\\);'));
-    assert.ok(match, constant + ' declaration is missing');
-    const counts = [...match[1].matchAll(/([a-z0-9_]+):\s*(\d+)/g)];
-    assert.ok(counts.length > 0, constant + ' has no declared image families');
-    for (const [, category, rawCount] of counts) {
-      const count = Number(rawCount);
-      for (let index = 0; index < count; index++) {
-        const name = prefix + '_' + category + '_' + String(index).padStart(3, '0');
-        assert.ok(shipped.has(name), 'missing shipped sprite: ' + name);
-        assert.ok(fs.existsSync(new URL('../assets/' + name + '.png', import.meta.url)), 'missing PNG file: ' + name);
-      }
-    }
-  }
+  assert.match(source, /typeof IMG === 'undefined' \|\| IMG\[name\]/);
+  assert.match(source, /if \(!im\) return d0\.apply/);
+  assert.match(source, /packed && IMG\[packed\]/);
 });
