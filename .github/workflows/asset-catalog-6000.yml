@@ -9,7 +9,7 @@ on:
       - 'tools/build_pack6000_atlases.py'
       - 'tools/validate_pack6000_hd.py'
       - 'tools/zip_pack6000_hd.py'
-      - 'src/hd64_catalog.js'
+      - 'src/hd64_catalog.js'\n      - 'src/asset_pack.js'\n      - 'client/main.js'\n      - 'tools/build.cjs'\n      - 'tools/build-itch.cjs'
       - 'package.json'
       - 'requirements-assets.txt'
       - 'tests/visual-assets.test.js'
