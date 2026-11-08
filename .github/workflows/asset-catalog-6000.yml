@@ -1,0 +1,59 @@
+name: Build 6,000-image HD64 asset catalog
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/gen_pack6000_hd.py'
+      - 'tools/hd64_engine.py'
+      - 'tools/build_pack6000_atlases.py'
+      - 'tools/validate_pack6000_hd.py'
+      - 'tools/zip_pack6000_hd.py'
+      - 'src/hd64_catalog.js'
+      - 'package.json'
+      - 'requirements-assets.txt'
+      - 'tests/visual-assets.test.js'
+      - 'docs/BUILD_6000_ASSET_PACK.md'
+      - '.github/workflows/asset-catalog-6000.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-validate-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Install image pipeline dependencies
+        run: python -m pip install -r requirements-assets.txt
+      - name: Check source syntax
+        run: npm run check:syntax
+      - name: Run game tests
+        run: npm test
+      - name: Generate all 6,000 PNG assets and atlas pages
+        run: npm run assets:build:6000
+      - name: Create validated asset archive
+        run: npm run assets:zip:6000
+      - name: Upload generated source images, atlases and manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: GB-Quest-6000-HD64-Asset-Pack
+          path: |
+            assets_hd64/gbq_6000/
+            build/GB-Quest-6000-HD64-Assets.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
