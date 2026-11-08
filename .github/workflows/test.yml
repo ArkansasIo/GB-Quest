@@ -159,7 +159,7 @@ jobs:
         with:
           node-version: 24
       - name: Install server dependencies
-        run: npm install --no-audit --no-fund
+        run: npm install --omit=dev --no-audit --no-fund
       - name: Apply database schema
         env:
           DATABASE_URL: postgres://gbquest:gbquest_test_password@localhost:5432/gbquest_test
