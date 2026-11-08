@@ -209,6 +209,14 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       headers: { authorization: 'Bearer ' + token }
     });
     assert.equal((await bankAfter.json()).bankGold, '6');
+    const bankAuditPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try {
+      const audit = await bankAuditPool.query(
+        'SELECT action,amount FROM bank_transactions WHERE character_id=$1 ORDER BY id DESC LIMIT 2',
+        [character.id]
+      );
+      assert.deepEqual(audit.rows.map(row => [row.action, String(row.amount)]), [['withdraw', '4'], ['deposit', '10']]);
+    } finally { await bankAuditPool.end(); }
     const vendorListResponse = await fetch(base + '/api/vendors', {
       headers: { authorization: 'Bearer ' + token }
     });
