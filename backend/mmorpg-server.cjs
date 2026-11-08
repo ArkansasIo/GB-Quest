@@ -496,6 +496,7 @@ const server = http.createServer(async (req, res) => {
       const characterId = characterTradesMatch[1];
       const owned = await pool.query('SELECT 1 FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      await pool.query("UPDATE player_trade_offers SET status='expired' WHERE status='pending' AND expires_at<=now() AND (from_character_id=$1 OR to_character_id=$1)", [characterId]);
       const result = await pool.query(`SELECT t.id,t.from_character_id,t.to_character_id,t.item_id,ic.name AS item_name,
         t.quantity,t.gold_amount,t.status,t.created_at,t.expires_at,
         sf.name AS from_name,st.name AS to_name
@@ -610,6 +611,9 @@ const server = http.createServer(async (req, res) => {
         if (!sender) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
         if (!recipient) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'recipient_not_found' }); }
         if (sender.zone_id !== recipient.zone_id) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'characters_not_in_same_zone' }); }
+        await tx.query("UPDATE player_trade_offers SET status='expired' WHERE from_character_id=$1 AND status='pending' AND expires_at<=now()", [senderId]);
+        const pendingOffers = await tx.query("SELECT count(*)::integer AS total FROM player_trade_offers WHERE from_character_id=$1 AND status='pending' AND expires_at>now()", [senderId]);
+        if (Number(pendingOffers.rows[0].total) >= 20) { await tx.query('ROLLBACK'); return json(res, 429, { error: 'too_many_pending_trade_offers' }); }
         if (BigInt(sender.gold) < BigInt(goldAmount)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'sender_insufficient_gold' }); }
         if (itemId) {
           const item = await tx.query('SELECT ci.id,ci.quantity FROM character_inventory ci WHERE ci.character_id=$1 AND ci.item_id=$2 FOR UPDATE',
