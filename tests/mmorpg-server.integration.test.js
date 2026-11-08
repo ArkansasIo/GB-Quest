@@ -132,10 +132,44 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const chat = await waitFor('chat.message');
     assert.equal(chat.payload.text, 'Integration test online');
 
-    send(5, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001' });
-    const combat = await waitFor('combat.resolved');
-    assert.ok(combat.payload.damage >= 1);
-    assert.equal(combat.payload.targetId, '00000000-0000-4000-8000-000000000001');
+    const questListResponse = await fetch(base + `/api/characters/${character.id}/quests`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(questListResponse.status, 200);
+    const questList = await questListResponse.json();
+    assert.equal(questList.quests[0].id, 'first_slime');
+    assert.equal(questList.quests[0].status, 'available');
+    const acceptQuest = await fetch(base + `/api/characters/${character.id}/quests`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ questId: 'first_slime' })
+    });
+    assert.equal(acceptQuest.status, 201);
+    let sequence = 5, defeated = false;
+    for (let attempt = 0; attempt < 8 && !defeated; attempt++) {
+      send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001' });
+      const combat = await waitFor('combat.resolved');
+      assert.ok(combat.payload.damage >= 1);
+      assert.equal(combat.payload.targetId, '00000000-0000-4000-8000-000000000001');
+      defeated = combat.payload.defeated;
+      if (!defeated) await new Promise(resolve => setTimeout(resolve, 700));
+    }
+    assert.equal(defeated, true, 'Training Slime should be defeated by the test character');
+    const reward = await waitFor('loot.reward');
+    assert.equal(reward.payload.completedQuests.length, 1);
+    assert.equal(reward.payload.completedQuests[0].id, 'first_slime');
+    assert.ok(reward.payload.gold >= 25);
+    const finalQuestsResponse = await fetch(base + `/api/characters/${character.id}/quests`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    const finalQuests = await finalQuestsResponse.json();
+    assert.equal(finalQuests.quests[0].status, 'completed');
+    const walletResponse = await fetch(base + `/api/characters/${character.id}/wallet`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(walletResponse.status, 200);
+    const wallet = await walletResponse.json();
+    assert.ok(wallet.gold >= 25);
   } finally {
     if (socket) socket.close();
     child.kill('SIGTERM');
