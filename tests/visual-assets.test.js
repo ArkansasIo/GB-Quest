@@ -81,3 +81,33 @@ test('world renderer consumes asynchronous HD character frames with classic fall
   assert.match(world, /const portrait = hdFrame \|\| packFrame \|\| gearWalker \|\| worldPortrait/);
   assert.match(world, /HD character frame unavailable; using classic sprite/);
 });
+
+test('6,000-image HD64 atlases include every generated asset and runtime can resolve by stable ID', () => {
+  const builder = read('tools/build_pack6000_atlases.py');
+  const runtime = read('src/hd64_catalog.js');
+  const build = read('tools/build.cjs');
+  const itch = read('tools/build-itch.cjs');
+  const boot = read('client/main.js');
+  const pack = read('src/asset_pack.js');
+  assert.match(builder, /EXPECTED = 6000/);
+  assert.match(builder, /atlas_index\\.json/);
+  assert.match(builder, /PAGE_SIZE = 100/);
+  assert.match(runtime, /GBQ_6000_ASSET_INDEX/);
+  assert.match(runtime, /GBQ_6000_ATLASES/);
+  assert.match(runtime, /GBQ6000Assets/);
+  assert.match(runtime, /function draw\\(/);
+  assert.match(build, /GBQ_6000_ASSET_INDEX/);
+  assert.match(build, /GBQ_6000_ATLASES/);
+  assert.match(build, /hd64_catalog/);
+  assert.match(itch, /GBQ_6000_ASSET_INDEX/);
+  assert.match(boot, /GBQ6000Assets\\.load/);
+  assert.match(pack, /asset6000For/);
+  assert.match(pack, /get6000/);
+});
+
+test('full 6,000-image build creates atlases before validation', () => {
+  const pkg = JSON.parse(read('package.json'));
+  assert.equal(pkg.scripts['assets:build:6000'], 'npm run assets:generate:6000 && python tools/build_pack6000_atlases.py && npm run assets:validate:6000');
+  assert.match(pkg.scripts['check:syntax'], /src\\/hd64_catalog\\.js/);
+  assert.match(pkg.scripts['check:syntax'], /tools\\/build_pack6000_atlases\\.py/);
+});
