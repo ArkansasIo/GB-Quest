@@ -48,6 +48,33 @@ body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a
 .pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
 .game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
 #dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
+
+/* Borderless game presentation: remove the grey page chrome and all launcher UI
+   outside the actual game viewport. The in-game HUD remains part of the game. */
+html, body {
+  background: #000 !important;
+  background-color: #000 !important;
+  scrollbar-width: none !important;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; }
+body::before, body::after { display: none !important; content: none !important; }
+.game-client, .game-viewport {
+  background: #000 !important;
+  outline: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.game-viewport { overflow: hidden !important; }
+#lcd {
+  background: #000 !important;
+  outline: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.fsbar, .build-info, .brand, .bezel-top, .keys, .speaker,
+.controls, .foot, #chatShow, .game-viewport > .chat {
+  display: none !important;
+}
 </style>
 <div class="fsbar" role="toolbar" aria-label="Window">
   <button id="fsPad" title="On-screen pad">PAD</button>
