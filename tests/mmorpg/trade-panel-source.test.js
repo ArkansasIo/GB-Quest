@@ -18,10 +18,10 @@ test('MMO trading overlay parses as standalone browser JavaScript', () => {
 });
 
 test('trading overlay exposes authenticated character and player trade workflows', () => {
-  for (const route of ['/api/register', '/api/login', '/api/me', '/api/characters', '/trades', '/accept', '/cancel', '/inventory', '/wallet']) {
+  for (const route of ['/api/register', '/api/login', '/api/me', '/api/characters', '/trades', '/accept', '/cancel', '/inventory', '/wallet', '/bank', '/bank/deposit', '/bank/withdraw']) {
     assert.ok(source.includes(route), 'missing MMO route: ' + route);
   }
-  for (const feature of ['data-login', 'data-register', 'data-create-character', 'data-connect', 'data-recipient', 'data-send-offer', 'data-accept', 'data-cancel']) {
+  for (const feature of ['data-login', 'data-register', 'data-create-character', 'data-connect', 'data-recipient', 'data-send-offer', 'data-accept', 'data-cancel', 'data-bank-action']) {
     assert.ok(source.includes(feature), 'missing trading UI control: ' + feature);
   }
   assert.match(source, /zone\.snapshot/);
@@ -51,3 +51,4 @@ test('HUD exposes the Trading action and delegates to the realm panel', () => {
   assert.match(styles, /gbq-trade-overlay/);
   assert.match(styles, /@media\(max-width:560px\)/);
 });
+\ntest('bank tab exposes server-backed deposit and withdrawal forms', () => {\n  assert.match(source, /data-tab=\"bank\"/);\n  assert.match(source, /data-bank-action=\"deposit\"/);\n  assert.match(source, /data-bank-action=\"withdraw\"/);\n  assert.match(source, /state\.api\.bank\(state\.selected\.id\)/);\n  assert.match(source, /state\.api\.depositBank/);\n  assert.match(source, /state\.api\.withdrawBank/);\n});\n
