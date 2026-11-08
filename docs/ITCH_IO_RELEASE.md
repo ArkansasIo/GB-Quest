@@ -42,3 +42,16 @@ GitHub Actions also builds and uploads the ZIP as the `gbquest-itch-html5` workf
 ## Important
 
 The build produces a ready-to-upload ZIP; it does not publish to your itch.io account. Publishing requires signing in to itch.io and uploading the artifact, or configuring an authenticated Butler upload separately.
+
+
+## Automated publishing with Butler
+
+The repository includes a manual/release-triggered GitHub Actions workflow at
+`.github/workflows/itchio-publish.yml`. To enable it:
+
+1. In the GitHub repository, open **Settings → Secrets and variables → Actions**.
+2. Add the repository secret `BUTLER_API_KEY` using an itch.io API key from your itch.io account settings.
+3. Add repository variables `ITCH_USERNAME` and `ITCH_GAME` with the itch.io account name and project URL slug (not the full URL).
+4. Open **Actions → Publish itch.io HTML5**, choose **Run workflow**, and keep the channel set to `html5`.
+
+The workflow rebuilds and validates the single-file HTML5 ZIP, installs the official Butler CLI, and pushes the generated build to the configured project/channel. Publishing on a GitHub Release also triggers the workflow and uses the `html5` channel. Never commit the API key or place it in repository variables; keep it in the encrypted Actions secret.
