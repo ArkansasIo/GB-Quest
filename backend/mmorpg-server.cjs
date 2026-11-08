@@ -611,7 +611,6 @@ const server = http.createServer(async (req, res) => {
         if (!sender) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
         if (!recipient) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'recipient_not_found' }); }
         if (sender.zone_id !== recipient.zone_id) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'characters_not_in_same_zone' }); }
-        await tx.query("UPDATE player_trade_offers SET status='expired' WHERE status='pending' AND expires_at<=now() AND (from_character_id=$1 OR to_character_id=$1 OR from_character_id=$2 OR to_character_id=$2)", [senderId,recipientId]);
         const pendingOffers = await tx.query("SELECT count(*)::integer AS total FROM player_trade_offers WHERE status='pending' AND expires_at>now() AND (from_character_id=$1 OR to_character_id=$1 OR from_character_id=$2 OR to_character_id=$2)", [senderId,recipientId]);
         if (Number(pendingOffers.rows[0].total) >= 20) { await tx.query('ROLLBACK'); return json(res, 429, { error: 'too_many_pending_trade_offers' }); }
         if (BigInt(sender.gold) < BigInt(goldAmount)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'sender_insufficient_gold' }); }
