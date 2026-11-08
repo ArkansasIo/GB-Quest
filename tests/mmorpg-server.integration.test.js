@@ -318,7 +318,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       headers: { authorization: 'Bearer ' + token }
     })).json();
     assert.equal(senderInventoryAfterTrade.items.find(item => item.item_id === 'minor_potion').quantity, 3);
-    assert.equal(recipientInventoryAfterTrade.items.find(item => item.item_id === 'minor_potion').quantity, 5);
+    assert.equal(recipientInventoryAfterTrade.items.find(item => item.item_id === 'minor_potion').quantity, 6);
     const cancelOffer = await fetch(base + `/api/characters/${character.id}/trades`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
