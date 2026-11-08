@@ -14,7 +14,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'dw', swap: false, textSpeed: 1, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native', artStyle: 'original' },
   store.get('gbq2_settings') || {});
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
 if (S.displayMode === 'windowed' && !S.displayModeUserSet) S.displayMode = 'full-window';
@@ -47,7 +47,9 @@ applyFilter();
 const PALS = {
   dmg: { ui: [[160, 168, 104], [112, 124, 72], [60, 76, 42], [22, 32, 18]], name: 'DMG GREEN' },
   gbc: { ui: [[248, 248, 232], [144, 184, 232], [48, 88, 168], [16, 24, 48]], name: 'GB COLOR' },
+  dw: { ui: [[255, 240, 200], [200, 180, 140], [120, 100, 60], [40, 30, 20]], name: 'DRAGON WARRIOR' },
   full: { ui: [[236, 232, 214], [170, 164, 146], [86, 82, 96], [22, 20, 30]], name: 'FULL COLOR' },
+  dw: { ui: [[255, 245, 220], [210, 190, 150], [100, 80, 40], [30, 20, 10]], name: 'DRAGON WARRIOR' },
   pocket: { ui: [[196, 207, 161], [139, 149, 109], [77, 83, 60], [31, 31, 31]], name: 'POCKET' },
   sunset: { ui: [[255, 224, 174], [238, 160, 105], [150, 75, 90], [48, 38, 70]], name: 'SUNSET' },
   amber: { ui: [[255, 239, 190], [224, 177, 90], [145, 95, 45], [55, 42, 28]], name: 'AMBER' },
@@ -512,7 +514,7 @@ const TRACKS = {
   victory: { bpm: 140, root: 60, scale: 'major', prog: [0], drums: '', jingle: true }, defeat: { bpm: 70, root: 57, scale: 'minor', prog: [0], drums: '', jingle: true },
   inn: { bpm: 76, root: 60, scale: 'major', prog: [0, 5, 3, 4], drums: '' }, credits: { bpm: 112, root: 62, scale: 'major', prog: [0, 4, 5, 3, 0, 4, 3, 4], drums: 'k.h.s.h.k.h.s.h.' },
 };
-const JINGLES = { boot: [72, 0, 84], victory: [72, 76, 79, 84, 0, 79, 84, 88], defeat: [67, 65, 63, 60, 0, 55] };
+const JINGLES = { boot: [72, 0, 84], victory: [72, 76, 79, 84, 0, 79, 84, 88], defeat: [67, 65, 63, 60, 0, 55], levelup: [72, 76, 84, 88, 96, 84, 76, 72] };
 function composeTrack(id) {
   const t = TRACKS[id], r = RNG('music-' + id), sc = SCALES[t.scale];
   const deg = (d, oct = 0) => t.root + sc[((d % 7) + 7) % 7] + 12 * (Math.floor(d / 7) + oct);

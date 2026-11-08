@@ -3,17 +3,21 @@ package io.arkansasio.gbquest;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.imageio.ImageIO;
+
+/** Native Swing/AWT renderer; logical world remains tile-based and pixel crisp. */
 
 /** Native Swing/AWT renderer; logical world remains tile-based and pixel crisp. */
 public final class GamePanel extends JPanel implements ActionListener {
     private static final int SCALE=2, W=320, H=240;
     private final GameState game;
+    private final Map<String, BufferedImage> assets = new HashMap<>();
     private final Timer timer=new Timer(16,this);
     private final boolean[] keys=new boolean[512];
-    private BufferedImage tileAtlas;
     private int cameraX,cameraY;
 
     public GamePanel(GameState game) {
@@ -27,9 +31,23 @@ public final class GamePanel extends JPanel implements ActionListener {
             if(k==KeyEvent.VK_I)openInventory();
             if(k==KeyEvent.VK_ESCAPE){Window w=SwingUtilities.getWindowAncestor(GamePanel.this);if(w!=null)w.dispatchEvent(new WindowEvent(w,WindowEvent.WINDOW_CLOSING));else System.exit(0);}}
             @Override public void keyReleased(KeyEvent e){int k=e.getKeyCode();if(k<keys.length)keys[k]=false;}});
-        loadAtlas();timer.start();
+        loadAssets();timer.start();
     }
-    private void loadAtlas(){try{File f=new File("assets_hd64/tiles_0.png");if(f.isFile())tileAtlas=ImageIO.read(f);}catch(Exception ignored){}}
+    private void loadAssets() {
+        String[] files = {"tiles_0.png", "player.png", "enemy.png", "loot.png"};
+        for (String file : files) {
+            try {
+                File f = new File("assets_hd64/" + file);
+                if (f.exists()) {
+                    assets.put(file, ImageIO.read(f));
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to load asset: " + file);
+            }
+        }
+    }
+
+    private void loadAtlas(){try{File f=new File("assets_hd64/tiles_0.png");if(f.isFile()){}}catch(Exception ignored){}}
     @Override public void actionPerformed(ActionEvent e){
         double dx=0,dy=0; if(key(KeyEvent.VK_LEFT)||key(KeyEvent.VK_A))dx--;if(key(KeyEvent.VK_RIGHT)||key(KeyEvent.VK_D))dx++;
         if(key(KeyEvent.VK_UP)||key(KeyEvent.VK_W))dy--;if(key(KeyEvent.VK_DOWN)||key(KeyEvent.VK_S))dy++;
@@ -83,13 +101,44 @@ public final class GamePanel extends JPanel implements ActionListener {
         drawHud(g);g.dispose();
     }
     private void drawHud(Graphics2D g){
-        g.setColor(new Color(10,14,25,225));g.fillRoundRect(8,8,270,47,8,8);
-        g.setFont(new Font(Font.MONOSPACED,Font.BOLD,10));g.setColor(Color.WHITE);g.drawString("SHADOWBANE  |  LEVEL "+game.level,16,21);
-        g.setColor(new Color(70,25,35));g.fillRect(16,28,120,7);g.setColor(new Color(220,65,75));g.fillRect(16,28,120*game.hp/game.maxHp,7);
-        g.setColor(new Color(30,45,75));g.fillRect(16,39,120,5);g.setColor(new Color(65,145,235));g.fillRect(16,39,120*game.mana/game.maxMana,5);
-        g.setColor(Color.WHITE);g.drawString("HP "+game.hp+"/"+game.maxHp+"   MP "+game.mana+"/"+game.maxMana,145,35);
-        g.drawString("GOLD "+game.gold+"   POTIONS "+game.potions+"   BAG "+game.inventory.items().size()+"/"+game.inventory.capacity,145,48);
-        if(game.messageTicks>0){g.setColor(new Color(8,12,20,220));g.fillRoundRect(8,H-32,W-16,24,6,6);g.setColor(new Color(238,226,194));g.drawString(game.message,16,H-17);}
-        g.setColor(new Color(220,220,230));g.drawString("WASD/ARROWS MOVE   SPACE ATTACK   H POTION   V VENDOR   I INVENTORY",8,H-5);
+        // Modern HD-2D HUD: Deep Purple Gradient with Gold Accents
+        g.setColor(new Color(42, 27, 77, 225)); // Base Purple
+        g.fillRoundRect(8, 8, 270, 55, 8, 8);
+        
+        // Gold Border
+        g.setColor(new Color(218, 165, 32)); 
+        g.setStroke(new BasicStroke(2));
+        g.drawRoundRect(8, 8, 270, 55, 8, 8);
+
+        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        g.setColor(new Color(255, 230, 150)); // Soft Gold Text
+        g.drawString("SHADOWBANE  |  LEVEL " + game.level, 16, 22);
+
+        // HP Bar: Dark Red background, Bright Red fill
+        g.setColor(new Color(60, 10, 20));
+        g.fillRect(16, 28, 120, 8);
+        g.setColor(new Color(220, 65, 75));
+        g.fillRect(16, 28, (int)(120 * game.hp / game.maxHp), 8);
+
+        // MP Bar: Dark Blue background, Bright Blue fill
+        g.setColor(new Color(20, 30, 60));
+        g.fillRect(16, 39, 120, 6);
+        g.setColor(new Color(65, 145, 235));
+        g.fillRect(16, 39, (int)(120 * game.mana / game.maxMana), 6);
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 10));
+        g.drawString("HP " + game.hp + "/" + game.maxHp + "   MP " + game.mana + "/" + game.maxMana, 145, 35);
+        g.drawString("GOLD " + game.gold + "   POTIONS " + game.potions + "   BAG " + game.inventory.items().size() + "/" + game.inventory.capacity, 145, 48);
+
+        if(game.messageTicks > 0){
+            g.setColor(new Color(20, 10, 40, 220));
+            g.fillRoundRect(8, H - 32, W - 16, 24, 6, 6);
+            g.setColor(new Color(238, 226, 194));
+            g.drawString(game.message, 16, H - 17);
+        }
+        g.setColor(new Color(180, 180, 200));
+        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 8));
+        g.drawString("WASD/ARROWS MOVE   SPACE ATTACK   H POTION   V VENDOR   I INVENTORY", 8, H - 5);
     }
 }
