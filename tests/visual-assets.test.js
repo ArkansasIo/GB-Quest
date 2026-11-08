@@ -120,3 +120,11 @@ test('GitHub Actions generates and uploads the complete 6,000-image source catal
   assert.match(workflow, /GB-Quest-6000-HD64-Asset-Pack/);
   assert.match(workflow, /retention-days: 30/);
 });
+
+test('6,000-image runtime asset helpers use the global catalog without window-only assumptions', () => {
+  const pack = read('src/asset_pack.js');
+  assert.match(pack, /asset6000For:/);
+  assert.match(pack, /get6000:/);
+  assert.match(pack, /warm6000:/);
+  assert.match(pack, /globalThis\\.GBQ6000Assets/);
+});
