@@ -14,12 +14,20 @@ It combines:
 Runtime art is assembled from repository-managed PNG/SVG assets and generated sprite atlases. The release builder embeds the active game assets, HD64 atlases, Citadel artwork and UI catalog images into the standalone browser build.
 
 
+## In-game player trading
+
+The Trading HUD opens a dedicated MMO realm account flow, lets players create/select a PostgreSQL character, connects to the authoritative WebSocket realm, discovers online characters in the same zone, and submits item/gold offers. Configure `window.GBQ_MMO_REALM_URL` before the trading script loads when the MMO API is hosted on a separate origin; remote realms must use HTTPS/WSS. Localhost HTTP/WS is permitted for development only. The dedicated MMO account is separate from the legacy local-save account. The trading panel and CSS are bundled into the single-file itch.io HTML export.
+
 ## Art, ranks, and world tiles
 
 - Adventurer progression: **F → E → D → C → B → A → S → SS → SSS**; independent of item rarity and character levels.
 - World tile contract: layered 16×16 tiles, generated 64×64 and 96×96 nearest-neighbour exports, 16-way cardinal autotiling, animated shorelines, 25 biome families, and six dungeon themes.
 - Asset generation and build instructions: [docs/ART_PIPELINE.md](docs/ART_PIPELINE.md).
 - Equipment progression: [docs/GEAR_PROGRESSION.md](docs/GEAR_PROGRESSION.md) (4-digit gear level, 6-digit power, item levels 1–720, F–SSS × 12 stars).
+
+## Authoritative MMORPG server
+
+The PostgreSQL-backed HTTP/WebSocket service is documented in [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md). It includes account authentication, character persistence, zone presence, authoritative movement, basic mob combat/XP, persistent wallet and bank balances, auditable deposits/withdrawals, NPC vendor trading, player-to-player item/gold offers with transactional settlement, and zone chat. Start the single-node Docker deployment with `cp .env.example .env`, set the database password, token secret and exact HTTPS origin allowlist, then run `docker compose up -d --build`. This is a single live service instance; distributed multi-world scaling is not yet implemented.
 
 ## itch.io browser release
 
@@ -255,3 +263,6 @@ These are local PvE-driven simulations using the game's combat system and simula
 This applies to the game's original source code, game design, story, characters, original artwork, audio, animations, UI, branding, and other original materials. Public repository access does not grant a reuse license. See [LICENSE](LICENSE).
 
 Third-party software and content remain under their respective licenses. In particular, any SRD material identified in the project remains subject to the applicable Creative Commons Attribution 4.0 terms and attribution requirements; this proprietary notice does not override those rights. See [docs/SRD_ATTRIBUTION.md](docs/SRD_ATTRIBUTION.md) and each dependency's license.
+
+
+The authoritative backend includes PostgreSQL-backed inventory, equipment, consumables, quest progression and character gold. See [backend deployment and operations](backend/DEPLOYMENT.md).

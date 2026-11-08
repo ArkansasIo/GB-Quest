@@ -20,6 +20,7 @@ jobs:
       - name: Validate Electron launcher JavaScript
         run: |
           node --check backend/mmorpg-server.cjs
+          node --check backend/mmorpg-security.cjs
           node --check backend/migrate.cjs
           node --check src/mmorpg/net/mmorpg-api.js
           node --check desktop/main.cjs
@@ -134,3 +135,36 @@ jobs:
             dist/gbquest-fullscreen.html
           if-no-files-found: error
           retention-days: 14
+
+  mmorpg-integration:
+    name: PostgreSQL authoritative MMO integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: gbquest_test
+          POSTGRES_USER: gbquest
+          POSTGRES_PASSWORD: gbquest_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gbquest -d gbquest_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install server dependencies
+        run: npm install --omit=dev --no-audit --no-fund
+      - name: Apply database schema
+        env:
+          DATABASE_URL: postgres://gbquest:gbquest_test_password@localhost:5432/gbquest_test
+        run: npm run mmorpg:migrate
+      - name: Exercise HTTP, PostgreSQL and WebSocket gameplay
+        env:
+          GBQ_TEST_DATABASE_URL: postgres://gbquest:gbquest_test_password@localhost:5432/gbquest_test
+        run: node --test tests/mmorpg-server.integration.test.js
