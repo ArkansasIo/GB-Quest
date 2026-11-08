@@ -168,8 +168,54 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       headers: { authorization: 'Bearer ' + token }
     });
     assert.equal(walletResponse.status, 200);
-    const wallet = await walletResponse.json();
+    let wallet = await walletResponse.json();
     assert.ok(wallet.gold >= 25);
+    const vendorListResponse = await fetch(base + '/api/vendors', {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(vendorListResponse.status, 200);
+    const vendorList = await vendorListResponse.json();
+    assert.ok(vendorList.vendors.some(vendor => vendor.id === 'aelmoor_general'));
+    const vendorResponse = await fetch(base + '/api/vendors/aelmoor_general', {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(vendorResponse.status, 200);
+    const vendor = await vendorResponse.json();
+    assert.ok(vendor.items.some(item => item.item_id === 'minor_potion'));
+    const buyResponse = await fetch(base + `/api/characters/${character.id}/vendor/buy`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ vendorId: 'aelmoor_general', itemId: 'minor_potion', quantity: 1 })
+    });
+    assert.equal(buyResponse.status, 200);
+    const buy = await buyResponse.json();
+    assert.equal(buy.totalGold, '18');
+    const afterBuyInventory = await (await fetch(base + `/api/characters/${character.id}/inventory`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    const potionStack = afterBuyInventory.items.find(item => item.item_id === 'minor_potion');
+    assert.equal(potionStack.quantity, 5);
+    const sellResponse = await fetch(base + `/api/characters/${character.id}/vendor/sell`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ vendorId: 'aelmoor_general', itemId: 'minor_potion', inventoryId: potionStack.inventory_id, quantity: 1 })
+    });
+    assert.equal(sellResponse.status, 200);
+    const sell = await sellResponse.json();
+    assert.equal(sell.totalGold, '6');
+    assert.equal(Number(sell.gold), Number(buy.gold) + 6);
+    const insufficient = await fetch(base + `/api/characters/${character.id}/vendor/buy`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ vendorId: 'aelmoor_general', itemId: 'minor_potion', quantity: 99 })
+    });
+    assert.equal(insufficient.status, 409);
+    const invalidZone = await fetch(base + `/api/characters/${character.id}/vendor/buy`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ vendorId: 'unknown_vendor', itemId: 'minor_potion', quantity: 1 })
+    });
+    assert.equal(invalidZone.status, 404);
   } finally {
     if (socket) socket.close();
     child.kill('SIGTERM');
