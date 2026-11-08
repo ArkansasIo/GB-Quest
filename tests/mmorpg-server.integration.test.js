@@ -170,6 +170,45 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(walletResponse.status, 200);
     let wallet = await walletResponse.json();
     assert.ok(wallet.gold >= 25);
+    const bankBefore = await fetch(base + `/api/characters/${character.id}/bank`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(bankBefore.status, 200);
+    assert.equal((await bankBefore.json()).bankGold, '0');
+    const deposit = await fetch(base + `/api/characters/${character.id}/bank/deposit`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ amount: 10 })
+    });
+    assert.equal(deposit.status, 200);
+    const deposited = await deposit.json();
+    assert.equal(deposited.amount, '10');
+    assert.equal(deposited.bankGold, '10');
+    const withdraw = await fetch(base + `/api/characters/${character.id}/bank/withdraw`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ amount: 4 })
+    });
+    assert.equal(withdraw.status, 200);
+    const withdrawn = await withdraw.json();
+    assert.equal(withdrawn.bankGold, '6');
+    assert.equal(BigInt(withdrawn.gold), BigInt(deposited.gold) + 4n);
+    const overdraft = await fetch(base + `/api/characters/${character.id}/bank/withdraw`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ amount: 99 })
+    });
+    assert.equal(overdraft.status, 409);
+    const invalidDeposit = await fetch(base + `/api/characters/${character.id}/bank/deposit`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ amount: 0 })
+    });
+    assert.equal(invalidDeposit.status, 400);
+    const bankAfter = await fetch(base + `/api/characters/${character.id}/bank`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal((await bankAfter.json()).bankGold, '6');
     const vendorListResponse = await fetch(base + '/api/vendors', {
       headers: { authorization: 'Bearer ' + token }
     });
