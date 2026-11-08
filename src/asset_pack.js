@@ -94,8 +94,15 @@ if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
   characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
   apMonsterArt, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
-  asset6000For: (category, identity) => window.GBQ6000Assets ? window.GBQ6000Assets.pick(category, identity) : Promise.resolve(null),
-  get6000: id => window.GBQ6000Assets ? window.GBQ6000Assets.get(id) : Promise.resolve(null),
+  asset6000For: (category, identity) => globalThis.GBQ6000Assets ? globalThis.GBQ6000Assets.pick(category, identity) : Promise.resolve(null),
+  get6000: id => globalThis.GBQ6000Assets ? globalThis.GBQ6000Assets.get(id) : Promise.resolve(null),
+  warm6000: async (category, identities) => {
+    const api = globalThis.GBQ6000Assets;
+    if (!api) return [];
+    const keys = Array.isArray(identities) ? identities : [identities];
+    const ids = await Promise.all(keys.map(identity => api.pick(category, identity)));
+    return Promise.all(ids.filter(Boolean).map(id => api.get(id)));
+  },
 };
 
 if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
