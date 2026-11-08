@@ -123,7 +123,7 @@
         </div>
         <div class="gbq-hud-action-area"><div class="gbq-hud-quick"><button type="button" data-hud-action="quick1">Q</button><button type="button" data-hud-action="quick2">E</button></div><div class="gbq-hud-hotbar" data-hud-hotbar></div><div class="gbq-hud-potions"><button type="button" data-hud-action="potion">HP <small data-hud-potions>0</small></button><button type="button" data-hud-action="mana">MP</button></div></div>
         <div class="gbq-hud-shortcuts gbq-hud-shortcuts-right">
-          ${button('Map','map','M')} ${button('Journal','journal','J')} ${button('Guild','guild','G')} ${button('Market','market','
+          ${button('Map','map','M')} ${button('Journal','journal','J')} ${button('Guild','guild','G')} ${button('Market','market','$')} ${button('Trading','trading','⇄')} ${button('Collection','collection','C')}
         </div>
       </div>
       <div class="gbq-hud-toast" role="status" aria-live="polite"></div>`;
