@@ -48,9 +48,13 @@ async function readBody(req, max = 16384) {
 }
 function originAllowed(req) {
   const origin = req.headers.origin;
+  // Non-browser clients may omit Origin; browser origins must be explicitly trusted.
   if (!origin) return true;
-  try { const u = new URL(origin); const local = u.protocol === 'http:' && ['localhost','127.0.0.1'].includes(u.hostname); return local || (u.protocol === 'https:' && (ALLOWED_ORIGINS.size === 0 || ALLOWED_ORIGINS.has(u.origin))); }
-  catch { return false; }
+  try {
+    const u = new URL(origin);
+    const local = u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname);
+    return local || (u.protocol === 'https:' && ALLOWED_ORIGINS.has(u.origin));
+  } catch { return false; }
 }
 async function accountFor(req) {
   const header = req.headers.authorization || '';
@@ -81,8 +85,9 @@ function recordAuthFailure(ip) {
   else item.count++;
 }
 setInterval(() => { for (const [ip, item] of authFailures) if (Date.now() - item.startedAt > 600000) authFailures.delete(ip); }, 600000).unref();
-function attachSocket(ws) {
-  const state = { authenticated: false, account: null, character: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0 };
+function attachSocket(ws, req) {
+  const ip = req?.socket?.remoteAddress || 'unknown';
+  const state = { authenticated: false, account: null, character: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
   socketState.set(ws, state); activeSockets.set(ws, state);
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
   ws.on('message', async raw => {
@@ -93,11 +98,13 @@ function attachSocket(ws) {
       if (msg.sequence <= state.inSequence) return send(ws, 'error', { code: 'stale_sequence' });
       state.inSequence = msg.sequence;
       if (!state.authenticated) {
+        if (authThrottled(state.ip)) return ws.close(4429, 'authentication rate limited');
         if (msg.type !== 'authenticate') return ws.close(4401, 'authenticate first');
         const claims = verifyToken(msg.payload.token);
-        if (!claims) return ws.close(4401, 'invalid token');
+        if (!claims) { recordAuthFailure(state.ip); return ws.close(4401, 'invalid token'); }
         const acct = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
-        if (!acct.rowCount) return ws.close(4401, 'account unavailable');
+        if (!acct.rowCount) { recordAuthFailure(state.ip); return ws.close(4401, 'account unavailable'); }
+        authFailures.delete(state.ip);
         state.account = acct.rows[0]; state.authenticated = true;
         const chars = await pool.query('SELECT id,name,class,level,zone_id,x,y,hp,max_hp,mp,max_mp FROM characters WHERE account_id=$1 ORDER BY created_at', [state.account.id]);
         send(ws, 'authenticated', { account: state.account, characters: chars.rows });
@@ -244,7 +251,7 @@ server.on('upgrade', (req, socket, head) => {
   if (new URL(req.url, 'http://localhost').pathname !== '/ws' || !originAllowed(req)) return socket.destroy();
   wss.handleUpgrade(req, socket, head, ws => { wss.emit('connection', ws, req); });
 });
-wss.on('connection', attachSocket);
+wss.on('connection', (ws, req) => attachSocket(ws, req));
 const respawnTimer = setInterval(async () => {
   try {
     const result = await pool.query("UPDATE world_mobs SET hp=max_hp,alive=true,respawn_at=NULL,updated_at=now() WHERE alive=false AND respawn_at IS NOT NULL AND respawn_at<=now() RETURNING id,zone_id,name,level,x,y,hp,max_hp");
