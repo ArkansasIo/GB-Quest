@@ -152,3 +152,22 @@ test('game shell has one metadata set and readable responsive text and viewport 
   assert.match(pokemon, /FINAL GAME TEXT \+ HUD SCALE/);
   assert.match(pokemon, /font:700 10px\/1\.25 Arial,sans-serif !important/);
 });
+
+
+test('HUD shortcuts open detailed tabbed submenu pages with safe live game data', () => {
+  const hud = read('src/player_hud.js');
+  const styles = read('client/player-hud.css');
+  for (const key of ['character','inventory','skills','talents','crafting','journal','guild','market','collection']) {
+    assert.match(hud, new RegExp(key + ':\\{title:'));
+  }
+  assert.match(hud, /data-gbq-detail/);
+  assert.match(hud, /data-detail-tab/);
+  assert.match(hud, /function detailRows\(/);
+  assert.match(hud, /function openDetailPage\(/);
+  assert.match(hud, /function closeDetailPage\(/);
+  assert.match(hud, /esc\(row\.label\)/);
+  assert.match(styles, /\.gbq-detail-window/);
+  assert.match(styles, /\.gbq-detail-grid/);
+  assert.match(styles, /@media\(max-width:620px\)/);
+  assert.match(styles, /\.gbq-detail-page\[hidden\]/);
+});
