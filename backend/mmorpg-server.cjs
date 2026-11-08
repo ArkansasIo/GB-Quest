@@ -7,6 +7,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
+const { isAllowedOrigin, createAuthLimiter } = require('./mmorpg-security.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -46,16 +47,7 @@ async function readBody(req, max = 16384) {
   for await (const chunk of req) { size += chunk.length; if (size > max) throw Object.assign(new Error('body_too_large'), { status: 413 }); chunks.push(chunk); }
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { throw Object.assign(new Error('invalid_json'), { status: 400 }); }
 }
-function originAllowed(req) {
-  const origin = req.headers.origin;
-  // Non-browser clients may omit Origin; browser origins must be explicitly trusted.
-  if (!origin) return true;
-  try {
-    const u = new URL(origin);
-    const local = u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname);
-    return local || (u.protocol === 'https:' && ALLOWED_ORIGINS.has(u.origin));
-  } catch { return false; }
-}
+function originAllowed(req) { return isAllowedOrigin(req.headers.origin, ALLOWED_ORIGINS); }
 async function accountFor(req) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
@@ -73,18 +65,10 @@ function broadcastZone(zoneId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.zoneId === zoneId && ws !== except) send(ws, type, payload);
 }
 const activeSockets = new Map();
-const authFailures = new Map();
-function authThrottled(ip) {
-  const item = authFailures.get(ip);
-  if (!item || Date.now() - item.startedAt > 600000) { authFailures.delete(ip); return false; }
-  return item.count >= 10;
-}
-function recordAuthFailure(ip) {
-  const item = authFailures.get(ip);
-  if (!item || Date.now() - item.startedAt > 600000) authFailures.set(ip, { count: 1, startedAt: Date.now() });
-  else item.count++;
-}
-setInterval(() => { for (const [ip, item] of authFailures) if (Date.now() - item.startedAt > 600000) authFailures.delete(ip); }, 600000).unref();
+const authLimiter = createAuthLimiter();
+const authThrottled = ip => authLimiter.blocked(ip);
+const recordAuthFailure = ip => authLimiter.fail(ip);
+setInterval(() => authLimiter.sweep(), 600000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
   const state = { authenticated: false, account: null, character: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
@@ -104,7 +88,7 @@ function attachSocket(ws, req) {
         if (!claims) { recordAuthFailure(state.ip); return ws.close(4401, 'invalid token'); }
         const acct = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
         if (!acct.rowCount) { recordAuthFailure(state.ip); return ws.close(4401, 'account unavailable'); }
-        authFailures.delete(state.ip);
+        authLimiter.clear(state.ip);
         state.account = acct.rows[0]; state.authenticated = true;
         const chars = await pool.query('SELECT id,name,class,level,zone_id,x,y,hp,max_hp,mp,max_mp FROM characters WHERE account_id=$1 ORDER BY created_at', [state.account.id]);
         send(ws, 'authenticated', { account: state.account, characters: chars.rows });
@@ -220,7 +204,7 @@ const server = http.createServer(async (req, res) => {
       if (!result.rowCount || result.rows[0].disabled) { await scrypt(password.slice(0, 72), crypto.randomBytes(16)); recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' }); }
       const acct = result.rows[0], candidate = await scrypt(password, acct.password_salt);
       if (candidate.length !== acct.password_hash.length || !crypto.timingSafeEqual(candidate, acct.password_hash)) { recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' }); }
-      authFailures.delete(ip);
+      authLimiter.clear(ip);
       return json(res, 200, { token: issueToken(acct.id), account: { id: acct.id, username: acct.username } });
     }
     if (url.pathname === '/api/me' && req.method === 'GET') {
