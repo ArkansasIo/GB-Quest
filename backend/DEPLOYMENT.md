@@ -80,7 +80,7 @@ The service listens on `0.0.0.0:8788` by default. Set `HOST=127.0.0.1` for local
 - `POST /api/characters/:id/trades` creates an offer with `toCharacterId` and either an item (`itemId`, `quantity`), gold (`goldAmount`), or both.
 - `POST /api/trades/:tradeId/accept` is restricted to the recipient character's account and settles the trade.
 - `POST /api/trades/:tradeId/cancel` lets either participant cancel a pending offer.
-- Offers expire after 15 minutes. Both characters must be in the same zone at offer creation and acceptance.
+- Offers expire after 15 minutes, and each character is limited to 20 pending incoming/outgoing offers. Both characters must be in the same zone at offer creation and acceptance.
 - Settlement locks both character rows in deterministic ID order and then locks inventory rows. The server rechecks ownership, item quantity, equipment state, wallet funds, recipient stack capacity and wallet overflow before moving anything.
 - Items currently equipped cannot be offered. Currency and item movement, offer completion, and the `player_trade_transactions` audit row commit in one PostgreSQL transaction. Failed settlement rolls back all changes.
 - Offers do not reserve items or gold while pending; the server revalidates availability when the recipient accepts. A stale offer therefore fails safely rather than duplicating assets.
