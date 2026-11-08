@@ -162,3 +162,18 @@ INSERT INTO vendor_stock(vendor_id,item_id,buy_price,sell_price,stock) VALUES
  ('aelmoor_general','rusty_sword',75,24,30),
  ('aelmoor_general','traveler_tunic',60,20,30)
 ON CONFLICT (vendor_id,item_id) DO NOTHING;
+
+
+-- Persistent character bank balances and auditable transfers between wallet and bank.
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS bank_gold bigint NOT NULL DEFAULT 0 CHECK (bank_gold >= 0);
+CREATE TABLE IF NOT EXISTS bank_transactions (
+  id bigserial PRIMARY KEY,
+  character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+  action varchar(8) NOT NULL CHECK (action IN ('deposit','withdraw')),
+  amount bigint NOT NULL CHECK (amount > 0),
+  gold_after bigint NOT NULL CHECK (gold_after >= 0),
+  bank_gold_after bigint NOT NULL CHECK (bank_gold_after >= 0),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS bank_transactions_character_idx
+  ON bank_transactions(character_id, created_at DESC);
