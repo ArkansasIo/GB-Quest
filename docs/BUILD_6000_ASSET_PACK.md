@@ -64,7 +64,7 @@ npm run assets:build:godot
 npm run assets:zip:6000
 ```
 
-This writes `build/GB-Quest-6000-HD64-Assets.zip`. It is a separate art download; the itch.io HTML5 game ZIP remains a distinct release artifact.
+The ZIP helper first runs the full read-only integrity validator, then archives the already-generated catalog without regenerating it. It writes `build/GB-Quest-6000-HD64-Assets.zip`. It is a separate art download; the itch.io HTML5 game ZIP remains a distinct release artifact.
 
 ## Partial development runs
 
