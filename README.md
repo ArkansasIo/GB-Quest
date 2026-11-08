@@ -276,3 +276,5 @@ The MMO Trading panel includes a **Bank** tab. It loads the selected character's
 ### Incoming player-trade notifications
 
 While a character is connected to the realm, the Trading panel refreshes the persistent offer list every 15 seconds. Newly received pending offers are surfaced as an in-panel notification, and the Offers tab displays the current incoming pending-offer count. Polling is stopped when the panel closes or the player logs out. The initial offer load seeds the notification tracker so old offers are not announced as new.
+
+The Offers view also includes filters for incoming, outgoing, pending, completed, and closed (cancelled or expired) offers. It presents the latest 50 server-returned records for the selected character.
