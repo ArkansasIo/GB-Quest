@@ -95,7 +95,12 @@ def main() -> None:
             digest = hashlib.sha256(data).hexdigest()
             category = category_for(info.filename)
             stem = re.sub(r"[^a-z0-9]+", "_", member.stem.lower()).strip("_")[:36] or "image"
-            asset_id = f"itch_{args.pack}_{category}_{stem}_{digest[:8]}"
+            # Small standalone equipment/item icons are safe to expose to the
+            # existing icon renderer. Character/monster/terrain sheets stay
+            # review-only until frame/crop metadata is authored.
+            ready_icon = category in {"weapons", "armor", "items"} and max(dims) <= 64
+            readiness = "ready" if ready_icon else "review"
+            asset_id = f"itch_{args.pack}_{category}_{readiness}_{stem}_{digest[:8]}"
             if asset_id in known:
                 continue
             (ASSETS / f"{asset_id}.png").write_bytes(data)
@@ -108,7 +113,7 @@ def main() -> None:
                 "width": dims[0],
                 "height": dims[1],
                 "sha256": digest,
-                "review_required": dims[0] > 128 or dims[1] > 128,
+                "review_required": not ready_icon,
             })
             added += 1
 
@@ -118,7 +123,7 @@ def main() -> None:
     manifest["packs"].append(pack_record)
     INDEX.write_text(json.dumps(sorted(names), indent=2) + "\n", encoding="utf-8")
     MANIFEST.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Imported {added} PNGs from {args.pack}; review sheets and update runtime mappings before release.")
+    print(f"Imported {added} PNGs from {args.pack}; only small standalone item/weapon/armour icons are enabled for automatic runtime selection.")
 
 
 if __name__ == "__main__":
