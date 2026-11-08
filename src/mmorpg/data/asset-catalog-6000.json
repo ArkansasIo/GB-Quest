@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "title": "GB Quest Aelmoor Original 8-bit Asset Catalog",
+  "defaultGeneratedCount": 6144,
+  "countPerFamily": 384,
+  "families": [
+    "terrain",
+    "flora",
+    "buildings",
+    "props",
+    "characters",
+    "monsters",
+    "bosses",
+    "weapons",
+    "armor",
+    "items",
+    "icons",
+    "effects",
+    "ui",
+    "mounts",
+    "portraits",
+    "dungeon_tiles"
+  ],
+  "generator": "tools/generate_6000_assets.py",
+  "output": "assets/generated_catalog/",
+  "manifest": "assets/generated_catalog/manifest.json",
+  "format": "PNG RGBA",
+  "dimensions": [
+    16,
+    24,
+    32
+  ],
+  "palette": "original-fantasy-8bit",
+  "requirements": {
+    "transparentBackground": true,
+    "nearestNeighbor": true,
+    "integerScaling": true,
+    "originalArtworkOnly": true
+  }
+}\n
