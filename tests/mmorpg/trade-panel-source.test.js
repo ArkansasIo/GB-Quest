@@ -60,3 +60,11 @@ test('bank tab exposes server-backed deposit and withdrawal forms', () => {
   assert.match(source, /state\.api\.depositBank/);
   assert.match(source, /state\.api\.withdrawBank/);
 });
+
+test('trade offers poll for incoming notifications and stop when panel closes', () => {
+  assert.match(source, /window\.setInterval\(\(\)=>\{if\(panel\(\)&&state\.selected\) refresh\(\);\},15000\)/);
+  assert.match(source, /New trade offer from/);
+  assert.match(source, /state\.seenOfferIds\.add\(offer\.id\)/);
+  assert.match(source, /function stopPolling\(\)/);
+  assert.match(source, /function close\(\) \{ stopPolling\(\)/);
+});
