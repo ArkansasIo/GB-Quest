@@ -490,6 +490,45 @@ const server = http.createServer(async (req, res) => {
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
       return json(res, 404, { error: 'quest_not_found' });
     }
+    const bankMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/bank(?:\\/(deposit|withdraw))?$/i);
+    if (bankMatch && req.method === 'GET' && !bankMatch[2]) {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const result = await pool.query('SELECT id,gold,bank_gold FROM characters WHERE id=$1 AND account_id=$2', [bankMatch[1], acct.id]);
+      if (!result.rowCount) return json(res, 404, { error: 'character_not_found' });
+      return json(res, 200, { characterId: result.rows[0].id, gold: String(result.rows[0].gold), bankGold: String(result.rows[0].bank_gold) });
+    }
+    if (bankMatch && req.method === 'POST' && bankMatch[2]) {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), amount = body.amount;
+      if (!Number.isSafeInteger(amount) || amount < 1 || amount > 1000000000) return json(res, 400, { error: 'invalid_bank_amount' });
+      const action = bankMatch[2].toLowerCase(), characterId = bankMatch[1], value = BigInt(amount);
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const character = await tx.query('SELECT id,gold,bank_gold FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [characterId, acct.id]);
+        if (!character.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
+        const gold = BigInt(character.rows[0].gold), bankGold = BigInt(character.rows[0].bank_gold);
+        let nextGold = gold, nextBank = bankGold;
+        if (action === 'deposit') {
+          if (gold < value) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'insufficient_wallet_gold' }); }
+          if (bankGold + value > BigInt(Number.MAX_SAFE_INTEGER)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'bank_limit_exceeded' }); }
+          nextGold -= value; nextBank += value;
+        } else {
+          if (bankGold < value) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'insufficient_bank_gold' }); }
+          if (gold + value > BigInt(Number.MAX_SAFE_INTEGER)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'wallet_limit_exceeded' }); }
+          nextGold += value; nextBank -= value;
+        }
+        const updated = await tx.query('UPDATE characters SET gold=$1,bank_gold=$2,updated_at=now() WHERE id=$3 RETURNING gold,bank_gold',
+          [nextGold.toString(), nextBank.toString(), characterId]);
+        await tx.query('INSERT INTO bank_transactions(character_id,action,amount,gold_after,bank_gold_after) VALUES($1,$2,$3,$4,$5)',
+          [characterId, action, value.toString(), nextGold.toString(), nextBank.toString()]);
+        await tx.query('COMMIT');
+        return json(res, 200, { action, amount: value.toString(), gold: String(updated.rows[0].gold), bankGold: String(updated.rows[0].bank_gold) });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
     const walletMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/wallet$/i);
     if (walletMatch && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
