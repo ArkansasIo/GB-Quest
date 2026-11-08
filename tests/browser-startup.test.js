@@ -36,3 +36,13 @@ test('the HTML boot fallback is hidden only after a successful canvas render', (
   assert.match(engine, /function render\(\)[\s\S]*document\.body\.classList\.add\('game-rendered'\)/);
   assert.match(shell, /body\.game-rendered \.game-start-fallback \{ display: none; \}/);
 });
+
+
+test('title scene removes the outer browser shell and expands the game viewport', () => {
+  const engine = read('src/engine.js');
+  const shell = read('client/shell.html');
+  assert.match(engine, /classList\.toggle\('title-screen',[\s\S]*constructor\?\.name === 'Title'/);
+  assert.match(shell, /body\.title-screen \.build-info,[\s\S]*body\.title-screen \.game-viewport > #chatShow \{ display:none !important; \}/);
+  assert.match(shell, /body\.title-screen \.game-viewport \{[\s\S]*aspect-ratio:160 \/ 144/);
+  assert.match(shell, /body\.title-screen \.game-viewport > #lcd \{[\s\S]*width:100% !important/);
+});
