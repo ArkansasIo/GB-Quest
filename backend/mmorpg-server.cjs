@@ -372,6 +372,91 @@ const server = http.createServer(async (req, res) => {
         throw error;
       } finally { tx.release(); }
     }
+    if (url.pathname === '/api/vendors' && req.method === 'GET') {
+      const vendors = await pool.query(`SELECT v.id,v.name,v.zone_id,COUNT(vs.item_id)::int AS catalogue_size
+        FROM npc_vendors v LEFT JOIN vendor_stock vs ON vs.vendor_id=v.id
+        WHERE v.active=true GROUP BY v.id ORDER BY v.name`);
+      return json(res, 200, { vendors: vendors.rows });
+    }
+    const vendorMatch = url.pathname.match(/^\/api\/vendors\/([a-z0-9_-]{1,48})$/i);
+    if (vendorMatch && req.method === 'GET') {
+      const vendor = await pool.query(`SELECT v.id,v.name,v.zone_id,ic.id AS item_id,ic.name AS item_name,
+        ic.description,ic.item_type,ic.max_stack,ic.level_required,ic.stats,vs.buy_price,vs.sell_price,vs.stock
+        FROM npc_vendors v JOIN vendor_stock vs ON vs.vendor_id=v.id
+        JOIN item_catalog ic ON ic.id=vs.item_id
+        WHERE v.id=$1 AND v.active=true ORDER BY ic.name`, [vendorMatch[1]]);
+      if (!vendor.rowCount) return json(res, 404, { error: 'vendor_not_found' });
+      return json(res, 200, { vendor: { id: vendor.rows[0].id, name: vendor.rows[0].name, zoneId: vendor.rows[0].zone_id },
+        items: vendor.rows.map(({id,name,zone_id,...item}) => item) });
+    }
+    const vendorTradeMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/vendor\/(buy|sell)$/i);
+    if (vendorTradeMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), vendorId = String(body.vendorId || ''), itemId = String(body.itemId || '');
+      const quantity = Number(body.quantity);
+      if (!/^[a-z0-9_-]{1,48}$/i.test(vendorId) || !/^[a-z0-9_-]{1,48}$/i.test(itemId) ||
+          !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) {
+        return json(res, 400, { error: 'invalid_trade_request' });
+      }
+      const action = vendorTradeMatch[2].toLowerCase(), characterId = vendorTradeMatch[1];
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const character = await tx.query('SELECT id,gold,zone_id FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [characterId, acct.id]);
+        if (!character.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'character_not_found' }); }
+        const vendor = await tx.query('SELECT id,zone_id FROM npc_vendors WHERE id=$1 AND active=true FOR SHARE', [vendorId]);
+        if (!vendor.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'vendor_not_found' }); }
+        if (vendor.rows[0].zone_id !== character.rows[0].zone_id) {
+          await tx.query('ROLLBACK'); return json(res, 403, { error: 'vendor_not_in_character_zone' });
+        }
+        const listing = await tx.query(`SELECT vs.buy_price,vs.sell_price,vs.stock,ic.max_stack,ic.level_required
+          FROM vendor_stock vs JOIN item_catalog ic ON ic.id=vs.item_id
+          WHERE vs.vendor_id=$1 AND vs.item_id=$2 FOR UPDATE OF vs`, [vendorId,itemId]);
+        if (!listing.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'item_not_sold_here' }); }
+        const price = BigInt(action === 'buy' ? listing.rows[0].buy_price : listing.rows[0].sell_price);
+        if (price <= 0n) { await tx.query('ROLLBACK'); return json(res, 400, { error: 'item_not_tradeable' }); }
+        const total = price * BigInt(quantity);
+        if (action === 'buy') {
+          const item = listing.rows[0];
+          if (item.stock !== null && Number(item.stock) < quantity) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'vendor_out_of_stock' }); }
+          if (Number(character.rows[0].gold) < Number(total)) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'insufficient_gold' }); }
+          const existing = await tx.query('SELECT id,quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE', [characterId,itemId]);
+          if (existing.rowCount && Number(existing.rows[0].quantity)+quantity > Number(item.max_stack)) {
+            await tx.query('ROLLBACK'); return json(res, 409, { error: 'inventory_stack_limit' });
+          }
+          if (Number(item.level_required) > 100) { await tx.query('ROLLBACK'); return json(res, 400, { error: 'invalid_item_level' }); }
+          if (item.stock !== null) await tx.query('UPDATE vendor_stock SET stock=stock-$1 WHERE vendor_id=$2 AND item_id=$3', [quantity,vendorId,itemId]);
+          if (existing.rowCount) await tx.query('UPDATE character_inventory SET quantity=quantity+$1 WHERE id=$2', [quantity,existing.rows[0].id]);
+          else await tx.query('INSERT INTO character_inventory(character_id,item_id,quantity) VALUES($1,$2,$3)', [characterId,itemId,quantity]);
+          const wallet = await tx.query('UPDATE characters SET gold=gold-$1,updated_at=now() WHERE id=$2 RETURNING gold', [total.toString(),characterId]);
+          await tx.query(`INSERT INTO economy_transactions(character_id,vendor_id,item_id,action,quantity,unit_price,gold_delta)
+            VALUES($1,$2,$3,'buy',$4,$5,$6)`, [characterId,vendorId,itemId,quantity,price.toString(),(-total).toString()]);
+          await tx.query('COMMIT');
+          return json(res, 200, { action,itemId,quantity,totalGold:total.toString(),gold:Number(wallet.rows[0].gold) });
+        }
+        const inventoryId = String(body.inventoryId || '');
+        if (!/^[0-9a-f-]{36}$/i.test(inventoryId)) { await tx.query('ROLLBACK'); return json(res, 400, { error: 'invalid_inventory_id' }); }
+        const inventory = await tx.query(`SELECT ci.id,ci.quantity,ci.item_id FROM character_inventory ci
+          WHERE ci.id=$1 AND ci.character_id=$2 AND ci.item_id=$3 FOR UPDATE`, [inventoryId,characterId,itemId]);
+        if (!inventory.rowCount) { await tx.query('ROLLBACK'); return json(res, 404, { error: 'inventory_item_not_found' }); }
+        if (Number(inventory.rows[0].quantity) < quantity) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'insufficient_item_quantity' }); }
+        const equipped = await tx.query('SELECT 1 FROM character_equipment WHERE inventory_id=$1', [inventoryId]);
+        if (equipped.rowCount) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'unequip_item_before_selling' }); }
+        if (Number(character.rows[0].gold) + Number(total) > Number.MAX_SAFE_INTEGER) {
+          await tx.query('ROLLBACK'); return json(res, 409, { error: 'wallet_limit_exceeded' });
+        }
+        if (Number(inventory.rows[0].quantity) === quantity) await tx.query('DELETE FROM character_inventory WHERE id=$1', [inventoryId]);
+        else await tx.query('UPDATE character_inventory SET quantity=quantity-$1 WHERE id=$2', [quantity,inventoryId]);
+        const wallet = await tx.query('UPDATE characters SET gold=gold+$1,updated_at=now() WHERE id=$2 RETURNING gold', [total.toString(),characterId]);
+        await tx.query(`INSERT INTO economy_transactions(character_id,vendor_id,item_id,action,quantity,unit_price,gold_delta)
+          VALUES($1,$2,$3,'sell',$4,$5,$6)`, [characterId,vendorId,itemId,quantity,price.toString(),total.toString()]);
+        await tx.query('COMMIT');
+        return json(res, 200, { action,itemId,quantity,totalGold:total.toString(),gold:Number(wallet.rows[0].gold) });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
     const questMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/quests$/i);
     if (questMatch && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
