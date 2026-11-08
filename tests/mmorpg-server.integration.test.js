@@ -55,6 +55,14 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(create.status, 201);
     const { character } = await create.json();
     assert.equal(character.class, 'ranger');
+    const secondCreate = await fetch(base + '/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ name: 'Trade Recipient', class: 'cleric' })
+    });
+    assert.equal(secondCreate.status, 201);
+    const { character: recipientCharacter } = await secondCreate.json();
+
 
     const inventoryResponse = await fetch(base + `/api/characters/${character.id}/inventory`, {
       headers: { authorization: 'Bearer ' + token }
@@ -263,6 +271,80 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ vendorId: 'unknown_vendor', itemId: 'minor_potion', quantity: 1 })
     });
     assert.equal(invalidZone.status, 404);
+    const equippedTrade = await fetch(base + `/api/characters/${character.id}/trades`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ toCharacterId: recipientCharacter.id, itemId: 'rusty_sword', quantity: 1 })
+    });
+    assert.equal(equippedTrade.status, 409);
+    const senderWalletBeforeTrade = await (await fetch(base + `/api/characters/${character.id}/wallet`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    const recipientWalletBeforeTrade = await (await fetch(base + `/api/characters/${recipientCharacter.id}/wallet`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    const createTrade = await fetch(base + `/api/characters/${character.id}/trades`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ toCharacterId: recipientCharacter.id, itemId: 'minor_potion', quantity: 1, goldAmount: 5 })
+    });
+    assert.equal(createTrade.status, 201);
+    const trade = (await createTrade.json()).trade;
+    assert.equal(trade.status, 'pending');
+    const tradeList = await fetch(base + `/api/characters/${recipientCharacter.id}/trades`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(tradeList.status, 200);
+    assert.ok((await tradeList.json()).trades.some(entry => entry.id === trade.id));
+    const acceptTrade = await fetch(base + `/api/trades/${trade.id}/accept`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({})
+    });
+    assert.equal(acceptTrade.status, 200);
+    assert.equal((await acceptTrade.json()).status, 'completed');
+    const senderWalletAfterTrade = await (await fetch(base + `/api/characters/${character.id}/wallet`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    const recipientWalletAfterTrade = await (await fetch(base + `/api/characters/${recipientCharacter.id}/wallet`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    assert.equal(senderWalletAfterTrade.gold, senderWalletBeforeTrade.gold - 5);
+    assert.equal(recipientWalletAfterTrade.gold, recipientWalletBeforeTrade.gold + 5);
+    const senderInventoryAfterTrade = await (await fetch(base + `/api/characters/${character.id}/inventory`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    const recipientInventoryAfterTrade = await (await fetch(base + `/api/characters/${recipientCharacter.id}/inventory`, {
+      headers: { authorization: 'Bearer ' + token }
+    })).json();
+    assert.equal(senderInventoryAfterTrade.items.find(item => item.item_id === 'minor_potion').quantity, 3);
+    assert.equal(recipientInventoryAfterTrade.items.find(item => item.item_id === 'minor_potion').quantity, 5);
+    const cancelOffer = await fetch(base + `/api/characters/${character.id}/trades`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ toCharacterId: recipientCharacter.id, goldAmount: 3 })
+    });
+    assert.equal(cancelOffer.status, 201);
+    const cancelId = (await cancelOffer.json()).trade.id;
+    const cancelResponse = await fetch(base + `/api/trades/${cancelId}/cancel`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({})
+    });
+    assert.equal(cancelResponse.status, 200);
+    assert.equal((await cancelResponse.json()).status, 'cancelled');
+    const tradeAuditPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try {
+      const audit = await tradeAuditPool.query(
+        'SELECT item_id,quantity,gold_amount FROM player_trade_transactions WHERE offer_id=$1',
+        [trade.id]
+      );
+      assert.equal(audit.rowCount, 1);
+      assert.equal(audit.rows[0].item_id, 'minor_potion');
+      assert.equal(Number(audit.rows[0].quantity), 1);
+      assert.equal(String(audit.rows[0].gold_amount), '5');
+    } finally { await tradeAuditPool.end(); }
+
   } finally {
     if (socket) socket.close();
     child.kill('SIGTERM');
