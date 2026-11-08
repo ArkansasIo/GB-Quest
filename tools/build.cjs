@@ -33,7 +33,7 @@ const themeShadows = rd('client/theme-shadows.css')
 const shell = rd('client/shell.html')
   .replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + themeShadows + '\n</style>')
   .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>')
-  .replace('<link rel="stylesheet" href="client/trade-panel.css">', '<style>\\n' + rd('client/trade-panel.css') + '\\n</style>')
+  .replace('<link rel="stylesheet" href="client/trade-panel.css">', '<style>\n' + rd('client/trade-panel.css') + '\n</style>')
   .replace('<link rel="stylesheet" href="client/theme-pokemon.css">', '<style>\n' + themePokemon + '\n</style>');
 
 const files = fs.readdirSync(path.join(ROOT, 'assets'))
