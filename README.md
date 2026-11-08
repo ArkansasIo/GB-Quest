@@ -23,7 +23,7 @@ Runtime art is assembled from repository-managed PNG/SVG assets and generated sp
 
 ## Authoritative MMORPG server
 
-The PostgreSQL-backed HTTP/WebSocket service is documented in [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md). It includes account authentication, character persistence, zone presence, authoritative movement, basic mob combat/XP, persistent wallet and bank balances, auditable deposits/withdrawals, NPC vendor trading, and zone chat. Start the single-node Docker deployment with `cp .env.example .env`, set the database password, token secret and exact HTTPS origin allowlist, then run `docker compose up -d --build`. This is a single live service instance; distributed multi-world scaling is not yet implemented.
+The PostgreSQL-backed HTTP/WebSocket service is documented in [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md). It includes account authentication, character persistence, zone presence, authoritative movement, basic mob combat/XP, persistent wallet and bank balances, auditable deposits/withdrawals, NPC vendor trading, player-to-player item/gold offers with transactional settlement, and zone chat. Start the single-node Docker deployment with `cp .env.example .env`, set the database password, token secret and exact HTTPS origin allowlist, then run `docker compose up -d --build`. This is a single live service instance; distributed multi-world scaling is not yet implemented.
 
 ## itch.io browser release
 
