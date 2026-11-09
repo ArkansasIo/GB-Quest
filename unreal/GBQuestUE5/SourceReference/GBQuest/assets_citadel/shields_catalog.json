@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "category": "shields",
+  "format": "image/svg+xml",
+  "masterViewBox": "0 0 520 560",
+  "entries": [
+    {
+      "id": "lionguard-shield",
+      "name": "Lionguard Shield",
+      "src": "assets_citadel/shields/lionguard-shield.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "frostward-buckler",
+      "name": "Frostward Buckler",
+      "src": "assets_citadel/shields/frostward-buckler.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "thornwall-tower",
+      "name": "Thornwall Tower Shield",
+      "src": "assets_citadel/shields/thornwall-tower.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "sunspire-aegis",
+      "name": "Sunspire Aegis",
+      "src": "assets_citadel/shields/sunspire-aegis.svg",
+      "status": "concept-icon"
+    }
+  ],
+  "note": "Original scalable inventory concept icons, not production 3D equipment meshes or PBR texture sets."
+}

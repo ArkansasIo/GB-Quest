@@ -14,8 +14,14 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'gb', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'gbc', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'hd64', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'full', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
   store.get('gbq2_settings') || {});
+const applySmoothArtDefaults = !S.smoothArtDefaultsApplied;
+if (applySmoothArtDefaults) { S.video = 'hd64'; S.palette = 'full'; S.smoothArtDefaultsApplied = true; }
+// The former 8K option was capped at 1080p and wasted memory. Keep saved users
+// on the largest supported, real output size instead.
+if (S.hdRes === '8k') S.hdRes = '4k';
+if (!['native', '2k', '4k'].includes(S.hdRes)) S.hdRes = 'native';
 S.displayMode = S.displayMode || (S.fullscreen ? 'borderless' : 'full-window');
 if (S.displayMode === 'windowed' && !S.displayModeUserSet) S.displayMode = 'full-window';
 function syncDisplayMode() {
@@ -41,6 +47,7 @@ document.addEventListener('fullscreenchange', () => {
 function applyFilter() { LCD.style.filter = `brightness(${0.7 + S.bright * 0.1}) contrast(${0.7 + S.contrast * 0.1})`; }
 function saveSettings() { store.set('gbq2_settings', S); applyFilter(); }
 applyFilter();
+if (applySmoothArtDefaults) saveSettings();
 
 // ================================================================ palettes
 // UI shades 0 (lightest) .. 3 (darkest) per palette mode; extra named colours for GBC/FULL
@@ -73,6 +80,19 @@ let ASSET_NAMES = [];
 let HD64_INDEX = null, HD64_INDEX_PROMISE = null;
 const HD64_ATLASES = new Map();
 const HD64_REQUESTED = new Set();
+function assetPackHiResName(name) {
+  if (/^(?:gt|gd|go|gh)_/.test(name)) return `gb_hi_${name}`;
+  let m = /^ap_scene_(.+)$/.exec(name);
+  if (m) return `ap_hi_scene_${m[1]}`;
+  m = /^ap_(.+)$/.exec(name);
+  if (m) return `ap_hi_${m[1]}`;
+  m = /^au_scene_(.+)$/.exec(name);
+  if (m) return `au_hi_scene_${m[1]}`;
+  m = /^au_rframe_(\d+)$/.exec(name);
+  if (m) return `au_hi_rarity_frames_${String(Number(m[1])).padStart(3, '0')}`;
+  m = /^au_(.+)$/.exec(name);
+  return m ? `au_hi_${m[1]}` : null;
+}
 async function hd64Index() {
   if (HD64_INDEX) return HD64_INDEX;
   if (!HD64_INDEX_PROMISE) HD64_INDEX_PROMISE = (async () => {
@@ -91,7 +111,7 @@ async function hd64Atlas(family, page) {
   const key = `${family}_${page}`;
   if (!HD64_ATLASES.has(key)) HD64_ATLASES.set(key, new Promise((resolve, reject) => {
     const im = new Image();
-    im.onload = () => { HD64_ATLASES.set(key, im); clearCaches(); resolve(im); };
+    im.onload = () => { HD64_ATLASES.set(key, im); clearHd64AtlasCache(family, page); resolve(im); };
     im.onerror = () => { HD64_ATLASES.delete(key); reject(new Error(`HD64 atlas unavailable: ${key}`)); };
     im.src = window.GBQ_HD64_ATLASES && window.GBQ_HD64_ATLASES[key] || `assets_hd64/${key}.png`;
   }));
@@ -105,19 +125,87 @@ function requestHd64Sprite(name) {
     if (entry) hd64Atlas(entry.family, entry.rect[0]).catch(() => {});
   });
 }
+function clearHd64AtlasCache(family, page) {
+  if (!HD64_INDEX) return;
+  const names = new Set();
+  for (const [name, entry] of HD64_INDEX) if (entry.family === family && entry.rect[0] === page) names.add(name);
+  for (const key of sprCache.keys()) {
+    const name = key.slice(0, key.indexOf('|'));
+    if (names.has(name)) sprCache.delete(key);
+  }
+}
+async function loadCitadelAssets() {
+  const catalogs = [
+    ['races', 'assets_citadel/catalog.json', 'races'],
+    ['classes', 'assets_citadel/catalog.json', 'classes'],
+    ['creatures', 'assets_citadel/creature_catalog.json', 'entries'],
+    ['bosses', 'assets_citadel/boss_catalog.json', 'entries'],
+    ['environments', 'assets_citadel/environment_catalog.json', 'entries'],
+    ['props', 'assets_citadel/prop_catalog.json', 'entries'],
+    ['terrain', 'assets_citadel/terrain_catalog.json', 'entries'],
+    ['buildings', 'assets_citadel/building_catalog.json', 'entries'],
+    ['roads', 'assets_citadel/road_catalog.json', 'entries'],
+    ['weapons', 'assets_citadel/weapons_catalog.json', 'entries'],
+    ['armor', 'assets_citadel/armor_catalog.json', 'entries'],
+    ['shields', 'assets_citadel/shields_catalog.json', 'entries'],
+  ];
+  const loadImage = (key, path) => new Promise(resolve => {
+    const im = new Image();
+    im.onload = () => { IMG[key] = im; resolve(true); };
+    im.onerror = () => resolve(false);
+    const embedded = window.GBQ_CITADEL_ASSETS && window.GBQ_CITADEL_ASSETS[path];
+    im.src = embedded || path;
+  });
+  let loaded = 0;
+  if (window.GBQ_CITADEL_ASSETS) {
+    for (const [path] of Object.entries(window.GBQ_CITADEL_ASSETS)) {
+      const parts = path.split('/');
+      if (parts.length < 3 || parts[0] !== 'assets_citadel') continue;
+      const category = parts[1], id = parts[parts.length - 1].replace(/\.svg$/i, '');
+      const singular = ({ races: 'race', classes: 'class', creatures: 'creature', bosses: 'boss', environments: 'environment', props: 'prop', terrain: 'terrain', buildings: 'building', roads: 'road', weapons: 'weapon', armor: 'armor', shields: 'shield', ui: 'ui' })[category] || category;
+      const key = `citadel_${singular}_${id}`;
+      if (await loadImage(key, path)) loaded++;
+    }
+  } else {
+    const docs = new Map();
+    await Promise.all(catalogs.map(async ([kind, path, field]) => {
+      try {
+        if (!docs.has(path)) docs.set(path, await (await fetch(path)).json());
+        const entries = docs.get(path)[field] || [];
+        await Promise.all(entries.map(async entry => {
+          const id = entry.id, src = entry.src;
+          const key = `citadel_${kind === 'races' ? 'race' : kind === 'classes' ? 'class' : kind === 'creatures' ? 'creature' : kind === 'bosses' ? 'boss' : kind === 'props' ? 'prop' : kind === 'terrain' ? 'terrain' : kind === 'buildings' ? 'building' : kind === 'roads' ? 'road' : kind === 'weapons' ? 'weapon' : kind === 'armor' ? 'armor' : kind === 'shields' ? 'shield' : 'environment'}_${id}`;
+          if (await loadImage(key, src)) loaded++;
+        }));
+      } catch (e) { console.warn('CITADEL asset catalog unavailable:', path, e); }
+    }));
+    for (const [key, path] of [['citadel_ui_crest','assets_citadel/ui/citadel_crest.svg'],['citadel_ui_ornaments','assets_citadel/ui/citadel_ornaments.svg']]) if (await loadImage(key,path)) loaded++;
+  }
+  window.GBQ_CITADEL_PROPS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_prop_')).map(key => [key.slice('citadel_prop_'.length), IMG[key]]));
+  window.GBQ_CITADEL_TERRAIN = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_terrain_')).map(key => [key.slice('citadel_terrain_'.length), IMG[key]]));
+  window.GBQ_CITADEL_BUILDINGS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_building_')).map(key => [key.slice('citadel_building_'.length), IMG[key]]));
+  window.GBQ_CITADEL_ROADS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_road_')).map(key => [key.slice('citadel_road_'.length), IMG[key]]));
+  window.GBQ_CITADEL_WEAPONS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_weapon_')).map(key => [key.slice('citadel_weapon_'.length), IMG[key]]));
+  window.GBQ_CITADEL_ARMOR = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_armor_')).map(key => [key.slice('citadel_armor_'.length), IMG[key]]));
+  window.GBQ_CITADEL_SHIELDS = Object.fromEntries(Object.keys(IMG).filter(key => key.startsWith('citadel_shield_')).map(key => [key.slice('citadel_shield_'.length), IMG[key]]));
+  window.GBQ_CITADEL_ASSET_COUNT = loaded;
+  return loaded;
+}
 async function loadAssets(onProgress) {
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
-  if (!ASSET_NAMES.length) { onProgress && onProgress(1); return; }
+  if (!ASSET_NAMES.length) onProgress && onProgress(0.9);
   let done = 0;
   await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
     const im = new Image();
     let settled = false;
-    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(done / ASSET_NAMES.length); res(); };
+    const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(0.9 * done / Math.max(1, ASSET_NAMES.length)); res(); };
     im.onload = () => { IMG[n] = im; finish(); };
     im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
   })));
+  await loadCitadelAssets();
+  onProgress && onProgress(1);
 }
 
 // ---------------------------------------------------------------- sprite pipeline
@@ -163,17 +251,23 @@ function medianCut4(d) {
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 function spr(name, w, h, opt) {
   const img = IMG[name]; if (!img) return null;
+  const hiName = assetPackHiResName(name), packImage = hiName && IMG[hiName];
+  const source = S.art === 'packs' && packImage ? packImage : img;
   requestHd64Sprite(name);
   opt = opt || {};
-  w = w || img.width; h = h || Math.round(img.height * w / img.width);
+  w = w || source.width; h = h || Math.round(source.height * w / source.width);
   const key = `${name}|${w}|${h}|${S.palette}|${opt.flip ? 1 : 0}|${opt.rot ? 1 : 0}|${opt.ghost ? 1 : 0}|${opt.clean ? 1 : 0}`;
   let c = sprCache.get(key); if (c) return c;
-  c = scaled(img, w, h);
+  c = scaled(source, w, h);
   let hdReady = false;
-  if (S.video === 'hd64' && HD64_INDEX) {
-    const hd = HD64_INDEX.get(name);
+  if (S.video === 'hd64') {
+    const hd = HD64_INDEX && HD64_INDEX.get(name);
     const atlas = hd && HD64_ATLASES.get(`${hd.family}_${hd.rect[0]}`);
-    if (hd && atlas && atlas.width) {
+    if (packImage && packImage.width) {
+      const hdc = mkCanvas(w, h), hdx = hdc.getContext('2d');
+      hdx.imageSmoothingEnabled = true; hdx.drawImage(packImage, 0, 0, w, h);
+      c = hdc; hdReady = true;
+    } else if (hd && atlas && atlas.width) {
       const [page, sx, sy, sw, sh] = hd.rect;
       const hdc = mkCanvas(w, h), hdx = hdc.getContext('2d');
       hdx.imageSmoothingEnabled = true; hdx.drawImage(atlas, sx, sy, sw, sh, 0, 0, w, h);
@@ -220,8 +314,8 @@ function spr(name, w, h, opt) {
   }
   sprCache.set(key, c); return c;
 }
-function sprH(name, h, opt) { const img = IMG[name]; if (!img) return null; return spr(name, Math.max(1, Math.round(img.width * h / img.height)), h, opt); }
-function sprFit(name, box, opt) { const img = IMG[name]; if (!img) return null; const s = box / Math.max(img.width, img.height); return spr(name, Math.max(1, Math.round(img.width * s)), Math.max(1, Math.round(img.height * s)), opt); }
+function sprH(name, h, opt) { const img = IMG[name]; if (!img) return null; const hiName = assetPackHiResName(name), source = S.art === 'packs' && hiName && IMG[hiName] || img; return spr(name, Math.max(1, Math.round(source.width * h / source.height)), h, opt); }
+function sprFit(name, box, opt) { const img = IMG[name]; if (!img) return null; const hiName = assetPackHiResName(name), source = S.art === 'packs' && hiName && IMG[hiName] || img; const s = box / Math.max(source.width, source.height); return spr(name, Math.max(1, Math.round(source.width * s)), Math.max(1, Math.round(source.height * s)), opt); }
 function blit(c, x, y) { if (c) ctx.drawImage(c, Math.round(x), Math.round(y)); }
 function clearCaches() { sprCache.clear(); for (const k in fontC) delete fontC[k]; }
 
@@ -237,12 +331,24 @@ function font(c) {
   return fontC[key];
 }
 // characters the pixel font lacks become their plain-ASCII look-alikes (instead of '?')
-const TEXT_ASCII = { '\u00b7': '-', '\u2022': '-', '\u2013': '-', '\u2014': '-', '\u2019': "'", '\u2018': "'", '\u201c': '"', '\u201d': '"', '\u2026': '...', '\u00d7': 'x', '\u2192': '>', '\u2190': '<', '\u2191': '^', '\u2193': 'v', '\u25b6': '>', '\u2605': '*', '\u2606': '*', '\u00e9': 'e', '\u00f6': 'o', '\u00fc': 'u' };
+const TEXT_ASCII = { '\u00b7': '-', '\u2022': '-', '\u2013': '-', '\u2014': '-', '\u2019': "'", '\u2018': "'", '\u201c': '"', '\u201d': '"', '\u2026': '...', '\u00d7': 'x', '\u2192': '>', '\u2190': '<', '\u2191': '^', '\u2193': 'v', '\u25b6': '>', '\u2605': '*', '\u2606': '*', '\u00df': 'ss', '\u00e6': 'ae', '\u00c6': 'AE', '\u0153': 'oe', '\u0152': 'OE', '\u00f8': 'o', '\u00d8': 'O', '\u0142': 'l', '\u0141': 'L', '\u00de': 'Th', '\u00fe': 'th' };
+function gameText(s) {
+  let value = String(s);
+  if (typeof value.normalize === 'function') value = value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return value.replace(/[^\x20-\x7e\n]/g, ch => TEXT_ASCII[ch] || '?');
+}
+function fitText(s, maxChars) {
+  const value = gameText(s).replace(/\n/g, ' ');
+  const limit = Math.max(0, Math.floor(maxChars));
+  if (value.length <= limit) return value;
+  if (limit <= 3) return '.'.repeat(limit);
+  return value.slice(0, limit - 3).trimEnd() + '...';
+}
 // a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
 const HILITE = { frame: -1, rects: [] };
 function text(s, x, y, c = 3, sc = 1) {
   if (!IMG.font_6x9) return;
-  s = String(s); if (/[^\x20-\x7e\n]/.test(s)) s = s.replace(/[^\x20-\x7e\n]/g, ch => TEXT_ASCII[ch] || '?');
+  s = gameText(s);
   if (c === 1 && HILITE.frame === frameN && HILITE.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3])) c = 3;
   const f = font(c); let cx = x;
   for (const ch of s) {
@@ -252,12 +358,79 @@ function text(s, x, y, c = 3, sc = 1) {
     cx += 6 * sc;
   }
 }
-const textR = (s, rx, y, c, sc = 1) => text(s, rx - String(s).length * 6 * sc, y, c, sc);
-const textC = (s, cx, y, c, sc = 1) => text(s, Math.round(cx - String(s).length * 3 * sc), y, c, sc);
+const textR = (s, rx, y, c, sc = 1) => { const value = gameText(s); text(value, rx - value.length * 6 * sc, y, c, sc); };
+const textC = (s, cx, y, c, sc = 1) => { const value = gameText(s); text(value, Math.round(cx - value.length * 3 * sc), y, c, sc); };
 function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); if (c === 1 && h >= 8 && h <= 14 && w >= 30) { if (HILITE.frame !== frameN) { HILITE.frame = frameN; HILITE.rects = []; } HILITE.rects.push([x, y, w, h]); } }
 function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
   fill(x + 2, y + 2, w - 4, 1, 1); fill(x + 2, y + 2, 1, h - 4, 1);
+}
+function drawMenuBackdrop(scene = 'ap_scene_wilderness') {
+  const art = IMG[scene] && spr(scene, W, H, { clean: true });
+  if (art) {
+    const smooth = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    blit(art, 0, 0);
+    ctx.imageSmoothingEnabled = smooth;
+  } else {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#11132d'); sky.addColorStop(0.58, '#302346'); sky.addColorStop(1, '#5a3541');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#17172d'; ctx.beginPath(); ctx.moveTo(0, 98); ctx.lineTo(28, 58); ctx.lineTo(52, 92); ctx.lineTo(82, 47); ctx.lineTo(112, 91); ctx.lineTo(142, 54); ctx.lineTo(W, 90); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+  }
+  ctx.save();
+  const shade = ctx.createLinearGradient(0, 0, 0, H);
+  shade.addColorStop(0, 'rgba(5,7,21,.42)'); shade.addColorStop(.52, 'rgba(8,7,20,.24)'); shade.addColorStop(1, 'rgba(6,7,17,.72)');
+  ctx.fillStyle = shade; ctx.fillRect(0, 0, W, H);
+  const moonGlow = ctx.createRadialGradient(126, 24, 2, 126, 24, 37);
+  moonGlow.addColorStop(0, 'rgba(255,220,156,.2)'); moonGlow.addColorStop(1, 'rgba(151,118,228,0)');
+  ctx.fillStyle = moonGlow; ctx.fillRect(88, 0, 72, 64);
+  ctx.restore();
+}
+function drawOrnatePanel(x, y, w, h, title) {
+  ctx.save();
+  // Panel fill: slightly lighter so text inside is readable at small sizes
+  ctx.fillStyle = 'rgba(10,11,28,.92)'; ctx.fillRect(x, y, w, h);
+  // Subtle inner gradient to give depth
+  const grad = ctx.createLinearGradient(x, y, x, y + h);
+  grad.addColorStop(0, 'rgba(255,220,140,.06)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
+  // Outer dark border
+  ctx.lineWidth = 2; ctx.strokeStyle = '#08060f'; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+  // Gold inner frame
+  ctx.lineWidth = 1; ctx.strokeStyle = '#c9952e'; ctx.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
+  // Bright inner highlight line
+  ctx.strokeStyle = 'rgba(255,222,139,.45)'; ctx.strokeRect(x + 4.5, y + 4.5, w - 9, h - 9);
+  // Corner ornaments
+  ctx.fillStyle = '#e8b84a';
+  ctx.fillRect(x + 3, y + 3, 5, 1); ctx.fillRect(x + 3, y + 3, 1, 5);
+  ctx.fillRect(x + w - 8, y + 3, 5, 1); ctx.fillRect(x + w - 4, y + 3, 1, 5);
+  ctx.fillRect(x + 3, y + h - 4, 5, 1); ctx.fillRect(x + 3, y + h - 8, 1, 5);
+  ctx.fillRect(x + w - 8, y + h - 4, 5, 1); ctx.fillRect(x + w - 4, y + h - 8, 1, 5);
+  ctx.restore();
+  if (title) {
+    const maxChars = Math.max(1, Math.floor((w - 24) / 6));
+    title = fitText(title, maxChars);
+    const tw = Math.min(w - 14, title.length * 6 + 14), tx = Math.round(x + (w - tw) / 2);
+    // Badge background sits centred on the top border
+    fill(tx, y - 4, tw, 10, '#0e0a1c');
+    ctx.save(); ctx.strokeStyle = '#c9952e'; ctx.lineWidth = 1;
+    ctx.strokeRect(tx + .5, y - 3.5, tw - 1, 9); ctx.restore();
+    textC(title, x + w / 2, y - 2, '#ffd878');
+  }
+}
+function drawMenuButton(x, y, w, h, label, selected = false) {
+  label = fitText(label, Math.max(1, Math.floor((w - (selected ? 16 : 8)) / 6)));
+  if (selected) {
+    fill(x + 2, y + 1, w - 4, h - 2, 'rgba(157,91,33,.58)');
+    ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.shadowColor = '#ffb738'; ctx.shadowBlur = 4; ctx.strokeRect(x + 1.5, y + .5, w - 3, h - 1); ctx.restore();
+    text('>', x + 5, y + Math.max(0, (h - 9) >> 1), '#fff0c2');
+  }
+  textC(label, x + w / 2 + (selected ? 2 : 0), y + Math.max(0, (h - 9) >> 1), selected ? '#fff0c2' : '#e3deeb');
+}
+function drawMenuHeader(title, subtitle = '') {
+  textC(title, 80, 4, '#ffe2a0');
+  if (subtitle) textC(subtitle, 80, 14, '#ddd3e6');
 }
 function bar(x, y, w, h, v, max, c = 2) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, 0);
@@ -270,9 +443,15 @@ function icon(name, x, y, size = 10) { blit(sprFit(name, size), x + (size - Math
 const pad2 = n => String(n).padStart(2, '0');
 const fmt = n => n >= 1e9 ? (n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'K' : String(n);
 function wrap(s, n = 23) {
-  const out = []; for (const para of String(s).split('\n')) {
+  n = Math.max(1, Math.floor(Number(n) || 23));
+  const out = []; for (const para of gameText(s).split('\n')) {
     let line = '';
-    for (const word of para.split(' ')) {
+    for (let word of para.trim().split(/\s+/)) {
+      if (!word) continue;
+      while (word.length > n) {
+        if (line) { out.push(line); line = ''; }
+        out.push(word.slice(0, n)); word = word.slice(n);
+      }
       if ((line + (line ? ' ' : '') + word).length > n) { if (line) out.push(line); line = word; }
       else line += (line ? ' ' : '') + word;
     }
@@ -568,8 +747,10 @@ class Dialog {
     if (P('a') || P('b')) { SFX.cursor(); this.i++; this.c = 0; if (this.i >= this.p.length) { removeScene(this); this.cb && this.cb(); } }
   }
   draw() {
-    const y = H - 44; frame(2, y, W - 4, 42);
-    if (this.who) { const w = this.who.length * 6 + 8; frame(4, y - 11, w, 12); text(this.who, 8, y - 9, 2); }
+    const y = H - 44, blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, y - 1, W - 2, 43, '#b09258'); fill(2, y, W - 4, 41, '#080a0c'); fill(3, y + 1, W - 6, 39, '#171a1f'); fill(4, y + 2, W - 8, 1, '#343941'); }
+    else drawOrnatePanel(2, y, W - 4, 42);
+    if (this.who) { const w = this.who.length * 6 + 8; if (blackbird) { fill(3, y - 12, w + 2, 13, '#b09258'); fill(4, y - 11, w, 11, '#171a1f'); } else drawOrnatePanel(4, y - 11, w, 12); text(this.who, 8, y - 9, blackbird ? '#e1c78f' : '#ffe3a0'); }
     const L = this.p[this.i]; if (!L) return;
     text(L.slice(0, Math.floor(this.c)), 8, y + 6);
     if (this.c >= L.length && (frameN >> 4) % 2) text('v', W - 14, y + 31);
@@ -588,14 +769,42 @@ class Choice { // scrolling list with optional prompt
     else if (P('b')) { SFX.back(); removeScene(this); this.cb(-1); }
   }
   draw() {
+    const blackbird = S.uiTheme === 'blackbird';
     let bottom = H - 2;
-    if (this.prompt) { frame(2, H - 44, W - 4, 42); text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38); bottom = H - 46; }
+    if (this.prompt) {
+      if (blackbird) {
+        fill(2, H - 44, W - 4, 42, '#080a0c');
+        fill(2, H - 44, W - 4, 1, '#b09258');
+        fill(2, H - 3, W - 4, 1, '#51432f');
+      } else drawOrnatePanel(2, H - 44, W - 4, 42);
+      text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38, blackbird ? '#e1c78f' : '#fff0c2');
+      bottom = H - 46;
+    }
     const vis = this.o.slice(this.top, this.top + this.rows);
     const w = Math.min(156, Math.max(...this.o.map(s => String(s).length)) * 6 + 18), h = vis.length * 11 + 8;
     const x = this.x != null ? this.x : W - w - 2, y = Math.max(2, bottom - h);
-    frame(x, y, w, h);
-    vis.forEach((s, j) => { const i = this.top + j; text(String(s).slice(0, 24), x + 13, y + 5 + j * 11); if (i === this.i) text('>', x + 5, y + 5 + j * 11); });
-    if (this.o.length > this.rows) { if (this.top > 0) text('^', x + w - 9, y + 2, 2); if (this.top + this.rows < this.o.length) text('v', x + w - 9, y + h - 10, 2); }
+    if (blackbird) {
+      fill(x, y, w, h, '#b09258');
+      fill(x + 1, y + 1, w - 2, h - 2, '#080a0c');
+      fill(x + 2, y + 2, w - 4, h - 4, '#171a1f');
+      fill(x + 4, y + 4, w - 8, 1, '#343941');
+    } else drawOrnatePanel(x, y, w, h);
+    vis.forEach((s, j) => {
+      const i = this.top + j, rowY = y + 5 + j * 11;
+      if (blackbird && i === this.i) {
+        fill(x + 3, rowY - 2, w - 6, 10, '#51432f');
+        fill(x + 4, rowY - 1, w - 8, 8, '#29231a');
+      } else if (i === this.i) {
+        fill(x + 3, rowY - 2, w - 6, 10, 'rgba(157,91,33,.58)');
+        ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + 3.5, rowY - 1.5, w - 7, 9); ctx.restore();
+      }
+      text(String(s).slice(0, 24), x + 13, rowY, blackbird ? (i === this.i ? '#f2d99f' : '#d1d0ca') : (i === this.i ? '#fff0c2' : '#e3deeb'));
+      if (i === this.i) text('>', x + 5, rowY, blackbird ? '#e0bd78' : '#ffe3a0');
+    });
+    if (this.o.length > this.rows) {
+      if (this.top > 0) text('^', x + w - 9, y + 2, 2);
+      if (this.top + this.rows < this.o.length) text('v', x + w - 9, y + h - 10, 2);
+    }
   }
 }
 function choose(opts, cb, prompt, o) { push(new Choice(opts, cb, prompt, o)); }
@@ -651,14 +860,14 @@ function render() {
   drawToasts();
   if (window.DBG && DBG.overlay) DBG.overlay();
   present();
+  document.body.classList.toggle('title-screen', scenes.length > 0 && scenes[scenes.length - 1].constructor?.name === 'Title');
   document.body.classList.add('game-rendered');
 }
 function present() {
-  const requestedW = S.hdRes === '8k' ? 7680 : S.hdRes === '4k' ? 3840 : (S.video === 'hd64' ? W * 4 : W);
   const sourceW = S.video === 'hd64' ? W * 4 : W, sourceH = S.video === 'hd64' ? H * 4 : H;
-  // 4K/8K are display upscales; allocating those full backing stores every
-  // frame can exhaust browser canvas memory without adding source detail.
-  const outW = Math.min(requestedW, Math.max(sourceW, 1920));
+  // Keep output sizes honest and bounded: 2K is 1920 px wide, 4K is 3840.
+  const requestedW = S.hdRes === '4k' ? 3840 : S.hdRes === '2k' ? 1920 : sourceW;
+  const outW = Math.max(sourceW, requestedW);
   const outH = Math.round(sourceH * outW / sourceW);
   if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, outW, outH);
   if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }

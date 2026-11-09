@@ -159,7 +159,39 @@ class MarketScene {
     const run = (p, ok) => { this.busy = true; p.then(e => { this.busy = false; if (e && !/^Claimed/.test(e)) { this.msg = e.toUpperCase(); SFX.error(); } else { this.msg = (e || ok).toUpperCase(); SFX.buy(); } this.load(); }).catch(e => { this.busy = false; this.msg = String(e.message || e).toUpperCase().slice(0, 25); SFX.error(); }); };
     if (this.tab === 3) return run(Market.claim(), 'CLAIMED');
     const e = V[this.i]; if (!e) return;
-    if (this.tab === 0) return choose([`BUY ${fmt(e.price)} G`, 'BACK'], k => { if (k === 0) run(Market.buy(e), 'BOUGHT ' + listingName(e).slice(0, 14)); }, `${listingName(e)} from ${e.sellerName || 'A SELLER'}.`);
+    if (this.tab === 0) {
+      if (!e.stack && e.item) {
+        const item = e.item, slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item };
+        const target = derive({ ...G, eq });
+        const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+        const setId = item.setId || item.set || item.template?.setId || item.template?.set;
+        const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(item) : 0;
+        const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(item) : 0;
+        const durability = item.maxDur > 0 ? 'DUR ' + Math.round((item.dur || 0) / item.maxDur * 100) + '%' : 'DUR N/A';
+        const rows = [
+          listingName(e) + ' · ' + fmt(e.price) + ' G',
+          'ILVL ' + (item.ilvl || 1) + ' · ' + (RARITY[item.rarity]?.name || 'COMMON') + ' · ' + (SLOT_NAME[slot] || slot).toUpperCase(),
+          'SET ' + (setId || 'NONE') + ' · ' + durability,
+          'GEMS ' + (item.sockets || []).filter(Boolean).length + '/' + gemSlots + ' · RUNES ' + (item.runeSockets || []).filter(Boolean).length + '/' + runeSlots + ' · ' + (item.attune ? 'ATTUNE' : 'NO ATTUNE'),
+          ...legendarySetPreview(G, item).flatMap(set => set.thresholds.map(t => set.name + ' ' + t.pieces + 'PC ' + (t.newlyUnlocked ? 'NEW' : t.active ? 'ACTIVE' : 'LOCKED') + ': ' + t.stats.map(([k, v]) => k.toUpperCase() + ' +' + v).join(', '))),
+          'SELLER ' + (e.sellerName || 'A SELLER') + ' · GOLD AFTER ' + fmt(G.gold - e.price),
+          'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
+          'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
+          'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+          'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
+          'CRIT ' + current.crit + '% → ' + target.crit + '%',
+          'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+          'BLOCK ' + current.block + '% → ' + target.block + '%',
+          'LEECH ' + current.leech + '% → ' + target.leech + '%',
+          'HASTE ' + current.haste + '% → ' + target.haste + '%',
+          'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'
+        ];
+        const mods = (item.affixes || []).map(([key, value]) => 'AFFIX ' + key.toUpperCase() + ' +' + value);
+        rows.push(...(mods.length ? mods : ['NO ROLLED AFFIXES']));
+        return say(rows, () => choose([`BUY ${fmt(e.price)} G`, 'CANCEL'], k => { if (k === 0) run(Market.buy(e), 'BOUGHT ' + listingName(e).slice(0, 14)); }, 'Confirm only after reviewing the item and price.'));
+      }
+      return choose([`BUY ${fmt(e.price)} G`, 'BACK'], k => { if (k === 0) run(Market.buy(e), 'BOUGHT ' + listingName(e).slice(0, 14)); }, `${listingName(e)} from ${e.sellerName || 'A SELLER'}.`);
+    }
     if (this.tab === 2) return choose(['CANCEL LISTING', 'BACK'], k => { if (k === 0) run(Market.cancel(e), 'RETURNED TO YOU'); }, `${listingName(e)} for ${fmt(e.price)} G.`);
     if (this.tab === 1) {
       const v = e.value, opts = [2, 3, 4, 6, 10].map(x => Math.max(1, Math.round(v * x)));
@@ -168,6 +200,8 @@ class MarketScene {
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 11, 158, 132, '#090b0e'); fill(2, 12, 156, 1, '#8c744b'); fill(2, 12, 1, 130, '#6f5b3d'); fill(157, 12, 1, 130, '#292d32'); fill(3, 23, 154, 77, '#171a1f'); fill(3, 102, 154, 40, '#101317'); fill(3, 102, 154, 1, '#b09258'); }
     const tabs = ['BROWSE', 'SELL', 'MINE', 'CLAIM'];
     textC(`< ${tabs[this.tab]} >  ${Market.mode().toUpperCase()}`, 80, 1, 'gold');
     if (this.tab === 0) text(`< ${MARKET_CATS[this.cat]} >`, 3, 13, 2);
@@ -178,17 +212,34 @@ class MarketScene {
     if (this.tab !== 3 && !V.length) textC(this.tab === 1 ? 'NOTHING TO SELL' : 'NO LISTINGS', 80, 60, 2);
     V.slice(this.top, this.top + 7).forEach((e, j) => {
       const i = this.top + j, y = 24 + j * 11, sell = this.tab === 1;
-      if (i === this.i) fill(1, y - 1, 158, 11, 1);
+      if (i === this.i) fill(1, y - 1, 158, 11, blackbird ? '#51432f' : 1);
       const ic = sell ? e.icon : listingIcon(e); if (ic && IMG[ic]) blit(sprFit(ic, 9), 3, y);
       text((sell ? e.name : listingName(e)).slice(0, 15), 14, y, rarityCol(sell ? e.rarity : e.item ? e.item.rarity : (ITEMS[e.stack.id] || {}).rarity || 1));
       textR(sell ? `${fmt(e.value)}` : fmt(e.price), 157, y, 2);
     });
-    frame(1, 102, 158, 41);
+    if (!blackbird) frame(1, 102, 158, 41); else { fill(4, 103, 152, 37, '#171a1f'); fill(4, 103, 152, 1, '#343941'); }
     const e = V[this.i];
-    if (e && this.tab === 0) { text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2); if (e.item) text(wrap(itemDesc(e.item), 25).slice(0, 2).join('\n'), 5, 114, 3); else text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 114, 3); }
-    else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 105, 2);
+    // Gear inspection in the market uses the same live character stat/equipment
+    // model as the inventory screen, so listings show real upgrade deltas.
+    const gear = e && (this.tab === 1 ? e.src && e.src.item : e.item);
+    if (gear) {
+      if (this.tab === 0) text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
+      else if (this.tab === 1) text(`VALUE ${fmt(e.value)} G  DEPOSIT ${depositFor(e.value)} G`.slice(0, 25), 5, 105, 2);
+      else text(`LISTED AT ${fmt(e.price)} G`, 5, 105, 2);
+      const slot = SLOT_NAME[itemSlot(gear)] || 'GEAR';
+      text(`IL${gear.ilvl || 1} ${slot} ${itemKeyStat(gear)}`.slice(0, 25), 5, 114, 3);
+      const equipped = equippedFor(G, gear);
+      const delta = equipped ? itemPower(G, gear) - itemPower(G, equipped) : 0;
+      const affix = (gear.affixes || []).slice(0, 2).map(([k, v]) => SUBSTATS[k] ? `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 5)}` : '').filter(Boolean).join(' ');
+      const comparison = equipped ? `VS EQUIPPED ${delta >= 0 ? '+' : ''}${Math.round(delta)} PWR` : 'NEW EQUIPMENT SLOT';
+      text((affix || 'NO ROLLED AFFIXES').slice(0, 25), 5, 123, 3);
+      text(comparison.slice(0, 25), 5, 132, equipped && delta < 0 ? 'red' : 'green');
+    } else if (e && this.tab === 0) {
+      text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
+      text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 114, 3);
+    } else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 105, 2);
     else if (e && this.tab === 2) text(`LISTED AT ${fmt(e.price)} G\nA: CANCEL`, 5, 105, 2);
-    text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 5, 134, this.msg ? 'gold' : 1);
+    text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 5, 139, this.msg ? 'gold' : 1);
   }
 }
 

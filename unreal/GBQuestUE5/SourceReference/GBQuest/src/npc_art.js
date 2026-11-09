@@ -19,6 +19,25 @@ const NPC_PROF_ROLE = {
 const NPC_NAME_ROLE = [[/DOCKHAND/, 'dockhand'], [/FISHMONGER/, 'fisher'], [/GUARD/, 'guard'], [/MERCHANT/, 'merchant']];
 const NPC_FOLK = ['townsman', 'townswoman', 'noble', 'child'];
 const npcHash = s => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
+let AP_WORLD_NPCS = null;
+let AP_WORLD_CHARACTERS = null;
+function assetPackCharacter(character, dir = 'down', ghost = false) {
+  if (S.art !== 'packs') return null;
+  AP_WORLD_CHARACTERS ||= Object.keys(IMG).filter(name => /^ap_characters_\d+$/.test(name)).sort();
+  if (!AP_WORLD_CHARACTERS.length) return null;
+  const key = [character && character.cls, character && character.species, character && character.look].join('|');
+  const name = AP_WORLD_CHARACTERS[npcHash(key) % AP_WORLD_CHARACTERS.length];
+  return IMG[name] ? spr(name, 16, 32, { flip: dir === 'left', ghost }) : null;
+}
+function assetPackNpc(e) {
+  if (S.art !== 'packs') return null;
+  AP_WORLD_NPCS ||= Object.keys(IMG).filter(name => /^ap_npcs_\d+$/.test(name)).sort();
+  AP_WORLD_CHARACTERS ||= Object.keys(IMG).filter(name => /^ap_characters_\d+$/.test(name)).sort();
+  const pool = AP_WORLD_NPCS.length ? AP_WORLD_NPCS : AP_WORLD_CHARACTERS;
+  if (!pool.length) return null;
+  const name = pool[npcHash(e && (e.name || e.spr) || '') % pool.length];
+  return IMG[name] ? spr(name, 16, 32) : null;
+}
 function npcRole(e) {
   if (!e) return null;
   if (e.prof && NPC_PROF_ROLE[e.prof]) return NPC_PROF_ROLE[e.prof];
@@ -28,9 +47,14 @@ function npcRole(e) {
 }
 // the sprite for an NPC this frame: role art when present (blinking every few seconds), else the old look
 function npcSprite(e) {
+  const packSprite = assetPackNpc(e);
+  if (packSprite) return packSprite;
   const role = npcRole(e), base = `gh_npc_${role}`;
-  if (!role || !IMG[`${base}_down0`]) return walker(npcLook(e.spr), 'down', 0);
   const t = (frameN + npcHash(e.name || '') % 240) % 240, blink = role === 'realmstone' ? (frameN >> 4) % 2 === 1 : t < 7;
+  const retro = typeof retroNpcArt === 'function' && retroNpcArt(role, blink, e.name);
+  if (retro) return retro.startsWith('ka_') ? sprH(retro, 22) : spr(retro, 16, 16);
+  if (!role || !IMG[`${base}_down0`]) return walker(npcLook(e.spr), 'down', 0);
   return spr(blink && IMG[`${base}_blink`] ? `${base}_blink` : `${base}_down0`, 16, 16);
 }
 window.npcRole = npcRole; window.npcSprite = npcSprite;
+window.assetPackCharacter = assetPackCharacter;

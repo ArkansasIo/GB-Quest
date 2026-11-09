@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "category": "weapons",
+  "format": "image/svg+xml",
+  "masterViewBox": "0 0 520 560",
+  "entries": [
+    {
+      "id": "sunsteel-sword",
+      "name": "Sunsteel Longsword",
+      "src": "assets_citadel/weapons/sunsteel-sword.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "rimefang-axe",
+      "name": "Rimefang Battleaxe",
+      "src": "assets_citadel/weapons/rimefang-axe.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "thornwood-bow",
+      "name": "Thornwood Longbow",
+      "src": "assets_citadel/weapons/thornwood-bow.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "starfall-staff",
+      "name": "Starfall Staff",
+      "src": "assets_citadel/weapons/starfall-staff.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "dawnhammer",
+      "name": "Dawnhammer Mace",
+      "src": "assets_citadel/weapons/dawnhammer.svg",
+      "status": "concept-icon"
+    },
+    {
+      "id": "nightglass-dagger",
+      "name": "Nightglass Dagger",
+      "src": "assets_citadel/weapons/nightglass-dagger.svg",
+      "status": "concept-icon"
+    }
+  ],
+  "note": "Original scalable inventory concept icons, not production 3D equipment meshes or PBR texture sets."
+}

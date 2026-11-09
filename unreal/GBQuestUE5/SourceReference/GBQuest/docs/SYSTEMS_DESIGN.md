@@ -6,7 +6,7 @@ In game, **MAIN MENU > GUIDE** explains the same systems to players. Its pages r
 
 ## 1. Design pillars
 
-1. **A handheld RPG you can live in.** A 160×144 screen, four-shade art modes, short text pages, and menus that sit over the map, like a Pokémon game.
+1. **A handheld RPG you can live in.** A 160×144 screen, four-shade art modes, short text pages, and menus that sit over the map, with a classic handheld-RPG presentation.
 2. **D&D 5e at the core, MMO on top.** Attacks, saves, spell slots and class features follow the 5e SRD through class level 20. Levels 21–720, gear, guilds and world systems are MMO layers that never break bounded accuracy.
 3. **Many small loops.** Every session should offer a quick goal: a bounty, a world quest, an amitoi coming home, a boonstone to defend, or a masterwork rank.
 4. **Readable rules.** Every system has a pure, testable core exported on `globalThis.GBQ*`, and in-game text is generated from the same data.

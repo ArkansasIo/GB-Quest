@@ -435,11 +435,11 @@ Each subtype comes in 7 elemental variants plus elites. Full list:
 | Category | Count | Level range |
 |---|---|---|
 | Arc | 12 | 7–41 |
-| Dungeon | 66 | 5–602 |
-| Raid | 45 | 14–718 |
+| Dungeon | 114 | 5–662 |
+| Raid | 85 | 14–718 |
 | Trial | 30 | 10–37 |
 | Tower | 20 | 38–703 |
-| World | 177 | 4–722 |
+| World | 89 | 4–722 |
 
 ### Arc bosses
 
@@ -540,189 +540,189 @@ Each subtype comes in 7 elemental variants plus elites. Full list:
 | Zeess The Ashen | dungeon | 600 | humanoid | shield, phase | Dg_x5_1 |
 | Thix The Weeping | dungeon | 601 | humanoid | reflect, drain | Dg_x5_1 |
 | Orix Stormcaller | dungeon | 602 | humanoid | curse, drain | Dg_x5_1 |
-| Dreul Skyrender | raid | 14 | humanoid | drain, enrage, aoe | Rd_crypt |
-| Dreyn The Ashen | raid | 16 | humanoid | shield, reflect, enrage | Rd_crypt |
-| Zeath Doomspeaker | raid | 18 | humanoid | aoe, regen, summon | Rd_crypt |
-| Orel The Ashen | raid | 20 | humanoid | enrage, curse, summon | Rd_crypt |
-| Feless Stormcaller | raid | 18 | fiend | drain, curse, phase | Rd_forge |
-| Rakoth Ironhide | raid | 20 | construct | aoe, curse, reflect | Rd_forge |
-| Rakath The Weeping | raid | 22 | dragon | regen, summon, shield | Rd_forge |
-| Vayn Bonereaver | raid | 24 | fiend | drain, phase, frenzy | Rd_forge |
-| Felix The Ashen | raid | 26 | construct | curse, reflect, summon | Rd_forge |
-| Zeul Of The Pit | raid | 22 | dragon | regen, frenzy, curse | Rd_palace |
-| Azul The Drowned | raid | 24 | beast | shield, curse, drain | Rd_palace |
-| Ororn The Pale | raid | 26 | elemental | enrage, drain, summon | Rd_palace |
-| Uloth Of The Pit | raid | 28 | beast | enrage, phase, summon | Rd_palace |
-| Zear Doomspeaker | raid | 30 | beast | drain, frenzy, summon | Rd_palace |
-| Dreuk Nightmaw | raid | 40 | fiend | regen, summon, enrage | Rd_dusk |
-| Thar The Gilded | raid | 42 | aberration | reflect, aoe, regen | Rd_dusk |
-| Ulel The Hollow | raid | 44 | aberration | frenzy, enrage, regen | Rd_dusk |
-| Brauk The Unbroken | raid | 46 | undead | curse, reflect, aoe | Rd_dusk |
-| Dreess Voidborn | raid | 48 | aberration | phase, regen, curse | Rd_dusk |
-| Mororn The Weeping | raid | 50 | undead | shield, frenzy, curse | Rd_dusk |
-| Skayn The Pale | raid | 110 | ooze | drain, enrage, summon | Rd_x1 |
-| Thyn Of The Pit | raid | 112 | plant | enrage, frenzy, curse | Rd_x1 |
-| Gruk The Elder | raid | 114 | beast | aoe, regen, reflect | Rd_x1 |
-| Thel Voidborn | raid | 116 | undead | summon, enrage, regen | Rd_x1 |
-| Grix Bonereaver | raid | 118 | undead | reflect, curse, summon | Rd_x1 |
-| Zeorn Of The Pit | raid | 230 | fiend | reflect, curse, regen | Rd_x2 |
-| Orul Stormcaller | raid | 232 | fiend | curse, drain, regen | Rd_x2 |
-| Skael The Drowned | raid | 234 | fiend | curse, phase, summon | Rd_x2 |
-| Felorn The Ashen | raid | 236 | undead | frenzy, aoe, phase | Rd_x2 |
-| Morix Skyrender | raid | 238 | undead | phase, drain, enrage | Rd_x2 |
-| Dreess The Drowned | raid | 350 | humanoid | regen, shield, curse | Rd_x3 |
-| Khess The Unbroken | raid | 352 | beast | frenzy, aoe, summon | Rd_x3 |
-| Nyxorn The Hollow | raid | 354 | beast | shield, reflect, enrage | Rd_x3 |
-| Khoth The Unbroken | raid | 356 | ooze | curse, frenzy, reflect | Rd_x3 |
-| Braax Skyrender | raid | 358 | humanoid | enrage, phase, drain | Rd_x3 |
-| Orar Voidborn | raid | 530 | monstrosity | regen, curse, reflect | Rd_x4 |
-| Dreess The Elder | raid | 532 | construct | reflect, frenzy, aoe | Rd_x4 |
-| Oruk Of The Pit | raid | 534 | humanoid | reflect, regen, phase | Rd_x4 |
-| Dreix Ironhide | raid | 536 | undead | drain, curse, frenzy | Rd_x4 |
-| Morul Of The Pit | raid | 538 | construct | aoe, phase, enrage | Rd_x4 |
-| Thess Stormcaller | raid | 710 | elemental | phase, curse, frenzy | Rd_x5 |
-| Vaorn The Elder | raid | 712 | beast | curse, aoe, regen | Rd_x5 |
-| Azom The Hollow | raid | 714 | beast | regen, shield, enrage | Rd_x5 |
-| Rakoth The Gilded | raid | 716 | elemental | reflect, enrage, phase | Rd_x5 |
-| Skaath Nightmaw | raid | 718 | giant | frenzy, enrage, summon | Rd_x5 |
-| Orath Nightmaw | trial | 10 | monstrosity | regen, drain | Tr_gauntlet |
-| Orax The Weeping | trial | 13 | fiend | reflect, phase | Tr_gauntlet |
-| Rakax Bonereaver | trial | 16 | ooze | reflect, drain | Tr_gauntlet |
-| Orom Voidborn | trial | 19 | construct | shield, regen | Tr_gauntlet |
-| Silax Voidborn | trial | 22 | undead | curse, phase | Tr_gauntlet |
-| Skauk Of The Pit | trial | 15 | celestial | aoe, summon | Tr_clock |
-| Azax The Elder | trial | 18 | fiend | summon, drain | Tr_clock |
-| Felath Voidborn | trial | 21 | monstrosity | shield, aoe | Tr_clock |
-| Felax The Drowned | trial | 24 | celestial | frenzy, regen | Tr_clock |
-| Braar Of The Pit | trial | 27 | beast | shield, phase | Tr_clock |
-| Dreel The Gilded | trial | 12 | celestial | phase, shield | Tr_alone |
-| Brael Nightmaw | trial | 15 | beast | enrage, summon | Tr_alone |
-| Grom The Unbroken | trial | 18 | humanoid | reflect, drain | Tr_alone |
-| Khess The Weeping | trial | 21 | fey | enrage, shield | Tr_alone |
-| Braix The Weeping | trial | 24 | ooze | drain, aoe | Tr_alone |
-| Zeyn The Hollow | trial | 18 | undead | phase, regen | Tr_frail |
-| Azel The Weeping | trial | 21 | construct | curse, reflect | Tr_frail |
-| Khorn The Gilded | trial | 24 | dragon | enrage, summon | Tr_frail |
-| Vaix The Weeping | trial | 27 | fiend | shield, summon | Tr_frail |
-| Morom Of The Pit | trial | 30 | beast | curse, enrage | Tr_frail |
-| Khax Bonereaver | trial | 20 | humanoid | curse, regen | Tr_horde |
-| Azyn Doomspeaker | trial | 23 | beast | drain, reflect | Tr_horde |
-| Silix The Elder | trial | 26 | humanoid | drain, frenzy | Tr_horde |
-| Braess The Hollow | trial | 29 | fiend | phase, curse | Tr_horde |
-| Vaoth The Hollow | trial | 32 | aberration | regen, aoe | Tr_horde |
-| Grath Doomspeaker | trial | 25 | beast | frenzy, drain | Tr_mirror |
-| Silix The Unbroken | trial | 28 | beast | reflect, frenzy | Tr_mirror |
-| Zeom Voidborn | trial | 31 | giant | curse, drain | Tr_mirror |
-| Rakul Voidborn | trial | 34 | humanoid | aoe, shield | Tr_mirror |
-| Orul The Pale | trial | 37 | fiend | phase, drain | Tr_mirror |
-| Orel Of The Pit | tower | 38 | fiend | aoe, drain | Tower |
-| Zeax The Pale | tower | 73 | ooze | aoe, shield | Tower |
-| Braix Doomspeaker | tower | 108 | monstrosity | frenzy, summon | Tower |
-| Nyxel Ironhide | tower | 143 | fiend | frenzy, phase | Tower |
-| Thel Doomspeaker | tower | 178 | beast | regen, shield | Tower |
-| Vaom The Pale | tower | 213 | fey | drain, summon | Tower |
-| Dreath The Hollow | tower | 248 | elemental | reflect, shield | Tower |
-| Braix Doomspeaker | tower | 283 | fiend | enrage, shield | Tower |
-| Silul The Elder | tower | 318 | beast | regen, frenzy | Tower |
-| Skaul Bonereaver | tower | 353 | monstrosity | reflect, phase | Tower |
-| Felath Doomspeaker | tower | 388 | fey | enrage, regen | Tower |
-| Rakar The Unbroken | tower | 423 | dragon | aoe, summon | Tower |
-| Grix Ironhide | tower | 458 | construct | enrage, phase | Tower |
-| Drear The Hollow | tower | 493 | humanoid | reflect, drain | Tower |
-| Moryn Stormcaller | tower | 528 | plant | drain, regen | Tower |
-| Silar The Elder | tower | 563 | monstrosity | frenzy, summon | Tower |
-| Dreix Nightmaw | tower | 598 | construct | regen, drain | Tower |
-| Azoth The Gilded | tower | 633 | aberration | shield, drain | Tower |
-| Rakul The Ashen | tower | 668 | plant | drain, enrage | Tower |
-| Ulul Ironhide | tower | 703 | humanoid | enrage, drain | Tower |
-| Dreyn Bonereaver | world | 4 | beast | aoe, regen | Elderwood |
-| Zeyn Nightmaw | world | 5 | humanoid | curse, frenzy | Elderwood East |
-| Morix The Hollow | world | 5 | beast | aoe, regen | Elderwood South |
-| Rakess Skyrender | world | 6 | ooze | phase, reflect | Elderwood Far Reach |
-| Rakax The Elder | world | 7 | undead | enrage, shield | Hollowmere |
-| Ororn The Unbroken | world | 8 | beast | drain, shield | Hollowmere East |
-| Zeyn Stormcaller | world | 8 | beast | aoe, shield | Hollowmere South |
-| Orar Bonereaver | world | 9 | beast | aoe, frenzy | Hollowmere Far Reach |
-| Grax Skyrender | world | 9 | fey | aoe, summon | Thornwood |
-| Thar The Hollow | world | 10 | beast | shield, drain | Thornwood East |
-| Khoth The Drowned | world | 10 | beast | summon, enrage | Thornwood South |
-| Morath Bonereaver | world | 11 | beast | drain, summon | Thornwood Far Reach |
-| Thuk Ironhide | world | 11 | beast | shield, reflect | Greypeak Pass |
-| Azel Voidborn | world | 12 | elemental | curse, frenzy | Greypeak Pass East |
-| Silul The Pale | world | 12 | dragon | drain, enrage | Greypeak Pass South |
-| Nyxoth Ironhide | world | 13 | beast | curse, regen | Greypeak Pass Far Reac |
-| Nyxel The Elder | world | 13 | undead | reflect, enrage | Sandspire |
-| Grul Doomspeaker | world | 14 | humanoid | shield, curse | Sandspire East |
-| Thoth Ironhide | world | 14 | humanoid | aoe, regen | Sandspire South |
-| Grul Of The Pit | world | 15 | construct | enrage, aoe | Sandspire Far Reach |
-| Silar The Elder | world | 15 | beast | phase, drain | Saltreach Coast |
-| Braax Doomspeaker | world | 16 | beast | enrage, summon | Saltreach Coast East |
-| Grix Skyrender | world | 16 | beast | frenzy, aoe | Saltreach Coast South |
-| Grar Ironhide | world | 17 | humanoid | regen, phase | Saltreach Coast Far Re |
-| Feloth Bonereaver | world | 17 | dragon | reflect, aoe | Emberwaste |
-| Drear The Gilded | world | 18 | construct | shield, curse | Emberwaste East |
-| Silax Skyrender | world | 18 | elemental | summon, reflect | Emberwaste South |
-| Felorn Stormcaller | world | 19 | elemental | drain, enrage | Emberwaste Far Reach |
-| Skaar The Drowned | world | 19 | dragon | aoe, summon | Frostmarch |
-| Skaorn The Elder | world | 20 | beast | shield, reflect | Frostmarch East |
-| Rakax The Pale | world | 20 | beast | enrage, aoe | Frostmarch South |
-| Khix Voidborn | world | 21 | beast | phase, enrage | Frostmarch Far Reach |
-| Silorn Of The Pit | world | 21 | beast | curse, summon | Verdant Deep |
-| Khyn Doomspeaker | world | 22 | plant | enrage, drain | Verdant Deep East |
-| Felul The Gilded | world | 23 | fey | drain, reflect | Verdant Deep South |
-| Silath Ironhide | world | 24 | monstrosity | drain, summon | Verdant Deep Far Reach |
-| Orix Stormcaller | world | 24 | fiend | frenzy, aoe | Ashen Barrows |
-| Rakyn The Ashen | world | 25 | fiend | shield, enrage | Ashen Barrows East |
-| Drear The Drowned | world | 27 | fiend | regen, curse | Ashen Barrows South |
-| Rakax Ironhide | world | 28 | undead | frenzy, phase | Ashen Barrows Far Reac |
-| Silel The Pale | world | 28 | elemental | drain, reflect | Silverhaven |
-| Thoth Stormcaller | world | 29 | celestial | phase, reflect | Silverhaven East |
-| Dreel Stormcaller | world | 31 | celestial | drain, regen | Silverhaven South |
-| Orix Stormcaller | world | 32 | elemental | enrage, aoe | Silverhaven Far Reach |
-| Zeuk Skyrender | world | 33 | undead | frenzy, summon | Duskmoor |
-| Zeax The Pale | world | 36 | undead | phase, aoe | Duskmoor East |
-| Nyxath Ironhide | world | 39 | fiend | enrage, phase | Duskmoor South |
-| Silorn The Gilded | world | 42 | aberration | shield, summon | Duskmoor Far Reach |
-| Thess The Unbroken | world | 51 | beast | phase, drain | Coral Strand |
-| Thuk The Elder | world | 60 | beast | regen, summon | Coral Strand East |
-| Groth The Elder | world | 69 | beast | shield, curse | Coral Strand South |
-| Zeax Bonereaver | world | 78 | monstrosity | enrage, shield | Wreckwood |
-| Brayn The Weeping | world | 86 | plant | reflect, shield | Wreckwood East |
-| Skaorn The Ashen | world | 95 | beast | frenzy, aoe | Wreckwood South |
-| Grom The Gilded | world | 109 | ooze | regen, enrage | Mangrove Maze |
-| Siless The Ashen | world | 122 | beast | curse, shield | Mangrove Maze East |
-| Orix Voidborn | world | 135 | undead | drain, aoe | Pearl Trench |
-| Azix The Gilded | world | 149 | plant | regen, aoe | Pearl Trench East |
-| Siless Nightmaw | world | 162 | plant | shield, reflect | Pearl Trench South |
-| Moroth Stormcaller | world | 175 | celestial | aoe, drain | Glimmer Reef |
-| Thoth Voidborn | world | 189 | celestial | aoe, summon | Glimmer Reef East |
-| Skaix Skyrender | world | 202 | construct | frenzy, reflect | Glimmer Reef South |
-| Silar Stormcaller | world | 222 | undead | phase, summon | Black Fathom |
-| Nyxom Bonereaver | world | 242 | aberration | summon, phase | Black Fathom East |
-| Grax Skyrender | world | 255 | beast | curse, phase | Cloudholm |
-| Felel Nightmaw | world | 269 | beast | reflect, summon | Cloudholm East |
-| Felel The Pale | world | 282 | elemental | regen, curse | Cloudholm South |
-| Oroth Skyrender | world | 295 | elemental | frenzy, shield | Glass Peaks |
-| Grul Bonereaver | world | 309 | fey | reflect, regen | Glass Peaks East |
-| Dreom The Hollow | world | 322 | construct | curse, summon | Glass Peaks South |
-| Ulom Skyrender | world | 342 | ooze | enrage, summon | Windmeadow |
-| Rakyn The Gilded | world | 362 | beast | enrage, drain | Windmeadow East |
-| Zeath The Unbroken | world | 382 | fiend | aoe, phase | Cinder Rift |
-| Khul Of The Pit | world | 402 | elemental | shield, enrage | Cinder Rift East |
-| Silax Ironhide | world | 422 | elemental | enrage, frenzy | Cinder Rift South |
-| Brael Bonereaver | world | 442 | fiend | summon, reflect | Howling Gap |
-| Grorn Nightmaw | world | 462 | aberration | regen, shield | Howling Gap East |
-| Silath The Weeping | world | 482 | undead | reflect, enrage | Howling Gap South |
-| Ulel Stormcaller | world | 512 | humanoid | regen, summon | Scar Plains |
-| Ulax Bonereaver | world | 542 | monstrosity | curse, regen | Scar Plains East |
-| Felorn The Elder | world | 562 | construct | reflect, drain | Dawnshore |
-| Feless Nightmaw | world | 582 | fey | regen, summon | Dawnshore East |
-| Felel The Weeping | world | 602 | elemental | regen, aoe | Dawnshore South |
-| Dreoth Doomspeaker | world | 622 | humanoid | curse, aoe | Halo Fields |
-| Feless Voidborn | world | 642 | humanoid | regen, curse | Halo Fields East |
-| Siloth The Unbroken | world | 662 | beast | drain, shield | Halo Fields South |
-| Azax The Gilded | world | 692 | dragon | curse, phase | Last Peak |
-| Dreuk The Elder | world | 722 | beast | shield, curse | Last Peak East |
+| Dreul Skyrender | dungeon | 130 | fey | drain, enrage | Dg_x6_0 |
+| Dreyn The Ashen | dungeon | 131 | fey | shield, reflect | Dg_x6_0 |
+| Zeath Doomspeaker | dungeon | 132 | fey | aoe, regen | Dg_x6_0 |
+| Orel The Ashen | dungeon | 160 | beast | enrage, curse | Dg_x6_1 |
+| Feless Stormcaller | dungeon | 161 | beast | drain, curse | Dg_x6_1 |
+| Rakoth Ironhide | dungeon | 162 | humanoid | aoe, curse | Dg_x6_1 |
+| Rakath The Weeping | dungeon | 190 | giant | regen, summon | Dg_x7_0 |
+| Vayn Bonereaver | dungeon | 191 | beast | drain, phase | Dg_x7_0 |
+| Felix The Ashen | dungeon | 192 | dragon | curse, reflect | Dg_x7_0 |
+| Zeul Of The Pit | dungeon | 220 | construct | regen, frenzy | Dg_x7_1 |
+| Azul The Drowned | dungeon | 221 | fey | shield, curse | Dg_x7_1 |
+| Ororn The Pale | dungeon | 222 | elemental | enrage, drain | Dg_x7_1 |
+| Uloth Of The Pit | dungeon | 250 | fey | enrage, phase | Dg_x8_0 |
+| Zear Doomspeaker | dungeon | 251 | fey | drain, frenzy | Dg_x8_0 |
+| Dreuk Nightmaw | dungeon | 252 | elemental | regen, summon | Dg_x8_0 |
+| Thar The Gilded | dungeon | 280 | ooze | reflect, aoe | Dg_x8_1 |
+| Ulel The Hollow | dungeon | 281 | ooze | frenzy, enrage | Dg_x8_1 |
+| Brauk The Unbroken | dungeon | 282 | beast | curse, reflect | Dg_x8_1 |
+| Dreess Voidborn | dungeon | 330 | aberration | phase, regen | Dg_x9_0 |
+| Mororn The Weeping | dungeon | 331 | undead | shield, frenzy | Dg_x9_0 |
+| Skayn The Pale | dungeon | 332 | fiend | drain, enrage | Dg_x9_0 |
+| Thyn Of The Pit | dungeon | 360 | plant | enrage, frenzy | Dg_x9_1 |
+| Gruk The Elder | dungeon | 361 | beast | aoe, regen | Dg_x9_1 |
+| Thel Voidborn | dungeon | 362 | undead | summon, enrage | Dg_x9_1 |
+| Grix Bonereaver | dungeon | 410 | elemental | reflect, curse | Dg_x10_0 |
+| Zeorn Of The Pit | dungeon | 411 | construct | reflect, curse | Dg_x10_0 |
+| Orul Stormcaller | dungeon | 412 | construct | curse, drain | Dg_x10_0 |
+| Skael The Drowned | dungeon | 440 | dragon | curse, phase | Dg_x10_1 |
+| Felorn The Ashen | dungeon | 441 | beast | frenzy, aoe | Dg_x10_1 |
+| Morix Skyrender | dungeon | 442 | beast | phase, drain | Dg_x10_1 |
+| Dreess The Drowned | dungeon | 490 | dragon | regen, shield | Dg_x11_0 |
+| Khess The Unbroken | dungeon | 491 | beast | frenzy, aoe | Dg_x11_0 |
+| Nyxorn The Hollow | dungeon | 492 | beast | shield, reflect | Dg_x11_0 |
+| Khoth The Unbroken | dungeon | 520 | monstrosity | curse, frenzy | Dg_x11_1 |
+| Braax Skyrender | dungeon | 521 | humanoid | enrage, phase | Dg_x11_1 |
+| Orar Voidborn | dungeon | 522 | monstrosity | regen, curse | Dg_x11_1 |
+| Dreess The Elder | dungeon | 570 | aberration | reflect, frenzy | Dg_x12_0 |
+| Oruk Of The Pit | dungeon | 571 | undead | reflect, regen | Dg_x12_0 |
+| Dreix Ironhide | dungeon | 572 | fiend | drain, curse | Dg_x12_0 |
+| Morul Of The Pit | dungeon | 600 | monstrosity | aoe, phase | Dg_x12_1 |
+| Thess Stormcaller | dungeon | 601 | fey | phase, curse | Dg_x12_1 |
+| Vaorn The Elder | dungeon | 602 | beast | curse, aoe | Dg_x12_1 |
+| Azom The Hollow | dungeon | 630 | beast | regen, shield | Dg_x13_0 |
+| Rakoth The Gilded | dungeon | 631 | humanoid | reflect, enrage | Dg_x13_0 |
+| Skaath Nightmaw | dungeon | 632 | ooze | frenzy, enrage | Dg_x13_0 |
+| Orath Nightmaw | dungeon | 660 | monstrosity | regen, drain | Dg_x13_1 |
+| Orax The Weeping | dungeon | 661 | beast | reflect, phase | Dg_x13_1 |
+| Rakax Bonereaver | dungeon | 662 | monstrosity | reflect, drain | Dg_x13_1 |
+| Orom Voidborn | raid | 14 | undead | shield, regen, frenzy | Rd_crypt |
+| Silax Voidborn | raid | 16 | humanoid | curse, phase, summon | Rd_crypt |
+| Skauk Of The Pit | raid | 18 | monstrosity | aoe, summon, phase | Rd_crypt |
+| Azax The Elder | raid | 20 | undead | summon, drain, curse | Rd_crypt |
+| Felath Voidborn | raid | 18 | dragon | shield, aoe, regen | Rd_forge |
+| Felax The Drowned | raid | 20 | dragon | frenzy, regen, shield | Rd_forge |
+| Braar Of The Pit | raid | 22 | fiend | shield, phase, enrage | Rd_forge |
+| Dreel The Gilded | raid | 24 | dragon | phase, shield, reflect | Rd_forge |
+| Brael Nightmaw | raid | 26 | fiend | enrage, summon, aoe | Rd_forge |
+| Grom The Unbroken | raid | 22 | beast | reflect, drain, aoe | Rd_palace |
+| Khess The Weeping | raid | 24 | beast | enrage, shield, drain | Rd_palace |
+| Braix The Weeping | raid | 26 | dragon | drain, aoe, regen | Rd_palace |
+| Zeyn The Hollow | raid | 28 | beast | phase, regen, summon | Rd_palace |
+| Azel The Weeping | raid | 30 | elemental | curse, reflect, drain | Rd_palace |
+| Khorn The Gilded | raid | 40 | fiend | enrage, summon, curse | Rd_dusk |
+| Vaix The Weeping | raid | 42 | undead | shield, summon, aoe | Rd_dusk |
+| Morom Of The Pit | raid | 44 | undead | curse, enrage, reflect | Rd_dusk |
+| Khax Bonereaver | raid | 46 | undead | curse, regen, aoe | Rd_dusk |
+| Azyn Doomspeaker | raid | 48 | undead | drain, reflect, summon | Rd_dusk |
+| Silix The Elder | raid | 50 | undead | drain, frenzy, phase | Rd_dusk |
+| Braess The Hollow | raid | 110 | beast | phase, curse, aoe | Rd_x1 |
+| Vaoth The Hollow | raid | 112 | ooze | regen, aoe, drain | Rd_x1 |
+| Grath Doomspeaker | raid | 114 | beast | frenzy, drain, enrage | Rd_x1 |
+| Silix The Unbroken | raid | 116 | plant | reflect, frenzy, summon | Rd_x1 |
+| Zeom Voidborn | raid | 118 | ooze | curse, drain, regen | Rd_x1 |
+| Rakul Voidborn | raid | 230 | undead | aoe, shield, reflect | Rd_x2 |
+| Orul The Pale | raid | 232 | undead | phase, drain, reflect | Rd_x2 |
+| Orel Of The Pit | raid | 234 | undead | aoe, drain, curse | Rd_x2 |
+| Zeax The Pale | raid | 236 | fiend | aoe, shield, summon | Rd_x2 |
+| Braix Doomspeaker | raid | 238 | aberration | frenzy, summon, regen | Rd_x2 |
+| Nyxel Ironhide | raid | 350 | beast | frenzy, phase, summon | Rd_x3 |
+| Thel Doomspeaker | raid | 352 | beast | regen, shield, drain | Rd_x3 |
+| Vaom The Pale | raid | 354 | humanoid | drain, summon, aoe | Rd_x3 |
+| Dreath The Hollow | raid | 356 | humanoid | reflect, shield, curse | Rd_x3 |
+| Braix Doomspeaker | raid | 358 | beast | enrage, shield, regen | Rd_x3 |
+| Silul The Elder | raid | 530 | humanoid | regen, frenzy, phase | Rd_x4 |
+| Skaul Bonereaver | raid | 532 | monstrosity | reflect, phase, shield | Rd_x4 |
+| Felath Doomspeaker | raid | 534 | undead | enrage, regen, drain | Rd_x4 |
+| Rakar The Unbroken | raid | 536 | construct | aoe, summon, frenzy | Rd_x4 |
+| Grix Ironhide | raid | 538 | undead | enrage, phase, frenzy | Rd_x4 |
+| Drear The Hollow | raid | 710 | beast | reflect, drain, phase | Rd_x5 |
+| Moryn Stormcaller | raid | 712 | giant | drain, regen, enrage | Rd_x5 |
+| Silar The Elder | raid | 714 | giant | frenzy, summon, aoe | Rd_x5 |
+| Dreix Nightmaw | raid | 716 | elemental | regen, drain, summon | Rd_x5 |
+| Azoth The Gilded | raid | 718 | dragon | shield, drain, frenzy | Rd_x5 |
+| Rakul The Ashen | raid | 210 | aberration | drain, enrage, regen | Rd_x6 |
+| Ulul Ironhide | raid | 212 | undead | enrage, drain, regen | Rd_x6 |
+| Dreyn Bonereaver | raid | 214 | undead | aoe, regen, curse | Rd_x6 |
+| Zeyn Nightmaw | raid | 216 | fiend | curse, frenzy, summon | Rd_x6 |
+| Morix The Hollow | raid | 218 | undead | aoe, regen, frenzy | Rd_x6 |
+| Rakess Skyrender | raid | 290 | monstrosity | phase, reflect, aoe | Rd_x7 |
+| Rakax The Elder | raid | 292 | undead | enrage, shield, aoe | Rd_x7 |
+| Ororn The Unbroken | raid | 294 | humanoid | drain, shield, curse | Rd_x7 |
+| Zeyn Stormcaller | raid | 296 | humanoid | aoe, shield, enrage | Rd_x7 |
+| Orar Bonereaver | raid | 298 | humanoid | aoe, frenzy, phase | Rd_x7 |
+| Grax Skyrender | raid | 370 | construct | aoe, summon, curse | Rd_x8 |
+| Thar The Hollow | raid | 372 | fiend | shield, drain, summon | Rd_x8 |
+| Khoth The Drowned | raid | 374 | fiend | summon, enrage, aoe | Rd_x8 |
+| Morath Bonereaver | raid | 376 | fiend | drain, summon, regen | Rd_x8 |
+| Thuk Ironhide | raid | 378 | elemental | shield, reflect, enrage | Rd_x8 |
+| Azel Voidborn | raid | 450 | undead | curse, frenzy, reflect | Rd_x9 |
+| Silul The Pale | raid | 452 | monstrosity | drain, enrage, summon | Rd_x9 |
+| Nyxoth Ironhide | raid | 454 | undead | curse, regen, enrage | Rd_x9 |
+| Nyxel The Elder | raid | 456 | undead | reflect, enrage, phase | Rd_x9 |
+| Grul Doomspeaker | raid | 458 | humanoid | shield, curse, aoe | Rd_x9 |
+| Thoth Ironhide | raid | 530 | humanoid | aoe, regen, frenzy | Rd_x10 |
+| Grul Of The Pit | raid | 532 | construct | enrage, aoe, curse | Rd_x10 |
+| Silar The Elder | raid | 534 | humanoid | phase, drain, enrage | Rd_x10 |
+| Braax Doomspeaker | raid | 536 | humanoid | enrage, summon, frenzy | Rd_x10 |
+| Grix Skyrender | raid | 538 | humanoid | frenzy, aoe, drain | Rd_x10 |
+| Grar Ironhide | raid | 610 | humanoid | regen, phase, curse | Rd_x11 |
+| Feloth Bonereaver | raid | 612 | ooze | reflect, aoe, curse | Rd_x11 |
+| Drear The Gilded | raid | 614 | humanoid | shield, curse, regen | Rd_x11 |
+| Silax Skyrender | raid | 616 | beast | summon, reflect, shield | Rd_x11 |
+| Felorn Stormcaller | raid | 618 | humanoid | drain, enrage, summon | Rd_x11 |
+| Skaar The Drowned | raid | 690 | ooze | aoe, summon, enrage | Rd_x12 |
+| Skaorn The Elder | raid | 692 | beast | shield, reflect, drain | Rd_x12 |
+| Rakax The Pale | raid | 694 | beast | enrage, aoe, frenzy | Rd_x12 |
+| Khix Voidborn | raid | 696 | beast | phase, enrage, reflect | Rd_x12 |
+| Silorn Of The Pit | raid | 698 | beast | curse, summon, frenzy | Rd_x12 |
+| Khyn Doomspeaker | raid | 710 | monstrosity | enrage, drain, aoe | Rd_x13 |
+| Felul The Gilded | raid | 712 | humanoid | drain, reflect, enrage | Rd_x13 |
+| Silath Ironhide | raid | 714 | monstrosity | drain, summon, aoe | Rd_x13 |
+| Orix Stormcaller | raid | 716 | humanoid | frenzy, aoe, drain | Rd_x13 |
+| Rakyn The Ashen | raid | 718 | humanoid | shield, enrage, aoe | Rd_x13 |
+| Drear The Drowned | trial | 10 | ooze | regen, curse | Tr_gauntlet |
+| Rakax Ironhide | trial | 13 | humanoid | frenzy, phase | Tr_gauntlet |
+| Silel The Pale | trial | 16 | fiend | drain, reflect | Tr_gauntlet |
+| Thoth Stormcaller | trial | 19 | monstrosity | phase, reflect | Tr_gauntlet |
+| Dreel Stormcaller | trial | 22 | beast | drain, regen | Tr_gauntlet |
+| Orix Stormcaller | trial | 15 | fey | enrage, aoe | Tr_clock |
+| Zeuk Skyrender | trial | 18 | fiend | frenzy, summon | Tr_clock |
+| Zeax The Pale | trial | 21 | beast | phase, aoe | Tr_clock |
+| Nyxath Ironhide | trial | 24 | giant | enrage, phase | Tr_clock |
+| Silorn The Gilded | trial | 27 | celestial | shield, summon | Tr_clock |
+| Thess The Unbroken | trial | 12 | undead | phase, drain | Tr_alone |
+| Thuk The Elder | trial | 15 | beast | regen, summon | Tr_alone |
+| Groth The Elder | trial | 18 | beast | shield, curse | Tr_alone |
+| Zeax Bonereaver | trial | 21 | aberration | enrage, shield | Tr_alone |
+| Brayn The Weeping | trial | 24 | celestial | reflect, shield | Tr_alone |
+| Skaorn The Ashen | trial | 18 | fiend | frenzy, aoe | Tr_frail |
+| Grom The Gilded | trial | 21 | ooze | regen, enrage | Tr_frail |
+| Siless The Ashen | trial | 24 | humanoid | curse, shield | Tr_frail |
+| Orix Voidborn | trial | 27 | dragon | drain, aoe | Tr_frail |
+| Azix The Gilded | trial | 30 | celestial | regen, aoe | Tr_frail |
+| Siless Nightmaw | trial | 20 | monstrosity | shield, reflect | Tr_horde |
+| Moroth Stormcaller | trial | 23 | plant | aoe, drain | Tr_horde |
+| Thoth Voidborn | trial | 26 | plant | aoe, summon | Tr_horde |
+| Skaix Skyrender | trial | 29 | monstrosity | frenzy, reflect | Tr_horde |
+| Silar Stormcaller | trial | 32 | undead | phase, summon | Tr_horde |
+| Nyxom Bonereaver | trial | 25 | beast | summon, phase | Tr_mirror |
+| Grax Skyrender | trial | 28 | fiend | curse, phase | Tr_mirror |
+| Felel Nightmaw | trial | 31 | humanoid | reflect, summon | Tr_mirror |
+| Felel The Pale | trial | 34 | construct | regen, curse | Tr_mirror |
+| Oroth Skyrender | trial | 37 | fey | frenzy, shield | Tr_mirror |
+| Grul Bonereaver | tower | 38 | beast | reflect, regen | Tower |
+| Dreom The Hollow | tower | 73 | ooze | curse, summon | Tower |
+| Ulom Skyrender | tower | 108 | beast | enrage, summon | Tower |
+| Rakyn The Gilded | tower | 143 | beast | enrage, drain | Tower |
+| Zeath The Unbroken | tower | 178 | beast | aoe, phase | Tower |
+| Khul Of The Pit | tower | 213 | elemental | shield, enrage | Tower |
+| Silax Ironhide | tower | 248 | fiend | enrage, frenzy | Tower |
+| Brael Bonereaver | tower | 283 | elemental | summon, reflect | Tower |
+| Grorn Nightmaw | tower | 318 | aberration | regen, shield | Tower |
+| Silath The Weeping | tower | 353 | fiend | reflect, enrage | Tower |
+| Ulel Stormcaller | tower | 388 | beast | regen, summon | Tower |
+| Ulax Bonereaver | tower | 423 | celestial | curse, regen | Tower |
+| Felorn The Elder | tower | 458 | aberration | reflect, drain | Tower |
+| Feless Nightmaw | tower | 493 | beast | regen, summon | Tower |
+| Felel The Weeping | tower | 528 | elemental | regen, aoe | Tower |
+| Dreoth Doomspeaker | tower | 563 | giant | curse, aoe | Tower |
+| Feless Voidborn | tower | 598 | ooze | regen, curse | Tower |
+| Siloth The Unbroken | tower | 633 | undead | drain, shield | Tower |
+| Azax The Gilded | tower | 668 | giant | curse, phase | Tower |
+| Dreuk The Elder | tower | 703 | beast | shield, curse | Tower |
 | Dreul The Ashen | world | 4 | humanoid | reflect, curse | Elderwood |
 | Ular Bonereaver | world | 5 | beast | phase, drain | Elderwood East |
 | Zeoth Bonereaver | world | 5 | beast | phase, enrage | Elderwood South |
@@ -811,11 +811,11 @@ Each subtype comes in 7 elemental variants plus elites. Full list:
 | Ulorn The Pale | world | 662 | beast | regen, drain | Halo Fields South |
 | Vauk Stormcaller | world | 692 | dragon | reflect, shield | Last Peak |
 | Orix The Ashen | world | 722 | dragon | reflect, frenzy | Last Peak East |
-| Uless Bonereaver | world | 4 | beast | enrage, frenzy | Elderwood |
+| Uless Bonereaver | world | 115 | fey | enrage, frenzy | Prism Coast |
 
 </details>
 
-## Dungeons (22, 4 players)
+## Dungeons (38, 4 players)
 
 | Dungeon | Region | Level | Theme | Rooms |
 |---|---|---|---|---|
@@ -841,8 +841,24 @@ Each subtype comes in 7 elemental variants plus elites. Full list:
 | Howling Gap Depths | Howling Gap | 420 | lava | 4 |
 | Dawnshore Depths | Dawnshore | 570 | crypt | 4 |
 | Halo Fields Depths | Halo Fields | 600 | crypt | 4 |
+| Prism Coast Depths | Prism Coast | 130 | temple | 4 |
+| Glasswater Bay Depths | Glasswater Bay | 160 | temple | 4 |
+| Rimehold Depths | Rimehold | 190 | ice | 4 |
+| Shardwind Pass Depths | Shardwind Pass | 220 | ice | 4 |
+| Spellgrove Depths | Spellgrove | 250 | void | 4 |
+| Leymeadow Depths | Leymeadow | 280 | void | 4 |
+| Crimson Moor Depths | Crimson Moor | 330 | crypt | 4 |
+| Leech Fen Depths | Leech Fen | 360 | crypt | 4 |
+| Wyrmfire Caldera Depths | Wyrmfire Caldera | 410 | lava | 4 |
+| Skypeak Depths | Skypeak | 440 | lava | 4 |
+| Fjordholm Depths | Fjordholm | 490 | ice | 4 |
+| Shield Coast Depths | Shield Coast | 520 | ice | 4 |
+| Gloomhaven Woods Depths | Gloomhaven Woods | 570 | void | 4 |
+| Nightvine Jungle Depths | Nightvine Jungle | 600 | void | 4 |
+| Greenheart Vale Depths | Greenheart Vale | 630 | temple | 4 |
+| Wildroot Jungle Depths | Wildroot Jungle | 660 | temple | 4 |
 
-## Raids (9, 12 players)
+## Raids (17, 12 players)
 
 | Raid | Region | Level | Theme | Bosses |
 |---|---|---|---|---|
@@ -855,6 +871,14 @@ Each subtype comes in 7 elemental variants plus elites. Full list:
 | Throne Of Winds | Windmeadow | 350 | void | 5 |
 | Heart Of The Rift | Scar Plains | 530 | lava | 5 |
 | The First Lantern | Last Peak | 710 | crypt | 5 |
+| The Mirror Crown | Echo Mire | 210 | temple | 5 |
+| The Rime Dynasty | Frostscar Waste | 290 | ice | 5 |
+| The Spell-Light Spire | Cinder Arcanum | 370 | void | 5 |
+| The Eclipse Court | Red Dunes | 450 | crypt | 5 |
+| The Dragonspire | Scorched Plains | 530 | lava | 5 |
+| Hall Of Echoing Shields | Mead Halls | 610 | ice | 5 |
+| The First Shade | Shade Marsh | 690 | void | 5 |
+| The Green Horizon | Sunshore | 710 | temple | 5 |
 
 ## Trials (6)
 
@@ -909,9 +933,7 @@ Spire Of A Hundred: 100 floors, a mini-boss every 5 floors and a boss every 10; 
 
 Rarities: Poor · Common · Uncommon · Rare · Very Rare · Legendary.
 
-Dedicated equipment slots: Artifact and Relic. Each slot has 42 original item bases; both use the existing wondrous-gear progression, rarity, affix, item-level, enhancement and attunement rules. See [ARTIFACTS_AND_RELICS](ARTIFACTS_AND_RELICS.md) for the full catalog.
-
-## Achievements (36)
+## Achievements (38)
 
 | Achievement | Description |
 |---|---|
@@ -942,6 +964,8 @@ Dedicated equipment slots: Artifact and Relic. Each slot has 42 original item ba
 | Apocalypse | Win on difficulty 9. |
 | Naturalist | Record 50 creatures. |
 | Bestiary Complete | Record all 400 creatures. |
+| Creature Collector | Record 100 evolution-line creatures. |
+| Living Atlas | Record all 300 evolution-line creatures. |
 | Angler | Catch 10 fish. |
 | Artisan | Craft 10 items. |
 | Tycoon | Earn 10000 gold. |

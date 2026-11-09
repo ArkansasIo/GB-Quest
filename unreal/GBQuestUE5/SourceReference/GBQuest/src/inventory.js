@@ -75,6 +75,15 @@ function drawItemCell(it, x, y, sel, opts = {}) {
   fill(x + 2, y + 2, S - 4, S - 4, 0);
   }
   if (!it) return;
+  // Compact condition meter: damaged equipment remains readable in the bag grid.
+  const maxDur = Number(it.maxDur ?? it.maxDurability);
+  const durability = Number(it.dur ?? it.durability);
+  if (Number.isFinite(maxDur) && maxDur > 0 && Number.isFinite(durability)) {
+    const ratio = Math.max(0, Math.min(1, durability / maxDur));
+    fill(x + 2, y + 15, 14, 2, '#24202a');
+    fill(x + 2, y + 15, Math.round(14 * ratio), 2,
+      ratio <= 0.2 ? '#e34b54' : ratio <= 0.5 ? '#e6a33b' : '#83c76b');
+  }
   const icon = opts.icon || itemIcon(it); if (icon) blit(sprFit(icon, 13), x + 3, y + 3);
   if (opts.count != null) textR(String(opts.count), x + S - 1, y + 10, 3);
   if (it.junk) text('x', x + 2, y + 1, 'red');
@@ -128,7 +137,7 @@ class InventoryScene {
     choose(['SORT: RARITY', 'SORT: SLOT', 'SORT: LEVEL', `SELL ALL JUNK (${junk.length}) ${sellVal}G`, `SALVAGE ALL JUNK (${junk.length})`, 'MARK POOR+COMMON AS JUNK', 'BACK'], k => {
       if (k === 0) this.sortBag('rarity'); if (k === 1) this.sortBag('slot'); if (k === 2) this.sortBag('level');
       if (k === 3) { if (!junk.length) return this.flash('NO JUNK MARKED'); junk.forEach(it => G.bag.splice(G.bag.indexOf(it), 1)); G.gold += sellVal; SFX.sell(); this.flash(`SOLD ${junk.length} FOR ${sellVal} G`); }
-      if (k === 4) { if (!junk.length) return this.flash('NO JUNK MARKED'); const tot = {}; junk.forEach(it => { const y = salvage(it); for (const q in y) tot[q] = (tot[q] || 0) + y[q]; }); SFX.craft(); say(['Salvaged ' + junk.length + ' items:', yieldText(tot)]); }
+      if (k === 4) { if (!junk.length) return this.flash('NO JUNK MARKED'); const tot = {}; junk.forEach(it => { const y = salvageYield(it); for (const q in y) tot[q] = (tot[q] || 0) + y[q]; }); say(['SALVAGE ' + junk.length + ' JUNK ITEMS?', yieldText(tot), 'This permanently destroys the marked items.'], () => choose(['SALVAGE ALL', 'CANCEL'], ok => { if (ok !== 0) return; const actual = {}; junk.forEach(it => { const y = salvage(it); for (const q in y) actual[q] = (actual[q] || 0) + y[q]; }); SFX.craft(); say(['Salvaged ' + junk.length + ' items:', yieldText(actual)]); }, 'Confirm bulk salvage.')); }
       if (k === 5) { let n = 0; G.bag.forEach(it => { if (!it.fav && it.rarity <= 1) { it.junk = true; n++; } }); SFX.toggle(); this.flash(`${n} ITEMS MARKED JUNK`); }
     }, `BAG ${G.bag.length}/${BAG_MAX}  GOLD ${G.gold}`);
   }
@@ -148,10 +157,10 @@ class InventoryScene {
         if (!canUp) return this.flash(`${RARITY[e.rarity].name} CAPS AT +${cap}`);
         const need = `${cost.scrap} SCRAP${cost.shard ? `, ${cost.shard} SHARD` : ''}${cost.ember ? `, ${cost.ember} EMBER` : ''}, ${cost.gold}G`;
         if (!canAfford(cost)) { SFX.error(); return say(['Upgrade needs:', need, `You have ${G.inv.scrap || 0} scrap, ${G.inv.shard || 0} shards, ${G.inv.ember || 0} embers.`, 'Salvage gear to get materials.']); }
-        choose(['UPGRADE', 'CANCEL'], y => { if (y !== 0) return; for (const q of ['scrap', 'shard', 'ember']) for (let i = 0; i < cost[q]; i++) takeItem(q); G.gold -= cost.gold; e.plus++; e.value = Math.round(e.value * 1.3); SFX.levelup(); this.flash(`${e.name} IS NOW +${e.plus}`); }, `Cost: ${need}`);
+        say(['UPGRADE ' + e.name.slice(0, 18) + ' TO +' + (e.plus + 1) + '?', 'MATERIALS: ' + need, 'CURRENT VALUE ' + e.value + 'G → EST. ' + Math.round(e.value * 1.3) + 'G', 'Upgrade consumes the listed materials and gold.'], () => choose(['CONFIRM UPGRADE', 'CANCEL'], y => { if (y !== 0) return; if (!canAfford(cost)) return say('Materials changed. Upgrade cancelled.'); for (const q of ['scrap', 'shard', 'ember']) for (let i = 0; i < cost[q]; i++) takeItem(q); G.gold -= cost.gold; e.plus++; e.value = Math.round(e.value * 1.3); SFX.levelup(); this.flash(e.name + ' IS NOW +' + e.plus); }, 'FINAL COST: ' + need));
       }
-      else if (o === 'SALVAGE') { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); const y = salvage(e); SFX.craft(); this.flash('GOT ' + yieldText(y).toUpperCase().slice(0, 24)); }
-      else if (o.startsWith('SELL')) { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
+      else if (o === 'SALVAGE') { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); const preview = salvageYield(e); say(['SALVAGE ' + e.name.slice(0, 18) + '?', yieldText(preview), 'This permanently destroys the item.'], () => choose(['SALVAGE ITEM', 'CANCEL'], ok => { if (ok !== 0 || !G.bag.includes(e)) return; const y = salvage(e); SFX.craft(); this.flash('GOT ' + yieldText(y).toUpperCase().slice(0, 24)); }, 'Confirm item salvage.')); }
+      else if (o.startsWith('SELL')) { if (e.fav) return this.flash('UNFAVOURITE IT FIRST'); say(['SELL ' + e.name.slice(0, 18) + '?', 'You will receive ' + e.value + ' gold.', 'The item will be removed from your bag.'], () => choose(['SELL FOR ' + e.value + 'G', 'CANCEL'], ok => { if (ok !== 0 || !G.bag.includes(e)) return; G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); this.flash('SOLD FOR ' + e.value + ' G'); }, 'Confirm sale.')); }
       else if (o === 'LIST ON AUCTION') { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err.toUpperCase()); } else { SFX.auction(); this.flash('LISTED AT 4X VALUE (5% DEPOSIT)'); } }).catch(er => this.flash(String(er.message || er).toUpperCase())); }
     }, e.name.slice(0, 24));
   }
@@ -166,6 +175,18 @@ class InventoryScene {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      // Recessed brass-and-iron inventory cabinet; keep the original 160x144 layout.
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(2, 22, 156, 91, '#171a1f');
+      fill(3, 23, 154, 1, '#343941');
+      fill(3, 112, 154, 1, '#080a0c');
+      fill(3, 23, 1, 89, '#292e34');
+      fill(156, 23, 1, 89, '#080a0c');
+    }
     INV_TABS.forEach(([t], i) => { const x = 2 + i * 40; drawInventoryTab(t, x, 12, 38, 10, i === this.tab); });
     const L = this.list();
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {
@@ -173,8 +194,14 @@ class InventoryScene {
       if (this.tab === 0) { const eq = e && equippedFor(G, e); drawItemCell(e, x, y, sel, { up: e && (!eq || itemPower(G, e) > itemPower(G, eq)) }); }
       else { const it = e && ITEMS[e]; drawItemCell(it ? { rarity: 1 } : null, x, y, sel, it ? { icon: it.icon, count: G.inv[e] } : {}); }
     }
-    // tooltip
-    frame(1, 113, 158, 30);
+    // Tooltip panel uses the same iron-and-brass treatment as the inventory cabinet.
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 113, 158, 30, '#080a0c');
+      fill(1, 113, 158, 1, '#b09258');
+      fill(1, 113, 1, 30, '#796342');
+      fill(158, 113, 1, 30, '#343941');
+      fill(2, 114, 156, 28, '#171a1f');
+    } else frame(1, 113, 158, 30);
     const e = this.cur();
     if (this.msg) { text(wrap(this.msg, 25).slice(0, 2).join('\n'), 5, 117, 'gold'); }
     else if (e && this.tab === 0) {
@@ -195,8 +222,30 @@ class CompareScene {
   update() { if (P('b') || P('a') || P('start')) { SFX.back(); removeScene(this); } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(4, 22, 74, 110, '#171a1f');
+      fill(82, 22, 74, 110, '#171a1f');
+      // Fine inner bevels separate the two item cards without changing their layout.
+      fill(4, 22, 74, 1, '#b09258');
+      fill(82, 22, 74, 1, '#b09258');
+      fill(4, 131, 74, 1, '#51432f');
+      fill(82, 131, 74, 1, '#51432f');
+      fill(4, 22, 1, 110, '#51432f');
+      fill(77, 22, 1, 110, '#080a0c');
+      fill(82, 22, 1, 110, '#51432f');
+      fill(155, 22, 1, 110, '#080a0c');
+      fill(5, 23, 72, 1, '#343941');
+      fill(83, 23, 72, 1, '#343941');
+      fill(2, 132, 156, 10, '#101317');
+      fill(2, 132, 156, 1, '#8c744b');
+    }
     const it = this.it, { cur, d } = compareDelta(G, it);
-    textC('COMPARE', 80, 12, 3); fill(80, 22, 1, 112, 2);
+    textC('COMPARE', 80, 12, 3);
+    if (S.uiTheme !== 'blackbird') fill(80, 22, 1, 112, 2);
     const col = (x, e, title) => {
       text(title, x, 24, 2);
       if (!e) { text('- EMPTY -', x, 40, 1); return; }
@@ -207,7 +256,10 @@ class CompareScene {
       text(rankText(e).slice(0, 12), x, 113, 2); if (e.attune) text('ATTUNE', x, 122, 'purple'); if (e.lore) text(wrap(e.lore, 12)[0], x, 104, 1);
     };
     col(4, it, 'THIS ITEM'); col(84, cur, 'EQUIPPED');
-    if (d) { const s = Object.entries(d).filter(([, v]) => Math.abs(v) >= 0.1).map(([k, v]) => `${k.toUpperCase()}${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' ') || 'NO CHANGE'; text(s.slice(0, 25), 4, 134, Object.values(d).some(v => v > 0) ? 'green' : 'red'); }
+    if (d) {
+      const s = Object.entries(d).filter(([, v]) => Math.abs(v) >= 0.1).map(([k, v]) => `${k.toUpperCase()}${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' ') || 'NO CHANGE';
+      text(s.slice(0, 25), 4, 134, Object.values(d).some(v => v > 0) ? 'green' : 'red');
+    }
   }
 }
 // ---------------------------------------------------------------- STASH
@@ -267,6 +319,15 @@ class StashScene {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(2, 23, 156, 89, '#171a1f');
+      fill(3, 24, 154, 1, '#343941');
+      fill(3, 111, 154, 1, '#080a0c');
+    }
     const st = stashOf();
     for (let t = 0; t < STASH_TABS; t++) {
       const x = 2 + t * 39, on = this.pane && t === this.tab, lock = t >= st.unlocked;
@@ -276,11 +337,27 @@ class StashScene {
     for (let j = 0; j < INV_ROWS; j++) for (let i = 0; i < INV_COLS; i++) {
       const e = L[j * INV_COLS + i]; drawItemCell(e, 4 + i * 19, 24 + j * 18, i === this.cx && j === this.cy);
     }
-    frame(1, 115, 158, 28);
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 115, 158, 28, '#080a0c');
+      fill(1, 115, 158, 1, '#b09258');
+      fill(2, 116, 156, 26, '#171a1f');
+      fill(2, 130, 156, 1, '#343941');
+      fill(2, 142, 156, 1, '#51432f');
+    } else frame(1, 115, 158, 28);
     const e = L[this.cy * INV_COLS + this.cx];
-    if (e) { text(e.name.slice(0, 18), 5, 117, rarityCol(e.rarity)); text(`${itemKeyStat(e)} IL${e.ilvl}`.slice(0, 25), 5, 126, 2); }
-    else text(this.pane ? `${st.names[this.tab]} ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`, 5, 118, 2);
-    text(this.pane ? 'A:TAKE  SEL:BAG  START:TABS' : 'A:STORE  SEL:VAULT', 5, 135, 1);
+    if (e) {
+      text(e.name.slice(0, 18), 5, 117, rarityCol(e.rarity));
+      text(`${itemKeyStat(e)} IL${e.ilvl}`.slice(0, 25), 5, 126, 2);
+    } else {
+      const label = this.pane ? `${st.names[this.tab]} ${L.length}/${STASH_SIZE}` : `BAG ${L.length}/${BAG_MAX}`;
+      text(label.slice(0, 25), 5, 119, 2);
+    }
+    if (S.uiTheme === 'blackbird') {
+      const paneLabel = this.pane ? `VAULT ${this.tab + 1}/${st.unlocked}` : 'CARRYING PACK';
+      text(paneLabel, 5, 133, 'gold');
+      textR(this.pane ? 'A:TAKE  SEL:PACK' : 'A:STORE  SEL:VAULT', 156, 133, 1);
+      text('START: VAULT OPTIONS', 5, 140, 1);
+    } else text(this.pane ? 'A:TAKE  SEL:BAG  START:TABS' : 'A:STORE  SEL:VAULT', 5, 135, 1);
   }
 }
 // ---------------------------------------------------------------- EQUIPMENT (paper doll)
@@ -310,20 +387,48 @@ class PaperDoll {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, 158, 134, '#090b0e');
+      fill(2, 11, 156, 1, '#8c744b');
+      fill(2, 11, 1, 132, '#6f5b3d');
+      fill(157, 11, 1, 132, '#292d32');
+      fill(54, 12, 52, 101, '#171a1f');
+      fill(55, 13, 50, 1, '#343941');
+      fill(55, 112, 50, 1, '#080a0c');
+    }
     const D = derive(G);
     SLOT_COLS.forEach((col, c) => col.forEach((s, r) => {
       const x = c === 2 ? 110 : c ? 140 : 2, y = 13 + r * 17, it = G.eq[s], sel = c === this.col && r === Math.min(this.row, this.rows() - 1);
-      fill(x, y, 18, 16, sel ? 'gold' : 3); fill(x + 1, y + 1, 16, 14, it ? rarityCol(it.rarity) : 1); fill(x + 2, y + 2, 14, 12, 0);
+      if (S.uiTheme === 'blackbird') {
+        fill(x, y, 18, 16, sel ? '#d0ad68' : '#51432f');
+        fill(x + 1, y + 1, 16, 14, '#080a0c');
+        fill(x + 2, y + 2, 14, 12, it ? rarityCol(it.rarity) : '#171a1f');
+        fill(x + 3, y + 3, 12, 10, '#090b0e');
+      } else {
+        fill(x, y, 18, 16, sel ? 'gold' : 3);
+        fill(x + 1, y + 1, 16, 14, it ? rarityCol(it.rarity) : 1);
+        fill(x + 2, y + 2, 14, 12, 0);
+      }
       blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 11), x + 3, y + 2);
     }));
     // hero in the middle
+    if (S.uiTheme === 'blackbird') {
+      fill(55, 13, 50, 1, '#b09258');
+      fill(55, 13, 1, 99, '#51432f');
+      fill(104, 13, 1, 99, '#080a0c');
+      fill(55, 111, 50, 1, '#51432f');
+    }
     const por = heroPortrait(G); blit(por ? sprFit(por, 46) : sprH(`c_${G.cls}_0`, 42), 57, 14);
     text(G.name.slice(0, 10), 24, 64, 3); text(`LV${G.lvl}`, 110, 64, 2);
     text(`AC ${D.ac}`, 24, 74); text(`HP ${D.hpMax}`, 82, 74);
     text(`HIT ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 24, 83); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`.slice(0, 10), 82, 83);
     text(`INIT ${D.init >= 0 ? '+' : ''}${D.init}`, 24, 92); text(`x${D.attacks} ATK`, 82, 92);
     const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNED ${att}/${MAX_ATTUNE}`, 24, 101, 2);
-    frame(1, 115, 158, 28);
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 115, 158, 28, '#080a0c');
+      fill(1, 115, 158, 1, '#b09258');
+      fill(2, 116, 156, 26, '#171a1f');
+    } else frame(1, 115, 158, 28);
     const s = this.slot(), it = G.eq[s];
     text(SLOT_NAME[s], 5, 117, 'gold');
     if (it) { textR(itemKeyStat(it), 156, 117, 2); text(it.name.slice(0, 25), 5, 126, rarityCol(it.rarity)); text(((it.affixes || []).map(([k, v]) => `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 6)}`).join(' ') || RARITY[it.rarity].name).slice(0, 25), 5, 135, 2); }

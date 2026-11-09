@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { needs, IMAGES } from './support/needs.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const families = [
@@ -11,7 +12,7 @@ const families = [
   ['shields', 'shields_catalog.json', 4],
 ];
 
-test('CITADEL equipment catalogs resolve every SVG source', () => {
+test('CITADEL equipment catalogs resolve every SVG source', { skip: needs('assets_citadel/weapons/sunsteel-sword.svg') }, () => {
   for (const [folder, catalogName, expectedCount] of families) {
     const catalogPath = path.join(root, 'assets_citadel', catalogName);
     const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));

@@ -13,14 +13,14 @@ class Boot {
     if ((this.t > 150 && ready) || skip || this.t > 600) { fadeTo(() => reset(new Title())); this.t = -9999; }
   }
   draw() {
-    fill(0, 0, W, H, '#080a08');
+    fill(0, 0, W, H, '#dce8d1');
     const pulse = 0.7 + 0.3 * Math.sin(this.t / 12);
-    ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#68ddff'; ctx.shadowBlur = 8;
-    ctx.strokeStyle = '#68ddff'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.save(); ctx.globalAlpha = pulse; ctx.shadowColor = '#285da8'; ctx.shadowBlur = 8;
+    ctx.strokeStyle = '#285da8'; ctx.lineWidth = 2; ctx.beginPath();
     ctx.moveTo(80, 7); ctx.lineTo(94, 15); ctx.lineTo(94, 29); ctx.lineTo(80, 37); ctx.lineTo(66, 29); ctx.lineTo(66, 15); ctx.closePath(); ctx.stroke();
-    ctx.shadowColor = '#ffd36b'; ctx.shadowBlur = 5; ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.shadowColor = '#78a85b'; ctx.shadowBlur = 5; ctx.strokeStyle = '#78a85b'; ctx.lineWidth = 2; ctx.beginPath();
     ctx.moveTo(73, 29); ctx.lineTo(80, 14); ctx.lineTo(87, 29); ctx.moveTo(76, 24); ctx.lineTo(84, 24); ctx.stroke();
-    ctx.fillStyle = '#fff1bd'; ctx.beginPath(); ctx.arc(86, 17, 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#f8f8ef'; ctx.beginPath(); ctx.arc(86, 17, 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     textC(BUILD.engine, 80, 42, 'gold', 1);
     textC('GAME ENGINE', 80, 53, 2);
     textC(`VERSION ${BUILD.engineVersion}`, 80, 65, 3);
@@ -62,6 +62,7 @@ class MultiplayerScene {
     if (c.k === 'join') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); NET.joinServer(c.sv.peer); }
     if (c.k === 'leave') { NET.hostOf = null; SFX.close(); }
     if (c.k === 'play') { if (!this.heroReady()) return say('Create a hero first (NEW GAME).'); fadeTo(() => { scenes.length = 0; enterWorld(); }); }
+    if (c.k === 'realm') { push(new RealmSelect()); }
     if (c.k === 'back') { SFX.back(); removeScene(this); }
   }
   draw() {
@@ -85,109 +86,186 @@ function titleExtras() {
   }, 'EXTRAS');
 }
 class Title {
-  constructor() { this.opaque = true; this.t = 0; this.i = 0; }
-  enter() { Music.play('title'); }
-  resume() { Music.play('title'); }
-  opts() { const o = []; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('NEW GAME', 'LOAD GAME', 'STORY TRAILERS', 'ONLINE', 'ACCOUNT', 'EXTRAS', 'SETTINGS', 'CREDITS'); return o; }
+  constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
+  enter() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
+  resume() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
+  opts() { const o = ['NEW GAME']; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('LOAD GAME', 'OPTIONS', 'CREDITS', 'QUIT'); return o; }
   update() {
     this.t++;
     const o = this.opts();
     if (nav('up')) { this.i = (this.i + o.length - 1) % o.length; SFX.cursor(); }
     if (nav('down')) { this.i = (this.i + 1) % o.length; SFX.cursor(); }
-    if (P('a') || P('start')) {
-      SFX.select();
-      const c = o[this.i];
-      if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
-      if (c === 'NEW GAME') push(new SlotPicker('new'));
-      if (c === 'LOAD GAME') push(new SlotPicker('load'));
-      if (c === 'STORY TRAILERS') push(new StoryLibrary());
-      if (c === 'ONLINE') { push(new MultiplayerScene()); return; }
-      if (c === 'ACCOUNT') { push(new AccountScene()); return; }
-      if (c === 'EXTRAS') { titleExtras(); return; }
-      if (c === 'SETTINGS') push(new SettingsScene());
-      if (c === 'CREDITS') push(new Credits());
-    }
+    this.i = Math.min(this.i, o.length - 1);
+    if (P('b')) { SFX.back(); return; }
+    if (!(P('a') || P('start'))) return;
+    SFX.select();
+    const c = o[this.i];
+    if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
+    // the Aelmoor menu suite (src/menus_aelmoor.js); the older screens remain as fallbacks
+    const AM = window.GBQAelmoorMenus;
+    if (c === 'NEW GAME') push(AM ? new AM.AelNewGame() : new RealmSelect());
+    if (c === 'LOAD GAME') push(AM ? new AM.AelLoad() : new RealmSelect());
+    if (c === 'OPTIONS') push(AM ? new AM.AelOptions() : new SettingsScene());
+    if (c === 'CREDITS') push(AM ? new AM.AelCredits() : new Credits());
+    if (c === 'QUIT') { if (AM) push(new AM.AelQuit()); else choose(['NO', 'YES, QUIT'], k => {
+      if (k === 1) say(['Thanks for exploring Aelmoor.', 'You may close this browser tab.']);
+    }, 'Leave GB Quest?'); }
   }
   draw() {
-    ctx.save();
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#10172d'); sky.addColorStop(0.56, '#49304b'); sky.addColorStop(1, '#d07852');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < 32; i++) {
-      const x = (i * 47 + 13) % W, y = (i * 29 + 7) % 72;
-      ctx.globalAlpha = 0.45 + ((i + (this.t >> 4)) % 4) * 0.15;
-      ctx.fillStyle = i % 5 === 0 ? '#ffdca0' : '#d8e5ff';
-      ctx.fillRect(x, y, i % 7 === 0 ? 2 : 1, 1);
-    }
-    ctx.globalAlpha = 1;
-    const moon = ctx.createRadialGradient(128, 37, 2, 128, 37, 28);
-    moon.addColorStop(0, 'rgba(255,224,166,.38)'); moon.addColorStop(1, 'rgba(255,190,130,0)');
-    ctx.fillStyle = moon; ctx.fillRect(98, 7, 60, 60);
-    ctx.fillStyle = '#f6dda7'; ctx.beginPath(); ctx.arc(128, 36, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#d6a77d'; ctx.fillRect(123, 32, 3, 2); ctx.fillRect(130, 39, 2, 2);
+    // Key art (tools/make_title_art.py): logo, party and castle are in the picture; the live menu sits exactly over
+    // the art's own menu panel, the footer over its caption line. present64 redraws the art sharp at 640x576 and
+    // keeps only this.keep (menu + footer) from the framebuffer.
+    if (IMG.title_aelmoor) return this.drawKeyArt();
+    if (S.art === 'aelmoor' && IMG.r9_title) blit(spr('r9_title', W, H, { clean: false }), 0, 0);
+    else drawMenuBackdrop('ap_scene_wilderness');
 
-    const ridge = (points, color) => {
-      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
-      points.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
-    };
-    ridge([[0, 74], [17, 51], [29, 68], [48, 42], [67, 69], [88, 48], [105, 68], [126, 43], [147, 67], [160, 54]], '#34334a');
-    ridge([[0, 91], [18, 75], [38, 89], [58, 68], [78, 91], [99, 72], [118, 88], [139, 66], [160, 86]], '#24283a');
+    // ── Title card ────────────────────────────────────────────────
+    drawOrnatePanel(10, 2, 140, 44);
+    textC('GB QUEST', 80, 6, '#ffe080', 2);          // big gold title
+    textC('LOST KINGDOM OF SHADOWBANE', 80, 21, '#e8ddf5');  // subtitle
+    textC('CHRONICLES', 80, 31, '#c9b4f0');            // subtitle
+    textC('LANTERNS OF AELMOOR', 80, 39, '#ffd16d');   // tagline
 
-    const drift = Math.floor(this.t / 48) % 4;
-    ctx.fillStyle = '#1b2032';
-    ctx.fillRect(112 - drift, 62, 33, 39); ctx.fillRect(119 - drift, 53, 8, 48);
-    ctx.fillRect(136 - drift, 57, 7, 44); ctx.fillRect(108 - drift, 72, 7, 29);
-    ctx.fillRect(116 - drift, 56, 14, 3); ctx.fillRect(134 - drift, 60, 11, 3);
-    ctx.beginPath(); ctx.moveTo(118 - drift, 56); ctx.lineTo(123 - drift, 48); ctx.lineTo(128 - drift, 56); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(134 - drift, 60); ctx.lineTo(139 - drift, 51); ctx.lineTo(144 - drift, 60); ctx.fill();
-    ctx.fillStyle = '#f1a663';
-    [[116, 77], [126, 70], [137, 78], [121, 88], [141, 91]].forEach(([x, y], i) => {
-      if ((this.t + i * 7) % 80 < 68) ctx.fillRect(x - drift, y, 2, 3);
-    });
-
-    const glow = ctx.createRadialGradient(117, 76, 1, 117, 76, 19);
-    glow.addColorStop(0, 'rgba(247,112,65,.27)'); glow.addColorStop(1, 'rgba(247,112,65,0)');
-    ctx.fillStyle = glow; ctx.fillRect(96, 55, 42, 42);
-    blit(sprH('nm_dragon_0', 43, { flip: true }), 109 - drift, 47 + Math.round(Math.sin(this.t / 16) * 2));
-    ridge([[0, 112], [20, 101], [42, 108], [63, 97], [83, 106], [105, 96], [128, 108], [147, 98], [160, 104]], '#171c2a');
-    ctx.fillStyle = '#d98055';
-    for (let i = 0; i < 18; i++) {
-      const x = (i * 37 + 8) % W, y = 112 + ((i * 17) % 28);
-      ctx.fillRect(x, y, 1 + (i % 3), 1);
-    }
-    ctx.restore();
-
-    { const live = NET.isOnline(), lbl = NET.offline ? 'OFFLINE' : live ? `ONLINE ${NET.peers.length}` : 'LOCAL'; fill(W - 6 - lbl.length * 6, 1, lbl.length * 6 + 5, 10, 3); fill(W - 4 - lbl.length * 6 - 1, 4, 3, 3, NET.offline ? 'red' : live ? 'green' : 'gold'); text(lbl, W - 2 - lbl.length * 6, 1, 0); }
+    // ── Floating character portraits ──────────────────────────────
     const bob = Math.round(Math.sin(this.t / 12));
-    { // title heroes: your last saved hero's portrait, else the warden and arcanist portraits
-      const li = lastSlot(), info = li >= 0 ? slotInfo(li) : null;
-      const mine = info && (info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls));
-      const a = mine || classPortrait('warden'), b = mine ? null : classPortrait('arcanist');
-      if (a) { const s = sprFit(a, 44); blit(s, (b ? 104 : 116) - s.width / 2, 131 - s.height + bob); } else blit(sprH('c_warden_4', 36), 99, 93 + bob);
-      if (b) { const s = sprFit(b, 40); blit(s, 136 - s.width / 2, 131 - s.height - bob); } else if (!mine) blit(sprH('c_arcanist_4', 34), 122, 96 - bob);
+    const hero = classPortrait('warden'), mage = classPortrait('arcanist');
+    if (hero) { const p = sprFit(hero, 26); blit(p, 2, 108 - p.height + bob); }
+    if (mage) { const p = sprFit(mage, 24); blit(p, 134, 111 - p.height - bob); }
+
+    // ── Menu panel ────────────────────────────────────────────────
+    const o = this.opts(), rowH = 12, panelH = 14 + o.length * rowH;
+    const panelY = 50, panelX = 28, panelW = 104;
+    drawOrnatePanel(panelX, panelY, panelW, panelH, 'AELMOOR');
+    o.forEach((label, j) => drawMenuButton(panelX + 8, panelY + 10 + j * rowH, panelW - 16, 11, label, j === this.i));
+
+    // ── Footer bar ────────────────────────────────────────────────
+    fill(0, 136, W, 8, '#05060f');
+    // left border accent
+    ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
+    text(`v${BUILD.version}`, 4, 137, '#c8a84a');
+    textC('A  SELECT   B  BACK', 80, 137, '#e8dab8');
+  }
+  drawKeyArt() {
+    const smooth = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(IMG.title_aelmoor, 0, 0, W, H); ctx.imageSmoothingEnabled = smooth;
+    const o = this.opts(), panelX = 74, panelW = W - 74, panelY = 62, panelH = 73, rowH = Math.min(11, Math.floor((panelH - 6) / o.length)), top = panelY + Math.floor((panelH - rowH * o.length) / 2);
+    fill(panelX, panelY, panelW, panelH, '#0a0b1c');          // solid, so the art's own menu text never shows through
+    drawOrnatePanel(panelX, panelY, panelW, panelH);
+    o.forEach((label, j) => drawMenuButton(panelX + 5, top + j * rowH, panelW - 10, rowH, label, j === this.i));
+    fill(0, 136, W, 8, '#05060f');
+    ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
+    text(`v${BUILD.version}`, 4, 137, '#c8a84a');
+    textR('A SELECT  B BACK', W - 4, 137, '#e8dab8');
+    this.keep = [[panelX - 1, panelY - 1, panelW + 1, panelH + 2], [0, 136, W, 8]];
+  }
+}
+// ================================================================ ORIGINAL GAME BOY WORLD PALETTE
+// Quantize only the world-art pass to the four native-style LCD greens.
+// The HUD and menus are drawn afterward and retain their regular palette.
+function applyGameBoyWorldPalette(x = 0, y = 0, width = W, height = H) {
+  try {
+    const frame = ctx.getImageData(x, y, width, height);
+    const pixels = frame.data;
+    const shades = [
+      [15, 56, 15],    // darkest green
+      [48, 98, 48],
+      [139, 172, 15],
+      [155, 188, 15],  // lightest green
+    ];
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i + 3] === 0) continue;
+      const luminance = pixels[i] * 0.2126 + pixels[i + 1] * 0.7152 + pixels[i + 2] * 0.0722;
+      const shade = luminance < 64 ? 0 : luminance < 128 ? 1 : luminance < 192 ? 2 : 3;
+      pixels[i] = shades[shade][0];
+      pixels[i + 1] = shades[shade][1];
+      pixels[i + 2] = shades[shade][2];
     }
-    frame(4, 5, 152, 43);
-    textC('LOST KINGDOM OF', 80, 8, 1); textC('SHADOWBANE', 80, 17, 2); textC('CHRONICLES', 80, 26, 3);
-    textC(BUILD.subtitle, 80, 37, 2);
-    const o = this.opts(), rows = Math.min(o.length, 7), h = rows * 9 + 6;
-    this.top = this.top || 0; if (this.i < this.top) this.top = this.i; if (this.i >= this.top + rows) this.top = this.i - rows + 1; this.top = Math.max(0, Math.min(this.top, o.length - rows));
-    frame(5, 60, 83, h);
-    if (this.top > 0) textC('^', 46, 56, 'gold'); if (this.top + rows < o.length) textC('v', 46, 60 + h - 4, 'gold');
-    o.slice(this.top, this.top + rows).forEach((s, j) => {
-      const i = this.top + j, y = 63 + j * 9;
-      if (i === this.i) { fill(8, y - 1, 77, 9, typeof uiDark === 'function' && uiDark() ? 1 : 3); text('>', 10, y, 'gold'); }
-      text(s.slice(0, 11), 19, y, i === this.i ? 'gold' : 2);
-    });
-    textC(`AELMOOR  ${BUILD.version}`, 80, 134, 1);
+    ctx.putImageData(frame, x, y);
+    return true;
+  } catch (_) {
+    // A tainted canvas must never interrupt gameplay; leave its source colors intact.
+    return false;
   }
 }
 
+
+const WORLD_TERRAIN_PALETTE = ['#527b70', '#355c50', '#5c9fc4'];
+
+// ================================================================ REALM SELECT (WoW realms / FFXIV regions)
+// Pick a region (data center), then a realm inside it. Character saves live per account
+// per realm; each realm holds up to 1000 concurrent players.
+const REALM_INFO = {
+  hydaelyn: { name: 'HYADELYN', tag: 'NA', realms: ['ardenhold', 'ironreach', 'starhaven'] },
+  lordeon:  { name: 'LORDEON',  tag: 'EU', realms: ['moonfall', 'stormwake', 'frostmarch'] },
+  aether:   { name: 'AETHER',   tag: 'AP', realms: ['dawnspire', 'emberwild', 'shadowfen'] },
+};
+const REALM_TYPE = { ardenhold: 'ROLEPLAY', ironreach: 'PvE', starhaven: 'SEASONAL', moonfall: 'PvE', stormwake: 'PvP', frostmarch: 'PvP', dawnspire: 'ROLEPLAY', emberwild: 'PvE', shadowfen: 'ROLEPLAY' };
+// Client-side mirror of the backend realm table (region, type, capacity). Population is
+// 0 offline; when online it comes from /api/health /api/realms.
+const REALMS = [
+  { id: 'ardenhold',  name: 'Ardenhold',  regionId: 'hydaelyn', type: 'Roleplay',   status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'ironreach',  name: 'Ironreach',  regionId: 'hydaelyn', type: 'PvE',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'moonfall',   name: 'Moonfall',   regionId: 'lordeon',  type: 'PvE',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'stormwake',  name: 'Stormwake',  regionId: 'lordeon',  type: 'PvP',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'dawnspire',  name: 'Dawnspire',  regionId: 'aether',   type: 'Roleplay',   status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'emberwild',  name: 'Emberwild',  regionId: 'aether',   type: 'PvE',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'frostmarch', name: 'Frostmarch', regionId: 'lordeon',  type: 'PvP',        status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'starhaven',  name: 'Starhaven',  regionId: 'hydaelyn', type: 'Seasonal',   status: 'online', maxPlayers: 1000, population: 0 },
+  { id: 'shadowfen',  name: 'Shadowfen',  regionId: 'aether',   type: 'Roleplay',   status: 'online', maxPlayers: 1000, population: 0 },
+];
+class RealmSelect {
+  constructor() {
+    this.opaque = true; this.i = 0; this.j = 0; this.regionIds = Object.keys(REALM_INFO);
+    this.region = this.regionIds[0]; this.realms = REALM_INFO[this.region].realms;
+  }
+  setRegion(id) { this.region = id; this.realms = REALM_INFO[id].realms; this.j = 0; }
+  update() {
+    if (nav('left')) { const k = this.regionIds.indexOf(this.region); this.setRegion(this.regionIds[(k + this.regionIds.length - 1) % this.regionIds.length]); SFX.cursor(); }
+    if (nav('right')) { const k = this.regionIds.indexOf(this.region); this.setRegion(this.regionIds[(k + 1) % this.regionIds.length]); SFX.cursor(); }
+    if (nav('up')) { this.j = (this.j + this.realms.length - 1) % this.realms.length; SFX.cursor(); }
+    if (nav('down')) { this.j = (this.j + 1) % this.realms.length; SFX.cursor(); }
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    SFX.select();
+    const realmId = this.realms[this.j];
+    G.realm = realmId;
+    fadeTo(() => { scenes.length = 0; push(new SlotPicker('new')); });
+  }
+  draw() {
+    drawMenuBackdrop();
+    drawOrnatePanel(2, 5, 76, 136, 'REGIONS');
+    textC('SELECT A WORLD', 38, 10, '#ddd3e6');
+    this.regionIds.forEach((rid, k) => {
+      const y = 18 + k * 12, sel = rid === this.region;
+      fill(6, y, 68, 10, sel ? 'rgba(157,91,33,.5)' : 'rgba(12,13,28,.7)');
+      text(REALM_INFO[rid].name.slice(0, 10), 9, y + 2, sel ? '#ffe3a0' : '#cbb9ed');
+      textR(REALM_INFO[rid].tag, 70, y + 2, 2);
+    });
+    // realm list (right) - WoW style
+    drawOrnatePanel(82, 5, 76, 136, 'WORLDS');
+    textC(this.region.toUpperCase(), 120, 10, '#ddd3e6');
+    this.realms.forEach((rid, k) => {
+      const y = 18 + k * 24, sel = rid === this.realms[this.j];
+      fill(86, y, 68, 21, sel ? 'rgba(157,91,33,.5)' : 'rgba(12,13,28,.75)');
+      const info = REALMS.find(r => r.id === rid) || { name: rid, type: '?', status: 'offline', maxPlayers: 1000, population: 0 };
+      const pop = info.population || 0;
+      text(String(info.name).slice(0, 11), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6');
+      text(REALM_TYPE[rid] || '?', 90, y + 12, info.status === 'online' ? 'green' : 'red');
+      textR(`${pop}/${info.maxPlayers}`, 142, y + 12, pop >= info.maxPlayers ? 'red' : 2);
+      text(info.status === 'online' ? 'ONLINE' : 'OFFLINE', 90, y + 19, info.status === 'online' ? 'green' : 'red');
+    });
+    const info = REALMS.find(r => r.id === this.realms[this.j]) || {};
+    fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
+    textC(`A ENTER WORLD   B BACK   LEFT/RIGHT REGION`, 80, 129, '#fff0c2');
+    textC(`WORLD CAPACITY: ${(info.population||0)}/${(info.maxPlayers||1000)} PLAYERS`, 80, 139, '#cbb9ed');
+  }
+}
 // ================================================================ SAVE SLOTS
 class SlotPicker {
   constructor(mode) { this.opaque = true; this.mode = mode; this.i = 0; }
   update() {
-    if (nav('up')) { this.i = (this.i + 2) % 3; SFX.cursor(); }
-    if (nav('down')) { this.i = (this.i + 1) % 3; SFX.cursor(); }
+    if (nav('up')) { this.i = (this.i + 4) % 5; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % 5; SFX.cursor(); }
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
     const info = slotInfo(this.i);
@@ -203,18 +281,28 @@ class SlotPicker {
     }
   }
   draw() {
-    fill(0, 0, W, H, 0);
-    textC(this.mode === 'load' ? 'LOAD GAME' : 'NEW GAME: PICK A SLOT', 80, 4, 3);
-    for (let i = 0; i < 3; i++) {
-      const y = 18 + i * 40, info = slotInfo(i);
-      frame(6, y, 148, 36, i === this.i ? 1 : 0);
-      text(`SLOT ${i + 1}`, 12, y + 4, 2);
+    drawMenuBackdrop();
+    drawOrnatePanel(2, 5, 156, 136, this.mode === 'load' ? 'LOAD JOURNEY' : 'NEW JOURNEY');
+    textC('CHOOSE A SAVE SLOT', 80, 9, '#ddd3e6');
+    for (let i = 0; i < 5; i++) {
+      const y = 24 + i * 24, info = slotInfo(i), selected = i === this.i;
+      fill(7, y, 146, 22, selected ? 'rgba(157,91,33,.5)' : 'rgba(12,13,28,.82)');
+      ctx.save(); ctx.strokeStyle = selected ? '#ffd875' : '#65506d'; ctx.lineWidth = 1; ctx.strokeRect(7.5, y + .5, 145, 21); ctx.restore();
+      if (selected) text('>', 11, y + 2, '#fff0c2');
+      text(`SLOT 0${i + 1}`, 17, y + 3, selected ? '#ffe3a0' : '#ddd3e6');
       if (info) {
-        { const por = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls); blit(por ? sprFit(por, 26) : sprH(`c_${info.cls}_0`, 22), 126, y + 5); }
-        text(`${info.name}`, 12, y + 14); text(`LV${info.lvl} ${CLASSES[info.cls].name}`, 12, y + 24, 2);
-        textR(info.zone.slice(0, 12), 124, y + 4, 2);
-      } else text('- EMPTY -', 12, y + 16, 1);
+        const portrait = info.portrait && IMG[info.portrait] ? info.portrait : classPortrait(info.cls);
+        if (portrait) blit(sprFit(portrait, 20), 126, y + 2);
+        text(String(info.name || 'ADVENTURER').slice(0, 14), 17, y + 9, '#fff0c2');
+        text(`LV${info.lvl}  ${CLASSES[info.cls].name}`, 17, y + 16, '#cbb9ed');
+        textR(String(info.zone || 'UNKNOWN').slice(0, 12), 119, y + 16, '#cbb9ed');
+      } else {
+        text('- EMPTY SLOT -', 17, y + 9, selected ? '#ffe3a0' : '#ddd3e6');
+        text(this.mode === 'load' ? 'NO DATA TO LOAD' : 'READY FOR A NEW HERO', 17, y + 17, '#cbb9ed');
+      }
     }
+    fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
+    textC('UP/DOWN CHOOSE   A CONFIRM   B BACK', 80, 129, '#fff0c2');
   }
 }
 
@@ -265,7 +353,17 @@ class Prologue {
     flare.addColorStop(0, this.expansion ? `hsla(${hue}, 90%, 65%, .4)` : 'rgba(255,172,90,.34)');
     flare.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = flare; ctx.fillRect(34, 17, 92, 88);
-    blit(sprFit(scene.art || 'px_waypoint', 48), 56 + Math.round(Math.sin(this.t / 21) * 3), 34 + Math.round(Math.sin(this.t / 15) * 2));
+    const suppliedScene = !this.expansion && IMG.ap_scene_shadowbane;
+    if (suppliedScene) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(suppliedScene, 0, 0, suppliedScene.width, suppliedScene.height, 0, 18, W, 60);
+      ctx.restore();
+      fill(0, 18, W, 60, 'rgba(7,8,22,.18)');
+    } else {
+      blit(sprFit(scene.art || 'px_waypoint', 48), 56 + Math.round(Math.sin(this.t / 21) * 3), 34 + Math.round(Math.sin(this.t / 15) * 2));
+    }
     fill(0, 0, W, 17, 0); fill(0, 17, W, 1, 2);
     textC(this.expansion ? `EXPANSION ${this.story.n}` : 'AELMOOR - THE BEGINNING', 80, 4, 'gold');
     textC(scene.title || this.story.name, 80, 79, 'gold');
@@ -446,11 +544,12 @@ class CharCreate {
     blit(spr(IMG[name] ? name : `gh_warden_down${f}`, size, size, { flip: d === 'sideL' }), x, y);
   }
   draw() {
-    fill(0, 0, W, H, 0);
+    drawMenuBackdrop();
+    drawOrnatePanel(1, 13, 158, 129);
     // tabs
-    fill(0, 0, W, 11, 3);
-    CC_STEPS.forEach((n, j) => { const x = 1 + j * 20; const st = j === this.step ? 'gold' : j <= this.done ? 1 : 2; fill(x, 1, 18, 9, st); text(String(j + 1), x + 6, 1, j === this.step ? 3 : 3); });
-    textC(CC_STEPS[this.step] === 'REVIEW' ? 'YOUR HERO' : 'CHOOSE ' + CC_STEPS[this.step], 80, 13, 3); fill(4, 22, 152, 1, 2);
+    fill(0, 0, W, 11, 'rgba(7,7,20,.92)');
+    CC_STEPS.forEach((n, j) => { const x = 1 + j * 20; const st = j === this.step ? '#bd8131' : j <= this.done ? '#5b4674' : '#302b40'; fill(x, 1, 18, 9, st); text(String(j + 1), x + 6, 1, '#fff0c2'); });
+    textC(CC_STEPS[this.step] === 'REVIEW' ? 'YOUR HERO' : 'CHOOSE ' + CC_STEPS[this.step], 80, 15, '#ffe3a0'); fill(4, 22, 152, 1, '#9a672e');
     const p = this.pick, s = this.step;
     const hint = h => text(h, 2, 135, 2);
     if (s === 0) {
@@ -554,12 +653,63 @@ const blacksmithTier = level => BLACKSMITH_TIERS.filter(t => level >= t.level).a
 const TILE_SVC = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', a: 'bank' };
 let FIELD = null;
 const currentField = () => FIELD;
+const WOODS_SPRITES = new Map();
+const WOODS_CROPS = {
+  broad: [264, 0, 88, 88], round: [128, 0, 88, 88], leafy: [8, 8, 88, 88], rooted: [128, 96, 96, 88], pine: [308, 84, 44, 56],
+};
+const WOODS_PALETTES = {
+  meadow: ['#20513a', '#317a3d', '#48a84b', '#80c959', '#cae07a'], coast: ['#1f4f58', '#267a6c', '#429e7b', '#82bd85', '#c9d995'],
+  marsh: ['#233d2d', '#356534', '#4e8537', '#7e9e49', '#bbc16b'], jungle: ['#154b36', '#1e773d', '#319d43', '#58c95a', '#a4e66b'],
+  snow: ['#465b69', '#66889a', '#8fb1bd', '#c4dce0', '#f1f4e6'], badlands: ['#5c3f2d', '#8a5b31', '#b77a38', '#dba84c', '#eed18a'],
+  volcanic: ['#3b2728', '#70402b', '#a9502d', '#d56b2b', '#ffb64d'], dusk: ['#35273f', '#5d3c70', '#80549b', '#ad77bd', '#e0afd4'],
+  crystal: ['#20495a', '#307988', '#4aaab3', '#80d1cc', '#d3f2d8'],
+};
+function woodsSprite(name, biome = 'meadow') {
+  if (!IMG.woods_pixels || !WOODS_CROPS[name]) return null;
+  const key = `${biome}:${name}`;
+  if (!WOODS_SPRITES.has(key)) {
+    const [x, y, w, h] = WOODS_CROPS[name], canvas = mkCanvas(w, h), draw = canvas.getContext('2d');
+    draw.imageSmoothingEnabled = false;
+    draw.drawImage(IMG.woods_pixels, x, y, w, h, 0, 0, w, h);
+    const palette = WOODS_PALETTES[biome] || WOODS_PALETTES.meadow, image = draw.getImageData(0, 0, w, h);
+    for (let i = 0; i < image.data.length; i += 4) {
+      const r = image.data[i], g = image.data[i + 1], b = image.data[i + 2];
+      if (image.data[i + 3] && g > r * 1.12 && g > b * 1.05) {
+        const light = Math.round((r * 0.2126 + g * 0.7152 + b * 0.0722) / 51);
+        const hex = palette[Math.max(0, Math.min(4, light))];
+        image.data[i] = parseInt(hex.slice(1, 3), 16); image.data[i + 1] = parseInt(hex.slice(3, 5), 16); image.data[i + 2] = parseInt(hex.slice(5, 7), 16);
+      }
+    }
+    draw.putImageData(image, 0, 0);
+    WOODS_SPRITES.set(key, canvas);
+  }
+  return WOODS_SPRITES.get(key);
+}
+function woodsVariant(tile, x, y, map) {
+  let hash = 2166136261;
+  for (const ch of `${map}:${x}:${y}`) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619);
+  const variants = tile === 'F' ? ['pine', 'pine', 'broad'] : tile === 'D' ? ['broad', 'rooted', 'round'] : ['leafy', 'round', 'rooted', 'broad'];
+  return variants[(hash >>> 0) % variants.length];
+}
+window.GBQWorldMapMini = () => {
+  if (!G || !FIELD || !FIELD.m || !Array.isArray(FIELD.m.rows)) return null;
+  const rows = FIELD.m.rows;
+  const entities = typeof FIELD.entities === 'function' ? FIELD.entities().filter(e => Number.isFinite(e.x) && Number.isFinite(e.y)).slice(0, 80).map(e => ({ x: e.x, y: e.y, kind: e.kind, name: e.name || e.b?.name || e.p?.name || e.item || e.kind })) : [];
+  return { zone: FIELD.zone?.name || G.map || 'Unknown region', x: Number(G.x) || 0, y: Number(G.y) || 0, width: Math.max(1, ...rows.map(row => String(row).length)), height: rows.length, rows: rows.map(row => String(row)), entities };
+};
 function enterWorld() { reset(new Field()); }
 class Field {
   constructor() { this.opaque = true; this.ox = 0; this.oy = 0; this.walk = 0; this.since = 0; this.toast = 90; this.trail = []; FIELD = this; this.reload(); }
   reload() {
     if (G.inst) { this.m = G.inst.map; this.zone = null; }
     else { this.m = buildZoneCached(G.map); this.zone = ZONE_BY_ID[G.map]; }
+    this.woods = [];
+    if (this.zone && !this.zone.town && WOODS_PALETTES[this.zone.biome]) {
+      for (let y = 1; y < this.m.rows.length - 1; y++) for (let x = 1; x < this.m.rows[y].length - 1; x++) {
+        const tile = this.m.rows[y][x];
+        if ('TFD'.includes(tile)) this.woods.push({ kind: 'woods', x, y, biome: this.zone.biome, variant: woodsVariant(tile, x, y, G.map), sy: y * T + T });
+      }
+    }
     this.toast = 90; this.trail = []; Physics.clear();
     window.SOLID_AT = null;
     Music.play(this.m.music);
@@ -737,7 +887,9 @@ class Field {
     }
   }
   draw() {
+    // Draw the world pass first; quantize it to four Game Boy greens before the HUD.
     const m = this.m, cols = m.rows[0].length, rows = m.rows.length;
+    const worldPalette = S.palette === 'dmg' || S.palette === 'gameboy';
     const px = G.x * T + this.ox, py = G.y * T + this.oy;
     const cx = Math.max(0, Math.min(cols * T - W, px - 72)), cy = Math.max(0, Math.min(rows * T - H, py - 64));
     this.cam = [cx, cy];
@@ -746,10 +898,11 @@ class Field {
     for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++)
       for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
         const d = this.tileAt(tx, ty); if (!d) continue;
-        if (PIX && m.gfx) blit(spr(m.gfx[ty][tx].replace('%f', anim), T, T, { ghost }), tx * T - cx, ty * T - cy);
+        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
         else blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
       }
     const list = this.entities().map(e => Object.assign(e, { sy: e.y * T }));
+    if (S.art !== 'classic' && IMG.woods_pixels) list.push(...this.woods);
     list.push({ kind: 'player', sy: py });
     G.companions.slice(0, 3).forEach((c, i) => { const tr = this.trail[(i + 1) * 2 - 1]; if (tr) list.push({ kind: 'follower', c, x: tr[0], y: tr[1], dir: tr[2], sy: tr[1] * T - 1 }); });
     if (G.pet) { const tr = this.trail[G.companions.length ? 7 : 1]; if (tr) list.push({ kind: 'pet', x: tr[0], y: tr[1], sy: tr[1] * T - 2 }); }
@@ -762,28 +915,46 @@ class Field {
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
         const walkFrame = (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0;
         const hdFrame = hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
+        const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(G, G.dir, ghost) : null;
         const gearWalker = worldGearWalker(G, G.dir, walkFrame, ghost);
-        const portrait = hdFrame || gearWalker || worldPortrait(G, G.dir, ghost);
+        const portrait = hdFrame || packFrame || gearWalker || worldPortrait(G, G.dir, ghost);
         if (portrait) blit(portrait, px - cx + (T - portrait.width) / 2, py - cy + T - portrait.height - 1 - (G.mounted ? 6 : 0) - moveBob);
         else if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
-        else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
+        else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); if (c) blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
         const bob = (this.walk >> 3) % 2;
         const hdFrame = hdWorldFrame(e.c, e.dir, bob, true, false);
+        const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(e.c, e.dir) : null;
         const gearWalker = worldGearWalker(e.c, e.dir, bob);
-        const portrait = hdFrame || gearWalker || worldPortrait(e.c, e.dir);
+        const portrait = hdFrame || packFrame || gearWalker || worldPortrait(e.c, e.dir);
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1 - bob);
         else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex, ey - 3);
-        else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
+        else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
-      else if (e.kind === 'npc') { if (PIX) blit(typeof npcSprite === 'function' ? npcSprite(e) : walker(npcLook(e.spr), 'down', 0), ex, ey - 3); else { const c = sprH(e.spr, 23); blit(c, ex + (T - c.width) / 2, ey + T - 24); } if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } } }
+      else if (e.kind === 'woods') {
+        const tree = woodsSprite(e.variant, e.biome);
+        if (tree) {
+          const pine = e.variant === 'pine', w = pine ? 22 : 34, h = pine ? 30 : 36;
+          ctx.drawImage(tree, ex + (T - w) / 2, ey + T - h, w, h);
+        }
+      }
+      else if (e.kind === 'npc') {
+        if (PIX) {
+          const c = typeof npcSprite === 'function' ? npcSprite(e) : walker(npcLook(e.spr), 'down', 0);
+          if (c) blit(c, ex + Math.floor((T - c.width) / 2), ey + 13 - c.height);
+        } else {
+          const c = sprH(e.spr, 23); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 24);
+        }
+        if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } }
+      }
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
-        const portrait = worldPortrait({ cls: CLASSES[p.cls] ? p.cls : 'warden' }, p.dir || 'down');
+        const avatar = { cls: CLASSES[p.cls] ? p.cls : 'warden' };
+        const portrait = (typeof assetPackCharacter === 'function' ? assetPackCharacter(avatar, p.dir || 'down') : null) || worldPortrait(avatar, p.dir || 'down');
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1);
         else if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3);
-        else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
+        else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
         const nm = (p.name || '').slice(0, 8);
         const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
         if (S.nameTags !== false || hostile || Math.abs(e.x - G.x) + Math.abs(e.y - G.y) <= 1) { fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0); }
@@ -795,10 +966,11 @@ class Field {
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'vault') blit(PIX ? spr(e.open ? 'go_chestopen' : 'go_chest', 16, 16) : sprFit(e.open ? 'item_chest_open' : 'item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
-      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
+      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); if (c) blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
+    if (worldPalette) applyGameBoyWorldPalette(0, 0, W, H);
     const mmo = typeof hudMmo === 'function' && hudMmo(), by = mmo ? MMO_LAYOUT.bannerY : 4;
     if (this.toast > 0) { const n = (G.inst ? this.m.name : `${this.zone.name}`).slice(0, 24); frame(80 - n.length * 3 - 6, by, n.length * 6 + 12, 15); textC(n, 80, by + 3); if (this.zone && !this.zone.town) textC(`${this.zone.sub} LV${this.zone.lvl[0]}-${this.zone.lvl[1]}`, 80, by + 17, 'gold'); }
     if (this.zone && !G.inst && !mmo) textC(this.zone.town ? 'SAFE ZONE' : G.pvpEnabled ? 'WAR MODE: PVP' : 'WAR MODE: PVE', 80, 31, this.zone.town ? 2 : G.pvpEnabled ? 'red' : 2);
@@ -861,6 +1033,7 @@ let HD_WORLD_RUNTIME = null;
 const HD_WORLD_PRESENTERS = new WeakMap(), HD_WORLD_SCALED = new WeakMap();
 function hdWorldFrame(character, dir = 'down', frame = 0, moving = false, ghost = false) {
   if (ghost || !character || !character.eq || typeof globalThis === 'undefined') return null;
+  if (globalThis.GBQ_HD64_PACK && globalThis.GBQ_HD64_PACK.available === false) return null;
   const api = globalThis.GBQHDCharacterArt;
   if (!api) return null;
   try {
@@ -1068,17 +1241,52 @@ class SideQuestBoard {
     const q = qs[this.i]; frame(4, 98, 152, 42); text(wrap(q.text, 24).slice(0, 3).join('\n'), 8, 102); text(`${fmt(q.xp)}XP ${q.gold}G`, 8, 131, 2);
   }
 }
+function previewVendorGear(item, price, onBuy) {
+  const slot = itemSlot(item), current = derive(G), eq = { ...G.eq, [slot]: item };
+  const target = derive({ ...G, eq });
+  const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+  const setId = item.setId || item.set || item.template?.setId || item.template?.set;
+  const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(item) : 0;
+  const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(item) : 0;
+  const maxDur = Number(item.maxDur ?? item.maxDurability), dur = Number(item.dur ?? item.durability);
+  const durability = Number.isFinite(maxDur) && maxDur > 0 && Number.isFinite(dur)
+    ? 'DUR ' + Math.max(0, Math.min(100, Math.round(dur / maxDur * 100))) + '%' : 'DUR N/A';
+  const rows = [
+    item.name + ' · ' + fmt(price) + ' G',
+    'ILVL ' + (item.ilvl || 1) + ' · ' + (RARITY[item.rarity]?.name || 'COMMON') + ' · ' + (SLOT_NAME[slot] || slot).toUpperCase(),
+    'SET ' + (setId || 'NONE') + ' · ' + durability,
+    'GEMS ' + (item.sockets || []).filter(Boolean).length + '/' + gemSlots + ' · RUNES ' + (item.runeSockets || []).filter(Boolean).length + '/' + runeSlots + ' · ' + (item.attune ? 'ATTUNE' : 'NO ATTUNE'),
+    ...legendarySetPreview(G, item).flatMap(set => set.thresholds.map(t => set.name + ' ' + t.pieces + 'PC ' + (t.newlyUnlocked ? 'NEW' : t.active ? 'ACTIVE' : 'LOCKED') + ': ' + t.stats.map(([k, v]) => k.toUpperCase() + ' +' + v).join(', '))),
+    'CURRENT GOLD ' + fmt(G.gold) + ' · AFTER ' + fmt(G.gold - price),
+    'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
+    'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
+    'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+    'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
+    'CRIT ' + current.crit + '% → ' + target.crit + '%',
+    'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+    'BLOCK ' + current.block + '% → ' + target.block + '%',
+    'LEECH ' + current.leech + '% → ' + target.leech + '%',
+    'HASTE ' + current.haste + '% → ' + target.haste + '% · RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
+    'A: CONFIRM PURCHASE · B: CANCEL'
+  ];
+  say(rows, () => choose(['BUY ' + fmt(price) + 'G', 'CANCEL'], k => {
+    if (k !== 0) return;
+    if (G.gold < price) return say('Not enough gold.');
+    onBuy();
+  }, 'Review the proposed gear before spending gold.'));
+}
+
 function vendorMenu() {
   const stock = ['potion', 'greater', 'antitoxin', 'ration', 'campkit', 'ether', 'scroll_mend', 'scroll_flame'].concat(ITEMS.repair_kit ? ['repair_kit'] : []).concat(G.lvl >= 10 ? ['superior', 'might', 'scroll_dawn'] : []).concat(G.lvl >= 30 ? ['supreme'] : []);
   const disc = G.daily.discount === new Date().toDateString() ? 0.9 : 1;
   choose(['BUY', 'BUY GEAR', 'SELL', 'SELL ALL JUNK', 'HAGGLE (CHA)', 'HEIRLOOMS', 'REPAIR ALL', 'GEM CUTTER', 'LEAVE'], k => {
     if (k === 7 && typeof gemCutterMenu === 'function') return gemCutterMenu();
     if (k === 0) choose(stock.map(s => `${ITEMS[s].name.slice(0, 14)} ${Math.round(ITEMS[s].price * disc)}G`), i => { if (i < 0) return; const s = stock[i], p = Math.round(ITEMS[s].price * disc); if (G.gold < p) { SFX.error(); return say('Not enough gold.'); } G.gold -= p; addItem(s); SFX.buy(); vendorMenu(); }, `Gold: ${fmt(G.gold)}`);
-    if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i]; if (G.gold < it.value * 2) return say('Not enough gold.'); G.gold -= it.value * 2; addGear(it); SFX.buy(); }, 'Fresh stock from the forge.'); }
+    if (k === 1) { const items = [0, 1, 2, 3].map(i => makeItem({ lvl: G.lvl, rarity: i < 2 ? 1 : 2, kind: i === 3 ? 'wondrous' : i % 2 ? 'armor' : 'weapon' })); choose(items.map(it => `${it.name.slice(0, 14)} ${fmt(it.value * 2)}G`), i => { if (i < 0) return; const it = items[i], price = it.value * 2; previewVendorGear(it, price, () => { G.gold -= price; addGear(it); SFX.buy(); say(`Purchased ${it.name}.`); }); }, 'Fresh stock from the forge.'); }
     if (k === 2) push(new InventoryScene('sell'));
     if (k === 5 && typeof HeirloomScene === 'function') push(new HeirloomScene({ vendor: true }));
     if (k === 6 && typeof repairMenu === 'function') repairMenu();
-    if (k === 3) { let g = 0; for (const key of Object.keys(G.inv)) if (ITEMS[key] && ITEMS[key].type === 'junk') { g += ITEMS[key].price * G.inv[key]; delete G.inv[key]; } G.bag = G.bag.filter(it => { if (it.rarity === 0) { g += it.value; return false; } return true; }); G.gold += g; SFX.sell(); say(`Sold junk for ${g} G.`); }
+    if (k === 3) { const stackKeys = Object.keys(G.inv).filter(key => ITEMS[key] && ITEMS[key].type === 'junk' && G.inv[key] > 0); const gear = G.bag.filter(it => it.rarity === 0 && !it.fav); const estimate = stackKeys.reduce((sum, key) => sum + ITEMS[key].price * G.inv[key], 0) + gear.reduce((sum, it) => sum + it.value, 0); if (!estimate) return say('No sellable junk in your inventory.'); say(['SELL ALL JUNK?', 'Estimated proceeds: ' + fmt(estimate) + ' G.', 'Poor gear and junk materials will be removed.'], () => choose(['SELL JUNK', 'CANCEL'], confirm => { if (confirm !== 0) return; let g = 0; for (const key of stackKeys) { g += ITEMS[key].price * G.inv[key]; delete G.inv[key]; } G.bag = G.bag.filter(it => { if (it.rarity === 0 && !it.fav) { g += it.value; return false; } return true; }); G.gold += g; SFX.sell(); say('Sold junk for ' + g + ' G.'); }, 'Confirm merchant sale.')); }
     if (k === 4) { if (G.daily.haggle === new Date().toDateString()) return say('The merchant will not haggle again today.'); G.daily.haggle = new Date().toDateString(); const r = skillCheck(G, 'persuasion', 13); if (r.ok) G.daily.discount = new Date().toDateString(); say([r.text, r.ok ? '10% discount for today!' : 'The merchant shrugs. Prices stay.']); }
   }, 'MERCHANT: What will it be?');
 }
@@ -1106,7 +1314,7 @@ function smithBuyMenu(kind) {
     if (index < 0) return;
     const item = stock[index], price = item.value * 2;
     if (G.gold < price) return say('Not enough gold.');
-    G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`);
+    previewVendorGear(item, price, () => { G.gold -= price; addGear(item); const profession = kind === 'armor' ? 'armorsmith' : 'weaponsmith'; gainProf(profession); progressProfessionQuest(profession, 'trade'); SFX.buy(); say(`Purchased ${item.name}.`); });
   }, `GOLD ${fmt(G.gold)}. Stock is fitted to your level.`);
 }
 function smithSellMenu(kind) {
@@ -1672,6 +1880,7 @@ class WorldMap {
   }
   draw() {
     fill(0, 0, W, H, 0);
+    // The map image and markers are quantized separately from atlas labels and controls.
     const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
     if (this.zoom === 0) {
       const wi = IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s', img = IMG[wi]; const m = spr(wi, img.width, img.height);
@@ -1702,6 +1911,7 @@ class WorldMap {
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
+    if (S.palette === 'dmg' || S.palette === 'gameboy') applyGameBoyWorldPalette(0, 12, W, 97);
     fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'VALENDRIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
@@ -1817,9 +2027,14 @@ class Credits {
   enter() { Music.play('credits'); if (this.ending) saveGame(); }
   update() { this.t++; if (this.t > 60 && (P('a') || P('b') || P('start'))) { removeScene(this); if (this.ending) { const f = currentField(); if (f) f.resume(); } } }
   draw() {
-    fill(0, 0, W, H, 3);
-    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'From the original asset sheet', 'and its generated variants', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version} ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
-    lines.forEach((l, i) => { const y = 150 + i * 12 - this.t * 0.5 + (this.t > 520 ? this.t * 0.5 - 260 : 0); if (y > -10 && y < H) textC(l, 80, y, i === 2 || i === 3 || i === 7 ? 'gold' : 0); });
+    drawMenuBackdrop();
+    drawOrnatePanel(5, 4, 150, 136, this.ending ? 'THE LANTERNS OF AELMOOR' : 'CREDITS');
+    const lines = [this.ending ? 'DAWN RETURNS TO AELMOOR' : '', '', BUILD.gameLines[0], BUILD.gameLines[1], BUILD.subtitle, '', 'A GAME BY', BUILD.studio, '', 'DESIGN & CODE', BUILD.studio, '', 'ART', 'Original pixel-art direction', 'and generated game assets', '', 'RULES', 'A d20 system modelled on', 'the 5E SRD (CC-BY-4.0)', 'with original lore', '', 'MUSIC & SFX', 'Procedural 4-channel chip', '', `v${BUILD.version}  ${BUILD.build}`, '', 'THANK YOU FOR PLAYING!'];
+    lines.forEach((line, index) => {
+      const y = 150 + index * 12 - this.t * .5 + (this.t > 520 ? this.t * .5 - 260 : 0);
+      if (y > 23 && y < 132) textC(line, 80, y, index === 2 || index === 3 || index === 7 ? '#ffe3a0' : '#e3deeb');
+    });
+    textC('A / B / START: RETURN', 80, 135, '#fff0c2');
   }
 }
 

@@ -32,3 +32,20 @@ Run the `Generate HD64 v2 Original Art Library` workflow from GitHub Actions. It
 ## Validation
 
 The workflow checks that every manifest entry resolves to an RGBA PNG with the requested dimensions. TIFF masters are best-effort and require a separate codec validation step.
+
+## Existing HD64 atlas validation
+
+The committed `assets_hd64/*.json` files are rectangle indexes for the legacy HD64 atlas pages. Each entry has the form `[page, x, y, width, height]`; its image page is named `<manifest-stem>_<page>.png`. These atlases are packed sprite collections, not complete directional animation frame sets.
+
+Validate every committed manifest and crop rectangle with:
+
+```bash
+python tools/validate_hd64_atlases.py --root assets_hd64
+python3 -m unittest discover -s tests -p 'test_hd64_atlas_validation.py'
+```
+
+The validator checks manifest structure, integer/non-negative coordinates, referenced page existence, PNG headers, and crop bounds. The main asset-pipeline workflow runs both the validator and its regression tests after generating the HD64 atlas pages.
+
+## Unreal Engine import contract
+
+For the Unreal port, import each referenced PNG page as a texture under `Content/GBQuest/Art/Atlases` and preserve the manifest's page and rectangle values as sprite metadata (for example, a DataTable row per sprite). Do not import an atlas rectangle as a standalone image or treat the packed page as an animation sequence. Directional idle/walk/attack animation sets remain a separate deliverable and should use explicit per-frame metadata when they are produced.

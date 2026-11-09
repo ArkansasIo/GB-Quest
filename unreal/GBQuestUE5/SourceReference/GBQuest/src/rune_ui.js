@@ -53,12 +53,27 @@ class RuneForgeScene {
   draw() {
     const api = globalThis.GBQRunes, cap = api.runeSocketCapacity(this.item), sockets = api.normalizeRuneSockets(this.item);
     fill(0, 0, W, H, 0); hdr();
-    fill(2, 13, W - 4, 15, 1); textC('RUNE FORGE', W / 2, 16, 'gold');
+    if (S.uiTheme === 'blackbird') {
+      fill(1, 10, W - 2, H - 11, '#090b0e');
+      fill(2, 11, W - 4, 1, '#8c744b');
+      fill(2, 11, 1, H - 13, '#6f5b3d');
+      fill(W - 3, 11, 1, H - 13, '#292d32');
+      fill(3, 29, W - 6, 99, '#171a1f');
+      fill(4, 30, W - 8, 1, '#343941');
+      fill(3, 127, W - 6, 1, '#51432f');
+    }
+    fill(2, 13, W - 4, 15, S.uiTheme === 'blackbird' ? '#171a1f' : 1);
+    if (S.uiTheme === 'blackbird') fill(2, 27, W - 4, 1, '#b09258');
+    textC('RUNE FORGE', W / 2, 16, 'gold');
     textC((this.item.name || 'EQUIPMENT').slice(0, 25), W / 2, 31, 3);
     textC('ILVL ' + (this.item.ilvl || 1) + '  RUNE SLOTS ' + cap, W / 2, 41, 2);
     for (let i = 0; i < Math.max(1, cap); i++) {
       const x = 15 + i * 44, y = 56, id = sockets[i], d = id && api.runeDefinition(id);
-      fill(x, y, 36, 34, i === this.socket ? 3 : 1); fill(x + 2, y + 2, 32, 30, 0);
+      if (S.uiTheme === 'blackbird') {
+        fill(x, y, 36, 34, i === this.socket ? '#d0ad68' : '#51432f');
+        fill(x + 1, y + 1, 34, 32, '#080a0c');
+        fill(x + 2, y + 2, 32, 30, '#171a1f');
+      } else { fill(x, y, 36, 34, i === this.socket ? 3 : 1); fill(x + 2, y + 2, 32, 30, 0); }
       if (d) { fill(x + 12, y + 8, 12, 12, ({ flame: 'red', frost: 'cyan', storm: 'yellow', ward: 'blue', vigor: 'green', might: 'orange', precision: 'white', shadow: 'purple', leech: 'red' })[d.type] || 3); textC('R' + d.tier, x + 18, y + 22, 3); }
       else textC('EMPTY', x + 18, y + 13, 2);
       if (i === this.socket) textC('^', x + 18, y + 1, 'gold');
@@ -70,7 +85,8 @@ class RuneForgeScene {
     const bonuses = Object.entries(api.runeAffixes(this.item));
     text('RUNE BONUSES', 5, 133, 'gold');
     if (bonuses.length) textC(bonuses.map(([k, v]) => k.toUpperCase() + ' +' + v).join(' ').slice(0, 25), W / 2, 140, 3);
-    fill(2, H - 12, W - 4, 10, 1);
+    fill(2, H - 12, W - 4, 10, S.uiTheme === 'blackbird' ? '#080a0c' : 1);
+    if (S.uiTheme === 'blackbird') fill(2, H - 12, W - 4, 1, '#b09258');
     textC(this.mt > 0 ? this.msg.slice(0, 25) : 'A SOCKET  SEL REMOVE  START FUSE', W / 2, H - 10, 'gold');
   }
 }

@@ -1,0 +1,45 @@
+/* GB-Quest dark-fantasy stone-and-brass UI theme, derived from the new master atlas. */
+:root {
+  --abyss-black:#090b0d; --abyss-panel:#15191a; --abyss-panel-raised:#222827;
+  --abyss-gold:#c8ad76; --abyss-gold-bright:#f0d9a2; --abyss-ink:#e7e0cf;
+  --abyss-muted:#aaa18d; --abyss-green:#71866a; --abyss-blue:#607b89;
+  color-scheme:dark;
+}
+body.theme-shadows {
+  color:var(--abyss-ink);
+  background:radial-gradient(ellipse at 50% 0%,rgba(109,126,103,.14),transparent 44%),
+    radial-gradient(ellipse at 50% 100%,rgba(173,139,82,.10),transparent 55%),var(--abyss-black);
+}
+.theme-shadows .device {
+  background-image:linear-gradient(145deg,rgba(35,42,40,.96),rgba(15,19,19,.98) 58%,rgba(8,10,11,.99)),url("GBQ_MASTER_CATALOG");
+  background-position:center; background-size:cover; background-repeat:no-repeat;
+  border:1px solid rgba(200,173,118,.72); border-radius:14px;
+  box-shadow:0 24px 72px rgba(0,0,0,.8),inset 0 1px rgba(255,235,190,.12),0 0 28px rgba(113,134,106,.12);
+}
+.theme-shadows .bezel { background:linear-gradient(160deg,#090c0c,#1b211e 65%,#090b0c); border:1px solid rgba(200,173,118,.6); border-radius:8px; box-shadow:inset 0 0 0 1px #030405,0 0 22px rgba(0,0,0,.65); }
+.theme-shadows .bezel-top { color:var(--abyss-muted); }
+.theme-shadows .bezel-top span { background:linear-gradient(90deg,var(--abyss-gold),transparent); }
+.theme-shadows #lcd { image-rendering:auto; border:1px solid rgba(200,173,118,.55); box-shadow:0 0 0 2px #080a0b,0 0 22px rgba(113,134,106,.15); }
+.theme-shadows .brand { color:var(--abyss-gold-bright); font-family:Cinzel,Georgia,serif; letter-spacing:.13em; text-shadow:0 2px 16px #000,0 0 18px rgba(200,173,118,.18); }
+.theme-shadows .brand em { color:var(--abyss-gold); }
+.theme-shadows .brand small { color:var(--abyss-muted); }
+.theme-shadows .round { background:radial-gradient(circle at 32% 25%,#657268,#354139 58%,#111614); color:var(--abyss-ink); box-shadow:0 4px 0 #030405,0 0 0 2px rgba(200,173,118,.5); font-family:Cinzel,Georgia,serif; }
+.theme-shadows .pill { background:linear-gradient(#344039,#151b18); color:#ead9b4; box-shadow:0 3px 0 #030405; }
+.theme-shadows .chatlog,.theme-shadows .chatform input,.theme-shadows .build-info { background:rgba(12,15,14,.95); border:1px solid rgba(200,173,118,.5); color:var(--abyss-ink); border-radius:5px; }
+.theme-shadows .chat-tabs button,.theme-shadows .chatform button,.theme-shadows .atlas-btn { background:linear-gradient(180deg,#34413b,#151b19); border:1px solid rgba(200,173,118,.58); color:#efdfbd; border-radius:4px; }
+.theme-shadows .chat-tabs button[aria-pressed="true"] { background:linear-gradient(180deg,#80643a,#382c1c); border-color:var(--abyss-gold-bright); color:#fff3d9; }
+.theme-shadows .build-info { color:#c9c1af; } .theme-shadows .build-info strong { color:var(--abyss-gold-bright); }
+.theme-shadows .round:focus-visible,.theme-shadows .pill:focus-visible,.theme-shadows .atlas-btn:focus-visible { outline:2px solid var(--abyss-gold-bright); outline-offset:3px; }
+.theme-shadows .led { background:#873c32; } .theme-shadows.ready .led { background:#78bd82; box-shadow:0 0 10px #78bd82; }
+@media(max-width:520px) { .theme-shadows .device { border-radius:10px; } }
+
+
+/* The new UI mockup sheet is embedded as a low-opacity bezel finish in release builds. */
+.theme-shadows .bezel { position:relative; overflow:hidden; }
+.theme-shadows .bezel::after {
+  content:""; position:absolute; inset:0;
+  background:url("GBQ_UI_MOCKUP") center/cover no-repeat;
+  opacity:.075; mix-blend-mode:screen; pointer-events:none;
+}
+.theme-shadows #lcd { position:relative; z-index:1; }
+.theme-shadows .bezel-top { position:relative; z-index:2; }

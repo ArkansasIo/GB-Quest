@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gbquest}
+      POSTGRES_USER: ${POSTGRES_USER:-gbquest}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - gbquest-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gbquest} -d ${POSTGRES_DB:-gbquest}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [gbquest]
+
+  mmorpg:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8788
+      DATABASE_URL: postgres://${POSTGRES_USER:-gbquest}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-gbquest}
+      DATABASE_SSL: "disable"
+      GBQ_TOKEN_SECRET: ${GBQ_TOKEN_SECRET:?Set GBQ_TOKEN_SECRET in .env}
+      GBQ_ALLOWED_ORIGINS: ${GBQ_ALLOWED_ORIGINS:?Set GBQ_ALLOWED_ORIGINS in .env}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+    ports:
+      - "${GBQ_BIND_ADDRESS:-127.0.0.1}:${GBQ_PORT:-8788}:8788"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8788/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks: [gbquest]
+
+volumes:
+  gbquest-postgres:
+
+networks:
+  gbquest:
+    driver: bridge

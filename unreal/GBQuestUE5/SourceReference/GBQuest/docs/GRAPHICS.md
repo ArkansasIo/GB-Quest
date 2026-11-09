@@ -6,7 +6,7 @@
 |---|---|---|
 | **VIDEO** | GAME BOY · 64-BIT | presentation: 160×144 1:1, or 640×576 Scale4x with lighting (see below) |
 | **PALETTE** | GBC, DMG, POCKET, SUNSET, AMBER, OCEAN, FULL COLOR | how sprites are reduced to colours |
-| **TILES** | PIXEL · PAINTED | crisp 16×16 Game Boy tiles (`gt_*`), or the painted biome tilesets from the original sheet |
+| **TILES** | PIXEL · PAINTED | crisp 16×16 logical Game Boy tiles (`gt_*`), or painted biome tilesets from the original sheet; full-detail mode can use generated 64×64 variants |
 | **ART** | NES · CLASSIC | NES-style monster, item and portrait art (`nm_ ne_ np_`), or the original sheet sprites |
 | **BRIGHTNESS / CONTRAST** | 0–6 | CSS filter on the LCD |
 
@@ -20,7 +20,7 @@ asset PNG ──▶ scale to w×h ──▶ palette mode?
                         ──▶ flip / rotate / ghost ──▶ cache
 ```
 
-## 64-bit video mode (`src/video64.js`)
+## High-resolution 8-bit tile exports (`assets_hd/gbtiles/`)\n\n`python tools/gen_gbtiles.py` writes the native 16×16 RGBA tile/sprite sources and nearest-neighbour 4× (64×64) and 6× (96×96) variants. `manifest.json` records each logical source, scale, dimensions, and file path. The browser build embeds the 4× variants as `gb_hi_*` aliases; `src/engine.js` selects them in full-detail art mode while preserving the logical tile dimensions and pixel edges. The 6× set remains available for zoomed/desktop use. Alpha is preserved and smoothing is disabled by the pixel renderer.\n\n## 64-bit video mode (`src/video64.js`)
 
 Per frame, after the scenes draw the 160×144 framebuffer:
 
@@ -57,7 +57,7 @@ Each family has `<family>_<page>.png` pages and `<family>.json` (`{ name: [page,
 |---|---|
 | `tools/extract_assets.py` | slices `src_sheet/sheet.png` into `assets/*.png` |
 | `tools/gen_assets.py` | biome tilesets, monster variants, class looks, pixel icons |
-| `tools/gen_gbtiles.py` | 16×16 Game Boy terrain for 9 biomes (auto-tiled roads and shores, animated water), buildings, 6 dungeon themes, objects, walkers for 12 classes and 8 NPC looks |
+| `tools/gen_gbtiles.py` | 16×16 Game Boy terrain for 25 biome families (including forest, deep forest, hills, mountains, snow, desert, oasis, swamp, jungle, savanna, steppe, volcanic, ruins, corruption, aether, crystal, mushroom, coast, ocean, river, frozen and sky), 16-way auto-tiled roads and shores, animated water, buildings, 6 dungeon themes, objects and walkers |
 | `tools/make_font.py` | 6×9 bitmap font |
 | `tools/make_worldmap.py` | VALENDRIA map at 320 px and 160 px, 32 colours |
 | `tools/slice_sheets.py` | NES-style monster, equipment and portrait sheets, plus `assets/nes_index.json` |
@@ -90,3 +90,8 @@ Each family has `<family>_<page>.png` pages and `<family>.json` (`{ name: [page,
 - **Page shell** (`client/shell.html`, `client/fullscreen.html`): black and blood-red background, bronze-trimmed panels and buttons, Cinzel serif headings, a gold glow around the screen, and the chat lifted above the HUD.
 
 The single-tone palettes (DMG, POCKET, SUNSET, AMBER and OCEAN) keep the classic Game Boy look.
+
+
+## SHADOWS HD artwork integration
+
+The default browser shell theme uses the master art catalog as a subtle device finish and layers the new UI mockup catalog into the bezel at low opacity. `tools/build.cjs` replaces both artwork tokens with embedded PNG data URIs before producing the single-file browser build. This keeps the itch.io HTML5 export self-contained instead of relying on loose artwork files.

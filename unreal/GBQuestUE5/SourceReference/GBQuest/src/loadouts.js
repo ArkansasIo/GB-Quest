@@ -56,22 +56,84 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof equ
     applySpec(G, next); l.active = other; G.hp = Math.min(G.hp, derive(G).hpMax);
     return null;
   }
+  function previewSet(set) {
+    const plan = planSet(set.items, G.eq, G.bag, G.bank), eq = { ...G.eq };
+    const missing = [], available = [];
+    for (const [slot, p] of Object.entries(plan)) {
+      if (p.where === 'worn') { available.push(slot); continue; }
+      if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      const list = p.where === 'bank' ? G.bank : p.where === 'bag' ? G.bag : Object.values(G.eq);
+      const it = list.find(x => x && x.uid === p.uid);
+      if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      for (const s of Object.keys(eq)) if (eq[s] && eq[s].uid === p.uid) delete eq[s];
+      eq[slot] = it; available.push(slot);
+    }
+    const current = derive(G), target = derive({ ...G, eq });
+    const delta = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+    const sourceLines = [];
+    for (const slot of SLOTS) {
+      const it = eq[slot]; if (!it) continue;
+      const mods = [];
+      for (const [k, v] of it.affixes || []) mods.push(k.toUpperCase() + ' ' + (v > 0 ? '+' : '') + v);
+      if (typeof gemAffixes === 'function') for (const [k, v] of Object.entries(gemAffixes(it))) mods.push('GEM ' + k.toUpperCase() + ' +' + v);
+      if (typeof runeAffixes === 'function') for (const [k, v] of Object.entries(runeAffixes(it))) mods.push('RUNE ' + k.toUpperCase() + ' +' + v);
+      if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) mods.push('TIER ' + k.toUpperCase() + ' +' + v);
+      if (mods.length) sourceLines.push((SLOT_NAME[slot] || slot).toUpperCase() + ': ' + (it.name || it.base || 'GEAR') + ' — ' + mods.join(', '));
+    }
+    const lines = [
+      set.name + ' · ' + available.length + '/' + Object.keys(set.items || {}).length + ' pieces found',
+      'AC ' + current.ac + ' → ' + target.ac + ' (' + delta(current.ac, target.ac) + ')',
+      'ATTACK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + delta(current.weapon.hit, target.weapon.hit) + ')',
+      'DAMAGE ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+      'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + delta(current.hpMax, target.hpMax) + ')',
+      'CRIT ' + current.crit + '% → ' + target.crit + '%',
+      'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+      'BLOCK ' + current.block + '% → ' + target.block + '%',
+      'LEECH ' + current.leech + '% → ' + target.leech + '%',
+      'HASTE ' + current.haste + '% → ' + target.haste + '%',
+      'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%',
+      'ELEMENTS F' + current.elem.fire + '/C' + current.elem.cold + '/L' + current.elem.lightning + ' → F' + target.elem.fire + '/C' + target.elem.cold + '/L' + target.elem.lightning,
+      'SUBSTATS HIT ' + (current.sub.hit || 0) + ' → ' + (target.sub.hit || 0) + ' · DMG ' + (current.sub.dmg || 0) + ' → ' + (target.sub.dmg || 0)
+    ];
+    if (sourceLines.length) lines.push('--- EQUIPPED ITEM BONUS SOURCES ---', ...sourceLines);
+    else lines.push('NO PER-ITEM AFFIX, GEM, RUNE OR TIER BONUSES');
+    if (missing.length) lines.push(('MISSING: ' + missing.join(', ')).slice(0, 58));
+    return { lines, plan, missing, available };
+  }
+  function applySet(set, plan) {
+    let moved = 0; const missing = [];
+    for (const [slot, p] of Object.entries(plan)) {
+      if (p.where === 'worn') continue;
+      if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      if (p.where === 'eq') { const from = Object.keys(G.eq).find(s => G.eq[s] && G.eq[s].uid === p.uid), it = G.eq[from]; delete G.eq[from]; G.bag.push(it); }
+      const list = p.where === 'bank' ? G.bank : G.bag, it = list.find(x => x && x.uid === p.uid);
+      if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
+      const why = equipItem(G, it, list, slot);
+      if (why) missing.push((SLOT_NAME[slot] || slot) + ' (' + why + ')'); else moved++;
+    }
+    SFX.equip(); saveGame();
+    say([set.name + ': ' + moved + ' piece' + (moved === 1 ? '' : 's') + ' equipped.', ...(missing.length ? [('Unavailable/rejected: ' + missing.join(', ')).slice(0, 60)] : [])], setsMenu);
+  }
   function setsMenu() {
-    const l = L(), opts = [...l.sets.map(s => `EQUIP: ${s.name}`), ...(l.sets.length < MAX_SETS ? ['SAVE CURRENT GEAR'] : []), ...(l.sets.length ? ['DELETE A SET'] : []), 'BACK'];
+    const l = L(), opts = [...l.sets.map(s => `EQUIP: ${s.name}`), ...(l.sets.length < MAX_SETS ? ['SAVE CURRENT GEAR'] : []), ...(l.sets.length ? ['OVERWRITE A SET', 'RENAME A SET', 'DELETE A SET'] : []), 'BACK'];
     choose(opts, k => {
       const o = opts[k] || 'BACK'; if (o === 'BACK') return loadoutsMenu();
       if (o === 'SAVE CURRENT GEAR') { const n = l.sets.length + 1; l.sets.push({ name: `SET ${n}`, items: setFromEq(G.eq) }); SFX.confirm(); saveGame(); return say(`Saved SET ${n} (${Object.keys(l.sets[n - 1].items).length} pieces).`, setsMenu); }
+      if (o === 'OVERWRITE A SET') return choose(l.sets.map(s => s.name), j => { if (j >= 0) { l.sets[j].items = setFromEq(G.eq); saveGame(); SFX.confirm(); } setsMenu(); }, 'Overwrite with current gear?');
+      if (o === 'RENAME A SET') return choose(l.sets.map(s => s.name), j => {
+        if (j < 0) return setsMenu();
+        const names = ['DAMAGE', 'TANK', 'HEALER', 'DUNGEON', 'RAID', 'PVP', 'FARM', 'CUSTOM 1', 'CUSTOM 2'];
+        choose(names, n => { if (n >= 0) { l.sets[j].name = names[n]; saveGame(); SFX.confirm(); } setsMenu(); }, `Rename ${l.sets[j].name}`);
+      }, 'Rename which set?');
       if (o === 'DELETE A SET') return choose(l.sets.map(s => s.name), j => { if (j >= 0) { l.sets.splice(j, 1); saveGame(); } setsMenu(); }, 'Delete which set?');
-      if (inBattle()) return say('Not during a battle.');
-      const set = l.sets[k], plan = planSet(set.items, G.eq, G.bag, G.bank); let moved = 0; const missing = [];
-      for (const [slot, p] of Object.entries(plan)) {
-        if (p.where === 'worn') continue;
-        if (!p.where) { missing.push(SLOT_NAME[slot] || slot); continue; }
-        if (p.where === 'eq') { const from = Object.keys(G.eq).find(s => G.eq[s] && G.eq[s].uid === p.uid), it = G.eq[from]; delete G.eq[from]; G.bag.push(it); }
-        const list = p.where === 'bank' ? G.bank : G.bag, it = list.find(x => x && x.uid === p.uid); if (!it) { missing.push(SLOT_NAME[slot] || slot); continue; }
-        const why = equipItem(G, it, list, slot); if (why) missing.push(`${SLOT_NAME[slot] || slot} (${why})`); else moved++;
+      if (k < l.sets.length) {
+        if (inBattle()) return say('Not during a battle.');
+        const set = l.sets[k], preview = previewSet(set);
+        return say(preview.lines, () => choose(['APPLY LOADOUT', 'CANCEL'], action => {
+          if (action !== 0) return setsMenu();
+          applySet(set, preview.plan);
+        }, 'Review comparison before changing gear.'));
       }
-      SFX.equip(); saveGame(); say([`${set.name}: ${moved} piece${moved === 1 ? '' : 's'} equipped.`, ...(missing.length ? [`Missing: ${missing.join(', ')}`.slice(0, 60)] : [])], setsMenu);
     }, `EQUIPMENT SETS ${l.sets.length}/${MAX_SETS}`);
   }
   function barMenu() {

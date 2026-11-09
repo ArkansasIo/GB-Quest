@@ -92,3 +92,7 @@ Server endpoints:
 Friends, invite codes, the nine-realm directory, and the disabled store frame are described in [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md). The store is a UI prototype only; checkout is disabled until a server-verified payment integration exists.
 
 Item ownership is not checked on the server yet. A realm or page you host trusts its players' clients, so a modified client could list or trade items it doesn't own.
+
+## Dedicated authoritative MMORPG service
+
+The separate PostgreSQL + WSS service is now scaffolded for production deployment. It is started with Docker Compose from the repository root using docker-compose.mmorpg.yml. It provides independent account tokens, character records, authoritative movement/combat, zone presence and chat. See [MMORPG_BACKEND.md](MMORPG_BACKEND.md) for its deployment steps and protocol. This service is not automatically public when the itch.io ZIP is uploaded; it must be deployed to a persistent HTTPS/WSS host, and existing legacy realm accounts are not yet migrated into its PostgreSQL account store.

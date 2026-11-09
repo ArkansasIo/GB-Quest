@@ -1,3 +1,7 @@
+// Developer/debug tools are excluded from the normal game build.
+// For isolated local development only, change this constant to true and rebuild.
+const GAME_DEBUG_ENABLED = false;
+if (GAME_DEBUG_ENABLED) {
 'use strict';
 // ================================================================ DEBUG PANEL
 // Open with F9 (or ` + D), or by adding #debug to the page link. A dockable HTML panel beside the
@@ -168,3 +172,5 @@ addEventListener('keydown', e => { if (e.key === 'F9') { e.preventDefault(); DBG
 // god mode rides on the engine tick
 { const t0 = tick; window.tick = tick = function () { DBG.tick(); return t0(); }; }
 if (location.hash === '#debug') setTimeout(() => DBG.show(), 500);
+
+}

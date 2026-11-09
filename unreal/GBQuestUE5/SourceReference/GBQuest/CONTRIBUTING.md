@@ -1,7 +1,7 @@
 # Contributing to Lost Kingdom of Shadowbane Chronicles
 
 1. **Read** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/UML.md](docs/UML.md) first.
-2. **Keep it dependency-free.** The game is plain JavaScript in one global scope, concatenated in `tools/build.py` `ORDER`. Do not add frameworks or bundlers to the runtime.
+2. **Keep the runtime dependency-free.** The game is plain JavaScript in one global scope. `tools/build.cjs` is the canonical ordered bundler; `tools/build.py` is a compatibility wrapper. Do not add frameworks or bundlers to the runtime.
 3. **Keep it deterministic.** Generated content must use `RNG(seedString)`, never `Math.random()`, so every player sees the same world. Effects-only randomness (particles, stereo spread) is fine.
 4. **Keep it original.** Use no names, text, maps, art or audio from other games or books. Rules may model the SRD 5.1 (CC-BY-4.0).
 5. **Respect the screen.** All gameplay UI must fit 160×144 and work with the d-pad plus A and B.

@@ -8,6 +8,7 @@ let CB_HD_RUNTIME = null;
 const CB_HD_PRESENTERS = new WeakMap();
 function battleHDFrame(character, state = 'idle', frame = 0, direction = 'east') {
   if (!character || !character.eq || typeof globalThis === 'undefined') return null;
+  if (globalThis.GBQ_HD64_PACK && globalThis.GBQ_HD64_PACK.available === false) return null;
   const api = globalThis.GBQHDCharacterArt;
   if (!api) return null;
   try {
@@ -62,6 +63,7 @@ class Battle {
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
     this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
     combatHotkeyHandler = index => this.useHotbar(index);
+    window.GBQCombatHotbar = { entries: () => ['menu', 'list', 'realtime'].includes(this.state) && this.actor?.ch === G ? this.hotbarEntries(this.actor).map(entry => { const cooldown = Number(this.rt?.cooldowns?.[entry.id] || 0), gcd = this.combatMode === 'realtime' ? Number(this.rt?.gcd || 0) : 0; return { id: entry.id, name: entry.name, ok: !!entry.ok, sub: entry.sub || '', remaining: Math.max(cooldown, gcd), cooldown, gcd, paused: !!this.rt?.paused }; }) : [], use: index => this.useHotbar(index) };
     for (const u of this.party) { if (u.ch.ai === false && this.rule === 'frail') u.ch.hp = Math.ceil(u.ch.hp / 2); }
     this.setupEffects();
     const intro = this.foes.length === 1 ? `${this.foes[0].boss ? '' : 'A '}${this.foes[0].name} ${this.foes[0].boss ? 'blocks the way!' : 'appears!'}` : `${this.foes.length} foes appear!`;
@@ -1006,6 +1008,7 @@ class Battle {
       const cl = S.battleBg !== 'painted' ? { clean: true } : undefined;
       let s = por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
+      if (!s) return;                         // portrait still loading (the source build streams images in)
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
@@ -1027,8 +1030,9 @@ class Battle {
     this.foes.slice(0, 4).forEach(f => {
       if (f.hp <= 0 && !(this.anim.flash[f.id] && (this.anim.flash[f.id] >> 1) % 2)) return;
       const n = Math.min(4, this.foes.length), base = IMG[f.spr] ? f.spr : 'enemy_goblin';
+      if (!IMG[base]) return;                 // art still loading (the source build streams images in): draw it next frame
       const hh = Math.min(n === 1 ? 52 : 30, Math.round(IMG[base].height * (f.scale || 1) * (n === 1 ? 1 : 0.75)));
-      const s = sprH(base, hh, { flip: true, clean: S.battleBg !== 'painted' }); const [px, py] = this.posOf(f);
+      const s = sprH(base, hh, { flip: true, clean: S.battleBg !== 'painted' }); if (!s) return; const [px, py] = this.posOf(f);
       if (this.anim.flash[f.id] && f.hp > 0 && (this.anim.flash[f.id] >> 1) % 2) return;
       const lx = this.anim.lunge === f.id ? -4 : 0;
       blit(s, px - s.width / 2 + lx, py + 24 - s.height);

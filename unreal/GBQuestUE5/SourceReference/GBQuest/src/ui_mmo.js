@@ -1,19 +1,18 @@
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: BLACKBIRD / 8-BIT MMO / CRIMSON / CLASSIC / SANCTUM / DIABLO IV.
+// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / BLACKBIRD / QUEST WINDOWS (src/ui_quest.js).
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
 //   * top right square minimap with the zone's safety tag under it
-//   * bottom    hotbar of the four combat arts and potions, between a red HP orb and a blue MP orb (MU/Diablo)
 //   * banners and toasts sit in the middle band so nothing covers the frames
 //   * START menu: a right-hand list over the map (15 px rows, triangle cursor), a small hero card and a help line;
 //     every pop-up choice list uses the same roomy rows and cursor
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: '8-BIT MMO', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['aelmoor', 'mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird', 'quest'];
+const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS', aelmoor: 'AELMOOR' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -23,17 +22,27 @@ if (typeof globalThis !== 'undefined') globalThis.GBQUiMmo = { MMO_THEMES, MMO_T
 if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
-  if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'mmo'; try { saveSettings(); } catch (e) {} }
-  // One-time upgrade from the prior default to the newly imported BlackBird skin.
-  if (!S.blackbirdUiDefaulted) { if (!S.uiTheme || S.uiTheme === 'mmo' || S.uiTheme === 'sanctum') S.uiTheme = 'blackbird'; S.blackbirdUiDefaulted = true; try { saveSettings(); } catch (e) {} }
-  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  // the DIABLO IV theme was removed: saves that picked it get the default handheld theme
+  if (S.uiTheme === 'diablo') { S.uiTheme = 'tnl'; try { saveSettings(); } catch (e) {} }
+  if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'tnl'; try { saveSettings(); } catch (e) {} }
+  // One-time migration: use the classic blue-and-cream handheld interface as the default.
+  // Move saved Sanctum gameplay menus to the requested handheld theme while
+  // preserving other deliberately selected themes.
+  if (!S.handheldUiDefaulted || S.uiTheme === 'sanctum') {
+    if (!S.uiTheme || S.uiTheme === 'sanctum' || (S.uiTheme === 'blackbird' && S.blackbirdUiDefaulted)) S.uiTheme = 'tnl';
+    S.handheldUiDefaulted = true;
+    try { saveSettings(); } catch (e) {}
+  }
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird' || S.uiTheme === 'aelmoor';
+  const isHandheld = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
   let blackbirdPanelPattern = null;
   window.nextUiTheme = nextUiTheme; window.uiThemeName = t => MMO_THEME_NAME[t] || 'CLASSIC';
-  // colours per theme: 8-BIT MMO (handheld blue on cream) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
+  // colours per theme: HANDHELD CLASSIC (blue-and-cream handheld palette) and CRIMSON (MU-style: black stone, blood-red frames, gold trim)
   const PALETTE = {
-    mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [216, 48, 40], hpLow: [255, 120, 40], mp: [48, 104, 224], xp: [232, 184, 48], gold: [200, 150, 30], title: [24, 28, 48] },
+    mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [82, 170, 68], hpLow: [216, 72, 48], mp: [48, 104, 224], xp: [72, 142, 204], gold: [200, 150, 30], title: [24, 28, 48] },
+    tnl: { ink: [12, 22, 42], edge: [44, 82, 126], panel: [232, 239, 238], panel2: [196, 216, 222], shade: [112, 142, 158], hp: [58, 166, 112], hpLow: [216, 72, 48], mp: [52, 132, 206], xp: [68, 162, 194], gold: [210, 174, 92], title: [14, 34, 58] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
     blackbird: { ink: [5, 6, 9], edge: [92, 100, 111], panel: [16, 18, 22], panel2: [42, 46, 52], shade: [72, 78, 86], hp: [184, 44, 44], hpLow: [250, 94, 48], mp: [58, 110, 183], xp: [189, 147, 62], gold: [224, 188, 104], title: [12, 14, 17] },
   };
@@ -43,6 +52,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
 
   // handheld panel: rounded double border
   function panel(x, y, w, h, bg) {
+    if (S.uiTheme === 'aelmoor' && typeof aelPanel === 'function') return aelPanel(x, y, w, h);
     const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2), fillc = bg != null && bg !== 0 ? col(bg) : rgb(C.panel, 0);
     if (isBlackbird()) {
       fill(x, y, w, h, ink); fill(x + 1, y + 1, w - 2, h - 2, edge);
@@ -75,7 +85,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   { const f0 = frame; frame = function (x, y, w, h, bg = 0) { if (!hudMmo() || w < 6 || h < 6) return f0(x, y, w, h, bg); panel(x, y, w, h, bg); }; }
 
   function hbar(x, y, w, h, frac, c, k) {
-    fill(x, y, w, h, rgb(C.ink, 3)); fill(x + 1, y + 1, w - 2, h - 2, rgb([40, 44, 60], 0));
+    fill(x, y, w, h, rgb(C.ink, 3)); fill(x + 1, y + 1, w - 2, h - 2, isHandheld() ? rgb([255, 255, 255], 0) : rgb([40, 44, 60], 0));
     const f = Math.round((w - 2) * Math.max(0, Math.min(1, frac)));
     if (f > 0) { fill(x + 1, y + 1, f, h - 2, rgb(c, k)); if (h > 3) fill(x + 1, y + 1, f, 1, 'rgba(255,255,255,0.35)'); }
   }
@@ -127,23 +137,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     if (tag) { const w = tag.length * 6 + 4; fill(cx - (w >> 1), M.y + M.s, w, 8, z && z.town ? rgb([40, 120, 70], 2) : G.pvpEnabled ? 'red' : rgb(C.edge, 2)); textC(tag, cx, M.y + M.s, 0); }
     if (isMu() && field.zone) { const lab = `(${G.x},${G.y})`; fill(M.x - 2, M.y + M.s + 9, M.s + 4, 8, rgb(C.ink, 3)); textC(lab.slice(0, 7), cx, M.y + M.s + 9, 'gold'); } // MU-style coordinates
   }
-  function hotbar() {
-    const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
-    if (isBlackbird()) panel(0, Hd.y + 2, W, H - Hd.y - 2);
-    else { fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2)); }
-    if (isBlackbird() && IMG.bb_tab) ctx.drawImage(IMG.bb_tab, 0, Hd.y + 2, W, 2);
-    const OR = isMu() ? 11 : Hd.orbR;
-    if (isMu()) { fill(0, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); fill(W - 26, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); }
-    orb(13, H - 11, OR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
-    orb(W - 14, H - 11, OR, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, [44, 92, 220]);
-    const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
-    for (let i = 0; i < Hb.slots; i++) {
-      const x = Hb.x + i * Hb.step, y = Hd.y + 6;
-      panel(x, y, 18, 14, 0);
-      if (i < 4) { const a = arts[i]; if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2); } }
-      else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 3, y + 2); textR(String(Math.min(99, n)), x + 17, y + 6, n ? 3 : 2); }
-    }
-  }
+
 
   // ---------------------------------------------------------------- handheld-RPG menus
   // a solid right-pointing cursor triangle
@@ -200,8 +194,13 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
     RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
     ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
-    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS', SoundTest: 'SOUND TEST' };
-  const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; if (WIN_TITLE[n]) return WIN_TITLE[n]; } return null; };
+    HomeInteriorScene: 'HOUSING', GemSocketScene: 'GEM SOCKETS', RuneForgeScene: 'RUNEFORGE', CompareScene: 'COMPARE', StoryLibrary: 'LIBRARY', SecretWorldJournalScene: 'HIDDEN WORLD', EasterEggArchiveScene: 'SECRETS', SoundTest: 'SOUND TEST',
+    ArmoryScene: 'ARMOURY', ArtsScene: 'COMBAT ARTS', ArtGalleryScene: 'ART GALLERY', CompanionScene: 'COMPANIONS', IdentityScene: 'IDENTITY', MarketScene: 'MARKET', TradeScene: 'TRADE', MountScene: 'MOUNTS', AccountScene: 'ACCOUNT', PerkTreeScene: 'PERKS', AdminScene: 'ADMIN', TitleScene: 'TITLES', ExpansionMapsScene: 'EXPANSION MAPS', WaypointMenu: 'WAYPOINTS', SideQuestBoard: 'QUEST BOARD', LevelUpScene: 'LEVEL UP', MultiplayerScene: 'MULTIPLAYER' };
+  const derivedPageTitle = name => {
+    if (!name || !/(Scene|Menu|Board)$/.test(name)) return null;
+    return name.replace(/(Scene|Menu|Board)$/, '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2').toUpperCase().slice(0, 15);
+  };
+  const pageTitle = () => { for (let i = scenes.length - 1; i >= 0; i--) { const n = scenes[i] && scenes[i].constructor && scenes[i].constructor.name; const title = WIN_TITLE[n] || derivedPageTitle(n); if (title) return title; } return null; };
   window.mmoPageTitle = pageTitle;
   if (typeof hdr === 'function') {
     const h0 = hdr;
@@ -230,7 +229,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, closeInk); fill(W - 5 - k, 3 + k, 1, 1, closeInk); }
     };
   }
-  { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); hotbar(); } catch (e) { console.warn('mmo hud', e); } } }; }
+  { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); } catch (e) { console.warn('mmo hud', e); } } }; }
   // toasts in the middle band
   { const t0 = drawToasts; drawToasts = function () {
       if (!hudMmo() || !(scenes[scenes.length - 1] instanceof Field)) return t0.apply(this, arguments);

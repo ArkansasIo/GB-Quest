@@ -17,6 +17,50 @@ function startServer(env) {
 }
 const stop = child => new Promise(r => { child.on("exit", r); child.kill("SIGTERM"); });
 
+test("realm server regions and worlds expose FFXIV regions with WoW realms capped at 1000 players", async () => {
+  const data = tmp(), port = String(20000 + Math.floor(Math.random() * 20000)), base = `http://127.0.0.1:${port}`;
+  const call = async (p) => {
+    const r = await fetch(base + p);
+    return { status: r.status, body: await r.json().catch(() => ({})) };
+  };
+  const server = await startServer({ PORT: port, GBQ_DATA: data });
+  try {
+    const health = await call("/api/health");
+    assert.equal(health.status, 200);
+    assert.equal(health.body.maxPlayersPerWorld, 1000);
+    assert.ok(Array.isArray(health.body.regions) && health.body.regions.length >= 1);
+    assert.ok(Array.isArray(health.body.realms) && health.body.realms.length >= 1);
+
+    // every realm carries region, type, status, maxPlayers 1000, population
+    for (const realm of health.body.realms) {
+      assert.ok(realm.id && realm.name);
+      assert.ok(['hydaelyn','lordeon','aether'].includes(realm.regionId), realm.id);
+      assert.ok(['Roleplay','PvE','PvP','Seasonal'].includes(realm.type), realm.id);
+      assert.ok(['online','offline'].includes(realm.status));
+      assert.equal(realm.maxPlayers, 1000);
+      assert.ok(Number.isInteger(realm.population));
+    }
+
+    // regions endpoint lists regions with world counts
+    const regions = await call("/api/regions");
+    assert.equal(regions.status, 200);
+    assert.equal(regions.body.regions.length, 3);
+    const byId = Object.fromEntries(regions.body.regions.map(r => [r.id, r]));
+    assert.equal(byId.hydaelyn.worlds, 3);
+    assert.equal(byId.lordeon.worlds, 3);
+    assert.equal(byId.aether.worlds, 3);
+
+    // realms endpoint groups worlds under regions with population
+    const realms = await call("/api/realms");
+    assert.equal(realms.status, 200);
+    assert.equal(realms.body.realms.length, 9);
+    const arden = realms.body.realms.find(r => r.id === 'ardenhold');
+    assert.equal(arden.regionId, 'hydaelyn');
+    assert.equal(arden.online, true);
+  } finally { await stop(server); }
+});
+
+// Existing hardening tests continue below:
 test("realm server rejects prototype names, junk ids, oversized presence and bad leaderboard values", async () => {
   const data = tmp(), port = String(20000 + Math.floor(Math.random() * 20000)), base = `http://127.0.0.1:${port}`;
   const call = async (p, { method = "GET", body, token } = {}) => {
@@ -64,6 +108,9 @@ test("realm server rejects prototype names, junk ids, oversized presence and bad
     let last;
     for (let i = 0; i < 11; i++) last = await call("/api/password", { method: "POST", token: fresh, body: { oldPassword: "wrong-pass", newPassword: "newpassword1" } });
     assert.equal(last.status, 429);
+    // The realm batches disk writes on a one-second timer. Windows terminates a
+    // child process directly on kill(), so it cannot run the SIGTERM flush hook.
+    await new Promise(resolve => setTimeout(resolve, 1100));
   } finally { await stop(server); }
 
   const db = JSON.parse(fs.readFileSync(path.join(data, "realm.json"), "utf8"));

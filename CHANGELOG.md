@@ -12,6 +12,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **DIABLO IV UI theme**: removed from SETTINGS > UI THEME (and its CHARACTER-page layout). Saves that had it selected switch to the default handheld theme.
 
 ### Fixed
+- **Unreal source mirror** (`unreal/GBQuestUE5/SourceReference`): it never copied `.cjs` files, so its backend was stale and 6 of its tests failed (`npm run test:unreal-reference`). `create_blueprints.py` now includes `.cjs`, the new `tools/sync_unreal_source_reference.py` refreshes the mirror from git-tracked files without Unreal (229 files updated; a stray realm database with an account hash removed), and tests that inspect images, Java or workflows skip where those files are not mirrored. The mirror suite now passes (480 pass, 17 skipped).
 - **Crashes while images load**: the source build (`npm start`, http://127.0.0.1:8000/) streams its sprites in after the page opens, and battles or the field crashed (`Cannot read properties of undefined (reading 'height')` / `null (reading 'width')`) when a monster, party portrait, boss, NPC or player sprite was not loaded yet. Those draws now wait a frame instead.
 - **Standalone build 404s**: `dist/gbquest.html` looked for the HD character art (`assets_hd64/equipment/...`, `data/visuals/...`) inside `dist/`; it now looks one folder up.
 - SETTINGS showed every value from CHAT SETTINGS down one row off (CHAT SETTINGS and ABOUT had no value entries).

@@ -4,6 +4,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Cinzel:wght@500;700&display=swap">
+
 <style>
 /* Layout: one handheld, centred, portrait like the original DMG; controls sized for thumbs. */
 :root {
@@ -155,7 +156,7 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; bac
 .game-client { position: relative; width: 100%; height: 100%; box-sizing: border-box; padding: 8px 314px 30px 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .game-viewport { width: 100%; height: 100%; display: grid; place-items: center; }
 .bezel-top, .brand, .speaker { display: none; }
-#lcd { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
+#lcd { width: min(100%, calc(100dvh * 160 / 144)); height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 160 / 144; border: 0; border-radius: 0; box-shadow: none; }
 .controls, .foot { display: none; }
 .chat { position: fixed; z-index: 16; top: 48px; right: 10px; bottom: 36px; width: 284px; max-width: calc(34vw - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #39434e; border-radius: 4px; background: linear-gradient(160deg, #171e26ee, #0c1117ee); box-shadow: 0 8px 24px #0007; }
 .chatlog { flex: 1; min-height: 0; height: auto; font: 12px/1.5 Arial, sans-serif; }
@@ -227,7 +228,191 @@ body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a
 .pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
 .game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
 #dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
+
+/* GAME-BOUNDS FIX: keep every gameplay overlay aligned to the 160:144 LCD.
+   The desktop chat is a separate side panel; it must not shrink or offset the HUD. */
+@media (min-width: 901px) and (pointer: fine) {
+  .game-client { display:flex; align-items:center; justify-content:center; }
+  .game-viewport {
+    position:relative;
+    flex:0 1 auto;
+    width:min(100%, calc((100dvh - 104px) * 160 / 144));
+    height:auto;
+    max-height:calc(100dvh - 104px);
+    aspect-ratio:160 / 144;
+    margin:0 auto;
+    overflow:hidden;
+  }
+  .game-viewport #lcd {
+    display:block;
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100%;
+    aspect-ratio:160 / 144;
+    object-fit:contain;
+  }
+  .game-viewport > .gbq-player-hud {
+    position:absolute;
+    inset:0 !important;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+  }
+  body.chat-on .game-viewport > .gbq-player-hud { right:0 !important; }
+  .game-viewport > .chat {
+    position:fixed !important;
+    z-index:30;
+    top:48px !important;
+    right:10px !important;
+    bottom:36px !important;
+    left:auto !important;
+    width:284px !important;
+    max-width:calc(34vw - 16px) !important;
+    max-height:none !important;
+    display:flex;
+  }
+  .game-viewport > .chat .chatlog { flex:1; min-height:0; height:auto; }
+  .game-viewport > #chatShow {
+    position:fixed;
+    z-index:31;
+    right:10px;
+    bottom:12px;
+  }
+  body.full-window-mode .game-client,
+  body.fullscreen-mode .game-client {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 314px 12px 12px;
+  }
+  body.full-window-mode .game-viewport,
+  body.fullscreen-mode .game-viewport {
+    width:min(100%, calc((100dvh - 24px) * 160 / 144));
+    max-height:calc(100dvh - 24px);
+  }
+}
+
+
+/* FINAL INPUT + VIEWPORT REPAIR: consistent sizing, readable fields, no clipped chat. */
+*, *::before, *::after { box-sizing:border-box; }
+input, textarea, select, button { max-width:100%; }
+input:not([type="checkbox"]):not([type="radio"]),
+textarea, select {
+  min-width:0;
+  color:#f5ead2;
+  background:#0b0908;
+  border:1px solid #8a7048;
+  border-radius:3px;
+  padding:9px 10px;
+  font:14px/1.4 Arial,sans-serif;
+  letter-spacing:normal;
+}
+input::placeholder, textarea::placeholder { color:#b6a58a; opacity:1; }
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline:2px solid #e4c17c;
+  outline-offset:2px;
+  border-color:#e4c17c;
+}
+textarea { width:100%; min-height:84px; resize:vertical; overflow:auto; }
+.chatform { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:stretch; gap:7px; width:100%; min-width:0; }
+.chatform input {
+  display:block; width:100%; min-width:0; min-height:40px;
+  padding:9px 10px; font:13px/1.3 Arial,sans-serif;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.chatform input:focus { outline:2px solid #e4c17c; outline-offset:1px; }
+.chatform button { min-width:58px; min-height:40px; padding:0 12px; white-space:nowrap; }
+.chat { min-width:0; min-height:0; }
+.chatlog { min-width:0; min-height:56px; overflow-x:hidden; overflow-y:auto; overflow-wrap:anywhere; }
+.game-viewport { min-width:0; min-height:0; }
+#lcd { display:block; flex:none; object-fit:contain; }
+@media (max-width:900px) {
+  .chat, .game-viewport > .chat {
+    position:fixed !important; z-index:40 !important;
+    inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px !important;
+    width:auto !important; max-width:none !important;
+    max-height:min(44dvh,360px) !important;
+    padding:8px !important; overflow:hidden;
+  }
+  .chatlog { flex:1 1 auto; min-height:64px; }
+  .game-viewport > #chatShow { position:fixed; z-index:41; right:10px; bottom:10px; }
+}
+@media (max-width:480px) {
+  .chat-tabs { gap:2px; }
+  .chat-tabs button { min-width:0; padding:6px 1px; font-size:9px; }
+  .chatform { grid-template-columns:minmax(0,1fr) 58px; }
+  .chatform input { font-size:16px; } /* prevents iOS zoom when typing */
+  .chatform button { padding:0 6px; font-size:10px; }
+}
+@media (max-height:520px) {
+  .chat { max-height:38dvh !important; }
+  .chatlog { min-height:42px; }
+}
+
+/* TITLE SCREEN: hide browser-shell chrome and give the title scene the full viewport.
+   The title artwork and menu remain rendered inside the game's 160:144 canvas. */
+body.title-screen {
+  padding:0 !important;
+  overflow:hidden !important;
+  background:#050608 !important;
+}
+body.title-screen::before { display:none !important; content:none !important; }
+body.title-screen .build-info,
+body.title-screen .keys,
+body.title-screen .game-viewport > .chat,
+body.title-screen .game-viewport > #chatShow { display:none !important; }
+body.title-screen #gbq-player-hud { display:none !important; }
+body.title-screen .game-client {
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:#050608 !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body.title-screen .game-viewport {
+  position:relative !important;
+  flex:0 1 auto !important;
+  width:min(100vw, calc(100dvh * 160 / 144)) !important;
+  height:auto !important;
+  max-height:100dvh !important;
+  aspect-ratio:160 / 144 !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  display:grid !important;
+  place-items:center !important;
+  background:#050608 !important;
+}
+body.title-screen .game-viewport > #lcd {
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  aspect-ratio:160 / 144 !important;
+  object-fit:contain !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+@media (max-width:900px) {
+  body.title-screen .game-client { padding:0 !important; }
+  body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
+}
 </style>
+<link rel="stylesheet" href="theme-citadel.css">
+<link rel="stylesheet" href="client/player-hud.css">
+<link rel="stylesheet" href="client/trade-panel.css">
 
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">

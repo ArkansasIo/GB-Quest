@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { needs, IMAGES } from './support/needs.js';
 
 const read = path => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const exists = path => fs.existsSync(new URL('../' + path, import.meta.url));
 
-test('new HD art collections are indexed and present as PNG assets', () => {
+test('new HD art collections are indexed and present as PNG assets', { skip: needs(IMAGES) }, () => {
   const names = JSON.parse(read('assets/index.json'));
   for (const name of ['gbq_master_catalog', 'gbq_ui_mockup_catalog']) {
     assert.ok(names.includes(name), name + ' must be in the asset catalog');
@@ -54,7 +55,7 @@ test('itch.io package embeds generated HD animation frames, equipment, and visua
   assert.ok(runtime.includes('packedUrl || url'));
 });
 
-test('itch.io workflow generates all six F-rank animation sets before packaging', () => {
+test('itch.io workflow generates all six F-rank animation sets before packaging', { skip: needs('.github/workflows/itch-html5.yml') }, () => {
   const workflow = read('.github/workflows/itch-html5.yml');
   for (const archetype of ['warrior', 'mage', 'ranger', 'rogue', 'cleric', 'summoner']) {
     assert.match(workflow, new RegExp('\\b' + archetype + '\\b'));
@@ -64,7 +65,7 @@ test('itch.io workflow generates all six F-rank animation sets before packaging'
   assert.match(workflow, /npm run build:itch/);
 });
 
-test('asset repair workflow persists generated HD64 character frames and equipment into source assets', () => {
+test('asset repair workflow persists generated HD64 character frames and equipment into source assets', { skip: needs('.github/workflows/repair-game-assets.yml') }, () => {
   const workflow = read('.github/workflows/repair-game-assets.yml');
   assert.match(workflow, /build_animation_manifest\.py/);
   assert.match(workflow, /generate_character_sprite_pack\.py/);

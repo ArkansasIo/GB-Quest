@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "design": "Shadows of the Abyss",
+  "status": "reference-art-direction-integrated; production-sprite-migration-pending",
+  "sourceSheets": [
+    {
+      "id": "character-classes",
+      "file": "01-character-classes.jpg",
+      "source": "user-supplied reference",
+      "targetGroups": [
+        "class-portraits",
+        "character-concept-art"
+      ],
+      "classes": [
+        "blade-knight",
+        "dark-sorceress",
+        "shadow-ranger",
+        "abyssal-templar",
+        "void-assassin",
+        "blood-necromancer"
+      ]
+    },
+    {
+      "id": "master-style",
+      "file": "02-master-style-reference.jpg",
+      "source": "user-supplied reference",
+      "targetGroups": [
+        "materials",
+        "monster-concepts",
+        "ui-frame-style",
+        "rarity-colors"
+      ]
+    },
+    {
+      "id": "weapons-armor",
+      "file": "03-weapons-and-armor-catalog.jpg",
+      "source": "user-supplied reference",
+      "targetGroups": [
+        "weapons",
+        "armor",
+        "accessories",
+        "equipment-icons"
+      ],
+      "rarities": [
+        "normal",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary",
+        "mythic"
+      ]
+    },
+    {
+      "id": "game-ui",
+      "file": "04-game-ui-reference.jpg",
+      "source": "user-supplied reference",
+      "targetGroups": [
+        "character-panel",
+        "inventory",
+        "quest-journal",
+        "skill-tree",
+        "hud",
+        "party-frames",
+        "chat",
+        "tooltips",
+        "menus"
+      ]
+    }
+  ],
+  "migrationRules": {
+    "preserveExistingAssetIds": true,
+    "preserveGameplayAndInputLogic": true,
+    "preserveAtlasCoordinatesAndFrameOrder": true,
+    "preserveTransparencyAndPivotMetadata": true,
+    "uiTextMustRemainLiveText": true,
+    "verifyBrowserAndUnrealBeforeRemovingLegacyAssets": true
+  },
+  "browserTheme": {
+    "stylesheet": "client/theme-shadows.css",
+    "entrypoint": "index.html",
+    "bodyClass": "theme-shadows",
+    "scope": "presentation-only; canvas rendering and gameplay logic unchanged"
+  },
+  "productionTasks": [
+    "Extract or recreate individual character portraits and full-body class art.",
+    "Create isolated transparent weapon, armor, accessory, and rarity-tier icons.",
+    "Create creature and environment art as independent assets.",
+    "Create nine-slice UI frames, button states, skill nodes, HUD icons, and resource bars.",
+    "Generate animation frames and verify pivots, frame timing, and hitboxes.",
+    "Update asset manifests only after each replacement passes browser and Unreal validation."
+  ]
+}

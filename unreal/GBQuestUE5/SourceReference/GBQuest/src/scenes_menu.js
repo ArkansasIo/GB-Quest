@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -37,7 +37,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), HEIRLOOMS: () => new HeirloomScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), 'SECRET ARCHIVE': () => new EasterEggArchiveScene(), 'HIDDEN WORLD': () => new SecretWorldJournalScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
@@ -138,11 +138,12 @@ class BagScene extends ListScene {
     const e = L[this.i];
     if (this.tab === 0) {
       if (this.mode === 'sell') { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); return this.flash(`Sold for ${e.value} G.`); }
-      choose(['EQUIP', 'SELL ' + e.value + 'G', 'LIST ON AUCTION', 'DROP', 'BACK'], k => {
+      choose(['EQUIP', 'COMPARE', 'SELL ' + e.value + 'G', 'LIST ON AUCTION', 'DROP', 'BACK'], k => {
         if (k === 0) { const why = equipItem(G, e, G.bag); SFX[why ? 'error' : 'equip'](); this.flash(why || `Equipped ${e.name}.`); }
-        if (k === 1) { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
-        if (k === 2) { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err); } else { SFX.auction(); this.flash('Listed at 4x value.'); } }).catch(er => this.flash(String(er.message || er))); }
-        if (k === 3) { G.bag.splice(G.bag.indexOf(e), 1); SFX.back(); }
+        if (k === 1) { showGearComparison(e); }
+        if (k === 2) { G.bag.splice(G.bag.indexOf(e), 1); G.gold += e.value; SFX.sell(); }
+        if (k === 3) { Market.post({ item: e }, Math.max(1, e.value * 4)).then(err => { if (err) { SFX.error(); this.flash(err); } else { SFX.auction(); this.flash('Listed at 4x value.'); } }).catch(er => this.flash(String(er.message || er))); }
+        if (k === 4) { G.bag.splice(G.bag.indexOf(e), 1); SFX.back(); }
       }, e.name);
     } else {
       const it = ITEMS[e];
@@ -173,11 +174,73 @@ class BagScene extends ListScene {
     frame(2, 110, 156, 32);
     const e = L[this.i];
     let d = this.msg || '';
-    if (!d && e) d = this.tab === 0 ? itemDesc(e) : ITEMS[e].desc;
+    if (!d && e) d = this.tab === 0 ? itemInspectText(e) : ITEMS[e].desc;
     text(wrap(d, 24).slice(0, 3).join('\n'), 6, 113);
     if (this.tab === 0) textR(`${G.bag.length}/${BAG_MAX}`, 156, 14 + 0, 3);
     text('SEL:TAB', 120, 102, 1);
   }
+}
+function legendarySetPreviewLines(item) {
+  if (typeof legendarySetPreview !== 'function') return [];
+  return legendarySetPreview(G, item).flatMap(set => set.thresholds.map(t => {
+    const state = t.newlyUnlocked ? 'NEWLY UNLOCKED' : t.active ? 'ACTIVE' : 'LOCKED';
+    const stats = t.stats.map(([key, value]) => key.toUpperCase() + ' +' + value).join(', ');
+    return set.name + ' ' + t.pieces + 'PC ' + state + ': ' + stats;
+  }));
+}
+function showGearComparison(it) {
+  const slot = itemSlot(it), current = derive(G), eq = { ...G.eq, [slot]: it };
+  const target = derive({ ...G, eq });
+  const fmt = (a, b) => { const n = Math.round((b - a) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+  const rows = [
+    (SLOT_NAME[slot] || slot).toUpperCase() + ': ' + (it.name || it.base || 'ITEM'),
+    'AC ' + current.ac + ' → ' + target.ac + ' (' + fmt(current.ac, target.ac) + ')',
+    'ATK ' + current.weapon.hit + ' → ' + target.weapon.hit + ' (' + fmt(current.weapon.hit, target.weapon.hit) + ')',
+    'DMG ' + current.weapon.dice + '+' + current.weapon.dmg + ' → ' + target.weapon.dice + '+' + target.weapon.dmg,
+    'HP ' + current.hpMax + ' → ' + target.hpMax + ' (' + fmt(current.hpMax, target.hpMax) + ')',
+    'CRIT ' + current.crit + '% → ' + target.crit + '%',
+    'DODGE ' + current.dodge + '% → ' + target.dodge + '%',
+    'BLOCK ' + current.block + '% → ' + target.block + '%',
+    'LEECH ' + current.leech + '% → ' + target.leech + '%',
+    'HASTE ' + current.haste + '% → ' + target.haste + '%',
+    'RESIST ' + current.resistAll + '% → ' + target.resistAll + '%'
+  ];
+  const mods = [];
+  for (const [k, v] of it.affixes || []) mods.push('AFFIX ' + k.toUpperCase() + ' +' + v);
+  if (typeof gemAffixes === 'function') for (const [k, v] of Object.entries(gemAffixes(it))) mods.push('GEM ' + k.toUpperCase() + ' +' + v);
+  if (typeof runeAffixes === 'function') for (const [k, v] of Object.entries(runeAffixes(it))) mods.push('RUNE ' + k.toUpperCase() + ' +' + v);
+  if (typeof tierImplicit === 'function') for (const [k, v] of tierImplicit(it)) mods.push('TIER ' + k.toUpperCase() + ' +' + v);
+  rows.push(...(mods.length ? mods : ['NO ITEM MODIFIERS']));
+  rows.push(...legendarySetPreviewLines(it));
+  say(rows, () => {});
+}
+
+function itemInspectText(it) {
+  const slot = itemSlot(it), equipped = G.eq[slot];
+  let comparison = 'EMPTY SLOT';
+  if (equipped) {
+    const delta = Math.round((itemScore(G, it) - itemScore(G, equipped)) * 10) / 10;
+    comparison = delta > 0 ? `UPGRADE +${delta}` : delta < 0 ? `DOWNGRADE ${delta}` : 'SIDEGRADE';
+  }
+  const slotLabel = SLOT_NAME[slot] || slot.toUpperCase();
+  const setId = it.setId || it.set || it.template?.setId || it.template?.set;
+  const setPieces = setId ? Object.values(G.eq).filter(item => item && (item.setId || item.set || item.template?.setId || item.template?.set) === setId).length : 0;
+  const maxDur = Number(it.maxDur ?? it.maxDurability), dur = Number(it.dur ?? it.durability);
+  const durability = Number.isFinite(maxDur) && maxDur > 0 && Number.isFinite(dur)
+    ? `DUR ${Math.max(0, Math.min(100, Math.round(dur / maxDur * 100)))}%` : 'DUR N/A';
+  const gemSlots = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(it) : 0;
+  const runeSlots = typeof runeSocketCapacity === 'function' ? runeSocketCapacity(it) : 0;
+  const gems = Array.isArray(it.sockets) ? it.sockets.filter(Boolean).length : 0;
+  const runes = Array.isArray(it.runeSockets) ? it.runeSockets.filter(Boolean).length : 0;
+  const details = [
+    setId ? `SET ${String(setId).replace(/_/g, ' ')} · ${setPieces}PC EQUIPPED` : 'NO SET',
+    durability,
+    `GEMS ${gems}/${gemSlots} · RUNES ${runes}/${runeSlots}`,
+    it.attune ? 'ATTUNEMENT REQUIRED' : 'NO ATTUNEMENT',
+    it.aclass ? `ARMOR CLASS ${String(it.aclass).toUpperCase()}` : ''
+  ].filter(Boolean).join(' · ');
+  const setProgress = legendarySetPreviewLines(it).join('. ');
+  return `IL${it.ilvl || 1} ${slotLabel} · ${comparison}. ${details}. ${setProgress} ${itemDesc(it)}`;
 }
 function itemDesc(it) {
   let s = `${RARITY[it.rarity].name} IL${it.ilvl}. `;
@@ -211,15 +274,26 @@ class EquipScene extends ListScene {
     const D = derive(G);
     blit(heroPortrait(G) ? sprFit(heroPortrait(G), 48) : sprH(`c_${G.cls}_0`, 46), 4, 18);
     text(`AC ${D.ac}`, 6, 70); text(`ATK ${D.weapon.hit >= 0 ? '+' : ''}${D.weapon.hit}`, 6, 80); text(`DMG ${D.weapon.dice}+${D.weapon.dmg}`, 6, 90); text(`x${D.attacks}`, 6, 100, 2);
-    const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 112, 2);
+    const att = SLOTS.filter(s => G.eq[s] && G.eq[s].attune).length; text(`ATTUNE ${att}/3`, 6, 108, 2);
+    const selected = G.eq[SLOTS[this.i]];
+    const setId = selected && (selected.setId || selected.set || selected.template?.setId || selected.template?.set);
+    const setPieces = setId ? Object.values(G.eq).filter(item => item && (item.setId || item.set || item.template?.setId || item.template?.set) === setId).length : 0;
+    const setLabel = setId ? `SET ${String(setId).replace(/_/g, ' ').slice(0, 10)} ${setPieces}PC` : 'NO SET BONUS';
+    text(setLabel, 6, 118, 1);
     SLOTS.slice(this.top, this.top + this.rows).forEach((s, j) => {
       const i = this.top + j, y = 29 + j * 9, it = G.eq[s];
       if (i === this.i) fill(52, y - 1, 106, 8, 1);
       blit(sprFit(it ? itemIcon(it) : SLOT_ICON[s], 7), 54, y);
       text(SLOT_NAME[s].slice(0, 8), 64, y, 2); text(it ? it.name.slice(0, 11) : '-', 112, y, it ? rarityCol(it.rarity) : 1);
     });
-    frame(2, 114, 156, 28);
-    const it = G.eq[SLOTS[this.i]]; text(wrap(it ? itemDesc(it) : 'Empty slot. A: equip from bag.', 24).slice(0, 2).join('\n'), 6, 118);
+    frame(2, 124, 156, 18);
+    const it = G.eq[SLOTS[this.i]];
+    const maxDur = Number(it?.maxDur ?? it?.maxDurability), dur = Number(it?.dur ?? it?.durability);
+    const durability = it && Number.isFinite(dur) && Number.isFinite(maxDur) && maxDur > 0
+      ? `DUR ${Math.max(0, Math.min(100, Math.round(dur / maxDur * 100)))}%`
+      : 'DURABILITY N/A';
+    text(`${durability}  ${it?.attune ? 'ATTUNED' : ''}`, 6, 126, 2);
+    text(wrap(it ? itemDesc(it) : 'Empty slot. A: equip from bag.', 24)[0] || '', 6, 135);
   }
 }
 
@@ -227,14 +301,14 @@ class EquipScene extends ListScene {
 class CharSheet {
   constructor() { this.opaque = true; this.page = 0; this.scroll = 0; }
   update() {
-    if (nav('left')) { this.page = (this.page + 4) % 5; this.scroll = 0; SFX.page(); }
-    if (nav('right')) { this.page = (this.page + 1) % 5; this.scroll = 0; SFX.page(); }
+    if (nav('left')) { this.page = (this.page + 5) % 6; this.scroll = 0; SFX.page(); }
+    if (nav('right')) { this.page = (this.page + 1) % 6; this.scroll = 0; SFX.page(); }
     if (nav('down')) this.scroll++; if (nav('up')) this.scroll = Math.max(0, this.scroll - 1);
     if (P('b') || P('a')) { SFX.back(); removeScene(this); }
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    const D = derive(G), pages = ['OVERVIEW', 'ATTRIBUTES', 'SAVES/SKILLS', 'SUBSTATS', 'FEATURES'];
+    const D = derive(G), pages = ['OVERVIEW', 'ATTRIBUTES', 'SAVES/SKILLS', 'SUBSTATS', 'FEATURES', 'COMBAT'];
     textC(`< ${pages[this.page]} >`, 80, 13, 2); fill(2, 22, 156, 1, 3);
     const p = this.page;
     if (p === 0) {
@@ -252,7 +326,7 @@ class CharSheet {
     } else if (p === 3) {
       const rows = [['CRIT', D.crit + '%'], ['CRIT DMG', D.critdmg + '%'], ['DODGE', D.dodge + '%'], ['BLOCK', D.block + '%'], ['LIFESTEAL', D.leech + '%'], ['HASTE', D.haste + '%'], ['DAMAGE', '+' + D.dmgPct + '%'], ['HEALING', '+' + D.healPct + '%'], ['RESIST ALL', D.resistAll + '%'], ['THORNS', D.thorns], ['MAGIC FIND', D.mf + '%'], ['GOLD FIND', D.gf + '%'], ['XP BONUS', D.xpPct + '%']].concat(Object.entries(D.elem).map(([k, v]) => [k.toUpperCase(), '+' + v + '%']));
       rows.slice(this.scroll % rows.length).concat(rows).slice(0, 12).forEach(([k, v], i) => { text(k, 6, 26 + i * 9, 2); textR(String(v), 150, 26 + i * 9); });
-    } else {
+    } else if (p === 4) {
       const feats = CLASSES[G.cls].features.filter(([l]) => l <= D.CL).map(([l, f]) => `L${l} ${FEATURE_NAME[f]}`);
       if (G.sub) feats.push('SUB: ' + CLASSES[G.cls].subs.find(s => s.id === G.sub).desc);
       G.feats.forEach(f => feats.push('FEAT: ' + FEATS[f].name));
@@ -260,6 +334,30 @@ class CharSheet {
       G.boons.forEach(b => feats.push('BOON: ' + MYTHIC_BOONS.find(x => x.id === b).name));
       if (D.res.size) feats.push('RESIST: ' + [...D.res].join(',').toUpperCase());
       feats.slice(this.scroll % Math.max(1, feats.length)).slice(0, 12).forEach((s, i) => text(s.slice(0, 25), 4, 26 + i * 9));
+    } else {
+      const weapon = D.weapon || {};
+      const rows = [
+        ['WEAPON', weapon.name || 'FISTS'],
+        ['DAMAGE DICE', weapon.dice || '1d1'],
+        ['DAMAGE BONUS', (Number(weapon.dmg) > 0 ? '+' : '') + (weapon.dmg || 0)],
+        ['ATTACK HIT', (Number(weapon.hit) > 0 ? '+' : '') + (weapon.hit || 0)],
+        ['ATTACKS / TURN', D.attacks || 1],
+        ['ARMOR CLASS', D.ac],
+        ['INITIATIVE', (D.init >= 0 ? '+' : '') + D.init],
+        ['CRITICAL RANGE', `${D.critRange}-20`],
+        ['CRITICAL CHANCE', `${D.crit}%`],
+        ['CRITICAL DAMAGE', `${D.critdmg}%`],
+        ['DODGE', `${D.dodge}%`],
+        ['BLOCK', `${D.block}%`],
+        ['LIFESTEAL', `${D.leech}%`],
+        ['HASTE', `${D.haste}%`]
+      ];
+      rows.slice(this.scroll % rows.length).concat(rows).slice(0, 12).forEach(([key, value], i) => {
+        const y = 26 + i * 9;
+        text(String(key).slice(0, 16), 5, y, 2);
+        textR(String(value).slice(0, 12), 154, y, 3);
+      });
+      text('UP / DOWN: MORE STATS', 5, 137, 'gold');
     }
   }
 }
@@ -280,15 +378,13 @@ class CharacterMenu {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    const diablo = S.uiTheme === 'diablo';
-    if (diablo) { fill(1, 10, 158, 133, 0); frame(1, 10, 158, 133); fill(2, 11, 156, 10, 1); textC('CHARACTER', 80, 12, 'gold'); }
     this.tabs().forEach(([name, label], index) => {
       const x = 2 + index * 52, active = index === this.tab;
-      fill(x, 23, 50, 10, active ? (diablo ? 'gold' : 3) : 1); textC(label, x + 25, 24, active ? 0 : 3);
+      fill(x, 23, 50, 10, active ? 3 : 1); textC(label, x + 25, 24, active ? 0 : 3);
     });
     textC(this.tab === 0 ? 'STATS - A: FULL SHEET' : this.tab === 1 ? 'BAG - A: OPEN BAGS' : 'GEAR - A: EQUIPMENT', 80, 35, 'gold');
     const D = derive(G), portrait = heroPortrait(G);
-    fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
+    fill(2, 46, 52, 82, 1); fill(57, 46, 101, 82, 1);
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
     text(G.name.slice(0, 8), 5, 93, 'gold');
     text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
@@ -315,7 +411,7 @@ class CharacterMenu {
       text(k, 62, 50 + i * 12, 2); textR(String(v).slice(0, 8), 154, 50 + i * 12, 3);
     });
     }
-    fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
+    fill(2, 135, 156, 8, 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }
 
@@ -380,8 +476,10 @@ class Spellbook extends ListScene {
         const i = this.top + j, y = 35 + j * 10;
         const isKnown = D.spell && D.spell.known && D.spell.known.some(k => k.id === s.id);
         if (i === this.i) fill(2, y - 1, 152, 10, 1);
-        text(s.lvl ? `L${s.lvl}` : 'C', 4, y, isKnown ? 'gold' : 2);
-        text((isKnown ? '*' : ' ') + s.name.slice(0, 15), 14, y, isKnown ? 3 : 1);
+        const uiIcon = S.art === 'packs' && globalThis.GBQAssetPack && globalThis.GBQAssetPack.apUiIconForSpell(s);
+        if (uiIcon && IMG[uiIcon]) blit(spr(uiIcon, 8, 8), 4, y + 1);
+        text(s.lvl ? `L${s.lvl}` : 'C', 14, y, isKnown ? 'gold' : 2);
+        text((isKnown ? '*' : ' ') + s.name.slice(0, 13), 24, y, isKnown ? 3 : 1);
         textR(SCHOOLS[s.school].name.slice(0, 6), 154, y, 2);
       });
       this.scrollbar(156, 35, 58);
@@ -573,12 +671,14 @@ class QuestLog extends ListScene {
 class CraftScene extends ListScene {
   constructor() { super(8); this.pf = 0; }
   items() { return typeof craftList === 'function' ? craftList(this.pf) : RECIPES; }
-  update() { if (P('select')) { SFX.page(); push(new BlueprintScene(this.pf)); return; } if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const r = craft(this.items()[this.i]); SFX[/^(Made|Forged)/.test(r) ? 'craft' : 'error'](); this.msg = r; } }
+  update() { if (P('select')) { SFX.page(); push(new BlueprintScene(this.pf)); return; } if (typeof CRAFT_PROFS !== 'undefined' && (P('left') || P('right'))) { this.pf = (this.pf + (P('left') ? CRAFT_PROFS.length - 1 : 1)) % CRAFT_PROFS.length; this.i = this.top = 0; SFX.page(); return; } this.navList(); if (P('b')) { SFX.back(); removeScene(this); return; } if (P('a')) { const recipe = this.items()[this.i]; if (!recipe) return; const reduction = Math.floor(profTalentRank(recipe.prof, 'efficiency') / 24); const needs = Object.entries(recipe.needs).map(([key, count]) => ITEMS[key].name + ' ' + Math.max(1, count - reduction)).join(', '); if (!G.blueprints.includes(recipe.id)) return say('Blueprint required before crafting.'); if (G.prof[recipe.prof] < recipe.skill) return say('Profession skill too low.'); if (!Object.keys(recipe.needs).every(key => (G.inv[key] || 0) >= Math.max(1, recipe.needs[key] - reduction))) return say(['MISSING MATERIALS', needs]); say(['CRAFT ' + recipe.name + '?', 'INGREDIENTS: ' + needs, 'Output: ' + ITEMS[recipe.makes].name], () => choose(['CRAFT ITEM', 'CANCEL'], confirm => { if (confirm !== 0) return; const result = craft(recipe); SFX[/^(Made|Forged)/.test(result) ? 'craft' : 'error'](); this.msg = result; }, 'Confirm crafting.')); } }
   draw() {
     fill(0, 0, W, H, 0); hdr();
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 21, 158, 122, '#090b0e'); fill(2, 22, 156, 1, '#8c744b'); fill(2, 22, 1, 120, '#6f5b3d'); fill(157, 22, 1, 120, '#292d32'); fill(3, 24, 154, 80, '#171a1f'); fill(3, 108, 154, 33, '#101317'); fill(3, 108, 154, 1, '#b09258'); }
     { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; text(`<${k === 'ALL' ? 'ALL' : PROFS[k].slice(0, 9)} ${k === 'ALL' ? '' : G.prof[k]}> SEL:BLUEPRINT`, 2, 14, 2); }
-    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 16), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
-    const r = this.items()[this.i]; if (!r) return; frame(2, 108, 156, 34);
+    this.items().slice(this.top, this.top + this.rows).forEach((r, j) => { const i = this.top + j, y = 25 + j * 10, reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24), known = G.blueprints.includes(r.id), ok = known && G.prof[r.prof] >= r.skill && Object.keys(r.needs).every(k => (G.inv[k] || 0) >= Math.max(1, r.needs[k] - reduction)); if (i === this.i) fill(2, y - 1, 152, 10, blackbird ? '#51432f' : 1); blit(sprFit(ITEMS[r.makes].icon, 9), 4, y); text((known ? r.name : `? ${r.name}`).slice(0, 16), 16, y, ok ? 3 : known ? 1 : 2); textR(`${PROFS[r.prof].slice(0, 4)}${r.skill}`, 154, y, 2); });
+    const r = this.items()[this.i]; if (!r) return; if (!blackbird) frame(2, 108, 156, 34); else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); }
     const reduction = Math.floor(profTalentRank(r.prof, 'efficiency') / 24);
     text(G.blueprints.includes(r.id) ? Object.entries(r.needs).map(([k, n]) => `${ITEMS[k].name.slice(0, 10)} ${G.inv[k] || 0}/${Math.max(1, n - reduction)}`).join('\n') : `BLUEPRINT UNKNOWN  COST ${recipeBlueprintCost(r)}G`, 6, 111);
     if (this.msg) textR(this.msg.slice(0, 14), 154, 131, 'gold');
@@ -597,16 +697,19 @@ class BlueprintScene extends ListScene {
     SFX[result.startsWith('Learned') ? 'craft' : 'error'](); this.msg = result;
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; textC(`< ${k === 'ALL' ? 'ALL BLUEPRINTS' : PROFS[k]} >`, 80, 14, 'gold'); }
+    fill(0, 0, W, H, 0); hdr();
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 21, 158, 122, '#090b0e'); fill(2, 22, 156, 1, '#8c744b'); fill(2, 22, 1, 120, '#6f5b3d'); fill(157, 22, 1, 120, '#292d32'); fill(3, 24, 154, 80, '#171a1f'); fill(3, 108, 154, 33, '#101317'); fill(3, 108, 154, 1, '#b09258'); }
+    { const k = typeof CRAFT_PROFS !== 'undefined' ? CRAFT_PROFS[this.pf] : 'ALL'; textC(`< ${k === 'ALL' ? 'ALL BLUEPRINTS' : PROFS[k]} >`, 80, 14, 'gold'); }
     this.items().slice(this.top, this.top + this.rows).forEach((recipe, row) => {
       const index = this.top + row, y = 25 + row * 10, learned = G.blueprints.includes(recipe.id);
-      if (index === this.i) fill(2, y - 1, 152, 10, 1);
+      if (index === this.i) fill(2, y - 1, 152, 10, blackbird ? '#51432f' : 1);
       blit(sprFit(ITEMS[recipe.makes].icon, 9), 4, y);
       text((learned ? `KNOWN ${recipe.name}` : recipe.name).slice(0, 17), 16, y, learned ? 3 : 2);
       textR(`${recipe.skill}/${PROFS[recipe.prof].slice(0, 3)}`, 154, y, 2);
     });
     const recipe = this.items()[this.i]; if (!recipe) return; const cost = recipeBlueprintCost(recipe);
-    frame(2, 108, 156, 34);
+    if (!blackbird) frame(2, 108, 156, 34); else { fill(4, 109, 152, 32, '#171a1f'); fill(4, 109, 152, 1, '#343941'); }
     text(`${PROFS[recipe.prof]} ${G.prof[recipe.prof]}/${recipe.skill}`, 6, 111, 2);
     text(G.blueprints.includes(recipe.id) ? 'ALREADY LEARNED' : `LEARN BLUEPRINT ${cost}G`, 6, 122, 'gold');
     if (this.msg) text(this.msg.slice(0, 25), 6, 132, 2);
@@ -929,12 +1032,19 @@ class AuctionHouse extends ListScene {
     if (!P('a')) return;
     const e = this.list[this.i]; if (!e) return;
     if (G.gold < e.price) { SFX.error(); return say('Not enough gold.'); }
-    G.gold -= e.price; addGear(e.it); this.list.splice(this.i, 1); SFX.buy();
+    say(['PURCHASE ' + e.it.name.slice(0, 18) + '?', 'PRICE ' + fmt(e.price) + ' G', 'GOLD AFTER PURCHASE ' + fmt(G.gold - e.price) + ' G'], () => choose(['BUY ITEM', 'CANCEL'], confirm => {
+      if (confirm !== 0 || !this.list.includes(e)) return;
+      if (G.gold < e.price) return say('Your gold changed. Purchase cancelled.');
+      G.gold -= e.price; addGear(e.it); this.list.splice(this.list.indexOf(e), 1); SFX.buy();
+    }, 'Confirm auction purchase.'));
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr(); text('AUCTION HOUSE', 4, 14, 'gold'); textR(`MY LISTINGS ${G.ah.length}`, 156, 14, 2);
-    this.list.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 25 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); blit(sprFit(itemIcon(e.it), 9), 4, y); text(e.it.name.slice(0, 14), 16, y, rarityCol(e.it.rarity)); textR(fmt(e.price), 154, y, 2); });
-    const e = this.list[this.i]; frame(2, 104, 156, 38);
+    fill(0, 0, W, H, 0); hdr();
+    const blackbird = S.uiTheme === 'blackbird';
+    if (blackbird) { fill(1, 10, 158, 134, '#090b0e'); fill(2, 11, 156, 1, '#8c744b'); fill(2, 11, 1, 132, '#6f5b3d'); fill(157, 11, 1, 132, '#292d32'); fill(3, 23, 154, 78, '#171a1f'); fill(3, 104, 154, 38, '#101317'); fill(3, 104, 154, 1, '#b09258'); }
+    text('AUCTION HOUSE', 4, 14, 'gold'); textR(`MY LISTINGS ${G.ah.length}`, 156, 14, 2);
+    this.list.slice(this.top, this.top + this.rows).forEach((e, j) => { const i = this.top + j, y = 25 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, blackbird ? '#51432f' : 1); blit(sprFit(itemIcon(e.it), 9), 4, y); text(e.it.name.slice(0, 14), 16, y, rarityCol(e.it.rarity)); textR(fmt(e.price), 154, y, 2); });
+    const e = this.list[this.i]; if (!blackbird) frame(2, 104, 156, 38); else { fill(4, 105, 152, 36, '#171a1f'); fill(4, 105, 152, 1, '#343941'); }
     if (e) { text(`SELLER ${e.seller}`, 6, 107, 2); text(wrap(itemDesc(e.it), 24).slice(0, 2).join('\n'), 6, 117); }
     text('SEL: sell from bag', 6, 136, 1);
   }
@@ -1040,10 +1150,16 @@ class HomeInteriorScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'ADMIN CONTROL', 'DEVELOPER MODE', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'DEBUG PANEL', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
+  items() { return ['GRAPHICS', 'CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
+  values() { // one value per items() entry (CHAT SETTINGS and ABOUT open sub-screens, shown as '>')
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS', aelmoor: 'AELMOOR' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    v.splice(1, 0, '>'); v.splice(this.items().indexOf('ABOUT'), 0, '>');
+    return v;
+  }
   update() {
     this.navList();
     if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
+    if (this.items()[this.i] === 'GRAPHICS' && P('a')) { push(new GraphicsScene()); SFX.confirm(); return; }
     if (this.items()[this.i] === 'KEY BINDINGS' && P('a')) { push(new KeybindScene()); SFX.confirm(); return; }
     if (this.items()[this.i] === 'CHAT SETTINGS' && P('a') && typeof ChatSettingsScene === 'function') { push(new ChatSettingsScene()); SFX.confirm(); return; }
     const d = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0; if (!d) return;
@@ -1052,19 +1168,18 @@ class SettingsScene extends ListScene {
       const modes = ['windowed', 'full-window', 'borderless', 'fullscreen'], k = modes.indexOf(S.displayMode);
       applyDisplayMode(modes[(k + (d > 0 ? 1 : modes.length - 1)) % modes.length]); SFX.toggle(); return;
     }
-    if (o === 'ADMIN CONTROL') { if (typeof openAdmin === 'function') openAdmin(); return; }
-    if (o === 'DEVELOPER MODE') { S.devMode = !S.devMode; }
     if (o === 'HOVER TOOLTIPS') S.tooltipHover = S.tooltipHover !== false ? false : true;
     if (o === 'RIGHT-CLICK TOOLTIPS') S.tooltipRightClick = S.tooltipRightClick !== false ? false : true;
     if (o === 'BATTLE BG') { S.battleBg = typeof nextBattleBg === 'function' ? nextBattleBg(S.battleBg || 'clean') : S.battleBg === 'painted' ? 'clean' : 'painted'; }
-    if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum', 'diablo']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
+    if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
     if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
-    if (o === 'HD RESOLUTION') { const options = ['native', '4k', '8k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
+    if (o === 'HD RESOLUTION') { const options = ['native', '2k', '4k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
     if (o === 'FRAME RATE') { const options = [12, 60, 240], k = options.indexOf(Number(S.fps)); S.fps = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
     if (o === 'AUDIO') { S.audio = S.audio === 'hd64' ? 'chip' : 'hd64'; const c = Music.cur; Music.cur = null; Music.step = 0; if (c) Music.play(c); }
     if (o === 'VIDEO') { if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; } else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; } UI = PALS[S.palette]; clearCaches(); }
-    if (o === 'ART') { S.art = ({ classic: 'nes', nes: 'packs', packs: 'classic' })[S.art] || 'nes'; if (typeof applyPackArt === 'function') applyPackArt(); applyArt(); clearCaches(); }
+    if (o === 'ART') { S.art = (typeof nextArtMode === 'function' ? nextArtMode : m => ({ classic: 'nes', nes: 'packs', packs: 'retro', retro: 'aelmoor', aelmoor: 'classic' })[m] || 'nes')(S.art); if (typeof applyPackArt === 'function') applyPackArt(); applyArt(); if (typeof window.applyAssetPackArt === 'function') window.applyAssetPackArt(); clearCaches(); }
+    if (o === 'CITADEL ART') { S.citadelArt = S.citadelArt === false; clearCaches(); }
     if (o === 'TILES') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
     if (o === 'SFX VOLUME') S.vol = clamp(S.vol + d);
     if (o === 'MUSIC VOLUME') S.music = clamp(S.music + d);
@@ -1077,16 +1192,101 @@ class SettingsScene extends ListScene {
     if (o === 'SWAP A/B') S.swap = !S.swap;
     if (o === 'DIFFICULTY' && G) { difficultyMenu(); return; }
     if (o === 'SOUND TEST' && P('a')) { push(new SoundTest()); return; }
-    if (o === 'DEBUG PANEL' && P('a')) { window.DBG && DBG.toggle(); return; }
     if (o === 'ABOUT' && P('a')) { say([`${BUILD.game}: ${BUILD.subtitle}`, `Version ${BUILD.version} build ${BUILD.build}`, `A game by ${BUILD.studio}`, 'EXPANSIONS:', ...BUILD.expansions, `${ZONES.length} zones, ${BESTIARY.length} creatures, ${BOSSES.length} bosses, ${SPELLS.length} spells, ${SFX_NAMES.length} sound effects, ${Object.keys(TRACKS).length} music tracks.`]); return; }
     saveSettings(); SFX.toggle();
   }
   draw() {
-    fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
-    if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
-    textC('SETTINGS', 80, 13, 'gold');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), typeof adminAllowed === 'function' && adminAllowed() ? 'OPEN' : 'LOCKED', S.devMode ? 'ON' : typeof accountDevMode === 'function' && accountDevMode() ? 'ACCOUNT' : 'OFF', NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', 'F9', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
-    this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11)); this.items().slice(this.top, this.top + 11).forEach((s, j) => { const i = this.top + j, y = 24 + j * 10; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(s, 6, y); typeof v[i] === 'number' ? segBar(108, y + 1, v[i], 6) : textR(String(v[i]), 154, y, 2); });
+    // Aelmoor's title-page visual language: ink-violet panels, gold rules,
+    // lantern accents and a readable 11-row settings viewport.
+    drawMenuBackdrop();
+    drawOrnatePanel(2, 7, 156, 134, 'OPTIONS');
+    textC('REALM SETTINGS', 80, 12, '#ddd3e6');
+    fill(7, 22, 146, 2, '#9a672e');
+    const v = this.values();
+    this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
+    this.items().slice(this.top, this.top + 11).forEach((label, j) => {
+      const index = this.top + j, y = 25 + j * 9;
+      if (index === this.i) {
+        fill(8, y - 2, 144, 9, 'rgba(157,91,33,.52)');
+        ctx.save(); ctx.strokeStyle = '#e8b95a'; ctx.lineWidth = 1; ctx.strokeRect(8.5, y - 1.5, 143, 8); ctx.restore();
+      }
+      text(label, 13, y, index === this.i ? '#ffe3a0' : '#ddd3e6');
+      if (typeof v[index] === 'number') segBar(111, y, v[index], 6);
+      else textR(String(v[index]), 147, y, index === this.i ? '#ffe3a0' : '#cbb9ed');
+    });
+    fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
+    text('UP/DOWN MOVE   LEFT/RIGHT CHANGE', 9, 127, '#ddd3e6');
+    text('A SELECT   B SAVE & BACK', 9, 135, '#ffe3a0');
+  }
+}
+class GraphicsScene extends ListScene {
+  constructor() { super(10); }
+  items() { return ['DISPLAY MODE', 'VIDEO PROFILE', 'UPSCALE RESOLUTION', 'FRAME RATE', 'COLOR PALETTE', 'BRIGHTNESS', 'CONTRAST', 'PIXEL FILTER', 'RESTORE GRAPHICS DEFAULTS', 'BACK']; }
+  value(label) {
+    const values = {
+      'DISPLAY MODE': ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED',
+      'VIDEO PROFILE': S.video === 'hd64' ? 'HD 64-BIT' : 'GAME BOY',
+      'UPSCALE RESOLUTION': ({ native: 'NATIVE', '2k': '2K', '4k': '4K' })[S.hdRes] || 'NATIVE',
+      'FRAME RATE': `${S.fps} FPS`,
+      'COLOR PALETTE': PALS[S.palette]?.name || String(S.palette).toUpperCase(),
+      'BRIGHTNESS': String(S.bright),
+      'CONTRAST': String(S.contrast),
+      'PIXEL FILTER': S.tiles === 'painted' ? 'PAINTED' : 'CRISP PIXELS',
+      'RESTORE GRAPHICS DEFAULTS': 'RESET',
+      'BACK': 'RETURN'
+    };
+    return values[label] || '';
+  }
+  update() {
+    this.navList();
+    if (P('b')) { saveSettings(); SFX.back(); removeScene(this); return; }
+    if (!P('a') && !nav('left') && !nav('right')) return;
+    const label = this.items()[this.i], dir = nav('left') ? -1 : 1;
+    if (label === 'BACK') { saveSettings(); removeScene(this); return; }
+    if (label === 'RESTORE GRAPHICS DEFAULTS') {
+      choose(['CANCEL', 'RESTORE'], choice => {
+        if (choice !== 1) return;
+        S.displayMode = 'windowed'; S.video = 'gb'; S.hdRes = 'native'; S.fps = 60;
+        S.palette = 'gbc'; S.bright = 3; S.contrast = 3; S.tiles = 'pixel';
+        UI = PALS[S.palette]; applyDisplayMode(S.displayMode); clearCaches(); saveSettings(); SFX.confirm();
+      }, 'Restore graphics settings?');
+      return;
+    }
+    if (label === 'DISPLAY MODE') {
+      const modes = ['windowed', 'full-window', 'borderless', 'fullscreen'], k = modes.indexOf(S.displayMode);
+      applyDisplayMode(modes[(k + (dir > 0 ? 1 : modes.length - 1)) % modes.length]);
+    } else if (label === 'VIDEO PROFILE') {
+      if (S.video === 'hd64') { S.video = 'gb'; S.palette = S.palPrev || 'gbc'; }
+      else { S.video = 'hd64'; S.palPrev = S.palette; S.palette = 'full'; }
+      UI = PALS[S.palette]; clearCaches();
+    } else if (label === 'UPSCALE RESOLUTION') {
+      const values = ['native', '2k', '4k'], k = values.indexOf(S.hdRes);
+      S.hdRes = values[(k + (dir > 0 ? 1 : values.length - 1)) % values.length];
+    } else if (label === 'FRAME RATE') {
+      const values = [12, 60, 240], k = values.indexOf(Number(S.fps));
+      S.fps = values[(k + (dir > 0 ? 1 : values.length - 1)) % values.length];
+    } else if (label === 'COLOR PALETTE') {
+      const k = PAL_ORDER.indexOf(S.palette);
+      S.palette = PAL_ORDER[(k + (dir > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length];
+      UI = PALS[S.palette]; clearCaches();
+    } else if (label === 'BRIGHTNESS') S.bright = Math.max(0, Math.min(6, S.bright + dir));
+    else if (label === 'CONTRAST') S.contrast = Math.max(0, Math.min(6, S.contrast + dir));
+    else if (label === 'PIXEL FILTER') S.tiles = S.tiles === 'painted' ? 'pixel' : 'painted';
+    saveSettings(); SFX.toggle();
+  }
+  draw() {
+    drawMenuBackdrop();
+    drawOrnatePanel(2, 6, 156, 135, 'GRAPHICS');
+    textC('DISPLAY & PICTURE', 80, 11, '#ddd3e6');
+    this.items().forEach((label, j) => {
+      const y = 23 + j * 10, selected = j === this.i;
+      if (selected) { fill(7, y - 2, 146, 10, 'rgba(157,91,33,.52)'); ctx.save(); ctx.strokeStyle = '#e8b95a'; ctx.lineWidth = 1; ctx.strokeRect(7.5, y - 1.5, 145, 9); ctx.restore(); }
+      text(label, 11, y, selected ? '#ffe3a0' : '#ddd3e6');
+      textR(this.value(label), 148, y, selected ? '#ffe3a0' : '#cbb9ed');
+    });
+    fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
+    text('UP/DOWN MOVE  LEFT/RIGHT CHANGE', 8, 127, '#ddd3e6');
+    text('A CHANGE  B SAVE & BACK', 8, 135, '#ffe3a0');
   }
 }
 class KeybindScene extends ListScene {

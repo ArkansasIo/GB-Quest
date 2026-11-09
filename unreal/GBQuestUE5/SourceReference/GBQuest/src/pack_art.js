@@ -1,7 +1,7 @@
 'use strict';
-// ================================================================ PIXEL PACKS ART MODE
-// SETTINGS > ART cycles CLASSIC, NES and PIXEL PACKS (the default). PIXEL PACKS uses the third-party pixel-art packs
-// converted by tools/gen_packs.py (PACK_INDEX in src/pack_index.js):
+// ================================================================ ASSET PACK ART MODE
+// SETTINGS > ART cycles CLASSIC, NES, FULL DETAIL (the default) RETRO 8-BIT and AELMOOR HD (src/art.js, tools/gen_retro8.py, tools/gen_aelmoor.py). FULL DETAIL uses the full-resolution sources
+// from assets_pack, with generated pixel-pack aliases retained for its alternate character/world sprites.
 //   * gear icons: 11-tier weapons, shields, armour, helmets and boots; polearms, crossbows, staves, wands,
 //     rings, gems, keys, coins, spellbooks and potions
 //   * a third of each monster family's subtypes (and some bosses) use the packs' monsters
@@ -14,7 +14,7 @@ const PACK_MODE = 'packs';
 function pkHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 // a third of a family's subtypes get pack art; same subtype -> same sprite
 const packMonsterFor = (fam, key, pools) => { const L = pools && pools[fam]; if (!L || !L.length) return null; const h = pkHash('pk|' + key); return h % 3 === 0 ? L[(h >>> 2) % L.length] : null; };
-const nextArtMode = m => ({ classic: 'nes', nes: 'packs', packs: 'classic' })[m] || 'nes';
+const nextArtMode = m => ({ classic: 'nes', nes: 'packs', packs: 'retro', retro: 'aelmoor', aelmoor: 'classic' })[m] || 'nes';
 
 if (typeof globalThis !== 'undefined') globalThis.GBQPackArt = { packMonsterFor, nextArtMode, PACK_MODE };
 
@@ -22,6 +22,9 @@ if (typeof window !== 'undefined' && typeof PACK_INDEX !== 'undefined' && typeof
   const packOn = () => S.art === PACK_MODE;
   // the packs are the default look for players who have not picked CLASSIC
   if (!S.packsDefaulted) { S.packsDefaulted = true; if (S.art !== 'classic') S.art = PACK_MODE; try { if (typeof saveSettings === 'function') saveSettings(); } catch (e) {} }
+  // Older saves used "nes" for the generated pixel pack art. That mode no longer
+  // exists; normalize it so saved players actually see the current asset packs.
+  if (S.art === 'nes') { S.art = PACK_MODE; try { if (typeof saveSettings === 'function') saveSettings(); } catch (e) {} }
 
   // item art lists (NES categories); helmets get their own list
   const NES0 = {}; for (const k of Object.keys(PACK_INDEX.items)) NES0[k] = (NES[k] || []).slice();
@@ -43,6 +46,7 @@ if (typeof window !== 'undefined' && typeof PACK_INDEX !== 'undefined' && typeof
       if (!(old in ORIG)) ORIG[old] = IMG[old] || null;
       if (on && IMG[pk]) IMG[old] = IMG[pk]; else if (ORIG[old]) IMG[old] = ORIG[old];
     }
+    document.body.classList.toggle('full-detail-art', on);
     if (applied !== on && typeof clearCaches === 'function') clearCaches();
     applied = on;
   };

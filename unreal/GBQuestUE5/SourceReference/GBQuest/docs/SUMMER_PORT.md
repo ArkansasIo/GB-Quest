@@ -162,7 +162,7 @@ CHECK army: cap=9 raised=["SKIRMISHER SKELETON 98", ..., "BONE GOLEM 385"]
 CHECK battle music=battle army in battle=9
 CHECK raise dead: ["RAISE DEAD! 3 minions rise again."] alive=9
 CHECK sacrifice warriors: army=3 crit 0 -> 8
-CHECK themes: ["classic", "mmo", "mu", "sanctum", "diablo"]
+CHECK themes: ["classic", "mmo", "mu", "sanctum"]
 ```
 
 Online, against `GBQ_DATA=<temp dir> node backend/server.cjs` with a second client driven by curl in the browser's formats

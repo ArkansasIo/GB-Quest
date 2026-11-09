@@ -6,6 +6,10 @@ Boss victories can award runes in addition to the existing gear, named-item, gol
 ## Legendary equipment sets
 Named boss drops can belong to one of four three-piece legendary sets: Crypt Warden, Forgefire, Rime Throne, and Long Night. Equipping two pieces activates the first set bonus; equipping all three activates the stronger bonus. Set pieces retain their existing named-item identity and base equipment slot. Bonuses are applied in the existing derived-stat pipeline and stack with ordinary affixes, gems, runes and armour-class set bonuses.
 
+## Runtime set-bonus implementation
+
+The browser RPG gear-stat pipeline defines four set IDs: `crypt_warden`, `forgefire`, `rime_throne`, and `long_night`. Set pieces declare `setId` on the item (or its template). Two- and three-piece thresholds are evaluated from currently equipped, non-broken items. Bonuses are included in `aggregateEquipmentStats` and `calculateCharacterGearProfile`, and the profile exposes the unlocked set details under `setBonuses`. Set bonuses stack with ordinary item stats and with bonuses from other sets. The definitions and thresholds are centralized in `src/mmorpg/systems/gear-stats.js`.
+
 ## Existing loot integration
 The game already uses category-specific boss loot tables and named drop pools. This update adds rune rewards to that flow and adds additional named pieces to selected raid pools. It does not claim that every one of the 350 bosses has an exclusive unique drop. Boss reward probabilities are configurable in `src/boss_rewards.js`.
 

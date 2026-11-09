@@ -2,28 +2,30 @@
 
 ## Requirements
 
-- Python 3.10+ with Pillow and NumPy (asset tools)
-- Node 18+ (atlas export, doc generation, tests)
+- Python 3.10+ with Pillow and NumPy (asset and atlas tools)
+- Node.js 20+ (canonical runtime builder, atlas export, documentation and tests)
 - Optional: Playwright with Chromium (headless screenshots), CMake and a C++23 compiler with SDL2 (desktop port)
 
 ## Build everything
 
 ```sh
-python3 tools/build.py          # runs build_atlas.py first, then:
-                                #   index.html                    dev build (serve the folder over http)
-                                #   dist/gbquest.html             single file, handheld frame
-                                #   dist/gbquest-fullscreen.html  single file, full-screen window
-                                #   dist/atlas.html               interactive atlas
-node tools/gen_docs.cjs          # docs/STORY, CHARACTERS, CONTENT_CATALOG, WORLD_ATLAS
-python3 tools/gen_hd64.py       # assets_hd64/ (64-bit atlases)
+python3 tools/build.py          # builds the live atlas, then delegates to tools/build.cjs
+                                # index.html                    development build
+                                # dist/gbquest.html             self-contained game
+                                # dist/gbquest-fullscreen.html  self-contained full-screen game
+                                # dist/atlas.html               interactive atlas
+node tools/gen_docs.cjs         # regenerate generated reference documentation
 ```
 
-Regenerate the art only when the source sheets change:
+`tools/build.cjs` is the single canonical runtime bundler. It embeds the current shell, classic handheld UI theme, player HUD styles, PNG game assets, HD64 atlas pages/indexes, Citadel SVG artwork, and the live world atlas. The Python command is retained as a compatibility wrapper so older scripts use the same release implementation.
+
+Regenerate generated artwork only when the source artwork or generator definitions change:
 
 ```sh
-python3 tools/extract_assets.py && python3 tools/gen_assets.py
 python3 tools/gen_gbtiles.py
-python3 tools/make_worldmap.py && python3 tools/slice_sheets.py
+python3 tools/gen_newart.py
+python3 tools/gen_hd64.py
+node tools/build.cjs
 ```
 
 ## Run
@@ -47,7 +49,7 @@ python3 tools/make_worldmap.py && python3 tools/slice_sheets.py
 ## Tests
 
 ```sh
-npm test                        # node --test: data integrity, rules, generators
+npm test                        # node --test: data integrity, rules, generators and UI/build contracts
 ```
 
 Headless smoke tests use the `window.GBQ` debug hooks, for example:
@@ -63,6 +65,7 @@ GBQ.openAtlas();
 
 1. `python3 tools/build.py` and `node tools/gen_docs.cjs`
 2. `npm test`
-3. Headless screenshots of the title, field, battle, map, atlas, 64-bit mode and full screen; no page errors
-4. Update `CHANGELOG.md` and the version in `BUILD` (`src/data_world.js`) and in the shell's build strip
-5. Commit, then `git push`; CI runs the tests and the desktop build
+3. Run `npm run build:itch` and verify the ZIP contains one root-level `index.html`
+4. Verify title, field, battle, map, atlas, HUD and full-screen layouts in a browser; check the console for asset-load errors
+5. Update `CHANGELOG.md` and the version metadata when making a release
+6. Commit and push; GitHub Actions runs the tests, asset pipeline and release packaging

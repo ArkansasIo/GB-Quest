@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "category": "roads",
+  "format": "image/svg+xml",
+  "entries": [
+    {
+      "id": "road-straight",
+      "name": "Straight Cobble Road",
+      "src": "assets_citadel/roads/road-straight.svg",
+      "status": "concept-master"
+    },
+    {
+      "id": "road-crossing",
+      "name": "Four-Way Crossing",
+      "src": "assets_citadel/roads/road-crossing.svg",
+      "status": "concept-master"
+    },
+    {
+      "id": "road-corner",
+      "name": "Cobble Corner",
+      "src": "assets_citadel/roads/road-corner.svg",
+      "status": "concept-master"
+    },
+    {
+      "id": "road-t-junction",
+      "name": "T Junction",
+      "src": "assets_citadel/roads/road-t-junction.svg",
+      "status": "concept-master"
+    },
+    {
+      "id": "road-bridge",
+      "name": "Stone Bridge Road",
+      "src": "assets_citadel/roads/road-bridge.svg",
+      "status": "concept-master"
+    },
+    {
+      "id": "road-stairs",
+      "name": "Castle Stairway",
+      "src": "assets_citadel/roads/road-stairs.svg",
+      "status": "concept-master"
+    }
+  ],
+  "note": "Original scalable vector concept artwork for the CITADEL remaster. These are not production 3D meshes or tilemap-ready collision assets."
+}

@@ -1,12 +1,13 @@
 <style>
 /* Full-screen window build: the LCD fills the window (aspect-locked, pixel-crisp);
    touch controls float over the picture on phones; chat is a toggled overlay. */
-html, body { height: 100%; overflow: hidden; }
-body { background: #000 !important; padding: 0 !important; display: block !important; gap: 0 !important; }
+html, body { width: 100%; height: 100%; min-height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+body { min-height: 100vh !important; min-height: 100dvh !important; background: #000 !important; padding: 0 !important; display: block !important; gap: 0 !important; }
+.game-client, .game-viewport { box-sizing: border-box; }
 .build-info, .brand, .bezel-top, .keys, .speaker { display: none !important; }
 .game-client { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; min-height: 0 !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; }
 .game-viewport { position: absolute !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; display: grid !important; place-items: center; }
-#lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)) !important; height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+#lcd { display: block; width: min(100vw, calc(100vh * 160 / 144), calc(100dvh * 160 / 144)) !important; height: auto; max-width: 100vw; max-height: 100vh; max-height: 100dvh; aspect-ratio: 160 / 144; object-fit: contain; margin: 0; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 body.int #lcd { width: calc(160px * var(--int, 1)) !important; }
 .fsbar { position: fixed; z-index: 20; top: calc(env(safe-area-inset-top, 0px) + 8px); right: max(8px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; opacity: .35; transition: opacity .2s; }
 .fsbar:hover, .fsbar:focus-within, body.idle-off .fsbar { opacity: 1; }
@@ -47,6 +48,57 @@ body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a
 .pill { background: #160f0c !important; color: var(--san-gold) !important; box-shadow: 0 3px 0 #000, 0 0 0 1px var(--san-trim) !important; }
 .game-viewport > .chat, body.full-window-mode .game-viewport > .chat, body.fullscreen-mode .game-viewport > .chat { bottom: 19% !important; }
 #dpad::before, #dpad::after { background: #1a1210 !important; box-shadow: inset 0 2px 0 rgba(212,172,96,.15), 0 3px 0 #000 !important; }
+
+/* Borderless game presentation: remove the grey page chrome and all launcher UI
+   outside the actual game viewport. The in-game HUD remains part of the game. */
+html, body {
+  background: #000 !important;
+  background-color: #000 !important;
+  scrollbar-width: none !important;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; }
+body::before, body::after { display: none !important; content: none !important; }
+.game-client, .game-viewport {
+  background: #000 !important;
+  outline: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.game-viewport { overflow: hidden !important; }
+#lcd {
+  background: #000 !important;
+  outline: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.fsbar, .build-info, .brand, .bezel-top, .keys, .speaker,
+.controls, .foot, #chatShow {
+  display: none !important;
+}
+
+/* Fullscreen text entry and screen-fit corrections. */
+*, *::before, *::after { box-sizing:border-box; }
+.game-viewport { min-width:0; min-height:0; }
+#lcd { display:block; object-fit:contain; }
+.chat { min-width:0; min-height:0; }
+.chatlog { min-width:0; min-height:56px; overflow-x:hidden; overflow-y:auto; overflow-wrap:anywhere; }
+.chatform { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; width:100%; min-width:0; }
+.chatform input { width:100%; min-width:0; min-height:40px; padding:9px 10px; font:13px/1.3 Arial,sans-serif; }
+.chatform button { min-width:58px; min-height:40px; white-space:nowrap; }
+@media(max-width:900px) {
+  body.fullscreen-mode .game-viewport > .chat,
+  body.full-window-mode .game-viewport > .chat {
+    position:fixed !important; inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px !important;
+    width:auto !important; max-width:none !important; max-height:min(44dvh,360px) !important;
+  }
+  .chatlog { flex:1 1 auto; min-height:64px; }
+}
+@media(max-width:480px) {
+  .chatform { grid-template-columns:minmax(0,1fr) 58px; }
+  .chatform input { font-size:16px; }
+  .chatform button { padding:0 6px; }
+}
+
 </style>
 <div class="fsbar" role="toolbar" aria-label="Window">
   <button id="fsPad" title="On-screen pad">PAD</button>

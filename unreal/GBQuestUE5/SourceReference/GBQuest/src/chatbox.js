@@ -75,12 +75,12 @@ const CB_CSS = `
 .chat.cbx.cb-idle:not(:hover):not(:focus-within) .chat-tabs, .chat.cbx.cb-idle:not(:hover):not(:focus-within) .cb-bar, .chat.cbx.cb-idle:not(:hover):not(:focus-within) .chat-titlebar,
 .chat.cbx.cb-idle:not(:hover):not(:focus-within) .cb-grip { opacity: 0; }
 .chat.cbx.cb-idle:not(:hover):not(:focus-within) .chatlog { background: transparent !important; border-color: transparent !important; }
-.chat.cbx.cb-idle:not(:hover):not(:focus-within) .chatform { opacity: .35; }
+.chat.cbx.cb-idle:not(:hover):not(:focus-within) .chatform { opacity: .72; }
 .chat.cbx .chat-tabs, .chat.cbx .cb-bar, .chat.cbx .chat-titlebar, .chat.cbx .chatform, .chat.cbx .cb-grip { transition: opacity .4s; }
 .chat.cbx .chat-titlebar { cursor: move; user-select: none; touch-action: none; }
 .chat.cbx .chatlog { flex: 1; min-height: 40px; font-size: var(--cb-fs, 12px) !important; line-height: 1.35 !important; text-shadow: 0 1px 0 #000; }
 .chat.cbx .chatlog .cb-name { cursor: pointer; } .chat.cbx .chatlog .cb-name:hover { text-decoration: underline; }
-.chat.cbx .chatlog .cb-stamp { color: #8b8378; font-weight: 400; }
+.chat.cbx .chatlog .cb-stamp { color: #c2b9a8; font-weight: 400; }
 .chat.cbx .chat-tabs button { position: relative; }
 .chat.cbx .chat-tabs button.cb-new { animation: cbflash 1s steps(2) infinite; }
 .chat.cbx .chat-tabs button .cb-dot { position: absolute; top: 1px; right: 2px; font-size: 8px; color: #ffcf3a; }
@@ -89,7 +89,7 @@ const CB_CSS = `
 .cb-bar button { min-width: 22px; height: 20px; padding: 0 5px; background: linear-gradient(#241a14, #120d0a); color: #d4ac60; border: 1px solid #5a4630; border-radius: 2px; font: 700 10px Arial, sans-serif; cursor: pointer; }
 .cb-bar button:hover { border-color: #d4ac60; color: #fff3d2; }
 .cb-bar .cb-sp { flex: 1; }
-.cb-bar .cb-mode { color: #8b8378; font: 400 9px Arial, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
+.cb-bar .cb-mode { color: #c8b88f; font: 400 9px Arial, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
 .chat.cbx .chatform { align-items: stretch; gap: 0 !important; }
 .chat.cbx .chatform .cb-label { display: flex; align-items: center; padding: 0 5px 0 7px; background: #0a0807; border: 1px solid #3a2e22; border-right: 0; border-radius: 2px 0 0 2px; font: 700 11px Arial, sans-serif; white-space: nowrap; max-width: 46%; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .chat.cbx .chatform input { border-left: 0 !important; border-radius: 0 !important; font: 400 12px Arial, sans-serif !important; padding-left: 2px !important; }
@@ -103,7 +103,7 @@ const CB_CSS = `
 .cb-menu .cb-mh { padding: 3px 6px; color: #d4ac60; font-weight: 700; letter-spacing: .08em; font-size: 10px; border-bottom: 1px solid #3a2e22; margin-bottom: 2px; }
 .cb-menu button { display: flex; width: 100%; gap: 6px; justify-content: space-between; padding: 3px 6px; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .cb-menu button:hover, .cb-menu button:focus { background: #3a1a12; color: #fff; outline: none; }
-.cb-menu button small { color: #8b8378; }
+.cb-menu button small { color: #c2b9a8; }
 .cb-menu.cb-grid { display: grid; grid-template-columns: repeat(3, 1fr); width: 220px; }
 .cb-menu.cb-grid .cb-mh { grid-column: 1 / -1; }
 `;

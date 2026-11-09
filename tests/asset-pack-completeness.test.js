@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { needs, IMAGES } from './support/needs.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const exists = file => fs.existsSync(path.join(root, file));
@@ -20,7 +21,7 @@ test('optional reference art packs are not required for the distributable game',
   }
 });
 
-test('runtime catalog is derived from files that are actually present', () => {
+test('runtime catalog is derived from files that are actually present', { skip: needs(IMAGES) }, () => {
   const assetsDir = path.join(root, 'assets');
   const actual = fs.readdirSync(assetsDir).filter(name => name.endsWith('.png')).map(name => name.slice(0, -4)).sort();
   assert.ok(actual.length > 0, 'base game PNG catalog must not be empty');

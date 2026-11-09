@@ -24,4 +24,6 @@ This wrapper targets Unreal Editor and desktop Windows. It is not a native Unrea
 
 After reopening the project so the Python and Editor Scripting plugins load, run the script from Unreal Editor's **Tools > Execute Python Script** menu. The image import scans thousands of files and can take several minutes. The import is non-destructive: it does not replace existing Unreal assets or change the project's default GameMode.
 
+To refresh only the source mirror without opening Unreal, run `python tools/sync_unreal_source_reference.py` from the repository root (`--check` reports whether it is out of date). It copies the same source and text file types from git-tracked files and removes files that are no longer tracked; images, Java and `.github` workflows are not mirrored, so tests that inspect them skip there (`npm run test:unreal-reference`).
+
 The source mirror and Blueprint scaffolds are migration aids. They do not convert JavaScript gameplay into Blueprint event graphs; that logic still needs to be ported and compiled system by system.

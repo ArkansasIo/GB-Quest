@@ -33,10 +33,17 @@
     return 'idle';
   };
   const archetypeForClass = value => {
-    const key = String(value || '').toLowerCase();
-    const map = { warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
-      mage: 'mage', wizard: 'mage', sorcerer: 'mage', ranger: 'ranger', rogue: 'rogue',
-      cleric: 'cleric', priest: 'cleric', summoner: 'summoner', warlock: 'summoner', druid: 'summoner', necromancer: 'summoner' };
+    const key = String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
+    const map = {
+      warrior: 'warrior', fighter: 'warrior', barbarian: 'warrior', paladin: 'warrior',
+      bladeknight: 'warrior', abyssaltemplar: 'cleric',
+      mage: 'mage', wizard: 'mage', sorcerer: 'mage', darksorceress: 'mage',
+      ranger: 'ranger', shadowranger: 'ranger',
+      rogue: 'rogue', voidassassin: 'rogue',
+      cleric: 'cleric', priest: 'cleric',
+      summoner: 'summoner', warlock: 'summoner', druid: 'summoner',
+      necromancer: 'summoner', bloodnecromancer: 'summoner'
+    };
     return map[key] || 'warrior';
   };
   const fallbackVisual = (slot, base) => {
@@ -69,14 +76,24 @@
     return { archetype: safe(character && character.archetype, ARCHETYPES) || archetypeForClass(character && character.cls),
       rank: safe(rank, RANKS) || 'F', equipment: result };
   };
+  const availableRank = (manifest, requested = 'F') => {
+    const ranks = new Set((manifest && Array.isArray(manifest.items) ? manifest.items : [])
+      .map(item => item && String(item.rank || '')).filter(rank => RANKS.includes(rank)));
+    const preferred = safe(requested, RANKS) || 'F';
+    if (ranks.has(preferred)) return preferred;
+    if (ranks.has('F')) return 'F';
+    return RANKS.find(rank => ranks.has(rank)) || 'F';
+  };
   const createFramePresenter = (runtime, options = {}) => {
     if (!runtime || typeof runtime.renderCharacter !== 'function') throw new TypeError('HD character runtime is required');
     const maxEntries = Math.max(2, Math.min(128, Number(options.maxEntries) || 24));
     const entries = new Map();
-    const failed = new Set();
+    const failedUntil = new Map();
+    const retryDelayMs = Math.max(0, Number(options.retryDelayMs ?? 1500) || 0);
     const keyFor = (character, spec) => JSON.stringify([
       character && (character.id || character.name || character.cls),
-      character && character.rank, character && character.eq,
+      character && character.cls, character && character.archetype,
+      character && character.rank, character && character.gearRank, character && character.eq,
       spec.direction, spec.frame, spec.state, spec.action, spec.animation,
       spec.rank, spec.archetype, spec.ghost
     ]);
@@ -87,7 +104,9 @@
     };
     const request = (character, spec = {}) => {
       const key = keyFor(character, spec);
-      if (failed.has(key)) return null;
+      const retryAt = failedUntil.get(key);
+      if (retryAt && Date.now() < retryAt) return null;
+      if (retryAt) failedUntil.delete(key);
       const cached = entries.get(key);
       if (cached) {
         touch(key, cached);
@@ -106,14 +125,14 @@
         return canvas;
       }, error => {
         entries.delete(key);
-        failed.add(key);
+        if (retryDelayMs > 0) failedUntil.set(key, Date.now() + retryDelayMs);
         throw error;
       });
       // The renderer consumes readiness through the next synchronous request.
       entry.promise.catch(() => {});
       return null;
     };
-    const clear = () => { entries.clear(); failed.clear(); };
+    const clear = () => { entries.clear(); failedUntil.clear(); };
     return {
       request, clear,
       getReady: () => {
@@ -124,47 +143,63 @@
     };
   };
   const createRuntime = (options = {}) => {
-    const frameRoot = options.frameRoot || 'assets_hd64/animations/frames';
-    const equipmentRoot = options.equipmentRoot || 'assets_hd64/equipment';
+    // the standalone build lives in dist/: its HD files sit one folder up (paths are relative to the page)
+    const up = typeof location !== 'undefined' && /\/dist\/[^/]*$/.test(location.pathname || '') ? '../' : '';
+    const frameRoot = options.frameRoot || up + 'assets_hd64/animations/frames';
+    const equipmentRoot = options.equipmentRoot || up + 'assets_hd64/equipment';
     const manifestUrl = options.manifestUrl || `${equipmentRoot}/equipment_manifest.json`;
-    const visualMapUrl = options.visualMapUrl || 'data/visuals/equipment-catalog-visual-map.json';
+    const visualMapUrl = options.visualMapUrl || up + 'data/visuals/equipment-catalog-visual-map.json';
     const imageCache = new Map();
     const compositeCache = new Map();
     let manifestPromise = null;
     let visualMapPromise = null;
     const loadImage = url => {
-      if (!imageCache.has(url)) imageCache.set(url, new Promise((resolve, reject) => {
-        if (typeof Image === 'undefined') return reject(new Error('Image API unavailable'));
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Unable to load HD character asset: ${url}`));
-        img.src = url;
-      }));
+      if (!imageCache.has(url)) {
+        const pending = new Promise((resolve, reject) => {
+          if (typeof Image === 'undefined') return reject(new Error('Image API unavailable'));
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Unable to load HD character asset: ${url}`));
+          const packedUrl = root.GBQ_HD64_PACK && root.GBQ_HD64_PACK.images && root.GBQ_HD64_PACK.images[url];
+          img.src = packedUrl || url;
+        });
+        imageCache.set(url, pending);
+        pending.catch(() => { if (imageCache.get(url) === pending) imageCache.delete(url); });
+      }
       return imageCache.get(url);
     };
     const getVisualMap = () => {
       if (!visualMapPromise) {
-        visualMapPromise = typeof fetch === 'function'
+        const packed = root.GBQ_HD64_PACK && root.GBQ_HD64_PACK.visualMap;
+        const pending = packed ? Promise.resolve(packed) : typeof fetch === 'function'
           ? fetch(visualMapUrl).then(r => { if (!r.ok) throw new Error(`Equipment visual map HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
+        visualMapPromise = pending;
+        pending.catch(() => { if (visualMapPromise === pending) visualMapPromise = null; });
       }
       return visualMapPromise;
     };
     const getManifest = () => {
       if (!manifestPromise) {
-        manifestPromise = typeof fetch === 'function'
+        const packed = root.GBQ_HD64_PACK && root.GBQ_HD64_PACK.equipmentManifest;
+        const pending = packed ? Promise.resolve(packed) : typeof fetch === 'function'
           ? fetch(manifestUrl).then(r => { if (!r.ok) throw new Error(`Equipment manifest HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
+        manifestPromise = pending;
+        pending.catch(() => { if (manifestPromise === pending) manifestPromise = null; });
       }
       return manifestPromise;
     };
     const renderCharacter = async (character, spec = {}) => {
-      const [visualMap] = await Promise.all([getVisualMap()]);
+      const [visualMap, manifest] = await Promise.all([getVisualMap(), getManifest()]);
       const resolved = resolveEquipment(character, visualMap, spec.rank || character && character.rank || 'F');
+      // The shipped source pack currently contains F-rank art. Reuse that
+      // complete set for higher gameplay ranks instead of dropping to classic sprites.
+      const renderRank = availableRank(manifest, resolved.rank);
       return render({
         ...spec, archetype: spec.archetype || resolved.archetype,
         direction: directionForInput(spec.direction), animation: spec.animation || animationForState(spec.state || spec.action),
-        rank: resolved.rank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
+        rank: renderRank, equipment: { ...resolved.equipment, ...(spec.equipment || {}) }
       });
     };
     const render = spec => {
@@ -180,7 +215,7 @@
         const width = Number(manifest.canvas && manifest.canvas.width), height = Number(manifest.canvas && manifest.canvas.height);
         if (!(width > 0 && height > 0)) throw new Error('Equipment manifest has invalid canvas dimensions');
         const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.drawImage(base, 0, 0, width, height);
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(base, 0, 0, width, height);
         const loadout = spec.equipment || {};
         const chosen = Object.entries(loadout).map(([slot, id]) => (manifest.items || []).find(item =>
           item.id === id && item.slot === slot && item.rank === spec.rank && item.direction === spec.direction
@@ -200,7 +235,7 @@
     };
     return { render, renderCharacter, getManifest, getVisualMap, loadImage, frameUrl: (a, r, d, anim, frame) => framePath(frameRoot, a, r, d, anim, frame), cacheSize: () => imageCache.size, compositeCacheSize: () => compositeCache.size };
   };
-  const api = { createRuntime, createFramePresenter, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
+  const api = { createRuntime, createFramePresenter, framePath, directionForInput, animationForState, archetypeForClass, fallbackVisual, resolveEquipment, availableRank, RANKS, DIRECTIONS, ANIMATIONS, ARCHETYPES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.GBQHDCharacterArt = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

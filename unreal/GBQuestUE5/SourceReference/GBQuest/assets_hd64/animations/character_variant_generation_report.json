@@ -1,0 +1,216 @@
+{
+  "frame_size": 128,
+  "directions": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE",
+    "E",
+    "SE"
+  ],
+  "animations": [
+    "idle",
+    "walk",
+    "run",
+    "attack",
+    "cast",
+    "block",
+    "hit",
+    "death"
+  ],
+  "total_frames": 2448,
+  "sets": [
+    {
+      "archetype": "warrior",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          48,
+          89,
+          154,
+          255
+        ],
+        "cloth_hi": [
+          93,
+          151,
+          219,
+          255
+        ],
+        "steel": [
+          142,
+          164,
+          190,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "mage",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          91,
+          53,
+          157,
+          255
+        ],
+        "cloth_hi": [
+          164,
+          111,
+          220,
+          255
+        ],
+        "steel": [
+          122,
+          144,
+          193,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "ranger",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          39,
+          119,
+          70,
+          255
+        ],
+        "cloth_hi": [
+          112,
+          183,
+          91,
+          255
+        ],
+        "steel": [
+          126,
+          151,
+          113,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "rogue",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          48,
+          55,
+          83,
+          255
+        ],
+        "cloth_hi": [
+          104,
+          112,
+          151,
+          255
+        ],
+        "steel": [
+          139,
+          148,
+          168,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "cleric",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          193,
+          174,
+          79,
+          255
+        ],
+        "cloth_hi": [
+          247,
+          222,
+          127,
+          255
+        ],
+        "steel": [
+          190,
+          199,
+          205,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    },
+    {
+      "archetype": "summoner",
+      "rank": "F",
+      "frame_count": 408,
+      "palette": {
+        "cloth": [
+          117,
+          47,
+          105,
+          255
+        ],
+        "cloth_hi": [
+          202,
+          89,
+          156,
+          255
+        ],
+        "steel": [
+          147,
+          105,
+          169,
+          255
+        ]
+      },
+      "rank_accent": [
+        150,
+        150,
+        150,
+        255
+      ]
+    }
+  ],
+  "generated_by": "procedural-pillow-class-specific",
+  "production_status": "class_distinct_pixel_art_prototype",
+  "style": "Game Boy Color-inspired limited palette, crisp pixel edges, transparent PNG",
+  "note": "Original class-specific starter sprites; validate animation silhouettes in-game before release."
+}

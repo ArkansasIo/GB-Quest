@@ -1,6 +1,6 @@
 # Architecture
 
-Lost Kingdom of Shadowbane Chronicles is plain JavaScript with no framework, no bundler and no runtime dependencies. `tools/build.py` concatenates the modules in a fixed order into one HTML file that runs anywhere. Diagrams are in [UML.md](UML.md).
+Lost Kingdom of Shadowbane Chronicles is plain JavaScript with no framework, no bundler and no runtime dependencies. `tools/build.cjs` concatenates the runtime modules in a fixed order and embeds the required assets into standalone HTML builds. `tools/build.py` is a compatibility wrapper that generates the live world atlas and delegates to the canonical Node builder. Diagrams are in [UML.md](UML.md).
 
 Repository boundaries: `client/` owns the browser shell and boot entry, `src/` owns game runtime modules, `backend/` owns the MMORPG realm service, `store/` owns catalog and purchase policy, and `admin/` owns the restricted control-plane page. `server/server.cjs` remains a compatibility launcher; `server.js` is a separate local native-rules HTTP bridge.
 

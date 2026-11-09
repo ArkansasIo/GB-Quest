@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { needs, IMAGES } from './support/needs.js';
 
 const src = f => fs.readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
 const plain = v => JSON.parse(JSON.stringify(v));
@@ -104,7 +105,7 @@ test('asset pack: monster pools and stable portrait selection remain determinist
   assert.equal(A.apPortraitFor('ELDER MAE'), A.apPortraitFor('ELDER MAE')); assert.equal(A.apPortraitFor(''), null);
 });
 
-test('pixel packs: index sprites exist, aliases point at real art, monster picks are stable', () => {
+test('pixel packs: index sprites exist, aliases point at real art, monster picks are stable', { skip: needs(IMAGES) }, () => {
   const idx = (() => { const c = {}; vm.runInNewContext(src('pack_index.js').replace(/^const PACK_INDEX/m, 'globalThis.PACK_INDEX'), Object.assign(c, { globalThis: c })); return c.PACK_INDEX; })();
   const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
   for (const L of [...Object.values(idx.items), ...Object.values(idx.monsters)]) for (const n of L) assert.ok(has(n), n);

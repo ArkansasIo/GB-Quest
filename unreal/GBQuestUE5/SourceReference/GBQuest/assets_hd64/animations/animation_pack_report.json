@@ -1,0 +1,70 @@
+{
+  "sequence_count": 3456,
+  "frame_count_target": 22032,
+  "archetypes": [
+    "warrior",
+    "mage",
+    "ranger",
+    "rogue",
+    "cleric",
+    "summoner"
+  ],
+  "ranks": [
+    "F",
+    "E",
+    "D",
+    "C",
+    "B",
+    "A",
+    "S",
+    "SS",
+    "SSS"
+  ],
+  "directions": [
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE",
+    "E",
+    "SE"
+  ],
+  "animations": {
+    "idle": {
+      "frames": 6,
+      "loop": true
+    },
+    "walk": {
+      "frames": 8,
+      "loop": true
+    },
+    "run": {
+      "frames": 8,
+      "loop": true
+    },
+    "attack": {
+      "frames": 6,
+      "loop": false
+    },
+    "cast": {
+      "frames": 8,
+      "loop": false
+    },
+    "block": {
+      "frames": 4,
+      "loop": false
+    },
+    "hit": {
+      "frames": 3,
+      "loop": false
+    },
+    "death": {
+      "frames": 8,
+      "loop": false
+    }
+  },
+  "frame_size": 128,
+  "artwork_generated": false,
+  "note": "Manifest and folders only; frame PNGs must be authored or imported."
+}
