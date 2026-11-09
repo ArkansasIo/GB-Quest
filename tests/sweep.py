@@ -135,6 +135,21 @@ async () => {
       reset(new Field()); run(3); startBattle(rollEncounter(ZONE_BY_ID[G.map])); run(30); render();
       scenes.length = 0; reset(new Field()); render();
     });
+  // every art mode x every UI theme: field (with the QUEST WINDOWS command/status windows), a battle, a dungeon,
+  // the main menu, inventory and the title screen
+  for (const art of ['packs', 'retro', 'aelmoor']) for (const theme of (typeof MMO_THEMES !== 'undefined' ? MMO_THEMES : ['tnl']))
+    step(`art ${art} / ui ${theme}`, () => {
+      S.palette = 'full'; UI = PALS.full; S.video = 'hd64'; S.tiles = 'pixel'; S.art = art; S.uiTheme = theme;
+      if (typeof applyPackArt === 'function') applyPackArt(); applyArt(); clearCaches();
+      reset(new Field()); run(60);
+      const f = scenes.find(sc => sc instanceof Field);
+      if (theme === 'quest' && window.GBQQuestUi) { for (const c of GBQQuestUi.QUEST_COMMANDS) { reset(new Field()); run(2); GBQQuestUi.questCommand(c, scenes.find(sc => sc instanceof Field)); run(8); press('b', 3); } }
+      reset(new Field()); run(3); startBattle(rollEncounter(ZONE_BY_ID[G.map])); run(40);
+      scenes.length = 0; reset(new Field()); push(new MainMenu()); run(6); push(new InventoryScene('field')); run(6);
+      reset(new Title()); run(6);
+      reset(new Field()); render();
+    });
+  S.uiTheme = 'tnl';
   S.palette = 'gbc'; UI = PALS.gbc; S.video = 'gb'; S.tiles = 'pixel'; S.art = 'nes'; applyArt(); clearCaches();
 
   // 8. save / load round trip, every slot
