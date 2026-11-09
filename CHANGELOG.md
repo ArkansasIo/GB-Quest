@@ -2,6 +2,10 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## Unreleased — 8-bit item icons at true resolution
+
+- The RETRO 8-BIT item-sheet icons (`ki_*`) are now real 16x16 pixel icons (area-average fit, hard alpha, 16 colours, 1px outline) instead of soft, uneven ~24-34px crops, matching the generated `r8i_*` icons. A stray caption fragment is no longer sliced as an icon.
+
 ## Unreleased — field sprites in colour
 
 - FULL DETAIL no longer shrinks the asset pack's painted people, houses and props to 16px field sprites (they turned into gray, muddy blobs). The field now uses the game's own coloured walkers, townsfolk and buildings; pack art stays on portraits, item icons, monsters and battle scenes. `S.packField = true` restores the old swap.
