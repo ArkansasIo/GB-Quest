@@ -23,10 +23,10 @@ test('asset pack deterministically resolves UI-kit image categories', () => {
 });
 
 test('world sprite families route to semantically matching pack art', () => {
-  assert.match(pack.fieldArtFor('gt_meadow_ground'), /^ap_terrain_/);
+  // ground and dungeon tiles keep the game's own auto-tiled art (a hashed terrain pick put lava on grass)
+  for (const t of ['gt_meadow_ground', 'gt_meadow_grass', 'gt_meadow_road5', 'gt_meadow_water3_0', 'gd_dungeon_wall', 'gd_dungeon_floor', 'gt_r8green_grass', 'gt_kagreen_house']) assert.equal(pack.fieldArtFor(t), null, t);
   assert.match(pack.fieldArtFor('gt_meadow_tree'), /^ap_environment_/);
   assert.match(pack.fieldArtFor('gt_meadow_house'), /^ap_buildings_/);
-  assert.match(pack.fieldArtFor('gd_dungeon_wall'), /^ap_dungeon_/);
   assert.match(pack.fieldArtFor('go_chest'), /^ap_map_elements_/);
   assert.match(pack.fieldArtFor('gh_npc_merchant_down0'), /^ap_npcs_/);
   assert.match(pack.fieldArtFor('gh_warden_down0'), /^ap_characters_/);

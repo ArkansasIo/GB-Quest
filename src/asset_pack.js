@@ -59,12 +59,17 @@ function apEquipmentFor(item) {
 function apFieldArtFor(name) {
   if (!name || typeof name !== 'string' || name.startsWith('ap_') || name.startsWith('au_')) return null;
   const lower = name.toLowerCase();
+  // generated retro / key-art tiles are never replaced
+  if (/^g[td]_(r8|r9|ka)/.test(lower)) return null;
   if (/^gt_/.test(lower)) {
     if (/_(house|inn|shop|temple|tower|building|windmill)(_|$)/.test(lower)) return apPick('buildings', lower);
     if (/_(tree|pine|dense|single|rock|bush|plant)(_|$)/.test(lower)) return apPick('environment', lower);
-    return apPick('terrain', lower);
+    // ground (grass, roads, water, sand, walls...) keeps the game's own auto-tiled art: picking a pack terrain
+    // texture by name hash put lava, stone and walls where grass and roads belong
+    return null;
   }
-  if (/^(gd_|d_[a-z])/.test(lower)) return apPick('dungeon', lower);
+  // dungeon floors, walls, stairs and doors keep their meaning (a hashed pick could turn a floor into a wall)
+  if (/^(gd_|d_[a-z])/.test(lower)) return null;
   if (/^go_/.test(lower) || /^(px_waypoint|item_chest)/.test(lower)) return apPick('map_elements', lower);
   if (/^mt_/.test(lower)) return apPick('mounts', lower);
   if (/^gh_npc_/.test(lower) || /^(villager|elder|hero)_/.test(lower)) return apPick('npcs', lower);
@@ -118,8 +123,9 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
 
   // Replace map tiles, people, and mounts by the semantically matching pack family.
   // Each mapper is deterministic and uses the original renderer as a fallback.
+  // only FULL DETAIL (packs) swaps sprites: NES, RETRO 8-BIT and AELMOOR HD keep their own art
   const packSpriteName = name => {
-    if (typeof artOn !== 'function' || !artOn()) return null;
+    if (S.art !== 'packs') return null;
     const candidate = apFieldArtFor(name);
     return candidate && IMG[candidate] ? candidate : null;
   };
@@ -140,7 +146,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   if (typeof worldPortrait === 'function') {
     const worldPortraitBase = worldPortrait;
     worldPortrait = function (character, dir, ghost) {
-      if (artOn() && !ghost) {
+      if (S.art === 'packs' && !ghost) {
         const packed = apCharacterFor(character);
         if (packed && IMG[packed]) return sprFit(packed, 24, { flip: dir === 'left' });
       }
@@ -150,7 +156,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   if (typeof npcSprite === 'function') {
     const npcSpriteBase = npcSprite;
     npcSprite = function (entity) {
-      if (artOn() && entity) {
+      if (S.art === 'packs' && entity) {
         const packed = apNpcFor(entity);
         if (packed && IMG[packed]) return spr(packed, 16, 16);
       }
