@@ -353,6 +353,64 @@ textarea { width:100%; min-height:84px; resize:vertical; overflow:auto; }
   .chatlog { min-height:42px; }
 }
 
+/* TITLE SCREEN: hide browser-shell chrome and give the title scene the full viewport.
+   The title artwork and menu remain rendered inside the game's 160:144 canvas. */
+body.title-screen {
+  padding:0 !important;
+  overflow:hidden !important;
+  background:#050608 !important;
+}
+body.title-screen::before { display:none !important; content:none !important; }
+body.title-screen .build-info,
+body.title-screen .keys,
+body.title-screen .game-viewport > .chat,
+body.title-screen .game-viewport > #chatShow { display:none !important; }
+body.title-screen .game-client {
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:#050608 !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body.title-screen .game-viewport {
+  position:relative !important;
+  flex:0 1 auto !important;
+  width:min(100vw, calc(100dvh * 160 / 144)) !important;
+  height:auto !important;
+  max-height:100dvh !important;
+  aspect-ratio:160 / 144 !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  display:grid !important;
+  place-items:center !important;
+  background:#050608 !important;
+}
+body.title-screen .game-viewport > #lcd {
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  aspect-ratio:160 / 144 !important;
+  object-fit:contain !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+@media (max-width:900px) {
+  body.title-screen .game-client { padding:0 !important; }
+  body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
+}
 </style>
 <style>
 /* CITADEL HD theme — cinematic fantasy command interface.
@@ -825,9 +883,46 @@ body.chat-on .gbq-player-hud { right:300px; }
 }
 
 </style>
+<style>
+.gbq-trade-overlay{position:fixed;inset:0;z-index:220;display:grid;place-items:center;padding:16px;background:#030609d9;color:#f3ead6;font:13px/1.45 Inter,Arial,sans-serif}
+.gbq-trade-window{width:min(760px,100%);max-height:min(88dvh,820px);overflow:auto;border:1px solid #a48650;background:linear-gradient(145deg,#121b24,#080c12);box-shadow:0 20px 70px #000c,inset 0 0 0 3px #241b12;border-radius:7px}
+.gbq-trade-header{display:flex;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid #66502e;background:linear-gradient(90deg,#202a35,#0a0f16)}
+.gbq-trade-header small,.gbq-trade-header span,.gbq-trade-window footer{color:#c4a66c;font-size:10px;letter-spacing:.12em}
+.gbq-trade-header h2{margin:3px 0;color:#ffe1a0;font:700 22px Cinzel,Georgia,serif;letter-spacing:.08em}
+.gbq-trade-header [data-close]{width:34px;height:34px;border:1px solid #806b48;background:#151b22;color:#fff0c9;font-size:24px;cursor:pointer}
+.gbq-trade-content{padding:18px;display:grid;gap:16px}.gbq-trade-auth,.gbq-trade-characters{display:grid;gap:12px}
+.gbq-trade-window label{display:grid;gap:5px;color:#e6d4ad;font-size:11px;letter-spacing:.04em}
+.gbq-trade-window input,.gbq-trade-window select{min-width:0;width:100%;padding:10px;border:1px solid #65563f;border-radius:3px;background:#080e15;color:#fff4dd;font:13px Inter,Arial,sans-serif}
+.gbq-trade-window button{padding:9px 12px;border:1px solid #927448;border-radius:3px;background:linear-gradient(#34414d,#151d26);color:#fff0ce;font:700 10px Cinzel,Georgia,serif;letter-spacing:.06em;cursor:pointer}
+.gbq-trade-window button:disabled{opacity:.45;cursor:not-allowed}
+.gbq-trade-actions,.gbq-trade-row,.gbq-trade-offer-form{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.gbq-trade-row label,.gbq-trade-offer-form label{flex:1 1 145px}.gbq-trade-auth p,.gbq-trade-empty{margin:0;color:#b9c2c9;font-size:12px}
+.gbq-trade-characters nav{display:flex;gap:7px;border-bottom:1px solid #66502e;padding-bottom:9px}
+.gbq-trade-characters nav button{min-width:100px}.gbq-trade-characters h3{margin:8px 0;color:#f2d18e;font:700 14px Cinzel,Georgia,serif;letter-spacing:.06em}
+.gbq-trade-characters h3 small{float:right;color:#a9bbc7;font:11px Inter,Arial,sans-serif}
+.gbq-trade-balance{padding:10px;border:1px solid #705a39;background:#171b1c;color:#f5d48e;font-weight:700}
+.gbq-trade-offer-form{padding:12px;border:1px solid #51432f;background:#0a1119}.gbq-trade-offer-form button{flex:1 0 100%}
+.gbq-trade-offer{display:grid;gap:5px;padding:12px;border:1px solid #51432f;background:#0a1119;margin:8px 0}
+.gbq-trade-offer b{color:#f5d48e}.gbq-trade-offer span{color:#d2d8db;font-size:11px}.gbq-trade-offer div{display:flex;gap:8px}
+.gbq-trade-message{margin:12px 18px 0;padding:10px;border:1px solid #876b42;background:#332716;color:#ffe2a3}.gbq-trade-message[hidden]{display:none}
+.gbq-trade-window footer{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-top:1px solid #51432f;letter-spacing:.04em}
+@media(max-width:560px){.gbq-trade-overlay{padding:5px}.gbq-trade-window{max-height:96dvh}.gbq-trade-content{padding:12px}.gbq-trade-header{padding:12px}.gbq-trade-header h2{font-size:17px}}
 
+.gbq-trade-bank-balances{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.gbq-trade-bank-balances>div{display:grid;gap:7px;padding:14px;border:1px solid #705a39;background:linear-gradient(145deg,#1b252d,#0a1017)}
+.gbq-trade-bank-balances small{color:#b8c7cf;font-size:9px;letter-spacing:.12em}
+.gbq-trade-bank-balances b{color:#f5d48e;font:700 17px Cinzel,Georgia,serif;overflow-wrap:anywhere}
+.gbq-trade-bank-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gbq-trade-bank-actions form{display:grid;gap:10px;padding:13px;border:1px solid #51432f;background:#0a1119}
+.gbq-trade-bank-actions button{width:100%}
+@media(max-width:560px){.gbq-trade-bank-balances,.gbq-trade-bank-actions{grid-template-columns:1fr}}
 
-<link rel="stylesheet" href="client/trade-panel.css">
+.gbq-trade-filterbar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+.gbq-trade-filterbar button{padding:7px 9px;font-size:9px;letter-spacing:.07em}
+.gbq-trade-filterbar button[aria-pressed="true"]{border-color:#d2ad6e;background:#554126;color:#fff0c9}
+
+</style>
+
 </head><body class="theme-shadows">
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
@@ -942,5 +1037,6 @@ body.chat-on .gbq-player-hud { right:300px; }
 <script src="src/identity.js"></script>
 <script src="client/main.js"></script>
 <script src="src/player_hud.js"></script>
+<script src="client/mmorpg-trade.js"></script>
 <script src="src/debug.js"></script>
-<script src="client/mmorpg-trade.js"></script>\n</body></html>
+</body></html>
