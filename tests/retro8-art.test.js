@@ -73,7 +73,7 @@ test('AELMOOR HD: monsters, bosses and the title backdrop exist, and the mode is
   assert.ok(has('r9_title'));
   assert.match(read('src/scenes_menu.js'), /'AELMOOR HD'/);
   assert.match(read('src/scenes_world.js'), /S\.art === 'aelmoor' && IMG\.r9_title/);
-  assert.match(read('src/npc_art.js'), /retroNpcArt\(role, blink\)/);
+  assert.match(read("src/npc_art.js"), /retroNpcArt\(role, blink, e\.name\)/);
 });
 
 test('retro 8-bit and AELMOOR HD: item icons for every equipment category slot and consumable', () => {
@@ -96,4 +96,17 @@ test('title screen uses the Lanterns of Aelmoor key art with the live menu over 
   assert.match(world, /this\.keep = \[/);
   assert.match(read('src/video64.js'), /IMG\.title_aelmoor_hi/);
   assert.match(read('client/shell.html'), /body\.title-screen #gbq-player-hud/);
+});
+
+test('Lanterns of Aelmoor key art: every sprite the AELMOOR index names exists, and lookups use it', () => {
+  const c = {}; c.globalThis = c; vm.runInNewContext(read('src/keyart_index.js'), c); const K = c.KEYART;
+  const names = [...Object.values(K.monsters), ...Object.values(K.equip).flat(), ...Object.values(K.consumables), ...Object.values(K.npc), ...K.npcPool,
+    ...Object.values(K.effects), ...K.portraits, ...K.cutscenes];
+  assert.ok(names.length > 100, 'index populated');
+  for (const n of names) assert.ok(has(n), n);
+  for (const base of new Set(Object.values(K.monsters))) for (const v of ['ember', 'frost', 'venom', 'shadow', 'gilded', 'ash']) assert.ok(has(`${base}_${v}`), `${base}_${v}`);
+  for (const key of K.town) for (const g of ['green', 'sand', 'snow', 'swamp', 'lava', 'mystic']) assert.ok(has(`gt_ka${g}_${key}`), `gt_ka${g}_${key}`);
+  assert.ok(!has('ka_monsters_00') && !has('ka_mounts_02'), 'look-alikes of other companies\' famous characters stay out');
+  const art = read('src/art.js');
+  for (const hook of ['KEYART.monsters', 'KEYART.equip', 'KEYART.consumables', 'KEYART.town', 'KEYART.effects', 'KEYART.npc']) assert.ok(art.includes(hook), hook);
 });

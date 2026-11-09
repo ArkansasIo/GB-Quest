@@ -45,8 +45,16 @@ const RETRO_TILE_GROUP = { desert: 'sand', badlands: 'sand', savanna: 'sand', oa
 // smooth height-field lighting (r9* sprites), and adds a moonlit title backdrop.
 const retroMode = () => S.art === 'retro' || S.art === 'aelmoor';
 const retroPrefix = () => (S.art === 'aelmoor' ? 'r9' : 'r8');
-function retroNpcArt(role, blink) {
+// Lanterns of Aelmoor key art (src/keyart_index.js, tools/slice_keyart.py): in AELMOOR HD mode the sliced sprites
+// replace the generated ones wherever the index has a match.
+const keyArtOn = () => S.art === 'aelmoor' && typeof KEYART !== 'undefined';
+const keyArtImg = n => (n && IMG[n] ? n : null);
+function retroNpcArt(role, blink, key) {
   if (!retroMode() || !role) return null;
+  if (keyArtOn()) {
+    const k = keyArtImg(KEYART.npc[role]) || keyArtImg(KEYART.npcPool[hashStr(String(key || role)) % KEYART.npcPool.length]);
+    if (k) return k;
+  }
   const name = `${retroPrefix()}n_${role}_${blink ? 1 : 0}`;
   return IMG[name] ? name : null;
 }
@@ -55,6 +63,7 @@ const RETRO_DUNGEON_THEMES = new Set(['dungeon', 'crypt', 'ice', 'lava', 'temple
 function retroWorldTile(tile) {
   const m = /^g([td])_([a-z]+)_(.+)$/.exec(tile || '');
   if (!m || m[2].startsWith('r8')) return null;
+  if (m[1] === 't' && keyArtOn() && KEYART.town.includes(m[3])) { const k = keyArtImg(`gt_ka${RETRO_TILE_GROUP[m[2]] || 'green'}_${m[3]}`); if (k) return k; }
   const name = m[1] === 'd' ? `gd_r8${RETRO_DUNGEON_THEMES.has(m[2]) ? m[2] : 'dungeon'}_${m[3]}` : `gt_r8${RETRO_TILE_GROUP[m[2]] || 'green'}_${m[3]}`;
   return IMG[name] ? name : null;
 }
@@ -64,6 +73,11 @@ function retroMonsterArt(b) {
   const src = isBoss ? (b.base && BEAST_BY_ID[b.base]) || (b.sub ? b : null) : b;
   if (!src || src.ccArt) return null;
   const slug = retroSlug(src.sub);
+  if (keyArtOn() && KEYART.monsters[slug]) {
+    const base = KEYART.monsters[slug], v = isBoss ? '' : (src.variant ? `${base}_${src.variant}` : '');
+    const k = keyArtImg(v) || keyArtImg(base);
+    if (k) return k;
+  }
   const p = retroPrefix(), name = isBoss ? `${p}b_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `${p}m_${slug}_${src.variant || 'base'}`;
   return IMG[name] ? name : null;
 }
@@ -127,12 +141,13 @@ function retroItemIcon(it) {
   else cat = RETRO_HELMS.has(it.base) ? 'helmet' : (WONDROUS_ART[it.base] || 'ring');
   const tier = Number.isFinite(Number(it.rarity)) ? Math.floor(Number(it.rarity)) : 1;
   const slot = Math.min(10, Math.max(0, tier * 2 - 1 + (hashStr(String(it.base)) % 2)));
+  if (keyArtOn() && KEYART.equip[cat]) { const L = KEYART.equip[cat], k = keyArtImg(L[Math.min(L.length - 1, Math.floor(slot * L.length / 11))]); if (k) return k; }
   const name = `${retroPrefix()}i_${cat}_${slot}`;
   return IMG[name] ? name : null;
 }
 if (typeof window !== 'undefined') window.retroItemIcon = retroItemIcon;
 function applyArt() {
-  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null; ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
+  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = (keyArtOn() && keyArtImg(KEYART.consumables[k])) || (retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null); ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
 }
 applyArt();
 
@@ -140,6 +155,7 @@ applyArt();
 const SPELL_ART = { fire: 0, cold: 1, lightning: 2, poison: 3, necrotic: 4, radiant: 5, force: 6, psychic: 7, thunder: 2, acid: 3, piercing: 8, bludgeoning: 9, slashing: 9 };
 const SCHOOL_ART = { aegis: 10, calling: 11, omen: 12, thrall: 13, veil: 14, flux: 15, grave: 4, storm: 0 };
 function spellArt(sp) {
+  if (keyArtOn() && sp) { const k = keyArtImg(KEYART.effects[sp.dt]); if (k) return k; }
   if (S.art === 'packs' && typeof window.assetPackSpellArt === 'function') {
     const pack = window.assetPackSpellArt(sp);
     if (pack && IMG[pack]) return pack;
