@@ -42,4 +42,9 @@ test("static game server answers the offline health probe and serves visual-map 
   assert.equal(visualMap.status, 200);
   assert.equal(visualMap.headers.get("content-type"), "application/json; charset=utf-8");
   assert.equal(typeof await visualMap.json(), "object");
+
+  // the source build (index.html) loads its 64-BIT sprite indexes and atlases from assets_hd64/
+  const hd64 = await fetch(`${base}/assets_hd64/monsters.json`);
+  assert.equal(hd64.status, 200);
+  assert.equal(typeof await hd64.json(), "object");
 });

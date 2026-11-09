@@ -12,6 +12,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **DIABLO IV UI theme**: removed from SETTINGS > UI THEME (and its CHARACTER-page layout). Saves that had it selected switch to the default handheld theme.
 
 ### Fixed
+- **Local http server** (`npm start`): `assets_hd64/` was missing from the static allow-list, so the source build at http://127.0.0.1:8000/ got 404s for every 64-BIT sprite index and atlas. It now loads with no failed requests.
 - **World tiles**: every art mode except CLASSIC showed random lava, stone and wall textures in place of grass, roads, water and dungeon floors. Ground and dungeon tiles now always keep the game's own auto-tiled art; the asset-pack swap only touches trees, rocks and buildings, and only in FULL DETAIL.
 - A stray duplicated menu line at the end of `src/scenes_world.js` threw `c is not defined` on every page load.
 
