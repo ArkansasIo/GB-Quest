@@ -119,3 +119,13 @@ test('settings list pairs every item with its own value (the Aelmoor OPTIONS scr
   for (const s of ['class AelOptions', 'class AelLoad', 'class AelCredits', 'class AelQuit', 'class AelNewGame', 'class AelClassSelect', 'class AelSummary']) assert.ok(menus.includes(s), s);
   assert.match(read('src/scenes_world.js'), /new AM\.AelOptions\(\)/);
 });
+
+test('8-bit item sheet: every icon the RETRO index names exists, the key-art world map is wired, no monster/UI rows sliced', { skip: needs(IMAGES) }, () => {
+  const c = {}; c.globalThis = c; vm.runInNewContext(read('src/itemsheet_index.js'), c); const K = c.ITEMSHEET;
+  const names = [...Object.values(K.equip).flat(), ...Object.values(K.consumables)];
+  assert.ok(names.length > 150, 'item sheet indexed');
+  for (const n of names) assert.ok(has(n), n);
+  assert.ok(!fs.readdirSync(new URL('../assets/', import.meta.url)).some(f => /^ki_(dragons|undead|oozes|slimes|ui)/.test(f)), 'no creature or UI rows');
+  assert.match(read('src/art.js'), /ITEMSHEET\.equip\[cat\]/);
+  assert.match(read('src/scenes_world.js'), /ka_worldmap_01/);
+});

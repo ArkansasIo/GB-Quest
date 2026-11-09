@@ -142,12 +142,14 @@ function retroItemIcon(it) {
   const tier = Number.isFinite(Number(it.rarity)) ? Math.floor(Number(it.rarity)) : 1;
   const slot = Math.min(10, Math.max(0, tier * 2 - 1 + (hashStr(String(it.base)) % 2)));
   if (keyArtOn() && KEYART.equip[cat]) { const L = KEYART.equip[cat], k = keyArtImg(L[Math.min(L.length - 1, Math.floor(slot * L.length / 11))]); if (k) return k; }
+  // RETRO 8-BIT: the 8-bit item sheet (src/itemsheet_index.js), one icon per tier left to right
+  if (S.art === 'retro' && typeof ITEMSHEET !== 'undefined' && ITEMSHEET.equip[cat]) { const L = ITEMSHEET.equip[cat], k = keyArtImg(L[Math.min(L.length - 1, Math.floor(slot * L.length / 11))]); if (k) return k; }
   const name = `${retroPrefix()}i_${cat}_${slot}`;
   return IMG[name] ? name : null;
 }
 if (typeof window !== 'undefined') window.retroItemIcon = retroItemIcon;
 function applyArt() {
-  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = (keyArtOn() && keyArtImg(KEYART.consumables[k])) || (retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null); ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
+  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = (keyArtOn() && keyArtImg(KEYART.consumables[k])) || (S.art === 'retro' && typeof ITEMSHEET !== 'undefined' && keyArtImg(ITEMSHEET.consumables[k])) || (retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null); ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
 }
 applyArt();
 

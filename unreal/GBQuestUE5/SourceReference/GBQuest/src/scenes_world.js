@@ -1882,11 +1882,13 @@ class WorldMap {
     fill(0, 0, W, H, 0);
     // The map image and markers are quantized separately from atlas labels and controls.
     const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
+    // AELMOOR HD shows the base world on the Lanterns of Aelmoor key-art map (pins keep their relative positions)
+    const keyMap = S.art === 'aelmoor' && !worldOf(z) && IMG.ka_worldmap_01 ? 'ka_worldmap_01' : null;
     if (this.zoom === 0) {
-      const wi = IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s', img = IMG[wi]; const m = spr(wi, img.width, img.height);
+      const wi = keyMap || (IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s'), img = keyMap ? { width: W, height: 99 } : IMG[wi]; const m = spr(wi, img.width, img.height, keyMap ? { clean: false } : undefined);
       blit(m, 0, 12); this.pinMarks(img, 0, 12, 1);
     } else if (this.zoom === 1) {
-      const wi = IMG[worldImg(worldOf(z))] ? worldImg(worldOf(z)) : 'gm_dunia', img = IMG[wi], m = spr(wi, img.width, img.height);
+      const wi = keyMap || (IMG[worldImg(worldOf(z))] ? worldImg(worldOf(z)) : 'gm_dunia'), img = keyMap ? { width: 320, height: 199 } : IMG[wi], m = spr(wi, img.width, img.height);
       const [nx, ny] = zonePin(z), tx = nx * img.width, ty = ny * img.height, vh = 97;
       const cx = Math.max(0, Math.min(img.width - W, tx - W / 2)), cy = Math.max(0, Math.min(img.height - vh, ty - vh / 2));
       this.camx = this.camx == null ? cx : this.camx + (cx - this.camx) * 0.25; this.camy = this.camy == null ? cy : this.camy + (cy - this.camy) * 0.25;
