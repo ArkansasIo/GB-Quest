@@ -111,7 +111,7 @@ test('pixel packs: index sprites exist, aliases point at real art, monster picks
   for (const [old, pk] of Object.entries(idx.alias)) { assert.ok(has(pk), pk); assert.ok(has(old), `alias target ${old} is a real game sprite`); }
   assert.equal(idx.items.sword.length, 11, '11 sword tiers');
   const c = { Math, Object, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('pack_art.js'), c); const P = c.GBQPackArt;
-  assert.equal(P.nextArtMode('classic'), 'nes'); assert.equal(P.nextArtMode('nes'), 'packs'); assert.equal(P.nextArtMode('packs'), 'retro'); assert.equal(P.nextArtMode('retro'), 'classic');
+  assert.equal(P.nextArtMode('classic'), 'nes'); assert.equal(P.nextArtMode('nes'), 'packs'); assert.equal(P.nextArtMode('packs'), 'retro'); assert.equal(P.nextArtMode('retro'), 'aelmoor'); assert.equal(P.nextArtMode('aelmoor'), 'classic');
   assert.equal(P.packMonsterFor('plant', 'x', idx.monsters), null);
   let n = 0; for (let i = 0; i < 300; i++) if (P.packMonsterFor('undead', 'z|' + i, idx.monsters)) n++;
   assert.ok(n > 60 && n < 140, 'about a third of a family');

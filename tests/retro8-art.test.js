@@ -50,3 +50,28 @@ test('retro 8-bit: art mode is wired into the ART setting, monster lookup and th
   assert.match(read('src/scenes_world.js'), /retroWorldTile\(tile\)/);
   assert.match(read('src/scenes_menu.js'), /'RETRO 8-BIT'/);
 });
+
+test('retro 8-bit and AELMOOR HD: every townsfolk role has open and blink frames in both sets', () => {
+  const src = read('src/npc_art.js');
+  const roles = new Set();
+  for (const name of ['NPC_SVC_ROLE', 'NPC_PROF_ROLE']) {
+    const body = new RegExp(`const ${name} = \\{([\\s\\S]*?)\\};`).exec(src)[1];
+    for (const [, v] of body.matchAll(/:\s*'([a-z]+)'/g)) roles.add(v);
+  }
+  for (const [, v] of /const NPC_NAME_ROLE = \[([\s\S]*?)\];/.exec(src)[1].matchAll(/'([a-z]+)'\]/g)) roles.add(v);
+  for (const [, v] of /const NPC_FOLK = \[([^\]]*)\]/.exec(src)[1].matchAll(/'([a-z]+)'/g)) roles.add(v);
+  assert.ok(roles.size >= 40, 'roles parsed: ' + roles.size);
+  for (const r of roles) for (const p of ['r8n', 'r9n']) for (const k of [0, 1]) assert.ok(has(`${p}_${r}_${k}`), `${p}_${r}_${k}`);
+});
+
+test('AELMOOR HD: monsters, bosses and the title backdrop exist, and the mode is in the ART cycle', () => {
+  const F = families();
+  for (const fam of Object.values(F)) for (const [sub] of fam.sub) {
+    for (const v of ['base', 'ember', 'frost', 'venom', 'shadow', 'gilded', 'ash']) assert.ok(has(`r9m_${slug(sub)}_${v}`), `r9m_${slug(sub)}_${v}`);
+    for (const k of [0, 1, 2]) assert.ok(has(`r9b_${slug(sub)}_${k}`), `r9b_${slug(sub)}_${k}`);
+  }
+  assert.ok(has('r9_title'));
+  assert.match(read('src/scenes_menu.js'), /'AELMOOR HD'/);
+  assert.match(read('src/scenes_world.js'), /S\.art === 'aelmoor' && IMG\.r9_title/);
+  assert.match(read('src/npc_art.js'), /retroNpcArt\(role, blink\)/);
+});

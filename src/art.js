@@ -41,6 +41,15 @@ function assetPackEnemyFor(b) {
 // Collector creatures and story (arc) bosses keep their own art.
 const RETRO_TILE_GROUP = { desert: 'sand', badlands: 'sand', savanna: 'sand', oasis: 'sand', snow: 'snow', frozen: 'snow',
   marsh: 'swamp', corruption: 'swamp', dusk: 'swamp', ruins: 'swamp', mushroom: 'swamp', volcanic: 'lava', crystal: 'mystic', aether: 'mystic', sky: 'mystic' };
+// AELMOOR HD (tools/gen_aelmoor.py) shares the retro shapes and tiles but renders monsters and townsfolk with
+// smooth height-field lighting (r9* sprites), and adds a moonlit title backdrop.
+const retroMode = () => S.art === 'retro' || S.art === 'aelmoor';
+const retroPrefix = () => (S.art === 'aelmoor' ? 'r9' : 'r8');
+function retroNpcArt(role, blink) {
+  if (!retroMode() || !role) return null;
+  const name = `${retroPrefix()}n_${role}_${blink ? 1 : 0}`;
+  return IMG[name] ? name : null;
+}
 const retroSlug = sub => String(sub || '').toLowerCase().replace(/[^a-z]/g, '');
 const RETRO_DUNGEON_THEMES = new Set(['dungeon', 'crypt', 'ice', 'lava', 'temple', 'void']);
 function retroWorldTile(tile) {
@@ -55,15 +64,15 @@ function retroMonsterArt(b) {
   const src = isBoss ? (b.base && BEAST_BY_ID[b.base]) || (b.sub ? b : null) : b;
   if (!src || src.ccArt) return null;
   const slug = retroSlug(src.sub);
-  const name = isBoss ? `r8b_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `r8m_${slug}_${src.variant || 'base'}`;
+  const p = retroPrefix(), name = isBoss ? `${p}b_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `${p}m_${slug}_${src.variant || 'base'}`;
   return IMG[name] ? name : null;
 }
-if (typeof window !== 'undefined') { window.retroWorldTile = retroWorldTile; window.retroMonsterArt = retroMonsterArt; }
+if (typeof window !== 'undefined') { window.retroWorldTile = retroWorldTile; window.retroMonsterArt = retroMonsterArt; window.retroNpcArt = retroNpcArt; window.retroMode = retroMode; }
 
 const monsterArt = b => {
   const supplied = assetPackEnemyFor(b);
   if (supplied) return supplied;
-  if (S.art === 'retro') { const retro = retroMonsterArt(b); if (retro) return retro; }
+  if (retroMode()) { const retro = retroMonsterArt(b); if (retro) return retro; }
   if (b && (b.boss || b.cat === 'raid' || b.cat === 'world') && S.citadelArt !== false) {
     const boss = 'citadel_boss_' + CITADEL_BOSSES[hashStr(String(b.id || b.name || b.sub)) % CITADEL_BOSSES.length];
     if (IMG[boss]) return boss;

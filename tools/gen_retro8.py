@@ -100,7 +100,7 @@ class C:
             self.px(x + s, y + s, pupil, sym)
 
 
-def shade(mat, palette):
+def shade(mat, palette, rim=2):
     """materials -> RGBA: three-tone ramps lit from the top-left, then a one-pixel ink outline"""
     m = np.array(mat.im, dtype=np.int16)
     h, w = m.shape
@@ -122,7 +122,7 @@ def shade(mat, palette):
             dk, base, lt = ramp(palette.get(k, FIXED.get(k, (200, 0, 200))))
             col = np.zeros((h, w, 3), np.uint8)
             col[:] = base
-            dark = sel & ((down != k) | (right != k) | (down2 != k))
+            dark = sel & ((down != k) | (right != k) | ((down2 != k) if rim > 1 else False))
             light = sel & ~dark & ((up != k) | (left != k))
             out[sel, :3] = base
             out[dark, :3] = dk
@@ -1266,6 +1266,116 @@ def dtile(theme, key):
     return t.im
 
 
+# ============================================================== townsfolk (16 x 16, front-facing, open and blink frames)
+SKINS = {'l': (238, 190, 150), 't': (206, 150, 108), 'd': (142, 98, 70), 'g': (130, 186, 110)}
+HAIR = {'brown': (118, 74, 42), 'black': (52, 44, 56), 'blond': (232, 196, 92), 'red': (196, 76, 44), 'grey': (176, 176, 186),
+        'white': (236, 236, 240), 'auburn': (150, 64, 46), 'blue': (70, 110, 200)}
+# role: clothes, accent, hair, hair style, prop, skin
+NPC_ROLES = {
+    'alchemist': ((96, 150, 90), (170, 80, 180), 'grey', 'short', 'flask', 'l'), 'arenamaster': ((170, 50, 44), (226, 178, 58), 'black', 'helm', 'sword', 't'),
+    'armorer': ((96, 100, 116), (110, 70, 40), 'brown', 'beard', 'hammer', 'l'), 'auctioneer': ((120, 40, 60), (226, 178, 58), 'black', 'short', 'coin', 'l'),
+    'banker': ((40, 70, 120), (226, 178, 58), 'grey', 'short', 'coin', 'l'), 'beastmaster': ((110, 86, 50), (90, 140, 60), 'brown', 'long', 'none', 't'),
+    'blacksmith': ((150, 96, 60), (90, 84, 90), 'brown', 'beard', 'hammer', 'd'), 'child': ((90, 150, 210), (230, 200, 90), 'blond', 'short', 'none', 'l'),
+    'cook': ((236, 236, 236), (200, 80, 60), 'brown', 'cap', 'mug', 'l'), 'craftmaster': ((150, 100, 50), (90, 90, 100), 'grey', 'beard', 'hammer', 't'),
+    'curator': ((70, 60, 110), (226, 178, 58), 'white', 'short', 'book', 'l'), 'dockhand': ((60, 100, 150), (230, 230, 230), 'brown', 'cap', 'none', 't'),
+    'elder': ((130, 110, 160), (226, 178, 58), 'white', 'beard', 'staff', 'l'), 'enchanter': ((90, 60, 170), (120, 220, 255), 'blue', 'hat', 'orb', 'l'),
+    'farmer': ((110, 140, 70), (210, 180, 100), 'brown', 'straw', 'fork', 't'), 'fisher': ((60, 120, 140), (230, 200, 90), 'grey', 'cap', 'rod', 't'),
+    'forester': ((60, 110, 60), (120, 80, 40), 'red', 'short', 'axe', 'l'), 'guard': ((60, 90, 170), (226, 178, 58), 'brown', 'helm', 'spear', 'l'),
+    'guildmaster': ((140, 40, 50), (226, 178, 58), 'black', 'beard', 'book', 'd'), 'harbormaster': ((40, 60, 110), (240, 240, 240), 'grey', 'cap', 'scroll', 't'),
+    'herald': ((180, 60, 60), (226, 178, 58), 'blond', 'cap', 'horn', 'l'), 'herbalist': ((90, 140, 80), (200, 120, 180), 'auburn', 'long', 'herbs', 'l'),
+    'hunter': ((100, 80, 50), (70, 110, 60), 'brown', 'hood', 'bow', 't'), 'innkeeper': ((170, 110, 60), (236, 230, 210), 'red', 'bun', 'mug', 'l'),
+    'jeweller': ((80, 60, 120), (120, 220, 255), 'black', 'short', 'gem', 'l'), 'leatherworker': ((130, 90, 54), (90, 60, 40), 'brown', 'short', 'none', 'd'),
+    'merchant': ((60, 130, 90), (210, 170, 80), 'brown', 'cap', 'bag', 'l'), 'miner': ((110, 100, 90), (226, 178, 58), 'black', 'helm', 'pick', 't'),
+    'noble': ((120, 50, 140), (226, 178, 58), 'blond', 'crown', 'none', 'l'), 'oracle': ((70, 50, 120), (200, 140, 255), 'white', 'hood', 'orb', 'l'),
+    'quartermaster': ((90, 100, 70), (226, 178, 58), 'grey', 'short', 'scroll', 't'), 'salvager': ((120, 100, 80), (150, 150, 160), 'red', 'cap', 'pick', 't'),
+    'spirekeeper': ((50, 70, 130), (140, 200, 255), 'grey', 'hood', 'staff', 'l'), 'stablemaster': ((130, 90, 50), (220, 200, 140), 'brown', 'straw', 'none', 't'),
+    'steward': ((60, 80, 110), (226, 178, 58), 'black', 'short', 'scroll', 'd'), 'tailor': ((170, 80, 130), (240, 230, 200), 'auburn', 'bun', 'spool', 'l'),
+    'townsman': ((90, 120, 160), (140, 100, 60), 'brown', 'short', 'none', 'l'), 'townswoman': ((170, 90, 90), (236, 220, 180), 'red', 'kerchief', 'none', 'l'),
+    'trainer': ((150, 60, 50), (100, 100, 110), 'black', 'short', 'sword', 't'), 'trialsmaster': ((70, 70, 90), (230, 90, 60), 'white', 'helm', 'sword', 'd'),
+    'warden': ((60, 100, 70), (226, 178, 58), 'brown', 'hood', 'spear', 'l'), 'weaponsmith': ((100, 70, 60), (150, 156, 170), 'black', 'beard', 'sword', 't'),
+}
+
+
+def npc(role, blink=False):
+    """townsfolk material canvas: STONE is the hair colour, BODY the clothes, ACC the trim"""
+    c = C(16, 16)
+    if role == 'realmstone':
+        c.r(4, 13, 11, 15, STONE)
+        c.p([(8, 0), (12, 5), (11, 12), (8, 14), (5, 12), (4, 5)], BODY)
+        c.l([(8, 1), (8, 13)], ACC); c.px(6, 4, SHINE); c.px(7 if blink else 6, 6, SHINE)
+        return c
+    clothes, acc, hair, style, prop, skin = NPC_ROLES[role]
+    small = role == 'child'
+    top = 3 if small else 0
+    c.r(5, 13, 6, 15, ACC if role != 'townswoman' else BODY, True); c.px(5, 15, DARK, True); c.px(6, 15, DARK, True)
+    if role == 'townswoman' or role == 'oracle' or role == 'enchanter' or role == 'elder' or role == 'spirekeeper':
+        c.p([(4, 8 + top // 2), (11, 8 + top // 2), (12, 15), (3, 15)], BODY)                       # robe / dress
+    else:
+        c.r(4, 8 + top // 2, 11, 13, BODY)
+    c.r(3, 9 + top // 2, 3, 12, BODY, True); c.px(3, 12, SKIN, True)
+    if prop == 'none' or role in ('cook', 'blacksmith', 'leatherworker'):
+        c.r(5, 10, 10, 13, ACC)                                                                     # apron / sash
+    else:
+        c.l([(4, 11), (11, 11)], ACC)
+    if style == 'hood':
+        c.e(3, top, 12, 8 + top, BODY)
+    c.e(4, top + 1, 11, top + 8, SKIN)
+    if style in ('short', 'bun', 'beard', 'crown'):
+        c.e(4, top, 11, top + 4, STONE); c.r(4, top + 2, 4, top + 5, STONE, True)
+    elif style == 'long':
+        c.e(4, top, 11, top + 4, STONE); c.r(3, top + 2, 4, top + 9, STONE, True)
+    elif style == 'helm':
+        c.e(4, top, 11, top + 5, STEEL); c.r(3, top + 3, 12, top + 4, STEEL); c.px(8, top, ACC)
+    elif style == 'hat':
+        c.p([(8, -1), (12, top + 4), (3, top + 4)], BODY); c.r(2, top + 3, 13, top + 4, BODY); c.px(8, top + 1, ACC)
+    elif style == 'cap':
+        c.e(4, top, 11, top + 4, ACC); c.r(4, top + 3, 12, top + 3, ACC)
+    elif style == 'straw':
+        c.e(4, top, 11, top + 3, GOLD); c.r(2, top + 3, 13, top + 3, GOLD)
+    elif style == 'kerchief':
+        c.e(4, top, 11, top + 4, ACC); c.r(3, top + 3, 4, top + 6, STONE, True)
+    if style == 'bun':
+        c.e(6, top - 1, 9, top + 1, STONE)
+    if style == 'crown':
+        c.r(5, top - 1, 10, top, GOLD); c.px(5, top - 2, GOLD); c.px(8, top - 2, GOLD); c.px(10, top - 2, GOLD)
+    if style == 'beard':
+        c.e(5, top + 5, 10, top + 10, STONE)
+    if blink:
+        c.px(6, top + 5, DARK, True)
+    else:
+        c.r(6, top + 4, 6, top + 5, DARK, True)
+    P = {
+        'bag': lambda: c.e(11, 9, 14, 13, WOOD), 'mug': lambda: (c.r(12, 9, 14, 12, WOOD), c.r(12, 8, 14, 8, WHITE)),
+        'spear': lambda: (c.l([(13, 1), (13, 15)], WOOD), c.p([(13, -1), (14, 2), (12, 2)], STEEL)),
+        'hammer': lambda: (c.l([(13, 6), (13, 13)], WOOD), c.r(11, 4, 15, 6, STEEL)),
+        'orb': lambda: (c.l([(13, 4), (13, 15)], WOOD), c.e(11, 0, 15, 4, GLOW)),
+        'staff': lambda: (c.l([(13, 2), (13, 15)], WOOD), c.e(12, 0, 14, 2, WOOD)),
+        'book': lambda: (c.r(11, 9, 14, 12, ACC), c.l([(11, 9), (11, 12)], GOLD)),
+        'scroll': lambda: (c.r(11, 10, 14, 11, BONE), c.px(11, 9, BONE), c.px(14, 12, BONE)),
+        'coin': lambda: c.e(12, 9, 14, 11, GOLD), 'gem': lambda: c.p([(13, 8), (15, 10), (13, 12), (11, 10)], ACC),
+        'pick': lambda: (c.l([(13, 6), (13, 14)], WOOD), c.l([(10, 6), (13, 4), (15, 6)], STEEL)),
+        'axe': lambda: (c.l([(13, 5), (13, 14)], WOOD), c.p([(13, 5), (15, 4), (15, 8), (13, 8)], STEEL)),
+        'rod': lambda: c.l([(12, 13), (15, 1)], WOOD), 'bow': lambda: (c.d.arc([10, 3, 15, 14], 270, 90, fill=WOOD), c.l([(13, 4), (13, 13)], BONE)),
+        'herbs': lambda: (c.e(11, 9, 14, 12, ACC), c.px(12, 8, ACC)), 'flask': lambda: (c.e(11, 10, 14, 13, GLOW), c.r(12, 8, 13, 9, BONE)),
+        'sword': lambda: (c.l([(13, 2), (13, 11)], STEEL), c.r(12, 11, 14, 11, GOLD), c.px(13, 12, WOOD)),
+        'fork': lambda: (c.l([(13, 3), (13, 15)], WOOD), c.l([(12, 0), (12, 3)], STEEL), c.l([(14, 0), (14, 3)], STEEL), c.l([(12, 3), (14, 3)], STEEL)),
+        'horn': lambda: (c.l([(11, 9), (15, 6)], GOLD), c.r(14, 4, 15, 7, GOLD)), 'spool': lambda: (c.r(12, 10, 14, 12, ACC), c.l([(12, 10), (14, 10)], WOOD)),
+    }
+    if prop in P:
+        P[prop]()
+    return c
+
+
+def npc_palette(role):
+    if role == 'realmstone':
+        return {BODY: (90, 200, 240), ACC: (210, 250, 255)}
+    clothes, acc, hair, style, prop, skin = NPC_ROLES[role]
+    return {BODY: clothes, ACC: acc, STONE: HAIR[hair], SKIN: SKINS[skin]}
+
+
+NPC_ALL = list(NPC_ROLES) + ['realmstone']
+
+
 # ============================================================== output
 def build(out=OUT):
     out.mkdir(exist_ok=True)
@@ -1281,6 +1391,9 @@ def build(out=OUT):
             monster(sub, v).save(out / f'r8m_{sub}_{v}.png'); n += 1
         for b in range(3):
             monster(sub, boss=b).save(out / f'r8b_{sub}_{b}.png'); n += 1
+    for role in NPC_ALL:
+        for k in (0, 1):
+            shade(npc(role, blink=bool(k)), npc_palette(role), rim=1).save(out / f'r8n_{role}_{k}.png'); n += 1
     return n
 
 
