@@ -16935,12 +16935,19 @@ function aelSlider(x, y, w, frac) {
   hdr = function () {
     if (!aelTheme()) return hdr2();
     fill(0, 0, W, 11, 'rgba(14,12,40,.96)'); fill(0, 10, W, 1, AEL.gold); fill(0, 11, W, 1, AEL.goldDark);
-    if (G) { text(`LV${G.lvl}`, 3, 1, AEL.gold); textR(`${G.gold}G`, W - 3, 1, AEL.cream); }
+    if (G) { text(`LV${G.lvl}`, 3, 1, AEL.gold); const g = fmt(G.gold); textR(g, W - 3, 1, AEL.cream); }
+    // the suite's gold title plaque, naming the screen that is open
+    const title = aelSceneTitle(scenes[scenes.length - 1]);
+    if (title) aelPlaque(title, 80, 0, Math.min(88, title.length * 6 + 14));
   };
   // menus clear the screen with shade 0 first: give them the moonlit backdrop instead of a flat fill
   const fill2 = fill;
   fill = function (x, y, w, h, c) {
     if (c === 0 && x === 0 && y === 0 && w === W && h === H && aelTheme() && (IMG.r9_title || IMG.title_aelmoor) && !(scenes[scenes.length - 1] instanceof Field)) { aelBackdrop(false); return; }
+    // a row or tab filled with the lightest shade is a selection: draw the suite's amber bar with a gold edge
+    if (c === 3 && h >= 8 && h <= 14 && w >= 30 && aelTheme()) {
+      fill2(x, y, w, h, AEL.amber); ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore(); return;
+    }
     return fill2(x, y, w, h, c);
   };
   const ornate2 = drawOrnatePanel;
@@ -16948,6 +16955,67 @@ function aelSlider(x, y, w, frac) {
     if (!aelTheme()) return ornate2(x, y, w, h, title);
     aelPanel(x, y, w, h); if (title) aelPlaque(title, x + (w >> 1), Math.max(0, y - 5));
   };
+}
+
+// screen names for the header plaque: explicit names first, else the class name split into words
+const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT',
+  StashScene: 'STASH', MarketScene: 'VENDOR', QuestLog: 'QUEST LOG', Spellbook: 'SPELLBOOK', GrowthScene: 'GROWTH', ArtsScene: 'COMBAT ARTS',
+  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
+  RepScene: 'REPUTATION', BestiaryScene: 'BESTIARY', BossJournalScene: 'BOSS JOURNAL', ActivityFinderScene: 'ACTIVITIES', SettingsScene: 'SETTINGS',
+  TalentScene: 'TALENTS', PerkTreeScene: 'PERKS', CompanionScene: 'PARTY', GemSocketScene: 'GEMS', RuneForgeScene: 'RUNE FORGE', CraftScene: 'CRAFTING',
+  ProfessionScene: 'PROFESSIONS', SideQuestBoard: 'QUEST BOARD', ExpansionMapsScene: 'EXPANSIONS', ArtGalleryScene: 'ART GALLERY', AbilitySkillsScene: 'SKILLS' };
+function aelSceneTitle(sc) {
+  if (!sc || !sc.constructor) return '';
+  const n = sc.constructor.name;
+  if (AEL_SCENE_TITLES[n]) return AEL_SCENE_TITLES[n];
+  return n.replace(/Scene$/, '').replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase().slice(0, 12);
+}
+
+// ---------------------------------------------------------------- GAME MENU (the in-game START menu)
+const AEL_MENU_ICON = { CHARACTER: 'ka_chars_00', SPELLBOOK: 'ka_items_17', GROWTH: 'ka_status_13', 'COMBAT ARTS': 'ka_weapons_03', ARMOURY: 'ka_weapons_17',
+  HEIRLOOMS: 'ka_weapons_44', WARDROBE: 'ka_weapons_13', LOADOUTS: 'ka_weapons_42', JOBS: 'ka_weapons_11', CHALLENGES: 'ka_icons_01', MOUNTS: 'ka_mounts_01',
+  'QUEST LOG': 'ka_items_11', CRAFTING: 'ka_weapons_00', REST: 'ka_items_01', 'ACTIVITY FINDER': 'ka_icons_07', BESTIARY: 'ka_status_01',
+  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', TITLES: 'ka_icons_03',
+  'WORLD MAP': 'ka_items_45', 'ART GALLERY': 'ka_items_13', 'EXPANSION MAPS': 'ka_items_45', HEARTHSTONE: 'ka_items_07', SETTINGS: 'ka_status_17',
+  SAVE: 'ka_items_46', 'SAVE & QUIT': 'ka_items_42' };
+const AEL_MENU_DESC = { CHARACTER: 'STATS, GEAR AND BAG', SPELLBOOK: 'SPELLS AND SLOTS', GROWTH: 'LEVEL-UP CHOICES', 'COMBAT ARTS': 'YOUR BATTLE ARTS',
+  ARMOURY: 'ARMOUR SETS', HEIRLOOMS: 'FAMILY RELICS', WARDROBE: 'CHANGE YOUR LOOK', LOADOUTS: 'SAVED GEAR SETS', JOBS: 'JOBS AND WORK', CHALLENGES: 'TRIALS AND GOALS',
+  MOUNTS: 'RIDE A MOUNT', 'QUEST LOG': 'ACTIVE QUESTS', CRAFTING: 'MAKE ITEMS', REST: 'REST AND HEAL', 'ACTIVITY FINDER': 'DUNGEONS, RAIDS', BESTIARY: 'MONSTERS SEEN',
+  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', TITLES: 'EARNED TITLES',
+  'WORLD MAP': 'MAP OF AELMOOR', 'ART GALLERY': 'ART YOU FOUND', 'EXPANSION MAPS': 'NEW LANDS', HEARTHSTONE: 'RETURN HOME', SETTINGS: 'GAME OPTIONS',
+  SAVE: 'SAVE YOUR GAME', 'SAVE & QUIT': 'SAVE, TO TITLE' };
+function aelGameMenuDraw(menu) {
+  fill(0, 0, W, H, 0); hdr();
+  const D = derive(G), items = menu.items();
+  aelPanel(2, 13, 92, 121);
+  menu.rows = 9;
+  if (menu.i < menu.top) menu.top = menu.i; if (menu.i >= menu.top + menu.rows) menu.top = menu.i - menu.rows + 1;
+  items.slice(menu.top, menu.top + menu.rows).forEach((s, j) => {
+    const i = menu.top + j, y = 16 + j * 13, sel = i === menu.i, base = s.replace(' (!)', '');
+    if (sel) { fill(5, y, 86, 12, AEL.amber); ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.strokeRect(5.5, y + .5, 85, 11); ctx.restore(); }
+    const ic = AEL_MENU_ICON[base];
+    if (ic && IMG[ic]) blit(sprFit(ic, 9), 7, y + 1); else fill(9, y + 4, 4, 4, AEL.gold);
+    text(base.slice(0, 11), 19, y + 2, sel ? AEL.cream : AEL.lav);
+    if (s.endsWith('(!)')) text('!', 86, y + 2, '#ff8a50');
+  });
+  if (items.length > menu.rows) { const h = 115, bh = Math.max(8, h * menu.rows / items.length); fill(91, 16, 1, h, AEL.goldDark); fill(90, 16 + (h - bh) * menu.top / Math.max(1, items.length - menu.rows), 3, bh, AEL.gold); }
+  aelPanel(96, 13, 62, 121);
+  const portrait = heroPortrait(G);
+  blit(portrait ? sprFit(portrait, 34) : sprH(`c_${G.cls}_0`, 30), 110, 17);
+  textC(G.name.slice(0, 9), 127, 53, AEL.cream); textC(CLASSES[G.cls].name.slice(0, 9), 127, 62, AEL.lav);
+  text('HP', 99, 73, '#ff8a80'); bar(113, 74, 42, 4, G.hp, D.hpMax, 'hp');
+  text('MP', 99, 82, '#80b4ff'); bar(113, 83, 42, 4, typeof resourceFrac === 'function' ? Math.round(resourceFrac(G) * 100) : 0, 100, 'mp');
+  text('XP', 99, 91, '#ffd875'); bar(113, 92, 42, 4, G.xp - xpForLevel(G.lvl), xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)) - xpForLevel(G.lvl), 'xp');
+  const zone = (typeof ZONE_BY_ID !== 'undefined' && ZONE_BY_ID[G.map]) ? ZONE_BY_ID[G.map].name : '';
+  textC(String(zone).slice(0, 10), 127, 101, 2);
+  const desc = (AEL_MENU_DESC[(items[menu.i] || '').replace(' (!)', '')] || '').split(' ');
+  const lines = ['']; for (const w of desc) { if ((lines[lines.length - 1] + ' ' + w).trim().length > 9 && lines.length < 2) lines.push(''); lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim(); }
+  fill(99, 111, 56, 20, 'rgba(26,22,58,.9)'); lines.forEach((l, k) => textC(l.slice(0, 9), 127, 112 + k * 9, AEL.cream));
+  aelHints([['A', 'OPEN'], ['B', 'CLOSE']]);
+}
+if (typeof MainMenu === 'function') {
+  const mmDraw = MainMenu.prototype.draw;
+  MainMenu.prototype.draw = function () { if (aelTheme()) return aelGameMenuDraw(this); this.rows = 11; return mmDraw.apply(this, arguments); };
 }
 
 // ---------------------------------------------------------------- QUIT
