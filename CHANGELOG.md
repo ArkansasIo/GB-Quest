@@ -2,6 +2,10 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## Unreleased — field sprites in colour
+
+- FULL DETAIL no longer shrinks the asset pack's painted people, houses and props to 16px field sprites (they turned into gray, muddy blobs). The field now uses the game's own coloured walkers, townsfolk and buildings; pack art stays on portraits, item icons, monsters and battle scenes. `S.packField = true` restores the old swap.
+
 ## Unreleased
 
 ### Changed

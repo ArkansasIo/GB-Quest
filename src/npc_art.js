@@ -21,8 +21,12 @@ const NPC_FOLK = ['townsman', 'townswoman', 'noble', 'child'];
 const npcHash = s => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
 let AP_WORLD_NPCS = null;
 let AP_WORLD_CHARACTERS = null;
+// The pack's people are large painted figures; shrunk to a 16px field sprite they turn into gray, muddy blobs.
+// FULL DETAIL keeps the game's own coloured walkers and townsfolk in the field (pack art is still used for
+// portraits, item icons, monsters and battle scenes). S.packField = true brings the old swap back.
+const packFieldOn = () => S.art === 'packs' && S.packField === true;
 function assetPackCharacter(character, dir = 'down', ghost = false) {
-  if (S.art !== 'packs') return null;
+  if (!packFieldOn()) return null;
   AP_WORLD_CHARACTERS ||= Object.keys(IMG).filter(name => /^ap_characters_\d+$/.test(name)).sort();
   if (!AP_WORLD_CHARACTERS.length) return null;
   const key = [character && character.cls, character && character.species, character && character.look].join('|');
@@ -30,7 +34,7 @@ function assetPackCharacter(character, dir = 'down', ghost = false) {
   return IMG[name] ? spr(name, 16, 32, { flip: dir === 'left', ghost }) : null;
 }
 function assetPackNpc(e) {
-  if (S.art !== 'packs') return null;
+  if (!packFieldOn()) return null;
   AP_WORLD_NPCS ||= Object.keys(IMG).filter(name => /^ap_npcs_\d+$/.test(name)).sort();
   AP_WORLD_CHARACTERS ||= Object.keys(IMG).filter(name => /^ap_characters_\d+$/.test(name)).sort();
   const pool = AP_WORLD_NPCS.length ? AP_WORLD_NPCS : AP_WORLD_CHARACTERS;
@@ -57,4 +61,4 @@ function npcSprite(e) {
   return spr(blink && IMG[`${base}_blink`] ? `${base}_blink` : `${base}_down0`, 16, 16);
 }
 window.npcRole = npcRole; window.npcSprite = npcSprite;
-window.assetPackCharacter = assetPackCharacter;
+window.assetPackCharacter = assetPackCharacter; window.packFieldOn = packFieldOn;

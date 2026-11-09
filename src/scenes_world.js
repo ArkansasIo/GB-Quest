@@ -898,7 +898,7 @@ class Field {
     for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++)
       for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
         const d = this.tileAt(tx, ty); if (!d) continue;
-        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
+        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.packFieldOn === 'function' && window.packFieldOn() && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
         else blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
       }
     const list = this.entities().map(e => Object.assign(e, { sy: e.y * T }));
