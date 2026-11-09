@@ -124,3 +124,9 @@ test('player HUD avoids narrow-screen shortcut collisions and honors reduced mot
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(styles, /image-rendering:pixelated/);
 });
+
+test('menu shortcut keys are implemented (field only) and avoid the keys the game already uses', () => {
+  for (const k of ['b:', 'i:', 'u:', 'p:', 'l:', 't:', 'g:', 'o:', 'h:', 'n:']) assert.ok(source.includes(k + ' () => new'), k);
+  assert.match(source, /topScene\(\) instanceof Field/);
+  assert.doesNotMatch(source, /\b[cmfwasdzjxk]: \(\) => new/);
+});

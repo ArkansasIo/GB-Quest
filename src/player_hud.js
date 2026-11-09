@@ -262,11 +262,25 @@
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
   function init() { mount(); if (!root) window.setTimeout(init, 250); }
-  // with the bottom bar gone, Y opens the realm trading panel (Trading used to be a bottom-bar button)
+  // Keyboard shortcuts for the menus the old bottom bar listed (they were labels only before).
+  // Field only, never while typing or in battle. Taken keys are avoided: WASD/arrows move, Z/J/Space = A,
+  // X/K/Esc = B, Enter = START, Shift/Tab = SELECT, C = chat, M = atlas, F = full screen.
+  const HUD_SHORTCUTS = {
+    b: () => new InventoryScene('field'), i: () => new InventoryScene('field'), u: () => new CharacterMenu(), p: () => new Spellbook(),
+    l: () => new QuestLog(), t: () => new GrowthScene(), n: () => new ArtsScene(), g: () => new SocialScene(), o: () => new CraftScene(),
+    h: () => new AchievementScene(),
+  };
+  window.GBQHudShortcuts = Object.keys(HUD_SHORTCUTS);
   window.addEventListener('keydown', event => {
     const el = document.activeElement, typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
-    if (event.repeat || typing || event.defaultPrevented || !(event.key === 'y' || event.key === 'Y')) return;
-    if (window.GBQMMOTrade) { event.preventDefault(); window.GBQMMOTrade.open(); } else showToast('Trading interface is still loading');
+    if (event.repeat || typing || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (typeof keyCaptureHandler !== 'undefined' && keyCaptureHandler) return;
+    const key = String(event.key || '').toLowerCase();
+    if (key === 'y') { if (window.GBQMMOTrade) { event.preventDefault(); window.GBQMMOTrade.open(); } else showToast('Trading interface is still loading'); return; }
+    const make = HUD_SHORTCUTS[key];
+    if (!make || typeof G === 'undefined' || !G || typeof topScene !== 'function' || !(topScene() instanceof Field)) return;
+    try { event.preventDefault(); if (typeof SFX !== 'undefined') SFX.open(); push(make()); }
+    catch (error) { console.warn('HUD shortcut failed:', key, error); showToast('That menu is unavailable right now'); }
   });
   window.GBQPlayerHUD = { mount:init, refresh:update, destroy(){ if(timer)window.clearInterval(timer);timer=null;root?.remove();root=null; } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();

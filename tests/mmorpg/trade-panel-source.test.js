@@ -46,7 +46,7 @@ test('trading panel styles and script are bundled into the one-file itch release
 });
 
 test('HUD exposes the Trading action and delegates to the realm panel', () => {
-  assert.match(hud, /event\.key === 'y' \|\| event\.key === 'Y'/);
+  assert.match(hud, /key === 'y'/);
   assert.match(hud, /window\.GBQMMOTrade\.open\(\)/);
   assert.match(styles, /gbq-trade-overlay/);
   assert.match(styles, /@media\(max-width:560px\)/);
