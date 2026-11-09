@@ -36,9 +36,33 @@ function assetPackEnemyFor(b) {
   const preferred = `ap_enemies_${String(index).padStart(3, '0')}`;
   return IMG[preferred] ? preferred : AP_PACK_ENEMIES[index % AP_PACK_ENEMIES.length];
 }
+// RETRO 8-BIT mode (tools/gen_retro8.py): original 8-bit console-RPG tiles and monsters.
+// Each bestiary subtype has one design, palette-swapped per element variant; bosses get a crowned regal version.
+// Collector creatures and story (arc) bosses keep their own art.
+const RETRO_TILE_GROUP = { desert: 'sand', badlands: 'sand', savanna: 'sand', oasis: 'sand', snow: 'snow', frozen: 'snow',
+  marsh: 'swamp', corruption: 'swamp', dusk: 'swamp', ruins: 'swamp', mushroom: 'swamp', volcanic: 'lava', crystal: 'mystic', aether: 'mystic', sky: 'mystic' };
+const retroSlug = sub => String(sub || '').toLowerCase().replace(/[^a-z]/g, '');
+function retroWorldTile(tile) {
+  const m = /^gt_([a-z]+)_(.+)$/.exec(tile || '');
+  if (!m || m[1].startsWith('r8')) return null;
+  const name = `gt_r8${RETRO_TILE_GROUP[m[1]] || 'green'}_${m[2]}`;
+  return IMG[name] ? name : null;
+}
+function retroMonsterArt(b) {
+  if (!b || b.ccArt || b.cat === 'arc') return null;
+  const isBoss = !!(b.cat || b.boss);
+  const src = isBoss ? (b.base && BEAST_BY_ID[b.base]) || (b.sub ? b : null) : b;
+  if (!src || src.ccArt) return null;
+  const slug = retroSlug(src.sub);
+  const name = isBoss ? `r8b_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `r8m_${slug}_${src.variant || 'base'}`;
+  return IMG[name] ? name : null;
+}
+if (typeof window !== 'undefined') { window.retroWorldTile = retroWorldTile; window.retroMonsterArt = retroMonsterArt; }
+
 const monsterArt = b => {
   const supplied = assetPackEnemyFor(b);
   if (supplied) return supplied;
+  if (S.art === 'retro') { const retro = retroMonsterArt(b); if (retro) return retro; }
   if (b && (b.boss || b.cat === 'raid' || b.cat === 'world') && S.citadelArt !== false) {
     const boss = 'citadel_boss_' + CITADEL_BOSSES[hashStr(String(b.id || b.name || b.sub)) % CITADEL_BOSSES.length];
     if (IMG[boss]) return boss;

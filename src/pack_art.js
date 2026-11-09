@@ -1,6 +1,6 @@
 'use strict';
 // ================================================================ ASSET PACK ART MODE
-// SETTINGS > ART cycles CLASSIC, NES and FULL DETAIL (the default). FULL DETAIL uses the full-resolution sources
+// SETTINGS > ART cycles CLASSIC, NES, FULL DETAIL (the default) and RETRO 8-BIT (src/art.js, tools/gen_retro8.py). FULL DETAIL uses the full-resolution sources
 // from assets_pack, with generated pixel-pack aliases retained for its alternate character/world sprites.
 //   * gear icons: 11-tier weapons, shields, armour, helmets and boots; polearms, crossbows, staves, wands,
 //     rings, gems, keys, coins, spellbooks and potions
@@ -14,7 +14,7 @@ const PACK_MODE = 'packs';
 function pkHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 // a third of a family's subtypes get pack art; same subtype -> same sprite
 const packMonsterFor = (fam, key, pools) => { const L = pools && pools[fam]; if (!L || !L.length) return null; const h = pkHash('pk|' + key); return h % 3 === 0 ? L[(h >>> 2) % L.length] : null; };
-const nextArtMode = m => ({ classic: 'nes', nes: 'packs', packs: 'classic' })[m] || 'nes';
+const nextArtMode = m => ({ classic: 'nes', nes: 'packs', packs: 'retro', retro: 'classic' })[m] || 'nes';
 
 if (typeof globalThis !== 'undefined') globalThis.GBQPackArt = { packMonsterFor, nextArtMode, PACK_MODE };
 

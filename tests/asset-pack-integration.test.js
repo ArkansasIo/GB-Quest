@@ -38,7 +38,7 @@ test('asset pack and pixel pack runtime scripts are loaded after the core art pi
 
 test('pixel pack mode preserves classic fallback and exposes all generated world aliases', () => {
   const runtime = read('src/pack_art.js');
-  assert.match(runtime, /classic:\s*'nes',\s*nes:\s*'packs',\s*packs:\s*'classic'/);
+  assert.match(runtime, /classic:\s*'nes',\s*nes:\s*'packs',\s*packs:\s*'retro',\s*retro:\s*'classic'/);
   assert.match(runtime, /IMG\[pk\]/, 'pack aliases must only replace sprites when their image loaded');
   assert.match(runtime, /ORIG\[old\]/, 'original sprites must be restored when pack mode is disabled');
   const source = read('src/pack_index.js');
