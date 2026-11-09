@@ -114,6 +114,12 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
   screen.save(); screen.imageSmoothingEnabled = false;
   if (Math.abs(z - 1) < 0.001) screen.drawImage(V64.big, 0, 0);
   else { screen.translate(BW / 2, BH / 2); screen.scale(z, z); screen.translate(-BW / 2, -BH / 2); screen.drawImage(V64.big, 0, 0); }
+  // title key art: draw it sharp at full size, then put the live menu and footer back from the framebuffer
+  const topSc = scenes[scenes.length - 1];
+  if (topSc && topSc.constructor && topSc.constructor.name === 'Title' && topSc.keep && IMG.title_aelmoor_hi) {
+    screen.imageSmoothingEnabled = true; screen.drawImage(IMG.title_aelmoor_hi, 0, 0, BW, BH); screen.imageSmoothingEnabled = false;
+    for (const [x, y, w, h] of topSc.keep) screen.drawImage(V64.big, x * SC, y * SC, w * SC, h * SC, x * SC, y * SC, w * SC, h * SC);
+  }
   // 2. lighting (field scenes only)
   const base = scenes.findLast ? scenes.findLast(s => s.opaque) : scenes.slice().reverse().find(s => s.opaque);
   if (base instanceof Field && Light64.dark > 0.01) {

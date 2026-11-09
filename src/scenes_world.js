@@ -110,6 +110,10 @@ class Title {
     }, 'Leave GB Quest?');
   }
   draw() {
+    // Key art (tools/make_title_art.py): logo, party and castle are in the picture; the live menu sits exactly over
+    // the art's own menu panel, the footer over its caption line. present64 redraws the art sharp at 640x576 and
+    // keeps only this.keep (menu + footer) from the framebuffer.
+    if (IMG.title_aelmoor) return this.drawKeyArt();
     if (S.art === 'aelmoor' && IMG.r9_title) blit(spr('r9_title', W, H, { clean: false }), 0, 0);
     else drawMenuBackdrop('ap_scene_wilderness');
 
@@ -138,6 +142,19 @@ class Title {
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
     textC('A  SELECT   B  BACK', 80, 137, '#e8dab8');
+  }
+  drawKeyArt() {
+    const smooth = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(IMG.title_aelmoor, 0, 0, W, H); ctx.imageSmoothingEnabled = smooth;
+    const o = this.opts(), panelX = 74, panelW = W - 74, panelY = 62, panelH = 73, rowH = Math.min(11, Math.floor((panelH - 6) / o.length)), top = panelY + Math.floor((panelH - rowH * o.length) / 2);
+    fill(panelX, panelY, panelW, panelH, '#0a0b1c');          // solid, so the art's own menu text never shows through
+    drawOrnatePanel(panelX, panelY, panelW, panelH);
+    o.forEach((label, j) => drawMenuButton(panelX + 5, top + j * rowH, panelW - 10, rowH, label, j === this.i));
+    fill(0, 136, W, 8, '#05060f');
+    ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
+    text(`v${BUILD.version}`, 4, 137, '#c8a84a');
+    textR('A SELECT  B BACK', W - 4, 137, '#e8dab8');
+    this.keep = [[panelX - 1, panelY - 1, panelW + 1, panelH + 2], [0, 136, W, 8]];
   }
 }
 // ================================================================ ORIGINAL GAME BOY WORLD PALETTE
