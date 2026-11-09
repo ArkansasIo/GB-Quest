@@ -208,6 +208,11 @@ def build(out=OUT):
             monster(sub, v).save(out / f'r9m_{sub}_{v}.png'); n += 1
         for b in range(3):
             monster(sub, boss=b).save(out / f'r9b_{sub}_{b}.png'); n += 1
+    for cat in R.EQUIP_ICONS:
+        for slot in range(11):
+            c, pal = R.equip_icon(cat, slot); hd_shade(c, pal, strength=2.0, glint=False).save(out / f'r9i_{cat}_{slot}.png'); n += 1
+    for key in R.CONSUMABLES:
+        c, pal = R.consumable(key); hd_shade(c, pal, strength=2.0, glint=False).save(out / f'r9c_{key}.png'); n += 1
     for role in R.NPC_ALL:
         for k in (0, 1):
             townsfolk(role, bool(k)).save(out / f'r9n_{role}_{k}.png'); n += 1

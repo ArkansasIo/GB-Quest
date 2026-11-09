@@ -117,8 +117,22 @@ const ITEM_ART = { potion: ['potion', 0], greater: ['potion', 1], superior: ['po
   goblin_token: ['currency', 2], old_bone: ['misc', 3], slimegel: ['reagent', 7], gold_dust: ['currency', 5], coinpurse: ['treasure2', 2], idol_shard: ['gem', 3],
   codex_page: ['tome', 3], tower_key: ['key', 4], old_boot: ['boots', 0] };
 for (const k in ITEMS) ITEMS[k].icon0 = ITEMS[k].icon;
+// RETRO 8-BIT / AELMOOR HD item icons: <p>i_<category>_<slot> (slot as tierPick picks it) and <p>c_<item key>
+const RETRO_HELMS = new Set(['helm', 'circlet', 'great_helm', 'bascinet', 'sallet', 'barbute', 'armet', 'kettle_hat', 'nasal_helm']);
+function retroItemIcon(it) {
+  if (!it || !retroMode()) return null;
+  let cat;
+  if (it.kind === 'weapon') cat = WEAPON_ART[it.base] || 'sword';
+  else if (it.kind === 'armor') cat = armorArtCategory(it);
+  else cat = RETRO_HELMS.has(it.base) ? 'helmet' : (WONDROUS_ART[it.base] || 'ring');
+  const tier = Number.isFinite(Number(it.rarity)) ? Math.floor(Number(it.rarity)) : 1;
+  const slot = Math.min(10, Math.max(0, tier * 2 - 1 + (hashStr(String(it.base)) % 2)));
+  const name = `${retroPrefix()}i_${cat}_${slot}`;
+  return IMG[name] ? name : null;
+}
+if (typeof window !== 'undefined') window.retroItemIcon = retroItemIcon;
 function applyArt() {
-  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; ITEMS[k].icon = artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0; }
+  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null; ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
 }
 applyArt();
 

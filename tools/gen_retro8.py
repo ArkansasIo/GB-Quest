@@ -1376,6 +1376,218 @@ def npc_palette(role):
 NPC_ALL = list(NPC_ROLES) + ['realmstone']
 
 
+# ============================================================== item icons (16 x 16)
+# equipment: 11 slots per category (index = rarity*2-1 + variant, as tierPick picks), consumables: one per item key
+RARITY_METAL = [(120, 104, 92), (164, 170, 184), (150, 186, 156), (128, 166, 232), (178, 128, 226), (244, 196, 76)]
+RARITY_TRIM = [(130, 100, 70), (200, 160, 70), (210, 170, 70), (220, 180, 80), (226, 190, 90), (255, 220, 120)]
+RARITY_GEM = [(150, 130, 120), (200, 60, 60), (70, 200, 90), (60, 130, 240), (170, 80, 240), (255, 140, 40)]
+RARITY_CLOTH = [(120, 100, 80), (110, 90, 70), (70, 130, 80), (60, 90, 170), (110, 60, 150), (180, 60, 40)]
+
+
+def i_sword(c, v):
+    c.l([(4, 11), (13, 2)], STEEL, 2 + v); c.px(14, 1, STEEL)
+    c.l([(2, 9), (6, 13)], GOLD, 2); c.l([(3, 12), (1, 14)], WOOD, 2); c.px(0, 15, GOLD)
+    if v: c.px(9, 6, ACC)
+
+
+def i_dagger(c, v):
+    c.l([(6, 9), (12, 3)], STEEL, 2); c.px(13, 2, STEEL)
+    c.l([(4, 8), (7, 11)], GOLD, 1 + v); c.l([(5, 10), (2, 13)], WOOD, 2)
+
+
+def i_axe(c, v):
+    c.l([(3, 14), (11, 5)], WOOD, 2)
+    c.p([(9, 2), (15, 4), (13, 10), (10, 7)], STEEL)
+    if v: c.p([(9, 6), (4, 3), (6, 8)], STEEL)
+    c.px(11, 5, GOLD)
+
+
+def i_mace(c, v):
+    c.l([(3, 14), (9, 7)], WOOD, 2); c.px(3, 14, GOLD)
+    c.e(8, 2, 14, 8, STEEL)
+    for x, y in ((11, 0), (15, 5), (6, 4), (11, 9)) if v else ((11, 1), (14, 5)):
+        c.px(x, y, STEEL)
+
+
+def i_polearm(c, v):
+    c.l([(2, 15), (12, 3)], WOOD, 2)
+    c.p([(12, 0), (15, 3), (11, 5)], STEEL)
+    if v: c.p([(10, 3), (7, 2), (9, 6)], STEEL)
+    c.px(9, 7, GOLD)
+
+
+def i_bow(c, v):
+    c.d.arc([3, 1, 13, 15], 270, 90, fill=WOOD, width=2)
+    c.l([(8, 1), (8, 15)], BONE)
+    if v: c.px(12, 8, GOLD); c.px(13, 7, GOLD)
+
+
+def i_crossbow(c, v):
+    c.l([(3, 13), (12, 4)], WOOD, 2)
+    c.l([(6, 3), (13, 10)], STEEL, 1 + v); c.l([(6, 3), (9, 8)], BONE); c.l([(13, 10), (9, 8)], BONE)
+
+
+def i_staff(c, v):
+    c.l([(3, 15), (11, 5)], WOOD, 2)
+    c.e(9, 0, 14, 5, ACC); c.px(10, 1, SHINE)
+    if v: c.l([(8, 3), (9, 6)], GOLD); c.l([(14, 6), (12, 7)], GOLD)
+
+
+def i_wand(c, v):
+    c.l([(4, 13), (11, 6)], WOOD, 2 if v else 1)
+    c.p([(12, 2), (13, 4), (15, 5), (13, 6), (12, 8), (11, 6), (9, 5), (11, 4)], ACC)
+
+
+def i_shield(c, v):
+    c.p([(2, 1), (13, 1), (13, 8), (7.5, 15), (2, 8)], STEEL)
+    c.p([(4, 3), (11, 3), (11, 8), (7.5, 13), (4, 8)], BODY)
+    if v: c.l([(7, 3), (7, 12)], GOLD); c.l([(4, 6), (11, 6)], GOLD)
+    else: c.e(6, 5, 9, 8, ACC)
+
+
+def i_lightarmor(c, v):
+    c.p([(4, 1), (11, 1), (14, 4), (12, 6), (12, 15), (3, 15), (3, 6), (1, 4)], BODY)
+    c.l([(7, 2), (7, 15)], GOLD if v else ACC); c.l([(3, 10), (12, 10)], WOOD)
+
+
+def i_mediumarmor(c, v):
+    c.p([(4, 1), (11, 1), (14, 4), (12, 6), (12, 15), (3, 15), (3, 6), (1, 4)], STEEL)
+    for y in range(3, 15, 2):
+        c.l([(4, y), (11, y)], DARK if False else BODY) if v else c.px(7, y, BODY)
+    c.r(5, 8, 10, 15, BODY); c.px(7, 10, GOLD)
+
+
+def i_heavyarmor(c, v):
+    c.r(3, 2, 12, 15, STEEL)
+    c.e(0, 1, 5, 6, STEEL); c.e(10, 1, 15, 6, STEEL)
+    c.l([(7, 3), (7, 15)], GOLD); c.l([(4, 9), (11, 9)], GOLD if v else STEEL)
+    c.px(7, 6, ACC)
+
+
+def i_helmet(c, v):
+    c.e(3, 2, 12, 13, STEEL); c.r(3, 8, 12, 13, STEEL)
+    c.r(5, 7, 10, 8, DARK); c.l([(7, 9), (7, 12)], DARK)
+    if v: c.p([(7, 2), (9, -1), (10, 3)], ACC)
+    else: c.l([(3, 6), (12, 6)], GOLD)
+
+
+def i_ring(c, v):
+    c.ring(3, 5, 12, 14, GOLD, 2)
+    c.p([(7, 1), (10, 4), (7, 7), (4, 4)], ACC) if v else c.e(5, 2, 9, 6, ACC)
+
+
+def i_amulet(c, v):
+    c.d.arc([2, 0, 13, 11], 20, 160, fill=GOLD, width=1)
+    c.p([(7, 7), (11, 11), (7, 15), (3, 11)], GOLD); c.p([(7, 9), (9, 11), (7, 13), (5, 11)], ACC)
+
+
+def i_boots(c, v):
+    for x in (2, 8):
+        c.r(x, 2, x + 4, 11, BODY); c.p([(x, 11), (x + 4, 11), (x + 6, 14), (x, 14)], BODY)
+        c.r(x, 2, x + 4, 3, STEEL if v else GOLD)
+
+
+def i_glove(c, v):
+    c.r(4, 7, 11, 15, BODY); c.r(4, 13, 11, 15, STEEL if v else GOLD)
+    for i, x in enumerate((4, 6, 8, 10)):
+        c.r(x, 2 + (i % 2), x + 1, 8, BODY)
+    c.p([(11, 9), (14, 6), (14, 9), (12, 11)], BODY)
+
+
+def i_belt(c, v):
+    c.r(0, 6, 15, 10, BODY); c.r(5, 5, 10, 11, GOLD); c.r(7, 7, 8, 9, DARK)
+    if v: c.px(2, 8, ACC); c.px(13, 8, ACC)
+
+
+def i_magicitem(c, v):
+    c.p([(4, 15), (11, 15), (9, 11), (6, 11)], GOLD)
+    c.e(3, 2, 12, 11, ACC); c.px(5, 4, SHINE); c.px(6, 4, SHINE)
+    if v: c.px(10, 8, SHINE)
+
+
+def i_relic(c, v):
+    c.e(2, 1, 13, 14, GOLD); c.r(5, 5, 6, 7, ACC); c.r(9, 5, 10, 7, ACC); c.l([(6, 11), (9, 11)], DARK)
+    if v: c.p([(7, 0), (9, -2), (8, 2)], ACC)
+
+
+EQUIP_ICONS = {'sword': i_sword, 'dagger': i_dagger, 'axe': i_axe, 'mace': i_mace, 'polearm': i_polearm, 'bow': i_bow, 'crossbow': i_crossbow,
+               'staff': i_staff, 'wand': i_wand, 'shield': i_shield, 'lightarmor': i_lightarmor, 'mediumarmor': i_mediumarmor,
+               'heavyarmor': i_heavyarmor, 'helmet': i_helmet, 'ring': i_ring, 'amulet': i_amulet, 'boots': i_boots, 'glove': i_glove,
+               'belt': i_belt, 'magicitem': i_magicitem, 'relic': i_relic}
+
+
+def equip_icon(cat, slot):
+    """slot 0..10 -> rarity (0 poor, 1-2 common, 3-4 uncommon, ... 9-10 legendary) and shape variant"""
+    rarity = (slot + 1) // 2
+    v = 0 if slot == 0 else (slot + 1) % 2
+    c = C(16, 16)
+    EQUIP_ICONS[cat](c, v)
+    pal = {STEEL: RARITY_METAL[rarity], GOLD: RARITY_TRIM[rarity], ACC: RARITY_GEM[rarity], BODY: RARITY_CLOTH[rarity]}
+    if cat in ('boots', 'glove', 'belt', 'lightarmor'):
+        pal[BODY] = mix(RARITY_CLOTH[rarity], (150, 100, 60), 0.4) if cat != 'lightarmor' else RARITY_CLOTH[rarity]
+    return c, pal
+
+
+def potion(c, colour_unused=None):
+    c.r(6, 1, 9, 2, WOOD); c.r(6, 3, 9, 5, WHITE)
+    c.e(2, 5, 13, 15, BODY); c.px(5, 8, SHINE); c.px(4, 9, SHINE)
+
+
+def scroll(c):
+    c.r(2, 4, 13, 11, BONE); c.e(0, 3, 3, 12, BONE); c.e(12, 3, 15, 12, BONE)
+    c.l([(4, 6), (11, 6)], WOOD); c.l([(4, 8), (9, 8)], WOOD); c.r(7, 10, 8, 14, BODY)
+
+
+def bloom(c):
+    c.l([(7, 15), (7, 7)], ACC, 1); c.p([(7, 11), (3, 9), (6, 12)], ACC); c.p([(8, 12), (12, 9), (8, 10)], ACC)
+    for dx, dy in ((0, -3), (3, 0), (0, 3), (-3, 0)):
+        c.e(6 + dx, 3 + dy, 9 + dx, 6 + dy, BODY)
+    c.e(6, 3, 9, 6, GOLD)
+
+
+def fish(c, big=False):
+    c.e(2, 5, 12 if big else 10, 11, BODY); c.p([(10, 8), (15, 4), (15, 12)], BODY); c.px(4, 7, DARK); c.l([(3, 9), (8, 9)], ACC)
+
+
+def eel(c):
+    c.l([(1, 12), (5, 6), (9, 10), (14, 4)], BODY, 3); c.px(14, 3, DARK)
+
+
+def pouch(c, coins=True):
+    c.e(2, 5, 13, 15, WOOD); c.r(5, 3, 10, 6, WOOD); c.l([(5, 6), (10, 6)], GOLD)
+    if coins: c.e(9, 10, 13, 14, GOLD); c.e(6, 12, 10, 15, GOLD)
+
+
+CONSUMABLES = {
+    'potion': (potion, (220, 40, 50)), 'greater': (potion, (240, 100, 40)), 'superior': (potion, (230, 60, 170)), 'supreme': (potion, (250, 200, 60)),
+    'ether': (potion, (60, 120, 240)), 'antitoxin': (potion, (70, 200, 80)), 'might': (potion, (150, 20, 40)),
+    'ration': (lambda c: (c.e(1, 5, 14, 13, BODY), c.l([(4, 6), (6, 9)], WOOD), c.l([(8, 6), (10, 9)], WOOD)), (210, 160, 90)),
+    'grilled': (lambda c: (c.e(4, 1, 14, 11, BODY), c.l([(5, 10), (2, 13)], BONE, 2), c.e(0, 12, 3, 15, BONE)), (150, 80, 40)),
+    'feast': (lambda c: (c.e(0, 8, 15, 15, WHITE), c.e(3, 3, 12, 11, BODY), c.px(11, 3, ACC), c.px(5, 5, SHINE)), (170, 96, 50)),
+    'campkit': (lambda c: (c.p([(8, 1), (15, 13), (1, 13)], BODY), c.p([(8, 6), (10, 13), (6, 13)], DARK), c.l([(0, 14), (15, 14)], WOOD)), (170, 140, 90)),
+    'scroll_flame': (scroll, (220, 70, 40)), 'scroll_mend': (scroll, (70, 190, 90)), 'scroll_dawn': (scroll, (240, 200, 70)),
+    'hearthstone': (lambda c: (c.e(2, 2, 13, 14, STONE), c.l([(7, 4), (7, 11)], GLOW), c.l([(5, 6), (9, 6)], GLOW)), (120, 116, 110)),
+    'peacebloom': (bloom, (240, 240, 250)), 'sandroot': (bloom, (230, 180, 90)), 'frostbloom': (bloom, (130, 200, 250)),
+    'small_fish': (fish, (120, 150, 190)), 'big_fish': (lambda c: fish(c, True), (90, 130, 160)), 'eel': (eel, (80, 100, 80)),
+    'goblin_token': (lambda c: (c.e(2, 2, 13, 13, STEEL), c.e(5, 5, 10, 10, DARK), c.px(7, 7, GOLD)), (140, 140, 140)),
+    'old_bone': (lambda c: (c.l([(3, 12), (12, 3)], BONE, 3), c.e(0, 10, 5, 15, BONE), c.e(10, 0, 15, 5, BONE)), (200, 200, 200)),
+    'slimegel': (lambda c: (c.e(1, 5, 14, 15, BODY), c.px(4, 8, SHINE), c.px(5, 7, SHINE)), (90, 200, 220)),
+    'gold_dust': (lambda c: pouch(c, False) or [c.px(x, y, GOLD) for x, y in ((3, 2), (12, 1), (13, 4), (1, 6))], (210, 170, 70)),
+    'coinpurse': (pouch, (150, 100, 60)),
+    'idol_shard': (lambda c: (c.p([(6, 1), (12, 6), (9, 15), (3, 9)], ACC), c.px(6, 4, SHINE)), (60, 200, 170)),
+    'codex_page': (lambda c: (c.r(3, 1, 12, 15, BONE), [c.l([(5, y), (10, y)], WOOD) for y in (4, 7, 10)], c.px(10, 13, BODY)), (180, 40, 40)),
+    'tower_key': (lambda c: (c.ring(1, 1, 7, 7, GOLD, 2), c.l([(6, 6), (14, 14)], GOLD, 2), c.l([(11, 13), (13, 11)], GOLD)), (220, 180, 70)),
+    'old_boot': (lambda c: (c.r(4, 1, 9, 11, WOOD), c.p([(4, 11), (9, 11), (14, 14), (4, 14)], WOOD), c.px(6, 5, DARK)), (120, 90, 60)),
+}
+
+
+def consumable(key):
+    fn, colour = CONSUMABLES[key]
+    c = C(16, 16)
+    fn(c)
+    return c, {BODY: colour, ACC: (90, 170, 70) if fn is bloom else colour}
+
+
 # ============================================================== output
 def build(out=OUT):
     out.mkdir(exist_ok=True)
@@ -1391,6 +1603,11 @@ def build(out=OUT):
             monster(sub, v).save(out / f'r8m_{sub}_{v}.png'); n += 1
         for b in range(3):
             monster(sub, boss=b).save(out / f'r8b_{sub}_{b}.png'); n += 1
+    for cat in EQUIP_ICONS:
+        for slot in range(11):
+            c, pal = equip_icon(cat, slot); shade(c, pal, rim=1).save(out / f'r8i_{cat}_{slot}.png'); n += 1
+    for key in CONSUMABLES:
+        c, pal = consumable(key); shade(c, pal, rim=1).save(out / f'r8c_{key}.png'); n += 1
     for role in NPC_ALL:
         for k in (0, 1):
             shade(npc(role, blink=bool(k)), npc_palette(role), rim=1).save(out / f'r8n_{role}_{k}.png'); n += 1

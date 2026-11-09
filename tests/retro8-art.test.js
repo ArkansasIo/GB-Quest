@@ -75,3 +75,16 @@ test('AELMOOR HD: monsters, bosses and the title backdrop exist, and the mode is
   assert.match(read('src/scenes_world.js'), /S\.art === 'aelmoor' && IMG\.r9_title/);
   assert.match(read('src/npc_art.js'), /retroNpcArt\(role, blink\)/);
 });
+
+test('retro 8-bit and AELMOOR HD: item icons for every equipment category slot and consumable', () => {
+  const art = read('src/art.js');
+  const cats = new Set(['sword', 'shield', 'lightarmor', 'mediumarmor', 'heavyarmor', 'helmet', 'ring']);
+  for (const name of ['WEAPON_ART', 'WONDROUS_ART']) for (const [, v] of new RegExp(`const ${name} = \\{([^}]*)\\}`).exec(art)[1].matchAll(/:\s*'([a-z]+)'/g)) cats.add(v);
+  const keys = [...(/const ITEM_ART = \{([\s\S]*?)\};/.exec(art)[1].matchAll(/(\w+):\s*\[/g))].map(m => m[1]);
+  assert.ok(keys.length > 25, 'consumables parsed');
+  for (const p of ['r8', 'r9']) {
+    for (const c of cats) for (let s = 0; s <= 10; s++) assert.ok(has(`${p}i_${c}_${s}`), `${p}i_${c}_${s}`);
+    for (const k of keys) assert.ok(has(`${p}c_${k}`), `${p}c_${k}`);
+  }
+  assert.match(read('tools/build.cjs'), /'pack_art', 'retro_art'/);
+});
