@@ -2043,7 +2043,3 @@ function safeSpot() {
     return r;
   };
 }
-
-
-    if (c.k === 'realm') { push(new RealmSelect()); }
-

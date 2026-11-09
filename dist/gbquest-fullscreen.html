@@ -7337,15 +7337,13 @@ class CharacterMenu {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    const diablo = S.uiTheme === 'diablo';
-    if (diablo) { fill(1, 10, 158, 133, 0); frame(1, 10, 158, 133); fill(2, 11, 156, 10, 1); textC('CHARACTER', 80, 12, 'gold'); }
     this.tabs().forEach(([name, label], index) => {
       const x = 2 + index * 52, active = index === this.tab;
-      fill(x, 23, 50, 10, active ? (diablo ? 'gold' : 3) : 1); textC(label, x + 25, 24, active ? 0 : 3);
+      fill(x, 23, 50, 10, active ? 3 : 1); textC(label, x + 25, 24, active ? 0 : 3);
     });
     textC(this.tab === 0 ? 'STATS - A: FULL SHEET' : this.tab === 1 ? 'BAG - A: OPEN BAGS' : 'GEAR - A: EQUIPMENT', 80, 35, 'gold');
     const D = derive(G), portrait = heroPortrait(G);
-    fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
+    fill(2, 46, 52, 82, 1); fill(57, 46, 101, 82, 1);
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
     text(G.name.slice(0, 8), 5, 93, 'gold');
     text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
@@ -7372,7 +7370,7 @@ class CharacterMenu {
       text(k, 62, 50 + i * 12, 2); textR(String(v).slice(0, 8), 154, 50 + i * 12, 3);
     });
     }
-    fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
+    fill(2, 135, 156, 8, 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }
 
@@ -8127,7 +8125,7 @@ class SettingsScene extends ListScene {
     if (o === 'HOVER TOOLTIPS') S.tooltipHover = S.tooltipHover !== false ? false : true;
     if (o === 'RIGHT-CLICK TOOLTIPS') S.tooltipRightClick = S.tooltipRightClick !== false ? false : true;
     if (o === 'BATTLE BG') { S.battleBg = typeof nextBattleBg === 'function' ? nextBattleBg(S.battleBg || 'clean') : S.battleBg === 'painted' ? 'clean' : 'painted'; }
-    if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum', 'diablo']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
+    if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
     if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
     if (o === 'HD RESOLUTION') { const options = ['native', '2k', '4k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
@@ -8158,7 +8156,7 @@ class SettingsScene extends ListScene {
     drawOrnatePanel(2, 7, 156, 134, 'OPTIONS');
     textC('REALM SETTINGS', 80, 12, '#ddd3e6');
     fill(7, 22, 146, 2, '#9a672e');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
     this.items().slice(this.top, this.top + 11).forEach((label, j) => {
       const index = this.top + j, y = 25 + j * 9;
@@ -10580,10 +10578,6 @@ function safeSpot() {
     return r;
   };
 }
-
-
-    if (c.k === 'realm') { push(new RealmSelect()); }
-
 
 </script>
 <script>
@@ -16454,7 +16448,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
 const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
 const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
 if (S.uiTheme == null) S.uiTheme = 'sanctum';
-const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird') && !MONO(S.palette);
+const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird') && !MONO(S.palette);
 {
   const col0 = col;
   col = function (c) { if (typeof c === 'number' && uiDark()) return css(SANCTUM[c] || SANCTUM[3]); return col0(c); };
@@ -16574,7 +16568,7 @@ function drawSanctumHud(field) {
 <script>
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / DIABLO IV / BLACKBIRD.
+// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / BLACKBIRD.
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -16586,8 +16580,8 @@ function drawSanctumHud(field) {
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird'];
+const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -16597,6 +16591,8 @@ if (typeof globalThis !== 'undefined') globalThis.GBQUiMmo = { MMO_THEMES, MMO_T
 if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
   if (!S.floatTextOff) { S.floatTextOff = true; S.screenChat = false; S.bubbles = false; S.nameTags = false; try { saveSettings(); } catch (e) {} }
+  // the DIABLO IV theme was removed: saves that picked it get the default handheld theme
+  if (S.uiTheme === 'diablo') { S.uiTheme = 'tnl'; try { saveSettings(); } catch (e) {} }
   if (!S.mmoUiDefaulted) { S.mmoUiDefaulted = true; if (!S.uiTheme || S.uiTheme === 'sanctum') S.uiTheme = 'tnl'; try { saveSettings(); } catch (e) {} }
   // One-time migration: use the classic blue-and-cream handheld interface as the default.
   // Move saved Sanctum gameplay menus to the requested handheld theme while
@@ -19190,7 +19186,7 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['MEMORY', ['NPCs remember how often you talk to them: stranger, regular, old friend. They greet you by name and notice strong heroes.']],
     ],
     'SETTINGS': () => [
-      ['THEMES', ['UI THEME: 8-BIT MMO, CRIMSON, CLASSIC, SANCTUM, DIABLO IV. ART: FULL DETAIL, NES, CLASSIC. BATTLE BG: CLEAN, PAINTED, SCENES.']],
+      ['THEMES', ['UI THEME: 8-BIT MMO, CRIMSON, CLASSIC, SANCTUM, BLACKBIRD. ART: FULL DETAIL, NES, CLASSIC, RETRO 8-BIT, AELMOOR HD. BATTLE BG: CLEAN, PAINTED, SCENES.']],
       ['CHAT', ['The chat panel starts closed (C opens it). CHAT SETTINGS turns screen chat, bubbles, name tags and NPC chatter on or off.']],
       ['ACCESSIBILITY', ['PALETTE includes HIGH CONTRAST for colour-blind players. TEXT SPEED, BRIGHTNESS, CONTRAST and KEY BINDINGS are in SETTINGS.']],
     ],

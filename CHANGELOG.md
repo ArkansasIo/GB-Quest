@@ -4,6 +4,12 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 
 ## Unreleased
 
+### Removed
+- **DIABLO IV UI theme**: removed from SETTINGS > UI THEME (and its CHARACTER-page layout). Saves that had it selected switch to the default handheld theme.
+
+### Fixed
+- A stray duplicated menu line at the end of `src/scenes_world.js` threw `c is not defined` on every page load.
+
 ### Added
 - **RETRO 8-BIT art mode** (SETTINGS > ART, after FULL DETAIL; `tools/gen_retro8.py`): an original classic 8-bit console-RPG look. All overworld tiles (grass, flowers, forests, mountains, auto-tiled water and roads, bridges, castle walls and gates, houses, inns, shops, shrines, temples, arenas) are redrawn in six terrain palettes (green, desert, snow, swamp, volcanic, mystic) that follow each zone's biome. Every bestiary subtype (51) has its own front-facing battle sprite with bold outlines, recoloured for the seven element variants, and dungeon/raid bosses get crowned regal versions. Dungeons get matching retro floors, brick walls over a black void, doors, stairs, torches, braziers, pools and props for all six themes (dungeon, crypt, ice, lava, temple, void). Collector creatures and story bosses keep their own art. All 1,156 images are drawn by the script; no third-party sprites.
 - **AELMOOR HD art mode** (SETTINGS > ART, after RETRO 8-BIT; `tools/gen_aelmoor.py`): the brighter "Lanterns of Aelmoor" look. Every battle monster (51 subtypes x 7 element variants, plus crowned bosses) and all 44 townsfolk roles are rendered with smooth height-field lighting, six-step hue-shifted ramps, coloured outlines and glowing emissives, and the title screen gets a moonlit castle-and-waterfall backdrop. World and dungeon tiles currently share the RETRO 8-BIT set.

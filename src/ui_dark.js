@@ -11,7 +11,7 @@
 const SANCTUM = [[12, 10, 10], [104, 82, 58], [178, 152, 112], [236, 224, 200]];
 const SAN = { trim: [118, 90, 54], trimDark: [44, 34, 26], stud: [212, 172, 96], panel: [16, 13, 12], panel2: [24, 19, 17] };
 if (S.uiTheme == null) S.uiTheme = 'sanctum';
-const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'diablo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird') && !MONO(S.palette);
+const uiDark = () => (S.uiTheme === 'sanctum' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird') && !MONO(S.palette);
 {
   const col0 = col;
   col = function (c) { if (typeof c === 'number' && uiDark()) return css(SANCTUM[c] || SANCTUM[3]); return col0(c); };

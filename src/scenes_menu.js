@@ -378,15 +378,13 @@ class CharacterMenu {
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
-    const diablo = S.uiTheme === 'diablo';
-    if (diablo) { fill(1, 10, 158, 133, 0); frame(1, 10, 158, 133); fill(2, 11, 156, 10, 1); textC('CHARACTER', 80, 12, 'gold'); }
     this.tabs().forEach(([name, label], index) => {
       const x = 2 + index * 52, active = index === this.tab;
-      fill(x, 23, 50, 10, active ? (diablo ? 'gold' : 3) : 1); textC(label, x + 25, 24, active ? 0 : 3);
+      fill(x, 23, 50, 10, active ? 3 : 1); textC(label, x + 25, 24, active ? 0 : 3);
     });
     textC(this.tab === 0 ? 'STATS - A: FULL SHEET' : this.tab === 1 ? 'BAG - A: OPEN BAGS' : 'GEAR - A: EQUIPMENT', 80, 35, 'gold');
     const D = derive(G), portrait = heroPortrait(G);
-    fill(2, 46, 52, 82, diablo ? 3 : 1); fill(57, 46, 101, 82, diablo ? 3 : 1); if (diablo) { frame(2, 46, 52, 82); frame(57, 46, 101, 82); }
+    fill(2, 46, 52, 82, 1); fill(57, 46, 101, 82, 1);
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
     text(G.name.slice(0, 8), 5, 93, 'gold');
     text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
@@ -413,7 +411,7 @@ class CharacterMenu {
       text(k, 62, 50 + i * 12, 2); textR(String(v).slice(0, 8), 154, 50 + i * 12, 3);
     });
     }
-    fill(2, 135, 156, 8, diablo ? 1 : 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
+    fill(2, 135, 156, 8, 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
   }
 }
 
@@ -1168,7 +1166,7 @@ class SettingsScene extends ListScene {
     if (o === 'HOVER TOOLTIPS') S.tooltipHover = S.tooltipHover !== false ? false : true;
     if (o === 'RIGHT-CLICK TOOLTIPS') S.tooltipRightClick = S.tooltipRightClick !== false ? false : true;
     if (o === 'BATTLE BG') { S.battleBg = typeof nextBattleBg === 'function' ? nextBattleBg(S.battleBg || 'clean') : S.battleBg === 'painted' ? 'clean' : 'painted'; }
-    if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum', 'diablo']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
+    if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
     if (o === 'NETWORK') { NET.setMode(NET.offline ? 'online' : 'offline'); }
     if (o === 'HD RESOLUTION') { const options = ['native', '2k', '4k'], k = options.indexOf(S.hdRes); S.hdRes = options[(k + (d > 0 ? 1 : options.length - 1)) % options.length]; }
@@ -1199,7 +1197,7 @@ class SettingsScene extends ListScene {
     drawOrnatePanel(2, 7, 156, 134, 'OPTIONS');
     textC('REALM SETTINGS', 80, 12, '#ddd3e6');
     fill(7, 22, 146, 2, '#9a672e');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
     this.items().slice(this.top, this.top + 11).forEach((label, j) => {
       const index = this.top + j, y = 25 + j * 9;
