@@ -12,6 +12,8 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **DIABLO IV UI theme**: removed from SETTINGS > UI THEME (and its CHARACTER-page layout). Saves that had it selected switch to the default handheld theme.
 
 ### Fixed
+- **Crashes while images load**: the source build (`npm start`, http://127.0.0.1:8000/) streams its sprites in after the page opens, and battles or the field crashed (`Cannot read properties of undefined (reading 'height')` / `null (reading 'width')`) when a monster, party portrait, boss, NPC or player sprite was not loaded yet. Those draws now wait a frame instead.
+- **Standalone build 404s**: `dist/gbquest.html` looked for the HD character art (`assets_hd64/equipment/...`, `data/visuals/...`) inside `dist/`; it now looks one folder up.
 - SETTINGS showed every value from CHAT SETTINGS down one row off (CHAT SETTINGS and ABOUT had no value entries).
 - **Local http server** (`npm start`): `assets_hd64/` was missing from the static allow-list, so the source build at http://127.0.0.1:8000/ got 404s for every 64-BIT sprite index and atlas. It now loads with no failed requests.
 - **World tiles**: every art mode except CLASSIC showed random lava, stone and wall textures in place of grass, roads, water and dungeon floors. Ground and dungeon tiles now always keep the game's own auto-tiled art; the asset-pack swap only touches trees, rocks and buildings, and only in FULL DETAIL.

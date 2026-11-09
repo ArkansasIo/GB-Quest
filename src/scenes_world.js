@@ -920,7 +920,7 @@ class Field {
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(G, G.dir, ghost);
         if (portrait) blit(portrait, px - cx + (T - portrait.width) / 2, py - cy + T - portrait.height - 1 - (G.mounted ? 6 : 0) - moveBob);
         else if (PIX) blit(walker(heroLook(G), G.dir, (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0, ghost), px - cx, py - cy - 3 - (G.mounted ? 5 : 0));
-        else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
+        else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); if (c) blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
         const bob = (this.walk >> 3) % 2;
         const hdFrame = hdWorldFrame(e.c, e.dir, bob, true, false);
@@ -929,7 +929,7 @@ class Field {
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(e.c, e.dir);
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1 - bob);
         else if (PIX) blit(walker(heroLook(e.c), e.dir, bob), ex, ey - 3);
-        else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
+        else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
       else if (e.kind === 'woods') {
@@ -944,7 +944,7 @@ class Field {
           const c = typeof npcSprite === 'function' ? npcSprite(e) : walker(npcLook(e.spr), 'down', 0);
           if (c) blit(c, ex + Math.floor((T - c.width) / 2), ey + 13 - c.height);
         } else {
-          const c = sprH(e.spr, 23); blit(c, ex + (T - c.width) / 2, ey + T - 24);
+          const c = sprH(e.spr, 23); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 24);
         }
         if (e.svc === 'warden' || e.svc === 'elder') { const q = npcMarker(e); if (q) { fill(ex + 5, ey - 12, 7, 10, 3); text(q, ex + 5, ey - 11, q === '?' ? 'gold' : 'gold'); } }
       }
@@ -954,7 +954,7 @@ class Field {
         const portrait = (typeof assetPackCharacter === 'function' ? assetPackCharacter(avatar, p.dir || 'down') : null) || worldPortrait(avatar, p.dir || 'down');
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1);
         else if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3);
-        else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); blit(c, ex + (T - c.width) / 2, ey + T - 22); }
+        else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
         const nm = (p.name || '').slice(0, 8);
         const hostile = e.kind === 'sim' && G.pvpEnabled && p.pvpEnabled && p.faction !== G.pvpFaction;
         if (S.nameTags !== false || hostile || Math.abs(e.x - G.x) + Math.abs(e.y - G.y) <= 1) { fill(ex + 8 - nm.length * 3 - 1, ey - 8, nm.length * 6 + 2, 8, hostile ? 'red' : e.kind === 'peer' ? 'blue' : 3); text(nm, ex + 8 - nm.length * 3, ey - 8, 0); }
@@ -966,8 +966,8 @@ class Field {
       else if (e.kind === 'trap') { if (PIX) blit(spr('go_trap', 16, 16), ex, ey); else fill(ex + 4, ey + 6, 8, 4, 'red'); }
       else if (e.kind === 'chest') blit(PIX ? spr('go_chest', 16, 16) : sprFit('item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
       else if (e.kind === 'vault') blit(PIX ? spr(e.open ? 'go_chestopen' : 'go_chest', 16, 16) : sprFit(e.open ? 'item_chest_open' : 'item_chest', 14), ex + (PIX ? 0 : 1), ey + (PIX ? 0 : 2));
-      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
-      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
+      else if (e.kind === 'boss') { const bd = e.b, B = BOSS_BY_ID[bd.id]; const c = sprH(monsterArt(B), 26); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 27 + Math.round(Math.sin(frameN / 10))); if ((frameN >> 4) % 2) text(B.cat === 'arc' ? '!!' : '!', ex + 4, ey - 18, 'red'); }
+      else if (e.kind === 'pull') { const p = e.p, s = p.boss ? monsterArt(BOSS_BY_ID[p.boss]) : monsterArt(BEAST_BY_ID[p.mobs[0]] || BESTIARY[0]); const c = sprH(s, p.boss ? 26 : 18); if (c) blit(c, ex + (T - c.width) / 2, ey + T - c.height - 1 + ((frameN >> 4) % 2)); if (p.miniboss && (frameN >> 4) % 2) text('M!', ex + 3, ey - 8, 'red'); }
     }
     FX.draw(cx, cy);
     if (worldPalette) applyGameBoyWorldPalette(0, 0, W, H);

@@ -1008,6 +1008,7 @@ class Battle {
       const cl = S.battleBg !== 'painted' ? { clean: true } : undefined;
       let s = por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
+      if (!s) return;                         // portrait still loading (the source build streams images in)
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
@@ -1029,8 +1030,9 @@ class Battle {
     this.foes.slice(0, 4).forEach(f => {
       if (f.hp <= 0 && !(this.anim.flash[f.id] && (this.anim.flash[f.id] >> 1) % 2)) return;
       const n = Math.min(4, this.foes.length), base = IMG[f.spr] ? f.spr : 'enemy_goblin';
+      if (!IMG[base]) return;                 // art still loading (the source build streams images in): draw it next frame
       const hh = Math.min(n === 1 ? 52 : 30, Math.round(IMG[base].height * (f.scale || 1) * (n === 1 ? 1 : 0.75)));
-      const s = sprH(base, hh, { flip: true, clean: S.battleBg !== 'painted' }); const [px, py] = this.posOf(f);
+      const s = sprH(base, hh, { flip: true, clean: S.battleBg !== 'painted' }); if (!s) return; const [px, py] = this.posOf(f);
       if (this.anim.flash[f.id] && f.hp > 0 && (this.anim.flash[f.id] >> 1) % 2) return;
       const lx = this.anim.lunge === f.id ? -4 : 0;
       blit(s, px - s.width / 2 + lx, py + 24 - s.height);

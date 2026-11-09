@@ -143,10 +143,12 @@
     };
   };
   const createRuntime = (options = {}) => {
-    const frameRoot = options.frameRoot || 'assets_hd64/animations/frames';
-    const equipmentRoot = options.equipmentRoot || 'assets_hd64/equipment';
+    // the standalone build lives in dist/: its HD files sit one folder up (paths are relative to the page)
+    const up = typeof location !== 'undefined' && /\/dist\/[^/]*$/.test(location.pathname || '') ? '../' : '';
+    const frameRoot = options.frameRoot || up + 'assets_hd64/animations/frames';
+    const equipmentRoot = options.equipmentRoot || up + 'assets_hd64/equipment';
     const manifestUrl = options.manifestUrl || `${equipmentRoot}/equipment_manifest.json`;
-    const visualMapUrl = options.visualMapUrl || 'data/visuals/equipment-catalog-visual-map.json';
+    const visualMapUrl = options.visualMapUrl || up + 'data/visuals/equipment-catalog-visual-map.json';
     const imageCache = new Map();
     const compositeCache = new Map();
     let manifestPromise = null;
