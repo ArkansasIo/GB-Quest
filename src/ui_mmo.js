@@ -1,6 +1,6 @@
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / BLACKBIRD.
+// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / BLACKBIRD / QUEST WINDOWS (src/ui_quest.js).
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -11,8 +11,8 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird'];
-const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird', 'quest'];
+const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };

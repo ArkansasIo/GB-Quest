@@ -8041,7 +8041,7 @@ class SettingsScene extends ListScene {
     drawOrnatePanel(2, 7, 156, 134, 'OPTIONS');
     textC('REALM SETTINGS', 80, 12, '#ddd3e6');
     fill(7, 22, 146, 2, '#9a672e');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
     this.items().slice(this.top, this.top + 11).forEach((label, j) => {
       const index = this.top + j, y = 25 + j * 9;
@@ -16470,7 +16470,7 @@ function drawSanctumHud(field) {
 <script>
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / BLACKBIRD.
+// SETTINGS > UI THEME: HANDHELD CLASSIC / CRIMSON / CLASSIC / SANCTUM / BLACKBIRD / QUEST WINDOWS (src/ui_quest.js).
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -16481,8 +16481,8 @@ function drawSanctumHud(field) {
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird'];
-const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird', 'quest'];
+const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -16712,6 +16712,134 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
 
 </script>
 <script>
+'use strict';
+// ================================================================ QUEST WINDOWS UI THEME (classic 8-bit console RPG)
+// SETTINGS > UI THEME: QUEST WINDOWS. The look of the early console RPGs:
+//   * every window, menu and dialog: solid black with a thin white rounded border and white text
+//   * a STATUS window (name, LV, HP, MP, G, E) that appears when you stand still on the field
+//   * a COMMAND window: press A where there is nothing to talk to or use
+//       TALK  STATUS  ITEM  SPELL  SEARCH  EQUIP  STAIRS  MAP
+//     SEARCH looks around your feet (sometimes coins or a herb, once a day per spot); STAIRS uses the stairs
+//     you stand on. The rest open the existing screens.
+// Wraps col/frame/bar/hdr after the other themes, so every existing screen follows without changes.
+
+const QUEST_SHADES = [[0, 0, 0], [92, 92, 104], [180, 180, 190], [255, 255, 255]];
+const questUi = () => S.uiTheme === 'quest' && !MONO(S.palette);
+const QUEST_COMMANDS = ['TALK', 'STATUS', 'ITEM', 'SPELL', 'SEARCH', 'EQUIP', 'STAIRS', 'MAP'];
+
+function questWindow(x, y, w, h, title) {
+  fill(x, y, w, h, '#000');
+  if (w >= 6 && h >= 6) {
+    fill(x + 2, y + 1, w - 4, 1, '#fff'); fill(x + 2, y + h - 2, w - 4, 1, '#fff');
+    fill(x + 1, y + 2, 1, h - 4, '#fff'); fill(x + w - 2, y + 2, 1, h - 4, '#fff');
+  }
+  if (title) { const tw = String(title).length * 6 + 4; fill(x + ((w - tw) >> 1), y, tw, 3, '#000'); textC(title, x + (w >> 1), y - 3, 3); }
+}
+
+{
+  const col1 = col;
+  col = function (c) { if (typeof c === 'number' && questUi()) { const k = QUEST_SHADES[c] || QUEST_SHADES[3]; return `rgb(${k[0]},${k[1]},${k[2]})`; } return col1(c); };
+  const frame1 = frame;
+  frame = function (x, y, w, h, bg = 0) { if (!questUi()) return frame1(x, y, w, h, bg); questWindow(x, y, w, h); };
+  const bar1 = bar;
+  bar = function (x, y, w, h, v, max, c = 2) {
+    if (!questUi()) return bar1(x, y, w, h, v, max, c);
+    fill(x, y, w, h, '#fff'); fill(x + 1, y + 1, w - 2, h - 2, '#000');
+    const f = Math.round((w - 2) * Math.max(0, Math.min(1, max ? v / max : 0)));
+    if (f > 0) fill(x + 1, y + 1, f, h - 2, col(c));
+  };
+  const hdr1 = hdr;
+  hdr = function () {
+    if (!questUi()) return hdr1();
+    fill(0, 0, W, 11, '#000'); fill(0, 10, W, 1, '#fff');
+    if (G) { text(`LV${G.lvl}`, 3, 1, 3); textR(`G ${G.gold}`, W - 3, 1, 3); }
+  };
+}
+
+// the classic status window, shown after standing still for a moment
+function questStatusWindow(field) {
+  if (!G || !field) return;
+  const D = derive(G), mp = typeof resourceFrac === 'function' ? Math.round(resourceFrac(G) * 100) : 0;
+  const x = 3, y = 6, w = 54, h = 56;
+  questWindow(x, y, w, h, String(G.name || 'HERO').slice(0, 7));
+  const rows = [['LV', G.lvl], ['HP', G.hp], ['MP', `${mp}%`], ['G', G.gold], ['E', G.xp || 0]];
+  rows.forEach(([k, v], i) => { text(k, x + 5, y + 6 + i * 10, 3); textR(String(v).slice(0, 6), x + w - 5, y + 6 + i * 10, 3); });
+  if (G.hp < D.hpMax * 0.25 && (frameN >> 4) % 2) fill(x + 2, y + 2, w - 4, 1, '#f44');
+}
+
+class QuestCommand {
+  constructor(field) { this.field = field; this.i = 0; }
+  update() {
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (nav('up')) { this.i = (this.i + 6) % 8; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 2) % 8; SFX.cursor(); }
+    if (nav('left') || nav('right')) { this.i ^= 1; SFX.cursor(); }
+    if (!P('a')) return;
+    SFX.select(); removeScene(this);
+    questCommand(QUEST_COMMANDS[this.i], this.field);
+  }
+  draw() {
+    const x = W - 76, y = 6, w = 73, h = 50;
+    questWindow(x, y, w, h, 'COMMAND');
+    QUEST_COMMANDS.forEach((c, k) => {
+      const cx = x + 9 + (k % 2) * 33, cy = y + 7 + (k >> 1) * 10;
+      if (k === this.i && (frameN >> 4) % 4 !== 3) text('>', cx - 7, cy, 3);
+      text(c.slice(0, 5), cx, cy, 3);
+    });
+  }
+}
+
+function questSearch(field) {
+  const day = Math.floor(Date.now() / 86400000), key = `${G.map}:${G.x},${G.y}`;
+  G.questSearched = G.questSearched || {};
+  if (G.questSearched[key] === day) return say(`${G.name} searched the ground here already today.`);
+  G.questSearched[key] = day;
+  const roll = hashStr(`${key}|${day}|${G.name}`) % 10;
+  if (roll === 0 && G.inv) { G.inv.potion = (G.inv.potion || 0) + 1; SFX.select(); return say([`${G.name} searched the ground...`, 'and found a healing draught!']); }
+  if (roll <= 2) { const g = 2 + (G.lvl || 1) * (1 + roll); G.gold += g; SFX.select(); return say([`${G.name} searched the ground...`, `and found ${g} gold!`]); }
+  say([`${G.name} searched the ground...`, 'Nothing is here.']);
+}
+
+function questCommand(cmd, field) {
+  if (cmd === 'TALK') { const n = scenes.length; field.questTalking = true; field.interact(); field.questTalking = false; if (scenes.length === n) say('There is no one there.'); return; }
+  if (cmd === 'STATUS') return push(new CharacterMenu());
+  if (cmd === 'ITEM') return push(new InventoryScene('field'));
+  if (cmd === 'SPELL') return push(new Spellbook());
+  if (cmd === 'EQUIP') return push(new PaperDoll());
+  if (cmd === 'MAP') return push(new WorldMap());
+  if (cmd === 'SEARCH') return questSearch(field);
+  if (cmd === 'STAIRS') {
+    const ch = field.chAt(G.x, G.y);
+    if (G.inst && ch === 'L') return leaveInstance();
+    if (G.inst && ch === 'U') return towerNext();
+    return say('There are no stairs here.');
+  }
+}
+
+if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
+  // A on nothing opens the COMMAND window
+  const interact0 = Field.prototype.interact;
+  Field.prototype.interact = function () {
+    const n = scenes.length, t = toasts.length;
+    const r = interact0.apply(this, arguments);
+    if (questUi() && !this.questTalking && scenes.length === n && toasts.length === t && scenes[scenes.length - 1] === this) push(new QuestCommand(this));
+    return r;
+  };
+  // the status window appears once you have stood still for about two thirds of a second
+  const draw0 = Field.prototype.draw;
+  Field.prototype.draw = function () {
+    draw0.apply(this, arguments);
+    if (!questUi() || !G) return;
+    const moving = this.ox || this.oy;
+    this.questIdle = moving ? 0 : (this.questIdle || 0) + 1;
+    if (this.questIdle > 40 && scenes[scenes.length - 1] === this) questStatusWindow(this);
+  };
+  window.GBQQuestUi = { QUEST_COMMANDS, questCommand, QuestCommand };
+}
+if (typeof globalThis !== 'undefined') globalThis.GBQQuestUiData = { QUEST_COMMANDS, QUEST_SHADES };
+
+</script>
+<script>
 // ================================================================ CLEAN BATTLE BACKGROUNDS (handheld creature-RPG style)
 // Flat, clean scenes instead of the busy painted strip: banded sky, a distant silhouette, flat ground
 // and two oval platforms (the foe's on the far side, the party's in front). One look per biome plus
@@ -16898,12 +17026,17 @@ function apEquipmentFor(item) {
 function apFieldArtFor(name) {
   if (!name || typeof name !== 'string' || name.startsWith('ap_') || name.startsWith('au_')) return null;
   const lower = name.toLowerCase();
+  // generated retro / key-art tiles are never replaced
+  if (/^g[td]_(r8|r9|ka)/.test(lower)) return null;
   if (/^gt_/.test(lower)) {
     if (/_(house|inn|shop|temple|tower|building|windmill)(_|$)/.test(lower)) return apPick('buildings', lower);
     if (/_(tree|pine|dense|single|rock|bush|plant)(_|$)/.test(lower)) return apPick('environment', lower);
-    return apPick('terrain', lower);
+    // ground (grass, roads, water, sand, walls...) keeps the game's own auto-tiled art: picking a pack terrain
+    // texture by name hash put lava, stone and walls where grass and roads belong
+    return null;
   }
-  if (/^(gd_|d_[a-z])/.test(lower)) return apPick('dungeon', lower);
+  // dungeon floors, walls, stairs and doors keep their meaning (a hashed pick could turn a floor into a wall)
+  if (/^(gd_|d_[a-z])/.test(lower)) return null;
   if (/^go_/.test(lower) || /^(px_waypoint|item_chest)/.test(lower)) return apPick('map_elements', lower);
   if (/^mt_/.test(lower)) return apPick('mounts', lower);
   if (/^gh_npc_/.test(lower) || /^(villager|elder|hero)_/.test(lower)) return apPick('npcs', lower);
@@ -16957,8 +17090,9 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
 
   // Replace map tiles, people, and mounts by the semantically matching pack family.
   // Each mapper is deterministic and uses the original renderer as a fallback.
+  // only FULL DETAIL (packs) swaps sprites: NES, RETRO 8-BIT and AELMOOR HD keep their own art
   const packSpriteName = name => {
-    if (typeof artOn !== 'function' || !artOn()) return null;
+    if (S.art !== 'packs') return null;
     const candidate = apFieldArtFor(name);
     return candidate && IMG[candidate] ? candidate : null;
   };
@@ -16979,7 +17113,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   if (typeof worldPortrait === 'function') {
     const worldPortraitBase = worldPortrait;
     worldPortrait = function (character, dir, ghost) {
-      if (artOn() && !ghost) {
+      if (S.art === 'packs' && !ghost) {
         const packed = apCharacterFor(character);
         if (packed && IMG[packed]) return sprFit(packed, 24, { flip: dir === 'left' });
       }
@@ -16989,7 +17123,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   if (typeof npcSprite === 'function') {
     const npcSpriteBase = npcSprite;
     npcSprite = function (entity) {
-      if (artOn() && entity) {
+      if (S.art === 'packs' && entity) {
         const packed = apNpcFor(entity);
         if (packed && IMG[packed]) return spr(packed, 16, 16);
       }
@@ -19061,7 +19195,7 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['MEMORY', ['NPCs remember how often you talk to them: stranger, regular, old friend. They greet you by name and notice strong heroes.']],
     ],
     'SETTINGS': () => [
-      ['THEMES', ['UI THEME: 8-BIT MMO, CRIMSON, CLASSIC, SANCTUM, BLACKBIRD. ART: FULL DETAIL, NES, CLASSIC, RETRO 8-BIT, AELMOOR HD. BATTLE BG: CLEAN, PAINTED, SCENES.']],
+      ['THEMES', ['UI THEME: 8-BIT MMO, CRIMSON, CLASSIC, SANCTUM, BLACKBIRD, QUEST WINDOWS (A on nothing opens COMMAND). ART: FULL DETAIL, NES, CLASSIC, RETRO 8-BIT, AELMOOR HD. BATTLE BG: CLEAN, PAINTED, SCENES.']],
       ['CHAT', ['The chat panel starts closed (C opens it). CHAT SETTINGS turns screen chat, bubbles, name tags and NPC chatter on or off.']],
       ['ACCESSIBILITY', ['PALETTE includes HIGH CONTRAST for colour-blind players. TEXT SPEED, BRIGHTNESS, CONTRAST and KEY BINDINGS are in SETTINGS.']],
     ],
