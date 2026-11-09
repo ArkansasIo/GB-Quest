@@ -10,6 +10,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
   - monsters `fdm_*` / `fdb_*`: a new 48x48 design for each of the 55 bestiary subtypes, seven element variants and three crowned boss forms with an aura
   - field props `gt_fd<biome>_*`: trees, pines, rocks, peaks, shops, inns, temples, shrines, statues, arena, keep, walls and gates on each of the 25 biomes' own ground
 - Townsfolk that wander now walk with FULL DETAIL frames (`fdn_<role>_<dir><frame>`) instead of switching back to the old sprites; the character creator's LOOKS preview and the HUD use the new hero for your class and species.
+- Battles in FULL DETAIL draw your party with the same hero sprite as the field (side view at 2x, facing the foe, ghosted when down) instead of the HD portrait, so a hero looks the same everywhere.
 - `src/art.js` adds `fdWalker`, `fdWalkerName`, `fdNpcArt`, `fdMonsterArt` and `fdWorldTile`; the field, townsfolk, battles and bestiary use them in FULL DETAIL.
 
 ## Unreleased — 8-bit item icons at true resolution

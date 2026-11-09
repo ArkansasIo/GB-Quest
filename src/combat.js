@@ -1006,13 +1006,15 @@ class Battle {
     shownP.forEach((u, k) => {
       const c = u.ch, look = `c_${c.cls}_4`, por = heroPortrait(c);
       const cl = S.battleBg !== 'painted' ? { clean: true } : undefined;
-      let s = por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
+      const fdName = typeof fdWalkerName === 'function' && fdWalkerName(c, 'right', (frameN >> 4) % 2);  // FULL DETAIL: the same hero as on the field
+      let s = fdName ? spr(fdName, 32, 48) : por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
       if (!s) return;                         // portrait still loading (the source build streams images in)
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
       if (c.hp <= 0) {
+        if (fdName) { blit(spr(fdName, 32, 48, { ghost: true }), px - 10, 64); return; }
         const deadHd = battleHDFrame(c, 'death', (frameN >> 2) % 8, 'east');
         if (deadHd) { const h = 30, w = Math.max(1, Math.round(deadHd.width * h / Math.max(1, deadHd.height))); ctx.drawImage(deadHd, Math.round(px - w / 2), 78, w, h); }
         else blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78);
@@ -1020,11 +1022,12 @@ class Battle {
       }
       const activePose = this.anim.pose && this.anim.pose.id === u.id && this.anim.pose.until > frameN ? this.anim.pose.state : 'idle';
       const pose = this.anim.flash[u.id] ? 'hit' : activePose;
-      const hd = battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
+      const hd = fdName ? null : battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
       if (hd) {
         const h = s.height, w = Math.max(1, Math.round(hd.width * h / Math.max(1, hd.height)));
         ctx.drawImage(hd, Math.round(px - w / 2 + lx), Math.round(py - h + 14), w, h);
-      } else blit(s, px - s.width / 2 + lx, py - s.height + 14);
+      } else if (fdName) blit(s, px - 10 + lx, py - s.height + 14);  // FULL DETAIL heroes are 32 px wide: keep the first one on screen
+      else blit(s, px - s.width / 2 + lx, py - s.height + 14);
       if (hasEff(u, 'invisible') || hasEff(u, 'hidden')) { ctx.globalAlpha = 0.4; fill(px - 8, py - 16, 16, 30, 0); ctx.globalAlpha = 1; }
     });
     this.foes.slice(0, 4).forEach(f => {

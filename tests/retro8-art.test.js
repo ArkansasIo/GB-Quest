@@ -154,4 +154,5 @@ test('FULL DETAIL redesign: heroes for every class and species, townsfolk, monst
   for (const fn of ['function fdMonsterArt', 'function fdWorldTile', 'function fdWalker', 'function fdNpcArt']) assert.ok(art.includes(fn), fn);
   assert.match(read('src/scenes_world.js'), /fdWalker\(G, G\.dir/);
   assert.match(read('src/npc_art.js'), /fdNpcArt\(role, blink\)/);
+  assert.match(read('src/combat.js'), /fdWalkerName\(c, 'right'/);
 });
