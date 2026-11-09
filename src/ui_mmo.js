@@ -11,8 +11,8 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird', 'quest'];
-const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS' };
+const MMO_THEMES = ['aelmoor', 'mmo', 'tnl', 'mu', 'classic', 'sanctum', 'blackbird', 'quest'];
+const MMO_THEME_NAME = { mmo: 'HANDHELD CLASSIC', tnl: 'TNL HANDHELD', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS', aelmoor: 'AELMOOR' };
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
@@ -33,7 +33,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     S.handheldUiDefaulted = true;
     try { saveSettings(); } catch (e) {}
   }
-  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird' || S.uiTheme === 'aelmoor';
   const isHandheld = () => S.uiTheme === 'mmo' || S.uiTheme === 'tnl';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
@@ -52,6 +52,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
 
   // handheld panel: rounded double border
   function panel(x, y, w, h, bg) {
+    if (S.uiTheme === 'aelmoor' && typeof aelPanel === 'function') return aelPanel(x, y, w, h);
     const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2), fillc = bg != null && bg !== 0 ? col(bg) : rgb(C.panel, 0);
     if (isBlackbird()) {
       fill(x, y, w, h, ink); fill(x + 1, y + 1, w - 2, h - 2, edge);

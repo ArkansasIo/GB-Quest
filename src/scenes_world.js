@@ -101,13 +101,15 @@ class Title {
     SFX.select();
     const c = o[this.i];
     if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
-    if (c === 'NEW GAME') push(new RealmSelect());
-    if (c === 'LOAD GAME') push(new RealmSelect());
-    if (c === 'OPTIONS') push(new SettingsScene());
-    if (c === 'CREDITS') push(new Credits());
-    if (c === 'QUIT') choose(['NO', 'YES, QUIT'], k => {
+    // the Aelmoor menu suite (src/menus_aelmoor.js); the older screens remain as fallbacks
+    const AM = window.GBQAelmoorMenus;
+    if (c === 'NEW GAME') push(AM ? new AM.AelNewGame() : new RealmSelect());
+    if (c === 'LOAD GAME') push(AM ? new AM.AelLoad() : new RealmSelect());
+    if (c === 'OPTIONS') push(AM ? new AM.AelOptions() : new SettingsScene());
+    if (c === 'CREDITS') push(AM ? new AM.AelCredits() : new Credits());
+    if (c === 'QUIT') { if (AM) push(new AM.AelQuit()); else choose(['NO', 'YES, QUIT'], k => {
       if (k === 1) say(['Thanks for exploring Aelmoor.', 'You may close this browser tab.']);
-    }, 'Leave GB Quest?');
+    }, 'Leave GB Quest?'); }
   }
   draw() {
     // Key art (tools/make_title_art.py): logo, party and castle are in the picture; the live menu sits exactly over

@@ -110,3 +110,11 @@ test('Lanterns of Aelmoor key art: every sprite the AELMOOR index names exists, 
   const art = read('src/art.js');
   for (const hook of ['KEYART.monsters', 'KEYART.equip', 'KEYART.consumables', 'KEYART.town', 'KEYART.effects', 'KEYART.npc']) assert.ok(art.includes(hook), hook);
 });
+
+test('settings list pairs every item with its own value (the Aelmoor OPTIONS screen reads the same list)', () => {
+  const src = read('src/scenes_menu.js');
+  assert.match(src, /v\.splice\(1, 0, '>'\); v\.splice\(this\.items\(\)\.indexOf\('ABOUT'\), 0, '>'\);/);
+  const menus = read('src/menus_aelmoor.js');
+  for (const s of ['class AelOptions', 'class AelLoad', 'class AelCredits', 'class AelQuit', 'class AelNewGame', 'class AelClassSelect', 'class AelSummary']) assert.ok(menus.includes(s), s);
+  assert.match(read('src/scenes_world.js'), /new AM\.AelOptions\(\)/);
+});

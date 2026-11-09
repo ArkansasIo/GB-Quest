@@ -119,7 +119,7 @@ test('pixel packs: index sprites exist, aliases point at real art, monster picks
 
 test('8-bit MMO UI: theme cycle and a layout that keeps frames apart', () => {
   const c = { Math, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('ui_mmo.js'), c); const U = c.GBQUiMmo;
-  assert.equal(U.nextUiTheme('mmo'), 'tnl'); assert.equal(U.nextUiTheme('tnl'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('sanctum'), 'blackbird'); assert.ok(!U.MMO_THEMES.includes('diablo'), 'DIABLO IV theme removed'); assert.equal(U.nextUiTheme('blackbird'), 'quest'); assert.equal(U.nextUiTheme('quest'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'quest'); assert.equal(U.nextUiTheme('tnl', -1), 'mmo');
+  assert.equal(U.nextUiTheme('mmo'), 'tnl'); assert.equal(U.nextUiTheme('tnl'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('sanctum'), 'blackbird'); assert.ok(!U.MMO_THEMES.includes('diablo'), 'DIABLO IV theme removed'); assert.equal(U.nextUiTheme('blackbird'), 'quest'); assert.equal(U.nextUiTheme('quest'), 'aelmoor'); assert.equal(U.nextUiTheme('aelmoor'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'aelmoor'); assert.equal(U.nextUiTheme('tnl', -1), 'mmo');
   const L = U.MMO_LAYOUT;
   assert.ok(L.unit.x + L.unit.w < L.map.x, 'unit frame and minimap do not touch');
   assert.ok(L.toastY > L.map.y + L.map.s + 8 && L.bannerY > L.toastY + 25, 'toasts and banners sit below the frames');
