@@ -2,6 +2,15 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## Unreleased — FULL DETAIL sprite redesign
+
+- New generator `tools/gen_fulldetail.py` draws a redesigned set for the default FULL DETAIL mode (2,590 images, stored as exact indexed PNGs, about 1.3 MB):
+  - heroes `fdw_*`: 16x24 walkers for every class in all nine species (elf ears, stonekin beards, shorter wisplings and burrowkin, emberborn horns, tuskborn tusks, drakkin scales), down/up/side with two walk frames; proportions follow the user's 8-bit hero reference sheet (smaller heads, pauldrons, crested shields, muted tones)
+  - townsfolk `fdn_*`: every role, with blink frames
+  - monsters `fdm_*` / `fdb_*`: a new 48x48 design for each of the 55 bestiary subtypes, seven element variants and three crowned boss forms with an aura
+  - field props `gt_fd<biome>_*`: trees, pines, rocks, peaks, shops, inns, temples, shrines, statues, arena, keep, walls and gates on each of the 25 biomes' own ground
+- `src/art.js` adds `fdWalker`, `fdNpcArt`, `fdMonsterArt` and `fdWorldTile`; the field, townsfolk, battles and bestiary use them in FULL DETAIL.
+
 ## Unreleased — 8-bit item icons at true resolution
 
 - The RETRO 8-BIT item-sheet icons (`ki_*`) are now real 16x16 pixel icons (area-average fit, hard alpha, 16 colours, 1px outline) instead of soft, uneven ~24-34px crops, matching the generated `r8i_*` icons. A stray caption fragment is no longer sliced as an icon.

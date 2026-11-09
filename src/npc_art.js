@@ -55,6 +55,8 @@ function npcSprite(e) {
   if (packSprite) return packSprite;
   const role = npcRole(e), base = `gh_npc_${role}`;
   const t = (frameN + npcHash(e.name || '') % 240) % 240, blink = role === 'realmstone' ? (frameN >> 4) % 2 === 1 : t < 7;
+  const fd = typeof fdNpcArt === 'function' && fdNpcArt(role, blink);
+  if (fd) return spr(fd, 16, 24);
   const retro = typeof retroNpcArt === 'function' && retroNpcArt(role, blink, e.name);
   if (retro) return retro.startsWith('ka_') ? sprH(retro, 22) : spr(retro, 16, 16);
   if (!role || !IMG[`${base}_down0`]) return walker(npcLook(e.spr), 'down', 0);

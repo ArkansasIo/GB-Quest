@@ -69,6 +69,7 @@ function retroWorldTile(tile) {
 }
 function retroMonsterArt(b) {
   if (!b || b.ccArt || b.cat === 'arc') return null;
+  if (S.art === 'packs') return fdMonsterArt(b);
   const isBoss = !!(b.cat || b.boss);
   const src = isBoss ? (b.base && BEAST_BY_ID[b.base]) || (b.sub ? b : null) : b;
   if (!src || src.ccArt) return null;
@@ -81,9 +82,46 @@ function retroMonsterArt(b) {
   const p = retroPrefix(), name = isBoss ? `${p}b_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `${p}m_${slug}_${src.variant || 'base'}`;
   return IMG[name] ? name : null;
 }
+// FULL DETAIL (the default mode, tools/gen_fulldetail.py): redesigned heroes for every class and species, townsfolk,
+// one monster per bestiary subtype (seven element variants, three boss forms) and field props for every biome.
+const FD_PROPS = new Set(['tree', 'pine', 'dense', 'single', 'rock', 'peak', 'shop', 'inn', 'shrine', 'statue', 'temple', 'arena', 'keep', 'keepdoor', 'wall', 'gate']);
+const fdOn = () => S.art === 'packs';
+function fdMonsterArt(b) {
+  if (!fdOn() || !b || b.ccArt || b.cat === 'arc') return null;
+  const isBoss = !!(b.cat || b.boss);
+  const src = isBoss ? (b.base && BEAST_BY_ID[b.base]) || (b.sub ? b : null) : b;
+  if (!src || src.ccArt) return null;
+  const slug = retroSlug(src.sub);
+  const name = isBoss ? `fdb_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `fdm_${slug}_${src.variant || 'base'}`;
+  return IMG[name] ? name : null;
+}
+function fdWorldTile(tile) {
+  if (!fdOn()) return null;
+  const m = /^gt_([a-z]+)_([a-z]+)$/.exec(tile || '');
+  if (!m || !FD_PROPS.has(m[2])) return null;
+  const name = `gt_fd${m[1]}_${m[2]}`;
+  return IMG[name] ? name : null;
+}
+// field walker: class + species frames (16x24); left is the mirrored side view
+function fdWalker(character, dir = 'down', frame = 0, ghost = false) {
+  if (!fdOn() || !character) return null;
+  const d = dir === 'up' ? 'up' : dir === 'down' ? 'down' : 'side', f = frame ? 1 : 0;
+  const cls = character.look && IMG[`fdw_${character.look}_down0`] ? character.look : character.cls;
+  const sp = character.species || character.race;
+  const name = [sp && sp !== 'hearthkin' ? `fdw_${cls}_${sp}_${d}${f}` : null, `fdw_${cls}_${d}${f}`].find(n => n && IMG[n]);
+  return name ? spr(name, 16, 24, { flip: dir === 'left', ghost }) : null;
+}
+function fdNpcArt(role, blink) {
+  if (!fdOn() || !role) return null;
+  const name = `fdn_${role}_${blink ? 1 : 0}`;
+  return IMG[name] ? name : null;
+}
+if (typeof window !== 'undefined') { window.fdWalker = fdWalker; window.fdWorldTile = fdWorldTile; window.fdNpcArt = fdNpcArt; window.fdMonsterArt = fdMonsterArt; }
 if (typeof window !== 'undefined') { window.retroWorldTile = retroWorldTile; window.retroMonsterArt = retroMonsterArt; window.retroNpcArt = retroNpcArt; window.retroMode = retroMode; }
 
 const monsterArt = b => {
+  const fd = fdMonsterArt(b);
+  if (fd) return fd;
   const supplied = assetPackEnemyFor(b);
   if (supplied) return supplied;
   if (retroMode()) { const retro = retroMonsterArt(b); if (retro) return retro; }
