@@ -540,6 +540,8 @@ class CharCreate {
   }
   drawWalker(look, x, y, size = 32) {
     const seq = ['down', 'side', 'up', 'sideL'], d = seq[Math.floor(this.t / 48) % 4], f = (this.t >> 4) % 2;
+    const fd = typeof fdWalkerName === 'function' && fdWalkerName({ cls: look, look, species: this.pick && this.pick.species }, d === 'sideL' ? 'left' : d, f);
+    if (fd) { const w = Math.round(size * 2 / 3), h = size; blit(spr(fd, w, h, { flip: d === 'sideL' }), x + Math.round((size - w) / 2), y); return; }
     const name = `gh_${look}_${d === 'sideL' ? 'side' : d}${f}`;
     blit(spr(IMG[name] ? name : `gh_warden_down${f}`, size, size, { flip: d === 'sideL' }), x, y);
   }

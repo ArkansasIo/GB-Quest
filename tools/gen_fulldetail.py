@@ -569,7 +569,7 @@ def walker(name, look, dir, frame, species='hearthkin'):
     return shade(figure(look, dir, frame, species=species), pal, ground_shadow=True)
 
 
-def townsfolk(role, blink=False):
+def townsfolk(role, blink=False, dir='down', frame=0):
     if role == 'realmstone':
         c = C(16, 24)
         c.r(3, 20, 12, 23, STONE); c.r(5, 18, 10, 20, STONE)
@@ -577,7 +577,7 @@ def townsfolk(role, blink=False):
         c.l([(8, 2), (8, 16)], WHITE); c.px(6, 5, WHITE)
         return shade(c, {STONE: (120, 116, 130), BODY: (90, 200, 240)}, ground_shadow=True)
     look = role_look(role)
-    return shade(figure(look, 'down', 0, blink, species='wispling' if role == 'child' else 'hearthkin'), look_palette(look), ground_shadow=True)
+    return shade(figure(look, dir, frame, blink, species='wispling' if role == 'child' else 'hearthkin'), look_palette(look), ground_shadow=True)
 
 
 # ---------------------------------------------------------------- monsters (48x48, facing the party on the left)
@@ -1442,6 +1442,10 @@ def build():
     for role in R.NPC_ALL:
         for k in (0, 1):
             save(townsfolk(role, bool(k)), OUT / f'fdn_{role}_{k}.png'); n += 1
+        if role != 'realmstone':                        # walking frames for townsfolk that wander (src/npc_ai.js)
+            for d in ('down', 'up', 'side'):
+                for f in (0, 1):
+                    save(townsfolk(role, False, d, f), OUT / f'fdn_{role}_{d}{f}.png'); n += 1
     for sub in DESIGNS:
         for v in R.VARIANTS:
             save(monster(sub, v), OUT / f'fdm_{sub}_{v}.png'); n += 1

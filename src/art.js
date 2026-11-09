@@ -103,12 +103,15 @@ function fdWorldTile(tile) {
   return IMG[name] ? name : null;
 }
 // field walker: class + species frames (16x24); left is the mirrored side view
-function fdWalker(character, dir = 'down', frame = 0, ghost = false) {
+function fdWalkerName(character, dir = 'down', frame = 0) {
   if (!fdOn() || !character) return null;
   const d = dir === 'up' ? 'up' : dir === 'down' ? 'down' : 'side', f = frame ? 1 : 0;
   const cls = character.look && IMG[`fdw_${character.look}_down0`] ? character.look : character.cls;
   const sp = character.species || character.race;
-  const name = [sp && sp !== 'hearthkin' ? `fdw_${cls}_${sp}_${d}${f}` : null, `fdw_${cls}_${d}${f}`].find(n => n && IMG[n]);
+  return [sp && sp !== 'hearthkin' ? `fdw_${cls}_${sp}_${d}${f}` : null, `fdw_${cls}_${d}${f}`].find(n => n && IMG[n]) || null;
+}
+function fdWalker(character, dir = 'down', frame = 0, ghost = false) {
+  const name = fdWalkerName(character, dir, frame);
   return name ? spr(name, 16, 24, { flip: dir === 'left', ghost }) : null;
 }
 function fdNpcArt(role, blink) {
@@ -116,7 +119,7 @@ function fdNpcArt(role, blink) {
   const name = `fdn_${role}_${blink ? 1 : 0}`;
   return IMG[name] ? name : null;
 }
-if (typeof window !== 'undefined') { window.fdWalker = fdWalker; window.fdWorldTile = fdWorldTile; window.fdNpcArt = fdNpcArt; window.fdMonsterArt = fdMonsterArt; }
+if (typeof window !== 'undefined') { window.fdWalker = fdWalker; window.fdWalkerName = fdWalkerName; window.fdWorldTile = fdWorldTile; window.fdNpcArt = fdNpcArt; window.fdMonsterArt = fdMonsterArt; }
 if (typeof window !== 'undefined') { window.retroWorldTile = retroWorldTile; window.retroMonsterArt = retroMonsterArt; window.retroNpcArt = retroNpcArt; window.retroMode = retroMode; }
 
 const monsterArt = b => {
