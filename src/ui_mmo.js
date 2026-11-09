@@ -5,7 +5,6 @@
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
 //   * top right square minimap with the zone's safety tag under it
-//   * bottom    hotbar of the four combat arts and potions, between a red HP orb and a blue MP orb (MU/Diablo)
 //   * banners and toasts sit in the middle band so nothing covers the frames
 //   * START menu: a right-hand list over the map (15 px rows, triangle cursor), a small hero card and a help line;
 //     every pop-up choice list uses the same roomy rows and cursor
@@ -137,42 +136,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     if (tag) { const w = tag.length * 6 + 4; fill(cx - (w >> 1), M.y + M.s, w, 8, z && z.town ? rgb([40, 120, 70], 2) : G.pvpEnabled ? 'red' : rgb(C.edge, 2)); textC(tag, cx, M.y + M.s, 0); }
     if (isMu() && field.zone) { const lab = `(${G.x},${G.y})`; fill(M.x - 2, M.y + M.s + 9, M.s + 4, 8, rgb(C.ink, 3)); textC(lab.slice(0, 7), cx, M.y + M.s + 9, 'gold'); } // MU-style coordinates
   }
-  function hotbar() {
-    const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
-    if (isHandheld()) {
-      const y = Hd.y;
-      panel(0, y, W, H - y, 0);
-      fill(2, y + 2, W - 4, 1, rgb(C.edge, 2));
-      panel(2, y + 4, 29, 14);
-      text('HP', 4, y + 5, 3);
-      hbar(4, y + 11, 25, 5, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 ? C.hpLow : C.hp, 'green');
-      panel(W - 31, y + 4, 29, 14);
-      text('MP', W - 29, y + 5, 3);
-      hbar(W - 29, y + 11, 25, 5, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, C.mp, 'blue');
-      const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
-      for (let i = 0; i < 5; i++) {
-        const x = 33 + i * 19, sy = y + 5;
-        panel(x, sy, 17, 13, 0);
-        if (i < 4) { const a = arts[i]; if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 4, sy + 1); } }
-        else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 2, sy + 1); textR(String(Math.min(99, n)), x + 16, sy + 4, n ? 3 : 2); }
-      }
-      return;
-    }
-    if (isBlackbird()) panel(0, Hd.y + 2, W, H - Hd.y - 2);
-    else { fill(0, Hd.y + 2, W, H - Hd.y - 2, rgb(C.ink, 3)); fill(0, Hd.y + 3, W, 1, rgb(C.edge, 2)); }
-    if (isBlackbird() && IMG.bb_tab) ctx.drawImage(IMG.bb_tab, 0, Hd.y + 2, W, 2);
-    const OR = isMu() ? 11 : Hd.orbR;
-    if (isMu()) { fill(0, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); fill(W - 26, Hd.y - 1, 26, H - Hd.y + 1, rgb(C.ink, 3)); }
-    orb(13, H - 11, OR, pct(G.hp, D.hpMax), G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? [255, 90, 50] : [200, 28, 24]);
-    orb(W - 14, H - 11, OR, typeof resourceFrac === 'function' ? resourceFrac(G) : 1, [44, 92, 220]);
-    const arts = typeof artLoadout === 'function' ? artLoadout(G) : [];
-    for (let i = 0; i < Hb.slots; i++) {
-      const x = Hb.x + i * Hb.step, y = Hd.y + 6;
-      panel(x, y, 18, 14, 0);
-      if (i < 4) { const a = arts[i]; if (a) { const ic = a.kind === 'physical' ? 'sk_power_strike' : 'sk_arcane_burst'; if (IMG[ic]) blit(sprFit(ic, 9), x + 5, y + 2); } }
-      else { const n = (G.inv && G.inv.potion) || 0, ic = ITEMS.potion && ITEMS.potion.icon; if (ic && IMG[ic]) blit(sprFit(ic, 9), x + 3, y + 2); textR(String(Math.min(99, n)), x + 17, y + 6, n ? 3 : 2); }
-    }
-  }
+
 
   // ---------------------------------------------------------------- handheld-RPG menus
   // a solid right-pointing cursor triangle
@@ -264,7 +228,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, closeInk); fill(W - 5 - k, 3 + k, 1, 1, closeInk); }
     };
   }
-  { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); hotbar(); } catch (e) { console.warn('mmo hud', e); } } }; }
+  { const d0 = Field.prototype.draw; Field.prototype.draw = function () { d0.apply(this, arguments); if (hudMmo() && G) { try { unitFrame(); minimap(this); } catch (e) { console.warn('mmo hud', e); } } }; }
   // toasts in the middle band
   { const t0 = drawToasts; drawToasts = function () {
       if (!hudMmo() || !(scenes[scenes.length - 1] instanceof Field)) return t0.apply(this, arguments);

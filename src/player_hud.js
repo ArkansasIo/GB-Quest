@@ -117,15 +117,6 @@
         <section class="gbq-hud-panel gbq-hud-map"><div class="gbq-hud-map-tools"><span>LOCAL MAP</span><button type="button" data-map-zoom="out" aria-label="Zoom out">−</button><button type="button" data-map-zoom="in" aria-label="Zoom in">+</button><button type="button" data-map-zoom="center" aria-label="Center on player">◎</button></div><canvas class="gbq-hud-map-art" data-hud-minimap width="180" height="112" aria-label="Interactive local map; click a marker to inspect it"></canvas><div class="gbq-hud-map-meta"><strong data-hud-zone>THE FRONTIER</strong><span data-hud-coords>X: 0 · Y: 0</span></div></section>
         <section class="gbq-hud-panel gbq-hud-quests"><div class="gbq-hud-section-title">QUESTS <span>^</span></div><div data-hud-quests><div class="gbq-hud-quest"><b>*</b><span><strong>Explore the Realm</strong><small>Continue your journey</small></span></div></div></section>
       </aside>
-      <div class="gbq-hud-bottom">
-        <div class="gbq-hud-shortcuts">
-          ${button('Character','character','C')} ${button('Inventory','inventory','B')} ${button('Skills','skills','M')} ${button('Talents','talents','T')} ${button('Crafting','crafting','C')}
-        </div>
-        <div class="gbq-hud-action-area"><div class="gbq-hud-quick"><button type="button" data-hud-action="quick1">Q</button><button type="button" data-hud-action="quick2">E</button></div><div class="gbq-hud-hotbar" data-hud-hotbar></div><div class="gbq-hud-potions"><button type="button" data-hud-action="potion">HP <small data-hud-potions>0</small></button><button type="button" data-hud-action="mana">MP</button></div></div>
-        <div class="gbq-hud-shortcuts gbq-hud-shortcuts-right">
-          ${button('Map','map','M')} ${button('Journal','journal','J')} ${button('Guild','guild','G')} ${button('Market','market','$')} ${button('Trading','trading','⇄')} ${button('Collection','collection','C')}
-        </div>
-      </div>
       <div class="gbq-hud-toast" role="status" aria-live="polite"></div>`;
     viewport.appendChild(root);
     root.addEventListener('click', onAction);
@@ -264,35 +255,19 @@
     if (questNode) questNode.innerHTML = quests.length ? quests.slice(0,3).map((q,i)=>`<div class="gbq-hud-quest"><b>${i===0?'*':'>'}</b><span><strong>${esc(q.name || q.title || 'Active Quest')}</strong><small>${esc(q.objective || q.description || q.progressText || 'Quest in progress')}</small></span></div>`).join('') : '<div class="gbq-hud-quest"><b>*</b><span><strong>Explore the Realm</strong><small>Open Journal to review your quests</small></span></div>';
     const combatEntries = window.GBQCombatHotbar && typeof window.GBQCombatHotbar.entries === 'function' ? window.GBQCombatHotbar.entries() : [];
     const arts = combatEntries.length ? combatEntries : (Array.isArray(g.arts) ? g.arts : Array.isArray(g.skills) ? g.skills : []);
-    const hotbar = root.querySelector('[data-hud-hotbar]');
-    if (hotbar) {
-      const markup = Array.from({length:8},(_,i)=>{
-        const a=arts[i], remaining=Number(a?.remaining||0), cooling=remaining>0;
-        const blocked=(a && a.ok===false)||cooling||!!a?.paused;
-        const label=cooling?Math.ceil(remaining/60)+'s':a?.paused?'PAUSE':'';
-        const name=a && (a.name || a.id) || 'Action slot '+(i+1);
-        const status=cooling?' · Cooldown '+label:a?.paused?' · Paused':blocked?' · Unavailable':'';
-        return '<button type="button" data-hud-action="slot'+(i+1)+'" aria-label="'+esc(name+status)+'" '+(blocked?'disabled':'')+' title="'+esc(name+status)+'"><span>'+(a?'A':'+')+'</span>'+(cooling?'<i class="gbq-hud-cooldown" aria-hidden="true">'+label+'</i>':'')+'<small>'+(i+1)+'</small></button>';
-      }).join('');
-      if (hotbar.dataset.renderedMarkup !== markup) {
-        const focusedAction = hotbar.contains(document.activeElement) ? document.activeElement.dataset.hudAction : '';
-        const focusHadHotbar = hotbar.contains(document.activeElement);
-        hotbar.innerHTML = markup;
-        hotbar.dataset.renderedMarkup = markup;
-        if (focusHadHotbar && focusedAction) {
-          const buttons = [...hotbar.querySelectorAll('button:not(:disabled)')];
-          const same = hotbar.querySelector('[data-hud-action="'+focusedAction+'"]:not(:disabled)');
-          const focusedIndex = Number(focusedAction.slice(4)) - 1;
-          const next = same || buttons.find(button => Number(button.dataset.hudAction.slice(4)) - 1 >= focusedIndex) || buttons[buttons.length-1];
-          next?.focus({preventScroll:true});
-        }
-      }
-    }
+    // the bottom shortcut bar and action hotbar were removed: menus open from the game itself (START / keys)
+    const hotbar = null;
     updateHudArtwork(g, hotbar);
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
   function init() { mount(); if (!root) window.setTimeout(init, 250); }
+  // with the bottom bar gone, Y opens the realm trading panel (Trading used to be a bottom-bar button)
+  window.addEventListener('keydown', event => {
+    const el = document.activeElement, typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+    if (event.repeat || typing || event.defaultPrevented || !(event.key === 'y' || event.key === 'Y')) return;
+    if (window.GBQMMOTrade) { event.preventDefault(); window.GBQMMOTrade.open(); } else showToast('Trading interface is still loading');
+  });
   window.GBQPlayerHUD = { mount:init, refresh:update, destroy(){ if(timer)window.clearInterval(timer);timer=null;root?.remove();root=null; } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
 })();

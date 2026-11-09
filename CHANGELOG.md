@@ -8,6 +8,7 @@ All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `M
 - **Title screen** now shows the *Lanterns of Aelmoor* key art (logo, party, castle, moon) with the live menu drawn over the art's menu panel. With 64-BIT video the art is drawn sharp at 640x576. The player HUD panels no longer cover the title screen. Source art: `art_source/title/`, rebuilt by `tools/make_title_art.py`.
 
 ### Removed
+- **Bottom bars**: the in-game HP / skill / potion / MP strip and the page HUD's bottom row (shortcut buttons and action hotbar) are gone. Menus still open from START and their keys; **Y** now opens Trading, which used to be a bottom-bar button.
 - **DIABLO IV UI theme**: removed from SETTINGS > UI THEME (and its CHARACTER-page layout). Saves that had it selected switch to the default handheld theme.
 
 ### Fixed

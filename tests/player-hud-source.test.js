@@ -19,7 +19,7 @@ test('player HUD is included in the browser game', () => {
 });
 
 test('player HUD exposes the requested live gameplay panels', () => {
-  for (const key of ['data-hud-hp', 'data-hud-mp', 'data-hud-xp', 'data-hud-party-list', 'data-hud-quests', 'data-hud-hotbar', 'data-hud-gold']) {
+  for (const key of ['data-hud-hp', 'data-hud-mp', 'data-hud-xp', 'data-hud-party-list', 'data-hud-quests', 'data-hud-gold']) {
     assert.ok(source.includes(key), `missing HUD binding: ${key}`);
   }
   assert.match(source, /window\.GBQPlayerHUD/);
@@ -37,17 +37,8 @@ test('player HUD uses authoritative combat and field map bridges', () => {
   assert.match(source, /drawMiniMap\(mapData\)/);
 });
 
-test('player HUD displays authoritative realtime cooldown and pause state', () => {
-  assert.match(source, /remaining=Number\(a\?\.remaining\|\|0\)/);
-  assert.match(source, /gbq-hud-cooldown/);
-  assert.match(styles, /\.gbq-hud-hotbar button \.gbq-hud-cooldown/);
-});
-
-test('player HUD avoids replacing unchanged hotbar markup and restores keyboard focus after state changes', () => {
-  assert.match(source, /hotbar\.dataset\.renderedMarkup !== markup/);
-  assert.match(source, /hotbar\.contains\(document\.activeElement\)/);
-  assert.match(source, /next\?\.focus\(\{preventScroll:true\}\)/);
-  assert.match(source, /aria-label=/);
+test('player HUD has no bottom bar: the shortcut row and action hotbar were removed', () => {
+  assert.doesNotMatch(source, /gbq-hud-bottom|data-hud-hotbar|gbq-hud-shortcuts/);
 });
 
 test('player HUD minimap supports zoom, player centering, and marker inspection', () => {
@@ -66,7 +57,6 @@ test('player HUD hardens navigation, quest filtering, and progression values', (
   assert.match(source, /Number\(window\.xpForLevel\(level\)\) \|\| 0/);
   assert.match(source, /That menu is unavailable right now/);
   assert.match(source, /typeof combat\.entries === 'function'/);
-  assert.match(source, /focusHadHotbar/);
 });
 
 test('player HUD controls expose visible keyboard focus and touch sizing', () => {
