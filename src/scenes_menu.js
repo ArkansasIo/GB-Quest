@@ -1203,14 +1203,28 @@ class SettingsScene extends ListScene {
     ctx.globalAlpha = 1;
     frame(2, 2, 156, 139, 1);
     fill(5, 5, 150, 15, '#17112d');
+    const settingsIcon = typeof window !== 'undefined' && window.GBQAssetPack && window.GBQAssetPack.systemIconFor('settings');
+    if (settingsIcon && IMG[settingsIcon]) blit(sprFit(settingsIcon, 8), 7, 8);
     textC('AELMOOR  •  OPTIONS', 80, 9, 'gold');
     fill(7, 22, 146, 2, '#9a672e');
-    const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    const v = [
+      'OPEN', 'OPEN',
+      ({ aelmoor: 'AELMOOR', mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' })[S.uiTheme] || 'CLASSIC',
+      (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name,
+      S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '4k': '4K UPSCALE', '8k': '8K UPSCALE' })[S.hdRes] || 'NATIVE',
+      `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'PIXEL PACKS' : 'NES',
+      S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music,
+      S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF',
+      S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF',
+      G ? diffOf().name : '-', 'OPEN', 'OPEN',
+      ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED',
+      'OPEN', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON',
+    ];
     this.top = Math.max(0, Math.min(this.i - 5, this.items().length - 11));
     this.items().slice(this.top, this.top + 11).forEach((label, j) => {
       const index = this.top + j, y = 25 + j * 9;
       if (index === this.i) {
-        fill(8, y - 2, 144, 9, '#49301f');
+        fill(8, y - 2, 144, 9, '#30284b');
         frame(7, y - 3, 146, 10, 1);
         fill(9, y - 1, 2, 6, '#ffd36b');
       }
@@ -1283,10 +1297,12 @@ class GraphicsScene extends ListScene {
     bg.addColorStop(0, '#090d26'); bg.addColorStop(.58, '#211b42'); bg.addColorStop(1, '#39294d');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     frame(2, 2, 156, 139, 1); fill(5, 5, 150, 15, '#17112d');
+    const graphicsIcon = typeof window !== 'undefined' && window.GBQAssetPack && window.GBQAssetPack.systemIconFor('graphics');
+    if (graphicsIcon && IMG[graphicsIcon]) blit(sprFit(graphicsIcon, 8), 7, 8);
     textC('AELMOOR  •  GRAPHICS', 80, 9, 'gold');
     this.items().forEach((label, j) => {
       const y = 23 + j * 10, selected = j === this.i;
-      if (selected) { fill(7, y - 2, 146, 10, '#49301f'); frame(6, y - 3, 148, 11, 1); }
+      if (selected) { fill(7, y - 2, 146, 10, '#30284b'); frame(6, y - 3, 148, 11, 1); }
       text(label, 11, y, selected ? 'gold' : 2);
       textR(this.value(label), 148, y, selected ? 'gold' : 2);
     });
@@ -1312,11 +1328,19 @@ class KeybindScene extends ListScene {
     SFX.confirm();
   }
   draw() {
-    fill(0, 0, W, H, 0); if (G) hdr(); else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
+    fill(0, 0, W, H, 0);
+    if (G) hdr();
+    else if (S.uiTheme === 'aelmoor') {
+      frame(2, 2, 156, 139, 1); fill(5, 5, 150, 15, '#17112d');
+      const icon = typeof window !== 'undefined' && window.GBQAssetPack && window.GBQAssetPack.systemIconFor('key bindings');
+      if (icon && IMG[icon]) blit(sprFit(icon, 8), 7, 8);
+      textC('AELMOOR  •  CONTROLS', 80, 9, 'gold');
+    } else { fill(0, 0, W, 11, 0); if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); }
     if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
-    textC('KEY BINDINGS', 80, 13, 'gold');
-    this.actions.forEach(([action, label], index) => { const y = 29 + index * 12; if (index === this.i) fill(3, y - 2, 154, 11, 1); text(label, 7, y); textR(this.capture === action ? 'PRESS KEY…' : keyLabel(S.keybinds[action]), 151, y, this.capture === action ? 'gold' : 2); });
-    const y = 29 + this.actions.length * 12; if (this.i === this.actions.length) fill(3, y - 2, 154, 11, 1); text('RESTORE DEFAULTS', 7, y, this.i === this.actions.length ? 3 : 2);
+    const compact = S.uiTheme === 'aelmoor' && !G;
+    textC('KEY BINDINGS', 80, compact ? 23 : 13, 'gold');
+    this.actions.forEach(([action, label], index) => { const y = compact ? 33 + index * 10 : 29 + index * 12; if (index === this.i) fill(3, y - 2, 154, compact ? 9 : 11, 1); text(label, 7, y); textR(this.capture === action ? 'PRESS KEY…' : keyLabel(S.keybinds[action]), 151, y, this.capture === action ? 'gold' : 2); });
+    const y = compact ? 33 + this.actions.length * 10 : 29 + this.actions.length * 12; if (this.i === this.actions.length) fill(3, y - 2, 154, compact ? 9 : 11, 1); text('RESTORE DEFAULTS', 7, y, this.i === this.actions.length ? 3 : 2);
     textC(this.capture ? 'PRESS A KEY  •  ESC ALSO WORKS' : 'ENTER: CHANGE  B: BACK', 80, 132, 2);
   }
 }
@@ -1332,10 +1356,15 @@ class SoundTest extends ListScene {
   }
   draw() {
     fill(0, 0, W, H, 0);
-    if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); else fill(0, 0, W, 11, 3);
+    if (S.uiTheme === 'aelmoor') {
+      frame(2, 2, 156, 139, 1); fill(5, 5, 150, 15, '#17112d');
+      const icon = typeof window !== 'undefined' && window.GBQAssetPack && window.GBQAssetPack.systemIconFor('sound test');
+      if (icon && IMG[icon]) blit(sprFit(icon, 8), 7, 8);
+    } else if (S.uiTheme === 'blackbird' && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12); else fill(0, 0, W, 11, 3);
     if (S.uiTheme === 'blackbird' && !G) frame(1, 12, 158, 130);
-    textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, S.uiTheme === 'blackbird' ? 'gold' : 0);
-    this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
+    const soundTitle = (S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`);
+    textC(soundTitle, 80, S.uiTheme === 'aelmoor' ? 9 : 1, S.uiTheme === 'blackbird' || S.uiTheme === 'aelmoor' ? 'gold' : 0);
+    this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = S.uiTheme === 'aelmoor' ? 23 + j * 10 : 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 10, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
     this.scrollbar(156, 14, 110);
     text('A:PLAY SEL:SFX/MUSIC START:ENGINE', 2, 134, 2);
   }

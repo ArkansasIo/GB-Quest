@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { hasRuntimeAsset, runtimeAssetNames } from './runtime-assets.js';
 
 const read = path => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const exists = path => fs.existsSync(new URL('../' + path, import.meta.url));
 
 test('new HD art collections are indexed and present as PNG assets', () => {
-  const names = JSON.parse(read('assets/index.json'));
+  const names = runtimeAssetNames();
   for (const name of ['gbq_master_catalog', 'gbq_ui_mockup_catalog']) {
-    assert.ok(names.includes(name), name + ' must be in the asset catalog');
-    assert.ok(exists('assets/' + name + '.png'), name + ' PNG must exist');
+    assert.ok(names.has(name), name + ' must be in the asset catalog');
+    assert.ok(hasRuntimeAsset(name), name + ' PNG must be present in the runtime bundle');
   }
 });
 
@@ -24,8 +25,9 @@ test('standalone browser build embeds both catalog images as data URIs', () => {
   const build = read('tools/build.cjs');
   assert.match(build, /GBQ_MASTER_CATALOG/);
   assert.match(build, /GBQ_UI_MOCKUP/);
-  assert.match(build, /gbq_master_catalog\.png/);
-  assert.match(build, /gbq_ui_mockup_catalog\.png/);
+  assert.match(build, /assetUrl\('gbq_master_catalog'\)/);
+  assert.match(build, /assetUrl\('gbq_ui_mockup_catalog'\)/);
+  assert.match(build, /name \+ '\.png'/);
   assert.match(build, /data:image\/png;base64,/);
 });
 

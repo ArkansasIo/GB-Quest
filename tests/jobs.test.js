@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { hasRuntimeAsset } from './runtime-assets.js';
 
 const src = f => fs.readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
 const plain = v => JSON.parse(JSON.stringify(v));
@@ -89,13 +90,13 @@ test('asset pack: scene choice, battle bg cycle and art names exist', () => {
   assert.equal(A.apSceneFor('dungeon', [{}], false, false), 'ap_scene_dungeon'); assert.equal(A.apSceneFor('field', [{}], true, false), 'ap_scene_dungeon');
   assert.equal(A.apSceneFor('field', [{}], false, true), 'ap_scene_city'); assert.equal(A.apSceneFor('field', [{}], false, false), 'ap_scene_wilderness');
   assert.equal(A.nextBattleBg('clean'), 'painted'); assert.equal(A.nextBattleBg('painted'), 'scenes'); assert.equal(A.nextBattleBg('scenes'), 'clean');
-  const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
+  const has = n => hasRuntimeAsset(n);
   for (const n of [...Object.values(A.AP_ITEM_ART), ...Object.values(A.AP_GEM_ART), 'ap_scene_boss_fight', 'ap_scene_dungeon', 'ap_scene_city', 'ap_scene_wilderness']) assert.ok(has(n), n);
 });
 
 test('asset pack: monster art by family, stable faces, rarity rings exist', () => {
   const c = { Math, Object, Array, String, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('asset_pack.js'), c); const A = c.GBQAssetPack;
-  const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
+  const has = n => hasRuntimeAsset(n);
   for (const L of Object.values(A.AP_MONSTERS)) for (const n of L) assert.ok(has(n), n);
   for (const n of A.AP_PORTRAITS) assert.ok(has(n), n);
   for (let t = 0; t < 9; t++) assert.ok(has(`au_rframe_${t}`));
@@ -108,7 +109,7 @@ test('asset pack: monster art by family, stable faces, rarity rings exist', () =
 
 test('pixel packs: index sprites exist, aliases point at real art, monster picks are stable', () => {
   const idx = (() => { const c = {}; vm.runInNewContext(src('pack_index.js').replace(/^const PACK_INDEX/m, 'globalThis.PACK_INDEX'), Object.assign(c, { globalThis: c })); return c.PACK_INDEX; })();
-  const has = n => fs.existsSync(new URL(`../assets/${n}.png`, import.meta.url));
+  const has = n => hasRuntimeAsset(n);
   for (const L of [...Object.values(idx.items), ...Object.values(idx.monsters)]) for (const n of L) assert.ok(has(n), n);
   for (const [old, pk] of Object.entries(idx.alias)) { assert.ok(has(pk), pk); assert.ok(has(old), `alias target ${old} is a real game sprite`); }
   assert.equal(idx.items.sword.length, 11, '11 sword tiers');
@@ -121,7 +122,8 @@ test('pixel packs: index sprites exist, aliases point at real art, monster picks
 
 test('8-bit MMO UI: theme cycle and a layout that keeps frames apart', () => {
   const c = { Math, Object, globalThis: null }; c.globalThis = c; vm.runInNewContext(src('ui_mmo.js'), c); const U = c.GBQUiMmo;
-  assert.equal(U.nextUiTheme('mmo'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'blackbird'); assert.equal(U.nextUiTheme('blackbird'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'blackbird');
+  assert.equal(U.nextUiTheme('mmo'), 'mu'); assert.equal(U.nextUiTheme('mu'), 'classic'); assert.equal(U.nextUiTheme('diablo'), 'blackbird'); assert.equal(U.nextUiTheme('blackbird'), 'aelmoor'); assert.equal(U.nextUiTheme('aelmoor'), 'mmo'); assert.equal(U.nextUiTheme('mmo', -1), 'aelmoor');
+  assert.ok(U.MMO_THEMES.includes('aelmoor')); assert.equal(U.MMO_THEME_NAME.aelmoor, 'AELMOOR');
   const L = U.MMO_LAYOUT;
   assert.ok(L.unit.x + L.unit.w < L.map.x, 'unit frame and minimap do not touch');
   assert.ok(L.toastY > L.map.y + L.map.s + 8 && L.bannerY > L.toastY + 25, 'toasts and banners sit below the frames');

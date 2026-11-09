@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hasRuntimeAsset, runtimeAssetNames } from './runtime-assets.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
@@ -33,15 +34,15 @@ test('reference UI kit source and pixel variants are complete', () => {
 test('all reference pixel assets are installed in the runtime asset catalog', () => {
   const main = readJson('assets_pack/manifest.json');
   const ui = readJson('assets_pack/ui/manifest.json');
-  const shipped = new Set(readJson('assets/index.json'));
+  const shipped = runtimeAssetNames();
   const missing = [];
   for (const entry of main) {
     const name = installedName(entry, 'ap_');
-    if (!shipped.has(name) || !exists('assets/' + name + '.png')) missing.push(name);
+    if (!shipped.has(name) || !hasRuntimeAsset(name)) missing.push(name);
   }
   for (const entry of ui) {
     const name = installedName(entry, 'au_');
-    if (!shipped.has(name) || !exists('assets/' + name + '.png')) missing.push(name);
+    if (!shipped.has(name) || !hasRuntimeAsset(name)) missing.push(name);
   }
   assert.deepEqual(missing, [], 'reference pack assets missing from runtime: ' + missing.join(', '));
 });

@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-const [source, styles, page] = await Promise.all([
+const [source, styles, page, builder, shell] = await Promise.all([
   readFile(new URL('../src/player_hud.js', import.meta.url), 'utf8'),
   readFile(new URL('../client/player-hud.css', import.meta.url), 'utf8'),
-  readFile(new URL('../index.html', import.meta.url), 'utf8')
+  readFile(new URL('../index.html', import.meta.url), 'utf8').catch(() => ''),
+  readFile(new URL('../tools/build.cjs', import.meta.url), 'utf8'),
+  readFile(new URL('../client/shell.html', import.meta.url), 'utf8')
 ]);
 
 test('player HUD source parses as browser JavaScript', () => {
@@ -14,8 +16,10 @@ test('player HUD source parses as browser JavaScript', () => {
 });
 
 test('player HUD is included in the browser game', () => {
-  assert.ok(/client\/player-hud\.css/.test(page) || page.includes('.gbq-hud-map-art'), 'HUD stylesheet is linked or inlined');
-  assert.ok(/src\/player_hud\.js/.test(page) || page.includes('window.GBQPlayerHUD'), 'HUD script is linked or inlined');
+  const sourcePage = /client\/player-hud\.css/.test(page) || page.includes('.gbq-hud-map-art');
+  const bundledContract = builder.includes("'main', 'player_hud', 'debug'") && shell.includes('client/player-hud.css');
+  assert.ok(sourcePage || bundledContract, 'HUD stylesheet is linked or included by the canonical build');
+  assert.ok(/src\/player_hud\.js/.test(page) || page.includes('window.GBQPlayerHUD') || builder.includes("'main', 'player_hud', 'debug'"), 'HUD script is linked or included by the canonical build');
 });
 
 test('player HUD exposes the requested live gameplay panels', () => {

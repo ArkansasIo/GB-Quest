@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hasRuntimeAsset, runtimeAssetNames } from './runtime-assets.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
@@ -12,28 +13,28 @@ test('pixel-pack index resolves every runtime sprite in the shipped asset index'
   const match = source.match(/const PACK_INDEX = (\{[\s\S]*\});\s*$/);
   assert.ok(match, 'generated PACK_INDEX declaration is missing');
   const pack = JSON.parse(match[1]);
-  const shipped = new Set(JSON.parse(read('assets/index.json')));
+  const shipped = runtimeAssetNames();
   const referenced = [
     ...Object.values(pack.items).flat(),
     ...Object.values(pack.monsters).flat(),
     ...Object.values(pack.alias),
   ];
-  const missing = [...new Set(referenced)].filter(name => !shipped.has(name));
+  const missing = [...new Set(referenced)].filter(name => !shipped.has(name) || !hasRuntimeAsset(name));
   assert.deepEqual(missing, [], 'pack_index references sprites absent from assets/index.json');
 });
 
 test('asset pack and pixel pack runtime scripts are loaded after the core art pipeline', () => {
-  const html = read('index.html');
-  const scripts = [
-    'src/art.js',
-    'src/asset_pack.js',
-    'src/pack_index.js',
-    'src/pack_art.js',
-    'src/mount_data.js',
-  ];
-  const positions = scripts.map(script => html.indexOf('<script src="' + script + '"></script>'));
-  assert.ok(positions.every(position => position >= 0), 'one or more art scripts are not included in index.html');
+  const build = read('tools/build.cjs');
+  const orderStart = build.indexOf('const ORDER = [');
+  const orderEnd = build.indexOf('];', orderStart);
+  assert.ok(orderStart >= 0 && orderEnd > orderStart, 'builder script order is missing');
+  const loadOrder = build.slice(orderStart, orderEnd);
+  const names = ['art', 'asset_pack', 'pack_index', 'pack_art', 'mount_data'];
+  const positions = names.map(name => loadOrder.indexOf(`'${name}'`));
+  assert.ok(positions.every(position => position >= 0), 'one or more art scripts are not included in the build');
   assert.deepEqual(positions, [...positions].sort((a, b) => a - b), 'art scripts are loaded in dependency order');
+  const indexPath = path.join(root, 'index.html');
+  if (fs.existsSync(indexPath)) assert.match(read('index.html'), /dist\/gbquest\.html|src\/asset_pack\.js/);
 });
 
 test('pixel pack mode preserves classic fallback and exposes all generated world aliases', () => {

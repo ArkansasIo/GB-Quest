@@ -88,7 +88,7 @@ class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
   enter() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
   resume() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
-  opts() { const o = ['NEW GAME']; if (lastSlot() >= 0) o.push('CONTINUE'); o.push('LOAD GAME', 'OPTIONS', 'CREDITS', 'QUIT'); return o; }
+  opts() { return ['NEW GAME', 'CONTINUE', 'LOAD GAME', 'OPTIONS', 'CREDITS', 'QUIT']; }
   update() {
     this.t++;
     const o = this.opts();
@@ -99,7 +99,7 @@ class Title {
     if (!(P('a') || P('start'))) return;
     SFX.select();
     const c = o[this.i];
-    if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
+    if (c === 'CONTINUE') { if (lastSlot() >= 0) { loadSlot(lastSlot()); fadeTo(() => enterWorld()); } else say('No saved adventure yet.'); }
     if (c === 'NEW GAME') push(new SlotPicker('new'));
     if (c === 'LOAD GAME') push(new SlotPicker('load'));
     if (c === 'OPTIONS') push(new SettingsScene());
@@ -109,56 +109,43 @@ class Title {
     }, 'Leave GB Quest?');
   }
   draw() {
-    // Aelmoor title scene: deep violet moonlight, layered mountains and a warm
-    // lantern-lit citadel, rendered at the native 160x144 canvas resolution.
     ctx.save();
-    const packBackdrop = typeof artOn === 'function' && artOn() && IMG.ap_scene_wilderness
-      ? spr('ap_scene_wilderness', W, H, { clean: true }) : null;
-    if (packBackdrop) {
-      blit(packBackdrop, 0, 0);
-      fill(0, 0, W, H, 'rgba(8,10,18,0.18)');
+    const titleArt = IMG.ap_title_screen || IMG.ap_scene_wilderness;
+    if (titleArt) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(titleArt, 0, 0, W, H);
     } else {
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#234b70'); sky.addColorStop(.52, '#6d9bb0'); sky.addColorStop(1, '#b8d8a0');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    const moon = ctx.createRadialGradient(132, 24, 2, 132, 24, 30);
-    moon.addColorStop(0, 'rgba(255,255,235,.95)'); moon.addColorStop(.55, 'rgba(216,232,198,.5)'); moon.addColorStop(1, 'rgba(184,216,160,0)');
-    ctx.fillStyle = moon; ctx.fillRect(98, 0, 62, 58);
-    ctx.fillStyle = '#f8f8ef'; ctx.beginPath(); ctx.arc(132, 23, 13, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#c9dcb6'; [[126,17,3,2],[135,20,4,3],[129,28,5,2],[138,29,2,2]].forEach(([x,y,w,h]) => ctx.fillRect(x,y,w,h));
-    for (let i = 0; i < 42; i++) { const x = (i * 37 + 11) % W, y = (i * 19 + 5) % 76; ctx.globalAlpha = .35 + ((i + (this.t >> 3)) % 4) * .13; ctx.fillStyle = i % 4 ? '#e8f0dc' : '#fff0a8'; ctx.fillRect(x,y,i%9===0?2:1,1); }
-    ctx.globalAlpha = 1;
-    const ridge = (pts, color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H); pts.forEach(([x,y])=>ctx.lineTo(x,y)); ctx.lineTo(W,H); ctx.closePath(); ctx.fill(); };
-    ridge([[0,65],[17,43],[30,65],[48,39],[66,65],[84,48],[105,70],[126,42],[146,64],[160,51]], '#527b70');
-    ridge([[0,88],[20,67],[40,83],[61,60],[83,87],[106,65],[128,84],[148,62],[160,75]], '#355c50');
-    // Castle towers and warm windows.
-    ctx.fillStyle = '#294a43'; ctx.fillRect(111,58,42,47); ctx.fillRect(119,48,8,57); ctx.fillRect(137,43,7,62); ctx.fillRect(106,68,8,37);
-    ctx.beginPath(); ctx.moveTo(117,49); ctx.lineTo(123,37); ctx.lineTo(129,49); ctx.moveTo(135,44); ctx.lineTo(140,31); ctx.lineTo(146,44); ctx.fill();
-    ctx.fillStyle = '#f4d56a'; [[115,75],[123,67],[133,78],[141,62],[121,88],[145,90]].forEach(([x,y],i)=>{ if ((this.t+i*9)%90<82) ctx.fillRect(x,y,2,3); });
-    // Foreground cliff path and river glints.
-    ridge([[0,111],[20,101],[40,108],[59,95],[79,108],[101,98],[121,110],[143,97],[160,105]], '#294a43');
-    ctx.strokeStyle = '#5c9fc4'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(104,144); ctx.quadraticCurveTo(91,126,108,116); ctx.stroke();
-    ctx.strokeStyle = 'rgba(220,245,255,.8)'; ctx.beginPath(); ctx.moveTo(110,141); ctx.lineTo(105,132); ctx.stroke();
-    // Pixel-art canopy framing the upper-left corner.
-    ctx.fillStyle = '#315d45'; ctx.fillRect(0,0,13,46); ctx.fillRect(8,0,24,7); ctx.fillRect(20,4,18,7);
-    for (let i=0;i<16;i++){ const x=(i*13)%43, y=(i*7)%22; ctx.fillStyle=i%3===0?'#a3a34a':i%2?'#587b42':'#315d45'; ctx.fillRect(x,y,5,4); }
+      fill(0, 0, W, H, '#111a35');
+      for (let i = 0; i < 48; i++) { const x = (i * 37 + 11) % W, y = (i * 19 + 5) % 80; fill(x, y, i % 9 === 0 ? 2 : 1, 1, i % 4 ? '#d9e2ef' : '#f3d078'); }
     }
-    // Small adventurer silhouettes, using the existing class portraits.
-    const bob = Math.round(Math.sin(this.t/12));
-    const hero = classPortrait('warden'), mage = classPortrait('arcanist');
-    if (hero) { const p=sprFit(hero,34); blit(p,28,103-p.height+bob); }
-    if (mage) { const p=sprFit(mage,29); blit(p,5,113-p.height-bob); }
-    // Ornate title plaque and subtitle.
-    fill(17,3,126,39,'#f8f8ef'); frame(3,2,154,43);
-    textC('GB QUEST',80,5,3); textC('LOST KINGDOM',80,14,1);
-    textC('OF SHADOWBANE',80,21,2); textC('CHRONICLES',80,28,2); textC('LANTERNS OF AELMOOR',80,36,3);
-    // Menu plaque; keep every command visible and selectable.
-    const o=this.opts(), rowH=9, h=o.length*rowH+7, y0=57;
-    frame(48,y0,64,h,1);
-    o.forEach((label,j)=>{ const y=y0+4+j*rowH; if(j===this.i){ fill(52,y-1,56,8,'#285da8'); frame(51,y-2,58,9,1); text('>',54,y,'white'); } textC(label,82,y,j===this.i?'white':3); });
-    // Footer and version.
-    fill(0,134,W,10,'#285da8'); text('v'+BUILD.version,3,136,'white');
-    textC('GB QUEST STUDIO',80,136,'white');
+    // Gold-edged title plaque and menu use the native 6x9 font at full resolution.
+    ctx.fillStyle = '#e4b95c'; ctx.fillRect(15, 2, 130, 1); ctx.fillRect(15, 51, 130, 1);
+    ctx.fillRect(15, 2, 1, 50); ctx.fillRect(144, 2, 1, 50);
+    ctx.fillStyle = 'rgba(8, 13, 33, 0.76)'; ctx.fillRect(16, 3, 128, 48);
+    ctx.fillStyle = '#756045'; ctx.fillRect(18, 5, 124, 1);
+    textC('GB QUEST', 80, 5, '#ffe08a');
+    textC('LOST KINGDOMS', 80, 14, '#f4ead0');
+    textC('OF SHADOWBANE', 80, 23, '#f4ead0');
+    textC('CHRONICLES', 80, 32, '#f4ead0');
+    textC('LANTERNS OF AELMOOR', 80, 42, '#ffe08a');
+    const o = this.opts(), x = 40, y0 = 55, w = 80, rowH = 9;
+    ctx.fillStyle = '#e4b95c'; ctx.fillRect(x - 1, y0 - 1, w + 2, 1); ctx.fillRect(x - 1, y0 + 58, w + 2, 1);
+    ctx.fillRect(x - 1, y0 - 1, 1, 60); ctx.fillRect(x + w, y0 - 1, 1, 60);
+    ctx.fillStyle = 'rgba(8, 13, 33, 0.94)'; ctx.fillRect(x, y0, w, 58);
+    ctx.fillStyle = '#756045'; ctx.fillRect(x + 2, y0 + 2, w - 4, 1);
+    o.forEach((command, j) => {
+      const y = y0 + 2 + j * rowH, enabled = command !== 'CONTINUE' || lastSlot() >= 0;
+      if (j === this.i) {
+        ctx.fillStyle = 'rgba(187, 133, 44, 0.58)'; ctx.fillRect(x + 3, y - 1, w - 6, 9);
+        ctx.fillStyle = '#ffe08a'; ctx.fillRect(x + 2, y + 2, 2, 3); ctx.fillRect(x + 3, y + 1, 2, 5); ctx.fillRect(x + 4, y, 2, 7);
+      }
+      const icon = window.GBQAssetPack && window.GBQAssetPack.menuIconFor(command);
+      if (icon && IMG[icon]) blit(sprFit(icon, 8), x + 8, y + 1);
+      textC(command, x + w / 2 + 6, y, j === this.i ? '#fff1be' : enabled ? '#eee8dc' : '#9993a5');
+    });
+    textC('ARROWS MOVE  Z SELECT', 80, 117, '#f4ead0');
+    text('v' + BUILD.version, 3, 136, 'white');
+    textC('GB QUEST STUDIO', 80, 136, 'white');
     ctx.restore();
   }
 }

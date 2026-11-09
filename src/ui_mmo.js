@@ -1,6 +1,6 @@
 'use strict';
 // ================================================================ MMO UI THEMES
-// SETTINGS > UI THEME: POKEMON CLASSIC / CRIMSON / CLASSIC / SANCTUM / DIABLO IV / BLACKBIRD.
+// SETTINGS > UI THEME: AELMOOR / POKEMON CLASSIC / CRIMSON / CLASSIC / SANCTUM / DIABLO IV / BLACKBIRD.
 // A Game Boy Color era layout that borrows the MMO screen plan:
 //   * menus and dialogue: light panels with a rounded double border (handheld-RPG style), dark text
 //   * top left  unit frame (WoW/FFXIV): portrait, level, HP and MP bars, XP strip; party frames below it
@@ -12,13 +12,14 @@
 //   * full-screen pages get a WoW-style window title bar: page name, gold and a close button (B)
 // Text and bars follow the chosen palette; the frames use fixed handheld colours.
 
-const MMO_THEMES = ['mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
-const MMO_THEME_NAME = { mmo: 'POKEMON CLASSIC', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const MMO_THEMES = ['aelmoor', 'mmo', 'mu', 'classic', 'sanctum', 'diablo', 'blackbird'];
+const MMO_THEME_NAME = { aelmoor: 'AELMOOR', mmo: 'POKEMON CLASSIC', mu: 'CRIMSON', classic: 'CLASSIC', sanctum: 'SANCTUM', diablo: 'DIABLO IV', blackbird: 'BLACKBIRD' };
+const AELMOOR_GB = [[8, 10, 28], [56, 57, 99], [181, 145, 83], [244, 225, 184]];
 const nextUiTheme = (cur, d = 1) => { const k = Math.max(0, MMO_THEMES.indexOf(cur)); return MMO_THEMES[(k + (d > 0 ? 1 : MMO_THEMES.length - 1)) % MMO_THEMES.length]; };
 // where things go on the 160x144 screen
 const MMO_LAYOUT = { unit: { x: 1, y: 1, w: 66, h: 23 }, map: { x: 127, y: 1, s: 32 }, toastY: 48, bannerY: 78, hud: { y: 144 - 22, orbR: 9 }, hotbar: { x: 31, slots: 5, step: 20 } };
 
-if (typeof globalThis !== 'undefined') globalThis.GBQUiMmo = { MMO_THEMES, MMO_THEME_NAME, nextUiTheme, MMO_LAYOUT };
+if (typeof globalThis !== 'undefined') globalThis.GBQUiMmo = { MMO_THEMES, MMO_THEME_NAME, nextUiTheme, MMO_LAYOUT, AELMOOR_GB };
 
 if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   // no floating text over the game by default: on-screen chat lines and chat bubbles start off (CHAT SETTINGS turns them on)
@@ -31,7 +32,14 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     S.pokemonUiDefaulted = true;
     try { saveSettings(); } catch (e) {}
   }
-  window.hudMmo = () => S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  // Upgrade the previous automatic handheld default once; explicitly chosen themes remain untouched.
+  if (!S.aelmoorUiDefaulted) {
+    if (!S.uiTheme || S.uiTheme === 'mmo') S.uiTheme = 'aelmoor';
+    S.aelmoorUiDefaulted = true;
+    try { saveSettings(); } catch (e) {}
+  }
+  window.hudMmo = () => S.uiTheme === 'aelmoor' || S.uiTheme === 'mmo' || S.uiTheme === 'mu' || S.uiTheme === 'blackbird';
+  const isAelmoor = () => S.uiTheme === 'aelmoor';
   const isPokemon = () => S.uiTheme === 'mmo';
   const isMu = () => S.uiTheme === 'mu';
   const isBlackbird = () => S.uiTheme === 'blackbird';
@@ -42,14 +50,26 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     mmo: { ink: [24, 28, 48], edge: [64, 88, 160], panel: [248, 246, 232], panel2: [226, 232, 244], shade: [168, 184, 214], hp: [82, 170, 68], hpLow: [216, 72, 48], mp: [48, 104, 224], xp: [72, 142, 204], gold: [200, 150, 30], title: [24, 28, 48] },
     mu: { ink: [10, 6, 6], edge: [128, 22, 18], panel: [26, 20, 18], panel2: [70, 48, 26], shade: [90, 70, 50], hp: [210, 20, 16], hpLow: [255, 90, 30], mp: [36, 76, 230], xp: [236, 186, 60], gold: [222, 172, 64], title: [86, 14, 10] },
     blackbird: { ink: [5, 6, 9], edge: [92, 100, 111], panel: [16, 18, 22], panel2: [42, 46, 52], shade: [72, 78, 86], hp: [184, 44, 44], hpLow: [250, 94, 48], mp: [58, 110, 183], xp: [189, 147, 62], gold: [224, 188, 104], title: [12, 14, 17] },
+    aelmoor: { ink: [8, 10, 28], edge: [190, 155, 91], panel: [16, 19, 44], panel2: [49, 47, 78], shade: [88, 84, 123], hp: [103, 182, 116], hpLow: [218, 69, 65], mp: [99, 127, 224], xp: [216, 173, 82], gold: [238, 195, 105], title: [12, 15, 38] },
   };
   const C = new Proxy({}, { get: (_, k) => (PALETTE[S.uiTheme] || PALETTE.mmo)[k] });
   const mono = () => typeof MONO === 'function' && MONO(S.palette);
+  const colBase = col;
+  col = function (c) { if (isAelmoor() && !mono() && typeof c === 'number') return css(AELMOOR_GB[Math.max(0, Math.min(3, Math.floor(c)))]); return colBase(c); };
   const rgb = (c, k) => mono() ? col(k) : css(c);
 
   // handheld panel: rounded double border
   function panel(x, y, w, h, bg) {
     const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2), fillc = bg != null && bg !== 0 ? col(bg) : rgb(C.panel, 0);
+    if (isAelmoor()) {
+      fill(x, y, w, h, ink); fill(x + 1, y + 1, w - 2, h - 2, edge); fill(x + 2, y + 2, w - 4, h - 4, fillc);
+      if (w > 12 && h > 12) {
+        fill(x + 3, y + 3, w - 6, 1, rgb(C.panel2, 2)); fill(x + 3, y + h - 4, w - 6, 1, rgb([55, 48, 83], 1));
+        fill(x + 3, y + 3, 1, h - 6, rgb([55, 48, 83], 1)); fill(x + w - 4, y + 3, 1, h - 6, rgb(C.panel2, 2));
+        for (const [sx, sy] of [[x + 2, y + 2], [x + w - 4, y + 2], [x + 2, y + h - 4], [x + w - 4, y + h - 4]]) fill(sx, sy, 2, 2, rgb(C.gold, 2));
+      }
+      return;
+    }
     if (isBlackbird()) {
       fill(x, y, w, h, ink); fill(x + 1, y + 1, w - 2, h - 2, edge);
       fill(x + 2, y + 2, w - 4, h - 4, fillc);
@@ -135,7 +155,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
   function hotbar() {
     const Hd = MMO_LAYOUT.hud, Hb = MMO_LAYOUT.hotbar, D = derive(G);
-    if (isPokemon()) {
+    if (isPokemon() || isAelmoor()) {
       const y = Hd.y;
       panel(0, y, W, H - y, 0);
       fill(2, y + 2, W - 4, 1, rgb(C.edge, 2));
@@ -211,7 +231,13 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       // menu list
       const w = 104, x = W - w - 2, rh = 15, h = this.rows * rh + 10;
       frame(x, 2, w, h);
-      items.slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, ty = 9 + j * rh; text(s.slice(0, 15), x + 14, ty, s.includes('(!)') ? 'gold' : 3); if (i === this.i) tri(x + 6, ty); });
+      items.slice(this.top, this.top + this.rows).forEach((s, j) => {
+        const i = this.top + j, ty = 9 + j * rh;
+        const icon = isAelmoor() && window.GBQAssetPack && window.GBQAssetPack.menuIconFor(s);
+        if (icon && IMG[icon]) blit(sprFit(icon, 8), x + 6, ty + 2);
+        text(s.slice(0, isAelmoor() ? 13 : 15), x + (isAelmoor() ? 16 : 14), ty, s.includes('(!)') ? 'gold' : 3);
+        if (i === this.i) tri(x + (isAelmoor() ? 1 : 6), ty);
+      });
       if (this.top > 0) text('^', x + w - 10, 3, 2); if (this.top + this.rows < items.length) text('v', x + w - 10, h - 7, 2);
       // help line
       const sel = (items[this.i] || '').replace(' (!)', '');
@@ -241,17 +267,19 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
         return;
       }
       if (!t) return h0.apply(this, arguments);
-      if (isBlackbird()) panel(1, 12, W - 2, H - 14);
+      if (isBlackbird() || isAelmoor()) panel(1, 12, W - 2, H - 14);
       const ink = rgb(C.ink, 3), edge = rgb(C.edge, 2);
       if (isBlackbird() && IMG.bb_title) ctx.drawImage(IMG.bb_title, 0, 0, W, 12);
       else fill(0, 0, W, 12, rgb(C.title, 3));
       fill(0, 11, W, 1, isMu() ? rgb(C.gold, 2) : edge); fill(1, 1, W - 2, 1, isMu() ? rgb([150, 40, 30], 1) : rgb([60, 70, 110], 1));
-      fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1));            // window icon
+      const systemIcon = isAelmoor() && window.GBQAssetPack && window.GBQAssetPack.systemIconFor(t);
+      if (systemIcon && IMG[systemIcon]) blit(sprFit(systemIcon, 8), 2, 2);
+      else { fill(2, 2, 7, 7, rgb(C.gold, 2)); fill(3, 3, 5, 5, rgb([255, 226, 120], 1)); } // window icon
       text(t.slice(0, 15), 12, 2, 'gold');
       const g = fmt(G.gold); textR(g, W - 13, 2, 'white');
-      fill(W - 11, 1, 10, 9, isBlackbird() ? rgb(C.edge, 2) : rgb([150, 30, 26], 2));
-      fill(W - 10, 2, 8, 7, isBlackbird() ? rgb(C.ink, 3) : rgb([200, 50, 40], 2));  // B closes the window
-      const closeInk = isBlackbird() ? rgb(C.gold, 2) : 'white';
+      fill(W - 11, 1, 10, 9, isBlackbird() || isAelmoor() ? rgb(C.edge, 2) : rgb([150, 30, 26], 2));
+      fill(W - 10, 2, 8, 7, isBlackbird() || isAelmoor() ? rgb(C.ink, 3) : rgb([200, 50, 40], 2));  // B closes the window
+      const closeInk = isBlackbird() || isAelmoor() ? rgb(C.gold, 2) : 'white';
       for (let k = 0; k < 5; k++) { fill(W - 9 + k, 3 + k, 1, 1, closeInk); fill(W - 5 - k, 3 + k, 1, 1, closeInk); }
     };
   }

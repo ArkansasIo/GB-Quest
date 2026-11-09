@@ -39,6 +39,10 @@ function apPick(category, identity, prefix = 'ap_') {
   const name = `${prefix}${category}_${String(apHash(`${category}|${identity}`) % count).padStart(3, '0')}`;
   return typeof IMG === 'undefined' || IMG[name] ? name : null;
 }
+const auMenuIconFor = label => apPick('menu_icons', label, 'au_');
+const auSystemIconFor = label => apPick('system_icons', label, 'au_');
+const AU_ITEM_CATEGORIES = new Set(['inventory_items', 'storage_items', 'shop_items']);
+const auItemFor = (category, identity) => AU_ITEM_CATEGORIES.has(category) ? apPick(category, identity, 'au_') : null;
 const apCharacterFor = character => apPick('characters', typeof character === 'object' && character ? `${character.name || ''}|${character.cls || ''}|${character.species || character.race || ''}` : character);
 const apNpcFor = entity => apPick('npcs', typeof entity === 'object' && entity ? `${entity.name || ''}|${entity.svc || ''}|${entity.prof || ''}|${entity.spr || ''}` : entity);
 const apMountFor = mount => apPick('mounts', typeof mount === 'object' && mount ? `${mount.id || ''}|${mount.family || ''}|${mount.variant || ''}` : mount);
@@ -82,7 +86,8 @@ const nextBattleBg = cur => BATTLE_BG_MODES[(BATTLE_BG_MODES.indexOf(cur) + 1) %
 
 if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
   AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
-  apPick, characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
+  apPick, menuIconFor: auMenuIconFor, systemIconFor: auSystemIconFor, uiItemFor: auItemFor,
+  characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
   apMonsterArt, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
 };
@@ -95,6 +100,11 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
     const itemIconBase = itemIcon;
     itemIcon = function (it) {
       if (it && artOn()) {
+        const active = typeof scenes !== 'undefined' && scenes.length ? scenes[scenes.length - 1] : null;
+        const sceneName = active && active.constructor ? active.constructor.name : '';
+        const category = sceneName === 'StashScene' ? 'storage_items' : /Auction|Shop|Store|Vendor/.test(sceneName) && !it.kind ? 'shop_items' : null;
+        const uiItem = category && auItemFor(category, `${it.base || it.id || it.name || ''}|${it.kind || it.type || ''}`);
+        if (uiItem && IMG[uiItem]) return uiItem;
         const named = it.named && IMG['nn_' + it.named];
         if (!named) {
           const packed = apEquipmentFor(it);
@@ -185,8 +195,17 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   // Item cells get the ornate rarity ring from the UI kit.
   if (typeof drawItemCell === 'function') {
     const drawItemCellBase = drawItemCell;
-    drawItemCell = function (it, x, y) {
-      const result = drawItemCellBase.apply(this, arguments);
+    drawItemCell = function (it, x, y, selected, opts = {}) {
+      const args = Array.from(arguments);
+      const active = typeof scenes !== 'undefined' && scenes.length ? scenes[scenes.length - 1] : null;
+      const sceneName = active && active.constructor ? active.constructor.name : '';
+      if (artOn() && opts && opts.icon) {
+        const category = sceneName === 'StashScene' && active.pane ? 'storage_items' : 'inventory_items';
+        const itemName = it && (it.name || it.base || it.id || it.kind) || opts.icon;
+        const uiItem = auItemFor(category, `${itemName}|${opts.icon}`);
+        if (uiItem && IMG[uiItem]) args[4] = { ...opts, icon: uiItem };
+      }
+      const result = drawItemCellBase.apply(this, args);
       if (it && artOn() && !MONO(S.palette)) {
         const n = `au_rframe_${Math.max(0, Math.min(8, it.rarity === undefined ? 1 : it.rarity))}`;
         if (IMG[n]) blit(spr(n, 18, 18), x, y);

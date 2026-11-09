@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/asset_pack.js';
+import '../src/ui_mmo.js';
 
 const pack = globalThis.GBQAssetPack;
 
@@ -20,6 +21,22 @@ test('asset pack deterministically resolves UI-kit image categories', () => {
     assert.match(first, new RegExp(`^au_${category}_\\d{3}$`), `${category} should resolve to the UI kit`);
     assert.equal(pack.apPick(category, 'same identity', 'au_'), first, `${category} selection should be stable`);
   }
+});
+
+test('UI-kit helpers resolve menu, system and context-specific item artwork', () => {
+  assert.match(pack.menuIconFor('CHARACTER'), /^au_menu_icons_\d{3}$/);
+  assert.match(pack.systemIconFor('graphics'), /^au_system_icons_\d{3}$/);
+  assert.match(pack.uiItemFor('inventory_items', 'potion'), /^au_inventory_items_\d{3}$/);
+  assert.match(pack.uiItemFor('storage_items', 'longsword'), /^au_storage_items_\d{3}$/);
+  assert.match(pack.uiItemFor('shop_items', 'ether'), /^au_shop_items_\d{3}$/);
+  assert.equal(pack.uiItemFor('unknown', 'potion'), null);
+});
+
+test('Aelmoor is an available UI theme with its own pixel palette', () => {
+  const ui = globalThis.GBQUiMmo;
+  assert.ok(ui.MMO_THEMES.includes('aelmoor'));
+  assert.equal(ui.MMO_THEME_NAME.aelmoor, 'AELMOOR');
+  assert.deepEqual(ui.AELMOOR_GB[0], [8, 10, 28]);
 });
 
 test('world sprite families route to semantically matching pack art', () => {
