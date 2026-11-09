@@ -35,6 +35,15 @@ test('retro 8-bit: every overworld tile the zone renderer can ask for exists in 
   for (const g of ['green', 'sand', 'snow', 'swamp', 'lava', 'mystic']) for (const k of keys) assert.ok(has(`gt_r8${g}_${k}`), `gt_r8${g}_${k}`);
 });
 
+test('retro 8-bit: every dungeon tile key exists for all six dungeon themes', () => {
+  const keys = new Set(['wall', 'walltop', 'door']);
+  for (const src of [read('src/gen.js'), read('src/rooms.js')]) {
+    for (const block of src.matchAll(/GD_KEY(?: = |, )\{([^}]*)\}/g)) for (const [, v] of block[1].matchAll(/:\s*'([^']+)'/g)) for (const f of ['0', '1']) keys.add(v.replace('%f', f));
+  }
+  assert.ok(keys.size > 20, 'dungeon keys parsed');
+  for (const t of ['dungeon', 'crypt', 'ice', 'lava', 'temple', 'void']) for (const k of keys) assert.ok(has(`gd_r8${t}_${k}`), `gd_r8${t}_${k}`);
+});
+
 test('retro 8-bit: art mode is wired into the ART setting, monster lookup and the world renderer', () => {
   assert.match(read('src/art.js'), /S\.art === 'retro'/);
   assert.match(read('src/art.js'), /function retroWorldTile/);

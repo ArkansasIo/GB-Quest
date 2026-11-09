@@ -42,10 +42,11 @@ function assetPackEnemyFor(b) {
 const RETRO_TILE_GROUP = { desert: 'sand', badlands: 'sand', savanna: 'sand', oasis: 'sand', snow: 'snow', frozen: 'snow',
   marsh: 'swamp', corruption: 'swamp', dusk: 'swamp', ruins: 'swamp', mushroom: 'swamp', volcanic: 'lava', crystal: 'mystic', aether: 'mystic', sky: 'mystic' };
 const retroSlug = sub => String(sub || '').toLowerCase().replace(/[^a-z]/g, '');
+const RETRO_DUNGEON_THEMES = new Set(['dungeon', 'crypt', 'ice', 'lava', 'temple', 'void']);
 function retroWorldTile(tile) {
-  const m = /^gt_([a-z]+)_(.+)$/.exec(tile || '');
-  if (!m || m[1].startsWith('r8')) return null;
-  const name = `gt_r8${RETRO_TILE_GROUP[m[1]] || 'green'}_${m[2]}`;
+  const m = /^g([td])_([a-z]+)_(.+)$/.exec(tile || '');
+  if (!m || m[2].startsWith('r8')) return null;
+  const name = m[1] === 'd' ? `gd_r8${RETRO_DUNGEON_THEMES.has(m[2]) ? m[2] : 'dungeon'}_${m[3]}` : `gt_r8${RETRO_TILE_GROUP[m[2]] || 'green'}_${m[3]}`;
   return IMG[name] ? name : null;
 }
 function retroMonsterArt(b) {

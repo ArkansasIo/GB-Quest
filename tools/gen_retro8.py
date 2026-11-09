@@ -1083,6 +1083,189 @@ def tile(group, key):
     return t.im
 
 
+# ============================================================== dungeon tiles (16 x 16)
+# floor blocks, brick walls over a black void, and props; one palette per dungeon theme
+DUN_PALS = {
+    'dungeon': dict(f=(118, 106, 96), fl=(150, 138, 126), fd=(78, 68, 64), b=(132, 120, 112), bl=(170, 160, 150), bd=(70, 60, 60), acc=(196, 64, 48), liq=(48, 104, 216), liql=(108, 162, 242)),
+    'crypt': dict(f=(96, 100, 110), fl=(128, 132, 144), fd=(60, 62, 74), b=(110, 114, 128), bl=(150, 156, 170), bd=(54, 56, 70), acc=(120, 70, 150), liq=(60, 120, 90), liql=(110, 180, 130)),
+    'ice': dict(f=(170, 206, 236), fl=(220, 240, 255), fd=(110, 150, 200), b=(130, 180, 226), bl=(200, 230, 255), bd=(70, 110, 170), acc=(60, 110, 200), liq=(60, 120, 210), liql=(150, 200, 250)),
+    'lava': dict(f=(110, 74, 64), fl=(146, 100, 84), fd=(70, 44, 42), b=(120, 64, 52), bl=(166, 96, 72), bd=(66, 34, 32), acc=(232, 140, 40), liq=(228, 86, 24), liql=(255, 190, 60)),
+    'temple': dict(f=(196, 178, 128), fl=(228, 212, 164), fd=(146, 128, 84), b=(170, 152, 104), bl=(214, 198, 150), bd=(110, 94, 60), acc=(60, 140, 90), liq=(52, 140, 200), liql=(130, 200, 240)),
+    'void': dict(f=(78, 64, 112), fl=(110, 92, 152), fd=(46, 36, 72), b=(90, 72, 130), bl=(130, 110, 180), bd=(46, 34, 76), acc=(200, 90, 230), liq=(130, 60, 200), liql=(210, 150, 255)),
+}
+VOID = (12, 10, 18)
+
+
+class DT(T):
+    def __init__(self, pal):
+        self.P = pal
+        self.im = Image.new('RGBA', (16, 16), pal['f'] + (255,))
+        self.d = ImageDraw.Draw(self.im)
+
+
+def dfloor(t, alt=False):
+    t.r(0, 0, 15, 15, 'fd')
+    for y0, x0 in ((0, 0), (0, 8), (8, 0), (8, 8)):
+        t.r(x0, y0, x0 + 6, y0 + 6, 'f'); t.l([(x0, y0), (x0 + 6, y0)], 'fl'); t.l([(x0, y0), (x0, y0 + 6)], 'fl')
+    if alt:
+        t.l([(10, 2), (12, 4), (12, 6)], 'fd'); t.px(3, 11, 'fd'); t.px(4, 12, 'fd')
+
+
+def dbricks(t):
+    t.r(0, 0, 15, 15, 'b')
+    for i, y in enumerate(range(0, 16, 4)):
+        t.l([(0, y + 3), (15, y + 3)], 'bd'); t.l([(0, y), (15, y)], 'bl')
+        for x in range(0 if i % 2 == 0 else 4, 16, 8):
+            t.l([(x, y), (x, y + 3)], 'bd')
+
+
+def dwall(t):
+    dbricks(t); t.l([(0, 15), (15, 15)], INK)
+
+
+def dwalltop(t):
+    t.r(0, 0, 15, 15, VOID)
+    t.l([(0, 15), (15, 15)], 'bd'); t.px(4, 5, (34, 30, 44)); t.px(11, 10, (34, 30, 44))
+
+
+def ddoor(t):
+    dbricks(t)
+    t.e(3, 2, 12, 12, INK); t.r(3, 7, 12, 15, INK)
+    t.e(4, 3, 11, 11, WOOD_T); t.r(4, 7, 11, 15, WOOD_T)
+    for x in (6, 9):
+        t.l([(x, 4), (x, 15)], WOOD_D)
+    t.r(4, 8, 11, 8, STEEL_DARK); t.px(10, 11, (226, 178, 58))
+
+
+def dseal(t):
+    ddoor(t)
+    t.e(5, 7, 10, 12, 'acc'); t.px(7, 9, (255, 255, 255))
+
+
+def dstairs(t, down):
+    dfloor(t)
+    t.r(1, 1, 14, 14, INK)
+    for i in range(6):
+        y = 2 + i * 2
+        shade_ = mix(t.P['fl'], VOID, i / 6) if down else mix(t.P['fd'], t.P['fl'], i / 6)
+        t.r(2, y, 13, y + 1, shade_)
+    t.p([(7, 6), (9, 6), (8, 9)] if down else [(7, 9), (9, 9), (8, 6)], (255, 230, 120))
+
+
+def dtorch(t, f):
+    dwall(t)
+    t.r(7, 8, 8, 13, WOOD_D); t.r(6, 7, 9, 8, STEEL_DARK)
+    flame = [(8, 1 + f), (10, 6), (8, 7), (6, 6)]
+    t.p(flame, (255, 120, 40)); t.p([(8, 3 + f), (9, 6), (7, 6)], (255, 230, 120))
+
+
+def dbrazier(t, f):
+    dfloor(t)
+    t.r(5, 10, 10, 14, STEEL_DARK); t.r(4, 8, 11, 10, (150, 158, 176))
+    t.p([(8, 1 + f), (12, 8), (4, 8)], (255, 120, 40)); t.p([(8, 4 + f), (10, 8), (6, 8)], (255, 230, 120))
+
+
+def dpool(t, f):
+    dfloor(t)
+    t.r(1, 1, 14, 14, INK); t.r(2, 2, 13, 13, 'liq')
+    for x, y in WAVES[f]:
+        if 2 < x < 12 and 2 < y < 13:
+            t.l([(x, y), (x + 2, y)], 'liql')
+
+
+def daltar(t):
+    dfloor(t)
+    t.r(2, 6, 13, 14, INK); t.r(3, 7, 12, 13, 'bl'); t.r(3, 7, 12, 8, (240, 236, 220)); t.l([(3, 13), (12, 13)], 'bd')
+    t.r(7, 3, 8, 6, (226, 178, 58)); t.r(6, 4, 9, 4, (226, 178, 58))
+
+
+def dbarrel(t):
+    dfloor(t)
+    t.e(3, 2, 12, 14, INK); t.e(4, 3, 11, 13, WOOD_T)
+    t.l([(4, 5), (11, 5)], STEEL_DARK); t.l([(4, 11), (11, 11)], STEEL_DARK); t.l([(6, 3), (6, 13)], WOOD_L)
+
+
+def dbars(t):
+    dwall(t)
+    t.r(2, 2, 13, 15, VOID)
+    for x in (3, 6, 9, 12):
+        t.l([(x, 2), (x, 15)], (150, 158, 176))
+    t.l([(2, 5), (13, 5)], (150, 158, 176))
+
+
+def dbones(t):
+    dfloor(t, True)
+    bone = (226, 216, 186)
+    t.e(3, 4, 7, 8, bone); t.px(4, 6, INK); t.px(6, 6, INK)
+    t.l([(8, 10), (13, 7)], bone, 2); t.l([(4, 12), (10, 13)], bone)
+
+
+def dgold(t):
+    dfloor(t)
+    t.r(3, 6, 12, 14, INK); t.r(4, 9, 11, 13, WOOD_T); t.r(4, 6, 11, 9, WOOD_L)
+    t.l([(4, 9), (11, 9)], (226, 178, 58)); t.r(7, 9, 8, 11, (226, 178, 58))
+
+
+def dpillar(t):
+    dfloor(t)
+    t.r(4, 0, 11, 15, INK); t.r(5, 0, 10, 15, 'b'); t.l([(5, 0), (5, 15)], 'bl'); t.l([(10, 0), (10, 15)], 'bd')
+    t.r(3, 13, 12, 15, 'bd'); t.r(3, 0, 12, 1, 'bl')
+
+
+def drug(t):
+    dfloor(t)
+    t.r(2, 0, 13, 15, 'acc'); t.l([(3, 0), (3, 15)], (226, 178, 58)); t.l([(12, 0), (12, 15)], (226, 178, 58))
+    t.p([(8, 4), (10, 8), (8, 12), (6, 8)], (226, 178, 58))
+
+
+def dshelf(t):
+    dwall(t)
+    t.r(1, 1, 14, 15, WOOD_D)
+    for y in (2, 7, 12):
+        for i, x in enumerate(range(2, 14, 2)):
+            t.r(x, y, x + 1, y + 3, ((180, 60, 50), (60, 100, 170), (90, 150, 70), (200, 170, 70))[(i + y) % 4])
+        t.l([(1, y + 4), (14, y + 4)], WOOD_T)
+
+
+def dsign(t):
+    dwall(t)
+    t.r(3, 4, 12, 11, INK); t.r(4, 5, 11, 10, WOOD_T); t.l([(5, 7), (10, 7)], WOOD_D); t.l([(5, 9), (9, 9)], WOOD_D)
+
+
+def dspikes(t):
+    dfloor(t)
+    for x0 in (2, 8):
+        for y0 in (2, 9):
+            t.p([(x0, y0 + 5), (x0 + 2, y0), (x0 + 4, y0 + 5)], (150, 158, 176)); t.l([(x0 + 2, y0), (x0 + 2, y0 + 5)], (210, 216, 228))
+
+
+def dstatue(t):
+    dfloor(t)
+    t.r(3, 12, 12, 15, 'bd'); t.e(6, 1, 9, 4, 'bl'); t.r(5, 5, 10, 11, 'bl'); t.l([(10, 5), (10, 11)], 'bd'); t.px(7, 2, INK)
+
+
+def dthrone(t):
+    drug(t)
+    t.r(3, 1, 12, 14, INK); t.r(4, 2, 11, 13, (226, 178, 58)); t.r(5, 5, 10, 12, 'acc'); t.r(4, 10, 11, 13, (196, 150, 50))
+
+
+STEEL_DARK = (84, 88, 104)
+DUN_KEYS = {'floor': dfloor, 'floor2': lambda t: dfloor(t, True), 'wall': dwall, 'walltop': dwalltop, 'door': ddoor, 'seal': dseal,
+            'down': lambda t: dstairs(t, True), 'up': lambda t: dstairs(t, False), 'altar': daltar, 'barrel': dbarrel, 'bars': dbars,
+            'bones': dbones, 'gold': dgold, 'pillar': dpillar, 'rug': drug, 'shelf': dshelf, 'sign': dsign, 'spikes': dspikes,
+            'statue': dstatue, 'throne': dthrone}
+for f in (0, 1):
+    DUN_KEYS[f'torch{f}'] = (lambda f: lambda t: dtorch(t, f))(f)
+    DUN_KEYS[f'brazier{f}'] = (lambda f: lambda t: dbrazier(t, f))(f)
+    DUN_KEYS[f'pool{f}'] = (lambda f: lambda t: dpool(t, f))(f)
+
+
+def dtile(theme, key):
+    t = DT(DUN_PALS[theme])
+    DUN_KEYS[key](t)
+    return t.im
+
+
 # ============================================================== output
 def build(out=OUT):
     out.mkdir(exist_ok=True)
@@ -1090,6 +1273,9 @@ def build(out=OUT):
     for g in TILE_PALS:
         for k in TILE_KEYS:
             tile(g, k).save(out / f'gt_r8{g}_{k}.png'); n += 1
+    for th in DUN_PALS:
+        for k in DUN_KEYS:
+            dtile(th, k).save(out / f'gd_r8{th}_{k}.png'); n += 1
     for sub in DESIGNS:
         for v in VARIANTS:
             monster(sub, v).save(out / f'r8m_{sub}_{v}.png'); n += 1
