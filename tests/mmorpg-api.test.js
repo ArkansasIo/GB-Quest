@@ -139,3 +139,32 @@ test('MMORPG API retrieves authenticated realm and zone chat history', async () 
   ]);
   assert.equal(calls[0].options.headers.authorization, 'Bearer chat-session-token');
 });
+
+test('MMORPG API exposes opt-in reconnect and remembers the selected character', () => {
+  class FakeSocket {
+    constructor(url) { this.url = url; this.handlers = {}; this.readyState = 0; this.sent = []; }
+    addEventListener(name, callback) { this.handlers[name] = callback; }
+    emit(name, value) { this.handlers[name]?.(value); }
+    send(value) { this.sent.push(JSON.parse(value)); }
+    close() { this.readyState = 3; }
+  }
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    WebSocketImpl: FakeSocket,
+    autoReconnect: true,
+    reconnectDelayMs: 25,
+    maxReconnectDelayMs: 500
+  });
+  api.token = 'session-token';
+  api.connect();
+  const socket = api.multiplayer.socket;
+  socket.readyState = 1;
+  socket.emit('open');
+  assert.equal(socket.sent[0].type, 'authenticate');
+  socket.emit('message', { data: JSON.stringify({ type: 'authenticated', sequence: 1, payload: {} }) });
+  const characterId = '11111111-1111-4111-8111-111111111111';
+  api.selectCharacter(characterId);
+  assert.equal(socket.sent[1].type, 'character.select');
+  assert.equal(api.multiplayer.selectedCharacterId, characterId);
+  api.logout();
+});
