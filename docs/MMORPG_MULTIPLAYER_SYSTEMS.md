@@ -65,3 +65,10 @@ Run npm run mmorpg:migrate with DATABASE_URL configured. The migration is additi
 - The main in-game menu now includes **GUILD**, opening a guild hall with overview, member roster, create guild, accept invitation, invite player, guild message of the day, leadership transfer, leave, disband and refresh actions.
 - Guild mutations call the existing `GBQuestMMOApi` client methods and remain server-authoritative; the menu does not create fake local guild records. The game bootstrap must expose its authenticated API instance as `window.GBQ_MMO_API` and the selected server character UUID as `window.GBQ_MMO_CHARACTER_ID` before guild actions can run. Offline/local save characters are not interchangeable with MMO character IDs.
 - Text-entry actions currently use the browser prompt while the scene itself follows the Aelmoor in-game menu navigation. A dedicated pixel-art text-entry modal and invitation inbox endpoint are follow-up UI improvements.
+
+
+## World population and realm capacity dashboard
+- The realm configuration seeds three regions with three logical realms each. Each realm defaults to 1,000 player slots (9,000 configured slots total).
+- `GET /api/world/status` reports current online players by region, realm and zone, configured capacity and utilization, registered account/character totals, and the persisted peak-concurrent count.
+- `GET /api/world/status?refresh=1` bypasses the short response cache. The API client exposes `worldStatus({ refresh })`.
+- Current online population is explicitly scoped to one server process. This endpoint is monitoring and does not claim the service has been load-tested to 9,000 concurrent users. Cross-instance live population, admission control and real-time fan-out require shared presence and pub/sub before horizontal scaling.
