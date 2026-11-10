@@ -45,3 +45,24 @@ On an unexpected socket close the client schedules a retry. After the server emi
 - No durable replay of missed WebSocket events is implemented. Always replace state from the server snapshot and refetch party, guild, mail, auction and chat history through authenticated APIs.
 - Server close code `4401` (invalid, expired, or unavailable account token) and `4403` (forbidden) stop automatic retries, clear the cached connection credentials and selected character, and emit `authentication_required`; the application should request a fresh login and reconnect with the new token.\n- Server close code `4429` stops automatic retries and emits `rate_limited`; wait for the server's rate-limit window and require an explicit reconnect rather than amplifying authentication traffic.\n- Other unexpected closes retain exponential-backoff retry behavior.
 - Client tests: `node --test tests/mmorpg-reconnect.test.js`.
+
+
+## Rebuilding UI state after reconnect
+
+WebSocket messages are transient. After the transport reports `authenticated` and the server sends a fresh `zone.snapshot`, call `api.recoverSession(characterId)` to repopulate the character's durable UI panels:
+
+```js
+const recovery = await api.recoverSession(characterId, { chatLimit: 50 });
+renderInventory(recovery.resources.inventory);
+renderQuests(recovery.resources.quests);
+renderParty(recovery.resources.party);
+renderGuild(recovery.resources.guild);
+renderInstances(recovery.resources.instance);
+renderMail(recovery.resources.mail);
+renderFriends(recovery.resources.friends);
+renderTrades(recovery.resources.trades);
+renderChat(recovery.resources.zoneChat, recovery.resources.realmChat);
+if (recovery.errors.length) showRecoveryWarnings(recovery.errors);
+```
+
+The recovery call fetches inventory, quests, party, guild, dungeon instances, mail, friends, trades, and recent zone/realm chat in parallel. It uses `Promise.allSettled`: a failed panel is reported in `errors` while successful panels remain available. Invoke it after authentication/character selection and after receiving the authoritative `zone.snapshot`; do not replay commands that may mutate game state.
