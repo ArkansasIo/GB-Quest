@@ -31,6 +31,7 @@ export class GBQuestMMOApi {
   }
   me() { return this.request('/api/me'); }
   characters() { return this.request('/api/characters'); }
+  worldStatus({ refresh = false } = {}) { return this.request('/api/world/status' + (refresh ? '?refresh=1' : '')); }
   regions() { return this.request('/api/regions'); }
   realms(regionId) {
     const query = regionId ? '?region=' + encodeURIComponent(regionId) : '';
