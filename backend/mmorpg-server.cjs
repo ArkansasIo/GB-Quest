@@ -10,7 +10,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
-const { isAllowedOrigin, createCorsHeaders, createAuthLimiter } = require('./mmorpg-security.cjs');
+const { isAllowedOrigin, createCorsHeaders, createAuthLimiter, createRequestLimiter } = require('./mmorpg-security.cjs');
 const { handlePartyRequest } = require('./mmorpg-party-routes.cjs');
 const { handleGuildRequest } = require('./mmorpg-guild-routes.cjs');
 const { handleInstanceRequest } = require('./mmorpg-instance-routes.cjs');
@@ -116,9 +116,14 @@ const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp'
 const PER_REALM_CHARACTERS = 3, PER_ACCOUNT_CHARACTERS = 12;
 const activeSockets = new Map();
 const authLimiter = createAuthLimiter();
+const requestLimiter = createRequestLimiter({
+  limit: Number(process.env.GBQ_API_WRITE_LIMIT || 90),
+  windowMs: Number(process.env.GBQ_API_WRITE_WINDOW_MS || 60000)
+});
 const authThrottled = ip => authLimiter.blocked(ip);
 const recordAuthFailure = ip => authLimiter.fail(ip);
 setInterval(() => authLimiter.sweep(), 600000).unref();
+setInterval(() => requestLimiter.sweep(), 60000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
   const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
@@ -295,6 +300,17 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(204);
     return res.end();
+  }
+  if (url.pathname.startsWith('/api/') && ['POST', 'DELETE'].includes(req.method) &&
+      !['/api/login', '/api/register'].includes(url.pathname)) {
+    const ip = req.socket?.remoteAddress || 'unknown';
+    const rate = requestLimiter.consume(ip + ':api-write');
+    res.setHeader('x-ratelimit-limit', String(Number(process.env.GBQ_API_WRITE_LIMIT || 90)));
+    res.setHeader('x-ratelimit-remaining', String(rate.remaining));
+    if (!rate.allowed) {
+      res.setHeader('retry-after', String(rate.retryAfter));
+      return json(res, 429, { error: 'api_write_rate_limited', retryAfter: rate.retryAfter });
+    }
   }
   if (url.pathname === '/health' && req.method === 'GET') {
     try { await pool.query('SELECT 1'); return json(res, 200, { ok: true, service: 'gbquest-mmorpg', websocket: '/ws', database: 'connected' }); }
