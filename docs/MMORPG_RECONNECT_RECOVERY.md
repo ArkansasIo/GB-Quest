@@ -43,5 +43,5 @@ On an unexpected socket close the client schedules a retry. After the server emi
 - The application must explicitly call `selectCharacter(id)` to enable character restoration.
 - Reconnection does not bypass server authentication, realm capacity, or ownership checks.
 - No durable replay of missed WebSocket events is implemented. Always replace state from the server snapshot and refetch party, guild, mail, auction and chat history through authenticated APIs.
-- If credentials expire or are revoked, application UI should request a fresh login rather than repeatedly retrying.
+- Server close code `4401` (invalid, expired, or unavailable account token) and `4403` (forbidden) stop automatic retries, clear the cached connection credentials and selected character, and emit `authentication_required`; the application should request a fresh login and reconnect with the new token.\n- Server close code `4429` stops automatic retries and emits `rate_limited`; wait for the server's rate-limit window and require an explicit reconnect rather than amplifying authentication traffic.\n- Other unexpected closes retain exponential-backoff retry behavior.
 - Client tests: `node --test tests/mmorpg-reconnect.test.js`.
