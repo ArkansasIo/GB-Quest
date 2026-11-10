@@ -36,3 +36,35 @@ export function awardAchievement(state, achievement, catalog) {
 export function collectionSummary(state) {
   return Object.fromEntries(["mounts", "pets", "titles", "appearances", "achievements"].map(category => [category, state[category].length]));
 }
+
+/** Legacy item appearance collection API retained for the inventory/wardrobe systems. */
+export function createCollections(seed = {}) {
+  return {
+    appearances: new Set(seed.appearances ?? []),
+    mounts: new Set(seed.mounts ?? []),
+    transmog: { ...(seed.transmog ?? {}) }
+  };
+}
+export function collectAppearance(collection, item) {
+  const id = String(item?.templateId ?? item?.id ?? "");
+  if (!id || !(collection?.appearances instanceof Set)) return false;
+  const size = collection.appearances.size;
+  collection.appearances.add(id);
+  return collection.appearances.size !== size;
+}
+export function applyTransmog(collection, item, appearanceId) {
+  if (!collection || !(collection.appearances instanceof Set)) return { ok:false, reason:"invalid_collection" };
+  const slot = String(item?.slot ?? item?.equipmentSlot ?? "");
+  const id = String(appearanceId ?? "");
+  if (!slot || !id) return { ok:false, reason:"invalid_transmog_selection" };
+  if (!collection.appearances.has(id)) return { ok:false, reason:"appearance_not_unlocked" };
+  collection.transmog[slot] = id;
+  return { ok:true, slot, appearanceId:id };
+}
+export function collectMount(collection, mountId) {
+  const id = String(mountId ?? "");
+  if (!id || !(collection?.mounts instanceof Set)) return false;
+  const size = collection.mounts.size;
+  collection.mounts.add(id);
+  return collection.mounts.size !== size;
+}
