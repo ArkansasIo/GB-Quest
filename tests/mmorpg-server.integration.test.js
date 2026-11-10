@@ -241,6 +241,23 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       if (attempt === 0) {
         assert.equal(combat.payload.ability.id, 'ranger_hunter_node_00');
         assert.equal(combat.payload.manaSpent, 5);
+        const cooldownPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+        try {
+          const cooldown = await cooldownPool.query(
+            'SELECT ready_at FROM character_talent_cooldowns WHERE character_id=$1 AND node_id=$2',
+            [character.id, 'ranger_hunter_node_00']
+          );
+          assert.equal(cooldown.rowCount, 1);
+          assert.ok(new Date(cooldown.rows[0].ready_at).getTime() > Date.now());
+        } finally { await cooldownPool.end(); }
+        if (!combat.payload.defeated) {
+          await new Promise(resolve => setTimeout(resolve, 700));
+          send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001', abilityNodeId: 'ranger_hunter_node_00' });
+          const cooldownError = await waitFor('error');
+          assert.equal(cooldownError.payload.code, 'ability_on_cooldown');
+          assert.ok(cooldownError.payload.retryAfterSeconds >= 1);
+          await new Promise(resolve => setTimeout(resolve, 700));
+        }
       }
       assert.ok(combat.payload.damage >= 10, 'ranger DEX allocation should increase authoritative damage');
       assert.equal(combat.payload.targetId, '00000000-0000-4000-8000-000000000001');
