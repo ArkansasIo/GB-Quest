@@ -5,7 +5,9 @@ async function handleGuildRequest({req,res,url,pool,accountFor,readBody,json}){
  const invite=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/invites$/i);
  const accept=url.pathname.match(/^\/api\/guild-invites\/([0-9a-f-]{36})\/accept$/i);
  const motd=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/motd$/i);
- if(!member&&!invite&&!accept&&!motd)return false;
+ const transfer=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/transfer$/i);
+ const disband=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})$/i);
+ if(!member&&!invite&&!accept&&!motd&&!transfer&&!disband)return false;
  const acct=await accountFor(req);if(!acct){json(res,401,{error:'unauthorized'});return true;}
  if(member&&req.method==='GET'){
   const id=member[1],owned=await pool.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2',[id,acct.id]);
@@ -98,6 +100,37 @@ async function handleGuildRequest({req,res,url,pool,accountFor,readBody,json}){
    RETURNING g.id,g.motd`,[message,motd[1],actor,acct.id]);
   if(!result.rowCount){json(res,403,{error:'guild_motd_permission_required'});return true;}
   json(res,200,{guildId:result.rows[0].id,motd:result.rows[0].motd});return true;
+ }
+ if(transfer&&req.method==='POST'){
+  const guildId=transfer[1],body=await readBody(req),actor=String(body.actorCharacterId||''),target=String(body.targetCharacterId||'');
+  if(!/^[0-9a-f-]{36}$/i.test(actor)||!/^[0-9a-f-]{36}$/i.test(target)||actor===target){json(res,400,{error:'invalid_guild_transfer'});return true;}
+  const tx=await pool.connect();
+  try{
+   await tx.query('BEGIN');
+   const g=await tx.query('SELECT id,leader_character_id FROM guilds WHERE id=$1 FOR UPDATE',[guildId]);
+   if(!g.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'guild_not_found'});return true;}
+   const leader=await tx.query('SELECT 1 FROM guild_members gm JOIN characters c ON c.id=gm.character_id WHERE gm.guild_id=$1 AND gm.character_id=$2 AND gm.rank='leader' AND c.account_id=$3',[guildId,actor,acct.id]);
+   if(!leader.rowCount||g.rows[0].leader_character_id!==actor){await tx.query('ROLLBACK');json(res,403,{error:'guild_leader_required'});return true;}
+   const successor=await tx.query('SELECT 1 FROM guild_members WHERE guild_id=$1 AND character_id=$2 FOR UPDATE',[guildId,target]);
+   if(!successor.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'successor_not_in_guild'});return true;}
+   await tx.query("UPDATE guild_members SET rank=CASE WHEN character_id=$1 THEN 'leader' WHEN character_id=$2 THEN 'member' ELSE rank END WHERE guild_id=$3 AND character_id IN ($1,$2)",[target,actor,guildId]);
+   await tx.query('UPDATE guilds SET leader_character_id=$1 WHERE id=$2',[target,guildId]);
+   await tx.query('COMMIT');json(res,200,{transferred:true,guildId,previousLeaderCharacterId:actor,leaderCharacterId:target});return true;
+  }catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;}finally{tx.release();}
+ }
+ if(disband&&req.method==='DELETE'){
+  const guildId=disband[1],actor=String(url.searchParams.get('characterId')||'');
+  if(!/^[0-9a-f-]{36}$/i.test(actor)){json(res,400,{error:'invalid_character_id'});return true;}
+  const tx=await pool.connect();
+  try{
+   await tx.query('BEGIN');
+   const g=await tx.query('SELECT id,leader_character_id FROM guilds WHERE id=$1 FOR UPDATE',[guildId]);
+   if(!g.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'guild_not_found'});return true;}
+   const leader=await tx.query("SELECT 1 FROM guild_members gm JOIN characters c ON c.id=gm.character_id WHERE gm.guild_id=$1 AND gm.character_id=$2 AND gm.rank='leader' AND c.account_id=$3",[guildId,actor,acct.id]);
+   if(!leader.rowCount||g.rows[0].leader_character_id!==actor){await tx.query('ROLLBACK');json(res,403,{error:'guild_leader_required'});return true;}
+   await tx.query('DELETE FROM guilds WHERE id=$1',[guildId]);
+   await tx.query('COMMIT');json(res,200,{disbanded:true,guildId});return true;
+  }catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;}finally{tx.release();}
  }
  json(res,405,{error:'method_not_allowed'});return true;
 }
