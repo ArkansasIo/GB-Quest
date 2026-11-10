@@ -184,10 +184,10 @@ async function handleAuctionRequest({ req, res, url, pool, accountFor, readBody,
     const tx = await pool.connect();
     try {
       await tx.query('BEGIN');
-      const owner = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [sellerId, account.id]);
-      if (!owner.rowCount) { await tx.query('ROLLBACK'); json(res, 404, { error: 'character_not_found' }); return true; }
       const listing = await tx.query("SELECT * FROM auction_listings WHERE id=$1 AND seller_character_id=$2 AND status='active' FOR UPDATE", [listingId, sellerId]);
       if (!listing.rowCount) { await tx.query('ROLLBACK'); json(res, 404, { error: 'listing_not_cancellable' }); return true; }
+      const owner = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE', [sellerId, account.id]);
+      if (!owner.rowCount) { await tx.query('ROLLBACK'); json(res, 404, { error: 'character_not_found' }); return true; }
       const row = listing.rows[0], catalog = await tx.query('SELECT max_stack FROM item_catalog WHERE id=$1', [row.item_id]);
       const current = await tx.query('SELECT quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE', [sellerId, row.item_id]);
       if (!catalog.rowCount || (current.rowCount ? Number(current.rows[0].quantity) : 0) + Number(row.quantity) > Number(catalog.rows[0].max_stack)) { await tx.query('ROLLBACK'); json(res, 409, { error: 'inventory_stack_limit' }); return true; }
