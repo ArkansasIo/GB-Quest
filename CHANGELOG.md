@@ -2,6 +2,18 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.7.0 — Character Select
+
+Released 2026-11-10
+
+### New
+
+- CHARACTER SELECT: after you pick a realm, see every hero you have there, from this device and from your cloud saves, with class, level, zone and last save.
+- ENTER WORLD with A. A hero that is newer in the cloud downloads first; a hero only on this device is uploaded to your account.
+- CREATE NEW HERO uses a slot that is free on both this device and the cloud, so a new hero never overwrites a cloud save.
+- DELETE a hero with SELECT (asks first). The list also shows how many heroes you have on other realms.
+- CHARACTERS in the ONLINE / ACCOUNT menu opens the list for your current realm.
+
 ## v2.6.0 — Accounts & Realm Select
 
 Released 2026-11-10

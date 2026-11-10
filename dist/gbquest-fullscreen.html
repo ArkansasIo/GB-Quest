@@ -2046,7 +2046,7 @@ const BUILD = {
     'Nightshade Chronicles',
     'Mythical Meadowlands',
   ],
-  version: '2.6.0',
+  version: '2.7.0',
   build: 'B2026.11.10',
   studio: 'ArkansasIo',
   engine: 'ARKANSAS - IO',
@@ -20272,6 +20272,23 @@ window.GBQ_PATCH_NOTES = {
  "repo": "ArkansasIo/GB-Quest",
  "releases": [
   {
+   "version": "2.7.0",
+   "date": "2026-11-10",
+   "title": "Character Select",
+   "sections": [
+    {
+     "name": "New",
+     "notes": [
+      "CHARACTER SELECT: after you pick a realm, see every hero you have there, from this device and from your cloud saves, with class, level, zone and last save.",
+      "ENTER WORLD with A. A hero that is newer in the cloud downloads first; a hero only on this device is uploaded to your account.",
+      "CREATE NEW HERO uses a slot that is free on both this device and the cloud, so a new hero never overwrites a cloud save.",
+      "DELETE a hero with SELECT (asks first). The list also shows how many heroes you have on other realms.",
+      "CHARACTERS in the ONLINE / ACCOUNT menu opens the list for your current realm."
+     ]
+    }
+   ]
+  },
+  {
    "version": "2.6.0",
    "date": "2026-11-10",
    "title": "Accounts & Realm Select",
@@ -21427,7 +21444,30 @@ const TYPE_RULES = {
   Seasonal: ['SEASONAL', 'A fresh start each season.', 'Season rewards carry over', 'to your account.'],
 };
 
-if (typeof globalThis !== 'undefined') globalThis.GBQFrontEnd = { NAME_RE, checkCredentials, passwordStrength, suggestRealm, loadOf, TYPE_RULES };
+// Character roster: merge this device's save slots with the account's cloud slots. Each slot shows one hero:
+// the same hero in both places is BOTH (the newer copy is loaded); different heroes in one slot show the newer.
+//   locals[i]: a save state or null; clouds[i]: { name, lvl, cls, realm, saved } or null
+function mergeRoster(locals, clouds, fallbackRealm) {
+  const n = Math.max((locals || []).length, (clouds || []).length), out = [];
+  for (let i = 0; i < n; i++) {
+    const l = locals && locals[i], c = clouds && clouds[i];
+    if (!l && !c) { out.push(null); continue; }
+    const lr = l ? { name: l.name, lvl: +l.lvl || 1, cls: l.cls, realm: l.realm || fallbackRealm || null, saved: +l.saved || 0, zone: l.map || null } : null;
+    const cr = c ? { name: c.name, lvl: +c.lvl || 1, cls: c.cls, realm: c.realm || fallbackRealm || null, saved: +c.saved || 0, zone: null } : null;
+    let e;
+    if (lr && cr && lr.name === cr.name) e = Object.assign({}, cr.saved > lr.saved ? cr : lr, { where: 'BOTH', newer: cr.saved > lr.saved ? 'cloud' : 'local', zone: lr.zone });
+    else if (lr && cr) e = cr.saved > lr.saved ? Object.assign({}, cr, { where: 'CLOUD', newer: 'cloud', hidden: lr.name }) : Object.assign({}, lr, { where: 'LOCAL', newer: 'local', hidden: cr.name });
+    else e = Object.assign({}, lr || cr, { where: lr ? 'LOCAL' : 'CLOUD', newer: lr ? 'local' : 'cloud' });
+    e.slot = i; out.push(e);
+  }
+  return out;
+}
+const rosterOn = (roster, realm) => roster.filter(e => e && e.realm === realm);
+const otherRealmCounts = (roster, realm) => roster.reduce((m, e) => { if (e && e.realm !== realm) m[e.realm || '?'] = (m[e.realm || '?'] || 0) + 1; return m; }, {});
+// a new hero needs a slot that is empty on this device and in the cloud
+const freeSlot = (locals, clouds, n) => { for (let i = 0; i < n; i++) if (!(locals && locals[i]) && !(clouds && clouds[i])) return i; return -1; };
+
+if (typeof globalThis !== 'undefined') globalThis.GBQFrontEnd = { NAME_RE, checkCredentials, passwordStrength, suggestRealm, loadOf, TYPE_RULES, mergeRoster, rosterOn, otherRealmCounts, freeSlot };
 
 // ---------------------------------------------------------------- game wiring
 if (typeof window === 'undefined' || typeof document === 'undefined' || typeof REALMS === 'undefined') return;
@@ -21614,6 +21654,7 @@ class RealmListScene {
       if (typeof G !== 'undefined' && G) G.realm = r.id;
       if (this.opts.next) return this.opts.next(r.id);
       const AM = window.GBQAelmoorMenus;
+      if (typeof CharacterSelectScene === 'function') return push(new CharacterSelectScene(r.id));
       fadeTo(() => { scenes.length = 0; push(AM && AM.AelNewGame ? new AM.AelNewGame() : new SlotPicker('new')); });
     };
     SFX.select();
@@ -21649,6 +21690,106 @@ class RealmListScene {
   }
 }
 
+// ---- CHARACTER SELECT: your heroes on the chosen realm (this device + cloud), WoW style
+class CharacterSelectScene {
+  constructor(realmId) {
+    this.opaque = true; this.realm = realmId; this.j = 0; this.busy = false; this.msg = ''; this.cloud = null; this.loaded = !signedIn();
+    this.reload();
+  }
+  locals() { return SLOT_KEYS.map(k => store.get(k)); }
+  reload() {
+    this.build();
+    if (!signedIn()) return;
+    LocalRealm.listSaves().then(sl => { this.cloud = sl; this.loaded = true; this.build(); }).catch(e => { this.loaded = true; this.msg = 'CLOUD SAVES UNAVAILABLE'; this.build(); });
+  }
+  build() {
+    const fb = (LocalRealm && LocalRealm.realm) || this.realm;
+    this.roster = mergeRoster(this.locals(), this.cloud || [], fb);
+    this.heroes = rosterOn(this.roster, this.realm);
+    this.others = otherRealmCounts(this.roster, this.realm);
+    this.free = freeSlot(this.locals(), this.cloud || [], SLOT_KEYS.length);
+    this.j = Math.min(this.j, this.rows().length - 1);
+  }
+  rows() { return [...this.heroes.map(h => ({ hero: h })), { act: 'CREATE NEW HERO' }, { act: 'CHANGE REALM' }]; }
+  realmObj() { return REALMS.find(r => r.id === this.realm) || { name: this.realm, type: '' }; }
+  update() {
+    if (this.busy) return;
+    const R = this.rows();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (nav('up')) { this.j = (this.j + R.length - 1) % R.length; SFX.cursor(); }
+    if (nav('down')) { this.j = (this.j + 1) % R.length; SFX.cursor(); }
+    const row = R[this.j];
+    if (P('select') && row && row.hero) return this.remove(row.hero);
+    if (!(P('a') || P('start')) || !row) return;
+    if (row.hero) return this.enterWorld(row.hero);
+    if (row.act === 'CHANGE REALM') { SFX.back(); return removeScene(this); }
+    if (row.act === 'CREATE NEW HERO') {
+      if (this.free < 0) { SFX.error(); this.msg = 'ALL 5 SLOTS USED: DELETE ONE'; return; }
+      SFX.select(); window.PENDING_REALM = this.realm;
+      const AM = window.GBQAelmoorMenus, slot = this.free;
+      fadeTo(() => { scenes.length = 0; push(AM && AM.AelNewGame ? new AM.AelNewGame(slot) : new SlotPicker('new')); });
+    }
+  }
+  async enterWorld(h) {
+    SFX.select(); this.busy = true; this.msg = 'ENTERING WORLD...';
+    try {
+      if (h.newer === 'cloud' && signedIn()) await LocalRealm.download(h.slot);
+      if (!loadSlot(h.slot)) throw new Error('That save could not be loaded.');
+      G.realm = this.realm; saveGame();
+      if (h.where === 'LOCAL' && signedIn() && !h.hidden) LocalRealm.upload(h.slot).catch(() => {});
+      window.PENDING_REALM = null;
+      if (typeof NET !== 'undefined' && NET.init && signedIn()) NET.init().catch(() => {});
+      fadeTo(() => { scenes.length = 0; enterWorld(); });
+    } catch (e) { this.busy = false; SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 30); }
+  }
+  remove(h) {
+    SFX.select();
+    choose(['KEEP', 'DELETE'], async k => {
+      if (k !== 1) return;
+      try {
+        if (h.where !== 'CLOUD') store.del(SLOT_KEYS[h.slot]);
+        if (h.where !== 'LOCAL' && signedIn()) await LocalRealm.api(`/api/saves/${h.slot}`, { method: 'DELETE' });
+        if (store.get('gbq2_last') === h.slot) store.del('gbq2_last');
+        SFX.confirm(); this.msg = `${h.name} DELETED`;
+        if (signedIn()) this.cloud = await LocalRealm.listSaves().catch(() => this.cloud);
+        this.build();
+      } catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 30); }
+    }, `Delete ${h.name} (L${h.lvl}) for good? This cannot be undone.`);
+  }
+  draw() {
+    const R = this.rows(), row = R[this.j], realm = this.realmObj();
+    fill(0, 0, W, H, 0); screenTitle('CHARACTERS');
+    fill(0, 12, W, 10, 'rgba(28,24,62,.92)');
+    text(String(realm.name).toUpperCase(), 4, 13, 'gold', 1, 100); textR(realm.type === 'Roleplay' ? 'RP' : String(realm.type || ''), 156, 13, realm.type === 'PvP' ? 'red' : 2);
+    frame(2, 24, 156, 66);
+    if (!this.loaded) text('LOADING HEROES...', 8, 30, 2);
+    R.forEach((r, k) => {
+      const y = 28 + k * 10; if (y > 82) return;
+      if (k === this.j) fill(4, y - 1, 152, 10, 1);
+      if (r.hero) {
+        const h = r.hero, c = (typeof CLASSES !== 'undefined' && CLASSES[h.cls]) ? CLASSES[h.cls].name : String(h.cls || '').toUpperCase();
+        text(h.name, 7, y, 3, 1, 56); text(c, 64, y, 2, 1, 56); textR(`L${h.lvl}`, 140, y, 'gold');
+        text(h.where === 'BOTH' ? '=' : h.where === 'CLOUD' ? '^' : '.', 147, y, h.where === 'LOCAL' ? 2 : 'green');
+      } else text(r.act, 7, y, k === this.j ? 3 : r.act === 'CREATE NEW HERO' ? (this.free < 0 ? 2 : 'green') : 3);
+    });
+    frame(2, 92, 156, 42);
+    if (row && row.hero) {
+      const h = row.hero, z = h.zone && typeof ZONE_BY_ID !== 'undefined' && ZONE_BY_ID[h.zone] ? ZONE_BY_ID[h.zone].name : null;
+      text(`SLOT ${h.slot + 1}  ${h.where === 'BOTH' ? 'DEVICE + CLOUD' : h.where === 'CLOUD' ? 'CLOUD ONLY' : 'THIS DEVICE'}`, 6, 96, 'gold', 1, 150);
+      text(z ? String(z).toUpperCase() : (h.where === 'CLOUD' ? 'DOWNLOADS ON ENTER' : '-'), 6, 105, 2, 1, 150);
+      text(h.saved ? `SAVED ${new Date(h.saved).toLocaleDateString()}` : 'NOT SAVED YET', 6, 114, 2, 1, 150);
+      if (h.hidden) text(`REPLACES ${h.hidden} IN SLOT`, 6, 123, 'red', 1, 150);
+    } else {
+      const o = Object.entries(this.others), on = o.reduce((a, [, n]) => a + n, 0);
+      text(row && row.act === 'CREATE NEW HERO' ? (this.free < 0 ? 'NO FREE SLOT' : `NEW HERO IN SLOT ${this.free + 1}`) : 'PICK ANOTHER REALM', 6, 96, 'gold', 1, 150);
+      text(`HERE ${this.heroes.length}  OTHER REALMS ${on}`, 6, 105, 2, 1, 150);
+      o.slice(0, 2).forEach(([id, n], i) => { const r = REALMS.find(x => x.id === id); text(`${r ? r.name.toUpperCase() : id}: ${n}`, 6, 114 + i * 9, 2, 1, 150); });
+    }
+    if (this.msg) { fill(4, 124, 152, 9, 0); text(this.msg, 6, 125, /DELETED|ENTERING/.test(this.msg) ? 'green' : 'red', 1, 150); }
+    footer(this.busy ? 'PLEASE WAIT' : (row && row.hero ? 'A:PLAY SEL:DELETE' : 'A:SELECT'), 'B:BACK');
+  }
+}
+
 // ---- ONLINE / ACCOUNT hub
 class OnlineHubScene {
   constructor() { this.opaque = true; this.i = 0; this.me = null; this.saves = null; this.refresh(); }
@@ -21660,7 +21801,7 @@ class OnlineHubScene {
   opts() {
     if (!online()) return ['RETRY', 'BACK'];
     if (!signedIn()) return ['LOG IN', 'CREATE ACCOUNT', 'BACK'];
-    return ['CHOOSE REALM', 'CLOUD SAVES', 'CHANGE PASSWORD', 'LOG OUT', 'BACK'];
+    return ['CHARACTERS', 'CHOOSE REALM', 'CLOUD SAVES', 'CHANGE PASSWORD', 'LOG OUT', 'BACK'];
   }
   update() {
     const o = this.opts(); this.i = Math.min(this.i, o.length - 1);
@@ -21672,6 +21813,7 @@ class OnlineHubScene {
     if (c === 'BACK') return removeScene(this);
     if (c === 'RETRY') { if (LocalRealm.detect) LocalRealm.detect().then(() => this.refresh()); return; }
     if (c === 'LOG IN' || c === 'CREATE ACCOUNT') return push(new LoginScene(c === 'LOG IN' ? 'login' : 'register', () => this.refresh()));
+    if (c === 'CHARACTERS') return push(new CharacterSelectScene((typeof G !== 'undefined' && G && G.realm) || LocalRealm.realm || (REALMS[0] && REALMS[0].id)));
     if (c === 'CHOOSE REALM') return push(new RealmListScene());
     if (c === 'CLOUD SAVES' && typeof AccountScene === 'function') return push(new AccountScene());
     if (c === 'CHANGE PASSWORD') return push(new ChangePasswordScene());
@@ -21694,7 +21836,7 @@ class OnlineHubScene {
     footer('A:SELECT', 'B:BACK');
   }
 }
-Object.assign(window, { LoginScene, ChangePasswordScene, RealmListScene, OnlineHubScene });
+Object.assign(window, { LoginScene, ChangePasswordScene, RealmListScene, CharacterSelectScene, OnlineHubScene });
 
 // the start-up check for a realm server can time out while the page is still loading; keep looking every few
 // seconds until one answers, then switch the game to it (also covers starting the server after the page)
