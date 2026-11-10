@@ -11,6 +11,8 @@ This deployment runs the PostgreSQL-backed service in `mmorpg-server.cjs`. It is
 - Persistent quest catalogue and character quest acceptance/progress/completion, with rewards granted inside the monster-defeat transaction.
 - Persistent character gold wallet, server-calculated monster gold rewards, and a seeded slime-gel drop with inventory stack limits.
 - Authenticated WebSocket sessions.
+- Three regions and nine configured realms (1,000 concurrent-player slots each; 9,000 configured slots total), with live per-realm population and realm status.
+- Public `GET /api/world/status` dashboard endpoint with live online count by region, realm and zone, configured capacity, utilization, registered-account/character totals, and a persistent peak-concurrent counter. The endpoint is scoped to the current service instance until shared presence/pub-sub is deployed.
 - Server-authoritative movement coordinates and persisted character positions.
 - Zone presence and snapshots.
 - Transaction-locked mob combat, server-calculated damage, XP awards and timed mob respawns.
@@ -49,7 +51,7 @@ Do not expose PostgreSQL publicly. Keep `.env` out of version control, rotate se
 
 ## Current scale and production boundaries
 
-This is a real database-backed, authoritative **single service instance**, not 85 deployed game worlds. The current implementation keeps connected sockets and zone broadcasts in process memory. Do not run multiple replicas behind a load balancer yet: players in different replicas would not share presence, zone broadcasts, or consistent live-zone state. Horizontal scaling requires a shared pub/sub layer (for example Redis), zone ownership/partitioning, distributed rate limits, and reconnect/session coordination.
+This is a real database-backed, authoritative **single service instance**, not nine independently deployed realm clusters. The configuration defines nine logical realms with 1,000 player slots each (9,000 configured slots total); this is not a verified 9,000-player performance result. The live population dashboard currently counts sockets on this service instance only. Do not run multiple replicas behind a load balancer yet: players in different replicas would not share presence, zone broadcasts, or consistent live-zone state. Horizontal scaling requires shared presence leases, a shared pub/sub layer (for example Redis), zone ownership/partitioning, distributed rate limits, and reconnect/session coordination. Load-test each deployment before advertising a real concurrency limit.
 
 The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but general loot tables beyond the seeded slime-gel drop, vendor transactions, player trading, auction house and an economy ledger are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
 
