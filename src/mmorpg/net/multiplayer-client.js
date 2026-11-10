@@ -38,9 +38,26 @@ export class MultiplayerClient {
       }
       this.onMessage(message);
     });
-    socket.addEventListener("close", () => {
+    socket.addEventListener("close", event => {
       if (!current()) return;
       this.socket = null;
+      // Authentication failures and server-side rate limits cannot be fixed by retrying
+      // the same credentials. Stop the loop and require the caller to obtain a fresh token.
+      const permanentAuthFailure = event?.code === 4401 || event?.code === 4403;
+      const rateLimited = event?.code === 4429;
+      if (permanentAuthFailure) {
+        this.lastConnection = null;
+        this.selectedCharacterId = null;
+        this.reconnectAttempt = 0;
+        this.onStatus("authentication_required");
+        return;
+      }
+      if (rateLimited) {
+        this.lastConnection = null;
+        this.reconnectAttempt = 0;
+        this.onStatus("rate_limited");
+        return;
+      }
       this.onStatus("disconnected");
       if (this.autoReconnect && !this.intentionalClose && this.lastConnection) this.scheduleReconnect();
     });
