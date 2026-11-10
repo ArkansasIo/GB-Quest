@@ -64,6 +64,36 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const { character: recipientCharacter } = await secondCreate.json();
 
 
+    const profileResponse = await fetch(base + `/api/characters/${character.id}/profile`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(profileResponse.status, 200);
+    const initialProfile = await profileResponse.json();
+    assert.equal(initialProfile.character.id, character.id);
+    assert.equal(initialProfile.character.realm_id, character.realm_id);
+    assert.equal(initialProfile.inventory.length, 3);
+    assert.ok(Array.isArray(initialProfile.quests));
+    assert.equal(initialProfile.character.talent_points, 0);
+    const progressionPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try { await progressionPool.query('UPDATE characters SET talent_points=2 WHERE id=$1', [character.id]); }
+    finally { await progressionPool.end(); }
+    const allocateAttribute = await fetch(base + `/api/characters/${character.id}/attributes`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ attribute: 'str', points: 2 })
+    });
+    assert.equal(allocateAttribute.status, 200);
+    const allocated = await allocateAttribute.json();
+    assert.equal(allocated.talentPoints, 0);
+    assert.equal(allocated.allocatedAttributes.str, 2);
+    const overspendAttribute = await fetch(base + `/api/characters/${character.id}/attributes`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ attribute: 'dex', points: 1 })
+    });
+    assert.equal(overspendAttribute.status, 409);
+    assert.equal((await overspendAttribute.json()).error, 'insufficient_talent_points');
+
     const inventoryResponse = await fetch(base + `/api/characters/${character.id}/inventory`, {
       headers: { authorization: 'Bearer ' + token }
     });
