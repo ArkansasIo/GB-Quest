@@ -4,6 +4,30 @@ window.GBQ_PATCH_NOTES = {
  "repo": "ArkansasIo/GB-Quest",
  "releases": [
   {
+   "version": "2.8.0",
+   "date": "2026-11-10",
+   "title": "Friends",
+   "sections": [
+    {
+     "name": "New",
+     "notes": [
+      "FRIENDS screen (ONLINE / ACCOUNT menu, or SOCIAL in the main menu): your account friends across every realm. Online friends come first with the hero and level they are playing; select one to see their realm, or when an offline friend was last seen.",
+      "WHISPER a friend who is online on your realm straight from the list, or REMOVE them.",
+      "REQUESTS tab: accept or decline friend requests, and see or cancel the ones you sent.",
+      "ADD FRIEND: type their account name on the game screen.",
+      "Live updates: a FRIEND REQUEST or NEW FRIEND notice pops up as soon as it happens, and the list updates when friends come online or go offline."
+     ]
+    },
+    {
+     "name": "Realm server",
+     "notes": [
+      "Friends lists hold up to 100 friends, with up to 50 pending requests.",
+      "The server remembers when each account was last online."
+     ]
+    }
+   ]
+  },
+  {
    "version": "2.7.0",
    "date": "2026-11-10",
    "title": "Character Select",

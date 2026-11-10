@@ -2,6 +2,23 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.8.0 — Friends
+
+Released 2026-11-10
+
+### New
+
+- FRIENDS screen (ONLINE / ACCOUNT menu, or SOCIAL in the main menu): your account friends across every realm. Online friends come first with the hero and level they are playing; select one to see their realm, or when an offline friend was last seen.
+- WHISPER a friend who is online on your realm straight from the list, or REMOVE them.
+- REQUESTS tab: accept or decline friend requests, and see or cancel the ones you sent.
+- ADD FRIEND: type their account name on the game screen.
+- Live updates: a FRIEND REQUEST or NEW FRIEND notice pops up as soon as it happens, and the list updates when friends come online or go offline.
+
+### Realm server
+
+- Friends lists hold up to 100 friends, with up to 50 pending requests.
+- The server remembers when each account was last online.
+
 ## v2.7.0 — Character Select
 
 Released 2026-11-10
