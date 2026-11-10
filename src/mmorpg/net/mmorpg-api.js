@@ -74,6 +74,24 @@ export class GBQuestMMOApi {
   leaveParty(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
   }
+  pvpMatches(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/pvp-matches');
+  }
+  challengeDuel(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/pvp-challenges', { method: 'POST', body: { targetCharacterId } });
+  }
+  acceptDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/accept', { method: 'POST', body: { characterId } });
+  }
+  declineDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/decline', { method: 'POST', body: { characterId } });
+  }
+  cancelDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/cancel', { method: 'POST', body: { characterId } });
+  }
+  forfeitDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/forfeit', { method: 'POST', body: { characterId } });
+  }
   mail(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail');
   }
