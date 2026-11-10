@@ -72,6 +72,15 @@ export class MultiplayerClient {
       if (!this.intentionalClose && this.lastConnection) this.connect(this.lastConnection.url, this.lastConnection.token);
     }, delay);
   }
+  attack(targetId, abilityNodeId = null) {
+    if (typeof targetId !== "string" || !targetId) throw new TypeError("A target ID is required");
+    const payload = { targetId };
+    if (abilityNodeId !== null && abilityNodeId !== undefined && abilityNodeId !== "") {
+      if (typeof abilityNodeId !== "string" || !/^[a-z0-9_]{1,80}$/i.test(abilityNodeId)) throw new TypeError("Invalid talent ability ID");
+      payload.abilityNodeId = abilityNodeId;
+    }
+    return this.send("combat.intent", payload);
+  }
   selectCharacter(characterId) {
     if (typeof characterId !== "string" || !/^[0-9a-f-]{36}$/i.test(characterId)) throw new TypeError("Invalid character ID");
     this.selectedCharacterId = characterId;
