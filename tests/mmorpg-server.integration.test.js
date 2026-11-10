@@ -94,6 +94,41 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(overspendAttribute.status, 409);
     assert.equal((await overspendAttribute.json()).error, 'insufficient_talent_points');
 
+    const talentCatalogResponse = await fetch(base + '/api/talents?class=ranger');
+    assert.equal(talentCatalogResponse.status, 200);
+    const talentCatalog = await talentCatalogResponse.json();
+    assert.equal(talentCatalog.specializations.length, 3);
+    assert.equal(talentCatalog.specializations[0].nodes.length, 73);
+    const chooseSpec = await fetch(base + `/api/characters/${character.id}/specialization`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ specializationId: 'ranger_hunter' })
+    });
+    assert.equal(chooseSpec.status, 200);
+    const wrongClassSpec = await fetch(base + `/api/characters/${character.id}/specialization`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ specializationId: 'warrior_vanguard' })
+    });
+    assert.equal(wrongClassSpec.status, 400);
+    const talentPointPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try { await talentPointPool.query('UPDATE characters SET talent_points=1 WHERE id=$1', [character.id]); }
+    finally { await talentPointPool.end(); }
+    const unlockTalent = await fetch(base + `/api/characters/${character.id}/talents/ranger_hunter_node_00/unlock`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({})
+    });
+    assert.equal(unlockTalent.status, 200);
+    assert.equal((await unlockTalent.json()).talentPoints, 0);
+    const duplicateTalent = await fetch(base + `/api/characters/${character.id}/talents/ranger_hunter_node_00/unlock`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({})
+    });
+    assert.equal(duplicateTalent.status, 409);
+    assert.equal((await duplicateTalent.json()).error, 'insufficient_talent_points');
+
     const inventoryResponse = await fetch(base + `/api/characters/${character.id}/inventory`, {
       headers: { authorization: 'Bearer ' + token }
     });
