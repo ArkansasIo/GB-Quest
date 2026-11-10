@@ -36,3 +36,23 @@ test("expansion menu availability follows character, guild, collection and onlin
  assert.equal(find("Overview").enabled,true); assert.equal(find("Friends").enabled,false);
  assert.equal(getExpansionCatalog().regions.length,5);
 });
+
+import { createCollections, collectAppearance, applyTransmog, collectMount } from "../../src/mmorpg/systems/collections.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+test("legacy wardrobe collections remain compatible with itemization",()=>{
+ const c=createCollections(); const item={templateId:"longsword",slot:"main_hand"};
+ assert.equal(collectAppearance(c,item),true);
+ assert.equal(collectAppearance(c,item),false);
+ assert.equal(applyTransmog(c,item,"longsword").ok,true);
+ assert.equal(collectMount(c,"mount:warhorse"),true);
+ assert.equal(collectMount(c,"mount:warhorse"),false);
+});
+test("expansion catalog is valid JSON with original regions, dungeons and raids",()=>{
+ const here=dirname(fileURLToPath(import.meta.url));
+ const catalog=JSON.parse(readFileSync(resolve(here,"../../src/mmorpg/data/expansion-catalog.json"),"utf8"));
+ assert.equal(catalog.regions.length,5);
+ assert.equal(catalog.dungeons.length,5);
+ assert.equal(catalog.raids.length,3);
+});
