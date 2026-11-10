@@ -103,10 +103,11 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
       const ra = Number(ratings.rows.find(x => x.character_id === teamA).rating);
       const rb = Number(ratings.rows.find(x => x.character_id === teamB).rating);
       const expectedA = 1 / (1 + Math.pow(10, (rb - ra) / 400));
-      const deltaA = Math.round(32 * (0 - expectedA)), deltaB = -deltaA;
+      const teamAWon = characterId === teamB;
+      const deltaA = Math.round(32 * ((teamAWon ? 1 : 0) - expectedA)), deltaB = -deltaA;
       const deltas = { [teamA]: deltaA, [teamB]: deltaB };
-      await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaA, 0, 1, teamA]);
-      await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaB, 1, 0, teamB]);
+      await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaA, teamAWon ? 1 : 0, teamAWon ? 0 : 1, teamA]);
+      await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaB, teamAWon ? 0 : 1, teamAWon ? 1 : 0, teamB]);
       await tx.query("UPDATE pvp_matches SET status='completed',ended_at=now(),rating_delta=$1::jsonb WHERE id=$2", [JSON.stringify(deltas), matchId]);
       await tx.query('COMMIT'); json(res, 200, { completed: true, matchId, winnerCharacterId: winner, ratingDelta: deltas }); return true;
     } catch (error) { await tx.query('ROLLBACK').catch(() => {}); throw error; }
