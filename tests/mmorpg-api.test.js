@@ -190,3 +190,31 @@ test('MMORPG API exposes party role assignment and guild rank management', async
   assert.deepEqual(JSON.parse(calls[1].options.body), { actorCharacterId: 'leader-1', rank: 'officer' });
   assert.equal(calls[0].options.headers.authorization, 'Bearer social-session-token');
 });
+
+
+test('recoverSession restores durable panels in parallel and preserves partial successes', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      if (url.includes('/inventory')) return { ok: false, status: 503, json: async () => ({ error: 'inventory_unavailable' }) };
+      return { ok: true, status: 200, json: async () => ({ endpoint: url }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'recovery-token';
+  const result = await api.recoverSession('char-1', { chatLimit: 20 });
+  assert.equal(calls.length, 10);
+  assert.equal(result.characterId, 'char-1');
+  assert.equal(result.resources.inventory, undefined);
+  assert.equal(result.resources.party.endpoint, 'https://realm.example.test/api/characters/char-1/party');
+  assert.equal(result.resources.zoneChat.endpoint, 'https://realm.example.test/api/characters/char-1/chat?channel=zone&limit=20');
+  assert.deepEqual(result.errors, [{ resource: 'inventory', message: 'inventory_unavailable', status: 503 }]);
+  assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer recovery-token'));
+});
+
+test('recoverSession validates character ID before issuing requests', async () => {
+  const api = new GBQuestMMOApi({ baseUrl: 'https://realm.example.test', fetchImpl: async () => { throw new Error('should_not_fetch'); } });
+  await assert.rejects(api.recoverSession('  '), TypeError);
+});
