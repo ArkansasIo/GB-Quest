@@ -136,6 +136,7 @@
   function close() {
     if (overlay) overlay.remove();
     overlay = null;
+    activeSession = null;
     onReady = null;
   }
 
