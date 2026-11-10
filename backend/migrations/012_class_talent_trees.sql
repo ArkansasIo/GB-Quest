@@ -6,7 +6,7 @@ RETURNS bigint
 LANGUAGE sql
 IMMUTABLE
 STRICT
-AS $
+AS $gbq$
   SELECT CASE
     WHEN target_level < 1 OR target_level > 720 THEN NULL
     WHEN target_level <= 20 THEN
@@ -16,7 +16,7 @@ AS $
       + 25000::bigint * (target_level - 20)
       + 250::bigint * (target_level - 20) * (target_level - 20)
   END
-$;
+$gbq$;
 
 ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_level_check;
 ALTER TABLE characters ADD CONSTRAINT characters_level_check CHECK (level BETWEEN 1 AND 720);
