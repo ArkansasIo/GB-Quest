@@ -17,6 +17,3 @@ Run `npm test`. The expansion test file exercises authorization, ledger accounti
 
 ## Art direction
 The atlas uses a limited navy, slate, forest, amber, cream, ember and violet palette. SVG uses a 32px grid and `shape-rendering="crispEdges"` so it scales cleanly in the handheld viewport and high-resolution UI.
-
-## Persistent collection API
-Migration `008_character_collections.sql` adds per-character JSONB collection state. Authenticated `GET /api/characters/:id/collections` returns unlocked mounts, pets, titles, appearances, achievements and points. `POST /api/characters/:id/collections/activate` changes an active mount, pet or title only when already unlocked. Character ownership is checked server-side and updates are serialized in a database transaction. Trusted server reward handlers must grant unlocks; this API does not let clients grant themselves achievements or items.

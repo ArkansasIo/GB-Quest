@@ -162,12 +162,6 @@ export class GBQuestMMOApi {
   respondReadyCheck(readyCheckId, characterId, ready) {
     return this.request('/api/ready-checks/' + encodeURIComponent(readyCheckId) + '/respond', { method: 'POST', body: { characterId, ready } });
   }
-  collections(characterId) {
-    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/collections');
-  }
-  activateCollection(characterId, category, entryId) {
-    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/collections/activate', { method: 'POST', body: { category, entryId } });
-  }
   guild(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild');
   }

@@ -30,6 +30,9 @@ async function handleCollectionRequest({req,res,url,pool,accountFor,readBody,jso
     const tx = await pool.connect();
     try {
       await tx.query('BEGIN');
+      // Lock the owned character row as well: this serializes first-time writes before a collection row exists.
+      const characterLock = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE',[characterId,account.id]);
+      if (!characterLock.rowCount) { await tx.query('ROLLBACK'); json(res,404,{error:'character_not_found'}); return true; }
       const locked = await tx.query('SELECT state FROM character_collections WHERE character_id=$1 FOR UPDATE',[characterId]);
       const state = normalize(locked.rows[0]?.state);
       if (!state[category].some(entry => (typeof entry === 'string' ? entry : entry?.id) === entryId)) {
