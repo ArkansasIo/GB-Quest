@@ -109,7 +109,7 @@ async function handleGuildRequest({req,res,url,pool,accountFor,readBody,json}){
    await tx.query('BEGIN');
    const g=await tx.query('SELECT id,leader_character_id FROM guilds WHERE id=$1 FOR UPDATE',[guildId]);
    if(!g.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'guild_not_found'});return true;}
-   const leader=await tx.query('SELECT 1 FROM guild_members gm JOIN characters c ON c.id=gm.character_id WHERE gm.guild_id=$1 AND gm.character_id=$2 AND gm.rank='leader' AND c.account_id=$3',[guildId,actor,acct.id]);
+   const leader=await tx.query("SELECT 1 FROM guild_members gm JOIN characters c ON c.id=gm.character_id WHERE gm.guild_id=$1 AND gm.character_id=$2 AND gm.rank='leader' AND c.account_id=$3",[guildId,actor,acct.id]);
    if(!leader.rowCount||g.rows[0].leader_character_id!==actor){await tx.query('ROLLBACK');json(res,403,{error:'guild_leader_required'});return true;}
    const successor=await tx.query('SELECT 1 FROM guild_members WHERE guild_id=$1 AND character_id=$2 FOR UPDATE',[guildId,target]);
    if(!successor.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'successor_not_in_guild'});return true;}
