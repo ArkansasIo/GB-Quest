@@ -1264,27 +1264,43 @@ class SocialScene extends ListScene {
     if (!LocalRealm.available || !LocalRealm.account) return say('FRIEND LIST REQUIRES A REALM ACCOUNT. LOG IN AT TITLE > ACCOUNT.');
     try {
       const data = await LocalRealm.friends();
-      const entries = data.friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${f.name}`).concat(data.requests.map(f => `REQUEST  ${f.name}`));
-      choose(['ADD FRIEND', ...entries, ...(data.friends.length ? ['REMOVE FRIEND'] : [])], i => {
+      // Treat API collections as untrusted input: older servers or partial responses
+      // may omit either collection. Normalize IDs because actions require account IDs,
+      // not display names or request-row positions.
+      const friends = Array.isArray(data && data.friends) ? data.friends.filter(f => f && (f.id || f.accountId)) : [];
+      const requests = Array.isArray(data && data.requests) ? data.requests.filter(f => f && (f.id || f.accountId)) : [];
+      const accountId = f => String(f.id || f.accountId || '');
+      const displayName = f => clean(String(f.name || f.username || 'UNKNOWN PLAYER')).slice(0, 16);
+      const entries = friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${displayName(f)}`).concat(requests.map(f => `REQUEST  ${displayName(f)}`));
+      choose(['ADD FRIEND', ...entries, ...(friends.length ? ['REMOVE FRIEND'] : [])], i => {
         if (i === 0) {
-          const name = window.prompt('Realm account name to add:');
-          if (name) LocalRealm.requestFriend(name.trim()).then(r => say(r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.')).catch(e => say(e.message));
+          const raw = window.prompt('Realm account name to add (3-16 letters, numbers or _):');
+          if (raw == null) return;
+          const username = String(raw).trim();
+          if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return say('INVALID ACCOUNT NAME. USE 3-16 LETTERS, NUMBERS OR _.');
+          LocalRealm.requestFriend(username)
+            .then(r => say(r && r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.'))
+            .catch(e => say(`FRIEND REQUEST FAILED: ${e.message || e}`));
           return;
         }
         const idx = i - 1;
-        if (idx >= data.friends.length && idx < data.friends.length + data.requests.length) {
-          const f = data.requests[idx - data.friends.length];
+        if (idx >= friends.length && idx < friends.length + requests.length) {
+          const f = requests[idx - friends.length], id = accountId(f), name = displayName(f);
           choose(['ACCEPT', 'DECLINE'], answer => {
-            if (answer === 0) LocalRealm.acceptFriend(f.id).then(() => say(`${f.name} ADDED TO FRIENDS.`)).catch(e => say(e.message));
-            else LocalRealm.removeFriend(f.id).catch(() => {});
-          }, `FRIEND REQUEST FROM ${f.name}`);
-        } else if (idx >= 0 && idx < data.friends.length) {
-          const f = data.friends[idx]; say(`${f.name} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
-        } else if (i === 1 + entries.length && data.friends.length) {
-          choose(data.friends.map(f => f.name), j => { if (j >= 0) LocalRealm.removeFriend(data.friends[j].id).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message)); }, 'REMOVE WHICH FRIEND?');
+            const action = answer === 0 ? LocalRealm.acceptFriend(id) : LocalRealm.removeFriend(id);
+            action.then(() => say(answer === 0 ? `${name} ADDED TO FRIENDS.` : `REQUEST FROM ${name} DECLINED.`))
+              .catch(e => say(`FRIEND REQUEST UPDATE FAILED: ${e.message || e}`));
+          }, `FRIEND REQUEST FROM ${name}`);
+        } else if (idx >= 0 && idx < friends.length) {
+          const f = friends[idx]; say(`${displayName(f)} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
+        } else if (i === 1 + entries.length && friends.length) {
+          choose(friends.map(displayName), j => {
+            if (j < 0 || !friends[j]) return;
+            LocalRealm.removeFriend(accountId(friends[j])).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message));
+          }, 'REMOVE WHICH FRIEND?');
         }
       }, 'FRIENDS / REQUESTS');
-    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message}`); }
+    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message || e}`); }
   }
   async createInvite() {
     try { const invite = await LocalRealm.createInvite(); say([`INVITE CODE: ${invite.code}`, 'Share this code with a friend.', 'It expires in 15 minutes.']); }
