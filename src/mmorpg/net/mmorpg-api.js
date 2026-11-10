@@ -83,6 +83,19 @@ export class GBQuestMMOApi {
     if (realmId) body.realmId = realmId;
     return this.request('/api/characters', { method: 'POST', body });
   }
+  talentTrees(characterClass) {
+    return this.request('/api/talents?class=' + encodeURIComponent(characterClass));
+  }
+  chooseSpecialization(characterId, specializationId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/specialization', {
+      method: 'POST', body: { specializationId }
+    });
+  }
+  unlockTalent(characterId, nodeId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/talents/' + encodeURIComponent(nodeId) + '/unlock', {
+      method: 'POST', body: {}
+    });
+  }
   characterProfile(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/profile');
   }
