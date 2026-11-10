@@ -773,66 +773,159 @@ class AbilitySkillsScene extends ListScene {
 }
 
 class TalentScene extends ListScene {
-  constructor() { super(4); this.tree = 0; }
+  constructor() {
+    super(4); this.tree = 0; this.branch = 0; this.remoteTrees = []; this.profile = null;
+    this.online = !!(G && G.mmoCharacterId && window.GBQMMOAccount?.hasGameplaySession);
+    this.busy = false; this.error = ''; if (this.online) this.loadRemote();
+  }
   path() { return TALENT_TREES[this.tree]; }
-  items() { return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]); }
+  characterId() { return String(G.mmoCharacterId); }
+  request(path, options) { return window.GBQMMOAccount.gameplayRequest(path, options); }
+  async loadRemote() {
+    this.busy = true; this.error = '';
+    try {
+      const cls = encodeURIComponent(G.mmoCharacterClass || 'adventurer');
+      const [catalog, profile] = await Promise.all([
+        this.request('/api/talents?class=' + cls),
+        this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/profile')
+      ]);
+      this.remoteTrees = catalog.specializations || []; this.profile = profile;
+      const selected = this.remoteTrees.findIndex(tree => tree.id === profile.character?.specialization_id);
+      this.tree = Math.max(0, selected); this.i = this.top = 0;
+    } catch (error) { this.error = String(error.message || error); }
+    finally { this.busy = false; }
+  }
+  unlocked() { return new Set((this.profile?.talents || []).map(talent => talent.node_id)); }
+  remoteItems() { const tree = this.remoteTrees[this.tree]; return tree ? (tree.nodes || []).filter(node => node.branch === ['assault','utility','mastery'][this.branch]) : []; }
+  async chooseSpecialization() {
+    const tree = this.remoteTrees[this.tree]; if (!tree || this.busy) return;
+    this.busy = true;
+    try {
+      await this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/specialization', { method: 'POST', body: { specializationId: tree.id } });
+      await this.loadRemote();
+    } catch (error) { this.error = String(error.message || error); }
+    finally { this.busy = false; }
+  }
+  async unlockRemote(node) {
+    if (!node || this.busy) return;
+    this.busy = true; this.error = '';
+    try {
+      await this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/talents/' + encodeURIComponent(node.id) + '/unlock', { method: 'POST', body: {} });
+      await this.loadRemote(); SFX.levelup();
+    } catch (error) { this.error = String(error.message || error); SFX.error(); }
+    finally { this.busy = false; }
+  }
+  items() {
+    if (this.online) return this.remoteItems();
+    return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]);
+  }
   update() {
+    if (this.online) {
+      if (P('b')) { SFX.back(); removeScene(this); return; }
+      if (this.busy) return;
+      if (this.error) { if (P('a')) this.loadRemote(); return; }
+      if (!this.remoteTrees.length) return;
+      if (!this.profile?.character?.specialization_id) {
+        if (nav('left')) { this.tree = (this.tree + this.remoteTrees.length - 1) % this.remoteTrees.length; SFX.cursor(); }
+        if (nav('right')) { this.tree = (this.tree + 1) % this.remoteTrees.length; SFX.cursor(); }
+        if (P('a')) this.chooseSpecialization();
+        return;
+      }
+      if (P('select')) { this.branch = (this.branch + 1) % 3; this.i = this.top = 0; SFX.page(); }
+      this.navList();
+      if (P('a')) {
+        const node = this.items()[this.i], known = this.unlocked();
+        if (!node) return;
+        if (known.has(node.id)) return say('Already unlocked.');
+        if (this.profile.character.level < node.requiredLevel) return say('Unlocks at level ' + node.requiredLevel + '.');
+        if (node.prerequisiteId && !known.has(node.prerequisiteId)) return say('Unlock the previous node in this branch first.');
+        if (Number(this.profile.character.talent_points || 0) < Number(node.pointCost || 1)) return say('Not enough talent points.');
+        this.unlockRemote(node);
+      }
+      return;
+    }
     if (P('select')) { this.tree = (this.tree + 1) % TALENT_TREES.length; this.i = this.top = 0; SFX.page(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
-    const node = this.items()[this.i];
-    if (!node) return;
+    const node = this.items()[this.i]; if (!node) return;
     if (node.respec) {
       if (!G.talents.length) return say('No talents to reset.');
       choose(['RESET ALL TALENTS', 'CANCEL'], index => {
         if (index !== 0) return;
-        G.talentPts = (G.talentPts || 0) + G.talents.length;
-        G.talents = [];
-        G.hp = Math.min(G.hp, derive(G).hpMax);
-        SFX.levelup();
+        G.talentPts = (G.talentPts || 0) + G.talents.length; G.talents = [];
+        G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
       }, 'Refund all spent talent points?');
       return;
     }
-    if (G.talents.includes(node.id)) return say(`${node.name} is already learned.`);
-    if (G.lvl < node.level) return say(`Unlocks at level ${node.level}.`);
+    if (G.talents.includes(node.id)) return say(node.name + ' is already learned.');
+    if (G.lvl < node.level) return say('Unlocks at level ' + node.level + '.');
     if (node.requires && !G.talents.includes(node.requires)) {
       const prerequisite = this.path().nodes.find(candidate => candidate.id === node.requires);
-      return say(`Learn ${prerequisite ? prerequisite.name : 'the previous talent'} first.`);
+      return say('Learn ' + (prerequisite ? prerequisite.name : 'the previous talent') + ' first.');
     }
-    if ((G.talentPts || 0) < 1) return say('No talent points available. Earn one at levels 5, 10, 15 and 20.');
-    G.talents.push(node.id);
-    G.talentPts--;
-    G.hp = Math.min(G.hp, derive(G).hpMax);
-    SFX.levelup();
+    if ((G.talentPts || 0) < 1) return say('No talent points available.');
+    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr();
-    textC('TALENT SYSTEM', 80, 13, 'gold');
+    fill(0, 0, W, H, 0); hdr(); textC(this.online ? 'ONLINE TALENTS' : 'TALENT SYSTEM', 80, 13, 'gold');
+    if (this.online) {
+      if (this.busy) { textC('LOADING SERVER DATA…', 80, 65, 3); return; }
+      if (this.error) { textC(('SERVER: ' + this.error).slice(0, 25), 80, 55, 'red'); textC('A: RETRY   B: BACK', 80, 75, 2); return; }
+      if (!this.remoteTrees.length) { textC('NO SERVER TALENT TREES', 80, 65, 2); return; }
+      if (!this.profile?.character?.specialization_id) {
+        textC('CHOOSE SPECIALIZATION', 80, 27, 2);
+        this.remoteTrees.forEach((tree, index) => {
+          const y = 48 + index * 20; if (index === this.tree) fill(5, y - 1, 150, 16, 1);
+          text(tree.name.slice(0, 22), 10, y, index === this.tree ? 'gold' : 3);
+          text(String(tree.role || '').slice(0, 18), 10, y + 8, 2);
+        });
+        textC('LEFT/RIGHT: CHOOSE  A: CONFIRM', 80, 119, 2); return;
+      }
+      const tree = this.remoteTrees[this.tree], branches = ['ASSAULT','UTILITY','MASTERY'];
+      textC((tree?.name || 'SPECIALIZATION').slice(0, 20), 80, 24, 'gold');
+      branches.forEach((branch, index) => {
+        const x = 3 + index * 52; fill(x, 34, 49, 10, index === this.branch ? 3 : 1);
+        textC(branch.slice(0, 7), x + 24, 35, index === this.branch ? 0 : 3);
+      });
+      text('POINTS ' + (this.profile.character.talent_points || 0) + '  LV ' + (this.profile.character.level || G.lvl), 5, 47, 2);
+      const list = this.items(), known = this.unlocked();
+      list.slice(this.top, this.top + this.rows).forEach((node, offset) => {
+        const index = this.top + offset, y = 60 + offset * 9, learned = known.has(node.id);
+        const eligible = this.profile.character.level >= node.requiredLevel &&
+          (!node.prerequisiteId || known.has(node.prerequisiteId)) &&
+          Number(this.profile.character.talent_points || 0) >= Number(node.pointCost || 1);
+        if (index === this.i) fill(3, y - 1, 153, 9, 1);
+        text(learned ? '*' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+        text(node.name.slice(0, 19), 14, y, eligible ? 3 : 1);
+        textR('L' + node.requiredLevel, 153, y, learned ? 'gold' : 2);
+      });
+      const node = list[this.i]; frame(2, 98, 156, 37);
+      if (node) {
+        text(node.name.slice(0, 24), 6, 101, 'gold');
+        text(wrap(node.description || '', 24).slice(0, 2).join('\n'), 6, 111, 3);
+        text('COST ' + node.pointCost + '  ' + String(node.type || '').toUpperCase(), 6, 126, 2);
+      }
+      fill(0, 135, W, 9, 0); text('A: UNLOCK  SEL: BRANCH', 4, 136, 2); return;
+    }
     TALENT_TREES.forEach((tree, index) => {
-      const x = 3 + index * 52;
-      fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
+      const x = 3 + index * 52; fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
       textC(tree.name.slice(0, 8), x + 24, 25, index === this.tree ? 0 : 3);
     });
-    text(`POINTS ${G.talentPts || 0}   LEVEL ${G.lvl}`, 5, 38, 2);
+    text('POINTS ' + (G.talentPts || 0) + '   LEVEL ' + G.lvl, 5, 38, 2);
     const L = this.items();
     L.slice(this.top, this.top + this.rows).forEach((node, offset) => {
-      const index = this.top + offset, y = 50 + offset * 11;
-      const learned = !node.respec && G.talents.includes(node.id);
+      const index = this.top + offset, y = 50 + offset * 11, learned = !node.respec && G.talents.includes(node.id);
       const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
       if (index === this.i) fill(3, y - 1, 153, 10, 1);
-      if (node.icon && IMG[node.icon]) blit(spr(node.icon, 8, 8, { ghost: !eligible }), 4, y); else text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
-      if (learned) text('*', 134, y, 'gold');
+      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
       text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
-      if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
+      if (!node.respec) textR('L' + node.level, 152, y, learned ? 'gold' : 2);
     });
-    const node = L[this.i];
-    frame(2, 98, 156, 37);
+    const node = L[this.i]; frame(2, 98, 156, 37);
     if (node) {
-      const needReq = node.requires && !G.talents.includes(node.id);
-      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 101, 'gold');
-      text(wrap(node.desc, 24).slice(0, needReq ? 1 : 2).join('\n'), 6, 111, 3);
-      if (needReq) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 122, 2);
+      const known = G.talents.includes(node.id); text(node.name + (known ? ' LEARNED' : ''), 6, 101, 'gold');
+      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 111, 3);
     }
     fill(0, 135, W, 9, 0); text('SELECT: PATH', 4, 136, 2);
   }
