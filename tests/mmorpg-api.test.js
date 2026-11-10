@@ -168,3 +168,25 @@ test('MMORPG API exposes opt-in reconnect and remembers the selected character',
   assert.equal(api.multiplayer.selectedCharacterId, characterId);
   api.logout();
 });
+
+test('MMORPG API exposes party role assignment and guild rank management', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ updated: true }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'social-session-token';
+  await api.setPartyRole('party-1', 'leader-1', 'member-2', 'healer');
+  await api.setGuildMemberRank('guild-1', 'leader-1', 'member-2', 'officer');
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/parties/party-1/members/member-2/role',
+    'https://realm.example.test/api/guilds/guild-1/members/member-2/rank'
+  ]);
+  assert.deepEqual(JSON.parse(calls[0].options.body), { actorCharacterId: 'leader-1', role: 'healer' });
+  assert.deepEqual(JSON.parse(calls[1].options.body), { actorCharacterId: 'leader-1', rank: 'officer' });
+  assert.equal(calls[0].options.headers.authorization, 'Bearer social-session-token');
+});
