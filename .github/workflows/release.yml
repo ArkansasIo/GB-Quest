@@ -1,0 +1,71 @@
+name: Release
+
+# Runs when a version tag is pushed (node tools/release.cjs <version> does this).
+# Publishes a GitHub Release with the version's patch notes, the itch.io zip, the single-file game
+# and a source zip. GitHub also attaches its own "Source code" archives.
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to (re)publish, e.g. v2.2.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Version from tag
+        id: v
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Check patch notes and version match the tag
+        run: |
+          node tools/patch-notes.cjs --check
+          node -e "const p=require('./package.json'); if (p.version !== '${{ steps.v.outputs.version }}') { console.error('package.json is ' + p.version); process.exit(1); }"
+
+      - name: Install
+        run: npm ci --ignore-scripts || npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build:itch
+
+      - name: Package
+        run: |
+          mkdir -p release
+          cp build/gbquest-itch-html5.zip "release/gbquest-itch-html5-${{ steps.v.outputs.tag }}.zip"
+          cp dist/gbquest.html "release/gbquest-${{ steps.v.outputs.tag }}.html"
+          git archive --format=zip --prefix="GB-Quest-${{ steps.v.outputs.version }}/" -o "release/gbquest-source-${{ steps.v.outputs.tag }}.zip" HEAD src client tools tests backend server.js index.html package.json patch-notes.json CHANGELOG.md README.md
+          node tools/patch-notes.cjs --markdown "${{ steps.v.outputs.version }}" > release/notes.md
+          ls -la release
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.v.outputs.tag }}"
+          TITLE="$(node -e "const d=require('./patch-notes.json'); const r=d.releases.find(x=>x.version==='${{ steps.v.outputs.version }}'); console.log('v'+r.version+(r.title?' - '+r.title:''))")"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TITLE" --notes-file release/notes.md
+            gh release upload "$TAG" release/*.zip release/*.html --clobber
+          else
+            gh release create "$TAG" --title "$TITLE" --notes-file release/notes.md --latest release/*.zip release/*.html
+          fi

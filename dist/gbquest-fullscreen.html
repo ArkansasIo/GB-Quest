@@ -2046,8 +2046,8 @@ const BUILD = {
     'Nightshade Chronicles',
     'Mythical Meadowlands',
   ],
-  version: '2.1.1',
-  build: 'B2026.11.01',
+  version: '2.2.0',
+  build: 'B2026.11.09',
   studio: 'ArkansasIo',
   engine: 'ARKANSAS - IO',
   engineVersion: '2.5.0',
@@ -7607,7 +7607,7 @@ class RelicCodexScene extends ListScene {
       text(def.name, 30, 98, best ? 'gold' : 3, 1, 155);
       text(relicBonusLine(def, best && best.it), 30, 108, 3, 1, 155);
       const where = !best ? 'NOT FOUND YET' : best.where === 'eq' ? 'EQUIPPED' : best.where === 'bag' ? 'IN YOUR BAG' : 'IN STORAGE';
-      text(best ? `${where}  ILVL ${best.it.ilvl || 1}` : where, 6, 121, best ? 2 : 1, 1, 155);
+      text(best ? `${where}  ILVL ${best.it.ilvl || 1}` : where, 6, 121, 2, 1, 155);
     }
     fill(0, 135, W, 9, 0);
     const act = !def ? '' : copies.some(c => c.where === 'eq') ? 'A:REMOVE' : copies.some(c => c.where === 'bag') ? 'A:EQUIP' : '';
@@ -7758,8 +7758,8 @@ class AbilitySkillsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     textC(`${CLASSES[G.cls].name} SKILLS`, 80, 13, 'gold');
-    fill(5, 22, 70, 10, this.kind === 'active' ? 3 : 1); textC('ACTIVE', 40, 23, this.kind === 'active' ? 0 : 3);
-    fill(85, 22, 70, 10, this.kind === 'passive' ? 3 : 1); textC('PASSIVE', 120, 23, this.kind === 'passive' ? 0 : 3);
+    fill(5, 22, 70, 10, this.kind === 'active' ? 3 : 'rgba(28,24,62,.92)'); textC('ACTIVE', 40, 23, this.kind === 'active' ? 0 : 3);
+    fill(85, 22, 70, 10, this.kind === 'passive' ? 3 : 'rgba(28,24,62,.92)'); textC('PASSIVE', 120, 23, this.kind === 'passive' ? 0 : 3);
     text(`POINTS ${G.skillPts || 0}   LEVEL ${G.lvl}`, 5, 36, 2);
     const list = this.catalog(), learned = this.learned();
     list.slice(this.top, this.top + this.rows).forEach((skill, offset) => {
@@ -10987,7 +10987,9 @@ function compareDelta(c, it) {
   const after = derive(copy);
   return { cur, d: { ac: after.ac - before.ac, hp: after.hpMax - before.hpMax, hit: after.weapon.hit - before.weapon.hit, dmg: diceAvg(after.weapon.dice) + after.weapon.dmg - diceAvg(before.weapon.dice) - before.weapon.dmg, init: after.init - before.init } };
 }
-const salvageYield = it => it.rarity >= 5 ? { ember: 1, shard: 2, scrap: 4 } : it.rarity >= 3 ? { shard: 1, scrap: 2 + (it.rarity - 3) } : { scrap: 1 + it.rarity };
+const salvageBaseYield = it => it.rarity >= 5 ? { ember: 1, shard: 2, scrap: 4 } : it.rarity >= 3 ? { shard: 1, scrap: 2 + (it.rarity - 3) } : { scrap: 1 + it.rarity };
+// Other systems add to salvage through window.SALVAGE_EXTRAS (each: item -> { material: count }).
+const salvageYield = it => { const y = salvageBaseYield(it); for (const f of (typeof window !== 'undefined' && window.SALVAGE_EXTRAS) || []) { const e = f(it) || {}; for (const k in e) if (e[k] > 0) y[k] = (y[k] || 0) + e[k]; } return y; };
 const upgradeCost = it => { const n = Math.max(0, it.plus) + 1; return { scrap: 3 * n, shard: it.rarity >= 3 ? n : 0, ember: it.rarity >= 5 ? Math.max(0, n - 3) : 0, gold: 50 * n * Math.max(1, Math.floor(it.ilvl / 5)) }; };
 function canAfford(cost) { return (G.inv.scrap || 0) >= cost.scrap && (G.inv.shard || 0) >= cost.shard && (G.inv.ember || 0) >= cost.ember && G.gold >= cost.gold; }
 function salvage(it) { const y = salvageYield(it); for (const k in y) addItem(k, y[k]); const i = G.bag.indexOf(it); if (i >= 0) G.bag.splice(i, 1); return y; }
@@ -17271,6 +17273,20 @@ function aelPlaque(label, cx, y, w = Math.max(60, String(label).length * 6 + 22)
   fill(x + 4, y + 1, w - 8, 1, AEL.gold); fill(x + 4, y + 9, w - 8, 1, AEL.gold);
   textC(label, cx, y + 1, AEL.cream);
 }
+// the title menu's selected-row bar: amber fill, bright gold edge; text drawn inside it turns cream
+const AEL_SEL = { frame: -1, rects: [] };
+function aelSelBar(x, y, w, h) {
+  ctx.save(); ctx.fillStyle = AEL.amber; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore();
+  if (AEL_SEL.frame !== frameN) { AEL_SEL.frame = frameN; AEL_SEL.rects = []; }
+  AEL_SEL.rects.push([x, y, w, h]);
+}
+const aelInSel = (x, y) => AEL_SEL.frame === frameN && AEL_SEL.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3]);
+// an inner content panel: navy fill with a thin gold edge (lighter than the full ornate frame)
+function aelInset(x, y, w, h) {
+  ctx.save(); ctx.fillStyle = AEL.navy; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = AEL.goldDark; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore();
+}
 function aelButton(x, y, w, h, label, selected, center = false) {
   if (selected) {
     fill(x, y, w, h, AEL.amber);
@@ -17323,10 +17339,18 @@ function aelSlider(x, y, w, frac) {
   fill = function (x, y, w, h, c) {
     if (c === 0 && x === 0 && y === 0 && w === W && h === H && aelTheme() && (IMG.r9_title || IMG.title_aelmoor) && !(scenes[scenes.length - 1] instanceof Field)) { aelBackdrop(false); return; }
     // a row or tab filled with the lightest shade is a selection: draw the suite's amber bar with a gold edge
-    if (c === 3 && h >= 8 && h <= 14 && w >= 30 && aelTheme()) {
-      fill2(x, y, w, h, AEL.amber); ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore(); return;
-    }
+    if (c === 3 && h >= 8 && h <= 14 && w >= 30 && aelTheme()) { aelSelBar(x, y, w, h); return; }
+    // list rows draw their cursor with shade 1 (engine HILITE): give them the title menu's amber bar too
+    if (c === 1 && h >= 8 && h <= 14 && w >= 60 && aelTheme()) { fill2(x, y, w, h, c); aelSelBar(x, y, w, h); return; }
+    // large shade-1 boxes are content panels: navy with a gold edge, like the title menu's panel
+    if (c === 1 && w >= 24 && h >= 24 && aelTheme()) { aelInset(x, y, w, h); return; }
     return fill2(x, y, w, h, c);
+  };
+  // text on a selected row reads cream, like the title menu (warning colours keep their meaning)
+  const text2 = text;
+  text = function (str, x, y, c = 3, sc = 1, right) {
+    if (aelTheme() && aelInSel(x, y) && c !== 'red' && c !== 'green') c = AEL.cream;
+    return text2(str, x, y, c, sc, right);
   };
   const ornate2 = drawOrnatePanel;
   drawOrnatePanel = function (x, y, w, h, title) {
@@ -19924,6 +19948,409 @@ if (typeof window !== 'undefined' && typeof derive === 'function' && typeof gear
     const u0 = MainMenu.prototype.update; MainMenu.prototype.update = function () { if (P('a') && (this.items()[this.i] || '').replace(' (!)', '') === 'AWAKENING') { SFX.select(); return awakeningMenu(); } return u0.apply(this, arguments); };
   }
 }
+})();
+
+</script>
+<script>
+'use strict';
+(() => { // own scope: every module loads as a classic script sharing one global scope
+// ================================================================ GEAR AWAKENING (MAIN MENU > GEAR AWAKENING)
+// Every weapon, armour and shield can be AWAKENED, star by star, into a stronger form of itself.
+//   * STARS: 1-5. The cap depends on rarity: poor/common 1, uncommon 2, rare 3, epic 4, legendary+ 5.
+//     Each star also needs a hero level: 1 / 10 / 25 / 45 / 70.
+//   * PATH: the first star chooses the item's path (weapons and armour have their own). Every star adds the
+//     path's stats; star III unlocks the path's AWAKENED TRAIT and star V its TRANSCENDENT TRAIT.
+//   * BASE: weapons gain +DAMAGE% per star; armour gains MAX HP per star and +1 ARMOUR at stars II and IV.
+//   * Values scale with item level (x(1 + ilvl/60)), so an awakened high-level item stays relevant.
+//   * COST per star n: gold 60*n^2*(1+ilvl/10), AWAKENING STONES 2n-1, GLIMMER SHARDS n-2 from star III,
+//     one EMBER SOUL at star V. Awakening never fails.
+//   * STONES come from salvaging uncommon+ weapons and armour (+1, +2 for epic+, plus half the stones an
+//     awakened item cost), or TRANSMUTE: 6 scrap + 1 shard + 50 G -> 1 stone.
+//   * REFORGE changes an awakened item's path for gold and keeps its stars.
+// Pure rules are exported as GBQGearAwaken for tests; the game wiring runs only inside the game.
+
+const GA_MAX_STARS = 5;
+const GA_STAR_CAP = [1, 1, 2, 3, 4, 5, 5, 5, 5];          // by rarity index
+const GA_STAR_LEVEL = [1, 10, 25, 45, 70];                 // hero level needed for star n (index n-1)
+const GA_STAR_NAME = ['I', 'II', 'III', 'IV', 'V'];
+const GA_TRANSMUTE = { scrap: 6, shard: 1, gold: 50 };
+
+// Each path: per-star stats ([stat, base value per star]; 'f' marks values scaled by item level),
+// then the star III trait and the star V trait (flat stats, also level-scaled where marked).
+const GA_PATHS = {
+  weapon: {
+    ember: { name: 'EMBER', desc: 'Burning edge. Fire damage climbs with every star.',
+      per: [['fire', 6, 'f']], t3: { name: 'KINDLED', stats: [['crit', 3]], desc: '+3% crit chance.' },
+      t5: { name: 'INFERNO HEART', stats: [['fire', 25, 'f'], ['critdmg', 20, 'f']], desc: 'Large fire and crit damage boost.' } },
+    frost: { name: 'FROST', desc: 'Rime-bitten steel. Cold damage and a steady hand.',
+      per: [['cold', 6, 'f']], t3: { name: 'GLACIAL', stats: [['hit', 1]], desc: '+1 accuracy.' },
+      t5: { name: 'WINTER CROWN', stats: [['cold', 25, 'f'], ['block', 5]], desc: 'Large cold damage boost and +5% block.' } },
+    storm: { name: 'STORM', desc: 'Crackling charge. Shock damage and quicker strikes.',
+      per: [['lightning', 5, 'f'], ['haste', 1]], t3: { name: 'ARCING', stats: [['haste', 3]], desc: '+3% haste.' },
+      t5: { name: 'TEMPEST', stats: [['lightning', 25, 'f'], ['haste', 5]], desc: 'Large shock damage and +5% haste.' } },
+    void: { name: 'VOID', desc: 'Hungering dark. Shadow damage that drinks life.',
+      per: [['necrotic', 5, 'f']], t3: { name: 'DEVOURING', stats: [['leech', 2]], desc: '+2% lifesteal.' },
+      t5: { name: 'ABYSS MAW', stats: [['necrotic', 25, 'f'], ['leech', 3]], desc: 'Large shadow damage and +3% lifesteal.' } },
+    dawn: { name: 'DAWN', desc: 'Sunlit blade. Holy damage and keen strikes.',
+      per: [['radiant', 5, 'f']], t3: { name: 'HALLOWED', stats: [['crit', 2], ['heal', 5]], desc: '+2% crit, +5% healing.' },
+      t5: { name: 'SOLAR JUDGE', stats: [['radiant', 25, 'f'], ['crit', 4]], desc: 'Large holy damage and +4% crit.' } },
+    titan: { name: 'TITAN', desc: 'Raw might. Bigger hits and brutal crits.',
+      per: [['critdmg', 6, 'f']], t3: { name: 'CRUSHING', stats: [['dmg', 6, 'f']], desc: 'Extra damage %.' },
+      t5: { name: 'WORLD SPLITTER', stats: [['critdmg', 30, 'f'], ['hit', 1]], desc: 'Huge crit damage and +1 accuracy.' } },
+  },
+  armor: {
+    bulwark: { name: 'BULWARK', desc: 'Unyielding plate. Block more blows.',
+      per: [['block', 2]], t3: { name: 'BASTION', stats: [['acb', 1]], desc: '+1 armour.' },
+      t5: { name: 'LIVING FORTRESS', stats: [['acb', 1], ['block', 6]], desc: '+1 armour and +6% block.' } },
+    warding: { name: 'WARDING', desc: 'Runed lining. Resist every element.',
+      per: [['resist', 2]], t3: { name: 'SPELLBANE', stats: [['resist', 3]], desc: '+3% resist all.' },
+      t5: { name: 'NULL AEGIS', stats: [['resist', 6], ['hp', 20, 'f']], desc: '+6% resist all and max HP.' } },
+    vigor: { name: 'VIGOR', desc: 'Heartwood weave. More life and stronger healing.',
+      per: [['hp', 10, 'f'], ['heal', 2]], t3: { name: 'EVERGREEN', stats: [['heal', 6]], desc: '+6% healing.' },
+      t5: { name: 'WORLDTREE SAP', stats: [['hp', 50, 'f'], ['leech', 2]], desc: 'Large max HP and +2% lifesteal.' } },
+    shadow: { name: 'SHADOW', desc: 'Gloom-dyed leather. Slip past attacks.',
+      per: [['dodge', 2]], t3: { name: 'UMBRAL STEP', stats: [['haste', 3]], desc: '+3% haste.' },
+      t5: { name: 'NIGHT VEIL', stats: [['dodge', 6], ['crit', 3]], desc: '+6% dodge and +3% crit.' } },
+    thorn: { name: 'THORN', desc: 'Barbed mail. Attackers bleed for it.',
+      per: [['thorns', 6, 'f']], t3: { name: 'BRIAR SKIN', stats: [['acb', 1]], desc: '+1 armour.' },
+      t5: { name: 'IRON BRAMBLE', stats: [['thorns', 30, 'f'], ['resist', 4]], desc: 'Large thorns and +4% resist all.' } },
+  },
+};
+
+const gaFamily = it => it && it.kind === 'weapon' ? 'weapon' : it && it.kind === 'armor' ? 'armor' : null;
+const gaCanAwaken = it => !!gaFamily(it);
+const gaScale = it => 1 + Math.max(1, Number(it && it.ilvl) || 1) / 60;
+const gaState = it => { const a = it && it.awk; return { stars: Math.max(0, Math.min(GA_MAX_STARS, Math.floor(Number(a && a.stars) || 0))), path: a && a.path || null }; };
+const gaCap = it => GA_STAR_CAP[Math.max(0, Math.min(GA_STAR_CAP.length - 1, Number(it && it.rarity) || 0))];
+const gaPath = it => { const f = gaFamily(it), s = gaState(it); return f && s.path ? GA_PATHS[f][s.path] || null : null; };
+const gaVal = (it, v, scaled) => Math.max(1, Math.round(scaled ? v * gaScale(it) : v));
+
+// All stats an item gets from its awakening, at `stars` (defaults to its current stars), as [[stat, value]].
+function gaStats(it, stars, pathId) {
+  const fam = gaFamily(it); if (!fam) return [];
+  const st = gaState(it), n = stars == null ? st.stars : stars, pid = pathId || st.path;
+  if (!n) return [];
+  const out = {}, add = (k, v) => { out[k] = (out[k] || 0) + v; };
+  if (fam === 'weapon') add('dmg', gaVal(it, 4 * n, true));
+  else { add('hp', gaVal(it, 8 * n, true)); if (n >= 2) add('acb', 1); if (n >= 4) add('acb', 1); }
+  const p = pid && GA_PATHS[fam][pid];
+  if (p) {
+    for (const [k, v, f] of p.per) add(k, gaVal(it, v * n, f === 'f'));
+    if (n >= 3) for (const [k, v, f] of p.t3.stats) add(k, gaVal(it, v, f === 'f'));
+    if (n >= 5) for (const [k, v, f] of p.t5.stats) add(k, gaVal(it, v, f === 'f'));
+  }
+  return Object.entries(out);
+}
+// Cost of the NEXT star (n = current stars + 1).
+function gaCost(it, n) {
+  const k = n == null ? gaState(it).stars + 1 : n, lv = Math.max(1, Number(it && it.ilvl) || 1);
+  return { gold: Math.round(60 * k * k * (1 + lv / 10)), stone: 2 * k - 1, shard: k >= 3 ? k - 2 : 0, ember: k >= 5 ? 1 : 0 };
+}
+function gaSpentStones(it) { let s = 0; for (let k = 1; k <= gaState(it).stars; k++) s += gaCost(it, k).stone; return s; }
+const gaReforgeCost = it => Math.round(200 * Math.max(1, gaState(it).stars) * (1 + Math.max(1, Number(it && it.ilvl) || 1) / 10));
+// Why the next star can't be taken (null when it can). inv: { awk_stone, shard, ember }, gold, heroLvl.
+function gaBlock(it, heroLvl, inv, gold) {
+  if (!gaCanAwaken(it)) return 'Only weapons and armour can be awakened.';
+  const s = gaState(it), n = s.stars + 1, cap = gaCap(it);
+  if (s.stars >= GA_MAX_STARS) return 'Fully awakened.';
+  if (n > cap) return `This rarity awakens to ${GA_STAR_NAME[cap - 1]} stars at most.`;
+  if (heroLvl < GA_STAR_LEVEL[n - 1]) return `Star ${GA_STAR_NAME[n - 1]} needs hero level ${GA_STAR_LEVEL[n - 1]}.`;
+  const c = gaCost(it, n), have = inv || {};
+  if ((have.awk_stone || 0) < c.stone) return `Needs ${c.stone} awakening stones (you have ${have.awk_stone || 0}).`;
+  if ((have.shard || 0) < c.shard) return `Needs ${c.shard} glimmer shards.`;
+  if ((have.ember || 0) < c.ember) return `Needs ${c.ember} ember soul.`;
+  if ((gold || 0) < c.gold) return `Needs ${c.gold} G.`;
+  return null;
+}
+// Apply one star (pure: returns the new awk state). pathId is required for the first star.
+function gaNext(it, pathId) {
+  const s = gaState(it), fam = gaFamily(it);
+  const path = s.path || pathId;
+  if (!fam || !path || !GA_PATHS[fam][path]) throw new Error('awakening needs a valid path');
+  return { stars: s.stars + 1, path };
+}
+const gaStarText = it => { const n = gaState(it).stars; return n ? '*'.repeat(n) : ''; };
+
+if (typeof globalThis !== 'undefined') globalThis.GBQGearAwaken = {
+  GA_PATHS, GA_STAR_CAP, GA_STAR_LEVEL, GA_MAX_STARS, GA_TRANSMUTE, gaStats, gaCost, gaBlock, gaNext, gaState, gaCap, gaSpentStones, gaReforgeCost, gaCanAwaken, gaStarText,
+};
+
+// ---------------------------------------------------------------- game wiring
+if (typeof window === 'undefined' || typeof ITEMS === 'undefined' || typeof SUBSTATS === 'undefined') return;
+
+ITEMS.awk_stone = { name: 'AWAKENING STONE', icon: 'ne_gem_6', type: 'mat', price: 40, desc: 'Wakes the power sleeping in weapons and armour.' };
+window.awakenAffixes = it => gaStats(it);
+window.gaStarText = gaStarText;
+
+// stats: fold awakening into the gear affix totals
+if (typeof gearAffixes === 'function') {
+  const g0 = gearAffixes;
+  gearAffixes = function (c) {
+    const s = g0.apply(this, arguments);
+    for (const slot of SLOTS) { const it = c && c.eq && c.eq[slot]; if (!it || !gaState(it).stars) continue; for (const [k, v] of gaStats(it)) s[k] = (s[k] || 0) + v; }
+    return s;
+  };
+}
+// upgrade arrows and gear score see awakened items as stronger
+if (typeof itemScore === 'function') { const s0 = itemScore; itemScore = function (c, it) { return s0.apply(this, arguments) + gaState(it).stars * 12; }; }
+// salvage: stones from uncommon+ weapons/armour, plus half the stones an awakened item cost
+window.SALVAGE_EXTRAS = (window.SALVAGE_EXTRAS || []).concat(it => gaCanAwaken(it) ? { awk_stone: (it.rarity >= 2 ? 1 : 0) + (it.rarity >= 4 ? 1 : 0) + Math.floor(gaSpentStones(it) / 2) } : null);
+
+const statLine = ([k, v]) => `${(SUBSTATS[k] ? SUBSTATS[k].name : k.toUpperCase())} +${v}${SUBSTATS[k] && SUBSTATS[k].unit === '%' ? '%' : ''}`;
+// every weapon and armour piece you carry: equipped first
+function gaPieces() {
+  const out = [];
+  for (const slot of SLOTS) { const it = G.eq[slot]; if (gaCanAwaken(it)) out.push({ it, eq: slot }); }
+  for (const it of G.bag || []) if (gaCanAwaken(it)) out.push({ it, eq: null });
+  return out;
+}
+function payStar(it, pathId) {
+  const why = gaBlock(it, G.lvl, G.inv, G.gold); if (why) { SFX.error(); return say(why); }
+  const c = gaCost(it);
+  G.gold -= c.gold; G.inv.awk_stone -= c.stone; if (c.shard) G.inv.shard -= c.shard; if (c.ember) G.inv.ember -= c.ember;
+  it.awk = gaNext(it, pathId);
+  const D = derive(G); G.hp = Math.min(G.hp, D.hpMax);
+  saveGame(); SFX.act_complete ? SFX.act_complete() : SFX.confirm();
+  const p = gaPath(it), n = it.awk.stars;
+  toast(`AWAKENED ${GA_STAR_NAME[n - 1]}`, `${it.name}`, itemIcon(it), 'buff');
+  if (n === 3 || n === 5) say([`${p.name} ${n === 3 ? 'AWAKENED TRAIT' : 'TRANSCENDENT TRAIT'}:`, `${(n === 3 ? p.t3 : p.t5).name}`, (n === 3 ? p.t3 : p.t5).desc]);
+}
+
+class GearAwakenScene extends ListScene {
+  constructor() { super(6); }
+  items() { return gaPieces(); }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('select')) { // transmute
+      const T = GA_TRANSMUTE;
+      if ((G.inv.scrap || 0) < T.scrap || (G.inv.shard || 0) < T.shard || G.gold < T.gold) { SFX.error(); return say([`TRANSMUTE: ${T.scrap} scrap + ${T.shard} shard + ${T.gold} G`, 'makes 1 awakening stone.', `You have ${G.inv.scrap || 0} scrap, ${G.inv.shard || 0} shard.`]); }
+      G.inv.scrap -= T.scrap; G.inv.shard -= T.shard; G.gold -= T.gold; addItem('awk_stone', 1); saveGame(); SFX.buy(); return toast('TRANSMUTED', '+1 AWAKENING STONE', ITEMS.awk_stone.icon, 'confirm');
+    }
+    const row = this.items()[this.i]; if (!row) return;
+    const it = row.it, st = gaState(it), fam = gaFamily(it);
+    if (P('start') && st.stars) { // reforge path
+      const cost = gaReforgeCost(it), ids = Object.keys(GA_PATHS[fam]).filter(k => k !== st.path);
+      return choose([...ids.map(k => GA_PATHS[fam][k].name), 'CANCEL'], k => {
+        if (k < 0 || k >= ids.length) return;
+        if (G.gold < cost) { SFX.error(); return say(`Reforging costs ${cost} G.`); }
+        G.gold -= cost; it.awk = { stars: st.stars, path: ids[k] }; saveGame(); SFX.confirm(); toast('REFORGED', GA_PATHS[fam][ids[k]].name + ' PATH', itemIcon(it), 'confirm');
+      }, `REFORGE PATH: ${cost} G (stars kept)`);
+    }
+    if (!P('a')) return;
+    const why = gaBlock(it, G.lvl, G.inv, G.gold); if (why) { SFX.error(); return say(why); }
+    if (st.path) return payStar(it);
+    const ids = Object.keys(GA_PATHS[fam]);
+    choose([...ids.map(k => GA_PATHS[fam][k].name), 'CANCEL'], k => {
+      if (k < 0 || k >= ids.length) return;
+      const p = GA_PATHS[fam][ids[k]];
+      choose([`AWAKEN AS ${p.name}`, 'BACK'], j => { if (j === 0) payStar(it, ids[k]); }, p.desc);
+    }, 'CHOOSE A PATH (can reforge later)');
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const L = this.items();
+    text('GEAR AWAKENING', 4, 13, 'gold'); textR(`STONES ${G.inv.awk_stone || 0}`, 156, 13, 2);
+    if (!L.length) { textC('NO WEAPONS OR ARMOUR.', 80, 60, 2); textC('B  BACK', 80, 136, 2); return; }
+    for (let r = 0; r < this.rows; r++) {
+      const k = this.top + r, row = L[k]; if (!row) break;
+      const it = row.it, y = 23 + r * 10, sel = k === this.i, st = gaState(it), cap = gaCap(it);
+      if (sel) fill(2, y - 1, 152, 10, 1);
+      const ic = itemIcon(it); if (ic && IMG[ic]) blit(sprFit(ic, 8), 4, y); else fill(5, y + 1, 6, 6, rarityCol(it.rarity || 1));
+      text(it.name, 15, y, row.eq ? 'gold' : 3, 1, 118);
+      // stars: filled up to current, dim up to the rarity cap
+      for (let s = 0; s < cap; s++) fill(122 + s * 6, y + 2, 4, 4, s < st.stars ? 'gold' : 2);
+    }
+    this.scrollbar(155, 23, 59);
+    const row = L[this.i], it = row && row.it; if (!it) return;
+    const st = gaState(it), p = gaPath(it), cap = gaCap(it), next = st.stars < cap ? st.stars + 1 : 0;
+    frame(2, 84, 156, 50);
+    text(`${st.stars ? GA_STAR_NAME[st.stars - 1] : '-'} / ${GA_STAR_NAME[cap - 1]}  ${p ? p.name : 'NO PATH'}`, 6, 87, 'gold', 1, 154);
+    text(row.eq ? 'EQUIPPED' : 'IN BAG', 154 - (row.eq ? 48 : 36), 87, 2);
+    const now = gaStats(it).slice(0, 2).map(statLine);
+    text(now.length ? now.join('  ') : 'NOT AWAKENED', 6, 97, 3, 1, 154);
+    if (next) {
+      const c = gaCost(it, next), lvlOk = G.lvl >= GA_STAR_LEVEL[next - 1];
+      const gain = gaStats(it, next, st.path || Object.keys(GA_PATHS[gaFamily(it)])[0]);
+      const before = Object.fromEntries(gaStats(it)), diff = gain.map(([k, v]) => [k, v - (before[k] || 0)]).filter(([, v]) => v > 0).slice(0, 2);
+      text(st.path ? `NEXT: ${diff.map(statLine).join(' ') || '-'}` : `NEXT: ${statLine(diff[0] || ['dmg', 0])} + PATH`, 6, 107, 2, 1, 154);
+      const parts = [`${c.stone}ST`, c.shard ? `${c.shard}SH` : '', c.ember ? `${c.ember}EM` : '', `${c.gold}G`].filter(Boolean).join(' ');
+      text(lvlOk ? `COST ${parts}` : `NEEDS HERO LV ${GA_STAR_LEVEL[next - 1]}`, 6, 117, lvlOk ? 3 : 'red', 1, 154);
+      if (next === 3 || next === 5) { const t = p ? (next === 3 ? p.t3 : p.t5) : null; text(t ? `UNLOCKS ${t.name}` : `STAR ${GA_STAR_NAME[next - 1]} UNLOCKS A TRAIT`, 6, 126, 'gold', 1, 154); }
+    } else text(st.stars >= GA_MAX_STARS ? 'FULLY AWAKENED' : 'RARITY CAP REACHED', 6, 112, 'gold');
+    fill(0, 135, W, 9, 0);
+    text(st.stars ? 'A:STAR ST:PATH' : 'A:AWAKEN', 3, 136, 'gold'); textR('SEL:STONE', 157, 136, 2);
+  }
+}
+window.GearAwakenScene = GearAwakenScene;
+
+// item detail line and main-menu entry
+if (typeof MainMenu !== 'undefined') {
+  const i0 = MainMenu.prototype.items;
+  MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('ARMOURY'); L.splice(at >= 0 ? at + 1 : L.length, 0, 'GEAR AWAKENING'); return L; };
+  const u0 = MainMenu.prototype.update;
+  MainMenu.prototype.update = function () { if (P('a') && this.items()[this.i] === 'GEAR AWAKENING') { SFX.select(); return push(new GearAwakenScene()); } return u0.apply(this, arguments); };
+}
+window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { 'GEAR AWAKENING': 'Awaken weapons and armour: 5 stars, 11 paths, traits at III and V.' });
+})();
+
+</script>
+<script>
+'use strict';
+// GENERATED by tools/patch-notes.cjs from patch-notes.json. Edit that file, not this one.
+window.GBQ_PATCH_NOTES = {
+ "repo": "ArkansasIo/GB-Quest",
+ "releases": [
+  {
+   "version": "2.2.0",
+   "date": "2026-11-09",
+   "title": "Awakening & Aelmoor UI",
+   "sections": [
+    {
+     "name": "New",
+     "notes": [
+      "GEAR AWAKENING: awaken any weapon, armour or shield up to 5 stars. Choose one of 11 paths (Ember, Frost, Storm, Void, Dawn, Titan; Bulwark, Warding, Vigor, Shadow, Thorn). Traits unlock at stars III and V.",
+      "Awakening stones come from salvaging uncommon+ gear or from TRANSMUTE (6 scrap + 1 shard + 50 G). REFORGE changes a path and keeps the stars.",
+      "RELIC and ARTIFACT pages in the Character menu: all 42 of each, with found count, bonuses and equip from the codex.",
+      "PATCH NOTES page with an update check against the GitHub releases.",
+      "Regions, realms and a shared world on the multiplayer server."
+     ]
+    },
+    {
+     "name": "UI",
+     "notes": [
+      "Every menu and page uses the title menu's style: navy panels, gold frames and the amber selection bar with cream text.",
+      "The HTML overlay panels around the game screen are removed; the in-screen HUD shows instead.",
+      "Text that was too wide for the screen is fitted or shortened instead of running off the edge.",
+      "Realm select and expansion map layouts no longer overlap."
+     ]
+    },
+    {
+     "name": "Fixes",
+     "notes": [
+      "Title screen no longer starts blank while assets load; it shows LOADING %.",
+      "The game is centred and no longer clipped in full-window mode.",
+      "Quest board and home screen no longer crash on missing data."
+     ]
+    }
+   ]
+  },
+  {
+   "version": "2.1.1",
+   "date": "2026-11-01",
+   "title": "Full Detail",
+   "sections": [
+    {
+     "name": "Changes",
+     "notes": [
+      "FULL DETAIL sprite redesign: new heroes, townsfolk, monsters and field props.",
+      "Retro 8-bit item icons at true 16x16 resolution.",
+      "Title screen shows the Lanterns of Aelmoor key art."
+     ]
+    }
+   ]
+  }
+ ]
+};
+
+</script>
+<script>
+'use strict';
+(() => {
+// ================================================================ UPDATES & PATCH NOTES (MAIN MENU > PATCH NOTES)
+// * PATCH NOTES: every release in patch-notes.json (window.GBQ_PATCH_NOTES), newest first. UP/DOWN pick a
+//   version, LEFT/RIGHT scroll its notes.
+// * UPDATE CHECK: asks the GitHub releases API for the latest release of the game's repo (once per session,
+//   4 s timeout, silent when offline). A newer version shows UPDATE AVAILABLE; A opens its release page.
+// * WHAT'S NEW: the first time a new version runs, a toast points to the patch notes.
+if (typeof window === 'undefined') return;
+const NOTES = window.GBQ_PATCH_NOTES || { releases: [] };
+const REPO = NOTES.repo || 'ArkansasIo/GB-Quest';
+const CUR = (typeof BUILD !== 'undefined' && BUILD.version) || (NOTES.releases[0] && NOTES.releases[0].version) || '0.0.0';
+const cmpVer = (a, b) => { const pa = String(a).replace(/^v/, '').split('.').map(Number), pb = String(b).replace(/^v/, '').split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; } return 0; };
+const UPD = { state: 'idle', latest: null, url: null };
+
+function checkForUpdate(force) {
+  if (UPD.state === 'checking' || (UPD.state !== 'idle' && !force)) return;
+  if (typeof fetch !== 'function') { UPD.state = 'offline'; return; }
+  UPD.state = 'checking';
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const t = setTimeout(() => ctl && ctl.abort(), 4000);
+  fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { signal: ctl ? ctl.signal : undefined, headers: { Accept: 'application/vnd.github+json' } })
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(j => {
+      const tag = String(j.tag_name || '').replace(/^v/, '');
+      if (!/^\d+\.\d+\.\d+$/.test(tag)) { UPD.state = 'current'; return; }
+      UPD.latest = tag; UPD.url = j.html_url || `https://github.com/${REPO}/releases/latest`;
+      UPD.state = cmpVer(tag, CUR) > 0 ? 'available' : 'current';
+      if (UPD.state === 'available' && typeof toast === 'function') toast('UPDATE AVAILABLE', `v${tag} - MENU > PATCH NOTES`, 'item_key', 'confirm');
+    })
+    .catch(() => { UPD.state = 'offline'; })
+    .finally(() => clearTimeout(t));
+}
+window.GBQUpdates = { check: checkForUpdate, state: () => Object.assign({}, UPD), current: CUR, cmpVer };
+
+class PatchNotesScene {
+  constructor() { this.opaque = true; this.v = 0; this.scroll = 0; checkForUpdate(); }
+  lines() {
+    const r = NOTES.releases[this.v]; if (!r) return [];
+    const out = [];
+    for (const s of r.sections || []) { out.push({ t: s.name.toUpperCase(), c: 'gold' }); for (const n of s.notes) wrap('- ' + n, 25).forEach((l, i) => out.push({ t: i ? '  ' + l : l, c: 3 })); }
+    return out;
+  }
+  update() {
+    const n = NOTES.releases.length;
+    if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
+    if (nav('up') && this.v > 0) { this.v--; this.scroll = 0; SFX.cursor(); }
+    if (nav('down') && this.v < n - 1) { this.v++; this.scroll = 0; SFX.cursor(); }
+    const max = Math.max(0, this.lines().length - 9);
+    if (nav('right')) { this.scroll = Math.min(max, this.scroll + 3); SFX.cursor(); }
+    if (nav('left')) { this.scroll = Math.max(0, this.scroll - 3); SFX.cursor(); }
+    if (P('select')) { SFX.select(); checkForUpdate(true); }
+    if (P('a') && UPD.state === 'available' && UPD.url) { SFX.select(); try { window.open(UPD.url, '_blank', 'noopener'); } catch (e) {} }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const r = NOTES.releases[this.v];
+    text('PATCH NOTES', 4, 13, 'gold'); textR(`v${CUR}`, 156, 13, 2);
+    // update status bar
+    const st = UPD.state, msg = st === 'available' ? `UPDATE v${UPD.latest} - A: GET IT` : st === 'checking' ? 'CHECKING FOR UPDATES...' : st === 'current' ? 'UP TO DATE' : st === 'offline' ? 'OFFLINE - SEL: RETRY' : '';
+    if (msg) { fill(2, 23, 156, 10, st === 'available' ? 3 : 'rgba(28,24,62,.92)'); textC(msg, 80, 24, st === 'available' ? 0 : 2); }
+    if (!r) { textC('NO NOTES', 80, 70, 2); return; }
+    // version selector
+    fill(2, 35, 156, 11, 'rgba(28,24,62,.92)');
+    text(this.v > 0 ? '<' : ' ', 4, 36, 'gold'); textR(this.v < NOTES.releases.length - 1 ? '>' : ' ', 156, 36, 'gold');
+    textC(`v${r.version}  ${r.date || ''}`, 80, 36, cmpVer(r.version, CUR) === 0 ? 'gold' : 3);
+    frame(2, 48, 156, 86);
+    text(r.title || '', 6, 51, 'gold', 1, 154);
+    const L = this.lines();
+    L.slice(this.scroll, this.scroll + 8).forEach((l, i) => text(l.t, 6, 62 + i * 9, l.c, 1, 154));
+    if (L.length > 8) { const h = 70, bh = Math.max(6, h * 8 / L.length); fill(153, 62, 2, h, 2); fill(153, 62 + (h - bh) * this.scroll / Math.max(1, L.length - 8), 2, bh, 'gold'); }
+    fill(0, 135, W, 9, 0);
+    text('UP/DN: VERSION', 3, 136, 2); textR('L/R: SCROLL', 157, 136, 2);
+  }
+}
+window.PatchNotesScene = PatchNotesScene;
+
+if (typeof MainMenu !== 'undefined') {
+  const i0 = MainMenu.prototype.items;
+  MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('SETTINGS'); L.splice(at >= 0 ? at : L.length, 0, UPD.state === 'available' ? 'PATCH NOTES (!)' : 'PATCH NOTES'); return L; };
+  const u0 = MainMenu.prototype.update;
+  MainMenu.prototype.update = function () { if (P('a') && String(this.items()[this.i] || '').startsWith('PATCH NOTES')) { SFX.select(); return push(new PatchNotesScene()); } return u0.apply(this, arguments); };
+}
+if (typeof MainMenu !== 'undefined') window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { 'PATCH NOTES': 'What changed in each version, and an update check.' });
+
+// what's new: once per version, a little after the game starts
+setTimeout(() => {
+  try {
+    const seen = typeof store !== 'undefined' ? store.get('gbq_seen_version') : null;
+    if (seen !== CUR) {
+      if (seen && typeof toast === 'function') toast(`UPDATED TO v${CUR}`, 'MENU > PATCH NOTES', 'item_key', 'confirm');
+      if (typeof store !== 'undefined') store.set('gbq_seen_version', CUR);
+    }
+  } catch (e) {}
+  checkForUpdate();
+}, 6000);
 })();
 
 </script>

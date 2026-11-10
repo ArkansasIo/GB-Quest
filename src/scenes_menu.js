@@ -507,7 +507,7 @@ class RelicCodexScene extends ListScene {
       text(def.name, 30, 98, best ? 'gold' : 3, 1, 155);
       text(relicBonusLine(def, best && best.it), 30, 108, 3, 1, 155);
       const where = !best ? 'NOT FOUND YET' : best.where === 'eq' ? 'EQUIPPED' : best.where === 'bag' ? 'IN YOUR BAG' : 'IN STORAGE';
-      text(best ? `${where}  ILVL ${best.it.ilvl || 1}` : where, 6, 121, best ? 2 : 1, 1, 155);
+      text(best ? `${where}  ILVL ${best.it.ilvl || 1}` : where, 6, 121, 2, 1, 155);
     }
     fill(0, 135, W, 9, 0);
     const act = !def ? '' : copies.some(c => c.where === 'eq') ? 'A:REMOVE' : copies.some(c => c.where === 'bag') ? 'A:EQUIP' : '';
@@ -658,8 +658,8 @@ class AbilitySkillsScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); hdr();
     textC(`${CLASSES[G.cls].name} SKILLS`, 80, 13, 'gold');
-    fill(5, 22, 70, 10, this.kind === 'active' ? 3 : 1); textC('ACTIVE', 40, 23, this.kind === 'active' ? 0 : 3);
-    fill(85, 22, 70, 10, this.kind === 'passive' ? 3 : 1); textC('PASSIVE', 120, 23, this.kind === 'passive' ? 0 : 3);
+    fill(5, 22, 70, 10, this.kind === 'active' ? 3 : 'rgba(28,24,62,.92)'); textC('ACTIVE', 40, 23, this.kind === 'active' ? 0 : 3);
+    fill(85, 22, 70, 10, this.kind === 'passive' ? 3 : 'rgba(28,24,62,.92)'); textC('PASSIVE', 120, 23, this.kind === 'passive' ? 0 : 3);
     text(`POINTS ${G.skillPts || 0}   LEVEL ${G.lvl}`, 5, 36, 2);
     const list = this.catalog(), learned = this.learned();
     list.slice(this.top, this.top + this.rows).forEach((skill, offset) => {

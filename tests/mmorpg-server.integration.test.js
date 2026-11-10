@@ -50,7 +50,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const create = await fetch(base + '/api/characters', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-      body: JSON.stringify({ name: 'Integration Hero', class: 'ranger' })
+      body: JSON.stringify({ name: 'Hero' + crypto.randomBytes(4).toString('hex'), class: 'ranger' })
     });
     assert.equal(create.status, 201);
     const { character } = await create.json();
@@ -58,7 +58,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const secondCreate = await fetch(base + '/api/characters', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-      body: JSON.stringify({ name: 'Trade Recipient', class: 'cleric' })
+      body: JSON.stringify({ name: 'Recip' + crypto.randomBytes(4).toString('hex'), class: 'cleric' })
     });
     assert.equal(secondCreate.status, 201);
     const { character: recipientCharacter } = await secondCreate.json();

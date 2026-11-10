@@ -36,3 +36,32 @@ On first start after upgrading, older admin entries in `realm.json` are imported
 Set the level with `GBQ_LOG_LEVEL` (default `info`), or change it live from the control plane. Every response carries an `X-Request-Id` header, and server errors also return `reqId` in the body. When a player reports an error, search the debug log for that ID.
 
 Set `GBQ_TRUST_PROXY=1` only when the server runs behind your own reverse proxy. The first `X-Forwarded-For` address is then logged as the client IP; otherwise the socket address is used.
+
+## Regions and realms
+
+The authoritative MMO service (`backend/mmorpg-server.cjs`) groups the world WoW-style: **regions** (NA *Hydaelyn*, EU *Lordeon*, AP *Aether*) each hold three **realms**. Every character lives on one realm, and each realm is its own copy of the world. Players see, fight beside and chat with only the players on their own realm.
+
+Apply the schema with `npm run mmorpg:migrate`. It runs every file in `backend/migrations/` in order, and each file is safe to run again. `002_regions_realms.sql` adds the `regions` and `realms` tables, puts characters and monsters on a realm, and gives every realm its own monsters.
+
+| Realm type | Realms |
+|---|---|
+| PvE | Ironreach (NA), Moonfall (EU), Emberwild (AP) |
+| PvP | Stormwake, Frostmarch (EU) |
+| Roleplay | Ardenhold (NA), Dawnspire, Shadowfen (AP) |
+| Seasonal | Starhaven (NA) |
+
+HTTP endpoints:
+
+- `GET /api/regions` returns every region with its realms: type, `pvp`, status, `maxPlayers`, live `population`, `load` (LOW / MEDIUM / HIGH / FULL) and `recommended`. Send a bearer token to also get `characters`, the number of your characters on each realm.
+- `GET /api/realms?region=<id>` returns the realms of one region, or of all regions when `region` is left out.
+- `POST /api/characters` takes `{ name, class, realmId }`. Names are unique per realm, in any letter case. The limit is 3 characters per realm and 12 per account. Errors: `unknown_realm`, `realm_unavailable`, `name_taken` and `character_limit_reached`.
+- `GET /api/characters?realm=<id>` lists your characters on one realm.
+
+WebSocket:
+
+- `authenticated` also returns `regions` and `realms`.
+- `character.select` enters that character's realm. It fails with `realm_full` when the realm is at `maxPlayers`, or with `realm_unavailable` when the realm is not online.
+- `zone.snapshot` includes `realm`.
+- `chat.send` takes `channel`: `zone` (the default), `realm` (everyone on the realm) or `whisper` (with `to`, a character name on the same realm). An unknown name returns `whisper_target_offline`.
+
+Realm status lives in the `realms` table. Set a realm's `status` to `maintenance`, `offline` or `locked` to close it, or raise its `max_players`. The server rereads the table every 30 seconds.

@@ -43,6 +43,20 @@ function aelPlaque(label, cx, y, w = Math.max(60, String(label).length * 6 + 22)
   fill(x + 4, y + 1, w - 8, 1, AEL.gold); fill(x + 4, y + 9, w - 8, 1, AEL.gold);
   textC(label, cx, y + 1, AEL.cream);
 }
+// the title menu's selected-row bar: amber fill, bright gold edge; text drawn inside it turns cream
+const AEL_SEL = { frame: -1, rects: [] };
+function aelSelBar(x, y, w, h) {
+  ctx.save(); ctx.fillStyle = AEL.amber; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore();
+  if (AEL_SEL.frame !== frameN) { AEL_SEL.frame = frameN; AEL_SEL.rects = []; }
+  AEL_SEL.rects.push([x, y, w, h]);
+}
+const aelInSel = (x, y) => AEL_SEL.frame === frameN && AEL_SEL.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3]);
+// an inner content panel: navy fill with a thin gold edge (lighter than the full ornate frame)
+function aelInset(x, y, w, h) {
+  ctx.save(); ctx.fillStyle = AEL.navy; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = AEL.goldDark; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore();
+}
 function aelButton(x, y, w, h, label, selected, center = false) {
   if (selected) {
     fill(x, y, w, h, AEL.amber);
@@ -95,10 +109,18 @@ function aelSlider(x, y, w, frac) {
   fill = function (x, y, w, h, c) {
     if (c === 0 && x === 0 && y === 0 && w === W && h === H && aelTheme() && (IMG.r9_title || IMG.title_aelmoor) && !(scenes[scenes.length - 1] instanceof Field)) { aelBackdrop(false); return; }
     // a row or tab filled with the lightest shade is a selection: draw the suite's amber bar with a gold edge
-    if (c === 3 && h >= 8 && h <= 14 && w >= 30 && aelTheme()) {
-      fill2(x, y, w, h, AEL.amber); ctx.save(); ctx.strokeStyle = '#ffd875'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); ctx.restore(); return;
-    }
+    if (c === 3 && h >= 8 && h <= 14 && w >= 30 && aelTheme()) { aelSelBar(x, y, w, h); return; }
+    // list rows draw their cursor with shade 1 (engine HILITE): give them the title menu's amber bar too
+    if (c === 1 && h >= 8 && h <= 14 && w >= 60 && aelTheme()) { fill2(x, y, w, h, c); aelSelBar(x, y, w, h); return; }
+    // large shade-1 boxes are content panels: navy with a gold edge, like the title menu's panel
+    if (c === 1 && w >= 24 && h >= 24 && aelTheme()) { aelInset(x, y, w, h); return; }
     return fill2(x, y, w, h, c);
+  };
+  // text on a selected row reads cream, like the title menu (warning colours keep their meaning)
+  const text2 = text;
+  text = function (str, x, y, c = 3, sc = 1, right) {
+    if (aelTheme() && aelInSel(x, y) && c !== 'red' && c !== 'green') c = AEL.cream;
+    return text2(str, x, y, c, sc, right);
   };
   const ornate2 = drawOrnatePanel;
   drawOrnatePanel = function (x, y, w, h, title) {
