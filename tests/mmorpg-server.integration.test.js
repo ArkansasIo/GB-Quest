@@ -80,16 +80,16 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const allocateAttribute = await fetch(base + `/api/characters/${character.id}/attributes`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-      body: JSON.stringify({ attribute: 'str', points: 2 })
+      body: JSON.stringify({ attribute: 'dex', points: 2 })
     });
     assert.equal(allocateAttribute.status, 200);
     const allocated = await allocateAttribute.json();
     assert.equal(allocated.talentPoints, 0);
-    assert.equal(allocated.allocatedAttributes.str, 2);
+    assert.equal(allocated.allocatedAttributes.dex, 2);
     const overspendAttribute = await fetch(base + `/api/characters/${character.id}/attributes`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-      body: JSON.stringify({ attribute: 'dex', points: 1 })
+      body: JSON.stringify({ attribute: 'con', points: 1 })
     });
     assert.equal(overspendAttribute.status, 409);
     assert.equal((await overspendAttribute.json()).error, 'insufficient_talent_points');
