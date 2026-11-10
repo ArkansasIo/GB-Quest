@@ -1,7 +1,7 @@
 {
   "name": "Lost Kingdom of Shadowbane Chronicles",
   "applicationId": "io.arkansasio.gbquest",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "runtime": "html5",
   "language": "javascript",
   "entryPoint": "index.html",

@@ -2,6 +2,17 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.4.1 — Debug pass
+
+Released 2026-11-10
+
+### Fixes
+
+- Button hints that were drawn below the bottom of the screen are visible again on Skills, Activity Finder, Talents, the profession screens, Boss Journal, Art Gallery and the Auction House.
+- Account & Heroes shows all 5 save slots; the list scrolls (it showed 3 and hid slots 4 and 5).
+- Empty earring, trinket, relic and artifact slots on the equipment screens have their own icons instead of a blank cell.
+- Full debug sweep of every screen: no script errors, warnings, failed file requests or missing sprites.
+
 ## v2.4.0 — Character Details
 
 Released 2026-11-10
