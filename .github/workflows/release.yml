@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing tag to (re)publish, e.g. v2.2.0'
-        required: true
+        description: 'Version tag to publish, e.g. v2.2.0 (empty = v + package.json version; created if missing)'
+        required: false
 
 permissions:
   contents: write
@@ -20,8 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -30,7 +28,10 @@ jobs:
       - name: Version from tag
         id: v
         run: |
-          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            if [ "${{ github.ref_type }}" = "tag" ]; then TAG="${{ github.ref_name }}"; else TAG="v$(node -p "require('./package.json').version")"; fi
+          fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
@@ -67,5 +68,5 @@ jobs:
             gh release edit "$TAG" --title "$TITLE" --notes-file release/notes.md
             gh release upload "$TAG" release/*.zip release/*.html --clobber
           else
-            gh release create "$TAG" --title "$TITLE" --notes-file release/notes.md --latest release/*.zip release/*.html
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "$TITLE" --notes-file release/notes.md --latest release/*.zip release/*.html
           fi
