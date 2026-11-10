@@ -74,6 +74,30 @@ export class GBQuestMMOApi {
   leaveParty(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
   }
+  guild(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild');
+  }
+  createGuild(characterId, name) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild', { method: 'POST', body: { name } });
+  }
+  inviteToGuild(guildId, inviterCharacterId, inviteeCharacterId) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/invites', {
+      method: 'POST', body: { inviterCharacterId, inviteeCharacterId }
+    });
+  }
+  acceptGuildInvite(inviteId, characterId) {
+    return this.request('/api/guild-invites/' + encodeURIComponent(inviteId) + '/accept', {
+      method: 'POST', body: { characterId }
+    });
+  }
+  leaveGuild(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild', { method: 'DELETE' });
+  }
+  updateGuildMotd(guildId, characterId, motd) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/motd', {
+      method: 'POST', body: { characterId, motd }
+    });
+  }
   createTrade(characterId, toCharacterId, offer = {}) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades', {
       method: 'POST', body: { ...offer, toCharacterId }
