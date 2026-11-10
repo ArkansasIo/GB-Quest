@@ -205,8 +205,9 @@ test('recoverSession restores durable panels in parallel and preserves partial s
   });
   api.token = 'recovery-token';
   const result = await api.recoverSession('char-1', { chatLimit: 20 });
-  assert.equal(calls.length, 11);
+  assert.equal(calls.length, 12);
   assert.equal(result.characterId, 'char-1');
+  assert.equal(result.resources.profile.endpoint, 'https://realm.example.test/api/characters/char-1/profile');
   assert.equal(result.resources.inventory, undefined);
   assert.equal(result.resources.party.endpoint, 'https://realm.example.test/api/characters/char-1/party');
   assert.equal(result.resources.raidGroup.endpoint, 'https://realm.example.test/api/characters/char-1/raid-group');
@@ -249,4 +250,31 @@ test('MMORPG API exposes persistent raid group operations', async () => {
   ]);
   assert.deepEqual(JSON.parse(calls[0].options.body),{name:'Nightfall',raidSize:20});
   assert.equal(calls[0].options.headers.authorization,'Bearer raid-token');
+});
+
+test('MMORPG API loads persistent character profile and allocates server-owned attributes', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({
+        character: { id: 'char-1', level: 3, talent_points: 2 },
+        inventory: [], quests: [], equipment: [],
+        talentPoints: 1, allocatedAttributes: { str: 1 }
+      }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'progression-token';
+  const profile = await api.characterProfile('char-1');
+  const allocation = await api.allocateAttribute('char-1', 'str', 1);
+  assert.equal(profile.character.id, 'char-1');
+  assert.equal(allocation.talentPoints, 1);
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/characters/char-1/profile',
+    'https://realm.example.test/api/characters/char-1/attributes'
+  ]);
+  assert.deepEqual(JSON.parse(calls[1].options.body), { attribute: 'str', points: 1 });
+  assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer progression-token'));
 });
