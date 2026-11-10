@@ -69,6 +69,14 @@ test("realms are separate worlds: players, chat and battle topics stay on their 
     realms = (await call("/api/realms")).body.realms;
     assert.equal(realms.find(r => r.id === "moonfall").population, 2);
     assert.equal(realms.find(r => r.id === "emberwild").population, 0);
+    // cloud saves remember their hero's realm; signed-in realm lists count your characters per realm
+    assert.equal((await call("/api/saves/0", "PUT", { state: { name: "Ann", cls: "warden", lvl: 3, realm: "emberwild" } }, ta)).status, 200);
+    assert.equal((await call("/api/saves/1", "PUT", { state: { name: "Ann2", cls: "warden", lvl: 1 } }, ta)).status, 200);
+    assert.equal((await call("/api/saves", "GET", null, ta)).body.slots[0].realm, "emberwild");
+    const mine = (await call("/api/realms", "GET", null, ta)).body.realms;
+    assert.equal(mine.find(r => r.id === "emberwild").characters, 1);
+    assert.equal(mine.find(r => r.id === "moonfall").characters, 1); // no realm in the save: the account's realm
+    assert.equal(realms.find(r => r.id === "moonfall").characters, undefined); // not signed in: no counts
     const regions = (await call("/api/regions")).body.regions;
     assert.ok(regions.every(g => Array.isArray(g.realms) && g.realms.length === g.worlds));
   } finally {

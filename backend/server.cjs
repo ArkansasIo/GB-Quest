@@ -122,10 +122,19 @@ const DEFAULT_REALM = 'ardenhold';
 const accountRealm = a => (a && REALMS.some(r => r.id === a.realm)) ? a.realm : DEFAULT_REALM;
 function livePopulation(realmId) { const seen = new Set(); for (const c of clients.values()) if (c.realm === realmId) seen.add(c.uid); return seen.size; }
 const realmLoad = (pop, max) => pop >= max ? 'FULL' : pop >= max * 0.75 ? 'HIGH' : pop >= max * 0.35 ? 'MEDIUM' : 'LOW';
-function realmsView() {
-  return REALMS.map((realm, index) => { const population = livePopulation(realm.id);
-    return { ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population, online: realm.status === 'online', load: realm.status === 'online' ? realmLoad(population, realm.maxPlayers) : 'OFFLINE' }; });
+// characters an account has on each realm (its cloud saves, by the realm stored with each hero)
+function charactersByRealm(uid) {
+  const out = {}, acct = Object.values(db.accounts).find(a => a.id === uid);
+  for (const sv of Object.values((uid && db.saves[uid]) || {})) { const r = REALMS.some(x => x.id === (sv.meta && sv.meta.realm)) ? sv.meta.realm : accountRealm(acct); out[r] = (out[r] || 0) + 1; }
+  return out;
 }
+function realmsView(uid) {
+  const chars = uid ? charactersByRealm(uid) : {};
+  return REALMS.map((realm, index) => { const population = livePopulation(realm.id);
+    return { ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population, online: realm.status === 'online', load: realm.status === 'online' ? realmLoad(population, realm.maxPlayers) : 'OFFLINE', ...(uid ? { characters: chars[realm.id] || 0 } : {}) }; });
+}
+// the signed-in account for public routes (realm lists show "your characters" when a token is sent)
+const optionalUid = (req, url) => { try { const s = sessionFor(req, url); return s && s.acct ? s.acct.id : null; } catch (e) { return null; } };
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
 // staffRoles may hold 'root' only when set by a localhost claim or the admin CLI (backend/admin-cli.cjs)
@@ -223,8 +232,8 @@ const server = http.createServer(async (req, res) => {
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
     if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: realmsView(), regions: REGIONS, maxPlayersPerWorld: 1000 });
-    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length, realms: realmsView().filter(w => w.regionId === r.id) })) });
-    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: realmsView() });
+    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length, realms: realmsView(optionalUid(req, url)).filter(w => w.regionId === r.id) })) });
+    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: realmsView(optionalUid(req, url)) });
     if (p === '/api/store/catalog' && req.method === 'GET') return json(res, 200, require('../store/catalog.cjs').getCatalog());
 
     if (p === '/api/register' && req.method === 'POST') {
@@ -502,7 +511,7 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/api/saves') && !db.realmSettings.cloudSavesEnabled) return json(res, 503, { error: 'Cloud saves are disabled.' });
     if (p === '/api/saves' && req.method === 'GET') {
       const s = db.saves[uid] || {};
-      return json(res, 200, { slots: Array.from({ length: SLOTS }, (_, i) => s[i] ? { slot: i, name: s[i].meta.name, lvl: s[i].meta.lvl, cls: s[i].meta.cls, saved: s[i].saved } : null) });
+      return json(res, 200, { slots: Array.from({ length: SLOTS }, (_, i) => s[i] ? { slot: i, name: s[i].meta.name, lvl: s[i].meta.lvl, cls: s[i].meta.cls, realm: s[i].meta.realm || accountRealm(sess.acct), saved: s[i].saved } : null) });
     }
     const m = p.match(/^\/api\/saves\/([0-4])$/);
     if (m) {
@@ -512,7 +521,7 @@ const server = http.createServer(async (req, res) => {
         const { state } = await body(req, db.realmSettings.maxSaveBytes);
         if (!state || typeof state !== 'object' || typeof state.name !== 'string' || !state.cls) return json(res, 400, { error: 'Not a Lost Kingdom of Shadowbane Chronicles save.' });
         const prevLvl = mine[slot] ? mine[slot].meta.lvl : null;
-        mine[slot] = { state, saved: Date.now(), meta: { name: String(state.name).slice(0, 12), lvl: +state.lvl || 1, cls: String(state.cls).slice(0, 16) } }; save();
+        mine[slot] = { state, saved: Date.now(), meta: { name: String(state.name).slice(0, 12), lvl: +state.lvl || 1, cls: String(state.cls).slice(0, 16), realm: REALMS.some(r => r.id === state.realm) ? state.realm : accountRealm(sess.acct) } }; save();
         // saves are frequent: audit only new slots and level changes; every write goes to the debug log
         if (prevLvl !== mine[slot].meta.lvl) A({ ...actx, action: 'save.write', target: `slot ${slot}`, details: { hero: mine[slot].meta.name, cls: mine[slot].meta.cls, lvl: mine[slot].meta.lvl, prevLvl } });
         log.debug('cloud save written', { reqId, account: sess.acct.name, slot, bytes: +req.headers['content-length'] || undefined });
