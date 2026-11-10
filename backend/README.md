@@ -65,3 +65,15 @@ WebSocket:
 - `chat.send` takes `channel`: `zone` (the default), `realm` (everyone on the realm) or `whisper` (with `to`, a character name on the same realm). An unknown name returns `whisper_target_offline`.
 
 Realm status lives in the `realms` table. Set a realm's `status` to `maintenance`, `offline` or `locked` to close it, or raise its `max_players`. The server rereads the table every 30 seconds.
+
+## Running the realm server (the multiplayer world)
+
+`backend/server.cjs` is the realm server players connect to. It needs no database. On Windows, copy `tools/windows/start-realm-server.bat` next to `package.json` and double-click it. Anywhere else, run `HOST=0.0.0.0 PORT=8787 node backend/server.cjs`. The server serves the game itself at `http://<this computer>:8787`, so players open that address in a browser.
+
+Each realm is its own world:
+
+- An account plays on one realm at a time. `POST /api/realm/select` with `{ realm }` sets it, and the game sends it when a player enters a world from REALM SELECT and when a hero from a save loads. The server refuses a full or offline realm.
+- The live player list, every chat channel (say, yell, party, guild, whisper, world, trade, LFG) and party-battle messages reach only the players on the same realm. Whispers to someone on another realm fail.
+- `GET /api/realms` and `GET /api/regions` report live population: the distinct accounts connected to each realm. They also report a load label: LOW, MEDIUM, HIGH or FULL (`maxPlayers` is 1000).
+
+Accounts, saves and realm settings live in `server/data/realm.json`.

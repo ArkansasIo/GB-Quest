@@ -57,11 +57,16 @@ const LocalRealm = {
       }, error => peerSubs.forEach(([, err]) => err && err(error)));
       L.es = { close };
     } else {
-      L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
-      L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; });
-      L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
-      L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
-      L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+      const open = () => {
+        L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
+        L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; L.realm = d.realm || null; });
+        L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
+        L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
+        L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+      };
+      // enter the realm this hero belongs to before joining live play (each realm is its own world)
+      const want = typeof G !== 'undefined' && G && G.realm;
+      if (want && L.account) { L.es = { close() {} }; L.selectRealm(want).catch(() => {}).finally(open); } else open();
     }
     const post = (path, body) => L.peer ? L.api(path, { method: 'POST', body: { peer: L.peer, ...body } }) : Promise.reject(new Error('connecting'));
     return {
@@ -74,6 +79,8 @@ const LocalRealm = {
     };
   },
   disconnect() { if (this.es) { this.es.close(); this.es = null; } this.peer = null; },
+  // choose the world this account plays on (POST /api/realm/select); open live connections move with it
+  async selectRealm(realm) { const r = await this.api('/api/realm/select', { method: 'POST', body: { realm } }); this.realm = r.realm; return r; },
   // ---------------------------------------------------------------- cloud saves
   async listSaves() { return (await this.api('/api/saves')).slots; },
   async upload(slot) { const st = store.get(SLOT_KEYS[slot]); if (!st) throw new Error('That slot is empty on this device.'); await this.api(`/api/saves/${slot}`, { method: 'PUT', body: { state: st } }); },

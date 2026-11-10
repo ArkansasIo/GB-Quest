@@ -113,7 +113,19 @@ setInterval(() => {
   let n = 0; for (const t in db.sessions) if (db.sessions[t].exp < now) { delete db.sessions[t]; n++; }
   if (n) { save(); log.debug('expired sessions removed', { count: n }); }
 }, 600e3).unref();
-const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created });
+const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created, realm: accountRealm(a) });
+// ---------------------------------------------------------------- realms as separate worlds
+// Every account plays on one realm at a time (POST /api/realm/select). Live play is realm-scoped: the player
+// list, chat (all channels) and party-battle topics only reach players on the same realm. Population is the
+// live count of distinct accounts connected to a realm.
+const DEFAULT_REALM = 'ardenhold';
+const accountRealm = a => (a && REALMS.some(r => r.id === a.realm)) ? a.realm : DEFAULT_REALM;
+function livePopulation(realmId) { const seen = new Set(); for (const c of clients.values()) if (c.realm === realmId) seen.add(c.uid); return seen.size; }
+const realmLoad = (pop, max) => pop >= max ? 'FULL' : pop >= max * 0.75 ? 'HIGH' : pop >= max * 0.35 ? 'MEDIUM' : 'LOW';
+function realmsView() {
+  return REALMS.map((realm, index) => { const population = livePopulation(realm.id);
+    return { ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population, online: realm.status === 'online', load: realm.status === 'online' ? realmLoad(population, realm.maxPlayers) : 'OFFLINE' }; });
+}
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
 // staffRoles may hold 'root' only when set by a localhost claim or the admin CLI (backend/admin-cli.cjs)
@@ -148,11 +160,14 @@ function publicFriend(uid) {
 // ---------------------------------------------------------------- live realm (SSE)
 const clients = new Map(); // peer -> { res, uid, name, presence }
 const chatWindows = new Map();
-const peerList = () => [...clients.entries()].map(([peer, c]) => ({ peer, presence: c.presence || {}, kind: 'viewer', name: c.name }));
+const peerList = realm => [...clients.entries()].filter(([, c]) => realm == null || c.realm === realm).map(([peer, c]) => ({ peer, presence: c.presence || {}, kind: 'viewer', name: c.name, realm: c.realm }));
 function send(res, event, data) { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); }
 function broadcastPeers(left = []) {
-  const list = peerList();
-  for (const [peer, c] of clients) send(c.res, 'peers', { peers: list.map(p => ({ ...p, sameTab: p.peer === peer })), left: left.map(p => ({ peer: p })) });
+  const byRealm = new Map();
+  for (const [peer, c] of clients) {
+    if (!byRealm.has(c.realm)) byRealm.set(c.realm, peerList(c.realm));
+    send(c.res, 'peers', { peers: byRealm.get(c.realm).map(p => ({ ...p, sameTab: p.peer === peer })), left: left.map(p => ({ peer: p })) });
+  }
 }
 setInterval(() => { for (const c of clients.values()) c.res.write(': ping\n\n'); }, 25000).unref();
 
@@ -207,9 +222,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
-    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: REALMS, regions: REGIONS, maxPlayersPerWorld: 1000 });
-    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length })) });
-    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: REALMS.map((realm, index) => ({ ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population: realm.population, online: realm.status === 'online' })) });
+    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: realmsView(), regions: REGIONS, maxPlayersPerWorld: 1000 });
+    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length, realms: realmsView().filter(w => w.regionId === r.id) })) });
+    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: realmsView() });
     if (p === '/api/store/catalog' && req.method === 'GET') return json(res, 200, require('../store/catalog.cjs').getCatalog());
 
     if (p === '/api/register' && req.method === 'POST') {
@@ -562,27 +577,37 @@ const server = http.createServer(async (req, res) => {
     // live realm: one event stream per tab, plus presence and topic posts
     if (p === '/api/stream' && req.method === 'GET') {
       if (!db.realmSettings.livePlayEnabled) return json(res, 503, { error: 'Live realm features are disabled.' });
+      const realmId = accountRealm(sess.acct), realm = REALMS.find(r => r.id === realmId);
+      const alreadyIn = [...clients.values()].some(c => c.uid === uid && c.realm === realmId);
+      if (realm && realm.status !== 'online') return json(res, 503, { error: `The world ${realm.name} is offline.` });
+      if (realm && !alreadyIn && livePopulation(realmId) >= realm.maxPlayers) return json(res, 503, { error: `The world ${realm.name} is full (${realm.maxPlayers}/${realm.maxPlayers}). Try another realm.` });
       const peer = crypto.randomBytes(6).toString('hex');
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no', ...SEC });
       res.write('retry: 3000\n\n');
-      clients.set(peer, { res, uid, name: sess.acct.name, presence: {} });
-      const realm = REALMS.find(r => r.id === (sess.acct.realm || 'ardenhold'));
-      if (realm && realm.maxPlayers && (realm.population || 0) >= realm.maxPlayers) {
-        res.writeHead(503, { ...SEC, 'Content-Type': 'text/plain' });
-        return res.end(`The world ${realm.name} is full (${realm.population}/${realm.maxPlayers}). Try another realm.`);
-      }
-      if (realm) realm.population = (realm.population || 0) + 1;
-      send(res, 'hello', { peer, account: publicAcct(sess.acct) });
+      clients.set(peer, { res, uid, name: sess.acct.name, presence: {}, realm: realmId });
+      send(res, 'hello', { peer, account: publicAcct(sess.acct), realm: realmId });
       broadcastPeers();
       log.debug('live stream opened', { reqId, peer, account: sess.acct.name, ip, online: clients.size });
       req.on('close', () => {
         clients.delete(peer);
-        const realm = REALMS.find(r => r.id === (sess.acct.realm || 'ardenhold'));
-        if (realm && realm.population > 0) realm.population--;
         broadcastPeers([peer]);
         log.debug('live stream closed', { peer, account: sess.acct.name, online: clients.size });
       });
       return;
+    }
+    // choose the realm (world) this account plays on; open live connections move with it
+    if (p === '/api/realm/select' && req.method === 'POST') {
+      const { realm: want } = await body(req), realm = REALMS.find(r => r.id === String(want || ''));
+      if (!realm) return json(res, 400, { error: 'No such realm.' });
+      if (realm.status !== 'online') return json(res, 503, { error: `The world ${realm.name} is offline.` });
+      const already = [...clients.values()].some(c => c.uid === uid && c.realm === realm.id);
+      if (!already && livePopulation(realm.id) >= realm.maxPlayers) return json(res, 503, { error: `The world ${realm.name} is full. Try another realm.` });
+      const moved = [];
+      sess.acct.realm = realm.id; save();
+      for (const [pid, c] of clients) if (c.uid === uid && c.realm !== realm.id) { c.realm = realm.id; moved.push(pid); }
+      if (moved.length) broadcastPeers(moved);
+      log.info('realm selected', { reqId, account: sess.acct.name, realm: realm.id });
+      return json(res, 200, { realm: realm.id, name: realm.name, type: realm.type, population: livePopulation(realm.id) });
     }
     if (p === '/api/presence' && req.method === 'POST') {
       if (!db.realmSettings.livePlayEnabled) return json(res, 503, { error: 'Live realm features are disabled.' });
@@ -617,8 +642,9 @@ const server = http.createServer(async (req, res) => {
           if (!target || target === c) return json(res, 404, { error: 'Whisper target is not online.' });
         }
         const safeData = { channel, text: message, name: String(c.presence.n || c.name).slice(0, 24), to: channel === 'whisper' ? String(data.to) : '', from: peer };
+        if (target && target.realm !== c.realm) return json(res, 404, { error: 'Whisper target is not online.' });
         for (const [pid, dest] of clients) {
-          if (pid === peer) continue;
+          if (pid === peer || dest.realm !== c.realm) continue; // every channel stays on its own realm
           const presence = dest.presence || {}, source = c.presence || {};
           if (channel === 'whisper' && pid !== data.to) continue;
           if ((channel === 'say' || channel === 'yell') && (String(presence.z || '') !== String(source.z || ''))) continue;
@@ -629,7 +655,7 @@ const server = http.createServer(async (req, res) => {
         }
         return json(res, 200, { ok: true });
       }
-      for (const [pid, o] of clients) if (pid !== peer) send(o.res, 'msg', { topic, peer, data });
+      for (const [pid, o] of clients) if (pid !== peer && o.realm === c.realm) send(o.res, 'msg', { topic, peer, data });
       return json(res, 200, { ok: true });
     }
     return json(res, 404, { error: 'No such endpoint.' });

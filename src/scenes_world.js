@@ -221,6 +221,10 @@ class RealmSelect {
   constructor() {
     this.opaque = true; this.i = 0; this.j = 0; this.regionIds = Object.keys(REALM_INFO);
     this.region = this.regionIds[0]; this.realms = REALM_INFO[this.region].realms;
+    // live population and status from the realm server, when there is one
+    if (typeof LocalRealm !== 'undefined' && LocalRealm.available) LocalRealm.api('/api/realms').then(j => {
+      for (const r of (j && j.realms) || []) { const m = REALMS.find(x => x.id === r.id); if (m) { m.population = r.population || 0; m.status = r.status || m.status; m.maxPlayers = r.maxPlayers || m.maxPlayers; } }
+    }).catch(() => {});
   }
   setRegion(id) { this.region = id; this.realms = REALM_INFO[id].realms; this.j = 0; }
   update() {
@@ -232,8 +236,13 @@ class RealmSelect {
     if (!P('a')) return;
     SFX.select();
     const realmId = this.realms[this.j];
-    G.realm = realmId;
-    fadeTo(() => { scenes.length = 0; push(new SlotPicker('new')); });
+    const enter = () => { G.realm = realmId; fadeTo(() => { scenes.length = 0; push(new SlotPicker('new')); }); };
+    // on a realm server, the server must accept the realm (it may be full or offline)
+    if (typeof LocalRealm !== 'undefined' && LocalRealm.available && LocalRealm.account) {
+      LocalRealm.selectRealm(realmId).then(enter).catch(e => { SFX.error(); say([`${(REALMS.find(r => r.id === realmId) || { name: realmId }).name}:`, String(e.message || e)]); });
+      return;
+    }
+    enter();
   }
   draw() {
     drawMenuBackdrop();
