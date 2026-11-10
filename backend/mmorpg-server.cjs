@@ -327,12 +327,37 @@ function attachSocket(ws, req) {
           const mob = target.rows[0];
           const distance = Math.abs(state.x - Number(mob.x)) + Math.abs(state.y - Number(mob.y));
           if (distance > 3) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_out_of_range' }); }
-          const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[state.character.class] || 'str';
-          const primaryBonus = Math.min(50, Math.max(0, Number(state.character.allocated_attributes?.[primaryAttribute] || 0)) * 2);
-          const damage = Math.max(1, Math.min(999, 4 + Math.min(20, Number(state.character.level) || 1) * 2 + primaryBonus + crypto.randomInt(0, 7)));
+          const characterResult = await tx.query(`SELECT id,class,level,allocated_attributes,specialization_id,mp,max_mp
+            FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE`, [state.character.id, state.account.id]);
+          if (!characterResult.rowCount) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'character_not_found' }); }
+          const combatCharacter = characterResult.rows[0];
+          const unlockedResult = await tx.query(`SELECT n.id,n.node_type,n.effect,n.name
+            FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
+            WHERE u.character_id=$1`, [combatCharacter.id]);
+          const unlockedNodes = unlockedResult.rows;
+          const abilityId = String(msg.payload.abilityNodeId || '');
+          let ability = null, manaSpent = 0;
+          if (abilityId) {
+            ability = unlockedNodes.find(node => node.id === abilityId);
+            if (!ability || !['active','ultimate'].includes(ability.node_type)) {
+              await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'ability_not_unlocked_or_not_active' });
+            }
+            manaSpent = Math.max(0, Number(ability.effect?.manaCost || 0));
+            if (Number(combatCharacter.mp) < manaSpent) {
+              await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'insufficient_mana', required: manaSpent, current: Number(combatCharacter.mp) });
+            }
+          }
+          const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[combatCharacter.class] || 'str';
+          const primaryBonus = Math.min(50, Math.max(0, Number(combatCharacter.allocated_attributes?.[primaryAttribute] || 0)) * 2);
+          const passiveBonus = Math.min(25, unlockedNodes.filter(node => node.node_type === 'passive')
+            .reduce((sum, node) => sum + Math.max(0, Number(node.effect?.damageBonus || 0)), 0));
+          const baseDamage = 4 + Math.min(20, Number(combatCharacter.level) || 1) * 2 + primaryBonus + passiveBonus + crypto.randomInt(0, 7);
+          const multiplier = ability ? Math.max(1, Math.min(4, Number(ability.effect?.damageMultiplier || 1))) : 1;
+          const damage = Math.max(1, Math.min(999, Math.floor(baseDamage * multiplier)));
+          if (manaSpent) await tx.query('UPDATE characters SET mp=mp-$1,updated_at=now() WHERE id=$2', [manaSpent, combatCharacter.id]);
           const hp = Math.max(0, mob.hp - damage);
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
-          event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
+          event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id, ability: ability ? { id: ability.id, name: ability.name, type: ability.node_type } : null, manaSpent, passiveDamageBonus: passiveBonus };
           if (hp === 0) {
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
