@@ -9,7 +9,7 @@ class FakeSocket {
   emit(type, data) { this.handlers[type]?.(data); }
   open() { this.readyState = 1; this.emit('open'); }
   send(message) { this.sent.push(JSON.parse(message)); }
-  close() { this.readyState = 3; this.emit('close'); }
+  close(code = 1000) { this.readyState = 3; this.emit('close', { code }); }
   receive(type, payload = {}) { this.emit('message', { data: JSON.stringify({ type, sequence: 1, payload }) }); }
 }
 
@@ -51,4 +51,30 @@ test('manual disconnect never reconnects', async () => {
 test('rejects invalid character IDs', () => {
   const client = new MultiplayerClient({ WebSocketImpl: FakeSocket });
   assert.throws(() => client.selectCharacter('bad'), TypeError);
+});
+
+
+test('invalid or expired authentication stops automatic reconnect and requests a fresh token', async () => {
+  FakeSocket.sockets = [];
+  const statuses = [];
+  const client = new MultiplayerClient({ WebSocketImpl: FakeSocket, autoReconnect: true, reconnectDelayMs: 5, onStatus: s => statuses.push(s) });
+  client.connect('wss://game.example/ws', 'expired-token');
+  FakeSocket.sockets[0].open();
+  FakeSocket.sockets[0].close(4401);
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(FakeSocket.sockets.length, 1);
+  assert.ok(statuses.includes('authentication_required'));
+  assert.equal(client.lastConnection, null);
+});
+
+test('server authentication rate limit stops retries instead of amplifying the limit', async () => {
+  FakeSocket.sockets = [];
+  const statuses = [];
+  const client = new MultiplayerClient({ WebSocketImpl: FakeSocket, autoReconnect: true, reconnectDelayMs: 5, onStatus: s => statuses.push(s) });
+  client.connect('wss://game.example/ws', 'token');
+  FakeSocket.sockets[0].open();
+  FakeSocket.sockets[0].close(4429);
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(FakeSocket.sockets.length, 1);
+  assert.ok(statuses.includes('rate_limited'));
 });
