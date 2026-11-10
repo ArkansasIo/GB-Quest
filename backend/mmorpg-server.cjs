@@ -10,7 +10,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
-const { isAllowedOrigin, createAuthLimiter } = require('./mmorpg-security.cjs');
+const { isAllowedOrigin, createCorsHeaders, createAuthLimiter } = require('./mmorpg-security.cjs');
 const { handlePartyRequest } = require('./mmorpg-party-routes.cjs');
 const { handleGuildRequest } = require('./mmorpg-guild-routes.cjs');
 const { handleInstanceRequest } = require('./mmorpg-instance-routes.cjs');
@@ -50,7 +50,7 @@ function verifyToken(token) {
   } catch { return null; }
 }
 const scrypt = (password, salt) => new Promise((resolve, reject) => crypto.scrypt(password, salt, 64, { N: 16384, r: 8, p: 1 }, (err, key) => err ? reject(err) : resolve(key)));
-const json = (res, status, data) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }); res.end(JSON.stringify(data)); };
+const json = (res, status, data) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY' }); res.end(JSON.stringify(data)); };
 async function readBody(req, max = 16384) {
   const chunks = []; let size = 0;
   for await (const chunk of req) { size += chunk.length; if (size > max) throw Object.assign(new Error('body_too_large'), { status: 413 }); chunks.push(chunk); }
@@ -282,8 +282,20 @@ function attachSocket(ws, req) {
 }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
-  if (req.method === 'OPTIONS') { res.writeHead(204, { 'access-control-allow-methods': 'GET,POST,OPTIONS', 'access-control-allow-headers': 'content-type,authorization' }); return res.end(); }
-  if (!originAllowed(req)) return json(res, 403, { error: 'origin_not_allowed' });
+  const cors = createCorsHeaders(req.headers.origin, ALLOWED_ORIGINS);
+  if (!cors) return json(res, 403, { error: 'origin_not_allowed' });
+  for (const [name, value] of Object.entries(cors)) res.setHeader(name, value);
+  if (req.method === 'OPTIONS') {
+    const requestedMethod = String(req.headers['access-control-request-method'] || '').toUpperCase();
+    const requestedHeaders = String(req.headers['access-control-request-headers'] || '')
+      .split(',').map(value => value.trim().toLowerCase()).filter(Boolean);
+    if ((requestedMethod && !['GET', 'POST', 'DELETE'].includes(requestedMethod)) ||
+        requestedHeaders.some(header => !['authorization', 'content-type'].includes(header))) {
+      return json(res, 403, { error: 'cors_preflight_not_allowed' });
+    }
+    res.writeHead(204);
+    return res.end();
+  }
   if (url.pathname === '/health' && req.method === 'GET') {
     try { await pool.query('SELECT 1'); return json(res, 200, { ok: true, service: 'gbquest-mmorpg', websocket: '/ws', database: 'connected' }); }
     catch { return json(res, 503, { ok: false, service: 'gbquest-mmorpg', database: 'unavailable' }); }
