@@ -55,6 +55,25 @@ export class GBQuestMMOApi {
   trades(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades');
   }
+  party(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party');
+  }
+  createParty(characterId, name = '') {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'POST', body: { name } });
+  }
+  inviteToParty(partyId, inviterCharacterId, inviteeCharacterId) {
+    return this.request('/api/parties/' + encodeURIComponent(partyId) + '/invites', {
+      method: 'POST', body: { inviterCharacterId, inviteeCharacterId }
+    });
+  }
+  acceptPartyInvite(inviteId, characterId) {
+    return this.request('/api/party-invites/' + encodeURIComponent(inviteId) + '/accept', {
+      method: 'POST', body: { characterId }
+    });
+  }
+  leaveParty(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
+  }
   createTrade(characterId, toCharacterId, offer = {}) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades', {
       method: 'POST', body: { ...offer, toCharacterId }
