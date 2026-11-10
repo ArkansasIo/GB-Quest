@@ -84,3 +84,51 @@ test("realms are separate worlds: players, chat and battle topics stay on their 
     await stop(server);
   }
 });
+
+test("friends list: realm, hero and last seen; sent requests; live notifications; limits", async () => {
+  const data = tmp(), port = String(20000 + Math.floor(Math.random() * 20000)), base = `http://127.0.0.1:${port}`;
+  const call = async (p, method = "GET", body, token) => { const r = await fetch(base + p, { method, headers: { "content-type": "application/json", ...(token ? { authorization: "Bearer " + token } : {}) }, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, body: await r.json().catch(() => ({})) }; };
+  const server = await startServer({ PORT: port, GBQ_DATA: data });
+  const streams = [];
+  try {
+    const reg = async name => { const r = await call("/api/register", "POST", { username: name, password: "world-password-1" }); assert.equal(r.status, 201); return { token: r.body.token, id: r.body.account.id, name }; };
+    const a = await reg("ann" + port), b = await reg("bob" + port);
+    await call("/api/realm/select", "POST", { realm: "moonfall" }, a.token);
+    await call("/api/realm/select", "POST", { realm: "emberwild" }, b.token);
+    const A = await stream(base, a.token); streams.push(A);
+    // a request shows on both sides and reaches the target's open game live
+    assert.equal((await call("/api/friends/request", "POST", { username: b.name }, a.token)).body.pending, true);
+    let fa = (await call("/api/friends", "GET", null, a.token)).body;
+    assert.deepEqual(fa.sent.map(s => s.name), [b.name]); assert.equal(fa.limit, 100);
+    const B = await stream(base, b.token); streams.push(B);
+    let fb = (await call("/api/friends", "GET", null, b.token)).body;
+    assert.deepEqual(fb.requests.map(s => s.name), [a.name]);
+    // accepting tells the sender live
+    assert.equal((await call("/api/friends/accept", "POST", { accountId: a.id }, b.token)).status, 200);
+    const ev = await A.waitFor("friends", d => d.reason === "accepted"); assert.equal(ev.name, b.name);
+    fa = (await call("/api/friends", "GET", null, a.token)).body;
+    assert.equal(fa.sent.length, 0);
+    const fbob = fa.friends.find(f => f.id === b.id);
+    assert.equal(fbob.online, true); assert.equal(fbob.realm, "emberwild");
+    // live presence gives the hero
+    assert.equal((await call("/api/presence", "POST", { peer: B.peer, presence: { n: "Bo", l: 12, c: "warden" } }, b.token)).status, 200);
+    fa = (await call("/api/friends", "GET", null, a.token)).body;
+    assert.deepEqual(fa.friends[0].hero, { name: "Bo", lvl: 12, cls: "warden" });
+    // going offline notifies friends and records last seen
+    B.close(); streams.pop();
+    await A.waitFor("friends", d => d.reason === "offline" && d.id === b.id);
+    fa = (await call("/api/friends", "GET", null, a.token)).body;
+    assert.equal(fa.friends[0].online, false); assert.equal(fa.friends[0].hero, null); assert.ok(Date.now() - fa.friends[0].lastSeen < 10000);
+    // a request can be cancelled by the sender (remove clears it on both sides)
+    const c = await reg("cy" + port);
+    await call("/api/friends/request", "POST", { username: c.name }, a.token);
+    assert.equal((await call("/api/friends/remove", "POST", { accountId: c.id }, a.token)).status, 200);
+    assert.equal((await call("/api/friends", "GET", null, c.token)).body.requests.length, 0);
+    // duplicates and self are refused
+    assert.equal((await call("/api/friends/request", "POST", { username: b.name }, a.token)).status, 409);
+    assert.equal((await call("/api/friends/request", "POST", { username: a.name }, a.token)).status, 400);
+  } finally {
+    for (const s of streams) s.close();
+    await stop(server);
+  }
+});

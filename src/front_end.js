@@ -62,7 +62,27 @@ const otherRealmCounts = (roster, realm) => roster.reduce((m, e) => { if (e && e
 // a new hero needs a slot that is empty on this device and in the cloud
 const freeSlot = (locals, clouds, n) => { for (let i = 0; i < n; i++) if (!(locals && locals[i]) && !(clouds && clouds[i])) return i; return -1; };
 
-if (typeof globalThis !== 'undefined') globalThis.GBQFrontEnd = { NAME_RE, checkCredentials, passwordStrength, suggestRealm, loadOf, TYPE_RULES, mergeRoster, rosterOn, otherRealmCounts, freeSlot };
+// friends list: online first, then friends on your realm, then by name
+function sortFriends(list, myRealm) {
+  return [...(list || [])].sort((a, b) => (b.online - a.online) || ((b.realm === myRealm) - (a.realm === myRealm)) || String(a.name).localeCompare(String(b.name)));
+}
+// "5M AGO", "3H AGO", "2D AGO"; "NOW" under a minute; "-" when unknown
+function agoText(ts, now = Date.now()) {
+  if (!ts) return '-';
+  const m = Math.max(0, Math.floor((now - ts) / 60000));
+  if (m < 1) return 'NOW'; if (m < 60) return `${m}M AGO`;
+  const h = Math.floor(m / 60); if (h < 48) return `${h}H AGO`;
+  return `${Math.floor(h / 24)}D AGO`;
+}
+// what A does on a friend: whisper needs them online on your realm
+function friendActions(f, myRealm) {
+  const out = [];
+  if (f.online && f.realm === myRealm) out.push('WHISPER');
+  out.push('REMOVE FRIEND');
+  return out;
+}
+
+if (typeof globalThis !== 'undefined') globalThis.GBQFrontEnd = { NAME_RE, checkCredentials, passwordStrength, suggestRealm, loadOf, TYPE_RULES, mergeRoster, rosterOn, otherRealmCounts, freeSlot, sortFriends, agoText, friendActions };
 
 // ---------------------------------------------------------------- game wiring
 if (typeof window === 'undefined' || typeof document === 'undefined' || typeof REALMS === 'undefined') return;
@@ -385,6 +405,127 @@ class CharacterSelectScene {
   }
 }
 
+// ---- FRIENDS: account friends across every realm, with requests; updates live from the realm server
+class AddFriendScene extends FormScene {
+  constructor(done) { super(); this.done = done; this.name = mkField('NAME', { max: 16, filter: /[^A-Za-z0-9_]/g }); }
+  rows() { return [{ field: this.name }, { button: 'send', label: 'SEND REQUEST' }, { button: 'back', label: 'BACK' }]; }
+  async press(r) {
+    if (!r) return; if (r.button === 'back') return this.back();
+    const n = this.name.value.trim();
+    if (!NAME_RE.test(n)) { SFX.error(); this.msg = 'ACCOUNT NAMES ARE 3-16 LETTERS, NUMBERS OR _'; this.msgColor = 'red'; return; }
+    if (LocalRealm.account && n.toLowerCase() === String(LocalRealm.account.name).toLowerCase()) { SFX.error(); this.msg = 'THAT IS YOU'; this.msgColor = 'red'; return; }
+    this.busy = true; this.msg = 'SENDING...'; this.msgColor = 2;
+    try {
+      const res = await LocalRealm.requestFriend(n);
+      SFX.confirm(); Fields.blur(this); removeScene(this);
+      toast(res.accepted ? 'NEW FRIEND' : 'REQUEST SENT', n.toUpperCase(), 'item_scroll', 'confirm');
+      if (this.done) this.done();
+    } catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase(); this.msgColor = 'red'; this.busy = false; }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); screenTitle('ADD FRIEND');
+    frame(2, 14, 156, 120);
+    wrap('TYPE THEIR ACCOUNT NAME (THE NAME THEY SIGN IN WITH), NOT A HERO NAME.', 25).slice(0, 3).forEach((l, i) => text(l, 6, 18 + i * 9, 2));
+    this.drawRows(52);
+    this.drawMsg(100);
+    footer(this.busy ? 'PLEASE WAIT' : 'ENTER:SEND', 'ESC:BACK');
+  }
+}
+
+class FriendsScene {
+  constructor() {
+    this.opaque = true; this.tab = 0; this.j = 0; this.top = 0; this.data = null; this.msg = ''; this.t = 0;
+    this.onEvent = () => this.refresh();
+    window.addEventListener('gbq-friends', this.onEvent);
+    this.refresh();
+  }
+  myRealm() { return (typeof G !== 'undefined' && G && G.realm) || LocalRealm.realm || null; }
+  async refresh() {
+    if (!signedIn()) { this.msg = 'SIGN IN TO USE FRIENDS'; return; }
+    try { this.data = await LocalRealm.friends(); this.msg = ''; } catch (e) { this.msg = String(e.message || e).toUpperCase().slice(0, 30); }
+    this.j = Math.min(this.j, Math.max(0, this.rows().length - 1));
+  }
+  close() { window.removeEventListener('gbq-friends', this.onEvent); SFX.back(); removeScene(this); }
+  rows() {
+    const d = this.data || { friends: [], requests: [], sent: [] };
+    if (this.tab === 0) return [{ act: 'ADD FRIEND' }, ...sortFriends(d.friends, this.myRealm()).map(f => ({ friend: f }))];
+    return [...(d.requests || []).map(f => ({ incoming: f })), ...(d.sent || []).map(f => ({ sent: f }))];
+  }
+  realmName(id) { const r = (typeof REALMS !== 'undefined' ? REALMS : []).find(x => x.id === id); return r ? r.name : (id || '-'); }
+  update() {
+    this.t++;
+    if (this.t % 900 === 0) this.refresh(); // every 15 s: hero names and levels change without an event
+    if (P('b')) return this.close();
+    if (nav('left') || nav('right')) { this.tab = 1 - this.tab; this.j = 0; this.top = 0; SFX.cursor(); }
+    const R = this.rows(); if (!R.length) return;
+    if (nav('up')) { this.j = (this.j + R.length - 1) % R.length; SFX.cursor(); }
+    if (nav('down')) { this.j = (this.j + 1) % R.length; SFX.cursor(); }
+    if (this.j < this.top) this.top = this.j; if (this.j >= this.top + 7) this.top = this.j - 6;
+    if (!(P('a') || P('start'))) return;
+    const r = R[this.j]; SFX.select();
+    if (r.act) return push(new AddFriendScene(() => this.refresh()));
+    const act = (fn, ok) => fn().then(() => { toast(ok[0], ok[1], 'item_scroll', 'confirm'); this.refresh(); }).catch(e => { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 30); });
+    if (r.incoming) return choose(['ACCEPT', 'DECLINE'], k => {
+      if (k === 0) act(() => LocalRealm.acceptFriend(r.incoming.id), ['NEW FRIEND', r.incoming.name.toUpperCase()]);
+      if (k === 1) act(() => LocalRealm.removeFriend(r.incoming.id), ['DECLINED', r.incoming.name.toUpperCase()]);
+    }, `FRIEND REQUEST FROM ${r.incoming.name}`);
+    if (r.sent) return choose(['CANCEL REQUEST', 'KEEP'], k => { if (k === 0) act(() => LocalRealm.removeFriend(r.sent.id), ['CANCELLED', r.sent.name.toUpperCase()]); }, `REQUEST TO ${r.sent.name}`);
+    const f = r.friend, acts = friendActions(f, this.myRealm());
+    choose(acts.concat(['BACK']), k => {
+      const a = acts[k];
+      if (a === 'WHISPER') {
+        if (typeof cbWhisper === 'function') { this.close(); cbWhisper((f.hero && f.hero.name) || f.name); }
+        else say(`WHISPER: TYPE /w ${(f.hero && f.hero.name) || f.name} IN CHAT`);
+      }
+      if (a === 'REMOVE FRIEND') choose(['KEEP', 'REMOVE'], c => { if (c === 1) act(() => LocalRealm.removeFriend(f.id), ['FRIEND REMOVED', f.name.toUpperCase()]); }, `Remove ${f.name} from your friends?`);
+    }, f.name);
+  }
+  draw() {
+    const d = this.data || { friends: [], requests: [], sent: [] }, R = this.rows(), row = R[this.j], me = this.myRealm();
+    const on = (d.friends || []).filter(f => f.online).length, inc = (d.requests || []).length;
+    fill(0, 0, W, H, 0); screenTitle('FRIENDS');
+    // tabs
+    [[`FRIENDS ${on}/${(d.friends || []).length}`, 0], [`REQUESTS${inc ? ' ' + inc : ''}`, 1]].forEach(([l, k]) => {
+      const x = k ? 81 : 2; fill(x, 12, 77, 10, this.tab === k ? '#4a3410' : 'rgba(28,24,62,.92)');
+      textC(l, x + 38, 13, this.tab === k ? 'gold' : (k && inc ? 'green' : 2));
+    });
+    frame(2, 24, 156, 76);
+    if (!this.data) text(this.msg || 'LOADING...', 8, 30, this.msg ? 'red' : 2);
+    else if (!R.length) wrap(this.tab ? 'NO FRIEND REQUESTS.' : '', 25).forEach((l, i) => text(l, 8, 30 + i * 9, 2));
+    R.slice(this.top, this.top + 7).forEach((r, i) => {
+      const k = this.top + i, y = 28 + i * 10, sel = k === this.j;
+      if (sel) fill(4, y - 1, 152, 10, 1);
+      if (r.act) return text(r.act, 8, y, sel ? 3 : 'green');
+      if (r.friend) {
+        const f = r.friend; fill(7, y + 2, 4, 4, f.online ? '#58d858' : '#5a5a6a');
+        // account names are up to 16 letters: the full name, then the level if they are playing; realm is in the panel
+        text(f.name, 14, y, f.online ? (f.realm === me || sel ? 3 : 'gold') : 2, 1, 112);
+        if (f.online && f.hero && f.hero.lvl) textR(`L${f.hero.lvl}`, 154, y, sel ? 3 : 2);
+      } else {
+        const f = r.incoming || r.sent;
+        text(r.incoming ? 'FROM' : 'TO', 8, y, r.incoming ? (sel ? 3 : 'green') : 2); text(f.name, 36, y, 3, 1, 90);
+        textR(r.incoming ? 'A:ANSWER' : 'PENDING', 154, y, 2);
+      }
+    });
+    if (R.length > 7) textR(`${this.j + 1}/${R.length}`, 154, 92, 2);
+    frame(2, 102, 156, 32);
+    if (row && row.friend) {
+      const f = row.friend;
+      text(f.online ? `ONLINE ON ${this.realmName(f.realm).toUpperCase()}` : `OFFLINE  SEEN ${agoText(f.lastSeen)}`, 6, 106, f.online ? 'green' : 2, 1, 150);
+      if (!f.online) text(`REALM ${this.realmName(f.realm).toUpperCase()}`, 6, 115, 2, 1, 150);
+      if (f.hero) text(`${f.hero.name}${f.hero.cls && typeof CLASSES !== 'undefined' && CLASSES[f.hero.cls] ? '  ' + CLASSES[f.hero.cls].name : ''}`.toUpperCase(), 6, 115, 3, 1, 150);
+      text(f.online && f.realm !== me ? 'ANOTHER REALM: NO WHISPERS' : f.online ? 'A: WHISPER OR REMOVE' : 'A: REMOVE', 6, 124, 2, 1, 150);
+    } else if (row && row.act) {
+      text(`${(d.friends || []).length}/${d.limit || 100} FRIENDS`, 6, 106, 'gold'); text('ADD BY ACCOUNT NAME.', 6, 115, 2); text('GOLD NAME: ANOTHER REALM', 6, 124, 2, 1, 150);
+    } else if (row) {
+      text(row.incoming ? 'WANTS TO BE YOUR FRIEND' : 'WAITING FOR AN ANSWER', 6, 106, 'gold', 1, 150);
+      text(row.incoming ? 'A: ACCEPT OR DECLINE' : 'A: CANCEL REQUEST', 6, 115, 2);
+    }
+    if (this.msg && this.data) { fill(4, 124, 152, 9, 0); text(this.msg, 6, 125, 'red', 1, 150); }
+    footer('A:SELECT L/R:TAB', 'B:BACK');
+  }
+}
+
 // ---- ONLINE / ACCOUNT hub
 class OnlineHubScene {
   constructor() { this.opaque = true; this.i = 0; this.me = null; this.saves = null; this.refresh(); }
@@ -396,7 +537,7 @@ class OnlineHubScene {
   opts() {
     if (!online()) return ['RETRY', 'BACK'];
     if (!signedIn()) return ['LOG IN', 'CREATE ACCOUNT', 'BACK'];
-    return ['CHARACTERS', 'CHOOSE REALM', 'CLOUD SAVES', 'CHANGE PASSWORD', 'LOG OUT', 'BACK'];
+    return ['CHARACTERS', 'FRIENDS', 'CHOOSE REALM', 'CLOUD SAVES', 'CHANGE PASSWORD', 'LOG OUT', 'BACK'];
   }
   update() {
     const o = this.opts(); this.i = Math.min(this.i, o.length - 1);
@@ -409,6 +550,7 @@ class OnlineHubScene {
     if (c === 'RETRY') { if (LocalRealm.detect) LocalRealm.detect().then(() => this.refresh()); return; }
     if (c === 'LOG IN' || c === 'CREATE ACCOUNT') return push(new LoginScene(c === 'LOG IN' ? 'login' : 'register', () => this.refresh()));
     if (c === 'CHARACTERS') return push(new CharacterSelectScene((typeof G !== 'undefined' && G && G.realm) || LocalRealm.realm || (REALMS[0] && REALMS[0].id)));
+    if (c === 'FRIENDS') return push(new FriendsScene());
     if (c === 'CHOOSE REALM') return push(new RealmListScene());
     if (c === 'CLOUD SAVES' && typeof AccountScene === 'function') return push(new AccountScene());
     if (c === 'CHANGE PASSWORD') return push(new ChangePasswordScene());
@@ -427,11 +569,11 @@ class OnlineHubScene {
       text(`CLOUD HEROES ${n == null ? '-' : n + '/' + this.saves.length}`, 6, 38, 2);
       text(this.me && this.me.role && this.me.role !== 'player' ? `ROLE ${String(this.me.role).toUpperCase()}` : `ACCOUNT ID ${String(a.uid || a.id || '').slice(0, 12)}`, 6, 47, 2);
     }
-    this.opts().forEach((c, k) => { const y = 62 + k * 12; if (k === this.i) fill(4, y - 1, 152, 11, 1); text(c, 10, y + 1, 3); });
+    const o = this.opts(), gap = o.length > 6 ? 10 : 12; o.forEach((c, k) => { const y = 60 + k * gap; if (k === this.i) fill(4, y - 1, 152, gap - 1, 1); text(c, 10, y + (gap > 10 ? 1 : 0), 3); });
     footer('A:SELECT', 'B:BACK');
   }
 }
-Object.assign(window, { LoginScene, ChangePasswordScene, RealmListScene, CharacterSelectScene, OnlineHubScene });
+Object.assign(window, { LoginScene, ChangePasswordScene, RealmListScene, CharacterSelectScene, AddFriendScene, FriendsScene, OnlineHubScene });
 
 // the start-up check for a realm server can time out while the page is still loading; keep looking every few
 // seconds until one answers, then switch the game to it (also covers starting the server after the page)

@@ -6,6 +6,15 @@
 // When there is no realm server (e.g. a shared claude.ai page), the game falls back to the page's
 // own room/db capabilities, or plays offline.
 
+// the realm server says this account's friends list changed: screens refetch; requests and acceptances toast
+function friendsChanged(d) {
+  d = d || {};
+  try { window.dispatchEvent(new CustomEvent('gbq-friends', { detail: d })); } catch (e) {}
+  try {
+    if (d.reason === 'request' && typeof toast === 'function') toast('FRIEND REQUEST', String(d.name || '').toUpperCase().slice(0, 16), 'item_scroll', 'confirm');
+    if (d.reason === 'accepted' && typeof toast === 'function') toast('NEW FRIEND', String(d.name || '').toUpperCase().slice(0, 16), 'item_scroll', 'confirm');
+  } catch (e) {}
+}
 const LocalRealm = {
   base: '', available: false, token: null, account: null, peer: null, es: null, info: null, desktop: false, desktopSlot: null,
   load() { try { this.token = localStorage.getItem('gbq_token'); this.account = JSON.parse(localStorage.getItem('gbq_account') || 'null'); } catch (e) {} },
@@ -54,6 +63,7 @@ const LocalRealm = {
         if (message.event === 'hello') L.peer = d.peer;
         else if (message.event === 'peers') { peers = d.peers || []; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); }
         else if (message.event === 'msg') (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data }));
+        else if (message.event === 'friends') friendsChanged(d);
       }, error => peerSubs.forEach(([, err]) => err && err(error)));
       L.es = { close };
     } else {
@@ -62,6 +72,7 @@ const LocalRealm = {
         L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; L.realm = d.realm || null; });
         L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
         L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
+        L.es.addEventListener('friends', e => friendsChanged(JSON.parse(e.data)));
         L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
       };
       // enter the realm this hero belongs to before joining live play (each realm is its own world)

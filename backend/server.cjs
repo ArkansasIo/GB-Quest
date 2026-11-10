@@ -160,11 +160,20 @@ function addAdminAudit(ctx, action, target, details) {
 }
 function friendIds(uid) { return db.friendships[uid] || (db.friendships[uid] = []); }
 function accountById(id) { return Object.values(db.accounts).find(a => a.id === id); }
+const FRIEND_LIMIT = 100, PENDING_LIMIT = 50;
+// a friend as the friends list shows it: online status, the realm they are on (live connection, else the
+// account's realm), the hero they are playing (from live presence) and when they were last seen
 function publicFriend(uid) {
   const acct = accountById(uid); if (!acct) return null;
-  const online = [...clients.values()].some(c => c.uid === uid);
-  return { id: acct.id, name: acct.name, online };
+  const live = [...clients.values()].find(c => c.uid === uid), pr = (live && live.presence) || {};
+  const hero = live && pr.n ? { name: String(pr.n).slice(0, 16), lvl: +pr.l || null, cls: pr.c ? String(pr.c).slice(0, 16) : null } : null;
+  return { id: acct.id, name: acct.name, online: !!live, realm: live ? live.realm : accountRealm(acct), hero, lastSeen: live ? Date.now() : (acct.lastSeen || acct.lastLogin || null) };
 }
+const sentRequests = uid => Object.entries(db.friendRequests).filter(([, from]) => (from || []).includes(uid)).map(([to]) => to);
+// tell an account's open game tabs that its friends list changed (they refetch it)
+function notifyFriendsChanged(uid, data = {}) { for (const c of clients.values()) if (c.uid === uid) send(c.res, 'friends', data); }
+// tell everyone who has this account as a friend (online/offline, realm changes)
+function notifyFriendsOf(uid, reason) { for (const f of friendIds(uid)) notifyFriendsChanged(f, { reason, id: uid }); }
 
 // ---------------------------------------------------------------- live realm (SSE)
 const clients = new Map(); // peer -> { res, uid, name, presence }
@@ -444,7 +453,8 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/friends' && req.method === 'GET') {
       const friends = friendIds(uid).map(publicFriend).filter(Boolean);
       const requests = (db.friendRequests[uid] || []).map(id => publicFriend(id)).filter(Boolean);
-      return json(res, 200, { friends, requests });
+      const sent = sentRequests(uid).map(id => { const a = accountById(id); return a && { id: a.id, name: a.name }; }).filter(Boolean);
+      return json(res, 200, { friends, requests, sent, limit: FRIEND_LIMIT });
     }
     if (p === '/api/friends/request' && req.method === 'POST') {
       const { username } = await body(req), key = String(username || '').toLowerCase(), target = own(db.accounts, key);
@@ -452,18 +462,28 @@ const server = http.createServer(async (req, res) => {
       if (target.id === uid) return json(res, 400, { error: 'You cannot add yourself.' });
       const friends = friendIds(uid), targetFriends = friendIds(target.id);
       if (friends.includes(target.id)) return json(res, 409, { error: 'Already friends.' });
+      if (friends.length >= FRIEND_LIMIT) return json(res, 409, { error: `Your friends list is full (${FRIEND_LIMIT}).` });
       const incoming = db.friendRequests[uid] || [];
-      if (incoming.includes(target.id)) { db.friendRequests[uid] = incoming.filter(id => id !== target.id); if (!friends.includes(target.id)) friends.push(target.id); if (!targetFriends.includes(uid)) targetFriends.push(uid); save(); return json(res, 200, { ok: true, accepted: true }); }
+      if (incoming.includes(target.id)) {
+        if (targetFriends.length >= FRIEND_LIMIT) return json(res, 409, { error: `${target.name}'s friends list is full.` });
+        db.friendRequests[uid] = incoming.filter(id => id !== target.id); friends.push(target.id); if (!targetFriends.includes(uid)) targetFriends.push(uid);
+        save(); notifyFriendsChanged(target.id, { reason: 'accepted', name: sess.acct.name }); return json(res, 200, { ok: true, accepted: true });
+      }
       const outgoing = db.friendRequests[target.id] || (db.friendRequests[target.id] = []);
-      if (!outgoing.includes(uid)) outgoing.push(uid);
-      save(); return json(res, 200, { ok: true, pending: true });
+      if (outgoing.includes(uid)) return json(res, 200, { ok: true, pending: true });
+      if (outgoing.length >= PENDING_LIMIT || sentRequests(uid).length >= PENDING_LIMIT) return json(res, 429, { error: 'Too many pending friend requests.' });
+      outgoing.push(uid);
+      save(); notifyFriendsChanged(target.id, { reason: 'request', name: sess.acct.name }); return json(res, 200, { ok: true, pending: true });
     }
     if (p === '/api/friends/accept' && req.method === 'POST') {
       const { accountId } = await body(req), fromId = String(accountId || ''), incoming = db.friendRequests[uid] || [];
       if (!incoming.includes(fromId) || !accountById(fromId)) return json(res, 404, { error: 'Friend request not found.' });
+      const mine = friendIds(uid), theirs = friendIds(fromId);
+      if (!mine.includes(fromId) && mine.length >= FRIEND_LIMIT) return json(res, 409, { error: `Your friends list is full (${FRIEND_LIMIT}).` });
+      if (!theirs.includes(uid) && theirs.length >= FRIEND_LIMIT) return json(res, 409, { error: 'Their friends list is full.' });
       db.friendRequests[uid] = incoming.filter(id => id !== fromId);
-      const mine = friendIds(uid), theirs = friendIds(fromId); if (!mine.includes(fromId)) mine.push(fromId); if (!theirs.includes(uid)) theirs.push(uid);
-      save(); return json(res, 200, { ok: true });
+      if (!mine.includes(fromId)) mine.push(fromId); if (!theirs.includes(uid)) theirs.push(uid);
+      save(); notifyFriendsChanged(fromId, { reason: 'accepted', name: sess.acct.name }); return json(res, 200, { ok: true });
     }
     if (p === '/api/friends/remove' && req.method === 'POST') {
       const { accountId } = await body(req), other = String(accountId || '');
@@ -473,7 +493,7 @@ const server = http.createServer(async (req, res) => {
       if (db.friendships[other]) db.friendships[other] = db.friendships[other].filter(id => id !== uid);
       db.friendRequests[uid] = (db.friendRequests[uid] || []).filter(id => id !== other);
       db.friendRequests[other] = (db.friendRequests[other] || []).filter(id => id !== uid);
-      save(); return json(res, 200, { ok: true });
+      save(); notifyFriendsChanged(other, { reason: 'removed' }); return json(res, 200, { ok: true });
     }
     if (p === '/api/invites' && req.method === 'POST') {
       if (!db.realmSettings.invitesEnabled) return json(res, 503, { error: 'Realm invites are disabled.' });
@@ -593,13 +613,16 @@ const server = http.createServer(async (req, res) => {
       const peer = crypto.randomBytes(6).toString('hex');
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no', ...SEC });
       res.write('retry: 3000\n\n');
+      const wasOnline = [...clients.values()].some(c => c.uid === uid);
       clients.set(peer, { res, uid, name: sess.acct.name, presence: {}, realm: realmId });
       send(res, 'hello', { peer, account: publicAcct(sess.acct), realm: realmId });
       broadcastPeers();
+      if (!wasOnline) notifyFriendsOf(uid, 'online');
       log.debug('live stream opened', { reqId, peer, account: sess.acct.name, ip, online: clients.size });
       req.on('close', () => {
         clients.delete(peer);
         broadcastPeers([peer]);
+        if (![...clients.values()].some(c => c.uid === uid)) { sess.acct.lastSeen = Date.now(); save(); notifyFriendsOf(uid, 'offline'); }
         log.debug('live stream closed', { peer, account: sess.acct.name, online: clients.size });
       });
       return;

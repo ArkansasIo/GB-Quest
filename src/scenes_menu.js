@@ -1073,6 +1073,7 @@ class SocialScene extends ListScene {
   }
   async openFriends() {
     if (!LocalRealm.available || !LocalRealm.account) return say('FRIEND LIST REQUIRES A REALM ACCOUNT. LOG IN AT TITLE > ACCOUNT.');
+    if (typeof FriendsScene === 'function') return push(new FriendsScene());
     try {
       const data = await LocalRealm.friends();
       const entries = data.friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${f.name}`).concat(data.requests.map(f => `REQUEST  ${f.name}`));

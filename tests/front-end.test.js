@@ -71,3 +71,15 @@ test('character roster merges device and cloud slots per realm', () => {
   assert.equal(A.freeSlot([1, 1], [null, null, 1], 3), -1);
   assert.equal(A.mergeRoster([], [], 'x').length, 0);
 });
+
+test('friends helpers: sort, last seen text, actions', () => {
+  const A = load();
+  const list = [{ name: 'zed', online: false, realm: 'moonfall' }, { name: 'amy', online: true, realm: 'emberwild' }, { name: 'bob', online: true, realm: 'moonfall' }, { name: 'cat', online: false, realm: 'emberwild' }];
+  assert.equal(A.sortFriends(list, 'moonfall').map(f => f.name).join(','), 'bob,amy,zed,cat');
+  const now = 1e12;
+  assert.equal(A.agoText(null, now), '-'); assert.equal(A.agoText(now - 30e3, now), 'NOW'); assert.equal(A.agoText(now - 5 * 60e3, now), '5M AGO');
+  assert.equal(A.agoText(now - 3 * 3600e3, now), '3H AGO'); assert.equal(A.agoText(now - 72 * 3600e3, now), '3D AGO');
+  assert.equal(A.friendActions({ online: true, realm: 'moonfall' }, 'moonfall').join(','), 'WHISPER,REMOVE FRIEND');
+  assert.equal(A.friendActions({ online: true, realm: 'emberwild' }, 'moonfall').join(','), 'REMOVE FRIEND');
+  assert.equal(A.friendActions({ online: false, realm: 'moonfall' }, 'moonfall').join(','), 'REMOVE FRIEND');
+});
