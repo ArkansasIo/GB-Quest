@@ -337,8 +337,8 @@ function attachSocket(ws, req) {
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
             const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
-              level=LEAST(720,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
-              talent_points=LEAST(1000,talent_points+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
+              level=GREATEST(level,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)),
+              talent_points=LEAST(1000,talent_points+GREATEST(0,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)-level)),
               gold=gold+$2,updated_at=now() WHERE id=$3 RETURNING xp,level,gold`, [xp, baseGold, state.character.id]);
             state.character.level = progress.rows[0].level;
             const questUpdates = await tx.query(`UPDATE character_quests cq
@@ -358,8 +358,8 @@ function attachSocket(ws, req) {
             }
             if (questXp || questGold) {
               const questPayout = await tx.query(`UPDATE characters SET xp=xp+$1,gold=gold+$2,
-                level=LEAST(720,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
-                talent_points=LEAST(1000,talent_points+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now()
+                level=GREATEST(level,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)),
+                talent_points=LEAST(1000,talent_points+GREATEST(0,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)-level)),updated_at=now()
                 WHERE id=$3 RETURNING xp,level,gold`, [questXp, questGold, state.character.id]);
               progress.rows[0] = questPayout.rows[0];
               state.character.level = questPayout.rows[0].level;
