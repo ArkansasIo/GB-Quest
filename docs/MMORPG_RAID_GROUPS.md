@@ -24,4 +24,4 @@ await api.leaveRaid(characterId);
 await api.disbandRaid(raid.id, characterId);
 ```
 
-Read the current roster with `api.raidGroup(characterId)`. All endpoints require an authenticated account and verify character ownership for the acting character. Raid completion and lockout issuance are deliberately not exposed as client-authorized actions; those must be tied to authoritative server-side encounter completion.
+Read the current roster with `api.raidGroup(characterId)` and current unexpired character lockouts with `api.raidLockouts(characterId)`. The lockout endpoint is read-only and returns only rows whose `reset_at` is still in the future. All endpoints require an authenticated account and verify character ownership for the acting character. Raid completion and lockout issuance are deliberately not exposed as client-authorized actions; those must be tied to authoritative server-side encounter completion.
