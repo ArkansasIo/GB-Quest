@@ -279,6 +279,20 @@ test('MMORPG API loads persistent character profile and allocates server-owned a
   assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer progression-token'));
 });
 
+test('multiplayer client sends validated active talent IDs with combat intents', () => {
+  class FakeSocket {
+    constructor() { this.readyState = 1; this.sent = []; }
+    addEventListener() {}
+    send(value) { this.sent.push(JSON.parse(value)); }
+    close() {}
+  }
+  const client = new MultiplayerClient({ WebSocketImpl: FakeSocket });
+  client.socket = new FakeSocket();
+  assert.equal(client.attack('mob-1', 'ranger_hunter_node_00'), true);
+  assert.deepEqual(client.socket.sent[0].payload, { targetId: 'mob-1', abilityNodeId: 'ranger_hunter_node_00' });
+  assert.throws(() => client.attack('mob-1', '../invalid'), /talent ability ID/);
+});
+
 test('MMORPG API exposes class talent trees, specialization choice and node unlocks', async () => {
   const calls = [];
   const api = new GBQuestMMOApi({
