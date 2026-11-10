@@ -427,6 +427,29 @@ body.title-screen .game-viewport > #lcd {
   body.title-screen .game-client { padding:0 !important; }
   body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
 }
+
+/* Online account / realm gateway shown before server-backed hero creation. */
+.gbq-account-overlay{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:16px;background:rgba(2,5,10,.92);color:#f3ead6;font:13px/1.45 Inter,Arial,sans-serif}
+.gbq-account-window{width:min(560px,100%);max-height:92dvh;overflow:auto;border:1px solid #a48650;background:linear-gradient(145deg,#17222d,#080c12);box-shadow:0 22px 80px #000e,inset 0 0 0 3px #241b12;border-radius:5px}
+.gbq-account-window header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #66502e;background:linear-gradient(90deg,#283643,#0b1119)}
+.gbq-account-window header small,.gbq-account-window footer{color:#c4a66c;font-size:9px;letter-spacing:.14em}
+.gbq-account-window h2{margin:4px 0 0;color:#ffe1a0;font:700 20px Cinzel,Georgia,serif;letter-spacing:.07em}
+.gbq-account-window header button{width:34px;height:34px;border:1px solid #806b48;background:#151b22;color:#fff0c9;font-size:23px;cursor:pointer}
+.gbq-account-step{padding:18px 20px;display:grid;gap:13px}
+.gbq-account-step[hidden]{display:none}
+.gbq-account-step label{display:grid;gap:6px;color:#e6d4ad;font-size:10px;letter-spacing:.1em}
+.gbq-account-step input,.gbq-account-step select{width:100%;min-width:0;padding:11px;border:1px solid #65563f;border-radius:2px;background:#080e15;color:#fff4dd;font:13px Inter,Arial,sans-serif}
+.gbq-account-intro,.gbq-account-note,.gbq-account-realm-detail{margin:0;color:#c3cbd1;font-size:12px}
+.gbq-account-actions{display:flex;gap:9px;flex-wrap:wrap}
+.gbq-account-actions button,.gbq-account-secondary{padding:11px 13px;border:1px solid #927448;border-radius:2px;background:linear-gradient(#34414d,#151d26);color:#fff0ce;font:700 10px Cinzel,Georgia,serif;letter-spacing:.06em;cursor:pointer}
+.gbq-account-actions button:disabled{opacity:.45;cursor:not-allowed}
+.gbq-account-secondary{justify-self:start;background:transparent;color:#d2c4a8}
+.gbq-account-message{margin:14px 20px 0;padding:10px;border:1px solid #927448;background:#302719;color:#ffe2a3;font-size:12px}
+.gbq-account-message[hidden]{display:none}
+.gbq-account-message.is-error{border-color:#a64b43;background:#351714;color:#ffc1b7}
+.gbq-account-window footer{padding:12px 20px;border-top:1px solid #51432f}
+@media(max-width:560px){.gbq-account-overlay{padding:5px}.gbq-account-window{max-height:98dvh}.gbq-account-window header,.gbq-account-step{padding:13px}.gbq-account-window h2{font-size:16px}}
+
 </style>
 <link rel="stylesheet" href="theme-citadel.css">
 <link rel="stylesheet" href="client/player-hud.css">
