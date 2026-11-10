@@ -435,6 +435,10 @@ class AelSummary {
     fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, G.mmoCharacterId ? `Your hero is saved on ${G.realm.toUpperCase()}.` : `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
   }
   async createOnlineHero() {
+    if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(this.pick.name)) {
+      this.error = 'Use 3-16 valid characters for your hero name.';
+      return;
+    }
     this.pending = true; this.error = '';
     try {
       const remote = await window.GBQMMOAccount.createCharacter(this.onlineSession, this.pick.name, this.pick.cls);
@@ -442,7 +446,14 @@ class AelSummary {
       this.beginAdventure(remote);
     } catch (error) {
       this.pending = false;
-      this.error = error.message || 'Online character creation failed.';
+      const messages = {
+        name_taken: 'That name is already used on this realm.',
+        character_limit_reached: 'Character limit reached for this account or realm.',
+        realm_unavailable: 'That realm is no longer available.',
+        unknown_realm: 'The selected realm could not be found.',
+        invalid_character: 'Check your character name and class.'
+      };
+      this.error = messages[error.code] || error.message || 'Online character creation failed.';
     }
   }
   update() {
