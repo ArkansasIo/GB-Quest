@@ -106,9 +106,29 @@ async function removePresence(ws) {
   const id = socketIds.get(ws);
   if (id) await pool.query('DELETE FROM world_presence WHERE socket_id=$1', [id]).catch(error => console.error('Presence cleanup failed:', error.message));
 }
-async function sharedRealmPopulation(realmId) {
-  const result = await pool.query('SELECT count(*)::int AS n FROM world_presence WHERE realm_id=$1 AND expires_at>now()', [realmId]);
-  return result.rows[0].n;
+async function claimRealmPresence(ws, state, realm) {
+  const tx = await pool.connect();
+  try {
+    await tx.query('BEGIN');
+    await tx.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['gbquest:realm-capacity:' + realm.id]);
+    const count = await tx.query('SELECT count(*)::int AS n FROM world_presence WHERE realm_id=$1 AND expires_at>now() AND socket_id<>$2', [realm.id, socketId(ws)]);
+    const population = count.rows[0].n;
+    if (population >= realm.max_players) {
+      await tx.query('ROLLBACK');
+      return { allowed: false, population };
+    }
+    await tx.query(`INSERT INTO world_presence(socket_id,server_instance_id,character_id,realm_id,zone_id,expires_at)
+      VALUES($1,$2,$3,$4,$5,now()+($6 * interval '1 second'))
+      ON CONFLICT(socket_id) DO UPDATE SET server_instance_id=EXCLUDED.server_instance_id,
+      character_id=EXCLUDED.character_id,realm_id=EXCLUDED.realm_id,zone_id=EXCLUDED.zone_id,
+      expires_at=EXCLUDED.expires_at,updated_at=now()`,
+      [socketId(ws), SERVER_INSTANCE_ID, state.character.id, realm.id, state.zoneId || 'unknown', PRESENCE_TTL_SECONDS]);
+    await tx.query('COMMIT');
+    return { allowed: true, population: population + 1 };
+  } catch (error) {
+    await tx.query('ROLLBACK').catch(() => {});
+    throw error;
+  } finally { tx.release(); }
 }
 function send(ws, type, payload = {}) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type, sequence: ++socketState.get(ws).outSequence, payload, serverTimestamp: Date.now() }));
@@ -251,10 +271,14 @@ function attachSocket(ws, req) {
         if (!realm) return send(ws, 'error', { code: 'realm_not_found', realmId: ch.realm_id });
         if (realm.status !== 'online') return send(ws, 'error', { code: 'realm_unavailable', realmId: realm.id, status: realm.status });
         const switchingWithin = state.realmId === realm.id && state.character;
-        if (!switchingWithin) { const population = await sharedRealmPopulation(realm.id); if (population >= realm.max_players) return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population, maxPlayers: realm.max_players }); }
         const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, id: state.character.id } : null;
         state.character = ch; state.realmId = ch.realm_id; state.zoneId = ch.zone_id; state.x = ch.x; state.y = ch.y;
-        await persistPresence(ws, state);
+        const admission = await claimRealmPresence(ws, state, realm);
+        if (!admission.allowed) {
+          state.character = previous ? { id: previous.id } : null;
+          state.realmId = previous?.realmId || null; state.zoneId = previous?.zoneId || null;
+          return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: admission.population, maxPlayers: realm.max_players });
+        }
         if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
         const sharedPlayers = await pool.query(`SELECT DISTINCT ON (p.character_id) p.character_id AS id,c.name,c.level,c.x,c.y
           FROM world_presence p JOIN characters c ON c.id=p.character_id
