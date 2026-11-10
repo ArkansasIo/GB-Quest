@@ -336,6 +336,7 @@ function attachSocket(ws, req) {
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
             const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
               level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
+              talent_points=LEAST(1000,talent_points+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
               gold=gold+$2,updated_at=now() WHERE id=$3 RETURNING xp,level,gold`, [xp, baseGold, state.character.id]);
             state.character.level = progress.rows[0].level;
             const questUpdates = await tx.query(`UPDATE character_quests cq
@@ -355,7 +356,8 @@ function attachSocket(ws, req) {
             }
             if (questXp || questGold) {
               const questPayout = await tx.query(`UPDATE characters SET xp=xp+$1,gold=gold+$2,
-                level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now()
+                level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
+                talent_points=LEAST(1000,talent_points+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now()
                 WHERE id=$3 RETURNING xp,level,gold`, [questXp, questGold, state.character.id]);
               progress.rows[0] = questPayout.rows[0];
               state.character.level = questPayout.rows[0].level;
@@ -550,6 +552,66 @@ const server = http.createServer(async (req, res) => {
         ? await pool.query(`SELECT ${CHAR_COLS},xp FROM characters WHERE account_id=$1 AND realm_id=$2 ORDER BY created_at`, [acct.id, realm])
         : await pool.query(`SELECT ${CHAR_COLS},xp FROM characters WHERE account_id=$1 ORDER BY created_at`, [acct.id]);
       return json(res, 200, { characters: result.rows });
+    }
+    const profileMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/profile$/i);
+    if (profileMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = profileMatch[1];
+      const owned = await pool.query(`SELECT c.id,c.name,c.class,c.level,c.xp,c.realm_id,c.zone_id,c.x,c.y,
+        c.hp,c.max_hp,c.mp,c.max_mp,c.gold,c.bank_gold,c.talent_points,c.allocated_attributes,
+        c.unlocked_talents,c.created_at,c.updated_at,r.name AS realm_name
+        FROM characters c JOIN realms r ON r.id=c.realm_id
+        WHERE c.id=$1 AND c.account_id=$2`, [characterId, acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const [inventory, quests, equipment] = await Promise.all([
+        pool.query(`SELECT ci.id AS inventory_id,ci.item_id,ic.name,ic.description,ic.item_type,
+          ic.equip_slot,ic.level_required,ic.stats,ci.quantity,
+          (ce.inventory_id IS NOT NULL) AS equipped
+          FROM character_inventory ci JOIN item_catalog ic ON ic.id=ci.item_id
+          LEFT JOIN character_equipment ce ON ce.inventory_id=ci.id AND ce.character_id=ci.character_id
+          WHERE ci.character_id=$1 ORDER BY ic.item_type,ic.name`, [characterId]),
+        pool.query(`SELECT cq.quest_id,q.name,q.description,cq.status,cq.objective_progress,
+          q.objective_required,q.reward_xp,q.reward_gold,cq.accepted_at,cq.completed_at
+          FROM character_quests cq JOIN quest_catalog q ON q.id=cq.quest_id
+          WHERE cq.character_id=$1 ORDER BY cq.accepted_at DESC`, [characterId]),
+        pool.query('SELECT slot,inventory_id,equipped_at FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId])
+      ]);
+      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows });
+    }
+    const attributeMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/attributes$/i);
+    if (attributeMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), attribute = String(body.attribute || '').toLowerCase();
+      const points = Number(body.points === undefined ? 1 : body.points);
+      if (!['str','dex','con','int','wis','vit'].includes(attribute) ||
+          !Number.isSafeInteger(points) || points < 1 || points > 20) {
+        return json(res, 400, { error: 'invalid_attribute_allocation' });
+      }
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const result = await tx.query(`UPDATE characters
+          SET talent_points=talent_points-$1,
+              allocated_attributes=jsonb_set(allocated_attributes,ARRAY[$2],
+                to_jsonb(COALESCE((allocated_attributes->>$2)::integer,0)+$1),true),
+              updated_at=now()
+          WHERE id=$3 AND account_id=$4 AND talent_points >= $1
+            AND COALESCE((allocated_attributes->>$2)::integer,0)+$1 <= 100
+          RETURNING talent_points,allocated_attributes`, [points, attribute, attributeMatch[1], acct.id]);
+        if (!result.rowCount) {
+          const owned = await tx.query('SELECT talent_points,allocated_attributes FROM characters WHERE id=$1 AND account_id=$2', [attributeMatch[1], acct.id]);
+          await tx.query('ROLLBACK');
+          if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+          const current = Number(owned.rows[0].allocated_attributes?.[attribute] || 0);
+          return json(res, 409, { error: current + points > 100 ? 'attribute_cap_reached' : 'insufficient_talent_points',
+            talentPoints: owned.rows[0].talent_points, allocatedAttributes: owned.rows[0].allocated_attributes });
+        }
+        await tx.query('COMMIT');
+        return json(res, 200, { talentPoints: result.rows[0].talent_points, allocatedAttributes: result.rows[0].allocated_attributes });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
     }
     if (url.pathname === '/api/world/status' && req.method === 'GET') {
       return json(res, 200, await worldStatus(url.searchParams.get('refresh') === '1'));
