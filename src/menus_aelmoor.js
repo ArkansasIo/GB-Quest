@@ -335,8 +335,9 @@ function aelScores(cls) { const v = STANDARD_ARRAY.slice().sort((a, b) => b - a)
 function aelFreeSlot() { const k = SLOT_KEYS.findIndex((_, i) => !slotInfo(i)); return k >= 0 ? k : 0; }
 
 class AelNewGame {
-  constructor(slot) {
+  constructor(slot, onlineSession = null) {
     this.opaque = true; this.i = 0; this.slot = slot == null ? aelFreeSlot() : slot;
+    this.onlineSession = onlineSession;
     this.pick = { species: 'hearthkin', cls: 'warden', bg: 'soldier', name: '', mode: 'solo', diff: 2, look: null, portrait: null };
     this.naming = false;
   }
@@ -362,7 +363,7 @@ class AelNewGame {
     if (c === 'CHARACTER') push(new AelClassSelect(this.pick));
     if (c === 'APPEARANCE') { const k = CC_LOOKS.indexOf(this.pick.look || this.pick.cls); this.pick.look = CC_LOOKS[(k + 1) % CC_LOOKS.length]; SFX.toggle(); }
     if (c === 'NAME') this.startNaming();
-    if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot)); }
+    if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot, this.onlineSession)); }
     if (c === 'ADVANCED') { SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); }); }
   }
   draw() {
@@ -374,7 +375,7 @@ class AelNewGame {
     textC(this.pick.name || '- NO NAME -', 110, 99, this.naming && (frameN >> 4) % 2 ? AEL.gold : AEL.cream);
     textC(CLASSES[this.pick.cls].name, 110, 108, 2);
     fill(68, 118, 86, 11, 'rgba(26,22,58,.9)');
-    textC(this.naming ? 'TYPE, ENTER' : this.i === 4 ? 'FULL CREATION' : 'NEW HERO', 111, 119, AEL.lav);
+    textC(this.naming ? 'TYPE, ENTER' : this.onlineSession ? this.onlineSession.realm.name.toUpperCase().slice(0, 16) : this.i === 4 ? 'FULL CREATION' : 'NEW HERO', 111, 119, AEL.lav);
     aelHints(this.items()[this.i] === 'NAME' ? [['A', 'TYPE'], ['S', 'RANDOM'], ['B', 'BACK']] : [['A', 'NEXT'], ['B', 'BACK']]);
   }
 }
@@ -410,18 +411,43 @@ class AelClassSelect {
 }
 
 class AelSummary {
-  constructor(pick, slot) { this.opaque = true; this.pick = pick; this.slot = slot; }
-  update() {
-    if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (!P('a')) return;
-    SFX.confirm();
+  constructor(pick, slot, onlineSession = null) {
+    this.opaque = true; this.pick = pick; this.slot = slot; this.onlineSession = onlineSession;
+    this.pending = false; this.error = '';
+  }
+  beginAdventure(remoteCharacter = null) {
     const p = this.pick;
     G = newGameState(Object.assign({ slot: this.slot }, p, { scores: aelScores(p.cls), look: p.look || null, portrait: p.portrait || null }));
     G.difficulty = p.diff;
+    if (remoteCharacter && this.onlineSession) {
+      G.realm = remoteCharacter.realm_id || this.onlineSession.realm.id;
+      G.accountId = this.onlineSession.account.id;
+      G.mmoCharacterId = remoteCharacter.id;
+      G.mmoCharacterClass = remoteCharacter.class;
+      G.onlineAccountName = this.onlineSession.account.username;
+    }
     const role = CLASSES[G.cls].role === 'tank' ? 'healer' : 'tank';
     G.companions.push(makeAdventurer(role === 'tank' ? 'warden' : 'chaplain', 1, role === 'tank' ? 'BRAM' : 'ESME'));
     saveGame();
-    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
+    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, G.mmoCharacterId ? `Your hero is saved on ${G.realm.toUpperCase()}.` : `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
+  }
+  async createOnlineHero() {
+    this.pending = true; this.error = '';
+    try {
+      const remote = await window.GBQMMOAccount.createCharacter(this.onlineSession, this.pick.name, this.pick.cls);
+      this.pending = false;
+      this.beginAdventure(remote);
+    } catch (error) {
+      this.pending = false;
+      this.error = error.message || 'Online character creation failed.';
+    }
+  }
+  update() {
+    if (P('b') && !this.pending) { SFX.back(); removeScene(this); return; }
+    if (!P('a') || this.pending) return;
+    SFX.confirm();
+    if (this.onlineSession) { this.createOnlineHero(); return; }
+    this.beginAdventure();
   }
   draw() {
     const p = this.pick, c = newCharacter(Object.assign({}, p, { name: p.name || 'HERO', scores: aelScores(p.cls) })), D = derive(c);
@@ -435,7 +461,9 @@ class AelSummary {
     const st = [['HP', D.hpMax], ['AC', D.ac], ['INIT', D.init], ['STR', D.A.STR], ['DEX', D.A.DEX], ['WIS', D.A.WIS]];
     st.forEach(([k, v], j) => { const y = 52 + j * 8; text(k, 112, y, 2); textR(String(v), 152, y, AEL.cream); });
     aelButton(24, 104, 112, 13, 'BEGIN ADVENTURE', (frameN >> 4) % 4 !== 3, true);
-    aelHints([['A', 'CONFIRM'], ['B', 'BACK']]);
+    if (this.pending) textC('SAVING HERO TO REALM…', 80, 124, AEL.gold);
+    else if (this.error) { fill(5, 121, 150, 11, 'rgba(80,12,12,.95)'); textC(this.error.slice(0, 25), 80, 123, '#ffb8a8'); }
+    aelHints([['A', this.pending ? 'SAVING' : 'CREATE'], ['B', 'BACK']]);
   }
 }
 
