@@ -36,6 +36,12 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       await new Promise(resolve => setTimeout(resolve, 250));
     }
     assert.equal(ready, true, 'MMO server did not become healthy: ' + logs);
+    const curvePool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try {
+      const curve = await curvePool.query(`SELECT gbq_xp_for_level(2)::text AS level2,
+        gbq_xp_for_level(21)::text AS level21,gbq_xp_for_level(720)::text AS level720`);
+      assert.deepEqual(curve.rows[0], { level2: '300', level21: '380250', level720: '140355000' });
+    } finally { await curvePool.end(); }
 
     const username = 'it' + crypto.randomBytes(5).toString('hex');
     const register = await fetch(base + '/api/register', {
