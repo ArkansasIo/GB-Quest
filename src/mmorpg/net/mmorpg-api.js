@@ -174,6 +174,14 @@ export class GBQuestMMOApi {
       method: 'POST', body: { characterId, motd }
     });
   }
+  transferGuildLeadership(guildId, actorCharacterId, targetCharacterId) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/transfer', {
+      method: 'POST', body: { actorCharacterId, targetCharacterId }
+    });
+  }
+  disbandGuild(guildId, characterId) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '?characterId=' + encodeURIComponent(characterId), { method: 'DELETE' });
+  }
   createTrade(characterId, toCharacterId, offer = {}) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades', {
       method: 'POST', body: { ...offer, toCharacterId }
