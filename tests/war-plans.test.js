@@ -28,7 +28,7 @@ test('war plan deterministically contains one dungeon, one trial and one raid', 
   const A = load(), first = A.createWarPlan('season-1', 2), second = A.createWarPlan('season-1', 2);
   assert.deepEqual(JSON.parse(JSON.stringify(first)), JSON.parse(JSON.stringify(second)));
   assert.equal(first.nodes.length, 3);
-  assert.deepEqual(first.nodes.map(n => A.BY_ID[n.activityId].type), ['dungeon', 'trial', 'raid']);
+  assert.deepEqual([...first.nodes.map(n => A.BY_ID[n.activityId].type)], ['dungeon', 'trial', 'raid']);
   assert.equal(A.nextPlanNode(first).id, 'node_1');
 });
 
