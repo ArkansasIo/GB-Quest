@@ -45,7 +45,7 @@ async function handleFriendRequest({ req, res, url, pool, accountFor, readBody, 
       const blocked = await tx.query("SELECT 1 FROM player_friends WHERE status='blocked' AND ((character_id=$1 AND friend_character_id=$2) OR (character_id=$2 AND friend_character_id=$1))", [characterId, targetId]);
       if (blocked.rowCount) { await tx.query('ROLLBACK'); json(res, 409, { error: 'friendship_blocked' }); return true; }
       const reverse = await tx.query("SELECT status FROM player_friends WHERE character_id=$1 AND friend_character_id=$2 FOR UPDATE", [targetId, characterId]);
-      const status = reverse.rowCount && reverse.rows[0].status === 'pending' ? 'accepted' : 'pending';
+      const status = reverse.rowCount && ['pending', 'accepted'].includes(reverse.rows[0].status) ? 'accepted' : 'pending';
       await tx.query("INSERT INTO player_friends(character_id,friend_character_id,status) VALUES($1,$2,$3) ON CONFLICT(character_id,friend_character_id) DO UPDATE SET status=EXCLUDED.status,created_at=now()", [characterId, targetId, status]);
       if (status === 'accepted') await tx.query("UPDATE player_friends SET status='accepted' WHERE character_id=$1 AND friend_character_id=$2", [targetId, characterId]);
       await tx.query('COMMIT'); json(res, 201, { requested: status === 'pending', accepted: status === 'accepted', targetCharacterId: targetId }); return true;
