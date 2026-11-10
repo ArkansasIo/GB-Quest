@@ -2,6 +2,22 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.6.0 — Accounts & Realm Select
+
+Released 2026-11-10
+
+### New
+
+- ACCOUNTS: new sign-in and CREATE ACCOUNT screens. Type your name and password right on the game screen (Tab or arrows move between fields, Enter confirms, Esc goes back). A password strength meter, confirm field and your last name remembered.
+- REALM SELECT: realms grouped by region (NA, EU, AP; switch with left/right). Each realm shows its type (PvE, PvP, RP), live load, and how many of your heroes live there. The details panel lists the realm rules and population. START jumps to the suggested realm (★).
+- NEW GAME with the realm server running: sign in, pick a realm, then create your hero. Without a server, NEW GAME plays offline as before.
+- ONLINE on the title screen and ACCOUNT in the main menu: choose or switch realm, cloud saves, change password, log out.
+- Cloud saves remember each hero's realm.
+
+### Fixes
+
+- The game now finds a realm server that starts after the page has loaded (it keeps checking for a minute).
+
 ## v2.5.0 — Realm Worlds
 
 Released 2026-11-10
