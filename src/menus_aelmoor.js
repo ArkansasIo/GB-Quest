@@ -132,7 +132,7 @@ function aelSlider(x, y, w, frac) {
 // screen names for the header plaque: explicit names first, else the class name split into words
 const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS', StatBreakdownScene: 'STATS', GearOverviewScene: 'GEAR', ItemDetailScene: 'ITEM', ProgressSummaryScene: 'PROGRESS', DetailHubScene: 'DETAILS', GearAwakenScene: 'AWAKENING', RiftScene: 'RIFTS', RiftBoardScene: 'LEADERBOARD', SkillRuneScene: 'SKILL RUNES', GamblerScene: 'GAMBLER', LootFilterScene: 'LOOT FILTER', SeasonPassScene: 'SEASON PASS', PatchNotesScene: 'PATCH NOTES',
   StashScene: 'STASH', MarketScene: 'VENDOR', QuestLog: 'QUEST LOG', Spellbook: 'SPELLBOOK', GrowthScene: 'GROWTH', ArtsScene: 'COMBAT ARTS',
-  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
+  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', GuildMenuScene: 'GUILD HALL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
   RepScene: 'REPUTATION', BestiaryScene: 'BESTIARY', BossJournalScene: 'BOSS JOURNAL', ActivityFinderScene: 'ACTIVITIES', SettingsScene: 'SETTINGS',
   TalentScene: 'TALENTS', PerkTreeScene: 'PERKS', CompanionScene: 'PARTY', GemSocketScene: 'GEMS', RuneForgeScene: 'RUNE FORGE', CraftScene: 'CRAFTING',
   ProfessionScene: 'PROFESSIONS', SideQuestBoard: 'QUEST BOARD', ExpansionMapsScene: 'EXPANSIONS', ArtGalleryScene: 'ART GALLERY', AbilitySkillsScene: 'SKILLS' };
@@ -147,13 +147,13 @@ function aelSceneTitle(sc) {
 const AEL_MENU_ICON = { CHARACTER: 'ka_chars_00', SPELLBOOK: 'ka_items_17', GROWTH: 'ka_status_13', 'COMBAT ARTS': 'ka_weapons_03', ARMOURY: 'ka_weapons_17',
   HEIRLOOMS: 'ka_weapons_44', WARDROBE: 'ka_weapons_13', LOADOUTS: 'ka_weapons_42', JOBS: 'ka_weapons_11', CHALLENGES: 'ka_icons_01', MOUNTS: 'ka_mounts_01',
   'QUEST LOG': 'ka_items_11', CRAFTING: 'ka_weapons_00', REST: 'ka_items_01', 'ACTIVITY FINDER': 'ka_icons_07', BESTIARY: 'ka_status_01',
-  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', TITLES: 'ka_icons_03',
+  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', GUILD: 'ka_status_03', TITLES: 'ka_icons_03',
   'WORLD MAP': 'ka_items_45', 'ART GALLERY': 'ka_items_13', 'EXPANSION MAPS': 'ka_items_45', HEARTHSTONE: 'ka_items_07', SETTINGS: 'ka_status_17',
   SAVE: 'ka_items_46', 'SAVE & QUIT': 'ka_items_42' };
 const AEL_MENU_DESC = { CHARACTER: 'STATS, GEAR AND BAG', SPELLBOOK: 'SPELLS AND SLOTS', GROWTH: 'LEVEL-UP CHOICES', 'COMBAT ARTS': 'YOUR BATTLE ARTS',
   ARMOURY: 'ARMOUR SETS', HEIRLOOMS: 'FAMILY RELICS', WARDROBE: 'CHANGE YOUR LOOK', LOADOUTS: 'SAVED GEAR SETS', JOBS: 'JOBS AND WORK', CHALLENGES: 'TRIALS AND GOALS',
   MOUNTS: 'RIDE A MOUNT', 'QUEST LOG': 'ACTIVE QUESTS', CRAFTING: 'MAKE ITEMS', REST: 'REST AND HEAL', 'ACTIVITY FINDER': 'DUNGEONS, RAIDS', BESTIARY: 'MONSTERS SEEN',
-  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', TITLES: 'EARNED TITLES',
+  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', GUILD: 'GUILD ROSTER AND MANAGEMENT', TITLES: 'EARNED TITLES',
   'WORLD MAP': 'MAP OF AELMOOR', 'ART GALLERY': 'ART YOU FOUND', 'EXPANSION MAPS': 'NEW LANDS', HEARTHSTONE: 'RETURN HOME', SETTINGS: 'GAME OPTIONS',
   SAVE: 'SAVE YOUR GAME', 'SAVE & QUIT': 'SAVE, TO TITLE' };
 function aelGameMenuDraw(menu) {
