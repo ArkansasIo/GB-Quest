@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { isAllowedOrigin, createAuthLimiter } = require('../backend/mmorpg-security.cjs');
+const { isAllowedOrigin, createCorsHeaders, createAuthLimiter } = require('../backend/mmorpg-security.cjs');
 
 test('browser origins require an exact HTTPS allowlist match', () => {
   const allow = new Set(['https://game.example.test', 'https://publisher.example.test']);
@@ -42,4 +42,17 @@ test('authentication limiter tracks client IPs independently', () => {
   limiter.fail('192.0.2.1');
   assert.equal(limiter.blocked('192.0.2.1'), true);
   assert.equal(limiter.blocked('192.0.2.2'), false);
+});
+
+test('CORS headers are emitted only for allowed origins and expose the API methods', () => {
+  const allow = new Set(['https://game.example.test']);
+  assert.deepEqual(createCorsHeaders(undefined, allow), { vary: 'Origin' });
+  assert.deepEqual(createCorsHeaders('https://game.example.test', allow), {
+    vary: 'Origin',
+    'access-control-allow-origin': 'https://game.example.test',
+    'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+    'access-control-allow-headers': 'authorization, content-type',
+    'access-control-max-age': '600'
+  });
+  assert.equal(createCorsHeaders('https://attacker.invalid', allow), null);
 });
