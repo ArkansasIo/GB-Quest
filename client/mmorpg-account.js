@@ -39,7 +39,14 @@
 
   function apiBase() {
     const input = overlay && overlay.querySelector('[data-server-url]');
-    return (input && input.value.trim()) || window.GBQ_MMO_REALM_URL || location.origin;
+    const raw = (input && input.value.trim()) || window.GBQ_MMO_REALM_URL || location.origin;
+    let parsed;
+    try { parsed = new URL(raw); } catch (_) { throw new Error('Enter a valid MMO server URL.'); }
+    const local = /^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/i.test(parsed.hostname);
+    if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && local)) {
+      throw new Error('Remote MMO servers must use HTTPS. HTTP is allowed only on localhost.');
+    }
+    return parsed.origin;
   }
 
   function showStep(step) {
@@ -93,7 +100,8 @@
   }
 
   async function authenticate(mode) {
-    const base = apiBase();
+    let base;
+    try { base = apiBase(); } catch (error) { return setMessage(error.message, true); }
     const username = overlay.querySelector('[data-username]').value.trim();
     const password = overlay.querySelector('[data-password]').value;
     if (!base || !username || !password) return setMessage('Enter the MMO server URL, account name and password.', true);
@@ -183,13 +191,17 @@
       close();
       if (options.onReady) options.onReady(session);
     });
-    overlay.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
+    overlay.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+    });
     overlay.querySelector('[data-username]').focus();
   }
 
   async function createCharacter(session, name, localClass) {
     if (!session || !session.token || !session.realm) throw new Error('Sign in and select a realm before creating an online character.');
-    const role = (window.CLASSES && window.CLASSES[localClass] && window.CLASSES[localClass].role) || '';
+    const classData = typeof CLASSES !== 'undefined' ? CLASSES[localClass] : (window.CLASSES && window.CLASSES[localClass]);
+    const role = (classData && classData.role) || '';
     const classMap = {
       warden: 'warrior', berserker: 'warrior', vanguard: 'warrior', sunwarden: 'warrior',
       chaplain: 'cleric', cantor: 'cleric', ascetic: 'cleric', arcanist: 'mage',
