@@ -6824,8 +6824,14 @@ function armorArtCategory(item) {
   if (['medium', 'mail', 'chain'].includes(type)) return 'mediumarmor';
   return 'mediumarmor';
 }
+// Relics and artifacts have their own icon sets (ne_relic_0..13, ne_artifact_0..13); 42 items cycle through them.
+function relicArtFor(base) {
+  const m = /^(relic|artifact)_(\d+)$/.exec(String(base || ''));
+  return m ? `ne_${m[1]}_${(Number(m[2]) - 1) % 14}` : null;
+}
 function nesItemIcon(it) {
   if (!it || !artOn()) return null;
+  if (it.kind === 'wondrous') { const ra = relicArtFor(it.base); if (ra && IMG[ra]) return ra; }
   if (it.kind === 'weapon') return tierPick(WEAPON_ART[it.base] || 'sword', it.rarity, it.base);
   if (it.kind === 'armor') return tierPick(armorArtCategory(it), it.rarity, it.base);
   return tierPick(WONDROUS_ART[it.base] || 'ring', it.rarity, it.base);
@@ -7321,24 +7327,26 @@ class CharSheet {
 // ================================================================ CHARACTER HUB (profile, inventory, equipment)
 class CharacterMenu {
   constructor() { this.opaque = true; this.tab = 0; }
-  tabs() { return [['CHARACTER', 'CHAR'], ['INVENTORY', 'BAG'], ['EQUIPMENT', 'GEAR']]; }
+  tabs() { return [['CHARACTER', 'CHAR'], ['INVENTORY', 'BAG'], ['EQUIPMENT', 'GEAR'], ['RELICS', 'RELIC'], ['ARTIFACTS', 'ARTI']]; }
   update() {
     if (P('b') || P('start')) { SFX.back(); removeScene(this); return; }
-    if (nav('left')) { this.tab = (this.tab + 2) % 3; SFX.page(); }
-    if (nav('right') || P('select')) { this.tab = (this.tab + 1) % 3; SFX.page(); }
+    const nTabs = this.tabs().length;
+    if (nav('left')) { this.tab = (this.tab + nTabs - 1) % nTabs; SFX.page(); }
+    if (nav('right') || P('select')) { this.tab = (this.tab + 1) % nTabs; SFX.page(); }
     if (!P('a')) return;
     SFX.select();
     if (this.tab === 0) push(new CharSheet());
     else if (this.tab === 1) push(new InventoryScene('field'));
-    else push(new PaperDoll());
+    else if (this.tab === 2) push(new PaperDoll());
+    else push(new RelicCodexScene(this.tab === 3 ? 'relic' : 'artifact'));
   }
   draw() {
     fill(0, 0, W, H, 0); hdr();
     this.tabs().forEach(([name, label], index) => {
-      const x = 2 + index * 52, active = index === this.tab;
-      fill(x, 23, 50, 10, active ? 3 : 1); textC(label, x + 25, 24, active ? 0 : 3);
+      const x = 2 + index * 31, active = index === this.tab;
+      fill(x, 23, 30, 10, active ? 3 : 1); textC(label, x + 15, 24, active ? 0 : 3);
     });
-    textC(this.tab === 0 ? 'STATS - A: FULL SHEET' : this.tab === 1 ? 'BAG - A: OPEN BAGS' : 'GEAR - A: EQUIPMENT', 80, 35, 'gold');
+    textC(['STATS - A: FULL SHEET', 'BAG - A: OPEN BAGS', 'GEAR - A: EQUIPMENT', 'RELICS - A: OPEN CODEX', 'ARTIFACTS - A: CODEX'][this.tab], 80, 35, 'gold');
     const D = derive(G), portrait = heroPortrait(G);
     fill(2, 46, 52, 82, 1); fill(57, 46, 101, 82, 1);
     blit(portrait ? sprFit(portrait, 42) : sprH(`c_${G.cls}_0`, 42), 7, 49);
@@ -7346,7 +7354,8 @@ class CharacterMenu {
     text(CLASSES[G.cls].name.slice(0, 8), 5, 102, 2);
     text(`LV ${G.lvl}`, 5, 111, 3);
     text('HP', 5, 120, 2); bar(18, 121, 33, 4, G.hp, D.hpMax, 'hp');
-    if (this.tab === 1) { // bag preview: the first 15 items as icons
+    if (this.tab >= 3) relicTabPreview(this.tab === 3 ? 'relic' : 'artifact');
+    else if (this.tab === 1) { // bag preview: the first 15 items as icons
       const bag = G.bag || [];
       for (let k = 0; k < 15; k++) { const it = bag[k], x = 60 + (k % 5) * 19, y = 49 + Math.floor(k / 5) * 19; fill(x, y, 18, 18, it ? rarityCol(it.rarity === undefined ? 1 : it.rarity) : 2); fill(x + 1, y + 1, 16, 16, 0); if (it) { const ic = itemIcon(it); if (ic && IMG[ic]) blit(sprFit(ic, 13), x + 3, y + 3); } }
       text(`ITEMS ${bag.length}/${BAG_MAX}`, 60, 108, 3); text(`GOLD ${fmt(G.gold)}`.slice(0, 16), 60, 118, 'gold');
@@ -7368,6 +7377,103 @@ class CharacterMenu {
     });
     }
     fill(2, 135, 156, 8, 0); text('START: MENU', 5, 136, 'gold'); textR('SELECT: TAB', 155, 136, 2);
+  }
+}
+
+// ================================================================ RELICS & ARTIFACTS (gear system codex pages)
+// Each category has 42 named items (data_rules.js WONDROUS, slot 'relic' / 'artifact'), each worn in its own gear
+// slot. These pages list the whole set: which you have found, where each copy is, its bonus, and equip from here.
+const RELIC_KIND = {
+  relic:    { title: 'RELICS',    one: 'RELIC',    other: 'artifact', otherTitle: 'ARTIFACTS' },
+  artifact: { title: 'ARTIFACTS', one: 'ARTIFACT', other: 'relic',    otherTitle: 'RELICS' },
+};
+const RELIC_BONUS_NAME = { hp: 'MAX HP', ac: 'ARMOR CLASS', save: 'SAVING THROWS', abil: 'PRIMARY STAT', hit: 'TO HIT', init: 'INITIATIVE' };
+const relicDefs = kind => WONDROUS.filter(w => w.slot === kind);
+// Every copy of a relic/artifact the hero has, with where it is. Equipped first, then best item level.
+function relicCopies(id) {
+  const out = [], add = (list, where) => (list || []).forEach(it => { if (it && it.kind === 'wondrous' && it.base === id) out.push({ it, where }); });
+  for (const slot of ['relic', 'artifact']) if (G.eq[slot] && G.eq[slot].base === id) out.push({ it: G.eq[slot], where: 'eq' });
+  add(G.bag, 'bag'); add(G.bank, 'bank');
+  for (const h of Object.values(G.homes || {})) add(h && h.storage, 'home');
+  const rank = { eq: 0, bag: 1, bank: 2, home: 3 };
+  return out.sort((a, b) => rank[a.where] - rank[b.where] || (b.it.ilvl || 0) - (a.it.ilvl || 0) || (b.it.rarity || 0) - (a.it.rarity || 0));
+}
+const relicFound = kind => relicDefs(kind).filter(w => relicCopies(w.id).length).length;
+function relicBonusLine(def, it) {
+  const name = RELIC_BONUS_NAME[def.bonus] || def.bonus.toUpperCase();
+  if (!it) return name;
+  const n = Math.max(1, it.plus);
+  return def.bonus === 'hp' ? `${name} +${6 * n * Math.max(1, Math.floor(G.lvl / 5))}` : def.bonus === 'abil' ? `${name} +${2 * n}` : `${name} +${n}`;
+}
+function relicIcon(def, it) { const ic = it ? itemIcon(it) : relicArtFor(def.id); return ic && IMG[ic] ? ic : def.icon; }
+// Character menu tab body: the equipped relic/artifact and the collection count.
+function relicTabPreview(kind) {
+  const K = RELIC_KIND[kind], it = G.eq[kind], def = it && WONDROUS.find(w => w.id === it.base);
+  fill(57, 46, 101, 82, 1);
+  text(`EQUIPPED ${K.one}`, 61, 49, 2);
+  fill(61, 59, 20, 20, it ? rarityCol(it.rarity === undefined ? 1 : it.rarity) : 2); fill(62, 60, 18, 18, 0);
+  if (def) { const ic = relicIcon(def, it); if (ic && IMG[ic]) blit(sprFit(ic, 16), 63, 61); }
+  if (def) {
+    text(def.name, 84, 60, 'gold', 1, 155); text(`ILVL ${it.ilvl || 1}`, 84, 70, 3);
+    text(relicBonusLine(def, it), 61, 84, 3, 1, 155);
+  } else { text('EMPTY SLOT', 84, 65, 2); text('A: CHOOSE ONE', 61, 84, 3); }
+  const found = relicFound(kind), total = relicDefs(kind).length;
+  text('FOUND', 61, 98, 2); textR(`${found}/${total}`, 154, 98, 'gold');
+  fill(61, 109, 93, 5, 2); fill(61, 109, Math.round(93 * found / Math.max(1, total)), 5, 'gold');
+  text('FOUND AS LOOT', 61, 118, 2);
+}
+class RelicCodexScene extends ListScene {
+  constructor(kind = 'relic') { super(7); this.kind = kind; }
+  items() { return relicDefs(this.kind); }
+  update() {
+    if (P('select')) { this.kind = RELIC_KIND[this.kind].other; this.i = this.top = 0; SFX.page(); }
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (!P('a')) return;
+    const def = this.items()[this.i], copies = def ? relicCopies(def.id) : [];
+    if (!def) return;
+    const worn = copies.find(c => c.where === 'eq');
+    if (worn) { // A on the equipped one takes it off
+      if (G.bag.length >= BAG_MAX) { SFX.error(); return say('Your bag is full.'); }
+      G.bag.push(G.eq[this.kind]); G.eq[this.kind] = null; SFX.back(); saveGame();
+      return toast('UNEQUIPPED', def.name, relicIcon(def, worn.it), 'confirm');
+    }
+    const inBag = copies.find(c => c.where === 'bag');
+    if (!inBag) { SFX.error(); return say(copies.length ? `Your ${def.name} is in storage. Take it out at a bank to equip it.` : `You have not found ${def.name} yet.`); }
+    const why = equipItem(G, inBag.it, G.bag, this.kind);
+    if (why) { SFX.error(); return say(why); }
+    SFX.equip(); saveGame();
+    toast('EQUIPPED', def.name, relicIcon(def, inBag.it), 'confirm');
+  }
+  draw() {
+    const K = RELIC_KIND[this.kind], L = this.items();
+    fill(0, 0, W, H, 0); hdr();
+    text(K.title, 4, 13, 'gold'); textR(`FOUND ${relicFound(this.kind)}/${L.length}`, 156, 13, 2);
+    for (let r = 0; r < this.rows; r++) {
+      const k = this.top + r, def = L[k]; if (!def) break;
+      const y = 23 + r * 10, sel = k === this.i, copies = relicCopies(def.id), worn = copies.some(c => c.where === 'eq');
+      if (sel) fill(2, y - 1, 152, 10, 1);
+      const ic = relicIcon(def, copies[0] && copies[0].it);
+      if (copies.length && ic && IMG[ic]) blit(sprFit(ic, 8), 4, y);
+      else fill(5, y + 1, 6, 6, 2);
+      text(def.name, 15, y, worn ? 'gold' : copies.length ? 3 : 2, 1, 128);
+      textR(worn ? 'EQP' : copies.length ? `x${copies.length}` : '--', 152, y, worn ? 'gold' : copies.length ? 3 : 2);
+    }
+    this.scrollbar(155, 23, 69);
+    // detail panel for the selected entry
+    const def = L[this.i], copies = def ? relicCopies(def.id) : [], best = copies[0];
+    frame(2, 94, 156, 40);
+    if (def) {
+      fill(6, 98, 20, 20, best ? rarityCol(best.it.rarity === undefined ? 1 : best.it.rarity) : 2); fill(7, 99, 18, 18, 0);
+      const ic = relicIcon(def, best && best.it); if (ic && IMG[ic]) blit(sprFit(ic, 16), 8, 100);
+      text(def.name, 30, 98, best ? 'gold' : 3, 1, 155);
+      text(relicBonusLine(def, best && best.it), 30, 108, 3, 1, 155);
+      const where = !best ? 'NOT FOUND YET' : best.where === 'eq' ? 'EQUIPPED' : best.where === 'bag' ? 'IN YOUR BAG' : 'IN STORAGE';
+      text(best ? `${where}  ILVL ${best.it.ilvl || 1}` : where, 6, 121, best ? 2 : 1, 1, 155);
+    }
+    fill(0, 135, W, 9, 0);
+    const act = !def ? '' : copies.some(c => c.where === 'eq') ? 'A:REMOVE' : copies.some(c => c.where === 'bag') ? 'A:EQUIP' : '';
+    text(act || 'B:BACK', 3, 136, act ? 'gold' : 2); textR(`SEL:${K.otherTitle}`, 157, 136, 2);
   }
 }
 
@@ -16801,7 +16907,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
 
   // ---------------------------------------------------------------- WoW-style window title bars on full-screen pages
-  const WIN_TITLE = { CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', PaperDoll: 'EQUIPMENT', EquipScene: 'EQUIPMENT', InventoryScene: 'BAGS', BagScene: 'BAGS', BankScene: 'BANK', StashScene: 'STASH',
+  const WIN_TITLE = { CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS', EquipScene: 'EQUIPMENT', InventoryScene: 'BAGS', BagScene: 'BAGS', BankScene: 'BANK', StashScene: 'STASH',
     Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
     RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
     ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
@@ -17092,7 +17198,7 @@ function aelSlider(x, y, w, frac) {
 }
 
 // screen names for the header plaque: explicit names first, else the class name split into words
-const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT',
+const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS',
   StashScene: 'STASH', MarketScene: 'VENDOR', QuestLog: 'QUEST LOG', Spellbook: 'SPELLBOOK', GrowthScene: 'GROWTH', ArtsScene: 'COMBAT ARTS',
   ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
   RepScene: 'REPUTATION', BestiaryScene: 'BESTIARY', BossJournalScene: 'BOSS JOURNAL', ActivityFinderScene: 'ACTIVITIES', SettingsScene: 'SETTINGS',

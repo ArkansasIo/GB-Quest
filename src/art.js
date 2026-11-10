@@ -159,8 +159,14 @@ function armorArtCategory(item) {
   if (['medium', 'mail', 'chain'].includes(type)) return 'mediumarmor';
   return 'mediumarmor';
 }
+// Relics and artifacts have their own icon sets (ne_relic_0..13, ne_artifact_0..13); 42 items cycle through them.
+function relicArtFor(base) {
+  const m = /^(relic|artifact)_(\d+)$/.exec(String(base || ''));
+  return m ? `ne_${m[1]}_${(Number(m[2]) - 1) % 14}` : null;
+}
 function nesItemIcon(it) {
   if (!it || !artOn()) return null;
+  if (it.kind === 'wondrous') { const ra = relicArtFor(it.base); if (ra && IMG[ra]) return ra; }
   if (it.kind === 'weapon') return tierPick(WEAPON_ART[it.base] || 'sword', it.rarity, it.base);
   if (it.kind === 'armor') return tierPick(armorArtCategory(it), it.rarity, it.base);
   return tierPick(WONDROUS_ART[it.base] || 'ring', it.rarity, it.base);
