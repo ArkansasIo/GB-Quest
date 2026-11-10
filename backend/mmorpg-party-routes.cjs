@@ -113,6 +113,25 @@ async function handlePartyRequest({ req, res, url, pool, accountFor, readBody, j
       await tx.query('COMMIT');json(res,200,{left:true,partyDisbanded:!remaining.rowCount,newLeader:remaining.rows[0]?.character_id||null});return true;
     } catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;} finally{tx.release();}
   }
+  const roleRoute=url.pathname.match(/^\/api\/parties\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/role$/i);
+  if(roleRoute && req.method==='POST'){
+    const partyId=roleRoute[1],targetId=roleRoute[2],body=await readBody(req),actorId=String(body.actorCharacterId||''),role=String(body.role||'');
+    if(!/^[0-9a-f-]{36}$/i.test(actorId)||!['tank','healer','damage','support'].includes(role)){json(res,400,{error:'invalid_party_role_request'});return true;}
+    const tx=await pool.connect();
+    try{
+      await tx.query('BEGIN');
+      const party=await tx.query('SELECT id,realm_id,leader_character_id FROM parties WHERE id=$1 FOR UPDATE',[partyId]);
+      if(!party.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'party_not_found'});return true;}
+      const actor=await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2',[actorId,acct.id]);
+      if(!actor.rowCount||party.rows[0].leader_character_id!==actorId){await tx.query('ROLLBACK');json(res,403,{error:'party_leader_required'});return true;}
+      const updated=await tx.query('UPDATE party_members SET role=$1 WHERE party_id=$2 AND character_id=$3 RETURNING character_id,role',[role,partyId,targetId]);
+      if(!updated.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'party_member_not_found'});return true;}
+      const roster=await tx.query('SELECT pm.character_id,c.name,c.level,c.zone_id,pm.role FROM party_members pm JOIN characters c ON c.id=pm.character_id WHERE pm.party_id=$1 ORDER BY pm.joined_at',[partyId]);
+      await tx.query('COMMIT');
+      json(res,200,{party:{id:partyId,realmId:party.rows[0].realm_id,members:roster.rows.map(m=>({characterId:m.character_id,name:m.name,level:m.level,zoneId:m.zone_id,role:m.role}))}});
+      return true;
+    }catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;}finally{tx.release();}
+  }
   json(res,405,{error:'method_not_allowed'});return true;
 }
 module.exports={handlePartyRequest};
