@@ -443,6 +443,7 @@ class AelSummary {
     try {
       const remote = await window.GBQMMOAccount.createCharacter(this.onlineSession, this.pick.name, this.pick.cls);
       this.pending = false;
+      window.GBQMMOAccount.adoptGameplaySession(this.onlineSession);
       this.beginAdventure(remote);
     } catch (error) {
       this.pending = false;
