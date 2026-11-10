@@ -51,3 +51,11 @@ Run npm run mmorpg:migrate with DATABASE_URL configured. The migration is additi
 - JSON responses include `Referrer-Policy: no-referrer` and `X-Frame-Options: DENY` in addition to no-store and nosniff.
 - The browser API client exposes `regions()` and `realms(regionId)` for the realm-selection screen. `createCharacter(name, characterClass, realmId)` can now submit the selected realm while retaining compatibility with callers that omit it.
 - Security-helper and API-client regression tests cover exact CORS policy, allowed preflight methods/headers, realm discovery URLs and realm-aware character creation.
+
+
+## API write-rate protection
+- Authenticated MMO API mutations (POST/DELETE under `/api/*), excluding login and registration which retain their dedicated failed-authentication limiter, are throttled by remote IP.
+- Default policy is 90 write requests per IP per 60-second fixed window. Configure with `GBQ_API_WRITE_LIMIT` and `GBQ_API_WRITE_WINDOW_MS`; invalid values fail service startup rather than silently disabling protection.
+- Responses include `X-RateLimit-Limit` and `X-RateLimit-Remaining`; rejected writes return HTTP 429, `Retry-After`, and `api_write_rate_limited`.
+- The in-memory limiter uses bounded key storage and periodic expiry sweeps. It is per process; multi-node deployments should move this policy to a shared Redis-backed limiter before horizontal scaling.
+- Unit tests cover threshold behavior, independent keys, reset timing, retry metadata, bounded storage, and invalid configuration.
