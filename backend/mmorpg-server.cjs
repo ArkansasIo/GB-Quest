@@ -80,8 +80,8 @@ function socketId(ws) {
   if (!id) { id = crypto.randomUUID(); socketIds.set(ws, id); }
   return id;
 }
-function publishWorldEvent(scope, realmId, zoneId, type, payload) {
-  const event = JSON.stringify({ origin: SERVER_INSTANCE_ID, scope, realmId, zoneId, type, payload });
+function publishWorldEvent(scope, realmId, zoneId, type, payload, characterId = null) {
+  const event = JSON.stringify({ origin: SERVER_INSTANCE_ID, scope, realmId, zoneId, type, payload, characterId });
   if (Buffer.byteLength(event) > 7800) return;
   pool.query('SELECT pg_notify($1, $2)', [WORLD_EVENT_CHANNEL, event])
     .catch(error => console.error('World event publish failed:', error.message));
@@ -408,7 +408,7 @@ function attachSocket(ws, req) {
           const local = [...activeSockets.entries()].find(([, targetState]) =>
             targetState.authenticated && targetState.character?.id === targetCharacter.id && targetState.realmId === state.realmId);
           if (local) send(local[0], 'chat.message', w);
-          else publishWorldEvent('character', state.realmId, null, 'chat.message', { ...w, characterId: targetCharacter.id });
+          else publishWorldEvent('character', state.realmId, null, 'chat.message', w, targetCharacter.id);
           if (!local || local[0] !== ws) send(ws, 'chat.message', w);
           return;
         }
