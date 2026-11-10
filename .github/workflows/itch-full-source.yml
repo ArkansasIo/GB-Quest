@@ -6,6 +6,7 @@ on:
     paths:
       - '**'
       - '!README.md'
+      - 'tools/package-itch-source.py'
   workflow_dispatch:
 
 permissions:
