@@ -2,6 +2,24 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.3.0 — Rifts, Gambler & Runes
+
+Released 2026-11-10
+
+### New
+
+- RIFTS: normal rifts are chains of battles from random biomes. Foes fill the progress bar; at 100% the RIFT GUARDIAN appears. Closing a rift pays gold, XP, an item, awakening stones, glimmer shards and a GREATER RIFT KEY.
+- GREATER RIFTS: pick any level up to your best + 1 (foes x1.12 HP and x1.07 damage per level). Beat the 15:00 timer to unlock up to 3 more levels. Pylons (healing, power, speed), a death penalty and a top-10 leaderboard.
+- GAMBLER: spend glimmer shards on gear of a chosen slot, from weapons to relics and artifacts. Rare 30%, epic 11%, legendary 3.5%, mythic 0.5%; 20 gambles without a legendary guarantee one.
+- LOOT FILTER: drops below COMMON, UNCOMMON or RARE are auto-salvaged or auto-sold. Favourites, heirlooms, relics, artifacts, awakened, set and epic+ items are never filtered.
+- SKILL RUNES: 24 runes, three for each active skill (Cleave, Sunder, War Cry, Smoke Bomb, Echo, Pack Leader...), unlocked at the skill's level +5, +15 and +30. Runed skills show * in battle.
+
+### Season Pass
+
+- New SEASON PASS page: the reward track, XP bar, days left; claim one tier with A or all with START.
+- New rewards: awakening stones every third tier, greater rift keys every seventh, and an awakening cache with 2 keys at tier 40.
+- Rifts give season XP.
+
 ## Unreleased — FULL DETAIL sprite redesign
 
 - New generator `tools/gen_fulldetail.py` draws a redesigned set for the default FULL DETAIL mode (2,590 images, stored as exact indexed PNGs, about 1.3 MB):

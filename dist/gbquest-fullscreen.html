@@ -2046,8 +2046,8 @@ const BUILD = {
     'Nightshade Chronicles',
     'Mythical Meadowlands',
   ],
-  version: '2.2.0',
-  build: 'B2026.11.09',
+  version: '2.3.0',
+  build: 'B2026.11.10',
   studio: 'ArkansasIo',
   engine: 'ARKANSAS - IO',
   engineVersion: '2.5.0',
@@ -14673,8 +14673,11 @@ function seasonReward(tier, lvl) {
   const L = Math.max(1, Math.min(720, Math.floor(Number(lvl) || 1))), t = Math.max(1, Math.min(SEASON_TIERS, Math.floor(tier)));
   if (t === 50) return { gold: 200 * (10 + L), gear: { rarity: 5, kind: 'wondrous', base: 'saints_token' }, title: 'season_champion', label: 'LEGENDARY TRINKET + TITLE' };
   if (t === 25) return { gold: 80 * (10 + L), items: { star_shard: 1 }, title: 'season_veteran', label: 'TITLE + STAR SHARD' };
+  if (t === 40) return { gold: 60 * (10 + L), items: { awk_stone: 10 }, riftKeys: 2, label: 'AWAKENING CACHE + 2 KEYS' };
   if (t % 10 === 0) return { gold: 40 * (10 + L), gear: { rarity: 4 }, label: 'EPIC ITEM' };
   if (t % 5 === 0) return { gold: 25 * (10 + L), items: { ember: 1, shard: 2 }, label: 'EMBER + SHARDS' };
+  if (t % 7 === 0) return { gold: 20 * (10 + L), riftKeys: 1, label: 'GREATER RIFT KEY' };
+  if (t % 3 === 0) return { gold: 15 * (10 + L), items: { awk_stone: 2 }, label: '2 AWAKENING STONES' };
   if (t % 2 === 0) return { gold: 15 * (10 + L), items: { scrap: 6 }, label: 'GOLD + SCRAP' };
   return { gold: 12 * (10 + L), items: { potion: 2 }, label: 'GOLD + POTIONS' };
 }
@@ -14740,6 +14743,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
     const r = seasonReward(t, G.lvl); G.season.claimed.push(t); G.gold += r.gold; giveItems(r.items);
     if (r.gear) addGear(makeItem({ lvl: G.lvl, ...r.gear }));
     if (r.title) G.titlesWon[r.title] = true;
+    if (r.riftKeys) { G.rift = G.rift || {}; G.rift.keys = (Number(G.rift.keys) || 0) + r.riftKeys; }
     return null;
   }
   Object.assign(window, { ensureLoop, claimBounty, claimSeasonTier, addSeasonXp, seasonXp });
@@ -14775,7 +14779,55 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
     ensureLoop(); const l = G.loop.login || { streak: 0 };
     say([`LOGIN STREAK: DAY ${l.streak}`, ...LOGIN_REWARDS.map(r => `${(l.streak - 1) % 7 + 1 === r.day ? '> ' : '  '}DAY ${r.day}: ${fmt(loginGold(r, G.lvl))} G, ${itemsText(r.items)}`), 'Come back tomorrow to keep the streak.']);
   }
-  function seasonPass() {
+  // SEASON PASS page: the reward track (L/R move, A claim the tier, START claim all), XP bar and days left
+  class SeasonPassScene {
+    constructor() { this.opaque = true; ensureLoop(); const t = seasonTier(seasonXp()); this.sel = Math.max(1, Math.min(SEASON_TIERS, (G.season.claimed.length < t ? (Array.from({ length: t }, (_, i) => i + 1).find(x => !G.season.claimed.includes(x)) || t) : t + 1))); }
+    update() {
+      if (P('b')) { SFX.back(); removeScene(this); return; }
+      if (nav('left')) { this.sel = Math.max(1, this.sel - 1); SFX.cursor(); }
+      if (nav('right')) { this.sel = Math.min(SEASON_TIERS, this.sel + 1); SFX.cursor(); }
+      if (nav('up')) { this.sel = Math.max(1, this.sel - 5); SFX.cursor(); }
+      if (nav('down')) { this.sel = Math.min(SEASON_TIERS, this.sel + 5); SFX.cursor(); }
+      if (P('start')) {
+        const tier = seasonTier(seasonXp()), open = []; for (let t = 1; t <= tier; t++) if (!G.season.claimed.includes(t)) open.push(t);
+        if (!open.length) { SFX.error(); return; }
+        open.forEach(claimSeasonTier); SFX.levelup(); saveGame(); toast('SEASON PASS', `CLAIMED ${open.length} TIER${open.length > 1 ? 'S' : ''}`, 'item_chest', 'confirm'); return;
+      }
+      if (!P('a')) return;
+      const why = claimSeasonTier(this.sel);
+      if (why) { SFX.error(); return say([`TIER ${this.sel}: ${seasonReward(this.sel, G.lvl).label}`, why]); }
+      SFX.confirm(); saveGame(); toast(`TIER ${this.sel} CLAIMED`, seasonReward(this.sel, G.lvl).label, 'item_chest', 'confirm');
+    }
+    draw() {
+      const s = seasonFor(), xp = seasonXp(), tier = seasonTier(xp);
+      fill(0, 0, W, H, 0); hdr();
+      text(s.name, 4, 13, 'gold', 1, 156);
+      text(`TIER ${tier}/${SEASON_TIERS}`, 4, 24, 3); textR(`${s.daysLeft} DAYS LEFT`, 156, 24, 2);
+      const into = tier >= SEASON_TIERS ? SEASON_XP_PER_TIER : xp % SEASON_XP_PER_TIER;
+      fill(4, 34, 152, 5, 2); fill(4, 34, Math.round(152 * into / SEASON_XP_PER_TIER), 5, 'gold');
+      textR(tier >= SEASON_TIERS ? 'MAX' : `${fmt(into)}/${fmt(SEASON_XP_PER_TIER)} XP`, 156, 41, 2);
+      // track: 7 tier boxes around the selection
+      const first = Math.max(1, Math.min(SEASON_TIERS - 6, this.sel - 3));
+      for (let k = 0; k < 7; k++) {
+        const t = first + k, x = 8 + k * 21, y = 53, got = G.season.claimed.includes(t), ready = t <= tier && !got, sel = t === this.sel, big = t % 5 === 0;
+        fill(x, y, 19, 20, sel ? 'gold' : big ? '#8a5a1c' : 2); fill(x + 1, y + 1, 17, 18, got ? '#1d3a22' : ready ? '#4a3410' : 0);
+        textC(String(t), x + 9, y + 6, got ? 'green' : ready ? 'gold' : t <= tier ? 3 : 2);
+        if (ready) fill(x + 14, y + 2, 3, 3, 'gold');
+      }
+      if (first > 1) text('<', 0, 59, 'gold'); if (first + 6 < SEASON_TIERS) text('>', 154, 59, 'gold');
+      const r = seasonReward(this.sel, G.lvl), got = G.season.claimed.includes(this.sel), ready = this.sel <= tier && !got;
+      frame(2, 78, 156, 56);
+      text(`TIER ${this.sel}`, 6, 82, 'gold'); textR(got ? 'CLAIMED' : ready ? 'READY - A: CLAIM' : `LOCKED`, 154, 82, got ? 'green' : ready ? 'gold' : 2);
+      text(r.label, 6, 93, 3, 1, 154);
+      text(`+${fmt(r.gold)} G${r.riftKeys ? `  +${r.riftKeys} RIFT KEY` : ''}`, 6, 103, 2, 1, 154);
+      if (r.title && SEASON_TITLES[r.title]) text(`TITLE: ${SEASON_TITLES[r.title].name}`, 6, 113, 'gold', 1, 154);
+      else if (!got && !ready) text(`${fmt(Math.max(0, this.sel * SEASON_XP_PER_TIER - xp))} XP TO GO`, 6, 113, 2, 1, 154);
+      text('XP FROM KILLS, RIFTS, KEYS', 6, 123, 2, 1, 154);
+      fill(0, 135, W, 9, 0); text('A:CLAIM ST:ALL', 3, 136, 'gold'); textR('L/R:TIER', 157, 136, 2);
+    }
+  }
+  window.SeasonPassScene = SeasonPassScene;
+  function seasonPassList() {
     ensureLoop(); const s = seasonFor(), xp = seasonXp(), tier = seasonTier(xp), open = [];
     for (let t = 1; t <= tier; t++) if (!G.season.claimed.includes(t)) open.push(t);
     const rows = Array.from({ length: SEASON_TIERS }, (_, i) => i + 1);
@@ -14786,6 +14838,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
       say(why ? [`TIER ${t}: ${seasonReward(t, G.lvl).label}`, why] : `Claimed tier ${t}.`, seasonPass);
     }, `${s.name.slice(0, 22)} T${tier} ${fmt(xp)}XP ${s.daysLeft}D`);
   }
+  function seasonPass() { push(new SeasonPassScene()); }
   window.challengesMenu = function () {
     ensureLoop();
     const ready = [...G.loop.daily.list, ...G.loop.weekly.list].filter(b => !b.claimed && bountyDone(b, G.stats)).length, vault = G.loop.vault && !G.loop.vault.claimed;
@@ -20202,6 +20255,31 @@ window.GBQ_PATCH_NOTES = {
  "repo": "ArkansasIo/GB-Quest",
  "releases": [
   {
+   "version": "2.3.0",
+   "date": "2026-11-10",
+   "title": "Rifts, Gambler & Runes",
+   "sections": [
+    {
+     "name": "New",
+     "notes": [
+      "RIFTS: normal rifts are chains of battles from random biomes. Foes fill the progress bar; at 100% the RIFT GUARDIAN appears. Closing a rift pays gold, XP, an item, awakening stones, glimmer shards and a GREATER RIFT KEY.",
+      "GREATER RIFTS: pick any level up to your best + 1 (foes x1.12 HP and x1.07 damage per level). Beat the 15:00 timer to unlock up to 3 more levels. Pylons (healing, power, speed), a death penalty and a top-10 leaderboard.",
+      "GAMBLER: spend glimmer shards on gear of a chosen slot, from weapons to relics and artifacts. Rare 30%, epic 11%, legendary 3.5%, mythic 0.5%; 20 gambles without a legendary guarantee one.",
+      "LOOT FILTER: drops below COMMON, UNCOMMON or RARE are auto-salvaged or auto-sold. Favourites, heirlooms, relics, artifacts, awakened, set and epic+ items are never filtered.",
+      "SKILL RUNES: 24 runes, three for each active skill (Cleave, Sunder, War Cry, Smoke Bomb, Echo, Pack Leader...), unlocked at the skill's level +5, +15 and +30. Runed skills show * in battle."
+     ]
+    },
+    {
+     "name": "Season Pass",
+     "notes": [
+      "New SEASON PASS page: the reward track, XP bar, days left; claim one tier with A or all with START.",
+      "New rewards: awakening stones every third tier, greater rift keys every seventh, and an awakening cache with 2 keys at tier 40.",
+      "Rifts give season XP."
+     ]
+    }
+   ]
+  },
+  {
    "version": "2.2.0",
    "date": "2026-11-09",
    "title": "Awakening & Aelmoor UI",
@@ -20351,6 +20429,580 @@ setTimeout(() => {
   } catch (e) {}
   checkForUpdate();
 }, 6000);
+})();
+
+</script>
+<script>
+'use strict';
+(() => {
+// ================================================================ RIFTS & GREATER RIFTS (MAIN MENU > RIFTS)
+// Diablo-style rifts, fought from the RIFTS page as a chain of battles.
+//   * NORMAL RIFT (free): every pack comes from a random biome. Slain foes fill the PROGRESS bar
+//     (normal 5%, elite 18%, boss 30%). At 100% the RIFT GUARDIAN appears; beat it to close the rift
+//     for gold, XP, an item and a GREATER RIFT KEY.
+//   * GREATER RIFT (1 key): choose any level from 1 up to your best + 1. Foes get x1.12 HP and x1.07
+//     damage per level and +1 foe level per 5 levels. The 15:00 timer starts at the first pack. Close it
+//     in time to unlock the next levels (+1, +2 under 80% of the timer, +3 under 60%); late runs still
+//     pay out, but less, and unlock nothing. A wipe costs 30 seconds and heals the party to half.
+//   * PYLONS: after a pack, 20% chance of HEALING (full heal), POWER (next pack -30% HP) or SPEED (-20 s).
+//   * Rewards scale with level: gold, XP, awakening stones and an item whose rarity rises with level.
+//   * LEADERBOARD: your 10 best greater rifts (level, then time), and your best per class.
+// Pure rules are exported as GBQRifts for tests; the game wiring runs only inside the game.
+
+const GR_TIME = 15 * 60;            // seconds
+const GR_MAX = 150;
+const PROGRESS = { normal: 5, elite: 18, boss: 30 };
+const DEATH_PENALTY = 30;
+const PYLONS = {
+  heal: { name: 'HEALING PYLON', desc: 'The party is fully healed.' },
+  power: { name: 'POWER PYLON', desc: 'The next pack has 30% less HP.' },
+  speed: { name: 'SPEED PYLON', desc: 'The rift timer gains 20 seconds.' },
+};
+
+const grMult = level => { const L = Math.max(1, Math.min(GR_MAX, Math.floor(level))); return { hp: Math.pow(1.12, L - 1), dmg: Math.pow(1.07, L - 1), lvlBonus: Math.floor(L / 5) }; };
+const foeProgress = f => f && f.boss ? PROGRESS.boss : f && f.elite ? PROGRESS.elite : PROGRESS.normal;
+// result of a finished greater rift: how many levels it unlocks
+function grResult(elapsed, limit = GR_TIME) {
+  const t = elapsed / limit;
+  return t <= 0.6 ? { timed: true, unlock: 3 } : t <= 0.8 ? { timed: true, unlock: 2 } : t <= 1 ? { timed: true, unlock: 1 } : { timed: false, unlock: 0 };
+}
+// rewards: kind 'normal' | 'greater'
+function riftRewards(kind, level, heroLvl, timed = true) {
+  const L = Math.max(1, Math.min(720, Math.floor(heroLvl) || 1));
+  if (kind === 'normal') return { gold: 60 + L * 12, xpShare: 0.15, stones: 1, shards: 2, keys: 1, rarity: L >= 30 ? 4 : 3 };
+  const g = Math.max(1, Math.min(GR_MAX, Math.floor(level))), k = timed ? 1 : 0.5;
+  return { gold: Math.round((100 + L * 15) * (1 + g / 10) * k), xpShare: (0.2 + g * 0.01) * k, stones: Math.max(1, Math.round((1 + Math.floor(g / 5)) * k)), shards: Math.max(1, Math.round((2 + Math.floor(g / 3)) * k)), keys: 0,
+    rarity: !timed ? 3 : g >= 40 ? 6 : g >= 25 ? 5 : g >= 10 ? 4 : 3 };
+}
+const maxUnlocked = best => Math.max(1, Math.min(GR_MAX, (best || 0) + 1));
+// keep the 10 best runs: higher level first, then faster
+function addToBoard(board, run) {
+  const out = (board || []).concat([run]).sort((a, b) => b.level - a.level || a.time - b.time);
+  return out.slice(0, 10);
+}
+const fmtTime = s => { s = Math.max(0, Math.round(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+function normRift(r) {
+  const o = r && typeof r === 'object' ? r : {};
+  return { keys: Math.max(0, Math.floor(Number(o.keys) || 0)), best: Math.max(0, Math.floor(Number(o.best) || 0)), bestByClass: o.bestByClass && typeof o.bestByClass === 'object' ? o.bestByClass : {},
+    board: Array.isArray(o.board) ? o.board.slice(0, 10) : [], closed: Math.max(0, Math.floor(Number(o.closed) || 0)), active: o.active && typeof o.active === 'object' ? o.active : null, pick: Math.max(1, Math.floor(Number(o.pick) || 1)) };
+}
+
+if (typeof globalThis !== 'undefined') globalThis.GBQRifts = { GR_TIME, GR_MAX, PROGRESS, PYLONS, DEATH_PENALTY, grMult, foeProgress, grResult, riftRewards, maxUnlocked, addToBoard, fmtTime, normRift };
+
+// ---------------------------------------------------------------- game wiring
+if (typeof window === 'undefined' || typeof startBattle !== 'function' || typeof makeMonster !== 'function') return;
+
+// normalise once, then always hand back the same object (callers mutate it)
+const RF = () => { const r = G.rift; if (!r || typeof r.keys !== 'number' || !Array.isArray(r.board) || !r.bestByClass) G.rift = normRift(r); return G.rift; };
+const scaleDice = (dice, m) => typeof diceAvg === 'function' && typeof dmgDice === 'function' ? dmgDice(Math.max(1, Math.round(diceAvg(dice) * m))) : dice;
+const runSeconds = a => a ? (a.startedAt ? (Date.now() - a.startedAt) / 1000 : 0) + (a.penalty || 0) - (a.bonus || 0) : 0;
+// biomes that can spawn monsters (they need both monster families and variants)
+const biomes = () => { const L = typeof BIOMES !== 'undefined' && typeof BIOME_VARIANT !== 'undefined' ? Object.keys(BIOMES).filter(k => BIOMES[k] && Array.isArray(BIOMES[k].fam) && Array.isArray(BIOME_VARIANT[k])) : []; return L.length ? L : ['meadow']; };
+
+function scaleFoes(foes, a) {
+  if (a.kind !== 'greater') return foes;
+  const m = grMult(a.level);
+  for (const f of foes) {
+    f.maxhp = Math.round(f.maxhp * m.hp * (a.power ? 0.7 : 1)); f.hp = f.maxhp;
+    (f.attacks || []).forEach(x => { if (x.dice) x.dice = scaleDice(x.dice, m.dmg); });
+    f.name = (`GR${a.level} ` + f.name).slice(0, 16);
+  }
+  return foes;
+}
+function foeLevel(a) { return Math.min(720, G.lvl + (a.kind === 'greater' ? grMult(a.level).lvlBonus : 0)); }
+function makePack(a) {
+  const biome = pick(biomes()), lvl = foeLevel(a);
+  let table = []; try { table = typeof spawnTable === 'function' ? spawnTable(biome, lvl) : []; } catch (e) { table = []; }
+  const src = table.length ? table : BESTIARY.filter(x => x.rank === 'normal'), n = R() < 0.35 ? 3 : 2, foes = [];
+  for (let i = 0; i < n; i++) foes.push(makeMonster(pick(src), Math.max(1, lvl - (i ? 1 : 0)), G.difficulty));
+  if (R() < 0.22) { const el = BESTIARY.filter(b => b.rank === 'elite'); if (el.length) foes[0] = makeMonster(pick(el), lvl + 1, G.difficulty); }
+  a.biome = biome;
+  if (a.power && a.kind !== 'greater') for (const f of foes) { f.maxhp = Math.round(f.maxhp * 0.7); f.hp = f.maxhp; }
+  return scaleFoes(foes, a);
+}
+function makeGuardian(a) {
+  const lvl = foeLevel(a) + 2;
+  const bossKeys = typeof MONSTERS !== 'undefined' ? Object.keys(MONSTERS).filter(k => MONSTERS[k].boss) : [];
+  let g;
+  try { g = bossKeys.length ? makeMonster({ unique: pick(bossKeys) }, lvl, G.difficulty) : null; } catch (e) { g = null; }
+  if (!g) { g = makeMonster(pick(BESTIARY.filter(b => b.rank === 'elite').concat(BESTIARY).slice(0, 40)), lvl, G.difficulty); g.maxhp *= 5; g.hp = g.maxhp; g.boss = true; }
+  g.name = 'RIFT GUARDIAN'; g.boss = true;
+  return scaleFoes([g], a);
+}
+function healParty(frac) {
+  const all = [G, ...(G.companions || [])];
+  for (const c of all) { const D = derive(c); c.hp = Math.max(c.hp, Math.min(D.hpMax, Math.round(D.hpMax * frac))); }
+}
+function grantRewards(rw, label) {
+  G.gold += rw.gold; addItem('awk_stone', rw.stones); if (rw.shards) addItem('shard', rw.shards);
+  const xp = Math.round(Math.max(1, xpForLevel(Math.min(LEVEL_CAP, G.lvl + 1)) - xpForLevel(G.lvl)) * rw.xpShare);
+  if (typeof gainXP === 'function' && xp > 0) gainXP(G, xp);
+  let it = null;
+  try { it = makeItem({ lvl: G.lvl, rarity: rw.rarity }); if (G.bag.length < BAG_MAX) G.bag.push(it); else it = null; } catch (e) { it = null; }
+  const lines = [label, `+${fmt(rw.gold)} G  +${rw.stones} AWAKENING STONE${rw.stones > 1 ? 'S' : ''}`, rw.shards ? `+${rw.shards} GLIMMER SHARDS (GAMBLER)` : '', xp ? `+${fmt(xp)} XP` : ''];
+  if (it) lines.push(`ITEM: ${it.name}`); else lines.push('BAG FULL - NO ITEM');
+  if (rw.keys) lines.push(`+${rw.keys} GREATER RIFT KEY`);
+  return lines.filter(Boolean);
+}
+
+function fightPack(scene) {
+  const r = RF(), a = r.active; if (!a) return;
+  if (a.kind === 'greater' && !a.startedAt) a.startedAt = Date.now();
+  const guardian = a.progress >= 100, foes = guardian ? makeGuardian(a) : makePack(a), worth = foes.reduce((s, f) => s + foeProgress(f), 0);
+  a.power = false;
+  startBattle(foes, { onEnd: result => {
+    const r2 = RF(), a2 = r2.active; if (!a2) return;
+    if (result === 'win') {
+      a2.packs = (a2.packs || 0) + 1;
+      if (guardian) return closeRift();
+      a2.progress = Math.min(100, (a2.progress || 0) + worth);
+      if (R() < 0.2) { const id = pick(Object.keys(PYLONS)); a2.pylon = id; if (id === 'heal') healParty(1); if (id === 'power') a2.power = true; if (id === 'speed') a2.bonus = (a2.bonus || 0) + 20; }
+      else a2.pylon = null;
+    } else if (result === 'lose') {
+      a2.deaths = (a2.deaths || 0) + 1; healParty(0.5);
+      if (a2.kind === 'greater') a2.penalty = (a2.penalty || 0) + DEATH_PENALTY;
+    }
+    saveGame();
+  } });
+}
+function closeRift() {
+  const r = RF(), a = r.active; if (!a) return;
+  r.active = null; r.closed++;
+  if (G.stats) G.stats.rifts = (G.stats.rifts || 0) + 1;
+  let lines;
+  if (a.kind === 'normal') {
+    const rw = riftRewards('normal', 1, G.lvl); r.keys += rw.keys;
+    lines = grantRewards(rw, 'RIFT CLOSED');
+    if (typeof addSeasonXp === 'function') addSeasonXp(80);
+  } else {
+    const time = runSeconds(a), res = grResult(time), rw = riftRewards('greater', a.level, G.lvl, res.timed);
+    lines = [`GREATER RIFT ${a.level} ${res.timed ? 'TIMED' : 'TOO SLOW'}: ${fmtTime(time)}`, ...grantRewards(rw, res.timed ? `UNLOCKED UP TO LEVEL ${Math.min(GR_MAX, a.level + res.unlock)}` : 'NO NEW LEVELS UNLOCKED')];
+    if (res.timed) {
+      r.best = Math.max(r.best, Math.min(GR_MAX - 1, a.level + res.unlock - 1));
+      r.bestByClass[G.cls] = Math.max(r.bestByClass[G.cls] || 0, a.level);
+      r.board = addToBoard(r.board, { level: a.level, time: Math.round(time), cls: G.cls, name: G.name, date: new Date().toISOString().slice(0, 10) });
+      r.pick = Math.min(maxUnlocked(r.best), a.level + 1);
+    }
+    if (typeof addSeasonXp === 'function') addSeasonXp(res.timed ? 120 + 10 * a.level : 60);
+  }
+  saveGame(); SFX.act_complete ? SFX.act_complete() : SFX.confirm();
+  say(lines);
+}
+
+class RiftScene {
+  constructor() { this.opaque = true; this.i = 0; RF(); }
+  opts() { const r = RF(); return r.active ? ['FIGHT', 'ABANDON'] : ['NORMAL RIFT', 'GREATER RIFT', 'LEADERBOARD']; }
+  update() {
+    const r = RF(), a = r.active, opts = this.opts();
+    if (this.i >= opts.length) this.i = 0;
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (nav('up')) { this.i = (this.i + opts.length - 1) % opts.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % opts.length; SFX.cursor(); }
+    if (!a && opts[this.i] === 'GREATER RIFT') {
+      const max = maxUnlocked(r.best);
+      if (nav('left')) { r.pick = Math.max(1, r.pick - 1); SFX.cursor(); }
+      if (nav('right')) { r.pick = Math.min(max, r.pick + 1); SFX.cursor(); }
+    }
+    if (!P('a')) return;
+    const o = opts[this.i];
+    if (o === 'FIGHT') { SFX.select(); return fightPack(this); }
+    if (o === 'ABANDON') return choose(['ABANDON RIFT', 'KEEP GOING'], k => { if (k === 0) { r.active = null; saveGame(); SFX.back(); } }, a.kind === 'greater' ? 'The key is lost.' : 'Progress is lost.');
+    if (o === 'NORMAL RIFT') { SFX.select(); r.active = { kind: 'normal', level: 0, progress: 0, packs: 0 }; saveGame(); this.i = 0; return; }
+    if (o === 'GREATER RIFT') {
+      if (r.keys < 1) { SFX.error(); return say(['A GREATER RIFT needs a key.', 'Close a NORMAL RIFT to earn one.']); }
+      r.keys--; SFX.select(); r.active = { kind: 'greater', level: Math.min(r.pick, maxUnlocked(r.best)), progress: 0, packs: 0, startedAt: 0, penalty: 0, bonus: 0 }; saveGame(); this.i = 0; return;
+    }
+    if (o === 'LEADERBOARD') { SFX.select(); return push(new RiftBoardScene()); }
+  }
+  draw() {
+    const r = RF(), a = r.active;
+    fill(0, 0, W, H, 0); hdr();
+    text('RIFTS', 4, 13, 'gold'); textR(`KEYS ${r.keys}  BEST GR${r.best}`, 156, 13, 2);
+    frame(2, 23, 156, 52);
+    if (!a) {
+      text('Random packs fill the bar.', 6, 26, 3, 1, 154);
+      text('At 100% the GUARDIAN comes.', 6, 35, 3, 1, 154);
+      text(`GREATER RIFT LEVEL < ${r.pick} >`, 6, 46, 'gold', 1, 154);
+      const m = grMult(r.pick); text(`FOES HP x${m.hp.toFixed(1)} DMG x${m.dmg.toFixed(1)}`, 6, 55, 2, 1, 154);
+      text(`TIMER ${fmtTime(GR_TIME)}  CLOSED ${r.closed}`, 6, 64, 2, 1, 154);
+    } else {
+      const t = runSeconds(a), left = GR_TIME - t;
+      text(a.kind === 'greater' ? `GREATER RIFT ${a.level}` : 'NORMAL RIFT', 6, 27, 'gold');
+      if (a.kind === 'greater') textR(a.startedAt ? fmtTime(left) : fmtTime(GR_TIME), 154, 27, left < 0 ? 'red' : left < 120 ? 'gold' : 3);
+      text('PROGRESS', 6, 38, 2); textR(`${Math.floor(a.progress)}%`, 154, 38, 3);
+      fill(6, 48, 146, 6, 2); fill(6, 48, Math.round(146 * Math.min(100, a.progress) / 100), 6, a.progress >= 100 ? 'red' : 'gold');
+      text(a.progress >= 100 ? 'THE RIFT GUARDIAN WAITS' : `PACKS ${a.packs || 0}  DEATHS ${a.deaths || 0}`, 6, 56, a.progress >= 100 ? 'red' : 2, 1, 154);
+      if (a.pylon) text(PYLONS[a.pylon].name, 6, 65, 'green', 1, 154);
+    }
+    const opts = this.opts();
+    opts.forEach((o, k) => { const y = 80 + k * 12; if (k === this.i) fill(4, y - 1, 152, 11, 1); text(o === 'FIGHT' && a && a.progress >= 100 ? 'FIGHT THE GUARDIAN' : o, 8, y + 1, k === this.i ? 'gold' : 3); });
+    fill(0, 135, W, 9, 0);
+    text(a ? 'A:SELECT' : 'A:ENTER', 3, 136, 'gold'); textR(!a && opts[this.i] === 'GREATER RIFT' ? 'L/R:LEVEL' : 'B:BACK', 157, 136, 2);
+  }
+}
+class RiftBoardScene {
+  constructor() { this.opaque = true; }
+  update() { if (P('b') || P('a')) { SFX.back(); removeScene(this); } }
+  draw() {
+    const r = RF();
+    fill(0, 0, W, H, 0); hdr();
+    text('GREATER RIFT BOARD', 4, 13, 'gold');
+    frame(2, 23, 156, 110);
+    if (!r.board.length) { textC('NO TIMED RUNS YET', 80, 70, 2); }
+    r.board.forEach((e, k) => {
+      const y = 27 + k * 10;
+      text(`${String(k + 1).padStart(2, ' ')} GR${e.level}`, 6, y, k === 0 ? 'gold' : 3);
+      text(String(e.name || '').slice(0, 8), 62, y, 3); textR(fmtTime(e.time), 154, y, 2);
+    });
+    fill(0, 135, W, 9, 0); text('B:BACK', 3, 136, 2);
+    const cls = Object.entries(r.bestByClass).sort((a, b) => b[1] - a[1])[0];
+    if (cls) textR(`BEST ${String(CLASSES[cls[0]] ? CLASSES[cls[0]].name : cls[0]).slice(0, 8)} GR${cls[1]}`, 157, 136, 'gold');
+  }
+}
+window.RiftScene = RiftScene; window.RiftBoardScene = RiftBoardScene;
+
+if (typeof MainMenu !== 'undefined') {
+  const i0 = MainMenu.prototype.items;
+  MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('ACTIVITY FINDER'); L.splice(at >= 0 ? at + 1 : L.length, 0, 'RIFTS'); return L; };
+  const u0 = MainMenu.prototype.update;
+  MainMenu.prototype.update = function () { if (P('a') && this.items()[this.i] === 'RIFTS') { SFX.select(); return push(new RiftScene()); } return u0.apply(this, arguments); };
+}
+window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { RIFTS: 'Normal and greater rifts: progress bar, guardian, timer, leaderboard.' });
+})();
+
+</script>
+<script>
+'use strict';
+(() => {
+// ================================================================ GAMBLER & LOOT FILTER
+// GAMBLER (MAIN MENU > GAMBLER): spend GLIMMER SHARDS on an item of the slot you pick; its rarity is a roll.
+//   * Odds: uncommon 55%, rare 30%, epic 11%, legendary 3.5%, mythic 0.5% (mythic from hero level 40,
+//     legendary from 8, epic from 5, following the rarity gates).
+//   * PITY: 20 gambles in a row without a legendary or better makes the next one legendary.
+//   * Cost per slot (x(1 + level/20)): armour pieces and jewellery 6-10, weapons 8, relics 20, artifacts 25.
+//   * Shards come from salvaging rare+ gear and from rifts.
+// LOOT FILTER (MAIN MENU > LOOT FILTER): new gear below the chosen rarity is salvaged or sold as it drops.
+//   Never filtered: favourites, heirlooms, relics, artifacts, awakened items, set pieces and epic+ gear.
+// Pure rules are exported as GBQGambler for tests; the game wiring runs only inside the game.
+
+// rarity index (items.js: 0 poor, 1 common, 2 uncommon, 3 rare, 4 epic, 5 legendary, 6 mythic), chance
+const GAMBLE_ODDS = [[6, 0.005], [5, 0.035], [4, 0.11], [3, 0.30], [2, 0.55]];
+const GAMBLE_GATE = { 6: 40, 5: 8, 4: 5, 3: 1, 2: 1 }; // hero level each rarity needs (RARITY_GATE)
+const LEGENDARY = 5;
+const PITY = 20;
+const FILTER_LEVELS = [
+  { id: 'off', name: 'OFF', keep: 0 },
+  { id: 'common', name: 'COMMON+', keep: 1 },
+  { id: 'uncommon', name: 'UNCOMMON+', keep: 2 },
+  { id: 'rare', name: 'RARE+', keep: 3 },
+];
+const FILTER_ACTIONS = ['salvage', 'sell'];
+const FILTER_MAX_KEEP = 3; // the filter never asks for more than rare; epic (4) and better are never filtered
+
+const gambleCost = (base, heroLvl) => Math.round(base * (1 + Math.floor(Math.max(1, Number(heroLvl) || 1) / 20)));
+// roll a rarity with u in [0,1); sinceLegendary = gambles since the last legendary+
+function gambleRarity(u, heroLvl, sinceLegendary = 0) {
+  const L = Math.max(1, Number(heroLvl) || 1);
+  if (sinceLegendary >= PITY - 1 && L >= GAMBLE_GATE[LEGENDARY]) return LEGENDARY;
+  let acc = 0;
+  for (const [r0, p] of GAMBLE_ODDS) { acc += p; if (u < acc) { let r = r0; while (r > 2 && L < GAMBLE_GATE[r]) r--; return r; } }
+  return 2;
+}
+// what the loot filter does with an item: 'keep' | 'salvage' | 'sell'
+function filterDecision(it, filter) {
+  const f = filter || {}, lvl = FILTER_LEVELS.find(x => x.id === f.level) || FILTER_LEVELS[0];
+  if (!it || lvl.keep <= 0) return 'keep';
+  if (!['weapon', 'armor', 'wondrous'].includes(it.kind)) return 'keep';
+  if (it.fav || it.heirloom || it.awk && it.awk.stars || it.setId || it.set || it.locked) return 'keep';
+  if (it.kind === 'wondrous' && /^(relic|artifact)_/.test(String(it.base || ''))) return 'keep';
+  const r = Number(it.rarity) || 0;
+  if (r >= Math.min(lvl.keep, FILTER_MAX_KEEP) || r >= 4) return 'keep';
+  return FILTER_ACTIONS.includes(f.action) ? f.action : 'salvage';
+}
+function normFilter(f) { const o = f && typeof f === 'object' ? f : {}; return { level: FILTER_LEVELS.some(x => x.id === o.level) ? o.level : 'off', action: FILTER_ACTIONS.includes(o.action) ? o.action : 'salvage', count: Math.max(0, Math.floor(Number(o.count) || 0)), gold: Math.max(0, Math.floor(Number(o.gold) || 0)) }; }
+
+if (typeof globalThis !== 'undefined') globalThis.GBQGambler = { GAMBLE_ODDS, GAMBLE_GATE, PITY, LEGENDARY, FILTER_LEVELS, FILTER_ACTIONS, gambleCost, gambleRarity, filterDecision, normFilter };
+
+// ---------------------------------------------------------------- game wiring
+if (typeof window === 'undefined' || typeof makeItem !== 'function' || typeof WONDROUS === 'undefined') return;
+
+const SLOT_COST = { weapon: 8, armor: 6, head: 6, neck: 10, ear: 10, back: 6, hands: 6, waist: 6, legs: 6, feet: 6, ring: 10, trinket: 10, relic: 20, artifact: 25 };
+const SLOT_LABEL = { weapon: 'WEAPON', armor: 'CHEST / SHIELD', head: 'HEAD', neck: 'AMULET', ear: 'EARRINGS', back: 'CLOAK', hands: 'GLOVES', waist: 'BELT', legs: 'LEGS', feet: 'BOOTS', ring: 'RING', trinket: 'TRINKET', relic: 'RELIC', artifact: 'ARTIFACT' };
+function gambleSlots() {
+  const have = new Set(WONDROUS.map(w => w.slot));
+  return Object.keys(SLOT_COST).filter(k => k === 'weapon' || k === 'armor' || have.has(k));
+}
+const GS = () => { if (!G.gamble || typeof G.gamble.count !== 'number') G.gamble = { count: 0, since: 0, best: 0 }; return G.gamble; };
+const LF = () => { if (!G.lootFilter || typeof G.lootFilter.count !== 'number') G.lootFilter = normFilter(G.lootFilter); return G.lootFilter; };
+
+function gamble(slot) {
+  const cost = gambleCost(SLOT_COST[slot], G.lvl), g = GS();
+  if ((G.inv.shard || 0) < cost) { SFX.error(); return say([`${SLOT_LABEL[slot]} costs ${cost} glimmer shards.`, `You have ${G.inv.shard || 0}. Salvage rare gear or run rifts.`]); }
+  if (G.bag.length >= BAG_MAX) { SFX.error(); return say('Your bag is full.'); }
+  const rarity = gambleRarity(R(), G.lvl, g.since);
+  let it;
+  if (slot === 'weapon' || slot === 'armor') it = makeItem({ kind: slot, lvl: G.lvl, rarity });
+  else { const pool = WONDROUS.filter(w => w.slot === slot); it = makeItem({ kind: 'wondrous', base: pick(pool).id, lvl: G.lvl, rarity }); }
+  G.inv.shard -= cost; g.count++; g.best = Math.max(g.best, it.rarity); g.since = it.rarity >= LEGENDARY ? 0 : g.since + 1;
+  G.bag.push(it); if (it.rarity >= 4) G.stats.epics = (G.stats.epics || 0) + 1;
+  saveGame(); (it.rarity >= LEGENDARY ? (SFX.levelup || SFX.confirm) : it.rarity >= 4 ? (SFX.chest || SFX.confirm) : SFX.buy)();
+  const R0 = RARITY[it.rarity] || RARITY[2];
+  toast(R0.name, it.name, itemIcon(it), 'confirm');
+  if (typeof chatLog === 'function') chatLog('loot', 'GAMBLER', `You gamble [${it.name}] (${R0.name}) for ${cost} shards.`);
+}
+
+class GamblerScene extends ListScene {
+  constructor() { super(7); }
+  items() { return gambleSlots(); }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('select')) { SFX.select(); return push(new LootFilterScene()); }
+    if (P('a')) { const s = this.items()[this.i]; if (s) gamble(s); }
+  }
+  draw() {
+    const L = this.items(), g = GS();
+    fill(0, 0, W, H, 0); hdr();
+    text('GAMBLER', 4, 13, 'gold'); textR(`SHARDS ${G.inv.shard || 0}`, 156, 13, 2);
+    for (let r = 0; r < this.rows; r++) {
+      const k = this.top + r, s = L[k]; if (!s) break;
+      const y = 23 + r * 10, cost = gambleCost(SLOT_COST[s], G.lvl), can = (G.inv.shard || 0) >= cost;
+      if (k === this.i) fill(2, y - 1, 152, 10, 1);
+      text(SLOT_LABEL[s], 6, y, 3); textR(`${cost}`, 140, y, can ? 'gold' : 2);
+      if (IMG.ne_gem_1) blit(sprFit('ne_gem_1', 8), 143, y);
+    }
+    this.scrollbar(155, 23, 69);
+    frame(2, 94, 156, 40);
+    text('ODDS  RARE 30%  EPIC 11%', 6, 97, 2, 1, 154);
+    text(`LEGENDARY 3.5%${G.lvl >= 40 ? '  MYTHIC 0.5%' : ''}`, 6, 106, G.lvl >= 8 ? 'gold' : 2, 1, 154);
+    text(`PITY ${g.since}/${PITY}  GAMBLED ${g.count}`, 6, 115, 3, 1, 154);
+    text(g.best ? `BEST ${(RARITY[g.best] || RARITY[2]).name}` : 'NO GAMBLES YET', 6, 123, g.best >= LEGENDARY ? 'gold' : 2, 1, 154);
+    fill(0, 135, W, 9, 0); text('A:GAMBLE', 3, 136, 'gold'); textR('SEL:LOOT FILTER', 157, 136, 2);
+  }
+}
+class LootFilterScene {
+  constructor() { this.opaque = true; this.i = 0; }
+  update() {
+    const f = LF();
+    if (P('b') || P('a') && this.i === 2) { SFX.back(); removeScene(this); saveGame(); return; }
+    if (nav('up')) { this.i = (this.i + 2) % 3; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % 3; SFX.cursor(); }
+    const step = nav('right') || P('a') ? 1 : nav('left') ? -1 : 0;
+    if (!step) return;
+    if (this.i === 0) { const k = FILTER_LEVELS.findIndex(x => x.id === f.level); f.level = FILTER_LEVELS[(k + step + FILTER_LEVELS.length) % FILTER_LEVELS.length].id; SFX.toggle(); }
+    if (this.i === 1) { f.action = f.action === 'salvage' ? 'sell' : 'salvage'; SFX.toggle(); }
+  }
+  draw() {
+    const f = LF(), lvl = FILTER_LEVELS.find(x => x.id === f.level) || FILTER_LEVELS[0];
+    fill(0, 0, W, H, 0); hdr();
+    text('LOOT FILTER', 4, 13, 'gold');
+    const rows = [['KEEP', lvl.name], ['OTHERS', f.action === 'sell' ? 'AUTO-SELL' : 'AUTO-SALVAGE'], ['DONE', '']];
+    rows.forEach(([k, v], i) => { const y = 26 + i * 13; if (i === this.i) fill(2, y - 2, 156, 12, 1); text(k, 8, y, 3); if (v) textR(`< ${v} >`, 152, y, 'gold'); });
+    frame(2, 66, 156, 68);
+    text(lvl.keep ? `Drops below ${(RARITY[lvl.keep] || RARITY[1]).name}` : 'Every drop goes to your bag.', 6, 70, 3, 1, 154);
+    if (lvl.keep) text(f.action === 'sell' ? 'are sold for gold.' : 'become materials.', 6, 79, 3, 1, 154);
+    text('NEVER FILTERED: FAVOURITES,', 6, 92, 2, 1, 154);
+    text('HEIRLOOMS, RELICS, ARTIFACTS,', 6, 101, 2, 1, 154);
+    text('AWAKENED, SETS AND EPIC+', 6, 110, 2, 1, 154);
+    text(`FILTERED ${f.count}  GOLD ${fmt(f.gold)}`, 6, 122, 'gold', 1, 154);
+    fill(0, 135, W, 9, 0); text('L/R:CHANGE', 3, 136, 'gold'); textR('B:DONE', 157, 136, 2);
+  }
+}
+window.GamblerScene = GamblerScene; window.LootFilterScene = LootFilterScene;
+
+// the filter: wrap addGear (loot, chests, mail-to-bag) so filtered drops never reach the bag
+if (typeof addGear === 'function') {
+  const ag0 = addGear;
+  addGear = function (it) {
+    if (!G || !it) return ag0.apply(this, arguments);
+    const f = LF(), d = filterDecision(it, f);
+    if (d === 'keep') return ag0.apply(this, arguments);
+    f.count++;
+    if (d === 'sell') { const v = Math.max(1, Math.floor((it.value || 1) / 4)); G.gold += v; f.gold += v; if (typeof chatLog === 'function') chatLog('loot', 'FILTER', `Sold [${it.name}] for ${v} G.`); }
+    else { const y = typeof salvageYield === 'function' ? salvageYield(it) : { scrap: 1 }; for (const k in y) addItem(k, y[k]); if (typeof chatLog === 'function') chatLog('loot', 'FILTER', `Salvaged [${it.name}].`); }
+    return true;
+  };
+}
+
+if (typeof MainMenu !== 'undefined') {
+  const i0 = MainMenu.prototype.items;
+  MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('CRAFTING'); L.splice(at >= 0 ? at + 1 : L.length, 0, 'GAMBLER', 'LOOT FILTER'); return L; };
+  const u0 = MainMenu.prototype.update;
+  MainMenu.prototype.update = function () {
+    if (P('a')) { const o = this.items()[this.i]; if (o === 'GAMBLER') { SFX.select(); return push(new GamblerScene()); } if (o === 'LOOT FILTER') { SFX.select(); return push(new LootFilterScene()); } }
+    return u0.apply(this, arguments);
+  };
+}
+window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { GAMBLER: 'Spend glimmer shards on gear of a chosen slot. Pity at 20.', 'LOOT FILTER': 'Auto-salvage or sell drops below a rarity.' });
+})();
+
+</script>
+<script>
+'use strict';
+(() => {
+// ================================================================ SKILL RUNES (MAIN MENU > SKILL RUNES)
+// Every active skill has three runes that add to what it does when you use it in battle. Equip one rune
+// per skill; change them any time outside battle. Runes unlock at the skill's level +5, +15 and +30.
+// Rune effects use the game's own buffs, conditions and healing, so resistances and immunities still apply.
+// Pure rules are exported as GBQSkillRunes for tests; the game wiring runs only inside the game.
+
+const RUNE_UNLOCK = [5, 15, 30];
+// effect kinds: buffSelf / buffParty / debuffTarget / debuffFoes {id, rounds}; healSelf / healParty {pct};
+// healTarget {pct}; extraHit (strike a second foe); summon {kind}; echo {chance} (skill may stay ready)
+const SKILL_RUNES = {
+  power_strike: [
+    { id: 'cleave', name: 'CLEAVE', desc: 'Also strikes a second foe.', fx: [{ k: 'extraHit' }] },
+    { id: 'sunder', name: 'SUNDER', desc: 'The target is SUNDERED for 2 rounds.', fx: [{ k: 'debuffTarget', id: 'sundered', rounds: 2 }] },
+    { id: 'bloodletting', name: 'BLOODLETTING', desc: 'Heal yourself for 12% of max HP.', fx: [{ k: 'healSelf', pct: 12 }] },
+  ],
+  rally: [
+    { id: 'war_cry', name: 'WAR CRY', desc: 'The party is MIGHTY for 2 rounds.', fx: [{ k: 'buffParty', id: 'might', rounds: 2 }] },
+    { id: 'steadfast', name: 'STEADFAST', desc: 'The party is FORTIFIED for 2 rounds.', fx: [{ k: 'buffParty', id: 'fortify', rounds: 2 }] },
+    { id: 'second_wind', name: 'SECOND WIND', desc: 'The party heals 10% of max HP.', fx: [{ k: 'healParty', pct: 10 }] },
+  ],
+  field_mend: [
+    { id: 'renewal', name: 'RENEWAL', desc: 'The ally REGENERATES for 3 rounds.', fx: [{ k: 'buffTarget', id: 'regen', rounds: 3 }] },
+    { id: 'sanctify', name: 'SANCTIFY', desc: 'The ally is BLESSED for 2 rounds.', fx: [{ k: 'buffTarget', id: 'bless', rounds: 2 }] },
+    { id: 'overflow', name: 'OVERFLOW', desc: 'The whole party heals 6% of max HP.', fx: [{ k: 'healParty', pct: 6 }] },
+  ],
+  shadowstep: [
+    { id: 'smoke', name: 'SMOKE BOMB', desc: 'All foes are BLINDED for 1 round.', fx: [{ k: 'debuffFoes', id: 'blinded', rounds: 1 }] },
+    { id: 'swiftness', name: 'SWIFTNESS', desc: 'You are HASTED for 2 rounds.', fx: [{ k: 'buffSelf', id: 'haste', rounds: 2 }] },
+    { id: 'predator', name: 'PREDATOR', desc: 'You gain FOCUS for 3 rounds.', fx: [{ k: 'buffSelf', id: 'focus', rounds: 3 }] },
+  ],
+  arcane_burst: [
+    { id: 'frostbolt', name: 'FROSTBOLT', desc: 'The target gets FROSTBITE for 2 rounds.', fx: [{ k: 'debuffTarget', id: 'frostbite', rounds: 2 }] },
+    { id: 'echo', name: 'ECHO', desc: '40% chance the burst stays ready.', fx: [{ k: 'echo', chance: 0.4 }] },
+    { id: 'unravel', name: 'UNRAVEL', desc: 'All foes are WEAKENED for 2 rounds.', fx: [{ k: 'debuffFoes', id: 'weakened', rounds: 2 }] },
+  ],
+  spirit_call: [
+    { id: 'pack', name: 'PACK LEADER', desc: 'A second spirit wolf answers.', fx: [{ k: 'summon', kind: 'wolf' }] },
+    { id: 'howl', name: 'HOWL', desc: 'The party is MIGHTY for 2 rounds.', fx: [{ k: 'buffParty', id: 'might', rounds: 2 }] },
+    { id: 'bond', name: 'SPIRIT BOND', desc: 'Heal yourself for 15% of max HP.', fx: [{ k: 'healSelf', pct: 15 }] },
+  ],
+  sunflare: [
+    { id: 'dazzle', name: 'DAZZLE', desc: 'The target is BLINDED for 1 round.', fx: [{ k: 'debuffTarget', id: 'blinded', rounds: 1 }] },
+    { id: 'judgement', name: 'JUDGEMENT', desc: 'The target is VULNERABLE for 2 rounds.', fx: [{ k: 'debuffTarget', id: 'vulnerable', rounds: 2 }] },
+    { id: 'dawnlight', name: 'DAWNLIGHT', desc: 'The party heals 8% of max HP.', fx: [{ k: 'healParty', pct: 8 }] },
+  ],
+  warding_aura: [
+    { id: 'briar', name: 'BRIAR WARD', desc: 'The party gains THORNSKIN for 3 rounds.', fx: [{ k: 'buffParty', id: 'thornskin', rounds: 3 }] },
+    { id: 'quicken', name: 'QUICKENING', desc: 'The party is HASTED for 1 round.', fx: [{ k: 'buffParty', id: 'haste', rounds: 1 }] },
+    { id: 'restore', name: 'RESTORATION', desc: 'The party heals 10% of max HP.', fx: [{ k: 'healParty', pct: 10 }] },
+  ],
+};
+const runeUnlockLevel = (skillLevel, index) => Math.max(1, Math.floor(skillLevel) || 1) + RUNE_UNLOCK[index];
+const runesUnlocked = (skillLevel, heroLvl) => RUNE_UNLOCK.filter((_, i) => heroLvl >= runeUnlockLevel(skillLevel, i)).length;
+// the rune a hero can actually use for a skill (null when none chosen or it is still locked)
+function activeRune(skillId, skillLevel, heroLvl, chosen) {
+  const list = SKILL_RUNES[skillId] || [], i = list.findIndex(r => r.id === chosen);
+  return i >= 0 && heroLvl >= runeUnlockLevel(skillLevel, i) ? list[i] : null;
+}
+
+if (typeof globalThis !== 'undefined') globalThis.GBQSkillRunes = { RUNE_UNLOCK, SKILL_RUNES, runeUnlockLevel, runesUnlocked, activeRune };
+
+// ---------------------------------------------------------------- game wiring
+if (typeof window === 'undefined' || typeof ACTIVE_SKILLS === 'undefined' || typeof Battle === 'undefined') return;
+
+const skillDef = id => ACTIVE_SKILLS.find(s => s.id === id);
+const runeOf = (c, id) => { const d = skillDef(id); return d ? activeRune(id, d.level, c.lvl, (c.skillRunes || {})[id]) : null; };
+const effectOk = id => (typeof BUFFS !== 'undefined' && BUFFS[id]) || (typeof CONDITIONS !== 'undefined' && CONDITIONS[id]);
+
+// apply a rune's effects after its skill resolves
+function runeSteps(battle, u, t, skillId, rune) {
+  const party = battle.party.filter(m => hpOf(m) > 0 && (!isChar(m) || !m.ch.dead)), foes = battle.foes.filter(f => hpOf(f) > 0);
+  const heal = (m, pct) => battle.heal(m, Math.max(1, Math.round(maxHpOf(m) * pct / 100)));
+  const instant = () => {
+    if (SFX.buff) SFX.buff();
+    for (const fx of rune.fx) {
+      if (fx.k === 'echo') { if (R() < fx.chance) battle.skillUses.delete(skillId); continue; }
+      if (fx.k === 'healSelf') { heal(u, fx.pct); continue; }
+      if (fx.k === 'healParty') { party.forEach(m => heal(m, fx.pct)); continue; }
+      if (fx.k === 'healTarget') { if (t) heal(t, fx.pct); continue; }
+      if (!fx.id || !effectOk(fx.id)) continue;
+      const hit = f => { if (hpOf(f) > 0 && !(f.condImm && f.condImm.includes(fx.id))) addEffect(f, { id: fx.id, rounds: fx.rounds, src: u.id }); };
+      if (fx.k === 'buffSelf') addEffect(u, { id: fx.id, rounds: fx.rounds });
+      else if (fx.k === 'buffParty') party.forEach(m => addEffect(m, { id: fx.id, rounds: fx.rounds }));
+      else if (fx.k === 'buffTarget' && t) addEffect(t, { id: fx.id, rounds: fx.rounds });
+      else if (fx.k === 'debuffTarget' && t) hit(t);
+      else if (fx.k === 'debuffFoes') foes.forEach(hit);
+    }
+  };
+  const steps = [battle.say(`RUNE ${rune.name}: ${rune.desc}`, instant)];
+  for (const fx of rune.fx) {
+    if (fx.k === 'extraHit') { const other = foes.filter(f => f !== t); if (other.length) steps.push(...battle.weaponAttack(u, pick(other), { single: true })); }
+    if (fx.k === 'summon' && battle.party.length < 12 && typeof battle.addSummon === 'function') steps.push(battle.say('Another spirit answers!', () => battle.addSummon(u, fx.kind)));
+  }
+  return steps.filter(Boolean);
+}
+// wrap each active skill in the battle menu with its rune
+{
+  const ab0 = Battle.prototype.abilities;
+  Battle.prototype.abilities = function (u) {
+    const list = ab0.apply(this, arguments), c = u && u.ch; if (!c || c.ai) return list;
+    for (const e of list) {
+      const m = /^skill_(.+)$/.exec(e.id || ''); if (!m) continue;
+      const rune = runeOf(c, m[1]); if (!rune) continue;
+      const f0 = e.fn, battle = this, skillId = m[1];
+      e.name = `${e.name}`.slice(0, 13) + '*';
+      e.fn = function (t) { const out = f0.apply(this, arguments); return (Array.isArray(out) ? out : out ? [out] : []).concat(runeSteps(battle, u, t, skillId, rune)); };
+    }
+    return list;
+  };
+}
+
+class SkillRuneScene extends ListScene {
+  constructor() { super(5); }
+  items() { return (G.activeSkills || []).map(skillDef).filter(d => d && d.classes.includes(G.cls)); }
+  update() {
+    this.navList();
+    if (P('b')) { SFX.back(); removeScene(this); return; }
+    const d = this.items()[this.i]; if (!d) return;
+    const runes = SKILL_RUNES[d.id] || [], open = runesUnlocked(d.level, G.lvl);
+    const step = P('a') || P('select') ? 1 : 0;
+    if (!step || !runes.length) return;
+    G.skillRunes = G.skillRunes || {};
+    const cur = runes.findIndex(r => r.id === G.skillRunes[d.id]);
+    // cycle NONE -> unlocked runes -> NONE
+    const order = [-1, ...runes.map((_, i) => i).filter(i => i < open)], next = order[(order.indexOf(cur) + 1) % order.length];
+    if (order.length === 1) { SFX.error(); return say(`${d.name} runes unlock at level ${runeUnlockLevel(d.level, 0)}.`); }
+    if (next < 0) delete G.skillRunes[d.id]; else G.skillRunes[d.id] = runes[next].id;
+    SFX.toggle(); saveGame();
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    const L = this.items();
+    text('SKILL RUNES', 4, 13, 'gold'); textR(`${L.length} SKILLS`, 156, 13, 2);
+    if (!L.length) { textC('LEARN AN ACTIVE SKILL', 80, 60, 2); textC('IN GROWTH > SKILLS', 80, 70, 2); fill(0, 135, W, 9, 0); text('B:BACK', 3, 136, 2); return; }
+    for (let r = 0; r < this.rows; r++) {
+      const k = this.top + r, d = L[k]; if (!d) break;
+      const y = 23 + r * 11, rn = runeOf(G, d.id);
+      if (k === this.i) fill(2, y - 1, 152, 11, 1);
+      text(d.name, 6, y + 1, 3); textR(rn ? rn.name : 'NO RUNE', 152, y + 1, rn ? 'gold' : 2);
+    }
+    this.scrollbar(155, 23, 54);
+    const d = L[this.i]; if (!d) return;
+    frame(2, 80, 156, 54);
+    const runes = SKILL_RUNES[d.id] || [], onId = (G.skillRunes || {})[d.id];
+    runes.forEach((rn, i) => {
+      const y = 83 + i * 9, need = runeUnlockLevel(d.level, i), open = G.lvl >= need, on = onId === rn.id;
+      text(`${on ? '>' : ' '}${rn.name}`, 6, y, on ? 'gold' : open ? 3 : 2, 1, 120);
+      textR(open ? (on ? 'ON' : '') : `LV${need}`, 154, y, open ? 'gold' : 'red');
+    });
+    const show = runes.find(r => r.id === onId) || runes[0];
+    if (show) wrap(show.desc, 25).slice(0, 2).forEach((l, i) => text(l, 6, 112 + i * 9, 2, 1, 154));
+    fill(0, 135, W, 9, 0); text('A:NEXT RUNE', 3, 136, 'gold'); textR('B:BACK', 157, 136, 2);
+  }
+}
+window.SkillRuneScene = SkillRuneScene;
+
+if (typeof MainMenu !== 'undefined') {
+  const i0 = MainMenu.prototype.items;
+  MainMenu.prototype.items = function () { const L = i0.apply(this, arguments), at = L.indexOf('COMBAT ARTS'); L.splice(at >= 0 ? at + 1 : L.length, 0, 'SKILL RUNES'); return L; };
+  const u0 = MainMenu.prototype.update;
+  MainMenu.prototype.update = function () { if (P('a') && this.items()[this.i] === 'SKILL RUNES') { SFX.select(); return push(new SkillRuneScene()); } return u0.apply(this, arguments); };
+}
+window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { 'SKILL RUNES': 'Three runes per active skill change what it does in battle.' });
 })();
 
 </script>
