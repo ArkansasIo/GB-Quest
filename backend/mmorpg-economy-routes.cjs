@@ -204,4 +204,4 @@ async function handleAuctionRequest({ req, res, url, pool, accountFor, readBody,
 
   json(res, 405, { error: 'method_not_allowed' }); return true;
 }
-module.exports = { handleMailRequest, handleAuctionRequest };
+module.exports = { handleMailRequest, handleAuctionRequest, parseAttachments };
