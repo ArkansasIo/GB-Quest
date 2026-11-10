@@ -314,9 +314,9 @@ async () => {
     if (!window.setMorphForm('wolf') || G.mount !== 'morph_wolf' || !G.mounted || mountSpeed() !== 5) return 'wolf morph start';
     if (!window.setMorphForm('swim') || G.morph !== 'swim' || G.mounted) return 'swim morph switch';
     window.endMorph(true); if (G.mount !== 'drake_crimson' || !G.mounted || G.morph) return 'morph restore ride';
-    G.mount = null; G.mounted = false; G.mounts = []; G.hasMount = false;
+    G.mount = null; G.mounted = false; G.mounts = []; G.hasMount = false; reset(new Field());
     if (!window.setMorphForm('wolf')) return 'wolf morph without mount';
-    press('b'); reset(new Field()); press('b'); render();
+    press('b'); render();
     if (G.morph || G.mounted || G.mount !== null) return 'wolf morph B exit';
     if (!window.setMorphForm('swim') || G.mounted) return 'swim morph start';
     window.endMorph(true); if (G.morph || G.mounted) return 'swim morph cleanup';
