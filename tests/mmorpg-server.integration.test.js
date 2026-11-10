@@ -231,6 +231,10 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal(acceptQuest.status, 201);
     let sequence = 5, defeated = false;
+    send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001', abilityNodeId: 'not_unlocked_talent' });
+    const rejectedAbility = await waitFor('error');
+    assert.equal(rejectedAbility.payload.code, 'ability_not_unlocked_or_not_active');
+    await new Promise(resolve => setTimeout(resolve, 700));
     for (let attempt = 0; attempt < 8 && !defeated; attempt++) {
       send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001', ...(attempt === 0 ? { abilityNodeId: 'ranger_hunter_node_00' } : {}) });
       const combat = await waitFor('combat.resolved');
