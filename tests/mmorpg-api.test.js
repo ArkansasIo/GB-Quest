@@ -278,3 +278,27 @@ test('MMORPG API loads persistent character profile and allocates server-owned a
   assert.deepEqual(JSON.parse(calls[1].options.body), { attribute: 'str', points: 1 });
   assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer progression-token'));
 });
+
+test('MMORPG API exposes class talent trees, specialization choice and node unlocks', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ specializations: [], unlocked: 'ranger_hunter_node_00' }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'talent-session-token';
+  await api.talentTrees('ranger');
+  await api.chooseSpecialization('char-1', 'ranger_hunter');
+  await api.unlockTalent('char-1', 'ranger_hunter_node_00');
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/talents?class=ranger',
+    'https://realm.example.test/api/characters/char-1/specialization',
+    'https://realm.example.test/api/characters/char-1/talents/ranger_hunter_node_00/unlock'
+  ]);
+  assert.deepEqual(JSON.parse(calls[1].options.body), { specializationId: 'ranger_hunter' });
+  assert.deepEqual(JSON.parse(calls[2].options.body), {});
+  assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer talent-session-token'));
+});
