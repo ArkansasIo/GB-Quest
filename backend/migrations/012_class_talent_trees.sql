@@ -93,10 +93,7 @@ SELECT spec_id || '_node_' || lpad(idx::text,2,'0'), spec_id, idx, branch, node_
        ELSE spec_name || ' ' || branch || ' passive. Improves this specialization and its combat utility.' END,
   required_level,point_cost,
   jsonb_build_object('kind',node_type,'branch',branch,'specialization',spec_name,'rank',idx/3+1,
-    'power',CASE WHEN node_type='ultimate' THEN 100 ELSE 3+(idx/3) END,
-    'damageBonus',CASE WHEN node_type='passive' THEN 1+(idx/12) ELSE 0 END,
-    'damageMultiplier',CASE WHEN node_type='ultimate' THEN 3.0 WHEN node_type='active' THEN 1.25+LEAST(1.5,(idx/12)*0.1) ELSE 1.0 END,
-    'manaCost',CASE WHEN node_type='ultimate' THEN 50 WHEN node_type='active' THEN 5+(idx/3) ELSE 0 END),
+    'power',CASE WHEN node_type='ultimate' THEN 100 ELSE 3+(idx/3) END),
   CASE WHEN idx>=3 THEN spec_id || '_node_' || lpad((idx-3)::text,2,'0') ELSE NULL END
 FROM node_rows
 ON CONFLICT (id) DO UPDATE SET
