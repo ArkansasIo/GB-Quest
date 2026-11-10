@@ -14,6 +14,7 @@ const { isAllowedOrigin, createCorsHeaders, createAuthLimiter, createRequestLimi
 const { handlePartyRequest } = require('./mmorpg-party-routes.cjs');
 const { handleGuildRequest } = require('./mmorpg-guild-routes.cjs');
 const { handleInstanceRequest } = require('./mmorpg-instance-routes.cjs');
+const { handleRaidRequest } = require('./mmorpg-raid-routes.cjs');
 const { handleFriendRequest } = require('./mmorpg-friend-routes.cjs');
 const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-routes.cjs');
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
