@@ -1,4 +1,23 @@
 -- Class specializations and a complete three-branch talent catalogue through level 720.
+
+-- Match the shared client progression curve exactly on the authoritative server.
+CREATE OR REPLACE FUNCTION gbq_xp_for_level(target_level integer)
+RETURNS bigint
+LANGUAGE sql
+IMMUTABLE
+STRICT
+AS $
+  SELECT CASE
+    WHEN target_level < 1 OR target_level > 720 THEN NULL
+    WHEN target_level <= 20 THEN
+      (ARRAY[0,300,900,2700,6500,14000,23000,34000,48000,64000,
+        85000,100000,120000,140000,165000,195000,225000,265000,305000,355000]::bigint[])[target_level]
+    ELSE 355000::bigint
+      + 25000::bigint * (target_level - 20)
+      + 250::bigint * (target_level - 20) * (target_level - 20)
+  END
+$;
+
 ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_level_check;
 ALTER TABLE characters ADD CONSTRAINT characters_level_check CHECK (level BETWEEN 1 AND 720);
 ALTER TABLE characters ADD COLUMN IF NOT EXISTS specialization_id varchar(48);
