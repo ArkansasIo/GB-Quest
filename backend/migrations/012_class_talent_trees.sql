@@ -63,7 +63,7 @@ WITH node_rows AS (
     CASE WHEN n=72 THEN 'ultimate' WHEN n % 4=0 THEN 'active' ELSE 'passive' END AS node_type,
     CASE WHEN n=72 THEN 720 ELSE n*10+1 END AS required_level,
     CASE WHEN n=72 THEN 3 WHEN n % 12=0 THEN 2 ELSE 1 END AS point_cost
-  FROM mmorpg_talent_specializations s CROSS JOIN generate_series(0,72) AS n
+  FROM mmorpg_talent_specializations s CROSS JOIN generate_series(0,72) AS gs(n)
 )
 INSERT INTO mmorpg_talent_nodes(id,specialization_id,node_index,branch,node_type,name,description,required_level,point_cost,effect,prerequisite_id)
 SELECT spec_id || '_node_' || lpad(idx::text,2,'0'), spec_id, idx, branch, node_type,
