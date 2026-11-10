@@ -65,4 +65,4 @@ renderChat(recovery.resources.zoneChat, recovery.resources.realmChat);
 if (recovery.errors.length) showRecoveryWarnings(recovery.errors);
 ```
 
-The recovery call fetches inventory, quests, party, guild, dungeon instances, mail, friends, trades, and recent zone/realm chat in parallel. It uses `Promise.allSettled`: a failed panel is reported in `errors` while successful panels remain available. Invoke it after authentication/character selection and after receiving the authoritative `zone.snapshot`; do not replay commands that may mutate game state.
+The recovery call fetches inventory, quests, party, raid group, guild, dungeon instances, mail, friends, trades, and recent zone/realm chat in parallel. It uses `Promise.allSettled`: a failed panel is reported in `errors` while successful panels remain available. Invoke it after authentication/character selection and after receiving the authoritative `zone.snapshot`; do not replay commands that may mutate game state.
