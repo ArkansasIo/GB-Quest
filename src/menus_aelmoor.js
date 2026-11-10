@@ -364,7 +364,10 @@ class AelNewGame {
     if (c === 'APPEARANCE') { const k = CC_LOOKS.indexOf(this.pick.look || this.pick.cls); this.pick.look = CC_LOOKS[(k + 1) % CC_LOOKS.length]; SFX.toggle(); }
     if (c === 'NAME') this.startNaming();
     if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot, this.onlineSession)); }
-    if (c === 'ADVANCED') { SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); }); }
+    if (c === 'ADVANCED') {
+      if (this.onlineSession) { say('ADVANCED CREATION IS OFFLINE ONLY. Use the standard creator to save a hero to your selected realm.'); return; }
+      SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); });
+    }
   }
   draw() {
     aelBackdrop(true);
