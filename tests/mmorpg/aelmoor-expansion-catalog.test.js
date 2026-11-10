@@ -30,8 +30,8 @@ test("expanded active abilities validate and unlock by class level", () => {
 
 test("talent trees enforce class, level and talent-point requirements", () => {
   assert.equal(TALENT_CATALOG.size, 60);
-  const character = { classId: "fighter", level: 10, talentPoints: 2, talents: [] };
-  const talent = TALENT_CATALOG.list({ classId: "fighter" })[0];
+  const character = { classId: "fighter", level: 30, talentPoints: 2, talents: [] };
+  const talent = TALENT_CATALOG.list({ classId: "fighter" }).find(entry => entry.requiredLevel > 1);
   assert.equal(TALENT_CATALOG.learn({ ...character, level: 1 }, talent.id).reason, "level_too_low");
   assert.equal(TALENT_CATALOG.learn(character, talent.id).ok, true);
   assert.equal(character.talentPoints, 1);
