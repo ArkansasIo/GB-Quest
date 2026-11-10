@@ -74,6 +74,21 @@ export class GBQuestMMOApi {
   leaveParty(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
   }
+  friends(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends');
+  }
+  requestFriend(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends', { method: 'POST', body: { targetCharacterId } });
+  }
+  acceptFriend(characterId, friendCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/' + encodeURIComponent(friendCharacterId) + '/accept', { method: 'POST', body: {} });
+  }
+  removeFriend(characterId, friendCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/' + encodeURIComponent(friendCharacterId), { method: 'DELETE' });
+  }
+  blockPlayer(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks', { method: 'POST', body: { targetCharacterId } });
+  }
   instance(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/instances');
   }
