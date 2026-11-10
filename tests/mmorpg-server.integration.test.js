@@ -193,7 +193,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     for (let attempt = 0; attempt < 8 && !defeated; attempt++) {
       send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001' });
       const combat = await waitFor('combat.resolved');
-      assert.ok(combat.payload.damage >= 1);
+      assert.ok(combat.payload.damage >= 10, 'ranger DEX allocation should increase authoritative damage');
       assert.equal(combat.payload.targetId, '00000000-0000-4000-8000-000000000001');
       defeated = combat.payload.defeated;
       if (!defeated) await new Promise(resolve => setTimeout(resolve, 700));
