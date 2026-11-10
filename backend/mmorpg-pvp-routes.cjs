@@ -7,8 +7,9 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
   const accept = url.pathname.match(/^\/api\/pvp-matches\/([0-9a-f-]{36})\/accept$/i);
   const decline = url.pathname.match(/^\/api\/pvp-matches\/([0-9a-f-]{36})\/decline$/i);
   const cancel = url.pathname.match(/^\/api\/pvp-matches\/([0-9a-f-]{36})\/cancel$/i);
+  const forfeit = url.pathname.match(/^\/api\/pvp-matches\/([0-9a-f-]{36})\/forfeit$/i);
   const matchView = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/pvp-matches$/i);
-  if (!challenges && !accept && !decline && !cancel && !matchView) return false;
+  if (!challenges && !accept && !decline && !cancel && !matchView && !forfeit) return false;
   const account = await accountFor(req);
   if (!account) { json(res, 401, { error: 'unauthorized' }); return true; }
 
@@ -29,6 +30,7 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
     const tx = await pool.connect();
     try {
       await tx.query('BEGIN');
+      await tx.query("UPDATE pvp_matches SET status='cancelled',ended_at=now() WHERE status='queued' AND created_at<=now()-interval '2 minutes'");
       const players = await tx.query('SELECT id,realm_id FROM characters WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE', [[challengerId, targetId]]);
       const challenger = players.rows.find(row => row.id === challengerId), target = players.rows.find(row => row.id === targetId);
       const owner = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [challengerId, account.id]);
@@ -78,6 +80,37 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
       RETURNING p.id,p.status,p.ended_at`, [matchId, JSON.stringify([characterId]), characterId, account.id]);
     if (!result.rowCount) { json(res, 404, { error: 'pvp_challenge_not_cancellable' }); return true; }
     json(res, 200, { match: result.rows[0] }); return true;
+  }
+
+
+  if (forfeit && req.method === 'POST') {
+    const matchId = forfeit[1], body = await readBody(req), characterId = String(body.characterId || '');
+    if (!UUID.test(characterId)) { json(res, 400, { error: 'invalid_character_id' }); return true; }
+    const tx = await pool.connect();
+    try {
+      await tx.query('BEGIN');
+      const owner = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [characterId, account.id]);
+      if (!owner.rowCount) { await tx.query('ROLLBACK'); json(res, 404, { error: 'character_not_found' }); return true; }
+      const match = await tx.query("SELECT * FROM pvp_matches WHERE id=$1 AND mode='duel' AND status='active' FOR UPDATE", [matchId]);
+      if (!match.rowCount) { await tx.query('ROLLBACK'); json(res, 404, { error: 'active_duel_not_found' }); return true; }
+      const row = match.rows[0], teamA = row.team_a?.[0], teamB = row.team_b?.[0];
+      if (characterId !== teamA && characterId !== teamB) { await tx.query('ROLLBACK'); json(res, 403, { error: 'pvp_participant_required' }); return true; }
+      const winner = characterId === teamA ? teamB : teamA;
+      const players = [teamA, teamB].sort();
+      for (const id of players) await tx.query("INSERT INTO pvp_ratings(character_id,bracket) VALUES($1,'duel') ON CONFLICT DO NOTHING", [id]);
+      const ratings = await tx.query("SELECT character_id,rating FROM pvp_ratings WHERE bracket='duel' AND character_id=ANY($1::uuid[]) ORDER BY character_id FOR UPDATE", [players]);
+      if (ratings.rowCount !== 2) { await tx.query('ROLLBACK'); json(res, 409, { error: 'pvp_rating_state_invalid' }); return true; }
+      const ra = Number(ratings.rows.find(x => x.character_id === teamA).rating);
+      const rb = Number(ratings.rows.find(x => x.character_id === teamB).rating);
+      const expectedA = 1 / (1 + Math.pow(10, (rb - ra) / 400));
+      const deltaA = Math.round(32 * (0 - expectedA)), deltaB = -deltaA;
+      const deltas = { [teamA]: deltaA, [teamB]: deltaB };
+      await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaA, 0, 1, teamA]);
+      await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaB, 1, 0, teamB]);
+      await tx.query("UPDATE pvp_matches SET status='completed',ended_at=now(),rating_delta=$1::jsonb WHERE id=$2", [JSON.stringify(deltas), matchId]);
+      await tx.query('COMMIT'); json(res, 200, { completed: true, matchId, winnerCharacterId: winner, ratingDelta: deltas }); return true;
+    } catch (error) { await tx.query('ROLLBACK').catch(() => {}); throw error; }
+    finally { tx.release(); }
   }
 
   json(res, 405, { error: 'method_not_allowed' }); return true;
