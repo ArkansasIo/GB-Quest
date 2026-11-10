@@ -74,6 +74,28 @@ export class GBQuestMMOApi {
   leaveParty(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
   }
+  mail(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail');
+  }
+  sendMail(characterId, recipientCharacterId, { subject = '', body = '', gold = 0, attachments = [] } = {}) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail/send', { method: 'POST', body: { recipientCharacterId, subject, body, gold, attachments } });
+  }
+  claimMail(mailId, characterId) {
+    return this.request('/api/mail/' + encodeURIComponent(mailId) + '/claim', { method: 'POST', body: { characterId } });
+  }
+  auctions(realmId, itemId = '') {
+    const query = '?realmId=' + encodeURIComponent(realmId) + (itemId ? '&itemId=' + encodeURIComponent(itemId) : '');
+    return this.request('/api/auctions' + query);
+  }
+  createAuction(characterId, itemId, quantity, buyoutGold, durationHours = 24) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/auctions', { method: 'POST', body: { itemId, quantity, buyoutGold, durationHours } });
+  }
+  buyAuction(listingId, characterId) {
+    return this.request('/api/auctions/' + encodeURIComponent(listingId) + '/buy', { method: 'POST', body: { characterId } });
+  }
+  cancelAuction(listingId, characterId) {
+    return this.request('/api/auctions/' + encodeURIComponent(listingId) + '/cancel', { method: 'POST', body: { characterId } });
+  }
   friends(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends');
   }
