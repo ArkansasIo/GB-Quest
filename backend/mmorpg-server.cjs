@@ -245,7 +245,9 @@ setInterval(() => requestLimiter.sweep(), 60000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
   const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
-  ws.isAlive = true;\n  ws.on('pong', () => { ws.isAlive = true; });\n  socketState.set(ws, state); activeSockets.set(ws, state);
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
+  socketState.set(ws, state); activeSockets.set(ws, state);
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
   ws.on('message', async raw => {
     try {
