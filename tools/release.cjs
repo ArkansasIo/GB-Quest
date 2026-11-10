@@ -19,7 +19,7 @@ const push = !args.includes('--no-push');
 if (!/^\d+\.\d+\.\d+$/.test(version)) { console.error('usage: node tools/release.cjs <MAJOR.MINOR.PATCH> [--no-push]'); process.exit(1); }
 
 // everything except the new notes must already be committed, so the release commit is complete
-const dirty = execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(l => l.trim() && !/ patch-notes\.json$/.test(l) && !/ package-lock\.json$/.test(l));
+const dirty = execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(l => l.trim() && !/ patch-notes\.json$/.test(l) && !/ package-lock\.json$/.test(l) && !/ dist\//.test(l)); // dist/ is rebuilt below
 if (dirty.length) { console.error('Commit your changes first. Uncommitted:\n' + dirty.join('\n')); process.exit(1); }
 const data = notes.load(), rel = data.releases[0];
 if (rel.version !== version) { console.error(`patch-notes.json: the first release is v${rel.version}. Add the notes for v${version} at the top first.`); process.exit(1); }
