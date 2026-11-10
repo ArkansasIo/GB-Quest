@@ -205,7 +205,7 @@ test('recoverSession restores durable panels in parallel and preserves partial s
   });
   api.token = 'recovery-token';
   const result = await api.recoverSession('char-1', { chatLimit: 20 });
-  assert.equal(calls.length, 12);
+  assert.equal(calls.length, 13);
   assert.equal(result.characterId, 'char-1');
   assert.equal(result.resources.profile.endpoint, 'https://realm.example.test/api/characters/char-1/profile');
   assert.equal(result.resources.inventory, undefined);
