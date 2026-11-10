@@ -16,7 +16,7 @@ This deployment runs the PostgreSQL-backed service in `mmorpg-server.cjs`. It is
 - Server-authoritative movement coordinates and persisted character positions.
 - Zone presence and snapshots.
 - Transaction-locked mob combat, server-calculated damage, XP awards and timed mob respawns.
-- Zone chat with per-connection rate limits.
+- Zone and realm chat with per-connection rate limits, persistent PostgreSQL message history, and cross-instance event relay. Whisper remains online-only and is not stored in public channel history.
 - Database health endpoint at `GET /health`.
 
 ## Start with Docker Compose
@@ -113,3 +113,9 @@ The game HUD includes a Trading action backed by `client/mmorpg-trade.js` and `c
 ### In-game bank interface
 
 The Trading panel's Bank tab uses the authenticated `GET /api/characters/:id/bank`, `POST /api/characters/:id/bank/deposit`, and `POST /api/characters/:id/bank/withdraw` endpoints. The client refreshes both wallet and bank balances after each successful transfer. The server validates whole-gold amounts, checks wallet/bank funds and safe-integer limits, locks the character row, updates balances and writes the `bank_transactions` audit row in the same PostgreSQL transaction. The interface is bundled into the single-file itch.io HTML build with the existing trade-panel stylesheet.
+
+
+## Persistent realm and zone chat
+- `chat.send` accepts `zone` and `realm` channels and stores each message in `world_chat_messages` before broadcasting it. Messages are limited to 180 characters and rate-limited per connection.
+- `GET /api/characters/:id/chat?channel=zone&limit=50` or `channel=realm` returns recent history for the authenticated character's current zone or realm. Limits are clamped to 1–100 messages and the character's realm/zone are resolved from PostgreSQL, not accepted from query parameters.
+- Whisper is still an online-only direct message in the current socket process. Persistent/offline mail is handled separately by the mailbox system; cross-instance whisper routing and moderation retention are future work.
