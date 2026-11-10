@@ -49,6 +49,7 @@ export class GBQuestMMOApi {
   async recoverSession(characterId, { chatLimit = 50 } = {}) {
     if (typeof characterId !== 'string' || !characterId.trim()) throw new TypeError('characterId is required');
     const resources = {
+      profile: () => this.characterProfile(characterId),
       inventory: () => this.inventory(characterId),
       quests: () => this.quests(characterId),
       party: () => this.party(characterId),
@@ -81,6 +82,14 @@ export class GBQuestMMOApi {
     const body = { name, class: characterClass };
     if (realmId) body.realmId = realmId;
     return this.request('/api/characters', { method: 'POST', body });
+  }
+  characterProfile(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/profile');
+  }
+  allocateAttribute(characterId, attribute, points = 1) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/attributes', {
+      method: 'POST', body: { attribute, points }
+    });
   }
   inventory(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/inventory');
