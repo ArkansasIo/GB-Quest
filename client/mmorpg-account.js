@@ -4,6 +4,7 @@
   if (typeof window === 'undefined' || window.GBQMMOAccount) return;
 
   let activeSession = null;
+  let gameplaySession = null;
   let overlay = null;
   let onReady = null;
   let directory = { regions: [], realms: [] };
@@ -219,11 +220,23 @@
     return result.character;
   }
 
+  async function gameplayRequest(path, options = {}) {
+    if (!gameplaySession || !gameplaySession.token) throw new Error('Online session expired. Sign in again to use server progression.');
+    return request(gameplaySession.baseUrl, path, gameplaySession.token, options);
+  }
+
   window.GBQMMOAccount = {
     open,
     close,
     createCharacter,
+    adoptGameplaySession(session) {
+      if (!session || !session.token || !session.baseUrl) throw new Error('A valid online session is required.');
+      gameplaySession = { baseUrl: session.baseUrl, token: session.token, account: session.account, realm: session.realm };
+      return true;
+    },
+    gameplayRequest,
+    get hasGameplaySession() { return !!(gameplaySession && gameplaySession.token); },
     get session() { return activeSession; },
-    logout() { activeSession = null; }
+    logout() { activeSession = null; gameplaySession = null; }
   };
 })();
