@@ -33,7 +33,9 @@ This specification defines the authoritative multiplayer domain and deployment c
 | Safety | player_reports | report.player and staff moderation routes |
 
 ## Scaling and runtime
-- Keep one authoritative simulation owner per realm/zone. Process-local registries are single-node only; multi-node deployments require Redis/NATS pub-sub or a durable event bus plus distributed ownership leases.
+- Shared online presence is stored in PostgreSQL `world_presence` leases (45-second default TTL, renewed every 15 seconds); expired leases are swept by each running process. Realm admission is serialized with PostgreSQL advisory transaction locks to avoid concurrent cross-instance capacity overbooking.
+- Zone and realm events are relayed through PostgreSQL `LISTEN/NOTIFY`. This is transient, best-effort fan-out, not a durable queue; reconnecting clients must request a fresh authoritative zone snapshot. The listener currently does not auto-reconnect after a database connection failure.
+- This is a shared presence/event relay foundation, not complete horizontal simulation sharding. Keep one authoritative simulation owner per realm/zone; multi-node deployments still need distributed ownership/fencing, durable event delivery for critical events, listener reconnection, distributed rate limiting and operational load testing.
 - PostgreSQL is authoritative for durable state. Redis may cache presence, queues and short-lived invitations, never the sole copy of inventory or currency.
 - Separate workers for simulation, chat fan-out, persistence and background jobs as load grows.
 - Add per-account, per-IP and per-message-type limits; disconnect malformed clients; record request IDs and security events.
@@ -72,3 +74,7 @@ Run npm run mmorpg:migrate with DATABASE_URL configured. The migration is additi
 - `GET /api/world/status` reports current online players by region, realm and zone, configured capacity and utilization, registered account/character totals, and the persisted peak-concurrent count.
 - `GET /api/world/status?refresh=1` bypasses the short response cache. The API client exposes `worldStatus({ refresh })`.
 - Current online population is explicitly scoped to one server process. This endpoint is monitoring and does not claim the service has been load-tested to 9,000 concurrent users. Cross-instance live population, admission control and real-time fan-out require shared presence and pub/sub before horizontal scaling.
+
+
+## Shared realm presence implementation
+Migration 006 creates `world_presence` leases keyed by WebSocket session. Every selected character session renews its lease, and disconnects remove it immediately; crashed processes are recovered by lease expiry. The public world status endpoint aggregates unexpired leases across instances. Realm capacity admission uses a PostgreSQL advisory transaction lock per realm and commits the presence lease atomically with the capacity check. Each server process uses a unique `GBQ_SERVER_INSTANCE_ID`; `GBQ_PRESENCE_TTL_SECONDS` configures the lease lifetime. PostgreSQL `LISTEN/NOTIFY` relays zone and realm events to other processes. Because notifications are not durable, zone snapshots remain the recovery mechanism after reconnects.
