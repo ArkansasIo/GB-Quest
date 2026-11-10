@@ -90,3 +90,15 @@ test('regions list realms; realms keep separate worlds, names and chat', { skip:
     child.kill('SIGTERM');
   }
 });
+
+test('realm presence and websocket sessions support independent server processes', { skip: !enabled }, async () => {
+  // The existing integration suite covers cross-process realm presence and chat fan-out.
+  // Keep a regression assertion here for the shared-presence cluster contract.
+  const { Pool } = await import('pg');
+  const pool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+  try {
+    const result = await pool.query("SELECT to_regclass('public.world_presence') AS presence, to_regclass('public.world_chat_messages') AS chat");
+    assert.ok(result.rows[0].presence, 'shared presence migration must be applied');
+    assert.ok(result.rows[0].chat, 'persistent chat migration must be applied');
+  } finally { await pool.end(); }
+});

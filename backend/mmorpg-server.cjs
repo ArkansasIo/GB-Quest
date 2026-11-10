@@ -91,6 +91,7 @@ function deliverWorldEvent(event) {
     if (!state.authenticated || !state.character) continue;
     if (event.scope === 'realm' && state.realmId === event.realmId) send(ws, event.type, event.payload);
     if (event.scope === 'zone' && state.realmId === event.realmId && state.zoneId === event.zoneId) send(ws, event.type, event.payload);
+    if (event.scope === 'character' && state.realmId === event.realmId && state.character.id === event.characterId) send(ws, event.type, event.payload);
   }
 }
 async function persistPresence(ws, state) {
@@ -240,7 +241,7 @@ setInterval(() => requestLimiter.sweep(), 60000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
   const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
-  socketState.set(ws, state); activeSockets.set(ws, state);
+  ws.isAlive = true;\n  ws.on('pong', () => { ws.isAlive = true; });\n  socketState.set(ws, state); activeSockets.set(ws, state);
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
   ws.on('message', async raw => {
     try {
@@ -395,10 +396,20 @@ function attachSocket(ws, req) {
         }
         if (channel === 'whisper') {
           const to = String(msg.payload.to || '').trim().toLowerCase();
-          const target = [...activeSockets.entries()].find(([, s]) => s.authenticated && s.character && s.realmId === state.realmId && s.character.name.toLowerCase() === to);
-          if (!target) return send(ws, 'error', { code: 'whisper_target_offline', to: msg.payload.to || '' });
-          const w = { ...message, to: target[1].character.name };
-          send(target[0], 'chat.message', w); if (target[0] !== ws) send(ws, 'chat.message', w);
+          if (!/^[a-z0-9 _-]{3,24}$/.test(to)) return send(ws, 'error', { code: 'invalid_whisper_target' });
+          // Resolve recipients from shared PostgreSQL presence so whispers work across server instances.
+          const recipient = await pool.query(`SELECT DISTINCT ON (c.id) c.id,c.name
+            FROM world_presence p JOIN characters c ON c.id=p.character_id
+            WHERE p.realm_id=$1 AND lower(c.name)=lower($2) AND p.expires_at>now()
+            ORDER BY c.id,p.updated_at DESC LIMIT 1`, [state.realmId, to]);
+          if (!recipient.rowCount) return send(ws, 'error', { code: 'whisper_target_offline', to: msg.payload.to || '' });
+          const targetCharacter = recipient.rows[0];
+          const w = { ...message, to: targetCharacter.name, channel: 'whisper' };
+          const local = [...activeSockets.entries()].find(([, targetState]) =>
+            targetState.authenticated && targetState.character?.id === targetCharacter.id && targetState.realmId === state.realmId);
+          if (local) send(local[0], 'chat.message', w);
+          else publishWorldEvent('character', state.realmId, null, 'chat.message', { ...w, characterId: targetCharacter.id });
+          if (!local || local[0] !== ws) send(ws, 'chat.message', w);
           return;
         }
         broadcastZone(state.realmId, state.zoneId, 'chat.message', message);
@@ -957,6 +968,11 @@ wss.on('connection', (ws, req) => attachSocket(ws, req));
 const presenceHeartbeat = setInterval(async () => {
   try {
     await pool.query('DELETE FROM world_presence WHERE expires_at<=now()');
+    for (const ws of wss.clients) {
+      if (ws.isAlive === false) { ws.terminate(); continue; }
+      ws.isAlive = false;
+      if (ws.readyState === WebSocket.OPEN) ws.ping();
+    }
     for (const [ws, state] of activeSockets) if (ws.readyState === WebSocket.OPEN && state.authenticated && state.character) await persistPresence(ws, state);
   } catch (error) { console.error('Presence heartbeat failed:', error.message); }
 }, 15000);

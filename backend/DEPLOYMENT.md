@@ -119,3 +119,12 @@ The Trading panel's Bank tab uses the authenticated `GET /api/characters/:id/ban
 - `chat.send` accepts `zone` and `realm` channels and stores each message in `world_chat_messages` before broadcasting it. Messages are limited to 180 characters and rate-limited per connection.
 - `GET /api/characters/:id/chat?channel=zone&limit=50` or `channel=realm` returns recent history for the authenticated character's current zone or realm. Limits are clamped to 1–100 messages and the character's realm/zone are resolved from PostgreSQL, not accepted from query parameters.
 - Whisper is still an online-only direct message in the current socket process. Persistent/offline mail is handled separately by the mailbox system; cross-instance whisper routing and moderation retention are future work.
+
+## Multi-instance WebSocket cluster behavior
+
+- Each server process has a unique `GBQ_SERVER_INSTANCE_ID` and owns only its local WebSocket connections.
+- Presence is stored as expiring PostgreSQL leases; the heartbeat renews leases and removes stale ones. WebSocket ping/pong checks terminate half-open connections so leases can expire promptly.
+- Zone and realm events are fanned out with PostgreSQL `LISTEN/NOTIFY`. This is low-latency best-effort delivery; it is not a durable queue. Gameplay state and rewards remain committed in PostgreSQL before the event is broadcast.
+- Whispers resolve recipients through shared realm presence and are routed to the owning process with a character-targeted event. Offline whispers are rejected; use the persistent mailbox endpoints for offline delivery.
+- Run multiple identical service containers behind a WebSocket-capable load balancer with sticky connections (or route each account consistently). All instances must use the same PostgreSQL database, token secret, origin allowlist and migration version. Set a distinct `GBQ_SERVER_INSTANCE_ID` per container.
+- Do not scale mob respawn workers horizontally without leader election or partitioning: the current SQL update is safe against duplicate respawn rewards, but deployment-level worker coordination is still recommended.
