@@ -11,6 +11,17 @@ function isAllowedOrigin(origin, allowlist = new Set()) {
   }
 }
 
+function createCorsHeaders(origin, allowlist = new Set()) {
+  const headers = { vary: 'Origin' };
+  if (!origin) return headers;
+  if (!isAllowedOrigin(origin, allowlist)) return null;
+  headers['access-control-allow-origin'] = origin;
+  headers['access-control-allow-methods'] = 'GET, POST, DELETE, OPTIONS';
+  headers['access-control-allow-headers'] = 'authorization, content-type';
+  headers['access-control-max-age'] = '600';
+  return headers;
+}
+
 function createAuthLimiter({ limit = 10, windowMs = 600000, clock = Date.now } = {}) {
   const failures = new Map();
   function current(ip) {
@@ -40,4 +51,4 @@ function createAuthLimiter({ limit = 10, windowMs = 600000, clock = Date.now } =
   };
 }
 
-module.exports = { isAllowedOrigin, createAuthLimiter };
+module.exports = { isAllowedOrigin, createCorsHeaders, createAuthLimiter };
