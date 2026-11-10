@@ -71,14 +71,55 @@ async function accountFor(req) {
 }
 const sessions = new Map(); // accountId -> Set<WebSocket>
 const socketState = new WeakMap();
+const SERVER_INSTANCE_ID = process.env.GBQ_SERVER_INSTANCE_ID || crypto.randomUUID();
+const PRESENCE_TTL_SECONDS = Math.max(30, Number(process.env.GBQ_PRESENCE_TTL_SECONDS || 45));
+const WORLD_EVENT_CHANNEL = 'gbquest_world_events';
+const socketIds = new WeakMap();
+function socketId(ws) {
+  let id = socketIds.get(ws);
+  if (!id) { id = crypto.randomUUID(); socketIds.set(ws, id); }
+  return id;
+}
+function publishWorldEvent(scope, realmId, zoneId, type, payload) {
+  const event = JSON.stringify({ origin: SERVER_INSTANCE_ID, scope, realmId, zoneId, type, payload });
+  if (Buffer.byteLength(event) > 7800) return;
+  pool.query('SELECT pg_notify($1, $2)', [WORLD_EVENT_CHANNEL, event])
+    .catch(error => console.error('World event publish failed:', error.message));
+}
+function deliverWorldEvent(event) {
+  for (const [ws, state] of activeSockets) {
+    if (!state.authenticated || !state.character) continue;
+    if (event.scope === 'realm' && state.realmId === event.realmId) send(ws, event.type, event.payload);
+    if (event.scope === 'zone' && state.realmId === event.realmId && state.zoneId === event.zoneId) send(ws, event.type, event.payload);
+  }
+}
+async function persistPresence(ws, state) {
+  if (!state.authenticated || !state.character || !state.realmId) return;
+  await pool.query(`INSERT INTO world_presence(socket_id,server_instance_id,character_id,realm_id,zone_id,expires_at)
+    VALUES($1,$2,$3,$4,$5,now()+($6 * interval '1 second'))
+    ON CONFLICT(socket_id) DO UPDATE SET server_instance_id=EXCLUDED.server_instance_id,
+    character_id=EXCLUDED.character_id,realm_id=EXCLUDED.realm_id,zone_id=EXCLUDED.zone_id,
+    expires_at=EXCLUDED.expires_at,updated_at=now()`,
+    [socketId(ws), SERVER_INSTANCE_ID, state.character.id, state.realmId, state.zoneId || 'unknown', PRESENCE_TTL_SECONDS]);
+}
+async function removePresence(ws) {
+  const id = socketIds.get(ws);
+  if (id) await pool.query('DELETE FROM world_presence WHERE socket_id=$1', [id]).catch(error => console.error('Presence cleanup failed:', error.message));
+}
+async function sharedRealmPopulation(realmId) {
+  const result = await pool.query('SELECT count(*)::int AS n FROM world_presence WHERE realm_id=$1 AND expires_at>now()', [realmId]);
+  return result.rows[0].n;
+}
 function send(ws, type, payload = {}) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type, sequence: ++socketState.get(ws).outSequence, payload, serverTimestamp: Date.now() }));
 }
 function broadcastZone(realmId, zoneId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && state.zoneId === zoneId && ws !== except) send(ws, type, payload);
+  publishWorldEvent('zone', realmId, zoneId, type, payload);
 }
 function broadcastRealm(realmId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && ws !== except) send(ws, type, payload);
+  publishWorldEvent('realm', realmId, null, type, payload);
 }
 // ---------------------------------------------------------------- regions & realms
 let REALM_CACHE = { regions: [], realms: [], at: 0 };
@@ -98,18 +139,16 @@ let WORLD_STATUS_CACHE = { at: 0, value: null };
 async function worldStatus(force = false) {
   if (!force && WORLD_STATUS_CACHE.value && Date.now() - WORLD_STATUS_CACHE.at < 15000) return WORLD_STATUS_CACHE.value;
   const rd = await realmData();
-  const liveByRealm = new Map();
-  const liveByZone = new Map();
-  for (const [, state] of activeSockets) {
-    if (!state.authenticated || !state.character || !state.realmId) continue;
-    liveByRealm.set(state.realmId, (liveByRealm.get(state.realmId) || 0) + 1);
-    const key = state.realmId + ':' + (state.zoneId || 'unknown');
-    liveByZone.set(key, (liveByZone.get(key) || 0) + 1);
-  }
-  const [totals, peak] = await Promise.all([
+  const [presence, totals, peak] = await Promise.all([
+    pool.query(`SELECT realm_id,zone_id,count(*)::int AS players FROM world_presence WHERE expires_at>now() GROUP BY realm_id,zone_id`),
     pool.query('SELECT (SELECT count(*)::int FROM accounts WHERE disabled=false) AS accounts, (SELECT count(*)::int FROM characters) AS characters'),
     pool.query('SELECT peak_concurrent, peak_at FROM world_population_peak WHERE id=true')
   ]);
+  const liveByRealm = new Map(), liveByZone = new Map();
+  for (const row of presence.rows) {
+    liveByRealm.set(row.realm_id, (liveByRealm.get(row.realm_id) || 0) + row.players);
+    liveByZone.set(row.realm_id + ':' + row.zone_id, row.players);
+  }
   const realms = rd.realms.map(r => ({
     id: r.id, name: r.name, regionId: r.region_id, type: r.realm_type, status: r.status,
     onlinePlayers: liveByRealm.get(r.id) || 0, capacity: r.max_players,
@@ -136,12 +175,12 @@ async function worldStatus(force = false) {
       peak_at=CASE WHEN EXCLUDED.peak_concurrent > world_population_peak.peak_concurrent THEN EXCLUDED.peak_at ELSE world_population_peak.peak_at END`, [onlinePlayers]);
   }
   const value = {
-    generatedAt: new Date().toISOString(), scope: 'this_server_instance',
+    generatedAt: new Date().toISOString(), scope: 'all_instances_shared_presence',
     onlinePlayers, capacity, utilization: capacity ? Math.round((onlinePlayers / capacity) * 1000) / 10 : 0,
     peakConcurrent, peakAt: peak.rows[0]?.peak_at || null,
     registeredAccounts: totals.rows[0].accounts, characters: totals.rows[0].characters,
     regions, zones: zonePopulation,
-    scaling: { mode: 'single_instance', distributedPresence: false, note: 'Online counts include this service instance only. Multi-instance shared presence and cross-node zone fan-out require Redis or an equivalent shared event bus.' }
+    scaling: { mode: 'postgres_shared_presence', distributedPresence: true, eventBus: 'postgresql_listen_notify', instanceId: SERVER_INSTANCE_ID, note: 'Counts and zone/realm events are shared across service instances through PostgreSQL presence leases and LISTEN/NOTIFY. PostgreSQL NOTIFY is best-effort transient delivery, not a durable message queue.' }
   };
   WORLD_STATUS_CACHE = { at: Date.now(), value };
   return value;
@@ -212,11 +251,16 @@ function attachSocket(ws, req) {
         if (!realm) return send(ws, 'error', { code: 'realm_not_found', realmId: ch.realm_id });
         if (realm.status !== 'online') return send(ws, 'error', { code: 'realm_unavailable', realmId: realm.id, status: realm.status });
         const switchingWithin = state.realmId === realm.id && state.character;
-        if (!switchingWithin && realmPopulation(realm.id) >= realm.max_players) return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: realmPopulation(realm.id), maxPlayers: realm.max_players });
+        if (!switchingWithin) { const population = await sharedRealmPopulation(realm.id); if (population >= realm.max_players) return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population, maxPlayers: realm.max_players }); }
         const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, id: state.character.id } : null;
         state.character = ch; state.realmId = ch.realm_id; state.zoneId = ch.zone_id; state.x = ch.x; state.y = ch.y;
+        await persistPresence(ws, state);
         if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
-        const players = [...activeSockets.entries()].filter(([other, s]) => other !== ws && s.authenticated && s.character && s.realmId === state.realmId && s.zoneId === state.zoneId).map(([, s]) => ({ id: s.character.id, name: s.character.name, level: s.character.level, x: s.x, y: s.y }));
+        const sharedPlayers = await pool.query(`SELECT DISTINCT ON (p.character_id) p.character_id AS id,c.name,c.level,c.x,c.y
+          FROM world_presence p JOIN characters c ON c.id=p.character_id
+          WHERE p.realm_id=$1 AND p.zone_id=$2 AND p.expires_at>now() AND p.socket_id<>$3
+          ORDER BY p.character_id,p.updated_at DESC`, [state.realmId, state.zoneId, socketId(ws)]);
+        const players = sharedPlayers.rows;
         const mobs = await pool.query('SELECT id,name,level,x,y,hp,max_hp FROM world_mobs WHERE realm_id=$1 AND zone_id=$2 AND alive=true ORDER BY id', [state.realmId, state.zoneId]);
         send(ws, 'zone.snapshot', { realm: realmView(realm), zoneId: state.zoneId, self: { ...state.character, x: state.x, y: state.y }, players, mobs: mobs.rows });
         broadcastZone(state.realmId, state.zoneId, 'presence.joined', { id: state.character.id, name: state.character.name, level: state.character.level, x: state.x, y: state.y }, ws);
@@ -336,6 +380,7 @@ function attachSocket(ws, req) {
   });
   ws.on('close', () => {
     activeSockets.delete(ws);
+    removePresence(ws);
     if (state.zoneId && state.character) broadcastZone(state.realmId, state.zoneId, 'presence.left', { characterId: state.character.id });
   });
 }
@@ -860,6 +905,23 @@ server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => { wss.emit('connection', ws, req); });
 });
 wss.on('connection', (ws, req) => attachSocket(ws, req));
+const presenceHeartbeat = setInterval(async () => {
+  try {
+    await pool.query('DELETE FROM world_presence WHERE expires_at<=now()');
+    for (const [ws, state] of activeSockets) if (ws.readyState === WebSocket.OPEN && state.authenticated && state.character) await persistPresence(ws, state);
+  } catch (error) { console.error('Presence heartbeat failed:', error.message); }
+}, 15000);
+presenceHeartbeat.unref();
+const worldListener = await pool.connect();
+worldListener.on('notification', message => {
+  if (message.channel !== WORLD_EVENT_CHANNEL) return;
+  try {
+    const event = JSON.parse(message.payload);
+    if (event.origin !== SERVER_INSTANCE_ID) deliverWorldEvent(event);
+  } catch (error) { console.error('Invalid world event notification:', error.message); }
+});
+worldListener.on('error', error => console.error('World event listener error:', error.message));
+await worldListener.query('LISTEN ' + WORLD_EVENT_CHANNEL);
 const respawnTimer = setInterval(async () => {
   try {
     const result = await pool.query("UPDATE world_mobs SET hp=max_hp,alive=true,respawn_at=NULL,updated_at=now() WHERE alive=false AND respawn_at IS NOT NULL AND respawn_at<=now() RETURNING id,realm_id,zone_id,name,level,x,y,hp,max_hp");
@@ -868,4 +930,4 @@ const respawnTimer = setInterval(async () => {
 }, 10000);
 respawnTimer.unref();
 server.listen(PORT, HOST, () => console.log('GB Quest authoritative MMO service listening on ' + HOST + ':' + PORT));
-for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });
+for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { clearInterval(presenceHeartbeat); await pool.query('DELETE FROM world_presence WHERE server_instance_id=$1', [SERVER_INSTANCE_ID]).catch(() => {}); await worldListener.query('UNLISTEN *').catch(() => {}); worldListener.release(); await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });
