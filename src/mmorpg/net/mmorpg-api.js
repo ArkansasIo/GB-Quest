@@ -180,6 +180,30 @@ export class GBQuestMMOApi {
   blockPlayer(characterId, targetCharacterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks', { method: 'POST', body: { targetCharacterId } });
   }
+  raidGroup(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group');
+  }
+  createRaidGroup(characterId, { name = '', raidSize = 10 } = {}) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group', { method: 'POST', body: { name, raidSize } });
+  }
+  inviteToRaid(raidGroupId, inviterCharacterId, inviteeCharacterId) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '/invites', { method: 'POST', body: { inviterCharacterId, inviteeCharacterId } });
+  }
+  acceptRaidInvite(inviteId, characterId) {
+    return this.request('/api/raid-invites/' + encodeURIComponent(inviteId) + '/accept', { method: 'POST', body: { characterId } });
+  }
+  setRaidRole(raidGroupId, actorCharacterId, targetCharacterId, role) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '/members/' + encodeURIComponent(targetCharacterId) + '/role', { method: 'POST', body: { actorCharacterId, role } });
+  }
+  transferRaidLeadership(raidGroupId, actorCharacterId, targetCharacterId) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '/transfer', { method: 'POST', body: { actorCharacterId, targetCharacterId } });
+  }
+  leaveRaid(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group', { method: 'DELETE' });
+  }
+  disbandRaid(raidGroupId, characterId) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '?characterId=' + encodeURIComponent(characterId), { method: 'DELETE' });
+  }
   instance(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/instances');
   }
