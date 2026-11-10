@@ -59,3 +59,9 @@ Run npm run mmorpg:migrate with DATABASE_URL configured. The migration is additi
 - Responses include `X-RateLimit-Limit` and `X-RateLimit-Remaining`; rejected writes return HTTP 429, `Retry-After`, and `api_write_rate_limited`.
 - The in-memory limiter uses bounded key storage and periodic expiry sweeps. It is per process; multi-node deployments should move this policy to a shared Redis-backed limiter before horizontal scaling.
 - Unit tests cover threshold behavior, independent keys, reset timing, retry metadata, bounded storage, and invalid configuration.
+
+
+## In-game guild hall menu
+- The main in-game menu now includes **GUILD**, opening a guild hall with overview, member roster, create guild, accept invitation, invite player, guild message of the day, leadership transfer, leave, disband and refresh actions.
+- Guild mutations call the existing `GBQuestMMOApi` client methods and remain server-authoritative; the menu does not create fake local guild records. The game bootstrap must expose its authenticated API instance as `window.GBQ_MMO_API` and the selected server character UUID as `window.GBQ_MMO_CHARACTER_ID` before guild actions can run. Offline/local save characters are not interchangeable with MMO character IDs.
+- Text-entry actions currently use the browser prompt while the scene itself follows the Aelmoor in-game menu navigation. A dedicated pixel-art text-entry modal and invitation inbox endpoint are follow-up UI improvements.
