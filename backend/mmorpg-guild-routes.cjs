@@ -132,6 +132,26 @@ async function handleGuildRequest({req,res,url,pool,accountFor,readBody,json}){
    await tx.query('COMMIT');json(res,200,{disbanded:true,guildId});return true;
   }catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;}finally{tx.release();}
  }
+ const rankRoute=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/rank$/i);
+ if(rankRoute&&req.method==='POST'){
+  const guildId=rankRoute[1],targetId=rankRoute[2],body=await readBody(req),actor=String(body.actorCharacterId||''),rank=String(body.rank||'');
+  if(!/^[0-9a-f-]{36}$/i.test(actor)||!['officer','veteran','member','recruit'].includes(rank)){json(res,400,{error:'invalid_guild_rank_request'});return true;}
+  const tx=await pool.connect();
+  try{
+   await tx.query('BEGIN');
+   const g=await tx.query('SELECT id,leader_character_id FROM guilds WHERE id=$1 FOR UPDATE',[guildId]);
+   if(!g.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'guild_not_found'});return true;}
+   const permitted=await tx.query(`SELECT 1 FROM guild_members gm
+    JOIN characters c ON c.id=gm.character_id
+    JOIN guild_permissions gp ON gp.rank=gm.rank AND gp.permission='promote'
+    WHERE gm.guild_id=$1 AND gm.character_id=$2 AND c.account_id=$3`,[guildId,actor,acct.id]);
+   if(!permitted.rowCount||g.rows[0].leader_character_id!==actor){await tx.query('ROLLBACK');json(res,403,{error:'guild_promote_permission_required'});return true;}
+   if(targetId===g.rows[0].leader_character_id){await tx.query('ROLLBACK');json(res,409,{error:'cannot_change_leader_rank'});return true;}
+   const target=await tx.query('UPDATE guild_members SET rank=$1 WHERE guild_id=$2 AND character_id=$3 RETURNING character_id,rank',[rank,guildId,targetId]);
+   if(!target.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'guild_member_not_found'});return true;}
+   await tx.query('COMMIT');json(res,200,{guildId,characterId:targetId,rank});return true;
+  }catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;}finally{tx.release();}
+ }
  json(res,405,{error:'method_not_allowed'});return true;
 }
 module.exports={handleGuildRequest};
