@@ -870,7 +870,7 @@ class SecretWorldJournalScene extends ListScene {
     const e = entries[this.i];
     frame(3, 119, 154, 23);
     text(e.found ? e.hint : 'A secret remains concealed.', 7, 124, 2);
-    text(e.found ? e.type.toUpperCase() + ' LV' + e.minLvl + '  +' + ((e.reward && e.reward.gold) || 0) + 'G' : 'Explore every region carefully.', 7, 134, 1);
+    text(e.found ? e.type.toUpperCase() + ' LV' + e.minLvl + '  +' + ((e.reward && e.reward.gold) || 0) + 'G' : 'Explore every region.', 7, 134, 1);
   }
 }
 class EasterEggArchiveScene extends ListScene {
@@ -891,7 +891,7 @@ class EasterEggArchiveScene extends ListScene {
     const e = entries[this.i];
     frame(3, 119, 154, 23);
     text(e.found ? e.hint : 'A secret remains undiscovered.', 7, 124, 2);
-    text(e.found ? `REWARD: ${e.reward.gold} GOLD` : 'Keep exploring and experimenting.', 7, 134, 1);
+    text(e.found ? `REWARD: ${e.reward.gold} GOLD` : 'Keep exploring.', 7, 134, 1);
   }
 }
 class BestiaryScene extends ListScene {
@@ -1109,9 +1109,10 @@ class HousingScene extends ListScene {
 
 class HomeInteriorScene extends ListScene {
   constructor(homeKey) { super(5); this.homeKey = homeKey; }
-  home() { return G.homes[this.homeKey]; }
+  home() { return (G.homes || {})[this.homeKey]; }
   items() { return ['REST AT HOME', 'OPEN STORAGE', 'DECORATE HOME', 'BIND HEARTHSTONE', 'RETURN OUTSIDE']; }
   update() {
+    if (!this.home()) { if (P('a') || P('b')) { SFX.back(); removeScene(this); } return; } // no home owned here
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
@@ -1135,6 +1136,7 @@ class HomeInteriorScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 0); hdr();
     textC(`${ZONE_BY_ID[this.homeKey]?.name || 'HOME'} HOME`, 80, 14, 'gold');
+    if (!this.home()) { textC('YOU OWN NO HOME HERE.', 80, 60, 3); textC('B  BACK', 80, 130, 2); return; }
     fill(7, 30, 146, 77, '#594332'); fill(11, 34, 138, 68, '#b58a5e');
     fill(15, 86, 130, 13, '#784d48'); fill(18, 89, 124, 7, '#a46d62');
     fill(20, 59, 29, 22, '#6d4d3a'); fill(22, 56, 25, 15, '#e0c99b'); fill(18, 77, 33, 5, '#4a3026');
@@ -1215,7 +1217,7 @@ class SettingsScene extends ListScene {
       else textR(String(v[index]), 147, y, index === this.i ? '#ffe3a0' : '#cbb9ed');
     });
     fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
-    text('UP/DOWN MOVE   LEFT/RIGHT CHANGE', 9, 127, '#ddd3e6');
+    text('UP/DN MOVE   L/R CHANGE', 9, 127, '#ddd3e6');
     text('A SELECT   B SAVE & BACK', 9, 135, '#ffe3a0');
   }
 }
@@ -1285,7 +1287,7 @@ class GraphicsScene extends ListScene {
       textR(this.value(label), 148, y, selected ? '#ffe3a0' : '#cbb9ed');
     });
     fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
-    text('UP/DOWN MOVE  LEFT/RIGHT CHANGE', 8, 127, '#ddd3e6');
+    text('UP/DN MOVE   L/R CHANGE', 8, 127, '#ddd3e6');
     text('A CHANGE  B SAVE & BACK', 8, 135, '#ffe3a0');
   }
 }
@@ -1331,6 +1333,6 @@ class SoundTest extends ListScene {
     textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, S.uiTheme === 'blackbird' ? 'gold' : 0);
     this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
     this.scrollbar(156, 14, 110);
-    text('A:PLAY SEL:SFX/MUSIC START:ENGINE', 2, 134, 2);
+    text('A:PLAY  SEL:MODE  START:ENGINE', 2, 134, 2);
   }
 }

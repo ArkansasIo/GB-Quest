@@ -237,6 +237,6 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY + (isMu() ? 8 : 0) - Math.round(6 * (1 - slide));
       ctx.globalAlpha = Math.max(0.2, slide); panel(4, y, 152, 25);
       if (t.icon) blit(sprFit(t.icon, 14), 9, y + 6);
-      text(String(t.title).slice(0, 21), 27, y + 4, 3); text(String(t.sub || '').slice(0, 21), 27, y + 14, 2); ctx.globalAlpha = 1;
+      text(String(t.title), 27, y + 4, 3, 1, 153); text(String(t.sub || ''), 27, y + 14, 2, 1, 153); ctx.globalAlpha = 1;
     }; }
 }

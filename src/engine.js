@@ -191,19 +191,29 @@ async function loadCitadelAssets() {
   window.GBQ_CITADEL_ASSET_COUNT = loaded;
   return loaded;
 }
+// Images the first screens need: the text font and the title key art. Loaded ahead of everything else.
+const BOOT_ASSETS = ['font_6x9', 'title_aelmoor', 'title_aelmoor_hi', 'r9_title', 'ap_scene_wilderness'];
+let ASSET_PROGRESS = 0;
 async function loadAssets(onProgress) {
+  const report = onProgress;
+  onProgress = p => { ASSET_PROGRESS = p; report && report(p); };
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
   if (!ASSET_NAMES.length) onProgress && onProgress(0.9);
   let done = 0;
-  await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
+  const loadOne = n => new Promise(res => {
     const im = new Image();
     let settled = false;
     const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(0.9 * done / Math.max(1, ASSET_NAMES.length)); res(); };
     im.onload = () => { IMG[n] = im; finish(); };
     im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
-  })));
+  });
+  // The title screen is shown before the full batch finishes. Fetch the pixel font and title art first so
+  // its text and key art appear at once instead of queuing behind thousands of other images.
+  const core = BOOT_ASSETS.filter(n => ASSET_NAMES.includes(n));
+  await Promise.all(core.map(loadOne));
+  await Promise.all(ASSET_NAMES.filter(n => !core.includes(n)).map(loadOne));
   await loadCitadelAssets();
   onProgress && onProgress(1);
 }
@@ -346,20 +356,53 @@ function fitText(s, maxChars) {
 }
 // a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
 const HILITE = { frame: -1, rects: [] };
-function text(s, x, y, c = 3, sc = 1) {
+// Letter advance for a line of n glyphs that must fit in avail pixels: the normal 6px, or 5px if the line would run
+// off the 160px screen. Glyphs are 5px wide, so tighter would overlap. Returns 0 when 5px is still too wide (the
+// caller then shortens the line).
+function fitAdvance(n, avail, sc = 1) {
+  for (const a of [6, 5]) if (n * a * sc <= avail) return a * sc;
+  return 0;
+}
+// Pixel width a line will actually take once fitted (used by textC/textR to align fitted lines).
+function fittedWidth(line, avail, sc = 1) {
+  const n = line.length, a = fitAdvance(n, avail, sc);
+  return a ? n * a : Math.floor(avail / (5 * sc)) * 5 * sc;
+}
+function text(s, x, y, c = 3, sc = 1, right = W) {
   if (!IMG.font_6x9) return;
   s = gameText(s);
   if (c === 1 && HILITE.frame === frameN && HILITE.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3])) c = 3;
-  const f = font(c); let cx = x;
-  for (const ch of s) {
-    if (ch === '\n') { y += 10 * sc; cx = x; continue; }
-    let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
-    if (code !== 32) ctx.drawImage(f, (code - 32) * 6, 0, 6, 9, Math.round(cx), Math.round(y), 6 * sc, 9 * sc);
-    cx += 6 * sc;
+  const f = font(c);
+  for (let line of String(s).split('\n')) {
+    let adv = 6 * sc;
+    // Only lines that start on screen are fitted; text placed off screen on purpose (markers, scrollers) is left alone.
+    if (x >= 0 && x < right && line.length * adv > right - x) {
+      const avail = right - x;
+      adv = fitAdvance(line.length, avail, sc);
+      if (!adv) { adv = 5 * sc; const keep = Math.max(1, Math.floor(avail / adv)); line = line.slice(0, keep - 1).trimEnd() + '.'; }
+    }
+    let cx = x;
+    for (const ch of line) {
+      let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
+      if (code !== 32) ctx.drawImage(f, (code - 32) * 6, 0, 6, 9, Math.round(cx), Math.round(y), 6 * sc, 9 * sc);
+      cx += adv;
+    }
+    y += 10 * sc;
   }
 }
-const textR = (s, rx, y, c, sc = 1) => { const value = gameText(s); text(value, rx - value.length * 6 * sc, y, c, sc); };
-const textC = (s, cx, y, c, sc = 1) => { const value = gameText(s); text(value, Math.round(cx - value.length * 3 * sc), y, c, sc); };
+// Right- and centre-aligned text. A line too long for the screen is fitted (tighter spacing) and kept inside 2..W-2.
+const textR = (s, rx, y, c, sc = 1) => {
+  const value = String(gameText(s)), full = value.length * 6 * sc;
+  if (rx - full >= 0) return text(value, rx - full, y, c, sc);
+  const right = Math.min(W - 2, rx), w = fittedWidth(value, right - 2, sc);
+  text(value, Math.max(2, right - w), y, c, sc, right);
+};
+const textC = (s, cx, y, c, sc = 1) => {
+  const value = String(gameText(s)), full = value.length * 6 * sc, x = Math.round(cx - full / 2);
+  if (x >= 0 && x + full <= W) return text(value, x, y, c, sc);
+  const w = fittedWidth(value, W - 4, sc);
+  text(value, Math.max(2, Math.min(W - 2 - w, Math.round(cx - w / 2))), y, c, sc);
+};
 function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); if (c === 1 && h >= 8 && h <= 14 && w >= 30) { if (HILITE.frame !== frameN) { HILITE.frame = frameN; HILITE.rects = []; } HILITE.rects.push([x, y, w, h]); } }
 function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
@@ -836,7 +879,7 @@ function drawToasts() {
   const y = Math.round(-26 + 28 * slide);
   frame(4, y, 152, 25, 0);
   if (t.icon) blit(sprFit(t.icon, 14), 8, y + 5);
-  text(String(t.title).slice(0, 22), 26, y + 4, 2); text(String(t.sub || '').slice(0, 22), 26, y + 14);
+  text(String(t.title), 26, y + 4, 2, 1, 153); text(String(t.sub || ''), 26, y + 14, 3, 1, 153);
 }
 
 // ================================================================ main loop

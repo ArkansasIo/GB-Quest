@@ -85,6 +85,9 @@ function titleExtras() {
     if (k === 3) say([`${BUILD.game}`, `Version ${BUILD.version} ${BUILD.build}`, `Engine ${BUILD.engine} ${BUILD.engineVersion}`, `By ${BUILD.studio}`]);
   }, 'EXTRAS');
 }
+// True while the asset batch is still loading (dev builds fetch thousands of PNGs one by one).
+function titleLoading() { return typeof ASSET_PROGRESS === 'number' && ASSET_PROGRESS < 1; }
+function titleLoadingLabel() { return `LOADING ${Math.floor(ASSET_PROGRESS * 100)}%`; }
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
   enter() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
@@ -98,6 +101,7 @@ class Title {
     this.i = Math.min(this.i, o.length - 1);
     if (P('b')) { SFX.back(); return; }
     if (!(P('a') || P('start'))) return;
+    if (titleLoading()) { SFX.back(); return; } // world art is still arriving; starting now would show blank tiles
     SFX.select();
     const c = o[this.i];
     if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
@@ -143,7 +147,7 @@ class Title {
     // left border accent
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
-    textC('A  SELECT   B  BACK', 80, 137, '#e8dab8');
+    textC(titleLoading() ? titleLoadingLabel() : 'A  SELECT   B  BACK', 80, 137, '#e8dab8');
   }
   drawKeyArt() {
     const smooth = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
@@ -155,7 +159,7 @@ class Title {
     fill(0, 136, W, 8, '#05060f');
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
-    textR('A SELECT  B BACK', W - 4, 137, '#e8dab8');
+    textR(titleLoading() ? titleLoadingLabel() : 'A SELECT  B BACK', W - 4, 137, '#e8dab8');
     this.keep = [[panelX - 1, panelY - 1, panelW + 1, panelH + 2], [0, 136, W, 8]];
   }
 }
@@ -248,16 +252,17 @@ class RealmSelect {
       const y = 18 + k * 24, sel = rid === this.realms[this.j];
       fill(86, y, 68, 21, sel ? 'rgba(157,91,33,.5)' : 'rgba(12,13,28,.75)');
       const info = REALMS.find(r => r.id === rid) || { name: rid, type: '?', status: 'offline', maxPlayers: 1000, population: 0 };
-      const pop = info.population || 0;
-      text(String(info.name).slice(0, 11), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6');
-      text(REALM_TYPE[rid] || '?', 90, y + 12, info.status === 'online' ? 'green' : 'red');
-      textR(`${pop}/${info.maxPlayers}`, 142, y + 12, pop >= info.maxPlayers ? 'red' : 2);
-      text(info.status === 'online' ? 'ONLINE' : 'OFFLINE', 90, y + 19, info.status === 'online' ? 'green' : 'red');
+      const pop = info.population || 0, online = info.status === 'online';
+      // Two rows per card: name + status dot, then a short type tag and the population.
+      text(String(info.name), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6', 1, 145);
+      fill(147, y + 4, 4, 4, online ? 'green' : 'red');
+      const type = REALM_TYPE[rid] || '?', short = { ROLEPLAY: 'RP', SEASONAL: 'SEAS' }[type] || type;
+      text(short, 90, y + 12, online ? 'green' : 'red');
+      const max = info.maxPlayers || 1000, cap = max >= 1000 && max % 1000 === 0 ? `${max / 1000}K` : String(max);
+      textR(`${pop}/${cap}`, 152, y + 12, pop >= max ? 'red' : 2);
     });
-    const info = REALMS.find(r => r.id === this.realms[this.j]) || {};
-    fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
-    textC(`A ENTER WORLD   B BACK   LEFT/RIGHT REGION`, 80, 129, '#fff0c2');
-    textC(`WORLD CAPACITY: ${(info.population||0)}/${(info.maxPlayers||1000)} PLAYERS`, 80, 139, '#cbb9ed');
+    fill(4, 130, 152, 10, 'rgba(5,6,15,.78)');
+    textC('A ENTER  B BACK  </>: REGION', 80, 131, '#fff0c2');
   }
 }
 // ================================================================ SAVE SLOTS
@@ -302,7 +307,7 @@ class SlotPicker {
       }
     }
     fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
-    textC('UP/DOWN CHOOSE   A CONFIRM   B BACK', 80, 129, '#fff0c2');
+    textC('UP/DN CHOOSE  A OK  B BACK', 80, 129, '#fff0c2');
   }
 }
 
@@ -1220,9 +1225,10 @@ function wardenMenu(e) {
   }, `${e.name}: Well met, ${G.name}.`);
 }
 class SideQuestBoard {
-  constructor(zid, who) { this.opaque = true; this.zid = zid; this.who = who; this.i = 0; }
+  constructor(zid, who) { this.opaque = true; this.zid = zid; this.who = String(who || 'QUEST BOARD'); this.i = 0; }
   update() {
     const qs = sideQuestsFor(this.zid);
+    if (!qs.length) { if (P('a') || P('b')) { removeScene(this); SFX.back(); } return; }
     if (nav('up')) { this.i = (this.i + qs.length - 1) % qs.length; SFX.cursor(); }
     if (nav('down')) { this.i = (this.i + 1) % qs.length; SFX.cursor(); }
     if (P('b')) { removeScene(this); SFX.back(); return; }
@@ -1239,6 +1245,7 @@ class SideQuestBoard {
     fill(0, 0, W, H, 0); frame(2, 2, 156, 140);
     text(`${this.who.slice(0, 22)}`, 7, 6, 2);
     const qs = sideQuestsFor(this.zid);
+    if (!qs.length) { text('NO QUESTS POSTED HERE.', 7, 24, 3); text('B  BACK', 7, 130, 2); return; }
     qs.forEach((q, i) => { const y = 18 + i * 13, st = G.sideq[q.id]; if (i === this.i) fill(4, y - 2, 152, 12, 1); text(st ? (st.state === 'done' ? '#' : st.state === 'ready' ? '?' : '-') : '!', 7, y, st && st.state === 'ready' ? 'gold' : 3); text(q.name.slice(0, 22), 15, y); });
     const q = qs[this.i]; frame(4, 98, 152, 42); text(wrap(q.text, 24).slice(0, 3).join('\n'), 8, 102); text(`${fmt(q.xp)}XP ${q.gold}G`, 8, 131, 2);
   }
@@ -1957,7 +1964,7 @@ class ExpansionMapsScene {
     textC(`${x.n}. ${x.name}`.slice(0, 25), 80, 2, 0);
     textC(`LEVEL ${x.lvl[0]}-${x.lvl[1]}  ${x.desc}`.slice(0, 25), 80, 15, 'gold');
     zones.forEach((z, index) => {
-      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 29 + row * 49;
+      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 22 + row * 42;
       const m = buildZoneCached(z.id), seen = !!(G.visited[z.id] || G.waypoints[z.id]);
       for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
         const ch = m.rows[ty][tx], rgb = MONO(S.palette) ? UI.ui[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
@@ -1968,18 +1975,18 @@ class ExpansionMapsScene {
       if (m.poi.dungeon) { fill(ox + m.poi.dungeon.x, oy + 7 + m.poi.dungeon.y, 2, 2, 'red'); text('D', ox + m.poi.dungeon.x - 1, oy + 6 + m.poi.dungeon.y, 0); }
       if (m.poi.raid) { fill(ox + m.poi.raid.x, oy + 7 + m.poi.raid.y, 2, 2, 'gold'); text('R', ox + m.poi.raid.x - 1, oy + 6 + m.poi.raid.y, 3); }
       if (index === this.zoneIndex) { ctx.strokeStyle = col('gold'); ctx.lineWidth = 1; ctx.strokeRect(ox - 2.5, oy + 4.5, ZW + 5, ZH + 5); }
-      text(`${index + 1} ${z.name}`.slice(0, 10), ox - 2, oy + 34, index === this.zoneIndex ? 'gold' : 2);
-      textR(`LV${z.lvl[0]}`, ox + ZW + 1, oy + 34, 2);
+      // Number and level only; the selected zone's full name is in the bottom bar.
+      text(`${index + 1} LV${z.lvl[0]}`, ox - 1, oy + 33, index === this.zoneIndex ? 'gold' : 2, 1, ox + 38);
     });
     const campaign = EXPANSION_CAMPAIGNS[this.expIndex], progress = G.expansionCampaigns && G.expansionCampaigns[x.id];
     const story = progress ? (progress.done ? campaign.epilogue : campaign.beats[progress.step] || campaign.intro) : campaign.beats[0];
     const step = campaign.steps[progress?.step || 0];
     const objective = progress?.done ? 'CAMPAIGN COMPLETE' : !progress ? '0/4 ARRIVE AT FRONTIER' : step.kind === 'slay' ? `2/4 FOES ${progress.kills || 0}/${step.target}` : `${progress.step + 1}/4 ${step.kind === 'raid' ? 'RAID' : step.kind === 'dungeon' ? 'DUNGEON' : 'REACH'}: ${step.kind === 'raid' ? x.raid : step.kind === 'dungeon' ? EXP_ZONE_NAMES[this.expIndex][1] : EXP_ZONE_NAMES[this.expIndex][0]}`;
-    textC(story.toUpperCase().slice(0, 25), 80, 105, 2);
-    textC(objective.slice(0, 25), 80, 116, progress?.done ? 'gold' : 2);
+    textC(story.toUpperCase().slice(0, 25), 80, 106, 2);
+    textC(objective.slice(0, 25), 80, 115, progress?.done ? 'gold' : 2);
     const selected = zones[this.zoneIndex];
     fill(0, 125, W, 19, 0); textC(`${selected?.name || ''}  LV${selected?.lvl[0] || 0}-${selected?.lvl[1] || 0}`, 80, 126, 'gold');
-    textC('UP/DN: EXPANSION  LEFT/RIGHT: ZONE  A: DETAIL', 80, 136, 2);
+    textC('UP/DN: EXP  L/R: ZONE  A: INFO', 80, 136, 2);
   }
 }
 

@@ -290,9 +290,25 @@ body::before { background: radial-gradient(ellipse at 45% 38%, #2a1210 0%, #140a
   }
   body.full-window-mode .game-viewport,
   body.fullscreen-mode .game-viewport {
+    /* The earlier full-window rule makes this box absolute at the top-left corner; keep it in the centred flex row. */
+    position:relative;
+    inset:auto;
+    display:block;
+    height:auto;
     width:min(100%, calc((100dvh - 24px) * 160 / 144));
     max-height:calc(100dvh - 24px);
   }
+  /* The screen fills its box exactly. The earlier rule sized it to the whole window, so it overflowed and was clipped. */
+  body.full-window-mode .game-viewport > #lcd,
+  body.fullscreen-mode .game-viewport > #lcd {
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100%;
+  }
+  /* The side chat panel starts closed; only reserve its column while it is open. */
+  body.full-window-mode:not(.chat-on) .game-client,
+  body.fullscreen-mode:not(.chat-on) .game-client { padding:12px; }
 }
 
 
@@ -365,6 +381,8 @@ body.title-screen .keys,
 body.title-screen .game-viewport > .chat,
 body.title-screen .game-viewport > #chatShow { display:none !important; }
 body.title-screen #gbq-player-hud { display:none !important; }
+/* No overlay chat button on mouse/keyboard screens: C opens and closes chat. Touch screens keep the button. */
+@media (pointer: fine) { .game-viewport > #chatShow { display:none !important; } }
 body.title-screen .game-client {
   position:fixed !important;
   inset:0 !important;
@@ -511,6 +529,9 @@ body.theme-shadows {
 .game-viewport { position:relative; }
 .gbq-player-hud { position:absolute; z-index:12; inset:0; pointer-events:none; color:#f0e6d2; font:500 clamp(9px,.72vw,13px)/1.25 Inter,Arial,sans-serif; text-shadow:0 1px 2px #000; }
 .gbq-player-hud * { box-sizing:border-box; }
+/* Hidden whenever a full-screen menu, battle or map covers the overworld (player_hud.js sets .is-live). */
+.gbq-player-hud:not(.is-live) { visibility:hidden; }
+.gbq-player-hud:not(.is-live) * { pointer-events:none !important; }
 .gbq-hud-top { position:absolute; inset:8px 12px auto; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:42px; }
 .gbq-hud-brand { display:flex; align-items:center; gap:9px; color:#f3dfad; font:700 clamp(13px,1.15vw,21px) Cinzel,Georgia,serif; letter-spacing:.12em; }
 .gbq-hud-brand small { display:block; margin-top:3px; color:#b8b4aa; font:600 8px Inter,Arial,sans-serif; letter-spacing:.2em; }
@@ -3345,19 +3366,29 @@ async function loadCitadelAssets() {
   window.GBQ_CITADEL_ASSET_COUNT = loaded;
   return loaded;
 }
+// Images the first screens need: the text font and the title key art. Loaded ahead of everything else.
+const BOOT_ASSETS = ['font_6x9', 'title_aelmoor', 'title_aelmoor_hi', 'r9_title', 'ap_scene_wilderness'];
+let ASSET_PROGRESS = 0;
 async function loadAssets(onProgress) {
+  const report = onProgress;
+  onProgress = p => { ASSET_PROGRESS = p; report && report(p); };
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
   if (!ASSET_NAMES.length) onProgress && onProgress(0.9);
   let done = 0;
-  await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
+  const loadOne = n => new Promise(res => {
     const im = new Image();
     let settled = false;
     const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(0.9 * done / Math.max(1, ASSET_NAMES.length)); res(); };
     im.onload = () => { IMG[n] = im; finish(); };
     im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
-  })));
+  });
+  // The title screen is shown before the full batch finishes. Fetch the pixel font and title art first so
+  // its text and key art appear at once instead of queuing behind thousands of other images.
+  const core = BOOT_ASSETS.filter(n => ASSET_NAMES.includes(n));
+  await Promise.all(core.map(loadOne));
+  await Promise.all(ASSET_NAMES.filter(n => !core.includes(n)).map(loadOne));
   await loadCitadelAssets();
   onProgress && onProgress(1);
 }
@@ -3500,20 +3531,53 @@ function fitText(s, maxChars) {
 }
 // a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
 const HILITE = { frame: -1, rects: [] };
-function text(s, x, y, c = 3, sc = 1) {
+// Letter advance for a line of n glyphs that must fit in avail pixels: the normal 6px, or 5px if the line would run
+// off the 160px screen. Glyphs are 5px wide, so tighter would overlap. Returns 0 when 5px is still too wide (the
+// caller then shortens the line).
+function fitAdvance(n, avail, sc = 1) {
+  for (const a of [6, 5]) if (n * a * sc <= avail) return a * sc;
+  return 0;
+}
+// Pixel width a line will actually take once fitted (used by textC/textR to align fitted lines).
+function fittedWidth(line, avail, sc = 1) {
+  const n = line.length, a = fitAdvance(n, avail, sc);
+  return a ? n * a : Math.floor(avail / (5 * sc)) * 5 * sc;
+}
+function text(s, x, y, c = 3, sc = 1, right = W) {
   if (!IMG.font_6x9) return;
   s = gameText(s);
   if (c === 1 && HILITE.frame === frameN && HILITE.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3])) c = 3;
-  const f = font(c); let cx = x;
-  for (const ch of s) {
-    if (ch === '\n') { y += 10 * sc; cx = x; continue; }
-    let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
-    if (code !== 32) ctx.drawImage(f, (code - 32) * 6, 0, 6, 9, Math.round(cx), Math.round(y), 6 * sc, 9 * sc);
-    cx += 6 * sc;
+  const f = font(c);
+  for (let line of String(s).split('\n')) {
+    let adv = 6 * sc;
+    // Only lines that start on screen are fitted; text placed off screen on purpose (markers, scrollers) is left alone.
+    if (x >= 0 && x < right && line.length * adv > right - x) {
+      const avail = right - x;
+      adv = fitAdvance(line.length, avail, sc);
+      if (!adv) { adv = 5 * sc; const keep = Math.max(1, Math.floor(avail / adv)); line = line.slice(0, keep - 1).trimEnd() + '.'; }
+    }
+    let cx = x;
+    for (const ch of line) {
+      let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
+      if (code !== 32) ctx.drawImage(f, (code - 32) * 6, 0, 6, 9, Math.round(cx), Math.round(y), 6 * sc, 9 * sc);
+      cx += adv;
+    }
+    y += 10 * sc;
   }
 }
-const textR = (s, rx, y, c, sc = 1) => { const value = gameText(s); text(value, rx - value.length * 6 * sc, y, c, sc); };
-const textC = (s, cx, y, c, sc = 1) => { const value = gameText(s); text(value, Math.round(cx - value.length * 3 * sc), y, c, sc); };
+// Right- and centre-aligned text. A line too long for the screen is fitted (tighter spacing) and kept inside 2..W-2.
+const textR = (s, rx, y, c, sc = 1) => {
+  const value = String(gameText(s)), full = value.length * 6 * sc;
+  if (rx - full >= 0) return text(value, rx - full, y, c, sc);
+  const right = Math.min(W - 2, rx), w = fittedWidth(value, right - 2, sc);
+  text(value, Math.max(2, right - w), y, c, sc, right);
+};
+const textC = (s, cx, y, c, sc = 1) => {
+  const value = String(gameText(s)), full = value.length * 6 * sc, x = Math.round(cx - full / 2);
+  if (x >= 0 && x + full <= W) return text(value, x, y, c, sc);
+  const w = fittedWidth(value, W - 4, sc);
+  text(value, Math.max(2, Math.min(W - 2 - w, Math.round(cx - w / 2))), y, c, sc);
+};
 function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); if (c === 1 && h >= 8 && h <= 14 && w >= 30) { if (HILITE.frame !== frameN) { HILITE.frame = frameN; HILITE.rects = []; } HILITE.rects.push([x, y, w, h]); } }
 function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
@@ -3990,7 +4054,7 @@ function drawToasts() {
   const y = Math.round(-26 + 28 * slide);
   frame(4, y, 152, 25, 0);
   if (t.icon) blit(sprFit(t.icon, 14), 8, y + 5);
-  text(String(t.title).slice(0, 22), 26, y + 4, 2); text(String(t.sub || '').slice(0, 22), 26, y + 14);
+  text(String(t.title), 26, y + 4, 2, 1, 153); text(String(t.sub || ''), 26, y + 14, 3, 1, 153);
 }
 
 // ================================================================ main loop
@@ -6230,7 +6294,7 @@ function expansionQuestEvent(kind, arg, zone) {
   }
 }
 const SQ_CACHE = {};
-function sideQuestsFor(zid) { return SQ_CACHE[zid] || (SQ_CACHE[zid] = sideQuests(ZONE_BY_ID[zid])); }
+function sideQuestsFor(zid) { if (!ZONE_BY_ID[zid]) return []; return SQ_CACHE[zid] || (SQ_CACHE[zid] = sideQuests(ZONE_BY_ID[zid])); }
 function sideQuestDef(id) { const zid = id.replace(/^sq_/, '').replace(/_\d+$/, ''); return sideQuestsFor(zid).find(q => q.id === id); }
 function turnInSide(id) {
   const d = sideQuestDef(id), sq = G.sideq[id];
@@ -7762,7 +7826,7 @@ class SecretWorldJournalScene extends ListScene {
     const e = entries[this.i];
     frame(3, 119, 154, 23);
     text(e.found ? e.hint : 'A secret remains concealed.', 7, 124, 2);
-    text(e.found ? e.type.toUpperCase() + ' LV' + e.minLvl + '  +' + ((e.reward && e.reward.gold) || 0) + 'G' : 'Explore every region carefully.', 7, 134, 1);
+    text(e.found ? e.type.toUpperCase() + ' LV' + e.minLvl + '  +' + ((e.reward && e.reward.gold) || 0) + 'G' : 'Explore every region.', 7, 134, 1);
   }
 }
 class EasterEggArchiveScene extends ListScene {
@@ -7783,7 +7847,7 @@ class EasterEggArchiveScene extends ListScene {
     const e = entries[this.i];
     frame(3, 119, 154, 23);
     text(e.found ? e.hint : 'A secret remains undiscovered.', 7, 124, 2);
-    text(e.found ? `REWARD: ${e.reward.gold} GOLD` : 'Keep exploring and experimenting.', 7, 134, 1);
+    text(e.found ? `REWARD: ${e.reward.gold} GOLD` : 'Keep exploring.', 7, 134, 1);
   }
 }
 class BestiaryScene extends ListScene {
@@ -8001,9 +8065,10 @@ class HousingScene extends ListScene {
 
 class HomeInteriorScene extends ListScene {
   constructor(homeKey) { super(5); this.homeKey = homeKey; }
-  home() { return G.homes[this.homeKey]; }
+  home() { return (G.homes || {})[this.homeKey]; }
   items() { return ['REST AT HOME', 'OPEN STORAGE', 'DECORATE HOME', 'BIND HEARTHSTONE', 'RETURN OUTSIDE']; }
   update() {
+    if (!this.home()) { if (P('a') || P('b')) { SFX.back(); removeScene(this); } return; } // no home owned here
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
@@ -8027,6 +8092,7 @@ class HomeInteriorScene extends ListScene {
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 0); hdr();
     textC(`${ZONE_BY_ID[this.homeKey]?.name || 'HOME'} HOME`, 80, 14, 'gold');
+    if (!this.home()) { textC('YOU OWN NO HOME HERE.', 80, 60, 3); textC('B  BACK', 80, 130, 2); return; }
     fill(7, 30, 146, 77, '#594332'); fill(11, 34, 138, 68, '#b58a5e');
     fill(15, 86, 130, 13, '#784d48'); fill(18, 89, 124, 7, '#a46d62');
     fill(20, 59, 29, 22, '#6d4d3a'); fill(22, 56, 25, 15, '#e0c99b'); fill(18, 77, 33, 5, '#4a3026');
@@ -8107,7 +8173,7 @@ class SettingsScene extends ListScene {
       else textR(String(v[index]), 147, y, index === this.i ? '#ffe3a0' : '#cbb9ed');
     });
     fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
-    text('UP/DOWN MOVE   LEFT/RIGHT CHANGE', 9, 127, '#ddd3e6');
+    text('UP/DN MOVE   L/R CHANGE', 9, 127, '#ddd3e6');
     text('A SELECT   B SAVE & BACK', 9, 135, '#ffe3a0');
   }
 }
@@ -8177,7 +8243,7 @@ class GraphicsScene extends ListScene {
       textR(this.value(label), 148, y, selected ? '#ffe3a0' : '#cbb9ed');
     });
     fill(4, 126, 152, 12, 'rgba(5,6,15,.86)');
-    text('UP/DOWN MOVE  LEFT/RIGHT CHANGE', 8, 127, '#ddd3e6');
+    text('UP/DN MOVE   L/R CHANGE', 8, 127, '#ddd3e6');
     text('A CHANGE  B SAVE & BACK', 8, 135, '#ffe3a0');
   }
 }
@@ -8223,7 +8289,7 @@ class SoundTest extends ListScene {
     textC((S.audio === 'hd64' ? '64-BIT ' : 'CHIP ') + (this.tab ? `MUSIC ${Object.keys(TRACKS).length}` : `SFX ${this.items().length}`), 80, 1, S.uiTheme === 'blackbird' ? 'gold' : 0);
     this.items().slice(this.top, this.top + this.rows).forEach((s, j) => { const i = this.top + j, y = 15 + j * 11; if (i === this.i) fill(2, y - 1, 152, 11, 1); text(`${String(i + 1).padStart(3, '0')} ${s.toUpperCase()}`, 6, y); });
     this.scrollbar(156, 14, 110);
-    text('A:PLAY SEL:SFX/MUSIC START:ENGINE', 2, 134, 2);
+    text('A:PLAY  SEL:MODE  START:ENGINE', 2, 134, 2);
   }
 }
 
@@ -8560,6 +8626,9 @@ function titleExtras() {
     if (k === 3) say([`${BUILD.game}`, `Version ${BUILD.version} ${BUILD.build}`, `Engine ${BUILD.engine} ${BUILD.engineVersion}`, `By ${BUILD.studio}`]);
   }, 'EXTRAS');
 }
+// True while the asset batch is still loading (dev builds fetch thousands of PNGs one by one).
+function titleLoading() { return typeof ASSET_PROGRESS === 'number' && ASSET_PROGRESS < 1; }
+function titleLoadingLabel() { return `LOADING ${Math.floor(ASSET_PROGRESS * 100)}%`; }
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
   enter() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
@@ -8573,6 +8642,7 @@ class Title {
     this.i = Math.min(this.i, o.length - 1);
     if (P('b')) { SFX.back(); return; }
     if (!(P('a') || P('start'))) return;
+    if (titleLoading()) { SFX.back(); return; } // world art is still arriving; starting now would show blank tiles
     SFX.select();
     const c = o[this.i];
     if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
@@ -8618,7 +8688,7 @@ class Title {
     // left border accent
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
-    textC('A  SELECT   B  BACK', 80, 137, '#e8dab8');
+    textC(titleLoading() ? titleLoadingLabel() : 'A  SELECT   B  BACK', 80, 137, '#e8dab8');
   }
   drawKeyArt() {
     const smooth = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
@@ -8630,7 +8700,7 @@ class Title {
     fill(0, 136, W, 8, '#05060f');
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
-    textR('A SELECT  B BACK', W - 4, 137, '#e8dab8');
+    textR(titleLoading() ? titleLoadingLabel() : 'A SELECT  B BACK', W - 4, 137, '#e8dab8');
     this.keep = [[panelX - 1, panelY - 1, panelW + 1, panelH + 2], [0, 136, W, 8]];
   }
 }
@@ -8723,16 +8793,17 @@ class RealmSelect {
       const y = 18 + k * 24, sel = rid === this.realms[this.j];
       fill(86, y, 68, 21, sel ? 'rgba(157,91,33,.5)' : 'rgba(12,13,28,.75)');
       const info = REALMS.find(r => r.id === rid) || { name: rid, type: '?', status: 'offline', maxPlayers: 1000, population: 0 };
-      const pop = info.population || 0;
-      text(String(info.name).slice(0, 11), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6');
-      text(REALM_TYPE[rid] || '?', 90, y + 12, info.status === 'online' ? 'green' : 'red');
-      textR(`${pop}/${info.maxPlayers}`, 142, y + 12, pop >= info.maxPlayers ? 'red' : 2);
-      text(info.status === 'online' ? 'ONLINE' : 'OFFLINE', 90, y + 19, info.status === 'online' ? 'green' : 'red');
+      const pop = info.population || 0, online = info.status === 'online';
+      // Two rows per card: name + status dot, then a short type tag and the population.
+      text(String(info.name), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6', 1, 145);
+      fill(147, y + 4, 4, 4, online ? 'green' : 'red');
+      const type = REALM_TYPE[rid] || '?', short = { ROLEPLAY: 'RP', SEASONAL: 'SEAS' }[type] || type;
+      text(short, 90, y + 12, online ? 'green' : 'red');
+      const max = info.maxPlayers || 1000, cap = max >= 1000 && max % 1000 === 0 ? `${max / 1000}K` : String(max);
+      textR(`${pop}/${cap}`, 152, y + 12, pop >= max ? 'red' : 2);
     });
-    const info = REALMS.find(r => r.id === this.realms[this.j]) || {};
-    fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
-    textC(`A ENTER WORLD   B BACK   LEFT/RIGHT REGION`, 80, 129, '#fff0c2');
-    textC(`WORLD CAPACITY: ${(info.population||0)}/${(info.maxPlayers||1000)} PLAYERS`, 80, 139, '#cbb9ed');
+    fill(4, 130, 152, 10, 'rgba(5,6,15,.78)');
+    textC('A ENTER  B BACK  </>: REGION', 80, 131, '#fff0c2');
   }
 }
 // ================================================================ SAVE SLOTS
@@ -8777,7 +8848,7 @@ class SlotPicker {
       }
     }
     fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
-    textC('UP/DOWN CHOOSE   A CONFIRM   B BACK', 80, 129, '#fff0c2');
+    textC('UP/DN CHOOSE  A OK  B BACK', 80, 129, '#fff0c2');
   }
 }
 
@@ -9695,9 +9766,10 @@ function wardenMenu(e) {
   }, `${e.name}: Well met, ${G.name}.`);
 }
 class SideQuestBoard {
-  constructor(zid, who) { this.opaque = true; this.zid = zid; this.who = who; this.i = 0; }
+  constructor(zid, who) { this.opaque = true; this.zid = zid; this.who = String(who || 'QUEST BOARD'); this.i = 0; }
   update() {
     const qs = sideQuestsFor(this.zid);
+    if (!qs.length) { if (P('a') || P('b')) { removeScene(this); SFX.back(); } return; }
     if (nav('up')) { this.i = (this.i + qs.length - 1) % qs.length; SFX.cursor(); }
     if (nav('down')) { this.i = (this.i + 1) % qs.length; SFX.cursor(); }
     if (P('b')) { removeScene(this); SFX.back(); return; }
@@ -9714,6 +9786,7 @@ class SideQuestBoard {
     fill(0, 0, W, H, 0); frame(2, 2, 156, 140);
     text(`${this.who.slice(0, 22)}`, 7, 6, 2);
     const qs = sideQuestsFor(this.zid);
+    if (!qs.length) { text('NO QUESTS POSTED HERE.', 7, 24, 3); text('B  BACK', 7, 130, 2); return; }
     qs.forEach((q, i) => { const y = 18 + i * 13, st = G.sideq[q.id]; if (i === this.i) fill(4, y - 2, 152, 12, 1); text(st ? (st.state === 'done' ? '#' : st.state === 'ready' ? '?' : '-') : '!', 7, y, st && st.state === 'ready' ? 'gold' : 3); text(q.name.slice(0, 22), 15, y); });
     const q = qs[this.i]; frame(4, 98, 152, 42); text(wrap(q.text, 24).slice(0, 3).join('\n'), 8, 102); text(`${fmt(q.xp)}XP ${q.gold}G`, 8, 131, 2);
   }
@@ -10432,7 +10505,7 @@ class ExpansionMapsScene {
     textC(`${x.n}. ${x.name}`.slice(0, 25), 80, 2, 0);
     textC(`LEVEL ${x.lvl[0]}-${x.lvl[1]}  ${x.desc}`.slice(0, 25), 80, 15, 'gold');
     zones.forEach((z, index) => {
-      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 29 + row * 49;
+      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 22 + row * 42;
       const m = buildZoneCached(z.id), seen = !!(G.visited[z.id] || G.waypoints[z.id]);
       for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
         const ch = m.rows[ty][tx], rgb = MONO(S.palette) ? UI.ui[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
@@ -10443,18 +10516,18 @@ class ExpansionMapsScene {
       if (m.poi.dungeon) { fill(ox + m.poi.dungeon.x, oy + 7 + m.poi.dungeon.y, 2, 2, 'red'); text('D', ox + m.poi.dungeon.x - 1, oy + 6 + m.poi.dungeon.y, 0); }
       if (m.poi.raid) { fill(ox + m.poi.raid.x, oy + 7 + m.poi.raid.y, 2, 2, 'gold'); text('R', ox + m.poi.raid.x - 1, oy + 6 + m.poi.raid.y, 3); }
       if (index === this.zoneIndex) { ctx.strokeStyle = col('gold'); ctx.lineWidth = 1; ctx.strokeRect(ox - 2.5, oy + 4.5, ZW + 5, ZH + 5); }
-      text(`${index + 1} ${z.name}`.slice(0, 10), ox - 2, oy + 34, index === this.zoneIndex ? 'gold' : 2);
-      textR(`LV${z.lvl[0]}`, ox + ZW + 1, oy + 34, 2);
+      // Number and level only; the selected zone's full name is in the bottom bar.
+      text(`${index + 1} LV${z.lvl[0]}`, ox - 1, oy + 33, index === this.zoneIndex ? 'gold' : 2, 1, ox + 38);
     });
     const campaign = EXPANSION_CAMPAIGNS[this.expIndex], progress = G.expansionCampaigns && G.expansionCampaigns[x.id];
     const story = progress ? (progress.done ? campaign.epilogue : campaign.beats[progress.step] || campaign.intro) : campaign.beats[0];
     const step = campaign.steps[progress?.step || 0];
     const objective = progress?.done ? 'CAMPAIGN COMPLETE' : !progress ? '0/4 ARRIVE AT FRONTIER' : step.kind === 'slay' ? `2/4 FOES ${progress.kills || 0}/${step.target}` : `${progress.step + 1}/4 ${step.kind === 'raid' ? 'RAID' : step.kind === 'dungeon' ? 'DUNGEON' : 'REACH'}: ${step.kind === 'raid' ? x.raid : step.kind === 'dungeon' ? EXP_ZONE_NAMES[this.expIndex][1] : EXP_ZONE_NAMES[this.expIndex][0]}`;
-    textC(story.toUpperCase().slice(0, 25), 80, 105, 2);
-    textC(objective.slice(0, 25), 80, 116, progress?.done ? 'gold' : 2);
+    textC(story.toUpperCase().slice(0, 25), 80, 106, 2);
+    textC(objective.slice(0, 25), 80, 115, progress?.done ? 'gold' : 2);
     const selected = zones[this.zoneIndex];
     fill(0, 125, W, 19, 0); textC(`${selected?.name || ''}  LV${selected?.lvl[0] || 0}-${selected?.lvl[1] || 0}`, 80, 126, 'gold');
-    textC('UP/DN: EXPANSION  LEFT/RIGHT: ZONE  A: DETAIL', 80, 136, 2);
+    textC('UP/DN: EXP  L/R: ZONE  A: INFO', 80, 136, 2);
   }
 }
 
@@ -16775,7 +16848,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY + (isMu() ? 8 : 0) - Math.round(6 * (1 - slide));
       ctx.globalAlpha = Math.max(0.2, slide); panel(4, y, 152, 25);
       if (t.icon) blit(sprFit(t.icon, 14), 9, y + 6);
-      text(String(t.title).slice(0, 21), 27, y + 4, 3); text(String(t.sub || '').slice(0, 21), 27, y + 14, 2); ctx.globalAlpha = 1;
+      text(String(t.title), 27, y + 4, 3, 1, 153); text(String(t.sub || ''), 27, y + 14, 2, 1, 153); ctx.globalAlpha = 1;
     }; }
 }
 
@@ -20650,7 +20723,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof c
 body.chat-disabled .game-viewport > .chat, body.chat-disabled .chat, body.chat-disabled #chatShow { display: none !important; }
 /* WoW: bottom-left, just above the action bar / HUD strip */
 .game-viewport > .chat.cbx.wowchat:not(.cb-moved) { left: 12px !important; right: auto !important; bottom: calc(15% + 12px) !important; top: auto !important; width: min(420px, 48%) !important; }
-body #chatShow { left: 12px; right: auto; }
+body #chatShow, body .game-viewport > #chatShow { left: 12px; right: auto; width: auto; } /* a compact button, not a bar across the screen */
 .chat.cbx.wowchat { background: rgba(8,6,5,.62) !important; border-color: rgba(118,90,54,.55) !important; backdrop-filter: blur(1px); }
 .chat.wowchat .chat-tabs { gap: 2px !important; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid rgba(212,172,96,.45); padding: 0 2px; min-height: 20px !important; }
 .chat.wowchat .chat-tabs::-webkit-scrollbar { display: none; }
@@ -21292,8 +21365,12 @@ document.querySelectorAll('[data-fullscreen]').forEach(b => b.addEventListener('
     if (!root || !root.isConnected) { if (timer) window.clearInterval(timer); timer = null; return; }
     const g = getGame();
     const stack = window.GBQ && window.GBQ.scenes;
-    const activeScene = Array.isArray(stack) && stack.length ? stack[stack.length - 1] : null;
-    const onField = !!(activeScene && activeScene.constructor && activeScene.constructor.name === 'Field');
+    // Live while the overworld is visible: the Field is on the stack and nothing full-screen (a menu, battle or
+    // map, which mark themselves opaque) sits above it. Dialog boxes and toasts over the world keep the HUD up.
+    const scenes = Array.isArray(stack) ? stack : [];
+    let fieldAt = -1;
+    for (let i = scenes.length - 1; i >= 0; i--) if (scenes[i] && scenes[i].constructor && scenes[i].constructor.name === 'Field') { fieldAt = i; break; }
+    const onField = fieldAt >= 0 && !scenes.slice(fieldAt + 1).some(s => s && s.opaque);
     if (!g || !onField) { root.classList.remove('is-live'); return; }
     root.classList.add('is-live');
     const derived = typeof window.derive === 'function' ? window.derive(g) : {};
@@ -21355,7 +21432,10 @@ document.querySelectorAll('[data-fullscreen]').forEach(b => b.addEventListener('
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
-  function init() { mount(); if (!root) window.setTimeout(init, 250); }
+  // The HTML overlay panels (top bar, side panels, bottom bar) are off: the game shows only its own in-screen UI.
+  // Set to true to bring the overlay back. The keyboard shortcuts below work either way.
+  const HUD_OVERLAY_ENABLED = false;
+  function init() { if (!HUD_OVERLAY_ENABLED) return; mount(); if (!root) window.setTimeout(init, 250); }
   // Keyboard shortcuts for the menus the old bottom bar listed (they were labels only before).
   // Field only, never while typing or in battle. Taken keys are avoided: WASD/arrows move, Z/J/Space = A,
   // X/K/Esc = B, Enter = START, Shift/Tab = SELECT, C = chat, M = atlas, F = full screen.
