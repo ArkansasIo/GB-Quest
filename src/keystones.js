@@ -22,6 +22,14 @@ const KEY_AFFIXES = {
   bolstered: { name: 'BOLSTERED', desc: 'All foes +10% HP.', all: { hp: 1.1 } },
 };
 const ROTATING = ['raging', 'brambled', 'warded', 'swift', 'bolstered'];
+const SEASONAL_AFFIXES = ['cinderbound', 'permafrost', 'overgrown', 'eclipsed'];
+const seasonalAffixForWeek = weekKey => { const month = Math.max(1, Math.min(12, Number(String(weekKey).split('-')[1]) || 1)); return SEASONAL_AFFIXES[Math.floor((month - 1) / 3)]; };
+Object.assign(KEY_AFFIXES, {
+  cinderbound: { name: 'CINDERBOUND', desc: 'Season of Emberfall: all foes +12% HP and +8% damage; foes begin MIGHTY.', all: { hp: 1.12, dmg: 1.08 }, start: { buff: 'might', rounds: 2 } },
+  permafrost: { name: 'PERMAFROST', desc: 'Season of Frostwake: all foes +12% HP and begin FORTIFIED.', all: { hp: 1.12, dmg: 1.04 }, start: { buff: 'fortify', rounds: 2 } },
+  overgrown: { name: 'OVERGROWN', desc: 'Season of Greentide: all foes +10% HP and begin with THORNSKIN.', all: { hp: 1.10, dmg: 1.06 }, start: { buff: 'thornskin', rounds: 3 } },
+  eclipsed: { name: 'ECLIPSED', desc: 'Season of Suncrown: all foes +8% HP and +12% damage; foes begin HASTED.', all: { hp: 1.08, dmg: 1.12 }, start: { buff: 'haste', rounds: 2 } },
+});
 // a week number from a 'YYYY-MM-DD' Monday key (days since 2026-01-05, a Monday, / 7)
 const weekIndex = weekKey => Math.floor((Date.UTC(...String(weekKey).split('-').map((v, i) => i === 1 ? Number(v) - 1 : Number(v))) - Date.UTC(2026, 0, 5)) / 6048e5);
 function weeklyAffixes(weekKey, level) {
@@ -29,6 +37,7 @@ function weeklyAffixes(weekKey, level) {
   if (level >= 2) out.push(((w % 2) + 2) % 2 === 0 ? 'fortified' : 'tyrannical');
   if (level >= 4) out.push(ROTATING[n]);
   if (level >= 7) out.push(ROTATING[(n + 2) % ROTATING.length]);
+  if (level >= 10) out.push(seasonalAffixForWeek(weekKey));
   return out;
 }
 const keyScale = level => Math.round(Math.pow(1.08, Math.max(0, Math.min(KEY_MAX, level) - 1)) * 1000) / 1000;
@@ -63,7 +72,7 @@ function pickKeyDungeon(dungeons, heroLvl, rnd, avoid) {
 }
 const fmtClock = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
-if (typeof globalThis !== 'undefined') globalThis.GBQKeystones = { KEY_MIN, KEY_MAX, KEY_AFFIXES, weekIndex, weeklyAffixes, keyScale, foeMultipliers, startEffects, timeLimit, runResult, failResult, keyLoot, pickKeyDungeon, fmtClock };
+if (typeof globalThis !== 'undefined') globalThis.GBQKeystones = { KEY_MIN, KEY_MAX, KEY_AFFIXES, SEASONAL_AFFIXES, seasonalAffixForWeek, weekIndex, weeklyAffixes, keyScale, foeMultipliers, startEffects, timeLimit, runResult, failResult, keyLoot, pickKeyDungeon, fmtClock };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof enterInstance === 'function' && typeof DUNGEONS !== 'undefined') {
