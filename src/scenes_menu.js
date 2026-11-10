@@ -28,7 +28,7 @@ class ListScene { // reusable scrolling list base
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'GUILD', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -37,7 +37,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), HEIRLOOMS: () => new HeirloomScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), 'SECRET ARCHIVE': () => new EasterEggArchiveScene(), 'HIDDEN WORLD': () => new SecretWorldJournalScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), GUILD: () => new GuildMenuScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
@@ -62,6 +62,102 @@ class MainMenu extends ListScene {
     this.scrollbar(156, 14, 128);
   }
 }
+
+/* ---------------------------------------------------------------- GUILD MENU
+ * Persistent guild management UI. The dedicated MMORPG client is injected as
+ * window.GBQ_MMO_API by the online bootstrap; offline saves never pretend to
+ * create server-side guild state.
+ */
+class GuildMenuScene {
+  constructor() { this.opaque = true; this.i = 0; this.page = 'home'; this.guild = null; this.busy = false; this.msg = ''; this.refresh(); }
+  api() { return window.GBQ_MMO_API || window.gbgMmoApi || null; }
+  characterId() { return String(window.GBQ_MMO_CHARACTER_ID || (G && (G.mmoCharacterId || G.characterId)) || ''); }
+  async refresh() {
+    const api = this.api(), id = this.characterId();
+    if (!api || !id) { this.guild = null; this.msg = !api ? 'ONLINE GUILD SERVICE NOT CONNECTED' : 'SELECT AN ONLINE CHARACTER'; return; }
+    this.busy = true;
+    try { const result = await api.guild(id); this.guild = result.guild || null; this.msg = this.guild ? 'GUILD DATA LOADED' : 'NO GUILD - CREATE OR ACCEPT AN INVITE'; }
+    catch (e) { this.msg = String(e.message || e).toUpperCase().slice(0, 44); }
+    finally { this.busy = false; }
+  }
+  rows() {
+    if (this.page === 'home') return this.guild
+      ? ['OVERVIEW', 'MEMBERS', 'INVITE PLAYER', 'GUILD MESSAGE', 'TRANSFER LEADERSHIP', 'LEAVE GUILD', 'DISBAND GUILD', 'REFRESH', 'BACK']
+      : ['CREATE GUILD', 'ACCEPT INVITE', 'REFRESH', 'BACK'];
+    if (this.page === 'members') return ['BACK'];
+    return ['BACK'];
+  }
+  update() {
+    const rows = this.rows();
+    if (nav('up')) { this.i = (this.i + rows.length - 1) % rows.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % rows.length; SFX.cursor(); }
+    if (P('b') || P('start')) { if (this.page !== 'home') { this.page = 'home'; this.i = 0; SFX.back(); } else { removeScene(this); SFX.back(); } return; }
+    if (!P('a') || this.busy) return;
+    const choice = rows[this.i], api = this.api(), id = this.characterId();
+    if (choice === 'BACK') { this.page = 'home'; this.i = 0; return; }
+    if (choice === 'REFRESH') return this.refresh();
+    if (!api || !id) { this.msg = 'ONLINE GUILD SERVICE NOT CONNECTED'; SFX.error(); return; }
+    if (choice === 'OVERVIEW') { this.page = 'overview'; this.i = 0; return; }
+    if (choice === 'MEMBERS') { this.page = 'members'; this.i = 0; return; }
+    const ask = (label, max = 64) => { const value = window.prompt(label); return value == null ? null : String(value).trim().slice(0, max); };
+    const run = async (fn, success) => {
+      this.busy = true; this.msg = 'CONTACTING REALM...';
+      try { await fn(); SFX.confirm(); this.msg = success; await this.refresh(); }
+      catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 44); }
+      finally { this.busy = false; }
+    };
+    if (choice === 'CREATE GUILD') {
+      const name = ask('Guild name (3-32 characters)', 32); if (name) return run(() => api.createGuild(id, name), 'GUILD CREATED');
+    } else if (choice === 'INVITE PLAYER') {
+      const target = ask('Invitee character ID (same realm)', 36); if (target) return run(() => api.inviteToGuild(this.guild.id, id, target), 'GUILD INVITATION SENT');
+    } else if (choice === 'ACCEPT INVITE') {
+      const invite = ask('Guild invitation ID', 36); if (invite) return run(() => api.acceptGuildInvite(invite, id), 'GUILD INVITATION ACCEPTED');
+    } else if (choice === 'GUILD MESSAGE') {
+      const motd = ask('Guild message of the day (max 180 characters)', 180); if (motd !== null) return run(() => api.updateGuildMotd(this.guild.id, id, motd), 'GUILD MESSAGE UPDATED');
+    } else if (choice === 'TRANSFER LEADERSHIP') {
+      const target = ask('New leader character ID (must be a member)', 36); if (target) return choose(['TRANSFER LEADERSHIP', 'CANCEL'], k => { if (k === 0) run(() => api.transferGuildLeadership(this.guild.id, id, target), 'LEADERSHIP TRANSFERRED'); }, 'Transfer guild leadership?');
+    } else if (choice === 'LEAVE GUILD') {
+      return choose(['LEAVE GUILD', 'CANCEL'], k => { if (k === 0) run(() => api.leaveGuild(id), 'LEFT GUILD'); }, 'Leave this guild? Guild leaders must transfer or disband first.');
+    } else if (choice === 'DISBAND GUILD') {
+      return choose(['DISBAND GUILD', 'CANCEL'], k => { if (k === 0) run(() => api.disbandGuild(this.guild.id, id), 'GUILD DISBANDED'); }, 'Permanently disband this guild?');
+    }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    text('GUILD HALL', 5, 14, 'gold');
+    if (this.guild) {
+      frame(3, 24, 154, 27);
+      text(String(this.guild.name || 'GUILD').slice(0, 23), 8, 28, 'gold');
+      text('MEMBERS ' + ((this.guild.members || []).length), 8, 39, 2);
+      if (this.page === 'overview') {
+        frame(3, 55, 154, 68);
+        text('GUILD: ' + String(this.guild.name).slice(0, 18), 8, 61, 'gold');
+        text('MOTD', 8, 75, 2);
+        wrap(String(this.guild.motd || 'No message set.'), 23).slice(0, 3).forEach((line, n) => text(line, 8, 85 + n * 9, 3));
+        text('LEADER ID ' + String(this.guild.leaderCharacterId || '').slice(0, 12), 8, 113, 2);
+      } else if (this.page === 'members') {
+        frame(3, 55, 154, 75);
+        (this.guild.members || []).slice(0, 7).forEach((m, n) => {
+          const y = 60 + n * 9;
+          text(String(m.name || m.characterId || '').slice(0, 17), 8, y, m.rank === 'leader' ? 'gold' : 3);
+          textR(String(m.rank || 'member').toUpperCase().slice(0, 8), 151, y, 2);
+        });
+        if (!(this.guild.members || []).length) text('NO MEMBERS RETURNED', 8, 66, 2);
+      } else {
+        this.rows().forEach((label, n) => { const y = 57 + n * 9; if (n === this.i) fill(4, y - 1, 152, 9, 1); text(label, 8, y, n === this.i ? 0 : 3); });
+      }
+    } else {
+      frame(3, 25, 154, 26);
+      text(this.busy ? 'LOADING GUILD...' : 'NO ACTIVE GUILD', 8, 31, 'gold');
+      text('CREATE ONE OR ACCEPT AN INVITE', 8, 41, 2);
+      this.rows().forEach((label, n) => { const y = 60 + n * 12; if (n === this.i) fill(4, y - 1, 152, 11, 1); text(label, 9, y + 1, n === this.i ? 0 : 3); });
+    }
+    if (this.page === 'home' && this.guild) this.rows().forEach((label, n) => { const y = 57 + n * 9; if (n === this.i) fill(4, y - 1, 152, 9, 1); text(label, 8, y, n === this.i ? 0 : 3); });
+    if (this.msg) text(this.msg.slice(0, 25), 4, 134, this.msg.includes('NOT CONNECTED') || this.msg.includes('ERROR') ? 'red' : 'gold');
+    aelHints([['A', 'SELECT'], ['B', 'BACK']]);
+  }
+}
+
 function restMenu() {
   choose(['SHORT REST (1 HOUR)', `LONG REST (CAMP KIT x${G.inv.campkit || 0})`, 'BACK'], k => {
     if (k === 0) { if (G.ghost) return say('Spirits cannot rest.'); const songs = G.companions.some(c => hasFeature(c, 'restsong')) || hasFeature(G, 'restsong'); const log = shortRest(G, songs); G.companions.forEach(c => shortRest(c, songs)); SFX.heal(); say(['You take a short rest.'].concat(log.length ? log : ['Nothing to recover (no hit dice?).'])); }
