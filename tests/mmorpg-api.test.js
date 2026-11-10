@@ -99,3 +99,23 @@ test('MMORPG API exposes realm discovery and supports selecting a realm at chara
   });
   assert.equal(calls[0].options.headers.authorization, 'Bearer realm-token');
 });
+
+test('MMORPG API exposes world population and capacity dashboard data', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ onlinePlayers: 12, capacity: 9000, regions: [], zones: [] }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'realm-token';
+  const status = await api.worldStatus();
+  await api.worldStatus({ refresh: true });
+  assert.equal(status.capacity, 9000);
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/world/status',
+    'https://realm.example.test/api/world/status?refresh=1'
+  ]);
+});
