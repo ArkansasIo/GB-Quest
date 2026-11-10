@@ -234,6 +234,6 @@ export const CLASS_ABILITY_RECORDS = Object.freeze([
     id: "wizard-diviner-portent", name: "Portent", classId: "wizard", subclassId: "diviner", level: 3,
     description: "Foresee and replace a d20 roll with a portent die.",
     effects: [{ type: "damage", dice: "1d8", damageType: "force", save: { ability: "wis", dc: 13, onSuccess: "half" } }]
-  }
+  },
   ...expansion.abilities
 ]);
