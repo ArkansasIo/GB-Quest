@@ -13,3 +13,6 @@ test('sliding-window rate limiter expires old hits',()=>{let t=0;const l=new Sli
 
 const {parseAttachments}=require('../../backend/mmorpg-economy-routes.cjs');
 test('mail attachment validation rejects duplicates, invalid ids and excessive quantities',()=>{assert.deepEqual(parseAttachments([{itemId:'slime_gel',quantity:3}]),[{itemId:'slime_gel',quantity:3}]);assert.deepEqual(parseAttachments(undefined),[]);assert.equal(parseAttachments([{itemId:'bad id',quantity:1}]),null);assert.equal(parseAttachments([{itemId:'potion',quantity:1},{itemId:'potion',quantity:2}]),null);assert.equal(parseAttachments([{itemId:'potion',quantity:100}]),null);assert.equal(parseAttachments(Array.from({length:6},(_,i)=>({itemId:'item_'+i,quantity:1}))),null);});
+
+const {calculateEloDelta}=require('../../backend/mmorpg-pvp-routes.cjs');
+test('duel Elo deltas are symmetric for wins and losses',()=>{assert.deepEqual(calculateEloDelta(1000,1000,1),{deltaA:16,deltaB:-16});assert.deepEqual(calculateEloDelta(1000,1000,0),{deltaA:-16,deltaB:16});assert.deepEqual(calculateEloDelta(1200,1000,1),{deltaA:8,deltaB:-8});assert.throws(()=>calculateEloDelta(-1,1000,1),/invalid_elo_input/);});
