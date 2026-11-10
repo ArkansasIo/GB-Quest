@@ -384,8 +384,15 @@ function attachSocket(ws, req) {
         const text = String(msg.payload.text || '').trim();
         if (!text || text.length > 180 || /[\u0000-\u001f\u007f]/.test(text)) return send(ws, 'error', { code: 'invalid_chat' });
         const channel = ['zone', 'realm', 'whisper'].includes(msg.payload.channel) ? msg.payload.channel : 'zone';
-        const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
-        if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
+        const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, zoneId: state.zoneId, at: Date.now() };
+        if (channel === 'realm' || channel === 'zone') {
+          const saved = await pool.query(`INSERT INTO world_chat_messages(realm_id,zone_id,channel,sender_character_id,message)
+            VALUES($1,$2,$3,$4,$5) RETURNING id,created_at`,
+            [state.realmId, channel === 'zone' ? state.zoneId : null, channel, state.character.id, text]);
+          message.id = saved.rows[0].id;
+          message.at = new Date(saved.rows[0].created_at).getTime();
+          if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
+        }
         if (channel === 'whisper') {
           const to = String(msg.payload.to || '').trim().toLowerCase();
           const target = [...activeSockets.entries()].find(([, s]) => s.authenticated && s.character && s.realmId === state.realmId && s.character.name.toLowerCase() === to);
@@ -913,6 +920,23 @@ const server = http.createServer(async (req, res) => {
         await tx.query('ROLLBACK').catch(() => {});
         throw error;
       } finally { tx.release(); }
+    }
+    const chatHistoryMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/chat$/i);
+    if (chatHistoryMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const owned = await pool.query('SELECT id,realm_id,zone_id FROM characters WHERE id=$1 AND account_id=$2', [chatHistoryMatch[1], acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const channel = url.searchParams.get('channel') === 'realm' ? 'realm' : 'zone';
+      const limit = Math.max(1, Math.min(100, Number.parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+      const args = channel === 'realm' ? [owned.rows[0].realm_id, limit] : [owned.rows[0].realm_id, owned.rows[0].zone_id, limit];
+      const result = await pool.query(channel === 'realm'
+        ? `SELECT m.id,m.channel,m.realm_id,m.zone_id,m.sender_character_id AS "characterId",c.name,m.message AS text,m.created_at AS "createdAt"
+           FROM world_chat_messages m JOIN characters c ON c.id=m.sender_character_id
+           WHERE m.realm_id=$1 AND m.channel='realm' ORDER BY m.created_at DESC LIMIT $2`
+        : `SELECT m.id,m.channel,m.realm_id,m.zone_id,m.sender_character_id AS "characterId",c.name,m.message AS text,m.created_at AS "createdAt"
+           FROM world_chat_messages m JOIN characters c ON c.id=m.sender_character_id
+           WHERE m.realm_id=$1 AND m.zone_id=$2 AND m.channel='zone' ORDER BY m.created_at DESC LIMIT $3`, args);
+      return json(res, 200, { channel, messages: result.rows.reverse().map(row => ({ ...row, at: new Date(row.createdAt).getTime() })) });
     }
     const walletMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/wallet$/i);
     if (walletMatch && req.method === 'GET') {
