@@ -31,6 +31,7 @@ The UI displays the generated 73-node catalogue per specialization, server level
 - Applies passive talent damage bonuses, with a server-side cap.
 - Applies the selected active/ultimate damage multiplier.
 - Charges the node's configured mana cost from the persistent character record.
-- Includes the used ability and mana spent in the combat resolution event.
+- Enforces and persists per-character cooldowns across reconnects and server instances.
+- Includes the used ability, mana spent, and passive bonus in the combat resolution event.
 
 Clients can call `MultiplayerClient.attack(targetId, abilityNodeId)`; omitting the ability ID performs a basic attack. The server still validates every request. Ability cooldown enforcement and wiring this helper into the game's in-world hotbar remain separate work.
