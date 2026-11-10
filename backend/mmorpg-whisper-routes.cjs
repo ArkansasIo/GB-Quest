@@ -1,7 +1,13 @@
 'use strict';
 
 // Authenticated, same-realm persistent direct-message history.
-async function handleWhisperRequest({ req, res, url, pool, accountFor, json }) {
+// `json(res, status, body)` is optional: the default writes a JSON response.
+function sendJson(res, status, body) {
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+  res.end(JSON.stringify(body));
+}
+
+async function handleWhisperRequest({ req, res, url, pool, accountFor, json = sendJson }) {
   const match = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/whispers$/i);
   if (!match) return false;
   if (!['GET', 'POST'].includes(req.method)) return false;
@@ -21,7 +27,14 @@ async function handleWhisperRequest({ req, res, url, pool, accountFor, json }) {
     const peer = await pool.query('SELECT id FROM characters WHERE id=$1 AND realm_id=$2', [withCharacter, owned.rows[0].realm_id]);
     if (!peer.rowCount) { json(res, 404, { error: 'same_realm_character_not_found' }); return true; }
     const limit = Math.max(1, Math.min(100, Number.parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+    // one statement: read the conversation and mark the peer's unread messages as read (the SELECT sees the
+    // rows as they were, so messages read now still come back with readAt null)
     const result = await pool.query(`
+      WITH marked AS (
+        UPDATE player_whispers SET read_at=now()
+        WHERE realm_id=$1 AND sender_character_id=$3 AND recipient_character_id=$2 AND read_at IS NULL
+        RETURNING id
+      )
       SELECT id, sender_character_id AS "senderCharacterId",
              recipient_character_id AS "recipientCharacterId", message,
              created_at AS "createdAt", read_at AS "readAt"
@@ -31,9 +44,6 @@ async function handleWhisperRequest({ req, res, url, pool, accountFor, json }) {
          (sender_character_id=$3 AND recipient_character_id=$2))
       ORDER BY created_at DESC LIMIT $4`,
       [owned.rows[0].realm_id, characterId, withCharacter, limit]);
-    await pool.query(`UPDATE player_whispers SET read_at=now()
-      WHERE realm_id=$1 AND sender_character_id=$2 AND recipient_character_id=$3 AND read_at IS NULL`,
-      [owned.rows[0].realm_id, withCharacter, characterId]);
     json(res, 200, { withCharacter, messages: result.rows.reverse() });
     return true;
   }
