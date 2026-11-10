@@ -4,6 +4,29 @@ window.GBQ_PATCH_NOTES = {
  "repo": "ArkansasIo/GB-Quest",
  "releases": [
   {
+   "version": "2.5.0",
+   "date": "2026-11-10",
+   "title": "Realm Worlds",
+   "sections": [
+    {
+     "name": "Multiplayer",
+     "notes": [
+      "Every realm is now its own world on the realm server: you only see, chat with and battle beside players on your realm.",
+      "Picking a realm in REALM SELECT moves your account there; a full or offline realm is refused with a message. Loading a hero re-enters that hero's realm.",
+      "Realm select shows live population and status from the server.",
+      "All chat channels (say, yell, party, guild, whisper, world, trade, LFG) and party battles stay on your realm.",
+      "New one-click Windows launcher tools/windows/start-realm-server.bat runs the realm server for your network and shows the addresses friends can join."
+     ]
+    },
+    {
+     "name": "Fixes",
+     "notes": [
+      "The realm server no longer crashes a connection when a realm is full; population is counted live instead of with counters that could drift."
+     ]
+    }
+   ]
+  },
+  {
    "version": "2.4.1",
    "date": "2026-11-10",
    "title": "Debug pass",

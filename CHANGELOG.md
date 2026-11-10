@@ -2,6 +2,22 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.5.0 — Realm Worlds
+
+Released 2026-11-10
+
+### Multiplayer
+
+- Every realm is now its own world on the realm server: you only see, chat with and battle beside players on your realm.
+- Picking a realm in REALM SELECT moves your account there; a full or offline realm is refused with a message. Loading a hero re-enters that hero's realm.
+- Realm select shows live population and status from the server.
+- All chat channels (say, yell, party, guild, whisper, world, trade, LFG) and party battles stay on your realm.
+- New one-click Windows launcher tools/windows/start-realm-server.bat runs the realm server for your network and shows the addresses friends can join.
+
+### Fixes
+
+- The realm server no longer crashes a connection when a realm is full; population is counted live instead of with counters that could drift.
+
 ## v2.4.1 — Debug pass
 
 Released 2026-11-10

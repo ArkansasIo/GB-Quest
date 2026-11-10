@@ -298,7 +298,7 @@ const BUILD = {
     'Nightshade Chronicles',
     'Mythical Meadowlands',
   ],
-  version: '2.4.1',
+  version: '2.5.0',
   build: 'B2026.11.10',
   studio: 'ArkansasIo',
   engine: 'ARKANSAS - IO',
