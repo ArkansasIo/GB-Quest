@@ -346,6 +346,16 @@ function attachSocket(ws, req) {
             if (Number(combatCharacter.mp) < manaSpent) {
               await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'insufficient_mana', required: manaSpent, current: Number(combatCharacter.mp) });
             }
+            const cooldownSeconds = Math.max(0, Math.min(3600, Number(ability.effect?.cooldownSeconds || 0)));
+            if (cooldownSeconds > 0) {
+              const cooldown = await tx.query(`SELECT GREATEST(1,CEIL(EXTRACT(EPOCH FROM (ready_at-now())))::int) AS remaining
+                FROM character_talent_cooldowns WHERE character_id=$1 AND node_id=$2 AND ready_at>now()`,
+                [combatCharacter.id, ability.id]);
+              if (cooldown.rowCount) {
+                await tx.query('ROLLBACK');
+                return send(ws, 'error', { code: 'ability_on_cooldown', retryAfterSeconds: cooldown.rows[0].remaining });
+              }
+            }
           }
           const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[combatCharacter.class] || 'str';
           const primaryBonus = Math.min(50, Math.max(0, Number(combatCharacter.allocated_attributes?.[primaryAttribute] || 0)) * 2);
@@ -355,6 +365,15 @@ function attachSocket(ws, req) {
           const multiplier = ability ? Math.max(1, Math.min(4, Number(ability.effect?.damageMultiplier || 1))) : 1;
           const damage = Math.max(1, Math.min(999, Math.floor(baseDamage * multiplier)));
           if (manaSpent) await tx.query('UPDATE characters SET mp=mp-$1,updated_at=now() WHERE id=$2', [manaSpent, combatCharacter.id]);
+          if (ability) {
+            const cooldownSeconds = Math.max(0, Math.min(3600, Number(ability.effect?.cooldownSeconds || 0)));
+            if (cooldownSeconds > 0) {
+              await tx.query(`INSERT INTO character_talent_cooldowns(character_id,node_id,ready_at)
+                VALUES($1,$2,now()+($3 * interval '1 second'))
+                ON CONFLICT(character_id,node_id) DO UPDATE SET ready_at=EXCLUDED.ready_at,updated_at=now()`,
+                [combatCharacter.id, ability.id, cooldownSeconds]);
+            }
+          }
           const hp = Math.max(0, mob.hp - damage);
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id, ability: ability ? { id: ability.id, name: ability.name, type: ability.node_type } : null, manaSpent, passiveDamageBonus: passiveBonus };
