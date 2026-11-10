@@ -358,7 +358,7 @@ function attachSocket(ws, req) {
             }
             if (questXp || questGold) {
               const questPayout = await tx.query(`UPDATE characters SET xp=xp+$1,gold=gold+$2,
-                level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
+                level=LEAST(720,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
                 talent_points=LEAST(1000,talent_points+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),updated_at=now()
                 WHERE id=$3 RETURNING xp,level,gold`, [questXp, questGold, state.character.id]);
               progress.rows[0] = questPayout.rows[0];
