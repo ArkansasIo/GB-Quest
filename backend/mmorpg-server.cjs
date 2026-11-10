@@ -271,12 +271,13 @@ function attachSocket(ws, req) {
         if (!realm) return send(ws, 'error', { code: 'realm_not_found', realmId: ch.realm_id });
         if (realm.status !== 'online') return send(ws, 'error', { code: 'realm_unavailable', realmId: realm.id, status: realm.status });
         const switchingWithin = state.realmId === realm.id && state.character;
-        const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, id: state.character.id } : null;
+        const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, character: state.character, x: state.x, y: state.y } : null;
         state.character = ch; state.realmId = ch.realm_id; state.zoneId = ch.zone_id; state.x = ch.x; state.y = ch.y;
         const admission = await claimRealmPresence(ws, state, realm);
         if (!admission.allowed) {
-          state.character = previous ? { id: previous.id } : null;
+          state.character = previous?.character || null;
           state.realmId = previous?.realmId || null; state.zoneId = previous?.zoneId || null;
+          state.x = previous?.x ?? 8; state.y = previous?.y ?? 8;
           return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: admission.population, maxPlayers: realm.max_players });
         }
         if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
