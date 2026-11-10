@@ -111,13 +111,13 @@ class ActivityFinderScene extends ListScene {
     this.scrollbar(156, 39, 72);
     const entry = list[this.i];
     if (entry) {
-      frame(3, 113, 153, 28);
+      frame(3, 110, 153, 25);
       const detail = entry.activityKind === 'tower' ? '100 FLOORS - CHECKPOINTS' :
         entry.activityKind === 'dungeon' || entry.activityKind === 'raid' ? `${entry.activityKind.toUpperCase()} ENTRANCE` :
           `${ZONE_BY_ID[entry.zone]?.name || entry.zone} - ${entry.status === 'active' ? 'ACTIVE NOW' : 'UPCOMING'}`;
-      text(wrap(detail, 24).slice(0, 2).join('\n'), 7, 117, 2);
+      text(wrap(detail, 24).slice(0, 2).join('\n'), 7, 113, 2);
     }
-    text('SELECT: PAGE', 4, 143, 1);
+    fill(0, 135, W, 9, 0); text('SELECT: PAGE', 4, 136, 2);
   }
 }
 // ================================================================ BAG
@@ -669,10 +669,10 @@ class AbilitySkillsScene extends ListScene {
       if (known) text('*', 134, y, 'gold');
       text(skill.name.slice(0, 20), 14, y, eligible ? 3 : 1); textR(`L${skill.level}`, 153, y, known ? 'gold' : 2);
     });
-    const selected = list[this.i]; frame(2, 105, 156, 37);
-    text(selected ? `${selected.name}${learned.includes(selected.id) ? ' LEARNED' : ''}` : '', 6, 108, 'gold');
-    if (selected) text(wrap(selected.desc, 24).slice(0, 2).join('\n'), 6, 119, 3);
-    text('SELECT: ACTIVE/PASSIVE', 4, 143, 1);
+    const selected = list[this.i]; frame(2, 103, 156, 32);
+    text(selected ? `${selected.name}${learned.includes(selected.id) ? ' LEARNED' : ''}` : '', 6, 106, 'gold');
+    if (selected) text(wrap(selected.desc, 24).slice(0, 2).join('\n'), 6, 115, 3);
+    fill(0, 135, W, 9, 0); text('SELECT: ACTIVE/PASSIVE', 4, 136, 2);
   }
 }
 
@@ -731,13 +731,14 @@ class TalentScene extends ListScene {
       if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
     });
     const node = L[this.i];
-    frame(2, 101, 156, 41);
+    frame(2, 98, 156, 37);
     if (node) {
-      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 104, 'gold');
-      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 114, 3);
-      if (node.requires && !G.talents.includes(node.id)) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 134, 2);
+      const needReq = node.requires && !G.talents.includes(node.id);
+      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 101, 'gold');
+      text(wrap(node.desc, 24).slice(0, needReq ? 1 : 2).join('\n'), 6, 111, 3);
+      if (needReq) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 122, 2);
     }
-    text('SELECT: PATH', 4, 143, 1);
+    fill(0, 135, W, 9, 0); text('SELECT: PATH', 4, 136, 2);
   }
 }
 
@@ -846,11 +847,11 @@ class ProfessionTreeScene extends ListScene {
       text(branch.name.slice(0, 19), 6, y);
       textR(`${rank}/240`, 151, y, rank >= 240 ? 'gold' : 2);
     });
-    frame(2, 106, 156, 36);
+    frame(2, 106, 156, 29);
     const selected = branches[this.i];
     const help = selected.id === 'yield' ? 'Every 24 ranks add one resource or crafted item.' : selected.id === 'efficiency' ? 'Every 24 ranks save one ingredient; blacksmiths also reduce tempering costs.' : 'Raises the chance to gain another profession skill level.';
     text(wrap(help, 24).slice(0, 2).join('\n'), 6, 111, 3);
-    text('SELECT: JOB  START: PERKS', 4, 143, 1);
+    fill(0, 135, W, 9, 0); text('SELECT: JOB  START: PERKS', 4, 136, 2);
   }
 }
 
@@ -894,13 +895,13 @@ class ProfessionQuestScene extends ListScene {
       textR(state, 151, y, status.ready ? 'gold' : status.done ? 2 : locked ? 1 : 3);
       text(wrap(status.text, 24).slice(0, 2).join('\n'), 6, y + 11, 2);
     });
-    frame(2, 106, 156, 36);
+    frame(2, 104, 156, 31);
     const selected = this.items()[this.i], status = professionQuestStatus(professionId, selected.id);
-    text(this.message || (status.ready ? 'A: TURN IN' : status.accepted ? `${status.progress}/${status.count} COMPLETE` : 'A: ACCEPT'), 6, 110, status.ready ? 'gold' : 3);
+    text(this.message || (status.ready ? 'A: TURN IN' : status.accepted ? `${status.progress}/${status.count} COMPLETE` : 'A: ACCEPT'), 6, 107, status.ready ? 'gold' : 3);
     const rewardScale = selected.id === 'side' ? 3 : 1, reward = PROFESSION_QUESTS[professionId];
-    text(`REWARD ${fmt(reward.xp * rewardScale)}XP ${fmt(reward.gold * rewardScale)}G`, 6, 121, 2);
-    text(`+${reward.skill * rewardScale} PROF ${reward.item ? ITEMS[reward.item].name : ''}`.slice(0, 24), 6, 132, 2);
-    text('SELECT: JOB', 4, 143, 1);
+    text(`REWARD ${fmt(reward.xp * rewardScale)}XP ${fmt(reward.gold * rewardScale)}G`, 6, 116, 2);
+    text(`+${reward.skill * rewardScale} PROF ${reward.item ? ITEMS[reward.item].name : ''}`.slice(0, 24), 6, 125, 2);
+    fill(0, 135, W, 9, 0); text('SELECT: JOB', 4, 136, 2);
   }
 }
 
@@ -940,16 +941,16 @@ class BossJournalScene extends ListScene {
       textR(namedMode ? (owned ? `x${(G.named && G.named[entry.id]) || (G.bossProgress.named[entry.id])}` : '???') : (record ? `K${record.kills}` : 'NEW'), 153, y, (record && record.firstClear) || owned ? 2 : 1);
     });
     this.scrollbar(156, 34, 82);
-    frame(2, 120, 156, 23);
+    frame(2, 113, 156, 22);
     if (namedMode) {
       const owned = (G.named && G.named[b.id]) || (G.bossProgress && G.bossProgress.named && G.bossProgress.named[b.id]) || 0;
-      text(`${b.kind.toUpperCase()}  ${b.src.raid ? 'RAID DROP' : b.src.act ? 'ARC DROP' : 'BOSS DROP'}`, 6, 124, 'gold');
-      text(owned ? `DISCOVERED x${owned}` : 'NOT YET DISCOVERED', 6, 134, owned ? 'green' : 2);
+      text(`${b.kind.toUpperCase()}  ${b.src.raid ? 'RAID DROP' : b.src.act ? 'ARC DROP' : 'BOSS DROP'}`, 6, 116, 'gold');
+      text(owned ? `DISCOVERED x${owned}` : 'NOT YET DISCOVERED', 6, 125, owned ? 'green' : 2);
     } else {
-      text(`${b.cat.toUpperCase()} LV${b.lvl} RANK ${globalThis.GBQBossProgression ? globalThis.GBQBossProgression.rank(b) : 'F'}`, 6, 124, 'gold');
-      text(`${state.firstClear ? 'CLEARED' : 'NOT DEFEATED'}  KILLS ${state.kills || 0}`, 6, 134, state.firstClear ? 'green' : 2);
+      text(`${b.cat.toUpperCase()} LV${b.lvl} RANK ${globalThis.GBQBossProgression ? globalThis.GBQBossProgression.rank(b) : 'F'}`, 6, 116, 'gold');
+      text(`${state.firstClear ? 'CLEARED' : 'NOT DEFEATED'}  KILLS ${state.kills || 0}`, 6, 125, state.firstClear ? 'green' : 2);
     }
-    text('LEFT/RIGHT: CATEGORY', 6, 146, 1);
+    fill(0, 135, W, 9, 0); text('LEFT/RIGHT: CATEGORY', 4, 136, 2);
   }
 }
 class SecretWorldJournalScene extends ListScene {

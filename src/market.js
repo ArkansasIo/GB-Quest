@@ -217,29 +217,29 @@ class MarketScene {
       text((sell ? e.name : listingName(e)).slice(0, 15), 14, y, rarityCol(sell ? e.rarity : e.item ? e.item.rarity : (ITEMS[e.stack.id] || {}).rarity || 1));
       textR(sell ? `${fmt(e.value)}` : fmt(e.price), 157, y, 2);
     });
-    if (!blackbird) frame(1, 102, 158, 41); else { fill(4, 103, 152, 37, '#171a1f'); fill(4, 103, 152, 1, '#343941'); }
+    if (!blackbird) frame(1, 100, 158, 35); else { fill(4, 101, 152, 33, '#171a1f'); fill(4, 101, 152, 1, '#343941'); }
     const e = V[this.i];
     // Gear inspection in the market uses the same live character stat/equipment
     // model as the inventory screen, so listings show real upgrade deltas.
     const gear = e && (this.tab === 1 ? e.src && e.src.item : e.item);
     if (gear) {
-      if (this.tab === 0) text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
-      else if (this.tab === 1) text(`VALUE ${fmt(e.value)} G  DEPOSIT ${depositFor(e.value)} G`.slice(0, 25), 5, 105, 2);
-      else text(`LISTED AT ${fmt(e.price)} G`, 5, 105, 2);
+      if (this.tab === 0) text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 102, 2);
+      else if (this.tab === 1) text(`VALUE ${fmt(e.value)} G  DEPOSIT ${depositFor(e.value)} G`.slice(0, 25), 5, 102, 2);
+      else text(`LISTED AT ${fmt(e.price)} G`, 5, 102, 2);
       const slot = SLOT_NAME[itemSlot(gear)] || 'GEAR';
-      text(`IL${gear.ilvl || 1} ${slot} ${itemKeyStat(gear)}`.slice(0, 25), 5, 114, 3);
+      text(`IL${gear.ilvl || 1} ${slot} ${itemKeyStat(gear)}`.slice(0, 25), 5, 110, 3);
       const equipped = equippedFor(G, gear);
       const delta = equipped ? itemPower(G, gear) - itemPower(G, equipped) : 0;
       const affix = (gear.affixes || []).slice(0, 2).map(([k, v]) => SUBSTATS[k] ? `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 5)}` : '').filter(Boolean).join(' ');
       const comparison = equipped ? `VS EQUIPPED ${delta >= 0 ? '+' : ''}${Math.round(delta)} PWR` : 'NEW EQUIPMENT SLOT';
-      text((affix || 'NO ROLLED AFFIXES').slice(0, 25), 5, 123, 3);
-      text(comparison.slice(0, 25), 5, 132, equipped && delta < 0 ? 'red' : 'green');
+      text((affix || 'NO ROLLED AFFIXES').slice(0, 25), 5, 118, 3);
+      text(comparison.slice(0, 25), 5, 126, equipped && delta < 0 ? 'red' : 'green');
     } else if (e && this.tab === 0) {
-      text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 105, 2);
-      text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 114, 3);
-    } else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 105, 2);
-    else if (e && this.tab === 2) text(`LISTED AT ${fmt(e.price)} G\nA: CANCEL`, 5, 105, 2);
-    text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 5, 139, this.msg ? 'gold' : 1);
+      text(`SELLER ${e.sellerName || '?'}`.slice(0, 25), 5, 102, 2);
+      text(wrap((ITEMS[e.stack.id] || {}).desc || '', 25).slice(0, 2).join('\n'), 5, 110, 3);
+    } else if (e && this.tab === 1) text(`LIST FOR 2X-10X VALUE\nDEPOSIT ${depositFor(e.value)} G`, 5, 102, 2);
+    else if (e && this.tab === 2) text(`LISTED AT ${fmt(e.price)} G\nA: CANCEL`, 5, 102, 2);
+    fill(0, 135, W, 9, 0); text((this.msg || 'SEL: TAB  L/R: CATEGORY').slice(0, 25), 4, 136, this.msg ? 'gold' : 2);
   }
 }
 
