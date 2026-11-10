@@ -75,7 +75,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.ok(Array.isArray(initialProfile.quests));
     assert.equal(initialProfile.character.talent_points, 0);
     const progressionPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
-    try { await progressionPool.query('UPDATE characters SET talent_points=2 WHERE id=$1', [character.id]); }
+    try { await progressionPool.query('UPDATE characters SET talent_points=2,xp=90 WHERE id=$1', [character.id]); }
     finally { await progressionPool.end(); }
     const allocateAttribute = await fetch(base + `/api/characters/${character.id}/attributes`, {
       method: 'POST',
@@ -208,6 +208,14 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     const finalQuests = await finalQuestsResponse.json();
     assert.equal(finalQuests.quests[0].status, 'completed');
+    const progressedProfile = await fetch(base + `/api/characters/${character.id}/profile`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(progressedProfile.status, 200);
+    const progressed = await progressedProfile.json();
+    assert.equal(progressed.character.level, 2);
+    assert.equal(progressed.character.talent_points, 1);
+    assert.equal(progressed.character.xp, '137');
     const walletResponse = await fetch(base + `/api/characters/${character.id}/wallet`, {
       headers: { authorization: 'Bearer ' + token }
     });
