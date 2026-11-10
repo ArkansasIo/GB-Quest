@@ -232,8 +232,12 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(acceptQuest.status, 201);
     let sequence = 5, defeated = false;
     for (let attempt = 0; attempt < 8 && !defeated; attempt++) {
-      send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001' });
+      send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001', ...(attempt === 0 ? { abilityNodeId: 'ranger_hunter_node_00' } : {}) });
       const combat = await waitFor('combat.resolved');
+      if (attempt === 0) {
+        assert.equal(combat.payload.ability.id, 'ranger_hunter_node_00');
+        assert.equal(combat.payload.manaSpent, 5);
+      }
       assert.ok(combat.payload.damage >= 10, 'ranger DEX allocation should increase authoritative damage');
       assert.equal(combat.payload.targetId, '00000000-0000-4000-8000-000000000001');
       defeated = combat.payload.defeated;
