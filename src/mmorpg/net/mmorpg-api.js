@@ -53,6 +53,7 @@ export class GBQuestMMOApi {
       quests: () => this.quests(characterId),
       party: () => this.party(characterId),
       raidGroup: () => this.raidGroup(characterId),
+      raidLockouts: () => this.raidLockouts(characterId),
       guild: () => this.guild(characterId),
       instance: () => this.instance(characterId),
       mail: () => this.mail(characterId),
@@ -183,6 +184,9 @@ export class GBQuestMMOApi {
   }
   raidGroup(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group');
+  }
+  raidLockouts(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-lockouts');
   }
   createRaidGroup(characterId, { name = '', raidSize = 10 } = {}) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group', { method: 'POST', body: { name, raidSize } });
