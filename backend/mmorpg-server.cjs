@@ -230,7 +230,7 @@ async function optionalAccount(req) {
   const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
   return r.rowCount ? r.rows[0] : null;
 }
-const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp';
+const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes';
 const PER_REALM_CHARACTERS = 3, PER_ACCOUNT_CHARACTERS = 12;
 const activeSockets = new Map();
 const authLimiter = createAuthLimiter();
@@ -327,7 +327,9 @@ function attachSocket(ws, req) {
           const mob = target.rows[0];
           const distance = Math.abs(state.x - Number(mob.x)) + Math.abs(state.y - Number(mob.y));
           if (distance > 3) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_out_of_range' }); }
-          const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + crypto.randomInt(0, 7)));
+          const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[state.character.class] || 'str';
+          const primaryBonus = Math.min(50, Math.max(0, Number(state.character.allocated_attributes?.[primaryAttribute] || 0)) * 2);
+          const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + primaryBonus + crypto.randomInt(0, 7)));
           const hp = Math.max(0, mob.hp - damage);
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
