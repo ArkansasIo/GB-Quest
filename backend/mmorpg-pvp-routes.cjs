@@ -20,6 +20,7 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
   if (!account) { json(res, 401, { error: 'unauthorized' }); return true; }
 
   if (matchView && req.method === 'GET') {
+    await pool.query("UPDATE pvp_matches SET status='cancelled',ended_at=now() WHERE status='queued' AND created_at<=now()-interval '2 minutes'");
     const characterId = matchView[1];
     const owner = await pool.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [characterId, account.id]);
     if (!owner.rowCount) { json(res, 404, { error: 'character_not_found' }); return true; }
