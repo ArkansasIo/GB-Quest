@@ -280,7 +280,7 @@ function attachSocket(ws, req) {
           state.x = previous?.x ?? 8; state.y = previous?.y ?? 8;
           return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: admission.population, maxPlayers: realm.max_players });
         }
-        if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
+        if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.character.id }, ws);
         const sharedPlayers = await pool.query(`SELECT DISTINCT ON (p.character_id) p.character_id AS id,c.name,c.level,c.x,c.y
           FROM world_presence p JOIN characters c ON c.id=p.character_id
           WHERE p.realm_id=$1 AND p.zone_id=$2 AND p.expires_at>now() AND p.socket_id<>$3
