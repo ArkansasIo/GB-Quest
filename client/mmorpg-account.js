@@ -42,7 +42,7 @@
     const raw = (input && input.value.trim()) || window.GBQ_MMO_REALM_URL || location.origin;
     let parsed;
     try { parsed = new URL(raw); } catch (_) { throw new Error('Enter a valid MMO server URL.'); }
-    const local = /^(localhost|127\\.0\\.0\\.1|\\[::1\\])$/i.test(parsed.hostname);
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname.toLowerCase());
     if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && local)) {
       throw new Error('Remote MMO servers must use HTTPS. HTTP is allowed only on localhost.');
     }
