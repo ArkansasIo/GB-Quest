@@ -20,7 +20,7 @@ Allowed attributes: `str`, `dex`, `con`, `int`, `wis`, `vit`. A request may spen
 
 ## Awarding progression
 
-When server-authoritative combat or a completed quest awards enough XP to cross the existing level threshold, the character gains one talent point alongside the level increase. Points are capped at 1,000. The client cannot set level, XP, gold, talent points, attributes or unlocked talents directly.
+When server-authoritative combat or a completed quest awards enough XP to cross the existing level threshold, the character gains one talent point alongside the level increase. Points are capped at 1,000. The client cannot set level, XP, gold, talent points, attributes or unlocked talents directly. Combat damage uses the character class's primary allocated attribute: warrior STR, mage INT, ranger/rogue DEX, cleric WIS and adventurer CON. Each allocated point adds 2 damage, capped at +50.
 
 ## Client API
 
