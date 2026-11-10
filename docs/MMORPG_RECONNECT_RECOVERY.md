@@ -2,6 +2,21 @@
 
 The browser transport supports opt-in reconnection with exponential backoff.
 
+The same controls are exposed by `GBQuestMMOApi`, so the game can enable recovery without reaching into the transport object:
+
+```js
+const api = new GBQuestMMOApi({
+  baseUrl: 'https://your-server.example',
+  autoReconnect: true,
+  reconnectDelayMs: 1000,
+  maxReconnectDelayMs: 30000,
+  onMessage: handleServerMessage,
+  onStatus: handleConnectionStatus
+});
+```
+
+Use `api.selectCharacter(characterId)` after the initial `authenticated` event. The API wrapper remembers that ID and reselects it after subsequent successful authentications.
+
 ```js
 import { MultiplayerClient } from './src/mmorpg/net/multiplayer-client.js';
 
