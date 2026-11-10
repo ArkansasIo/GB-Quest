@@ -656,7 +656,7 @@ const server = http.createServer(async (req, res) => {
         throw error;
       } finally { tx.release(); }
     }
-      const [inventory, quests, equipment] = await Promise.all([
+      const [inventory, quests, equipment, talents] = await Promise.all([
         pool.query(`SELECT ci.id AS inventory_id,ci.item_id,ic.name,ic.description,ic.item_type,
           ic.equip_slot,ic.level_required,ic.stats,ci.quantity,
           (ce.inventory_id IS NOT NULL) AS equipped
@@ -667,9 +667,12 @@ const server = http.createServer(async (req, res) => {
           q.objective_required,q.reward_xp,q.reward_gold,cq.accepted_at,cq.completed_at
           FROM character_quests cq JOIN quest_catalog q ON q.id=cq.quest_id
           WHERE cq.character_id=$1 ORDER BY cq.accepted_at DESC`, [characterId]),
-        pool.query('SELECT slot,inventory_id,equipped_at FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId])
+        pool.query('SELECT slot,inventory_id,equipped_at FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId]),
+        pool.query(`SELECT u.node_id,n.name,n.branch,n.node_type,n.description,n.effect,n.required_level,u.unlocked_at
+          FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
+          WHERE u.character_id=$1 ORDER BY n.required_level,n.node_index`, [characterId])
       ]);
-      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows });
+      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows, talents: talents.rows });
     }
     const attributeMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/attributes$/i);
     if (attributeMatch && req.method === 'POST') {
