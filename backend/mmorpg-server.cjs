@@ -17,6 +17,7 @@ const { handleInstanceRequest } = require('./mmorpg-instance-routes.cjs');
 const { handleFriendRequest } = require('./mmorpg-friend-routes.cjs');
 const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-routes.cjs');
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
+const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -395,21 +396,33 @@ function attachSocket(ws, req) {
           if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
         }
         if (channel === 'whisper') {
-          const to = String(msg.payload.to || '').trim().toLowerCase();
-          if (!/^[a-z0-9 _-]{3,24}$/.test(to)) return send(ws, 'error', { code: 'invalid_whisper_target' });
-          // Resolve recipients from shared PostgreSQL presence so whispers work across server instances.
-          const recipient = await pool.query(`SELECT DISTINCT ON (c.id) c.id,c.name
-            FROM world_presence p JOIN characters c ON c.id=p.character_id
-            WHERE p.realm_id=$1 AND lower(c.name)=lower($2) AND p.expires_at>now()
-            ORDER BY c.id,p.updated_at DESC LIMIT 1`, [state.realmId, to]);
-          if (!recipient.rowCount) return send(ws, 'error', { code: 'whisper_target_offline', to: msg.payload.to || '' });
+          const to = String(msg.payload.to || '').trim();
+          if (!/^[a-z0-9 _-]{3,24}$/i.test(to)) return send(ws, 'error', { code: 'invalid_whisper_target' });
+          // Resolve by realm, not online presence: offline recipients can read persisted history later.
+          const recipient = await pool.query(
+            'SELECT id,name FROM characters WHERE realm_id=$1 AND lower(name)=lower($2) LIMIT 1',
+            [state.realmId, to]
+          );
+          if (!recipient.rowCount) return send(ws, 'error', { code: 'whisper_target_not_found', to });
           const targetCharacter = recipient.rows[0];
-          const w = { ...message, to: targetCharacter.name, channel: 'whisper' };
+          if (targetCharacter.id === state.character.id) return send(ws, 'error', { code: 'cannot_whisper_self' });
+          const blocked = await pool.query(
+            "SELECT 1 FROM player_friends WHERE status='blocked' AND ((character_id=$1 AND friend_character_id=$2) OR (character_id=$2 AND friend_character_id=$1)) LIMIT 1",
+            [state.character.id, targetCharacter.id]
+          );
+          if (blocked.rowCount) return send(ws, 'error', { code: 'whisper_blocked' });
+          const saved = await pool.query(
+            `INSERT INTO player_whispers(realm_id,sender_character_id,recipient_character_id,message)
+             VALUES($1,$2,$3,$4) RETURNING id,created_at`,
+            [state.realmId, state.character.id, targetCharacter.id, text]
+          );
+          const w = { ...message, id: saved.rows[0].id, at: new Date(saved.rows[0].created_at).getTime(),
+            to: targetCharacter.name, recipientCharacterId: targetCharacter.id, channel: 'whisper' };
           const local = [...activeSockets.entries()].find(([, targetState]) =>
             targetState.authenticated && targetState.character?.id === targetCharacter.id && targetState.realmId === state.realmId);
-          if (local) send(local[0], 'chat.message', w);
-          else publishWorldEvent('character', state.realmId, null, 'chat.message', w, targetCharacter.id);
-          if (!local || local[0] !== ws) send(ws, 'chat.message', w);
+          if (local && local[0] !== ws) send(local[0], 'chat.message', w);
+          else if (!local) publishWorldEvent('character', state.realmId, null, 'chat.message', w, targetCharacter.id);
+          send(ws, 'chat.message', w);
           return;
         }
         broadcastZone(state.realmId, state.zoneId, 'chat.message', message);
@@ -466,6 +479,7 @@ const server = http.createServer(async (req, res) => {
     if (await handleMailRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleAuctionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handlePvpRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleWhisperRequest({ req, res, url, pool, accountFor, json })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
