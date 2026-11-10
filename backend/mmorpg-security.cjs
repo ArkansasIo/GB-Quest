@@ -51,4 +51,37 @@ function createAuthLimiter({ limit = 10, windowMs = 600000, clock = Date.now } =
   };
 }
 
-module.exports = { isAllowedOrigin, createCorsHeaders, createAuthLimiter };
+function createRequestLimiter({ limit = 90, windowMs = 60000, maxKeys = 10000, clock = Date.now } = {}) {
+  if (!Number.isSafeInteger(limit) || limit < 1 || !Number.isSafeInteger(windowMs) || windowMs < 1 ||
+      !Number.isSafeInteger(maxKeys) || maxKeys < 1) throw new TypeError('invalid_request_limiter_config');
+  const buckets = new Map();
+  function prune(now) {
+    for (const [key, entry] of buckets) {
+      if (now - entry.startedAt >= windowMs) buckets.delete(key);
+    }
+    while (buckets.size >= maxKeys) buckets.delete(buckets.keys().next().value);
+  }
+  return {
+    consume(key) {
+      const now = clock();
+      let entry = buckets.get(key);
+      if (!entry || now - entry.startedAt >= windowMs) {
+        if (!entry) prune(now);
+        entry = { count: 0, startedAt: now };
+        buckets.set(key, entry);
+      }
+      entry.count++;
+      const retryAfter = Math.max(1, Math.ceil((entry.startedAt + windowMs - now) / 1000));
+      return { allowed: entry.count <= limit, remaining: Math.max(0, limit - entry.count), retryAfter };
+    },
+    sweep() {
+      const now = clock();
+      for (const [key, entry] of buckets) {
+        if (now - entry.startedAt >= windowMs) buckets.delete(key);
+      }
+    },
+    size() { return buckets.size; }
+  };
+}
+
+module.exports = { isAllowedOrigin, createCorsHeaders, createAuthLimiter, createRequestLimiter };
