@@ -70,6 +70,14 @@ test('keystone affixes: fortified/tyrannical alternate weekly from +2, rotating 
   assert.equal(seven.length, 3); assert.equal(new Set(seven).size, 3);
   assert.equal(K.weeklyAffixes('2026-11-02', 4).length, 2);
   for (const id of seven) assert.ok(K.KEY_AFFIXES[id]);
+  assert.equal(K.seasonalAffixForWeek('2026-01-05'), 'cinderbound');
+  assert.equal(K.seasonalAffixForWeek('2026-04-06'), 'permafrost');
+  assert.equal(K.seasonalAffixForWeek('2026-07-06'), 'overgrown');
+  assert.equal(K.seasonalAffixForWeek('2026-10-05'), 'eclipsed');
+  for (const [week, id] of [['2026-01-05','cinderbound'],['2026-04-06','permafrost'],['2026-07-06','overgrown'],['2026-10-05','eclipsed']]) {
+    assert.ok(K.weeklyAffixes(week, 10).includes(id));
+    assert.ok(K.KEY_AFFIXES[id]);
+  }
 });
 
 test('keystone scaling: +8% a level, affixes apply to trash or bosses', () => {
