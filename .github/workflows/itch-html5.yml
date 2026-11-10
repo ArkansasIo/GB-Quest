@@ -2,7 +2,7 @@ name: itch.io HTML5 Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/mmorpg-server-systems]
     paths:
       - 'client/**'
       - 'src/**'
