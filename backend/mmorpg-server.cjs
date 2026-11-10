@@ -560,7 +560,7 @@ const server = http.createServer(async (req, res) => {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const characterId = profileMatch[1];
       const owned = await pool.query(`SELECT c.id,c.name,c.class,c.level,c.xp,c.realm_id,c.zone_id,c.x,c.y,
-        c.hp,c.max_hp,c.mp,c.max_mp,c.gold,c.bank_gold,c.talent_points,c.allocated_attributes,
+        c.hp,c.max_hp,c.mp,c.max_mp,c.gold,c.bank_gold,c.talent_points,c.allocated_attributes,c.specialization_id,
         c.unlocked_talents,c.created_at,c.updated_at,r.name AS realm_name
         FROM characters c JOIN realms r ON r.id=c.realm_id
         WHERE c.id=$1 AND c.account_id=$2`, [characterId, acct.id]);
@@ -628,6 +628,11 @@ const server = http.createServer(async (req, res) => {
           return json(res, owned.rowCount ? 409 : 404, { error: owned.rowCount ? 'specialization_not_selected_or_node_mismatch' : 'character_not_found' });
         }
         const node = result.rows[0];
+        const alreadyUnlocked = await tx.query('SELECT 1 FROM character_talent_unlocks WHERE character_id=$1 AND node_id=$2', [characterId, nodeId]);
+        if (alreadyUnlocked.rowCount) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'talent_already_unlocked' });
+        }
         if (Number(node.level) < Number(node.required_level)) {
           await tx.query('ROLLBACK');
           return json(res, 409, { error: 'talent_level_requirement', requiredLevel: node.required_level, level: node.level });
