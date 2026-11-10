@@ -130,7 +130,7 @@ function aelSlider(x, y, w, frac) {
 }
 
 // screen names for the header plaque: explicit names first, else the class name split into words
-const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS',
+const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS', StatBreakdownScene: 'STATS', GearOverviewScene: 'GEAR', ItemDetailScene: 'ITEM', ProgressSummaryScene: 'PROGRESS', DetailHubScene: 'DETAILS', GearAwakenScene: 'AWAKENING', RiftScene: 'RIFTS', RiftBoardScene: 'LEADERBOARD', SkillRuneScene: 'SKILL RUNES', GamblerScene: 'GAMBLER', LootFilterScene: 'LOOT FILTER', SeasonPassScene: 'SEASON PASS', PatchNotesScene: 'PATCH NOTES',
   StashScene: 'STASH', MarketScene: 'VENDOR', QuestLog: 'QUEST LOG', Spellbook: 'SPELLBOOK', GrowthScene: 'GROWTH', ArtsScene: 'COMBAT ARTS',
   ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
   RepScene: 'REPUTATION', BestiaryScene: 'BESTIARY', BossJournalScene: 'BOSS JOURNAL', ActivityFinderScene: 'ACTIVITIES', SettingsScene: 'SETTINGS',
