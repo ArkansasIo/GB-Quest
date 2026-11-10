@@ -82,3 +82,16 @@ Migration 006 creates `world_presence` leases keyed by WebSocket session. Every 
 
 ## Persistent zone and realm chat
 Migration 007 adds `world_chat_messages`. Zone and realm messages are committed to PostgreSQL before broadcast, then relayed to other instances using the shared event channel. `GET /api/characters/:id/chat` returns the latest 1–100 messages from the authenticated character's own current zone or realm; clients cannot request arbitrary realm/zone history by supplying IDs. Whisper currently remains online-only and local to the originating process; cross-instance whisper routing and durable direct-message history remain to be implemented.
+
+
+## Original Aelmoor combat content expansion
+The original expansion data lives in `src/mmorpg/data/aelmoor-expansion.json` and is intentionally original fantasy content, using broad genre conventions rather than reproducing named equipment, spell text, characters, art or lore from Elden Ring, World of Warcraft or Final Fantasy XIV.
+
+Current catalogue size in this expansion:
+- 48 original weapons across 18 weapon families and multiple rarity/item-level bands.
+- 120 armor pieces across 10 equipment slots and cloth, leather, mail and plate weights.
+- 120 original spells across eight schools and eight elemental/arcane damage themes.
+- 60 class abilities distributed across all twelve supported classes and unlocked by class level.
+- 60 class talents across offense, defense, utility, support and mastery branches. `TALENT_CATALOG` provides lookup, character filtering and point-costed learning with class and level checks.
+
+Integration: equipment records are included in the itemization catalog, spells in the spell catalog, and active abilities in the validated class-ability catalog. Talent learning is exposed through `src/mmorpg/systems/talent-catalog.js`; character persistence and the in-game talent-tree screen still need integration before these talents are available in live account progression.
