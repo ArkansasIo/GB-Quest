@@ -205,10 +205,11 @@ test('recoverSession restores durable panels in parallel and preserves partial s
   });
   api.token = 'recovery-token';
   const result = await api.recoverSession('char-1', { chatLimit: 20 });
-  assert.equal(calls.length, 10);
+  assert.equal(calls.length, 11);
   assert.equal(result.characterId, 'char-1');
   assert.equal(result.resources.inventory, undefined);
   assert.equal(result.resources.party.endpoint, 'https://realm.example.test/api/characters/char-1/party');
+  assert.equal(result.resources.raidGroup.endpoint, 'https://realm.example.test/api/characters/char-1/raid-group');
   assert.equal(result.resources.zoneChat.endpoint, 'https://realm.example.test/api/characters/char-1/chat?channel=zone&limit=20');
   assert.deepEqual(result.errors, [{ resource: 'inventory', message: 'inventory_unavailable', status: 503 }]);
   assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer recovery-token'));
@@ -217,4 +218,35 @@ test('recoverSession restores durable panels in parallel and preserves partial s
 test('recoverSession validates character ID before issuing requests', async () => {
   const api = new GBQuestMMOApi({ baseUrl: 'https://realm.example.test', fetchImpl: async () => { throw new Error('should_not_fetch'); } });
   await assert.rejects(api.recoverSession('  '), TypeError);
+});
+
+
+test('MMORPG API exposes persistent raid group operations', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => { calls.push({url,options}); return {ok:true,status:200,json:async()=>({raid:{id:'raid-1'}})}; },
+    WebSocketImpl: class {}
+  });
+  api.token='raid-token';
+  await api.createRaidGroup('char-1',{name:'Nightfall',raidSize:20});
+  await api.raidGroup('char-1');
+  await api.inviteToRaid('raid-1','char-1','char-2');
+  await api.acceptRaidInvite('invite-1','char-2');
+  await api.setRaidRole('raid-1','char-1','char-2','healer');
+  await api.transferRaidLeadership('raid-1','char-1','char-2');
+  await api.leaveRaid('char-2');
+  await api.disbandRaid('raid-1','char-2');
+  assert.deepEqual(calls.map(x=>x.url),[
+    'https://realm.example.test/api/characters/char-1/raid-group',
+    'https://realm.example.test/api/characters/char-1/raid-group',
+    'https://realm.example.test/api/raids/raid-1/invites',
+    'https://realm.example.test/api/raid-invites/invite-1/accept',
+    'https://realm.example.test/api/raids/raid-1/members/char-2/role',
+    'https://realm.example.test/api/raids/raid-1/transfer',
+    'https://realm.example.test/api/characters/char-2/raid-group',
+    'https://realm.example.test/api/raids/raid-1?characterId=char-2'
+  ]);
+  assert.deepEqual(JSON.parse(calls[0].options.body),{name:'Nightfall',raidSize:20});
+  assert.equal(calls[0].options.headers.authorization,'Bearer raid-token');
 });
