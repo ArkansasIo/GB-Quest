@@ -75,6 +75,8 @@ if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
 for (const required of [
   'gbq_master_catalog',
   'gbq_ui_mockup_catalog',
+  'GBQMMOAccount',
+  'ACCOUNT & REALM GATEWAY',
   'GBQ_HD64_ATLASES',
   'theme-shadows',
   'class="theme-shadows"'
