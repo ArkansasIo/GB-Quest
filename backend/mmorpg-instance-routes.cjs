@@ -101,7 +101,7 @@ async function handleInstanceRequest({ req, res, url, pool, accountFor, readBody
         WHERE im.instance_id=i.id AND im.character_id=$3 AND c.account_id=$4
       ) AND (i.party_id IS NULL OR EXISTS (
         SELECT 1 FROM parties p WHERE p.id=i.party_id AND p.leader_character_id=$3
-      )) RETURNING i.id,i.status,i.completed_at,i.expires_at`, [status, instanceId, characterId, account.id]);
+      )) RETURNING i.id,i.status,i.expires_at`, [status, instanceId, characterId, account.id]);
     if (!result.rowCount) { json(res, 403, { error: 'instance_leader_required_or_not_active' }); return true; }
     json(res, 200, { instance: result.rows[0] }); return true;
   }
@@ -123,6 +123,8 @@ async function handleInstanceRequest({ req, res, url, pool, accountFor, readBody
   }
 
   if (readyGet && req.method === 'GET') {
+    const viewerId = String(url.searchParams.get('characterId') || '');
+    if (!UUID.test(viewerId)) { json(res, 400, { error: 'invalid_character_id' }); return true; }
     const result = await pool.query(`SELECT rc.id,rc.party_id,rc.started_by,rc.expires_at,pm.character_id,c.name,
       COALESCE(rr.ready,false) AS ready,rr.responded_at
       FROM ready_checks rc JOIN party_members pm ON pm.party_id=rc.party_id
@@ -130,7 +132,7 @@ async function handleInstanceRequest({ req, res, url, pool, accountFor, readBody
       LEFT JOIN ready_check_responses rr ON rr.ready_check_id=rc.id AND rr.character_id=pm.character_id
       JOIN characters owner ON owner.id=$2 AND owner.account_id=$3
       WHERE rc.id=$1 AND EXISTS (SELECT 1 FROM party_members mine WHERE mine.party_id=rc.party_id AND mine.character_id=$2)
-      ORDER BY pm.joined_at`, [readyGet[1], String(url.searchParams.get('characterId') || ''), account.id]);
+      ORDER BY pm.joined_at`, [readyGet[1], viewerId, account.id]);
     if (!result.rowCount) { json(res, 404, { error: 'ready_check_not_found' }); return true; }
     const first = result.rows[0];
     json(res, 200, { readyCheck: { id: first.id, partyId: first.party_id, startedBy: first.started_by, expiresAt: first.expires_at,
