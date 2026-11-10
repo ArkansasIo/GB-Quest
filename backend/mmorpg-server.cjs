@@ -912,16 +912,18 @@ const presenceHeartbeat = setInterval(async () => {
   } catch (error) { console.error('Presence heartbeat failed:', error.message); }
 }, 15000);
 presenceHeartbeat.unref();
-const worldListener = await pool.connect();
-worldListener.on('notification', message => {
-  if (message.channel !== WORLD_EVENT_CHANNEL) return;
-  try {
-    const event = JSON.parse(message.payload);
-    if (event.origin !== SERVER_INSTANCE_ID) deliverWorldEvent(event);
-  } catch (error) { console.error('Invalid world event notification:', error.message); }
-});
-worldListener.on('error', error => console.error('World event listener error:', error.message));
-await worldListener.query('LISTEN ' + WORLD_EVENT_CHANNEL);
+const worldListenerPromise = pool.connect().then(async client => {
+  client.on('notification', message => {
+    if (message.channel !== WORLD_EVENT_CHANNEL) return;
+    try {
+      const event = JSON.parse(message.payload);
+      if (event.origin !== SERVER_INSTANCE_ID) deliverWorldEvent(event);
+    } catch (error) { console.error('Invalid world event notification:', error.message); }
+  });
+  client.on('error', error => console.error('World event listener error:', error.message));
+  await client.query('LISTEN ' + WORLD_EVENT_CHANNEL);
+  return client;
+}).catch(error => { console.error('World event listener unavailable:', error.message); return null; });
 const respawnTimer = setInterval(async () => {
   try {
     const result = await pool.query("UPDATE world_mobs SET hp=max_hp,alive=true,respawn_at=NULL,updated_at=now() WHERE alive=false AND respawn_at IS NOT NULL AND respawn_at<=now() RETURNING id,realm_id,zone_id,name,level,x,y,hp,max_hp");
@@ -930,4 +932,4 @@ const respawnTimer = setInterval(async () => {
 }, 10000);
 respawnTimer.unref();
 server.listen(PORT, HOST, () => console.log('GB Quest authoritative MMO service listening on ' + HOST + ':' + PORT));
-for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { clearInterval(presenceHeartbeat); await pool.query('DELETE FROM world_presence WHERE server_instance_id=$1', [SERVER_INSTANCE_ID]).catch(() => {}); await worldListener.query('UNLISTEN *').catch(() => {}); worldListener.release(); await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });
+for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { clearInterval(presenceHeartbeat); await pool.query('DELETE FROM world_presence WHERE server_instance_id=$1', [SERVER_INSTANCE_ID]).catch(() => {}); const worldListener = await worldListenerPromise; if (worldListener) { await worldListener.query('UNLISTEN *').catch(() => {}); worldListener.release(); } await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });
