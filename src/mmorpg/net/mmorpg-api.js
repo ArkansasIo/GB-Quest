@@ -32,6 +32,10 @@ export class GBQuestMMOApi {
   me() { return this.request('/api/me'); }
   characters() { return this.request('/api/characters'); }
   worldStatus({ refresh = false } = {}) { return this.request('/api/world/status' + (refresh ? '?refresh=1' : '')); }
+  chatHistory(characterId, channel = 'zone', limit = 50) {
+    const query = '?channel=' + encodeURIComponent(channel) + '&limit=' + encodeURIComponent(limit);
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/chat' + query);
+  }
   regions() { return this.request('/api/regions'); }
   realms(regionId) {
     const query = regionId ? '?region=' + encodeURIComponent(regionId) : '';
