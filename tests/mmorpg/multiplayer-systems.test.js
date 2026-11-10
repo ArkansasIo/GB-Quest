@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const {DomainError,SlidingWindowLimiter,PartyRegistry,InstanceRegistry,validateMovement,validateCombatIntent,canLoot,calculateDamage}=require('../../backend/mmorpg-systems.cjs');
