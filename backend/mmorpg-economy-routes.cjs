@@ -55,9 +55,10 @@ async function handleMailRequest({ req, res, url, pool, accountFor, readBody, js
       if (sender.realm_id !== recipient.realm_id) { await tx.query('ROLLBACK'); json(res, 409, { error: 'cross_realm_mail' }); return true; }
       if (Number(sender.gold) < gold) { await tx.query('ROLLBACK'); json(res, 409, { error: 'insufficient_gold' }); return true; }
       for (const item of attachments) {
-        const removed = await tx.query('UPDATE character_inventory SET quantity=quantity-$1 WHERE character_id=$2 AND item_id=$3 AND quantity>=$1 RETURNING quantity', [item.quantity, senderId, item.itemId]);
-        if (!removed.rowCount) { await tx.query('ROLLBACK'); json(res, 409, { error: 'mail_attachment_unavailable', itemId: item.itemId }); return true; }
-        if (Number(removed.rows[0].quantity) === 0) await tx.query('DELETE FROM character_inventory WHERE character_id=$1 AND item_id=$2', [senderId, item.itemId]);
+        const existing = await tx.query('SELECT quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE', [senderId, item.itemId]);
+        if (!existing.rowCount || Number(existing.rows[0].quantity) < item.quantity) { await tx.query('ROLLBACK'); json(res, 409, { error: 'mail_attachment_unavailable', itemId: item.itemId }); return true; }
+        if (Number(existing.rows[0].quantity) === item.quantity) await tx.query('DELETE FROM character_inventory WHERE character_id=$1 AND item_id=$2', [senderId, item.itemId]);
+        else await tx.query('UPDATE character_inventory SET quantity=quantity-$1 WHERE character_id=$2 AND item_id=$3', [item.quantity, senderId, item.itemId]);
       }
       if (gold) await tx.query('UPDATE characters SET gold=gold-$1,updated_at=now() WHERE id=$2', [gold, senderId]);
       const id = crypto.randomUUID();
@@ -134,9 +135,10 @@ async function handleAuctionRequest({ req, res, url, pool, accountFor, readBody,
       if (quantity > Number(item.rows[0].max_stack)) { await tx.query('ROLLBACK'); json(res, 400, { error: 'quantity_exceeds_stack_limit' }); return true; }
       const deposit = Math.max(1, Math.ceil(buyout * 0.02));
       if (Number(seller.rows[0].gold) < deposit) { await tx.query('ROLLBACK'); json(res, 409, { error: 'insufficient_listing_deposit' }); return true; }
-      const removed = await tx.query('UPDATE character_inventory SET quantity=quantity-$1 WHERE character_id=$2 AND item_id=$3 AND quantity>=$1 RETURNING quantity', [quantity, sellerId, itemId]);
-      if (!removed.rowCount) { await tx.query('ROLLBACK'); json(res, 409, { error: 'item_quantity_unavailable' }); return true; }
-      if (Number(removed.rows[0].quantity) === 0) await tx.query('DELETE FROM character_inventory WHERE character_id=$1 AND item_id=$2', [sellerId, itemId]);
+      const stock = await tx.query('SELECT quantity FROM character_inventory WHERE character_id=$1 AND item_id=$2 FOR UPDATE', [sellerId, itemId]);
+      if (!stock.rowCount || Number(stock.rows[0].quantity) < quantity) { await tx.query('ROLLBACK'); json(res, 409, { error: 'item_quantity_unavailable' }); return true; }
+      if (Number(stock.rows[0].quantity) === quantity) await tx.query('DELETE FROM character_inventory WHERE character_id=$1 AND item_id=$2', [sellerId, itemId]);
+      else await tx.query('UPDATE character_inventory SET quantity=quantity-$1 WHERE character_id=$2 AND item_id=$3', [quantity, sellerId, itemId]);
       await tx.query('UPDATE characters SET gold=gold-$1,updated_at=now() WHERE id=$2', [deposit, sellerId]);
       const id = crypto.randomUUID();
       await tx.query(`INSERT INTO auction_listings(id,realm_id,seller_character_id,item_id,quantity,buyout_gold,deposit_gold,expires_at)
