@@ -2,7 +2,7 @@ import { MultiplayerClient } from './multiplayer-client.js';
 
 /** HTTP account API plus the authoritative WSS transport for the standalone itch.io client. */
 export class GBQuestMMOApi {
-  constructor({ baseUrl, fetchImpl = globalThis.fetch, WebSocketImpl = globalThis.WebSocket, onMessage, onStatus } = {}) {
+  constructor({ baseUrl, fetchImpl = globalThis.fetch, WebSocketImpl = globalThis.WebSocket, onMessage, onStatus, autoReconnect = false, reconnectDelayMs = 1000, maxReconnectDelayMs = 30000 } = {}) {
     if (!baseUrl) throw new TypeError('baseUrl is required');
     this.baseUrl = new URL(baseUrl).origin;
     const parsedBase = new URL(baseUrl);
@@ -10,7 +10,7 @@ export class GBQuestMMOApi {
     if (parsedBase.protocol !== 'https:' && !(parsedBase.protocol === 'http:' && localDevelopmentHost)) throw new TypeError('Remote MMO API must use HTTPS; HTTP is allowed only on localhost');
     this.fetch = fetchImpl;
     this.token = null;
-    this.multiplayer = new MultiplayerClient({ onMessage, onStatus, WebSocketImpl });
+    this.multiplayer = new MultiplayerClient({ onMessage, onStatus, WebSocketImpl, autoReconnect, reconnectDelayMs, maxReconnectDelayMs });
   }
   async request(path, { method = 'GET', body, auth = true } = {}) {
     const headers = { accept: 'application/json' };
@@ -245,7 +245,7 @@ export class GBQuestMMOApi {
     this.multiplayer.connect(wsUrl.toString(), this.token);
   }
   selectCharacter(characterId) {
-    if (!this.multiplayer.send('character.select', { characterId })) throw new Error('Connect to the realm before selecting a character');
+    if (!this.multiplayer.selectCharacter(characterId)) throw new Error('Connect to the realm before selecting a character');
   }
   send(type, payload) { return this.multiplayer.send(type, payload); }
   disconnect() { this.multiplayer.disconnect(); }
