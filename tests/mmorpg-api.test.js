@@ -72,3 +72,30 @@ test('multiplayer transport permits ws only on loopback development hosts', () =
   client.disconnect();
   assert.throws(() => client.connect('ws://realm.example.test/ws', 'token'), /wss/);
 });
+
+test('MMORPG API exposes realm discovery and supports selecting a realm at character creation', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ regions: [], realms: [], character: { id: 'char-2' } }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'realm-token';
+  await api.regions();
+  await api.realms();
+  await api.realms('hydaelyn');
+  await api.createCharacter('Aelwyn', 'ranger', 'ardenhold');
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/regions',
+    'https://realm.example.test/api/realms',
+    'https://realm.example.test/api/realms?region=hydaelyn',
+    'https://realm.example.test/api/characters'
+  ]);
+  assert.deepEqual(JSON.parse(calls[3].options.body), {
+    name: 'Aelwyn', class: 'ranger', realmId: 'ardenhold'
+  });
+  assert.equal(calls[0].options.headers.authorization, 'Bearer realm-token');
+});
