@@ -309,6 +309,17 @@ async () => {
     if (G.mounts.length !== 1 || !G.hasMount) return 'first mount ' + G.mounts.length;
     if (mountSpeed() !== 4) return 'speed';
     G.lvl = 200; grantMount('drake_crimson'); G.mount = 'drake_crimson'; if (mountSpeed() !== 8 || mountArt() !== 'mt_drake_crimson') return 'drake';
+    // Morph forms must work even for a character with no owned mount, switch cleanly, and restore the prior ride.
+    G.mount = 'drake_crimson'; G.mounted = true;
+    if (!window.setMorphForm('wolf') || G.mount !== 'morph_wolf' || !G.mounted || mountSpeed() !== 5) return 'wolf morph start';
+    if (!window.setMorphForm('swim') || G.morph !== 'swim' || G.mounted) return 'swim morph switch';
+    window.endMorph(true); if (G.mount !== 'drake_crimson' || !G.mounted || G.morph) return 'morph restore ride';
+    G.mount = null; G.mounted = false; G.mounts = []; G.hasMount = false;
+    if (!window.setMorphForm('wolf')) return 'wolf morph without mount';
+    press('b'); reset(new Field()); press('b'); render();
+    if (G.morph || G.mounted || G.mount !== null) return 'wolf morph B exit';
+    if (!window.setMorphForm('swim') || G.mounted) return 'swim morph start';
+    window.endMorph(true); if (G.morph || G.mounted) return 'swim morph cleanup';
     push(new MountScene()); for (const k of ['down', 'right', 'a', 'left', 'up', 'a']) { press(k); render(); }
     G.mounted = true; reset(new Field()); run(4); render();
   });
