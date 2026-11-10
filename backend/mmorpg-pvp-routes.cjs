@@ -1,6 +1,12 @@
 'use strict';
 const crypto = require('node:crypto');
 const UUID = /^[0-9a-f-]{36}$/i;
+function calculateEloDelta(ratingA, ratingB, scoreA, k = 32) {
+  if (![ratingA, ratingB, scoreA, k].every(Number.isFinite) || ratingA < 0 || ratingB < 0 || ![0, 1].includes(scoreA) || k <= 0) throw new TypeError('invalid_elo_input');
+  const expectedA = 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
+  const deltaA = Math.round(k * (scoreA - expectedA));
+  return { deltaA, deltaB: -deltaA };
+}
 
 async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, json }) {
   const challenges = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/pvp-challenges$/i);
@@ -102,9 +108,8 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
       if (ratings.rowCount !== 2) { await tx.query('ROLLBACK'); json(res, 409, { error: 'pvp_rating_state_invalid' }); return true; }
       const ra = Number(ratings.rows.find(x => x.character_id === teamA).rating);
       const rb = Number(ratings.rows.find(x => x.character_id === teamB).rating);
-      const expectedA = 1 / (1 + Math.pow(10, (rb - ra) / 400));
       const teamAWon = characterId === teamB;
-      const deltaA = Math.round(32 * ((teamAWon ? 1 : 0) - expectedA)), deltaB = -deltaA;
+      const { deltaA, deltaB } = calculateEloDelta(ra, rb, teamAWon ? 1 : 0);
       const deltas = { [teamA]: deltaA, [teamB]: deltaB };
       await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaA, teamAWon ? 1 : 0, teamAWon ? 0 : 1, teamA]);
       await tx.query("UPDATE pvp_ratings SET rating=GREATEST(0,rating+$1),wins=wins+$2,losses=losses+$3,updated_at=now() WHERE character_id=$4 AND bracket='duel'", [deltaB, teamAWon ? 0 : 1, teamAWon ? 1 : 0, teamB]);
@@ -116,4 +121,4 @@ async function handlePvpRequest({ req, res, url, pool, accountFor, readBody, jso
 
   json(res, 405, { error: 'method_not_allowed' }); return true;
 }
-module.exports = { handlePvpRequest };
+module.exports = { handlePvpRequest, calculateEloDelta };
