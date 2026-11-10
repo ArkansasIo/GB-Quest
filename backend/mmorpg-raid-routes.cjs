@@ -138,7 +138,7 @@ async function handleRaidRequest({ req, res, url, pool, accountFor, readBody, js
       await tx.query('BEGIN');
       const owned=await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE',[id,account.id]);
       if(!owned.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'character_not_found'});return true;}
-      const member=await tx.query('SELECT r.id,r.leader_character_id FROM raid_group_members m JOIN raid_groups r ON r.id=m.raid_group_id WHERE m.character_id=$1 AND r.status='active' FOR UPDATE OF r',[id]);
+      const member=await tx.query("SELECT r.id,r.leader_character_id FROM raid_group_members m JOIN raid_groups r ON r.id=m.raid_group_id WHERE m.character_id=$1 AND r.status='active' FOR UPDATE OF r",[id]);
       if(!member.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'not_in_raid'});return true;}
       if(member.rows[0].leader_character_id===id){await tx.query('ROLLBACK');json(res,409,{error:'transfer_leadership_before_leaving'});return true;}
       await tx.query('DELETE FROM raid_group_members WHERE raid_group_id=$1 AND character_id=$2',[member.rows[0].id,id]);
