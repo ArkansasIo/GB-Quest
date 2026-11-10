@@ -52,6 +52,7 @@ export class GBQuestMMOApi {
       inventory: () => this.inventory(characterId),
       quests: () => this.quests(characterId),
       party: () => this.party(characterId),
+      raidGroup: () => this.raidGroup(characterId),
       guild: () => this.guild(characterId),
       instance: () => this.instance(characterId),
       mail: () => this.mail(characterId),
