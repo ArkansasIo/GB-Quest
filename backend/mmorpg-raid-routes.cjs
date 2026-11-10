@@ -5,15 +5,28 @@ const ROLES = new Set(['tank','healer','damage','support']);
 const SIZES = new Set([10,20,40]);
 
 async function handleRaidRequest({ req, res, url, pool, accountFor, readBody, json }) {
+  const lockouts = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/raid-lockouts$/i);
   const character = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/raid-group$/i);
   const invite = url.pathname.match(/^\/api\/raids\/([0-9a-f-]{36})\/invites$/i);
   const accept = url.pathname.match(/^\/api\/raid-invites\/([0-9a-f-]{36})\/accept$/i);
   const role = url.pathname.match(/^\/api\/raids\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/role$/i);
   const transfer = url.pathname.match(/^\/api\/raids\/([0-9a-f-]{36})\/transfer$/i);
   const disband = url.pathname.match(/^\/api\/raids\/([0-9a-f-]{36})$/i);
-  if (!character && !invite && !accept && !role && !transfer && !disband) return false;
+  if (!character && !lockouts && !invite && !accept && !role && !transfer && !disband) return false;
   const account = await accountFor(req);
   if (!account) { json(res,401,{error:'unauthorized'}); return true; }
+
+
+  if (lockouts && req.method === 'GET') {
+    const id=lockouts[1];
+    const owned=await pool.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2',[id,account.id]);
+    if(!owned.rowCount){json(res,404,{error:'character_not_found'});return true;}
+    const result=await pool.query(`SELECT raid_id,difficulty,reset_at,completed_at
+      FROM raid_lockouts WHERE character_id=$1 AND reset_at>now()
+      ORDER BY reset_at,raid_id,difficulty`,[id]);
+    json(res,200,{lockouts:result.rows.map(row=>({raidId:row.raid_id,difficulty:row.difficulty,resetAt:row.reset_at,completedAt:row.completed_at}))});
+    return true;
+  }
 
   if (character && req.method === 'GET') {
     const id=character[1];
