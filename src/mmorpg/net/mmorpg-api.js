@@ -90,6 +90,11 @@ export class GBQuestMMOApi {
   leaveParty(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
   }
+  setPartyRole(partyId, actorCharacterId, targetCharacterId, role) {
+    return this.request('/api/parties/' + encodeURIComponent(partyId) + '/members/' + encodeURIComponent(targetCharacterId) + '/role', {
+      method: 'POST', body: { actorCharacterId, role }
+    });
+  }
   pvpMatches(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/pvp-matches');
   }
@@ -184,6 +189,11 @@ export class GBQuestMMOApi {
   }
   leaveGuild(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild', { method: 'DELETE' });
+  }
+  setGuildMemberRank(guildId, actorCharacterId, targetCharacterId, rank) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/members/' + encodeURIComponent(targetCharacterId) + '/rank', {
+      method: 'POST', body: { actorCharacterId, rank }
+    });
   }
   updateGuildMotd(guildId, characterId, motd) {
     return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/motd', {
