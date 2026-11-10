@@ -42,3 +42,32 @@ test('suggested realm: online, not full, fewest players, PvE on ties', () => {
   assert.equal(A.loadOf({ status: 'offline' }), 'OFFLINE');
   for (const t of ['PvE', 'PvP', 'Roleplay', 'Seasonal']) assert.ok(A.TYPE_RULES[t].length >= 3);
 });
+
+test('character roster merges device and cloud slots per realm', () => {
+  const A = load();
+  const locals = [
+    { name: 'Ann', lvl: 5, cls: 'warden', realm: 'moonfall', saved: 200, map: 'town' },
+    { name: 'Bo', lvl: 2, cls: 'shade', saved: 100 },             // no realm: falls back to the account realm
+    null,
+    { name: 'Cy', lvl: 9, cls: 'cantor', realm: 'emberwild', saved: 50 },
+    null,
+  ];
+  const clouds = [
+    { name: 'Ann', lvl: 6, cls: 'warden', realm: 'moonfall', saved: 300 }, // same hero, cloud newer
+    null,
+    { name: 'Dee', lvl: 1, cls: 'arcanist', realm: 'moonfall', saved: 10 }, // cloud only
+    { name: 'Eve', lvl: 4, cls: 'strider', realm: 'emberwild', saved: 90 }, // different hero, cloud newer
+    null,
+  ];
+  const r = A.mergeRoster(locals, clouds, 'moonfall');
+  assert.equal(r[0].where, 'BOTH'); assert.equal(r[0].newer, 'cloud'); assert.equal(r[0].lvl, 6); assert.equal(r[0].zone, 'town');
+  assert.equal(r[1].where, 'LOCAL'); assert.equal(r[1].realm, 'moonfall');
+  assert.equal(r[2].where, 'CLOUD'); assert.equal(r[2].slot, 2);
+  assert.equal(r[3].where, 'CLOUD'); assert.equal(r[3].name, 'Eve'); assert.equal(r[3].hidden, 'Cy');
+  assert.equal(r[4], null);
+  assert.equal(A.rosterOn(r, 'moonfall').map(h => h.name).join(','), 'Ann,Bo,Dee');
+  assert.equal(JSON.stringify(A.otherRealmCounts(r, 'moonfall')), JSON.stringify({ emberwild: 1 }));
+  assert.equal(A.freeSlot(locals, clouds, 5), 4);
+  assert.equal(A.freeSlot([1, 1], [null, null, 1], 3), -1);
+  assert.equal(A.mergeRoster([], [], 'x').length, 0);
+});
