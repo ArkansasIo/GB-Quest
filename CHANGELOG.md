@@ -2,6 +2,21 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.4.0 — Character Details
+
+Released 2026-11-10
+
+### New
+
+- DETAILS (in the main menu, under CHARACTER): a hub of in-depth character and gear pages.
+- STAT BREAKDOWN: every substat with each source it comes from: item affixes, gems, runes, tier implicits, awakening, armour sets, ascension, companion bond, talents, boons and buffs, plus the final value after attributes and caps. SELECT shows CORE STATS: HP, AC, accuracy, initiative, proficiency, attributes and saves.
+- GEAR OVERVIEW: every equipment slot with rarity, item level, durability, gems, runes and awakening stars. A opens ITEM DETAIL with OVERVIEW, STATS, SOCKETS and VALUE pages.
+- PROGRESS SUMMARY: character, gear, collections and endgame on one page each.
+
+### UI
+
+- Short header titles for the new pages and for rifts, gambler, skill runes, season pass, patch notes and gear awakening, so none are cut off.
+
 ## v2.3.0 — Rifts, Gambler & Runes
 
 Released 2026-11-10
