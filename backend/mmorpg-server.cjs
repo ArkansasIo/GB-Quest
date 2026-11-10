@@ -230,7 +230,7 @@ async function optionalAccount(req) {
   const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
   return r.rowCount ? r.rows[0] : null;
 }
-const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes';
+const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes,specialization_id';
 const PER_REALM_CHARACTERS = 3, PER_ACCOUNT_CHARACTERS = 12;
 const activeSockets = new Map();
 const authLimiter = createAuthLimiter();
@@ -337,7 +337,7 @@ function attachSocket(ws, req) {
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
             const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
-              level=LEAST(100,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
+              level=LEAST(720,level+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
               talent_points=LEAST(1000,talent_points+CASE WHEN xp+$1 >= level*level*100 THEN 1 ELSE 0 END),
               gold=gold+$2,updated_at=now() WHERE id=$3 RETURNING xp,level,gold`, [xp, baseGold, state.character.id]);
             state.character.level = progress.rows[0].level;
@@ -565,6 +565,97 @@ const server = http.createServer(async (req, res) => {
         FROM characters c JOIN realms r ON r.id=c.realm_id
         WHERE c.id=$1 AND c.account_id=$2`, [characterId, acct.id]);
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+    if (url.pathname === '/api/talents' && req.method === 'GET') {
+      const classId = String(url.searchParams.get('class') || '').toLowerCase();
+      if (!['warrior','mage','ranger','cleric','rogue','adventurer'].includes(classId)) {
+        return json(res, 400, { error: 'invalid_class' });
+      }
+      const trees = await pool.query(`SELECT s.id,s.class_id,s.name,s.role,s.description,
+        COALESCE(json_agg(json_build_object('id',n.id,'index',n.node_index,'branch',n.branch,
+          'type',n.node_type,'name',n.name,'description',n.description,'requiredLevel',n.required_level,
+          'pointCost',n.point_cost,'effect',n.effect,'prerequisiteId',n.prerequisite_id)
+          ORDER BY n.node_index) FILTER (WHERE n.id IS NOT NULL),'[]'::json) AS nodes
+        FROM mmorpg_talent_specializations s LEFT JOIN mmorpg_talent_nodes n ON n.specialization_id=s.id
+        WHERE s.class_id=$1 GROUP BY s.id ORDER BY s.name`, [classId]);
+      return json(res, 200, { class: classId, specializations: trees.rows });
+    }
+    const specializationMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/specialization$/i);
+    if (specializationMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), specializationId = String(body.specializationId || '');
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const chosen = await tx.query(`SELECT s.id,s.class_id,s.name FROM mmorpg_talent_specializations s
+          JOIN characters c ON c.class=s.class_id
+          WHERE s.id=$1 AND c.id=$2 AND c.account_id=$3`, [specializationId, specializationMatch[1], acct.id]);
+        if (!chosen.rowCount) {
+          const owned = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [specializationMatch[1], acct.id]);
+          await tx.query('ROLLBACK');
+          return json(res, owned.rowCount ? 400 : 404, { error: owned.rowCount ? 'specialization_class_mismatch' : 'character_not_found' });
+        }
+        const current = await tx.query('SELECT specialization_id FROM characters WHERE id=$1 FOR UPDATE', [specializationMatch[1]]);
+        if (current.rows[0].specialization_id && current.rows[0].specialization_id !== specializationId) {
+          const learned = await tx.query('SELECT 1 FROM character_talent_unlocks WHERE character_id=$1 LIMIT 1', [specializationMatch[1]]);
+          if (learned.rowCount) {
+            await tx.query('ROLLBACK');
+            return json(res, 409, { error: 'specialization_locked', message: 'A specialization cannot be changed after learning talents.' });
+          }
+        }
+        await tx.query('UPDATE characters SET specialization_id=$1,updated_at=now() WHERE id=$2', [specializationId, specializationMatch[1]]);
+        await tx.query('COMMIT');
+        return json(res, 200, { specialization: chosen.rows[0] });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
+    const talentUnlockMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/talents\/([a-z0-9_]{1,80})\/unlock$/i);
+    if (talentUnlockMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const [, characterId, nodeId] = talentUnlockMatch;
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const result = await tx.query(`SELECT c.level,c.talent_points,c.specialization_id,n.id,n.required_level,
+          n.point_cost,n.prerequisite_id,n.name,s.class_id
+          FROM characters c JOIN mmorpg_talent_specializations s ON s.id=c.specialization_id
+          JOIN mmorpg_talent_nodes n ON n.specialization_id=s.id
+          WHERE c.id=$1 AND c.account_id=$2 AND n.id=$3 FOR UPDATE OF c`, [characterId, acct.id, nodeId]);
+        if (!result.rowCount) {
+          const owned = await tx.query('SELECT id,specialization_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+          await tx.query('ROLLBACK');
+          return json(res, owned.rowCount ? 409 : 404, { error: owned.rowCount ? 'specialization_not_selected_or_node_mismatch' : 'character_not_found' });
+        }
+        const node = result.rows[0];
+        if (Number(node.level) < Number(node.required_level)) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'talent_level_requirement', requiredLevel: node.required_level, level: node.level });
+        }
+        if (Number(node.talent_points) < Number(node.point_cost)) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'insufficient_talent_points', talentPoints: node.talent_points, pointCost: node.point_cost });
+        }
+        if (node.prerequisite_id) {
+          const prerequisite = await tx.query('SELECT 1 FROM character_talent_unlocks WHERE character_id=$1 AND node_id=$2', [characterId, node.prerequisite_id]);
+          if (!prerequisite.rowCount) {
+            await tx.query('ROLLBACK');
+            return json(res, 409, { error: 'talent_prerequisite_locked', prerequisiteId: node.prerequisite_id });
+          }
+        }
+        const inserted = await tx.query('INSERT INTO character_talent_unlocks(character_id,node_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING node_id', [characterId, nodeId]);
+        if (!inserted.rowCount) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'talent_already_unlocked' });
+        }
+        const spent = await tx.query('UPDATE characters SET talent_points=talent_points-$1,updated_at=now() WHERE id=$2 RETURNING talent_points', [node.point_cost, characterId]);
+        await tx.query('COMMIT');
+        return json(res, 200, { unlocked: nodeId, name: node.name, talentPoints: spent.rows[0].talent_points });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
       const [inventory, quests, equipment] = await Promise.all([
         pool.query(`SELECT ci.id AS inventory_id,ci.item_id,ic.name,ic.description,ic.item_type,
           ic.equip_slot,ic.level_required,ic.stats,ci.quantity,
