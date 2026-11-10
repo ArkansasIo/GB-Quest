@@ -45,7 +45,7 @@ async function handlePartyRequest({ req, res, url, pool, accountFor, readBody, j
 
   if (inviteRoute && req.method === 'POST') {
     const partyId=inviteRoute[1], body=await readBody(req), inviteeId=String(body.inviteeCharacterId||'');
-    if(!/^[0-9a-f-]{36}$/i.test(inviteeId)){json(res,400,{error:'invalid_invitee'});return true;}
+    if(!/^[0-9a-f-]{36}$/i.test(inviteeId)||!/^[0-9a-f-]{36}$/i.test(String(body.inviterCharacterId||''))){json(res,400,{error:'invalid_invitee_or_inviter'});return true;}
     const tx=await pool.connect();
     try {
       await tx.query('BEGIN');
