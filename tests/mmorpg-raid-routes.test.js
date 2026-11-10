@@ -67,3 +67,14 @@ test('raid invitation rejects a non-leader actor',async()=>{
  await handleRaidRequest({req:{method:'POST',body:{inviterCharacterId:leaderId,inviteeCharacterId:memberId}},res:h.res,url:new URL('https://game.test/api/raids/'+raidId+'/invites'),pool,accountFor,readBody,json:h.json});
  assert.equal(h.state.status,403);assert.equal(h.state.body.error,'raid_leader_required');
 });
+
+
+test('raid lockout endpoint requires character ownership and returns only unexpired records',async()=>{
+ const calls=[];
+ const pool={query:async(sql,args)=>{calls.push({sql,args});if(sql.startsWith('SELECT id FROM characters'))return {rowCount:1,rows:[{id:leaderId}]};return {rowCount:1,rows:[{raid_id:'vault_of_ashes',difficulty:'heroic',reset_at:'2030-01-01T00:00:00Z',completed_at:'2026-11-09T12:00:00Z'}]};}};
+ const h=harness();
+ await handleRaidRequest({req:{method:'GET'},res:h.res,url:new URL('https://game.test/api/characters/'+leaderId+'/raid-lockouts'),pool,accountFor,readBody,json:h.json});
+ assert.equal(h.state.status,200);
+ assert.equal(h.state.body.lockouts[0].raidId,'vault_of_ashes');
+ assert.ok(calls[1].sql.includes('reset_at>now()'));
+});
