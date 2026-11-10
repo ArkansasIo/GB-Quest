@@ -74,6 +74,27 @@ export class GBQuestMMOApi {
   leaveParty(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
   }
+  instance(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/instances');
+  }
+  createInstance(characterId, dungeonId, difficulty = 'normal') {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/instances', { method: 'POST', body: { dungeonId, difficulty } });
+  }
+  leaveInstance(instanceId, characterId) {
+    return this.request('/api/instances/' + encodeURIComponent(instanceId) + '/leave', { method: 'POST', body: { characterId } });
+  }
+  completeInstance(instanceId, characterId, status = 'completed') {
+    return this.request('/api/instances/' + encodeURIComponent(instanceId) + '/complete', { method: 'POST', body: { characterId, status } });
+  }
+  startReadyCheck(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/ready-checks', { method: 'POST', body: {} });
+  }
+  readyCheck(readyCheckId, characterId) {
+    return this.request('/api/ready-checks/' + encodeURIComponent(readyCheckId) + '?characterId=' + encodeURIComponent(characterId));
+  }
+  respondReadyCheck(readyCheckId, characterId, ready) {
+    return this.request('/api/ready-checks/' + encodeURIComponent(readyCheckId) + '/respond', { method: 'POST', body: { characterId, ready } });
+  }
   guild(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild');
   }
