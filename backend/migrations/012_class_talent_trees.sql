@@ -77,7 +77,7 @@ INSERT INTO mmorpg_talent_specializations(id,class_id,name,role,description) VAL
 ON CONFLICT (id) DO UPDATE SET role=EXCLUDED.role,description=EXCLUDED.description;
 
 WITH node_rows AS (
-  SELECT s.id AS spec_id, n AS idx,
+  SELECT s.id AS spec_id, s.name AS spec_name, n AS idx,
     CASE n % 3 WHEN 0 THEN 'assault' WHEN 1 THEN 'utility' ELSE 'mastery' END AS branch,
     CASE WHEN n=72 THEN 'ultimate' WHEN n % 4=0 THEN 'active' ELSE 'passive' END AS node_type,
     CASE WHEN n=72 THEN 720 ELSE n*10+1 END AS required_level,
@@ -87,15 +87,16 @@ WITH node_rows AS (
 INSERT INTO mmorpg_talent_nodes(id,specialization_id,node_index,branch,node_type,name,description,required_level,point_cost,effect,prerequisite_id)
 SELECT spec_id || '_node_' || lpad(idx::text,2,'0'), spec_id, idx, branch, node_type,
   CASE WHEN idx=72 THEN 'Grandmaster Capstone'
-       ELSE initcap(branch) || ' Talent ' || lpad((idx/3+1)::text,2,'0') END,
-  CASE WHEN node_type='active' THEN 'Unlocks a class-specific combat action in this specialization.'
-       WHEN node_type='ultimate' THEN 'Unlocks the specialization defining ultimate ability.'
-       ELSE 'Improves a specialization passive and its combat utility.' END,
+       ELSE spec_name || ' ' || initcap(branch) || ' ' || lpad((idx/3+1)::text,2,'0') END,
+  CASE WHEN node_type='active' THEN spec_name || ' ' || branch || ' active technique. Unlocks a server-validated combat action.'
+       WHEN node_type='ultimate' THEN spec_name || ' ultimate capstone. Unlocks the defining ability of this specialization.'
+       ELSE spec_name || ' ' || branch || ' passive. Improves this specialization and its combat utility.' END,
   required_level,point_cost,
-  jsonb_build_object('kind',node_type,'branch',branch,'rank',idx/3+1,
+  jsonb_build_object('kind',node_type,'branch',branch,'specialization',spec_name,'rank',idx/3+1,
     'power',CASE WHEN node_type='ultimate' THEN 100 ELSE 3+(idx/3) END),
   CASE WHEN idx>=3 THEN spec_id || '_node_' || lpad((idx-3)::text,2,'0') ELSE NULL END
 FROM node_rows
 ON CONFLICT (id) DO UPDATE SET
+  node_type=EXCLUDED.node_type,name=EXCLUDED.name,description=EXCLUDED.description,
   required_level=EXCLUDED.required_level,point_cost=EXCLUDED.point_cost,
   effect=EXCLUDED.effect,prerequisite_id=EXCLUDED.prerequisite_id;
