@@ -329,7 +329,7 @@ function attachSocket(ws, req) {
           if (distance > 3) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_out_of_range' }); }
           const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[state.character.class] || 'str';
           const primaryBonus = Math.min(50, Math.max(0, Number(state.character.allocated_attributes?.[primaryAttribute] || 0)) * 2);
-          const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + primaryBonus + crypto.randomInt(0, 7)));
+          const damage = Math.max(1, Math.min(999, 4 + Math.min(20, Number(state.character.level) || 1) * 2 + primaryBonus + crypto.randomInt(0, 7)));
           const hp = Math.max(0, mob.hp - damage);
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
