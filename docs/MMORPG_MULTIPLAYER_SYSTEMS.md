@@ -78,3 +78,7 @@ Run npm run mmorpg:migrate with DATABASE_URL configured. The migration is additi
 
 ## Shared realm presence implementation
 Migration 006 creates `world_presence` leases keyed by WebSocket session. Every selected character session renews its lease, and disconnects remove it immediately; crashed processes are recovered by lease expiry. The public world status endpoint aggregates unexpired leases across instances. Realm capacity admission uses a PostgreSQL advisory transaction lock per realm and commits the presence lease atomically with the capacity check. Each server process uses a unique `GBQ_SERVER_INSTANCE_ID`; `GBQ_PRESENCE_TTL_SECONDS` configures the lease lifetime. PostgreSQL `LISTEN/NOTIFY` relays zone and realm events to other processes. Because notifications are not durable, zone snapshots remain the recovery mechanism after reconnects.
+
+
+## Persistent zone and realm chat
+Migration 007 adds `world_chat_messages`. Zone and realm messages are committed to PostgreSQL before broadcast, then relayed to other instances using the shared event channel. `GET /api/characters/:id/chat` returns the latest 1–100 messages from the authenticated character's own current zone or realm; clients cannot request arbitrary realm/zone history by supplying IDs. Whisper currently remains online-only and local to the originating process; cross-instance whisper routing and durable direct-message history remain to be implemented.
