@@ -93,6 +93,60 @@ async function realmData(force) {
 }
 const realmPopulation = realmId => { let n = 0; for (const [, s] of activeSockets) if (s.authenticated && s.character && s.realmId === realmId) n++; return n; };
 const realmLoad = (pop, max) => pop >= max ? 'FULL' : pop >= max * 0.75 ? 'HIGH' : pop >= max * 0.35 ? 'MEDIUM' : 'LOW';
+
+let WORLD_STATUS_CACHE = { at: 0, value: null };
+async function worldStatus(force = false) {
+  if (!force && WORLD_STATUS_CACHE.value && Date.now() - WORLD_STATUS_CACHE.at < 15000) return WORLD_STATUS_CACHE.value;
+  const rd = await realmData();
+  const liveByRealm = new Map();
+  const liveByZone = new Map();
+  for (const [, state] of activeSockets) {
+    if (!state.authenticated || !state.character || !state.realmId) continue;
+    liveByRealm.set(state.realmId, (liveByRealm.get(state.realmId) || 0) + 1);
+    const key = state.realmId + ':' + (state.zoneId || 'unknown');
+    liveByZone.set(key, (liveByZone.get(key) || 0) + 1);
+  }
+  const [totals, peak] = await Promise.all([
+    pool.query('SELECT (SELECT count(*)::int FROM accounts WHERE disabled=false) AS accounts, (SELECT count(*)::int FROM characters) AS characters'),
+    pool.query('SELECT peak_concurrent, peak_at FROM world_population_peak WHERE id=true')
+  ]);
+  const realms = rd.realms.map(r => ({
+    id: r.id, name: r.name, regionId: r.region_id, type: r.realm_type, status: r.status,
+    onlinePlayers: liveByRealm.get(r.id) || 0, capacity: r.max_players,
+    utilization: Math.round(((liveByRealm.get(r.id) || 0) / r.max_players) * 1000) / 10
+  }));
+  const regions = rd.regions.map(region => {
+    const list = realms.filter(r => r.regionId === region.id);
+    return { id: region.id, name: region.name, tag: region.tag, status: region.status,
+      onlinePlayers: list.reduce((n, r) => n + r.onlinePlayers, 0),
+      capacity: list.filter(r => r.status === 'online').reduce((n, r) => n + r.capacity, 0),
+      realms: list };
+  });
+  const onlinePlayers = realms.reduce((n, r) => n + r.onlinePlayers, 0);
+  const capacity = realms.filter(r => r.status === 'online').reduce((n, r) => n + r.capacity, 0);
+  const zonePopulation = [...liveByZone.entries()].map(([key, players]) => {
+    const [realmId, zoneId] = key.split(':');
+    return { realmId, zoneId, onlinePlayers: players };
+  }).sort((a, b) => b.onlinePlayers - a.onlinePlayers);
+  const currentPeak = Number(peak.rows[0]?.peak_concurrent || 0);
+  const peakConcurrent = Math.max(currentPeak, onlinePlayers);
+  if (onlinePlayers > currentPeak) {
+    await pool.query(`INSERT INTO world_population_peak(id,peak_concurrent,peak_at) VALUES(true,$1,now())
+      ON CONFLICT(id) DO UPDATE SET peak_concurrent=GREATEST(world_population_peak.peak_concurrent,EXCLUDED.peak_concurrent),
+      peak_at=CASE WHEN EXCLUDED.peak_concurrent > world_population_peak.peak_concurrent THEN EXCLUDED.peak_at ELSE world_population_peak.peak_at END`, [onlinePlayers]);
+  }
+  const value = {
+    generatedAt: new Date().toISOString(), scope: 'this_server_instance',
+    onlinePlayers, capacity, utilization: capacity ? Math.round((onlinePlayers / capacity) * 1000) / 10 : 0,
+    peakConcurrent, peakAt: peak.rows[0]?.peak_at || null,
+    registeredAccounts: totals.rows[0].accounts, characters: totals.rows[0].characters,
+    regions, zones: zonePopulation,
+    scaling: { mode: 'single_instance', distributedPresence: false, note: 'Online counts include this service instance only. Multi-instance shared presence and cross-node zone fan-out require Redis or an equivalent shared event bus.' }
+  };
+  WORLD_STATUS_CACHE = { at: Date.now(), value };
+  return value;
+}
+
 function realmView(r, counts = {}) {
   const population = realmPopulation(r.id);
   return { id: r.id, regionId: r.region_id, name: r.name, type: r.realm_type, pvp: r.realm_type === 'PvP', status: r.status,
@@ -389,6 +443,9 @@ const server = http.createServer(async (req, res) => {
         ? await pool.query(`SELECT ${CHAR_COLS},xp FROM characters WHERE account_id=$1 AND realm_id=$2 ORDER BY created_at`, [acct.id, realm])
         : await pool.query(`SELECT ${CHAR_COLS},xp FROM characters WHERE account_id=$1 ORDER BY created_at`, [acct.id]);
       return json(res, 200, { characters: result.rows });
+    }
+    if (url.pathname === '/api/world/status' && req.method === 'GET') {
+      return json(res, 200, await worldStatus(url.searchParams.get('refresh') === '1'));
     }
     if (url.pathname === '/api/regions' && req.method === 'GET') {
       const rd = await realmData(), acct = await optionalAccount(req), counts = await characterCounts(acct && acct.id);
