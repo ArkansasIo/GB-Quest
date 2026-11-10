@@ -12,6 +12,7 @@ const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
 const { isAllowedOrigin, createAuthLimiter } = require('./mmorpg-security.cjs');
 const { handlePartyRequest } = require('./mmorpg-party-routes.cjs');
+const { handleGuildRequest } = require('./mmorpg-guild-routes.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -285,6 +286,7 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (await handlePartyRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleGuildRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
