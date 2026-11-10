@@ -257,6 +257,9 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(progressed.character.level, 2);
     assert.equal(progressed.character.talent_points, 1);
     assert.equal(progressed.character.xp, '346');
+    assert.equal(progressed.character.specialization_id, 'ranger_hunter');
+    assert.equal(progressed.talents.length, 1);
+    assert.equal(progressed.talents[0].node_id, 'ranger_hunter_node_00');
     const walletResponse = await fetch(base + `/api/characters/${character.id}/wallet`, {
       headers: { authorization: 'Bearer ' + token }
     });
