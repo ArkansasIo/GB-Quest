@@ -119,3 +119,23 @@ test('MMORPG API exposes world population and capacity dashboard data', async ()
     'https://realm.example.test/api/world/status?refresh=1'
   ]);
 });
+
+test('MMORPG API retrieves authenticated realm and zone chat history', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ channel: 'zone', messages: [] }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'chat-session-token';
+  await api.chatHistory('character-1');
+  await api.chatHistory('character-1', 'realm', 25);
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/characters/character-1/chat?channel=zone&limit=50',
+    'https://realm.example.test/api/characters/character-1/chat?channel=realm&limit=25'
+  ]);
+  assert.equal(calls[0].options.headers.authorization, 'Bearer chat-session-token');
+});
