@@ -40,6 +40,36 @@ export class GBQuestMMOApi {
     const query = '?with=' + encodeURIComponent(peerCharacterId) + '&limit=' + encodeURIComponent(limit);
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/whispers' + query);
   }
+
+  /**
+   * Rebuild the character's durable UI state after reconnecting. WebSocket events
+   * are transient, so each resource is fetched independently and failures are
+   * returned without discarding successful recovery results.
+   */
+  async recoverSession(characterId, { chatLimit = 50 } = {}) {
+    if (typeof characterId !== 'string' || !characterId.trim()) throw new TypeError('characterId is required');
+    const resources = {
+      inventory: () => this.inventory(characterId),
+      quests: () => this.quests(characterId),
+      party: () => this.party(characterId),
+      guild: () => this.guild(characterId),
+      instance: () => this.instance(characterId),
+      mail: () => this.mail(characterId),
+      friends: () => this.friends(characterId),
+      trades: () => this.trades(characterId),
+      zoneChat: () => this.chatHistory(characterId, 'zone', chatLimit),
+      realmChat: () => this.chatHistory(characterId, 'realm', chatLimit)
+    };
+    const names = Object.keys(resources);
+    const results = await Promise.allSettled(names.map(name => resources[name]()));
+    const recovered = {}, errors = [];
+    results.forEach((result, index) => {
+      const name = names[index];
+      if (result.status === 'fulfilled') recovered[name] = result.value;
+      else errors.push({ resource: name, message: result.reason?.message || 'recovery_failed', status: result.reason?.status || null });
+    });
+    return { characterId, recoveredAt: new Date().toISOString(), resources: recovered, errors };
+  }
   regions() { return this.request('/api/regions'); }
   realms(regionId) {
     const query = regionId ? '?region=' + encodeURIComponent(regionId) : '';
