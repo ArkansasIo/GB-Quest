@@ -1287,6 +1287,9 @@ class SocialScene extends ListScene {
         if (idx >= friends.length && idx < friends.length + requests.length) {
           const f = requests[idx - friends.length], id = accountId(f), name = displayName(f);
           choose(['ACCEPT', 'DECLINE'], answer => {
+            // Choice calls back with -1 when B is pressed. Cancellation must not
+            // be interpreted as DECLINE (which permanently removes the request).
+            if (answer !== 0 && answer !== 1) return;
             const action = answer === 0 ? LocalRealm.acceptFriend(id) : LocalRealm.removeFriend(id);
             action.then(() => say(answer === 0 ? `${name} ADDED TO FRIENDS.` : `REQUEST FROM ${name} DECLINED.`))
               .catch(e => say(`FRIEND REQUEST UPDATE FAILED: ${e.message || e}`));
