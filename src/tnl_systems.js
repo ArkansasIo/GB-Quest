@@ -144,22 +144,64 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof der
       if (G && G.morph === 'swim' && !G.inst && WATER.includes(this.chAt(x, y)) && !this.entities().some(e => e.x === x && e.y === y && !e.walk)) return false;
       return b0.apply(this, arguments);
     }; }
-  function endMorph(silent) { if (!G.morph) return; if (G.morph === 'wolf') { G.mounted = false; G.mount = G.morphPrevMount || (G.mounts && G.mounts[0]) || null; } G.morph = null; if (!silent) SFX.cursor(); }
+  // Keep the player's original mount state while moving between forms. Morphs are temporary
+  // movement modes, not entries in the player's collectible mount inventory.
+  function endMorph(silent, restoreRide = true) {
+    if (!G || !G.morph) return false;
+    const previousMount = Object.prototype.hasOwnProperty.call(G, 'morphPrevMount') ? G.morphPrevMount : ((G.mounts && G.mounts[0]) || null);
+    const previousMounted = Object.prototype.hasOwnProperty.call(G, 'morphPrevMounted') ? !!G.morphPrevMounted : false;
+    G.morph = null;
+    G.mount = previousMount;
+    G.mounted = restoreRide ? previousMounted : false;
+    delete G.morphPrevMount;
+    delete G.morphPrevMounted;
+    if (!silent) SFX.cursor();
+    return true;
+  }
+  function setMorphForm(form) {
+    if (!G || G.inst || !['wolf', 'swim'].includes(form)) return false;
+    const requiredLevel = form === 'wolf' ? 5 : 10;
+    if (G.lvl < requiredLevel) return false;
+    if (!G.morph) {
+      G.morphPrevMount = G.mount || null;
+      G.morphPrevMounted = !!G.mounted;
+    }
+    G.morph = form;
+    if (form === 'wolf') { G.mount = 'morph_wolf'; G.mounted = true; }
+    else { G.mount = G.morphPrevMount; G.mounted = false; }
+    return true;
+  }
   window.endMorph = endMorph;
+  window.setMorphForm = setMorphForm;
   function morphMenu() {
     if (G.inst) return say('You cannot morph inside an instance.');
     const opts = [`WOLF FORM${G.lvl < 5 ? ' (LV5)' : ''}`, `SWIM FORM${G.lvl < 10 ? ' (LV10)' : ''}`, ...(G.morph ? ['HUMAN FORM'] : []), 'BACK'];
     choose(opts, k => {
       const o = opts[k]; if (!o || o === 'BACK') return;
-      if (o === 'HUMAN FORM') { const f = scenes.find(s => s instanceof Field); if (G.morph === 'swim' && f && WATER.includes(f.chAt(G.x, G.y))) return say('Reach the shore first.'); endMorph(); return; }
-      if (o.startsWith('WOLF')) { if (G.lvl < 5) return say('WOLF FORM opens at level 5.'); endMorph(true); G.morphPrevMount = G.mount; G.mount = 'morph_wolf'; G.mounted = true; G.morph = 'wolf'; SFX.howl ? SFX.howl() : SFX.buff(); toast('WOLF FORM', 'Run fast. B: back to human.', 'pp_xp', 'buff'); return; }
-      if (o.startsWith('SWIM')) { if (G.lvl < 10) return say('SWIM FORM opens at level 10.'); endMorph(true); G.morph = 'swim'; SFX.buff(); toast('SWIM FORM', 'You can cross water.', 'pp_xp', 'buff'); }
+      if (o === 'HUMAN FORM') {
+        const f = scenes.find(s => s instanceof Field);
+        if (G.morph === 'swim' && f && WATER.includes(f.chAt(G.x, G.y))) return say('Reach the shore first.');
+        endMorph(); return;
+      }
+      if (o.startsWith('WOLF')) {
+        if (!setMorphForm('wolf')) return say('WOLF FORM opens at level 5.');
+        SFX.howl ? SFX.howl() : SFX.buff();
+        toast('WOLF FORM', 'Run fast. B: back to human.', 'pp_xp', 'buff'); return;
+      }
+      if (o.startsWith('SWIM')) {
+        if (!setMorphForm('swim')) return say('SWIM FORM opens at level 10.');
+        SFX.buff(); toast('SWIM FORM', 'You can cross water. B: back to human.', 'pp_xp', 'buff');
+      }
     }, `MORPH${G.morph ? ` (now: ${G.morph.toUpperCase()})` : ''}. Wolf runs, swim crosses water.`);
   }
-  // wolf art and pressing B to dismount ends the wolf form
+  // B returns from a morph directly instead of relying on G.hasMount (morphs are not owned mounts).
   { const u0 = Field.prototype.update; Field.prototype.update = function () {
+      if (G && G.morph && G.inst) endMorph(true, false);
       if (G && G.morph === 'wolf' && !G.mounted) endMorph(true);
-      if (G && G.morph && G.inst) endMorph(true);
+      if (G && G.morph && P('b') && !G.inst && !G.ghost) {
+        if (G.morph === 'swim' && WATER.includes(this.chAt(G.x, G.y))) return say('Reach the shore before leaving SWIM FORM.');
+        endMorph(); return;
+      }
       return u0.apply(this, arguments);
     }; }
   { const wolfArt = () => { const b = typeof BEAST_BY_ID !== 'undefined' && BEAST_BY_ID.beast_wolf_base; const n = b && (b.nspr && IMG[b.nspr] ? b.nspr : b.spr); if (n && IMG[n] && !IMG.mt_morph_wolf) IMG.mt_morph_wolf = IMG[n]; };
