@@ -32,7 +32,7 @@ async function handleFriendRequest({ req, res, url, pool, accountFor, readBody, 
       const chars = await tx.query('SELECT id,realm_id FROM characters WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE', [[characterId, targetId]]);
       const own = chars.rows.find(row => row.id === characterId);
       const target = chars.rows.find(row => row.id === targetId);
-      if (!own || own.account_id && own.account_id !== account.id) { await tx.query('ROLLBACK'); json(res, 404, { error: 'character_not_found' }); return true; }
+      if (!own) { await tx.query('ROLLBACK'); json(res, 404, { error: 'character_not_found' }); return true; }
       const ownership = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [characterId, account.id]);
       if (!ownership.rowCount) { await tx.query('ROLLBACK'); json(res, 404, { error: 'character_not_found' }); return true; }
       if (!target) { await tx.query('ROLLBACK'); json(res, 404, { error: 'target_not_found' }); return true; }
