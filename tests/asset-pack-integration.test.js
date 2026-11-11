@@ -23,6 +23,19 @@ test('pixel-pack index resolves every runtime sprite in the shipped asset index'
   assert.deepEqual(missing, [], 'pack_index references sprites absent from assets/index.json');
 });
 
+test('new adventurer and enemy sprite files are shipped and routed by class or family', () => {
+  const source = read('src/asset_pack.js');
+  const names = [
+    'custom_character_iron_vanguard', 'custom_character_moon_ranger', 'custom_character_ember_mage', 'custom_character_dawn_priest',
+    'custom_enemy_ash_wyrm', 'custom_enemy_mire_wisp', 'custom_enemy_crystal_titan', 'custom_enemy_bone_stalker',
+  ];
+  const shipped = runtimeAssetNames();
+  const missing = names.filter(name => !shipped.has(name) || !hasRuntimeAsset(name) || !fs.existsSync(path.join(root, 'assets', name + '.png')));
+  assert.deepEqual(missing, [], 'custom sprites must exist locally and in the built runtime asset index');
+  for (const name of names) assert.ok(source.includes(name), `custom sprite is not routed in asset_pack.js: ${name}`);
+  for (const cls of ['vanguard', 'strider', 'arcanist', 'chaplain']) assert.ok(source.includes(cls), `missing class route: ${cls}`);
+});
+
 test('asset pack and pixel pack runtime scripts are loaded after the core art pipeline', () => {
   const build = read('tools/build.cjs');
   const orderStart = build.indexOf('const ORDER = [');

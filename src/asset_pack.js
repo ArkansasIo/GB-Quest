@@ -23,13 +23,13 @@ const AP_ITEM_ART = {
 const AP_GEM_ART = { ruby: 'au_socket_gems_000', sapphire: 'au_socket_gems_001', emerald: 'au_socket_gems_002', topaz: 'au_socket_gems_003', garnet: 'au_socket_gems_004', onyx: 'au_socket_gems_004', opal: 'au_socket_gems_005', diamond: 'au_socket_gems_006', amethyst: 'au_socket_gems_007' };
 // Pack monster art by family. The wider pools make every supplied monster/enemy image eligible.
 const AP_MONSTERS = {
-  dragon: ['ap_monsters_000', 'ap_monsters_007', 'ap_monsters_008', 'ap_monsters_023'],
+  dragon: ['ap_monsters_000', 'ap_monsters_007', 'ap_monsters_008', 'ap_monsters_023', 'custom_enemy_ash_wyrm'],
   fiend: ['ap_monsters_002', 'ap_monsters_017', 'ap_monsters_018'],
-  construct: ['ap_monsters_001', 'ap_monsters_019'], elemental: ['ap_monsters_001', 'ap_monsters_020'], giant: ['ap_monsters_001', 'ap_monsters_021'],
+  construct: ['ap_monsters_001', 'ap_monsters_019', 'custom_enemy_crystal_titan'], elemental: ['ap_monsters_001', 'ap_monsters_020', 'custom_enemy_mire_wisp'], giant: ['ap_monsters_001', 'ap_monsters_021'],
   beast: ['ap_monsters_004', 'ap_monsters_005', 'ap_monsters_006', 'ap_monsters_011', 'ap_monsters_012', 'ap_monsters_013', 'ap_monsters_014', 'ap_monsters_015', 'ap_monsters_016'],
   monstrosity: ['ap_monsters_003', 'ap_monsters_005', 'ap_monsters_022'], aberration: ['ap_monsters_003', 'ap_monsters_022'], ooze: ['ap_monsters_009', 'ap_monsters_010'],
   humanoid: ['ap_enemies_002', 'ap_enemies_004', 'ap_enemies_005', 'ap_enemies_006', 'ap_enemies_007', 'ap_enemies_008', 'ap_enemies_009', 'ap_enemies_010', 'ap_enemies_011', 'ap_enemies_012', 'ap_enemies_013', 'ap_enemies_014', 'ap_enemies_015', 'ap_enemies_016', 'ap_enemies_017', 'ap_enemies_018', 'ap_monsters_019', 'ap_monsters_020', 'ap_monsters_021', 'ap_monsters_022'],
-  undead: ['ap_enemies_000', 'ap_enemies_001', 'ap_enemies_003'],
+  undead: ['ap_enemies_000', 'ap_enemies_001', 'ap_enemies_003', 'custom_enemy_bone_stalker'],
 };
 const AP_PORTRAITS = Array.from({ length: AP_COUNTS.portraits }, (_, i) => `ap_portraits_${String(i).padStart(3, '0')}`);
 function apHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -43,7 +43,16 @@ const auMenuIconFor = label => apPick('menu_icons', label, 'au_');
 const auSystemIconFor = label => apPick('system_icons', label, 'au_');
 const AU_ITEM_CATEGORIES = new Set(['inventory_items', 'storage_items', 'shop_items']);
 const auItemFor = (category, identity) => AU_ITEM_CATEGORIES.has(category) ? apPick(category, identity, 'au_') : null;
-const apCharacterFor = character => apPick('characters', typeof character === 'object' && character ? `${character.name || ''}|${character.cls || ''}|${character.species || character.race || ''}` : character);
+const AP_CLASS_ART = Object.freeze({
+  vanguard: 'custom_character_iron_vanguard', strider: 'custom_character_moon_ranger',
+  arcanist: 'custom_character_ember_mage', chaplain: 'custom_character_dawn_priest',
+});
+function apCharacterFor(character) {
+  const cls = typeof character === 'object' && character ? String(character.cls || '').toLowerCase() : '';
+  const custom = AP_CLASS_ART[cls];
+  if (custom && typeof IMG !== 'undefined' && IMG[custom]) return custom;
+  return apPick('characters', typeof character === 'object' && character ? `${character.name || ''}|${character.cls || ''}|${character.species || character.race || ''}` : character);
+}
 const apNpcFor = entity => apPick('npcs', typeof entity === 'object' && entity ? `${entity.name || ''}|${entity.svc || ''}|${entity.prof || ''}|${entity.spr || ''}` : entity);
 const apMountFor = mount => apPick('mounts', typeof mount === 'object' && mount ? `${mount.id || ''}|${mount.family || ''}|${mount.variant || ''}` : mount);
 function apEquipmentFor(item) {
@@ -85,7 +94,7 @@ const BATTLE_BG_MODES = ['clean', 'painted', 'scenes'];
 const nextBattleBg = cur => BATTLE_BG_MODES[(BATTLE_BG_MODES.indexOf(cur) + 1) % BATTLE_BG_MODES.length];
 
 if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
-  AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
+  AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_CLASS_ART, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
   apPick, menuIconFor: auMenuIconFor, systemIconFor: auSystemIconFor, uiItemFor: auItemFor,
   characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,

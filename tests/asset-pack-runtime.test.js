@@ -61,6 +61,26 @@ test('character, NPC, mount, equipment, and portrait helpers use their matching 
   assert.match(pack.portraitFor('Mira'), /^ap_portraits_/);
 });
 
+test('custom class sprites resolve only when available and new enemies join their families', () => {
+  const previous = globalThis.IMG;
+  globalThis.IMG = Object.fromEntries(Object.values(pack.AP_CLASS_ART).map(name => [name, {}]));
+  try {
+    assert.equal(pack.characterFor({ cls: 'vanguard' }), 'custom_character_iron_vanguard');
+    assert.equal(pack.characterFor({ cls: 'strider' }), 'custom_character_moon_ranger');
+    assert.equal(pack.characterFor({ cls: 'arcanist' }), 'custom_character_ember_mage');
+    assert.equal(pack.characterFor({ cls: 'chaplain' }), 'custom_character_dawn_priest');
+    globalThis.IMG = {};
+    assert.equal(pack.characterFor({ cls: 'vanguard' }), null, 'missing custom and pack sprites should fall through safely');
+  } finally {
+    if (previous === undefined) delete globalThis.IMG;
+    else globalThis.IMG = previous;
+  }
+  assert.ok(pack.AP_MONSTERS.dragon.includes('custom_enemy_ash_wyrm'));
+  assert.ok(pack.AP_MONSTERS.elemental.includes('custom_enemy_mire_wisp'));
+  assert.ok(pack.AP_MONSTERS.construct.includes('custom_enemy_crystal_titan'));
+  assert.ok(pack.AP_MONSTERS.undead.includes('custom_enemy_bone_stalker'));
+});
+
 test('battle scenes select the pack background by encounter context', () => {
   assert.equal(pack.apSceneFor('field', [], false, false), 'ap_scene_wilderness');
   assert.equal(pack.apSceneFor('field', [{ boss: true }], false, false), 'ap_scene_boss_fight');
