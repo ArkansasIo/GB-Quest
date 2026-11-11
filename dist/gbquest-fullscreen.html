@@ -6506,10 +6506,10 @@ const NET = {
     if (match) {
       const cmd = match[1].toLowerCase(), rest = match[2] || '';
       const aliases = { s: 'say', say: 'say', y: 'yell', yell: 'yell', p: 'party', party: 'party', g: 'guild', guild: 'guild', '1': 'world', world: 'world', '2': 'trade', trade: 'trade', '4': 'lfg', lfg: 'lfg', e: 'emote', emote: 'emote' };
-      if (cmd === 'help' || cmd === '?') { chatLog('system', 'CHAT', '/s /y /p /g /w name /1 /2 /4 /e · /r replies to last whisper'); return; }
-      if (cmd === 'w' || cmd === 'whisper' || cmd === 'tell') {
-        const w = rest.match(/^(\S+)\s+([\s\S]+)$/); if (!w) { chatLog('system', 'CHAT', 'Use /w playername message'); return; }
-        channel = 'whisper'; to = w[1].slice(0, 24); text = w[2];
+      if (cmd === 'help' || cmd === '?') { chatLog('system', 'CHAT', '/s /y /p /g /w name or /w "full name" message /1 /2 /4 /e · /r replies to last whisper'); return; }
+      if (cmd === 'w' || cmd === 'whisper' || cmd === 'tell' || cmd === 't' || cmd === 'send') {
+        const w = rest.match(/^(?:"([^"]+)"|(\S+))\s+([\s\S]+)$/); if (!w) { chatLog('system', 'CHAT', 'Use /w playername message or /w "full name" message.'); return; }
+        channel = 'whisper'; to = (w[1] || w[2]).slice(0, 24); text = w[3];
       } else if (cmd === 'r' || cmd === 'reply') {
         if (!this.lastWhisper) { chatLog('system', 'CHAT', 'There is nobody to reply to yet.'); return; }
         channel = 'whisper'; to = this.lastWhisper; text = rest;
@@ -19050,7 +19050,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     if (!m) return send0(raw);
     const cmd = m[1].toLowerCase(), rest = (m[2] || '').trim();
     const sys = t => chatLog('system', 'CHAT', t);
-    if (cmd === 'help' || cmd === '?') { sys('CHANNELS: /s say /y yell /p party /ra raid /i instance /g guild /o officer /w name whisper /r reply'); sys('/1 general /2 trade (cities) /3 local defense /4 looking for group /5+ joined channels'); sys('/join name /leave n /chatlist /who /afk /dnd /roll [max] /played /ignore name /friend name /invite name /clear'); sys('EMOTES: /' + Object.keys(EMOTES).join(' /')); return; }
+    if (cmd === 'help' || cmd === '?') { sys('CHANNELS: /s say /y yell /p party /ra raid /i instance /g guild /o officer /w name or /w "full name" message /r reply'); sys('/1 general /2 trade (cities) /3 local defense /4 looking for group /5+ joined channels'); sys('/join name /leave n /chatlist /who /afk /dnd /roll [max] /played /ignore name /friend name /invite name /clear'); sys('EMOTES: /' + Object.keys(EMOTES).join(' /')); return; }
     if (EMOTES[cmd]) return send0(`/e ${EMOTES[cmd]}${rest ? ' at ' + rest.slice(0, 20) : ''}.`);
     if (cmd === 'ra' || cmd === 'raid' || cmd === 'i' || cmd === 'instance') return send0(`/p ${rest}`);
     if (cmd === 'o' || cmd === 'officer') return send0(`/g ${rest}`);
@@ -19403,15 +19403,19 @@ function cbLabel(md) {
   if (m.ch === 'lfg') return '[4. LookingForGroup]:';
   return m.ch.replace(/^./, c => c.toUpperCase()) + ':';
 }
+function cbWhisperToken(name) {
+  const value = String(name || '').replace(/"/g, '');
+  return /\s/.test(value) ? `"${value}"` : value;
+}
 // the command a mode sends with
 function cbPrefix(m) {
-  if (m.ch === 'whisper') return `/w ${m.to} `;
+  if (m.ch === 'whisper') return `/w ${cbWhisperToken(m.to)} `;
   if (m.ch === 'custom') return `/${chatPrefs().custom.indexOf(m.to) + 5} `;
   return `/${CB_CMD[m.ch] || 's'} `;
 }
 // "/p hello" -> { mode, rest } when the text starts with a channel command
 function cbParse(v) {
-  const w = v.match(/^\/(w|whisper|tell|t|send)\s+(\S+)\s([\s\S]*)$/i); if (w) return { mode: { ch: 'whisper', to: w[2].slice(0, 24).toUpperCase() }, rest: w[3] };
+  const w = v.match(/^\/(w|whisper|tell|t|send)\s+(?:"([^"]+)"|(\S+))\s+([\s\S]*)$/i); if (w) return { mode: { ch: 'whisper', to: (w[2] || w[3]).slice(0, 24).toUpperCase() }, rest: w[4] };
   const r = v.match(/^\/(r|reply)\s([\s\S]*)$/i); if (r) return NET.lastWhisper ? { mode: { ch: 'whisper', to: String(NET.lastWhisper).toUpperCase() }, rest: r[2] } : null;
   const c = v.match(/^\/(\S+)\s([\s\S]*)$/); if (!c) return null;
   const k = c[1].toLowerCase();
@@ -19606,7 +19610,16 @@ function cbComplete(inp, back) {
   let before, word, list, tail = ' ';
   const cm = v.match(/^\/(\S*)$/);
   if (cm) { before = '/'; word = cm[1].toLowerCase(); list = CB_COMMANDS.filter(c => c.startsWith(word) && c !== word); }
-  else { const m = v.match(/^([\s\S]*?)(\S*)$/); before = m[1]; word = m[2].toUpperCase(); if (!word && !/^\/(w|whisper|tell|t|invite|inv|friend|ignore|unignore|unfriend)\s$/i.test(v)) return false; list = cbNames().filter(n => n.startsWith(word)); }
+  else {
+    const m = v.match(/^([\s\S]*?)(\S*)$/); before = m[1]; word = m[2].toUpperCase();
+    if (!word && !/^\/(w|whisper|tell|t|send|invite|inv|friend|ignore|unignore|unfriend)\s$/i.test(v)) return false;
+    list = cbNames().filter(n => n.startsWith(word));
+    const whisperPrefix = before.match(/^\/(?:w|whisper|tell|t|send)\s+("?)$/i);
+    if (whisperPrefix) {
+      const quoteOpen = whisperPrefix[1] === '"';
+      list = list.map(n => quoteOpen ? String(n).replace(/"/g, '') + '"' : cbWhisperToken(n));
+    }
+  }
   if (!list.length) { SFX.error && SFX.error(); return true; }
   CHATBOX.tab = { before, list, k: 0, tail };
   inp.value = before + list[0] + tail; CHATBOX.tab.after = inp.value;
@@ -19662,9 +19675,10 @@ function cbTabs() {
 {
   const send1 = NET.sendChat.bind(NET);
   NET.sendChat = function (raw) {
-    const w = String(raw || '').trim().match(/^\/(w|whisper|tell|t)\s+(\S+)\s+[\s\S]+$/i);
+    const w = String(raw || '').trim().match(/^\/(w|whisper|tell|t|send)\s+(?:"([^"]+)"|(\S+))\s+[\s\S]+$/i);
+    const target = w && (w[2] || w[3]);
     const n0 = CHAT_UI.entries.length, r = send1(raw);
-    if (w) for (let i = n0; i < CHAT_UI.entries.length; i++) if (CHAT_UI.entries[i].channel === 'whisper') { CHAT_UI.entries[i].to = w[2].toUpperCase(); renderChatLog(); }
+    if (w) for (let i = n0; i < CHAT_UI.entries.length; i++) if (CHAT_UI.entries[i].channel === 'whisper') { CHAT_UI.entries[i].to = target.toUpperCase(); renderChatLog(); }
     return r;
   };
 }

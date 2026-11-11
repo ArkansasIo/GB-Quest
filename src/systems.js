@@ -495,10 +495,10 @@ const NET = {
     if (match) {
       const cmd = match[1].toLowerCase(), rest = match[2] || '';
       const aliases = { s: 'say', say: 'say', y: 'yell', yell: 'yell', p: 'party', party: 'party', g: 'guild', guild: 'guild', '1': 'world', world: 'world', '2': 'trade', trade: 'trade', '4': 'lfg', lfg: 'lfg', e: 'emote', emote: 'emote' };
-      if (cmd === 'help' || cmd === '?') { chatLog('system', 'CHAT', '/s /y /p /g /w name /1 /2 /4 /e · /r replies to last whisper'); return; }
-      if (cmd === 'w' || cmd === 'whisper' || cmd === 'tell') {
-        const w = rest.match(/^(\S+)\s+([\s\S]+)$/); if (!w) { chatLog('system', 'CHAT', 'Use /w playername message'); return; }
-        channel = 'whisper'; to = w[1].slice(0, 24); text = w[2];
+      if (cmd === 'help' || cmd === '?') { chatLog('system', 'CHAT', '/s /y /p /g /w name or /w "full name" message /1 /2 /4 /e · /r replies to last whisper'); return; }
+      if (cmd === 'w' || cmd === 'whisper' || cmd === 'tell' || cmd === 't' || cmd === 'send') {
+        const w = rest.match(/^(?:"([^"]+)"|(\S+))\s+([\s\S]+)$/); if (!w) { chatLog('system', 'CHAT', 'Use /w playername message or /w "full name" message.'); return; }
+        channel = 'whisper'; to = (w[1] || w[2]).slice(0, 24); text = w[3];
       } else if (cmd === 'r' || cmd === 'reply') {
         if (!this.lastWhisper) { chatLog('system', 'CHAT', 'There is nobody to reply to yet.'); return; }
         channel = 'whisper'; to = this.lastWhisper; text = rest;

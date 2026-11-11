@@ -41,15 +41,19 @@ function cbLabel(md) {
   if (m.ch === 'lfg') return '[4. LookingForGroup]:';
   return m.ch.replace(/^./, c => c.toUpperCase()) + ':';
 }
+function cbWhisperToken(name) {
+  const value = String(name || '').replace(/"/g, '');
+  return /\s/.test(value) ? `"${value}"` : value;
+}
 // the command a mode sends with
 function cbPrefix(m) {
-  if (m.ch === 'whisper') return `/w ${m.to} `;
+  if (m.ch === 'whisper') return `/w ${cbWhisperToken(m.to)} `;
   if (m.ch === 'custom') return `/${chatPrefs().custom.indexOf(m.to) + 5} `;
   return `/${CB_CMD[m.ch] || 's'} `;
 }
 // "/p hello" -> { mode, rest } when the text starts with a channel command
 function cbParse(v) {
-  const w = v.match(/^\/(w|whisper|tell|t|send)\s+(\S+)\s([\s\S]*)$/i); if (w) return { mode: { ch: 'whisper', to: w[2].slice(0, 24).toUpperCase() }, rest: w[3] };
+  const w = v.match(/^\/(w|whisper|tell|t|send)\s+(?:"([^"]+)"|(\S+))\s+([\s\S]*)$/i); if (w) return { mode: { ch: 'whisper', to: (w[2] || w[3]).slice(0, 24).toUpperCase() }, rest: w[4] };
   const r = v.match(/^\/(r|reply)\s([\s\S]*)$/i); if (r) return NET.lastWhisper ? { mode: { ch: 'whisper', to: String(NET.lastWhisper).toUpperCase() }, rest: r[2] } : null;
   const c = v.match(/^\/(\S+)\s([\s\S]*)$/); if (!c) return null;
   const k = c[1].toLowerCase();
@@ -244,7 +248,16 @@ function cbComplete(inp, back) {
   let before, word, list, tail = ' ';
   const cm = v.match(/^\/(\S*)$/);
   if (cm) { before = '/'; word = cm[1].toLowerCase(); list = CB_COMMANDS.filter(c => c.startsWith(word) && c !== word); }
-  else { const m = v.match(/^([\s\S]*?)(\S*)$/); before = m[1]; word = m[2].toUpperCase(); if (!word && !/^\/(w|whisper|tell|t|invite|inv|friend|ignore|unignore|unfriend)\s$/i.test(v)) return false; list = cbNames().filter(n => n.startsWith(word)); }
+  else {
+    const m = v.match(/^([\s\S]*?)(\S*)$/); before = m[1]; word = m[2].toUpperCase();
+    if (!word && !/^\/(w|whisper|tell|t|send|invite|inv|friend|ignore|unignore|unfriend)\s$/i.test(v)) return false;
+    list = cbNames().filter(n => n.startsWith(word));
+    const whisperPrefix = before.match(/^\/(?:w|whisper|tell|t|send)\s+("?)$/i);
+    if (whisperPrefix) {
+      const quoteOpen = whisperPrefix[1] === '"';
+      list = list.map(n => quoteOpen ? String(n).replace(/"/g, '') + '"' : cbWhisperToken(n));
+    }
+  }
   if (!list.length) { SFX.error && SFX.error(); return true; }
   CHATBOX.tab = { before, list, k: 0, tail };
   inp.value = before + list[0] + tail; CHATBOX.tab.after = inp.value;
@@ -300,9 +313,10 @@ function cbTabs() {
 {
   const send1 = NET.sendChat.bind(NET);
   NET.sendChat = function (raw) {
-    const w = String(raw || '').trim().match(/^\/(w|whisper|tell|t)\s+(\S+)\s+[\s\S]+$/i);
+    const w = String(raw || '').trim().match(/^\/(w|whisper|tell|t|send)\s+(?:"([^"]+)"|(\S+))\s+[\s\S]+$/i);
+    const target = w && (w[2] || w[3]);
     const n0 = CHAT_UI.entries.length, r = send1(raw);
-    if (w) for (let i = n0; i < CHAT_UI.entries.length; i++) if (CHAT_UI.entries[i].channel === 'whisper') { CHAT_UI.entries[i].to = w[2].toUpperCase(); renderChatLog(); }
+    if (w) for (let i = n0; i < CHAT_UI.entries.length; i++) if (CHAT_UI.entries[i].channel === 'whisper') { CHAT_UI.entries[i].to = target.toUpperCase(); renderChatLog(); }
     return r;
   };
 }

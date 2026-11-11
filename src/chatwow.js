@@ -94,7 +94,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     if (!m) return send0(raw);
     const cmd = m[1].toLowerCase(), rest = (m[2] || '').trim();
     const sys = t => chatLog('system', 'CHAT', t);
-    if (cmd === 'help' || cmd === '?') { sys('CHANNELS: /s say /y yell /p party /ra raid /i instance /g guild /o officer /w name whisper /r reply'); sys('/1 general /2 trade (cities) /3 local defense /4 looking for group /5+ joined channels'); sys('/join name /leave n /chatlist /who /afk /dnd /roll [max] /played /ignore name /friend name /invite name /clear'); sys('EMOTES: /' + Object.keys(EMOTES).join(' /')); return; }
+    if (cmd === 'help' || cmd === '?') { sys('CHANNELS: /s say /y yell /p party /ra raid /i instance /g guild /o officer /w name or /w "full name" message /r reply'); sys('/1 general /2 trade (cities) /3 local defense /4 looking for group /5+ joined channels'); sys('/join name /leave n /chatlist /who /afk /dnd /roll [max] /played /ignore name /friend name /invite name /clear'); sys('EMOTES: /' + Object.keys(EMOTES).join(' /')); return; }
     if (EMOTES[cmd]) return send0(`/e ${EMOTES[cmd]}${rest ? ' at ' + rest.slice(0, 20) : ''}.`);
     if (cmd === 'ra' || cmd === 'raid' || cmd === 'i' || cmd === 'instance') return send0(`/p ${rest}`);
     if (cmd === 'o' || cmd === 'officer') return send0(`/g ${rest}`);

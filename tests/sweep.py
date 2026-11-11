@@ -229,7 +229,7 @@ async () => {
   });
   step('armoury', () => {
     fresh('arcanist', 'hearthkin', 'soldier', 20);
-    if (Object.keys(WEAPON_CLASSES).length !== 14 || ['scythe', 'grimoire', 'wand'].some(f => Object.values(WEAPONS).filter(w => w.fam === f).length < 4) || ARMOR_CATEGORIES.length !== 7 || ACLASS_ORDER.length !== 4) return 'counts';
+    if (Object.keys(WEAPON_CLASSES).length !== 15 || ['scythe', 'grimoire', 'wand'].some(f => Object.values(WEAPONS).filter(w => w.fam === f).length < 4) || ARMOR_CATEGORIES.length !== 7 || ACLASS_ORDER.length !== 4) return 'counts';
     for (const k in WEAPONS) if (!WEAPON_CLASSES[WEAPONS[k].fam]) return 'weapon without subclass ' + k;
     const plate = makeItem({ kind: 'wondrous', base: 'gauntlets', lvl: 50, aclass: 'plate' }); if (!canEquip(G, plate)) return 'arcanist wore plate';
     const robe = makeItem({ kind: 'armor', base: 'silkrobe', lvl: 50 }); if (canEquip(G, robe)) return 'robe: ' + canEquip(G, robe);
@@ -345,7 +345,17 @@ async () => {
     type('plain words'); send(); if (!CHAT_UI.entries.some(m => m.channel === 'say' && m.msg === 'plain words')) return 'say';
     key('ArrowUp'); if (inp.value !== 'plain words') return 'history ' + inp.value; key('ArrowUp'); key('ArrowDown'); inp.value = '';
     type('/da'); key('Tab'); if (inp.value !== '/dance ') return 'complete cmd ' + inp.value;
-    type('/w '); type('/w ' ); inp.value = '/w '; key('Tab'); if (!/^\/w \S+ $/.test(inp.value)) return 'complete name ' + inp.value; inp.value = '';
+    type('/w '); inp.value = '/w '; key('Tab');
+    const completed = inp.value.match(/^\/w ("([^"]+)"|(\S+)) $/i); if (!completed) return 'complete name ' + inp.value;
+    const target = (completed[2] || completed[3]).toUpperCase(), parsed = cbParse(inp.value + 'smoke message');
+    if (!parsed || parsed.mode.ch !== 'whisper' || parsed.mode.to !== target || parsed.rest !== 'smoke message') return 'whisper completion parse ' + inp.value;
+    const netBefore = { offline: NET.offline, room: NET.room, peers: NET.peers, lastWhisper: NET.lastWhisper }; let outgoing = null;
+    try {
+      NET.offline = false; NET.room = { emit: (kind, data) => { outgoing = { kind, data }; return Promise.resolve(); } };
+      NET.peers = [{ peer: 'sweep-whisper-target', presence: { n: target } }]; NET.sendChat(inp.value + 'smoke message');
+    } finally { Object.assign(NET, netBefore); }
+    if (!outgoing || outgoing.kind !== 'chat' || outgoing.data.channel !== 'whisper' || outgoing.data.to !== 'sweep-whisper-target' || outgoing.data.text !== 'smoke message') return 'whisper autocomplete send';
+    inp.value = '';
     for (const b of document.querySelectorAll('.cb-bar button')) { b.click(); const m = document.getElementById('cbmenu'); if (b.title !== 'Text size' && b.title !== 'Jump to latest' && !m) return 'no menu ' + b.title; if (m) { const it = m.querySelector('button'); if (b.title === 'Channels') it.click(); else cbCloseMenu(); } }
     const nm = document.querySelector('#chatlog .cb-name'); if (!nm) return 'no names'; nm.click(); if (!/^Tell /.test(lab.textContent)) return 'name click';
     nm.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 20 })); if (!document.getElementById('cbmenu')) return 'name menu'; cbCloseMenu();
