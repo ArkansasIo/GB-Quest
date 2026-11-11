@@ -8,6 +8,12 @@ const AP_COUNTS = Object.freeze({
   items: 54, terrain: 34, environment: 26, buildings: 27, dungeon: 48,
   ui_icons: 40, portraits: 30, particles: 24, mounts: 22, map_elements: 12,
 });
+const AP_ACTOR_SPRITES = Object.freeze({
+  characters: Array.from({ length: AP_COUNTS.characters }, (_, i) => `actor_character_${String(i).padStart(3, '0')}`),
+  npcs: Array.from({ length: AP_COUNTS.npcs }, (_, i) => `actor_npc_${String(i).padStart(3, '0')}`),
+  enemies: Array.from({ length: AP_COUNTS.enemies }, (_, i) => `actor_enemy_${String(i).padStart(3, '0')}`),
+  monsters: Array.from({ length: AP_COUNTS.monsters }, (_, i) => `actor_monster_${String(i).padStart(3, '0')}`),
+});
 const AU_COUNTS = Object.freeze({
   rarity_frames: 9, socket_gems: 8, consumables: 12, frames: 4, buttons: 3,
   checkboxes: 12, system_icons: 14, hotbar_skills: 4, hotbar_potions: 3,
@@ -21,16 +27,26 @@ const AP_ITEM_ART = {
   repair_kit: 'ap_items_013',
 };
 const AP_GEM_ART = { ruby: 'au_socket_gems_000', sapphire: 'au_socket_gems_001', emerald: 'au_socket_gems_002', topaz: 'au_socket_gems_003', garnet: 'au_socket_gems_004', onyx: 'au_socket_gems_004', opal: 'au_socket_gems_005', diamond: 'au_socket_gems_006', amethyst: 'au_socket_gems_007' };
-// Pack monster art by family. The wider pools make every supplied monster/enemy image eligible.
-const AP_MONSTERS = {
-  dragon: ['ap_monsters_000', 'ap_monsters_007', 'ap_monsters_008', 'ap_monsters_023', 'custom_enemy_ash_wyrm'],
-  fiend: ['ap_monsters_002', 'ap_monsters_017', 'ap_monsters_018'],
-  construct: ['ap_monsters_001', 'ap_monsters_019', 'custom_enemy_crystal_titan'], elemental: ['ap_monsters_001', 'ap_monsters_020', 'custom_enemy_mire_wisp'], giant: ['ap_monsters_001', 'ap_monsters_021'],
-  beast: ['ap_monsters_004', 'ap_monsters_005', 'ap_monsters_006', 'ap_monsters_011', 'ap_monsters_012', 'ap_monsters_013', 'ap_monsters_014', 'ap_monsters_015', 'ap_monsters_016'],
-  monstrosity: ['ap_monsters_003', 'ap_monsters_005', 'ap_monsters_022'], aberration: ['ap_monsters_003', 'ap_monsters_022'], ooze: ['ap_monsters_009', 'ap_monsters_010'],
-  humanoid: ['ap_enemies_002', 'ap_enemies_004', 'ap_enemies_005', 'ap_enemies_006', 'ap_enemies_007', 'ap_enemies_008', 'ap_enemies_009', 'ap_enemies_010', 'ap_enemies_011', 'ap_enemies_012', 'ap_enemies_013', 'ap_enemies_014', 'ap_enemies_015', 'ap_enemies_016', 'ap_enemies_017', 'ap_enemies_018', 'ap_monsters_019', 'ap_monsters_020', 'ap_monsters_021', 'ap_monsters_022'],
-  undead: ['ap_enemies_000', 'ap_enemies_001', 'ap_enemies_003', 'custom_enemy_bone_stalker'],
-};
+const actorMonster = i => AP_ACTOR_SPRITES.monsters[i];
+const actorEnemy = i => AP_ACTOR_SPRITES.enemies[i];
+// The source pack's dedicated px variants cover every actor role and monster family.
+const AP_MONSTERS = Object.freeze({
+  dragon: [0, 7, 8, 23].map(actorMonster).concat('custom_enemy_ash_wyrm'),
+  fiend: [2, 17, 18].map(actorMonster),
+  construct: [1, 19].map(actorMonster).concat('custom_enemy_crystal_titan'),
+  elemental: [1, 20].map(actorMonster).concat('custom_enemy_mire_wisp'),
+  giant: [1, 21].map(actorMonster),
+  beast: [4, 5, 6, 11, 12, 13, 14, 15, 16].map(actorMonster),
+  monstrosity: [3, 5, 22].map(actorMonster),
+  aberration: [3, 22].map(actorMonster),
+  ooze: [9, 10].map(actorMonster),
+  humanoid: [2, ...Array.from({ length: 15 }, (_, i) => i + 4)].map(actorEnemy).concat([19, 20, 21, 22].map(actorMonster)),
+  undead: [0, 1, 3].map(actorEnemy).concat('custom_enemy_bone_stalker'),
+  celestial: [2, 17, 18].map(actorMonster),
+  fey: [4, 9, 10].map(actorMonster),
+  plant: [9, 10, 16].map(actorMonster),
+  boss: AP_ACTOR_SPRITES.monsters,
+});
 const AP_PORTRAITS = Array.from({ length: AP_COUNTS.portraits }, (_, i) => `ap_portraits_${String(i).padStart(3, '0')}`);
 function apHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function apPick(category, identity, prefix = 'ap_') {
@@ -38,6 +54,12 @@ function apPick(category, identity, prefix = 'ap_') {
   if (!count) return null;
   const name = `${prefix}${category}_${String(apHash(`${category}|${identity}`) % count).padStart(3, '0')}`;
   return typeof IMG === 'undefined' || IMG[name] ? name : null;
+}
+function apActorPick(category, identity) {
+  const sprites = AP_ACTOR_SPRITES[category];
+  if (!sprites || !sprites.length) return apPick(category, identity);
+  const name = sprites[apHash(`${category}|${identity}`) % sprites.length];
+  return typeof IMG === 'undefined' || IMG[name] ? name : apPick(category, identity);
 }
 const auMenuIconFor = label => apPick('menu_icons', label, 'au_');
 const auSystemIconFor = label => apPick('system_icons', label, 'au_');
@@ -51,9 +73,9 @@ function apCharacterFor(character) {
   const cls = typeof character === 'object' && character ? String(character.cls || '').toLowerCase() : '';
   const custom = AP_CLASS_ART[cls];
   if (custom && typeof IMG !== 'undefined' && IMG[custom]) return custom;
-  return apPick('characters', typeof character === 'object' && character ? `${character.name || ''}|${character.cls || ''}|${character.species || character.race || ''}` : character);
+  return apActorPick('characters', typeof character === 'object' && character ? `${character.name || ''}|${character.cls || ''}|${character.species || character.race || ''}` : character);
 }
-const apNpcFor = entity => apPick('npcs', typeof entity === 'object' && entity ? `${entity.name || ''}|${entity.svc || ''}|${entity.prof || ''}|${entity.spr || ''}` : entity);
+const apNpcFor = entity => apActorPick('npcs', typeof entity === 'object' && entity ? `${entity.name || ''}|${entity.svc || ''}|${entity.prof || ''}|${entity.spr || ''}` : entity);
 const apMountFor = mount => apPick('mounts', typeof mount === 'object' && mount ? `${mount.id || ''}|${mount.family || ''}|${mount.variant || ''}` : mount);
 function apEquipmentFor(item) {
   if (!item) return null;
@@ -74,14 +96,20 @@ function apFieldArtFor(name) {
   if (/^(gd_|d_[a-z])/.test(lower)) return apPick('dungeon', lower);
   if (/^go_/.test(lower) || /^(px_waypoint|item_chest)/.test(lower)) return apPick('map_elements', lower);
   if (/^mt_/.test(lower)) return apPick('mounts', lower);
-  if (/^gh_npc_/.test(lower) || /^(villager|elder|hero)_/.test(lower)) return apPick('npcs', lower);
-  if (/^(gh_|c_)/.test(lower)) return apPick('characters', lower);
+  if (/^gh_npc_/.test(lower) || /^(villager|elder|hero)_/.test(lower)) return apActorPick('npcs', lower);
+  if (/^(gh_|c_)/.test(lower)) return apActorPick('characters', lower);
   if (/^world_/.test(lower)) return apPick('environment', lower);
   if (/^b_/.test(lower)) return apPick('buildings', lower);
   return null;
 }
-// A bestiary subtype gets pack art about half the time (stable per subtype).
-const apMonsterArt = (fam, key) => { const L = AP_MONSTERS[fam]; if (!L) return null; const h = apHash('ap|' + key); return h % 2 ? L[(h >>> 1) % L.length] : null; };
+// Every subtype resolves to stable family art; unknown families use the full monster set.
+const apMonsterArt = (fam, key) => { const L = AP_MONSTERS[fam] || AP_MONSTERS.boss; if (!L || !L.length) return null; return L[apHash('ap|' + key) % L.length]; };
+const apBossArtFor = boss => {
+  const family = boss && boss.fam;
+  const L = AP_MONSTERS[family] || AP_MONSTERS.boss;
+  if (!L || !L.length) return null;
+  return L[apHash(`boss|${boss && (boss.id || boss.name) || ''}`) % L.length];
+};
 const apPortraitFor = name => name ? AP_PORTRAITS[apHash('face|' + name) % AP_PORTRAITS.length] : null;
 // which painted scene a battle uses
 function apSceneFor(kind, foes, inDungeon, inTown) {
@@ -94,11 +122,11 @@ const BATTLE_BG_MODES = ['clean', 'painted', 'scenes'];
 const nextBattleBg = cur => BATTLE_BG_MODES[(BATTLE_BG_MODES.indexOf(cur) + 1) % BATTLE_BG_MODES.length];
 
 if (typeof globalThis !== 'undefined') globalThis.GBQAssetPack = {
-  AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_CLASS_ART, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
-  apPick, menuIconFor: auMenuIconFor, systemIconFor: auSystemIconFor, uiItemFor: auItemFor,
+  AP_ITEM_ART, AP_GEM_ART, AP_MONSTERS, AP_ACTOR_SPRITES, AP_CLASS_ART, AP_PORTRAITS, AP_COUNTS, AU_COUNTS,
+  apPick, apActorPick, menuIconFor: auMenuIconFor, systemIconFor: auSystemIconFor, uiItemFor: auItemFor,
   characterFor: apCharacterFor, npcFor: apNpcFor, mountFor: apMountFor,
   equipmentFor: apEquipmentFor, fieldArtFor: apFieldArtFor, portraitFor: apPortraitFor,
-  apMonsterArt, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
+  apMonsterArt, bossArtFor: apBossArtFor, apPortraitFor, apSceneFor, BATTLE_BG_MODES, nextBattleBg,
 };
 
 if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
@@ -170,8 +198,8 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   // Expose all supplied main-pack monsters across matching families and relevant bosses.
   if (typeof BESTIARY !== 'undefined') {
     for (const b of BESTIARY) if (!b.ccArt) { const n = apMonsterArt(b.fam, `${b.sub}|${b.variant}`); if (n) b.nspr = n; }
-    if (typeof BOSSES !== 'undefined') for (const b of BOSSES) if (b.cat !== 'arc' && ['dragon', 'fiend', 'construct'].includes(b.fam)) { const n = apMonsterArt(b.fam, b.id); if (n) b.nspr = n; }
   }
+  if (typeof BOSSES !== 'undefined') for (const b of BOSSES) { const n = apBossArtFor(b); if (n) b.nspr = n; }
 
   // Scene paintings are selected in SETTINGS > BATTLE BG > SCENES.
   if (typeof drawBattleBackdrop === 'function') {

@@ -100,9 +100,11 @@ test('asset pack: monster art by family, stable faces, rarity rings exist', () =
   for (const L of Object.values(A.AP_MONSTERS)) for (const n of L) assert.ok(has(n), n);
   for (const n of A.AP_PORTRAITS) assert.ok(has(n), n);
   for (let t = 0; t < 9; t++) assert.ok(has(`au_rframe_${t}`));
-  assert.equal(A.apMonsterArt('plant', 'x'), null, 'families without pack art keep theirs');
-  let hits = 0; for (let i = 0; i < 200; i++) if (A.apMonsterArt('beast', 'wolf|' + i)) hits++;
-  assert.ok(hits > 60 && hits < 140, 'about half of a family uses the pack art');
+  assert.ok(A.AP_MONSTERS.plant.includes(A.apMonsterArt('plant', 'x')), 'plant monsters use their pixel-art family pool');
+  assert.ok(A.AP_MONSTERS.boss.includes(A.apMonsterArt('unknown', 'x')), 'unmapped families fall back to the complete monster art set');
+  const beastSprites = new Set(Array.from({ length: 200 }, (_, i) => A.apMonsterArt('beast', 'wolf|' + i)));
+  assert.ok(beastSprites.size > 1, 'stable subtype hashing should use multiple family sprites');
+  for (const sprite of beastSprites) assert.ok(A.AP_MONSTERS.beast.includes(sprite));
   assert.equal(A.apMonsterArt('beast', 'wolf|7'), A.apMonsterArt('beast', 'wolf|7'));
   assert.equal(A.apPortraitFor('ELDER MAE'), A.apPortraitFor('ELDER MAE')); assert.equal(A.apPortraitFor(''), null);
 });

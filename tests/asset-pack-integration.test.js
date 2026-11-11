@@ -36,6 +36,22 @@ test('new adventurer and enemy sprite files are shipped and routed by class or f
   for (const cls of ['vanguard', 'strider', 'arcanist', 'chaplain']) assert.ok(source.includes(cls), `missing class route: ${cls}`);
 });
 
+test('all character, NPC, enemy, and monster pixel sprites are installed and shipped', () => {
+  const groups = [
+    ['actor_character', 43], ['actor_npc', 33], ['actor_enemy', 19], ['actor_monster', 24],
+  ];
+  const shipped = runtimeAssetNames();
+  const missing = [];
+  for (const [prefix, count] of groups) for (let i = 0; i < count; i++) {
+    const name = `${prefix}_${String(i).padStart(3, '0')}`;
+    if (!shipped.has(name) || !fs.existsSync(path.join(root, 'assets', `${name}.png`))) missing.push(name);
+  }
+  assert.deepEqual(missing, [], 'every source actor sprite must be present locally and in the runtime index');
+  const source = read('src/asset_pack.js');
+  for (const token of ['AP_ACTOR_SPRITES', 'apActorPick', 'bossArtFor']) assert.ok(source.includes(token), `missing actor route: ${token}`);
+  assert.ok(read('tools/install_actor_redesigns.py').includes('Installed {installed} pixel-art actor sprites'));
+});
+
 test('asset pack and pixel pack runtime scripts are loaded after the core art pipeline', () => {
   const build = read('tools/build.cjs');
   const orderStart = build.indexOf('const ORDER = [');

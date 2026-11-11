@@ -39,6 +39,10 @@ if (typeof window !== 'undefined' && typeof PACK_INDEX !== 'undefined' && typeof
     const on = packOn() && !!IMG[Object.values(PACK_INDEX.alias)[0]];
     for (const [cat, list] of Object.entries(PACK_INDEX.items)) { const want = on && list.length ? list : NES0[cat]; NES[cat] = want.slice(); }
     for (const [b, base, pk] of mons) b.nspr = on ? pk : base;
+    if (typeof GBQAssetPack !== 'undefined') {
+      if (typeof BESTIARY !== 'undefined') for (const b of BESTIARY) if (!b.ccArt) { const n = GBQAssetPack.apMonsterArt(b.fam, `${b.sub}|${b.variant}`); if (n && IMG[n]) b.nspr = n; }
+      if (typeof BOSSES !== 'undefined') for (const b of BOSSES) { const n = GBQAssetPack.bossArtFor(b); if (n && IMG[n]) b.nspr = n; }
+    }
     for (const [old, pk] of Object.entries(PACK_INDEX.alias)) {
       if (!(old in ORIG)) ORIG[old] = IMG[old] || null;
       if (on && IMG[pk]) IMG[old] = IMG[pk]; else if (ORIG[old]) IMG[old] = ORIG[old];

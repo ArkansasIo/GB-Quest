@@ -45,15 +45,15 @@ test('world sprite families route to semantically matching pack art', () => {
   assert.match(pack.fieldArtFor('gt_meadow_house'), /^ap_buildings_/);
   assert.match(pack.fieldArtFor('gd_dungeon_wall'), /^ap_dungeon_/);
   assert.match(pack.fieldArtFor('go_chest'), /^ap_map_elements_/);
-  assert.match(pack.fieldArtFor('gh_npc_merchant_down0'), /^ap_npcs_/);
-  assert.match(pack.fieldArtFor('gh_warden_down0'), /^ap_characters_/);
+  assert.match(pack.fieldArtFor('gh_npc_merchant_down0'), /^actor_npc_\d{3}$/);
+  assert.match(pack.fieldArtFor('gh_warden_down0'), /^actor_character_\d{3}$/);
   assert.match(pack.fieldArtFor('mt_steed_brown'), /^ap_mounts_/);
   assert.equal(pack.fieldArtFor('au_menu_icons_000'), null);
 });
 
 test('character, NPC, mount, equipment, and portrait helpers use their matching collections', () => {
-  assert.match(pack.characterFor({ cls: 'warden', species: 'hearthkin' }), /^ap_characters_/);
-  assert.match(pack.npcFor({ name: 'Mira', svc: 'vendor' }), /^ap_npcs_/);
+  assert.match(pack.characterFor({ cls: 'warden', species: 'hearthkin' }), /^actor_character_\d{3}$/);
+  assert.match(pack.npcFor({ name: 'Mira', svc: 'vendor' }), /^actor_npc_\d{3}$/);
   assert.match(pack.mountFor({ id: 'steed_brown', family: 'steed' }), /^ap_mounts_/);
   assert.match(pack.equipmentFor({ kind: 'weapon', base: 'longsword', name: 'Longsword' }), /^ap_weapons_/);
   assert.match(pack.equipmentFor({ kind: 'armor', base: 'chain', name: 'Chain mail', slot: 'chest' }), /^ap_armor_/);
@@ -70,7 +70,7 @@ test('custom class sprites resolve only when available and new enemies join thei
     assert.equal(pack.characterFor({ cls: 'arcanist' }), 'custom_character_ember_mage');
     assert.equal(pack.characterFor({ cls: 'chaplain' }), 'custom_character_dawn_priest');
     globalThis.IMG = {};
-    assert.equal(pack.characterFor({ cls: 'vanguard' }), null, 'missing custom and pack sprites should fall through safely');
+    assert.equal(pack.characterFor({ cls: 'vanguard' }), null, 'missing custom and pixel sprites should fall through safely');
   } finally {
     if (previous === undefined) delete globalThis.IMG;
     else globalThis.IMG = previous;
@@ -79,6 +79,25 @@ test('custom class sprites resolve only when available and new enemies join thei
   assert.ok(pack.AP_MONSTERS.elemental.includes('custom_enemy_mire_wisp'));
   assert.ok(pack.AP_MONSTERS.construct.includes('custom_enemy_crystal_titan'));
   assert.ok(pack.AP_MONSTERS.undead.includes('custom_enemy_bone_stalker'));
+});
+
+test('pixel actor sets cover every role and family-specific boss art resolves deterministically', () => {
+  const expected = { characters: 43, npcs: 33, enemies: 19, monsters: 24 };
+  for (const [category, count] of Object.entries(expected)) {
+    const sprites = pack.AP_ACTOR_SPRITES[category];
+    assert.equal(sprites.length, count, `${category} sprite coverage`);
+    assert.equal(new Set(sprites).size, count, `${category} sprite names should be unique`);
+    assert.ok(sprites.every(name => /^actor_(character|npc|enemy|monster)_\d{3}$/.test(name)));
+  }
+  const families = ['aberration', 'beast', 'celestial', 'construct', 'dragon', 'elemental', 'fey', 'fiend', 'giant', 'humanoid', 'monstrosity', 'ooze', 'plant', 'undead'];
+  for (const family of families) {
+    const selected = pack.apMonsterArt(family, 'stable-subtype');
+    assert.ok(pack.AP_MONSTERS[family].includes(selected), `${family} should resolve to its pixel-art family pool`);
+  }
+  const boss = { id: 'aelmoor-test-boss', fam: 'celestial' };
+  const sprite = pack.bossArtFor(boss);
+  assert.ok(pack.AP_MONSTERS.celestial.includes(sprite));
+  assert.equal(pack.bossArtFor(boss), sprite, 'boss sprite selection should be stable');
 });
 
 test('battle scenes select the pack background by encounter context', () => {
