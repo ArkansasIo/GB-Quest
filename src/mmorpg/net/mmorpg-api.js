@@ -142,6 +142,52 @@ export class GBQuestMMOApi {
       method: 'POST', body: { vendorId, itemId, inventoryId, quantity }
     });
   }
+  friends(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends');
+  }
+  requestFriend(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/request', {
+      method: 'POST', body: { targetCharacterId }
+    });
+  }
+  respondFriendRequest(requestId, action = 'accept') {
+    if (!['accept', 'decline'].includes(action)) throw new TypeError('action must be accept or decline');
+    return this.request('/api/friend-requests/' + encodeURIComponent(requestId) + '/' + action, { method: 'POST', body: {} });
+  }
+  blocks(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks');
+  }
+  blockCharacter(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks', {
+      method: 'POST', body: { targetCharacterId }
+    });
+  }
+  unblockCharacter(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks/' + encodeURIComponent(targetCharacterId), { method: 'DELETE' });
+  }
+  mail(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail');
+  }
+  sendMail(characterId, recipientCharacterId, subject, body) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail', {
+      method: 'POST', body: { recipientCharacterId, subject, body }
+    });
+  }
+  markMailRead(mailId) {
+    return this.request('/api/mail/' + encodeURIComponent(mailId) + '/read', { method: 'POST', body: {} });
+  }
+  joinPvpQueue(characterId, rating = 1000) {
+    return this.request('/api/pvp/queue', { method: 'POST', body: { characterId, rating } });
+  }
+  pvpQueueStatus(characterId) {
+    return this.request('/api/pvp/queue/' + encodeURIComponent(characterId));
+  }
+  leavePvpQueue(characterId) {
+    return this.request('/api/pvp/queue/' + encodeURIComponent(characterId), { method: 'DELETE' });
+  }
+  pvpMatch(matchId) {
+    return this.request('/api/pvp/matches/' + encodeURIComponent(matchId));
+  }
   connect() {
     if (!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl = new URL('/ws', this.baseUrl);
