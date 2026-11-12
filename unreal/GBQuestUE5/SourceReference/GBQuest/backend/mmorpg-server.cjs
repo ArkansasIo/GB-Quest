@@ -38,6 +38,16 @@ const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
 const JOB_IDS = new Set(['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller']);
 const LEGACY_CLASSES = new Set(['warrior','mage','ranger','cleric','rogue','adventurer']);
 const CHARACTER_CLASSES = new Set([...JOB_IDS, ...LEGACY_CLASSES]);
+// each class's main combat attribute: the 27 jobs (their primary stat in src/jobs_data.js) and the legacy classes
+const PRIMARY_ATTRIBUTE = Object.freeze({
+  warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con',
+  warden: 'str', berserker: 'str', vanguard: 'str', runeblade: 'str', ronin: 'str', wyrmlancer: 'str', dreadknight: 'str',
+  strider: 'dex', shade: 'dex', ascetic: 'dex', shinobi: 'dex', bladedancer: 'dex', corsair: 'dex', voidhunter: 'dex',
+  arcanist: 'int', necromancer: 'int', puppeteer: 'int', scalesage: 'int',
+  chaplain: 'wis', verdant: 'wis', sunwarden: 'wis', stormcaller: 'wis',
+  wildblood: 'cha', pactbound: 'cha', cantor: 'cha', summoner: 'cha', beastcaller: 'cha',
+});
+const ATTRIBUTES = ['str', 'dex', 'con', 'int', 'wis', 'cha', 'vit'];
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
 if (!TOKEN_SECRET || TOKEN_SECRET.length < 32) throw new Error('GBQ_TOKEN_SECRET must contain at least 32 characters');
 
@@ -381,7 +391,7 @@ function attachSocket(ws, req) {
               }
             }
           }
-          const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[combatCharacter.class] || 'str';
+          const primaryAttribute = PRIMARY_ATTRIBUTE[String(combatCharacter.class || '').toLowerCase()] || 'str';
           const primaryBonus = Math.min(50, Math.max(0, Number(combatCharacter.allocated_attributes?.[primaryAttribute] || 0)) * 2);
           const passiveBonus = Math.min(25, unlockedNodes.filter(node => node.node_type === 'passive')
             .reduce((sum, node) => sum + Math.max(0, Number(node.effect?.damageBonus || 0)), 0));
@@ -786,7 +796,7 @@ const server = http.createServer(async (req, res) => {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const body = await readBody(req), attribute = String(body.attribute || '').toLowerCase();
       const points = Number(body.points === undefined ? 1 : body.points);
-      if (!['str','dex','con','int','wis','vit'].includes(attribute) ||
+      if (!ATTRIBUTES.includes(attribute) ||
           !Number.isSafeInteger(points) || points < 1 || points > 20) {
         return json(res, 400, { error: 'invalid_attribute_allocation' });
       }

@@ -261,11 +261,17 @@
       pactbound: 'mage', necromancer: 'mage', summoner: 'mage', dreadknight: 'warrior',
       wyrmlancer: 'warrior', scalesage: 'mage', puppeteer: 'mage'
     };
-    const serverClass = classMap[localClass] || ({ tank: 'warrior', healer: 'cleric', caster: 'mage', striker: 'ranger', support: 'adventurer', dps: 'rogue' })[role] || 'adventurer';
-    const result = await request(session.baseUrl, '/api/characters', session.token, {
-      method: 'POST', body: { name, class: serverClass, realmId: session.realm.id }
-    });
-    return result.character;
+    const legacyClass = classMap[localClass] || ({ tank: 'warrior', healer: 'cleric', caster: 'mage', striker: 'ranger', support: 'adventurer', dps: 'rogue' })[role] || 'adventurer';
+    // Realm servers store the hero's real job (all 27 are valid server classes). Older servers only know the six
+    // legacy classes and answer invalid_character, so retry once with the closest legacy class for them.
+    const job = String(localClass || '').toLowerCase();
+    const post = cls => request(session.baseUrl, '/api/characters', session.token, { method: 'POST', body: { name, class: cls, realmId: session.realm.id } });
+    if (!Object.prototype.hasOwnProperty.call(classMap, job)) return (await post(legacyClass)).character;
+    try { return (await post(job)).character; }
+    catch (error) {
+      if (error && error.status === 400 && error.code === 'invalid_character') return (await post(legacyClass)).character;
+      throw error;
+    }
   }
 
   async function gameplayRequest(path, options = {}) {
