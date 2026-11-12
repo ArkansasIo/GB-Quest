@@ -191,9 +191,20 @@ body.full-window-mode .game-client, body.fullscreen-mode .game-client { position
 body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
 body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
 .game-viewport { position: relative; }
-.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
-.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
-body.game-rendered .game-start-fallback { display: none; }
+.game-start-fallback { position:absolute; z-index:20; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:22px; text-align:center; box-sizing:border-box; overflow:hidden; background:radial-gradient(ellipse at 50% 42%,#263b50 0%,#111c2b 42%,#05080e 100%); color:#f3e7ce; font:700 clamp(13px,2.4vw,22px)/1.35 Cinzel,Georgia,serif; letter-spacing:.11em; transition:opacity .65s ease,visibility .65s ease; }
+.game-start-fallback::before,.game-start-fallback::after { content:""; position:absolute; width:75%; height:1px; background:linear-gradient(90deg,transparent,#d9b66e,transparent); opacity:.7; }
+.game-start-fallback::before { top:12%; } .game-start-fallback::after { bottom:12%; }
+.boot-crest { width:clamp(62px,13vw,112px); aspect-ratio:1; display:grid; place-items:center; border:1px solid #d9b66e; border-radius:50%; box-shadow:0 0 0 6px #d9b66e18,0 0 34px #d9b66e33,inset 0 0 24px #d9b66e22; background:radial-gradient(circle,#273d53,#0b1421 70%); }
+.boot-crest svg { width:72%; height:72%; filter:drop-shadow(0 0 8px #d9b66e88); }
+.boot-title { max-width:760px; text-shadow:0 2px 20px #000; }
+.boot-subtitle { color:#d9b66e; font:600 clamp(11px,1.7vw,15px)/1.4 Cinzel,Georgia,serif; letter-spacing:.3em; }
+.boot-engine { margin-top:6px; color:#b8c8d9; font:700 10px/1.5 Inter,Arial,sans-serif; letter-spacing:.2em; }
+.boot-engine strong { color:#e9c77e; }
+.boot-progress { width:min(340px,78%); height:6px; border:1px solid #8d754c; border-radius:99px; padding:1px; background:#050a12; overflow:hidden; }
+.boot-progress-fill { height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#5b91c8,#e9c77e); box-shadow:0 0 12px #d9b66e99; transition:width .2s ease; }
+.boot-status { color:#d5dce4; font:10px/1.5 Inter,Arial,sans-serif; letter-spacing:.08em; }
+.boot-footer { color:#8fa1b7; font:8px/1.5 Inter,Arial,sans-serif; letter-spacing:.2em; }
+body.boot-complete .game-start-fallback { opacity:0; visibility:hidden; pointer-events:none; }
 .game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
 .game-viewport > .chat { display: flex; }
 body:not(.chat-on) .game-viewport > .chat { display: none; }
@@ -458,7 +469,15 @@ body.title-screen .game-viewport > #lcd {
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
   <div class="game-viewport">
-    <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
+    <div class="game-start-fallback" id="bootloader" role="status" aria-live="polite">
+      <div class="boot-crest" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 7 60 24 80 18 75 39 93 50 75 61 80 82 60 76 50 93 40 76 20 82 25 61 7 50 25 39 20 18 40 24 50 7Z" stroke="#e9c77e" stroke-width="2.5"/><path d="M50 24 60 40 75 43 64 55 66 72 50 64 34 72 36 55 25 43 40 40 50 24Z" fill="#d9b66e" fill-opacity=".2" stroke="#f3dfaa" stroke-width="2"/><path d="M50 37v27M39 49h22M42 65h16" stroke="#f3dfaa" stroke-width="3" stroke-linecap="square"/></svg></div>
+      <div class="boot-title">LOST KINGDOM OF SHADOWBANE CHRONICLES</div>
+      <div class="boot-subtitle">LANTERNS OF AELMOOR</div>
+      <div class="boot-engine">ARKANSAS-IO GAME ENGINE <strong>v2.5.0</strong></div>
+      <div class="boot-progress" role="progressbar" aria-label="Loading game assets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="boot-progress-fill" id="bootProgressFill"></div></div>
+      <div class="boot-status" id="bootStatus">INITIALIZING GAME SYSTEMS…</div>
+      <div class="boot-footer">DEVELOPED BY ARKANSASIO · ENGINE BUILD 1</div>
+    </div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
     <section class="chat" aria-label="In-game chat">
       <div class="chat-titlebar"><span>REALM CHAT · C</span><button type="button" id="chatHide" aria-label="Hide chat">×</button></div>
