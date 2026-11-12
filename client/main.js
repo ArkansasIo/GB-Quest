@@ -8,33 +8,14 @@
     document.body.classList.toggle('chat-on', visible);
     try { localStorage.setItem('gbq.fs.chatpanel', visible ? '1' : '0'); } catch (e) {}
   };
-  const bootProgress = document.getElementById('bootProgressFill');
-  const bootStatus = document.getElementById('bootStatus');
-  const bootBar = document.querySelector('.boot-progress[role="progressbar"]');
-  const updateBoot = (value, message = 'LOADING GAME ASSETS…') => {
-    const percent = Math.max(0, Math.min(100, Math.round(value <= 1 ? value * 100 : value)));
-    if (bootProgress) bootProgress.style.width = percent + '%';
-    if (bootStatus) bootStatus.textContent = message;
-    if (bootBar) bootBar.setAttribute('aria-valuenow', String(percent));
-  };
-  const finishBoot = () => {
-    updateBoot(100, 'AELMOOR IS READY');
-    document.body.classList.add('ready', 'boot-complete');
-  };
-  const loading = loadAssets(p => { progress = p; updateBoot(p); }).then(() => {
-    // Pack art can be selected before its images finish loading. Reapply every
-    // alias after the complete asset batch so world tiles and objects are ready
-    // before the first playable frame.
+  const loading = loadAssets(p => { progress = p; }).then(() => {
     if (typeof window.applyPackArt === 'function') window.applyPackArt();
     else if (typeof applyArt === 'function') applyArt();
     if (typeof window.applyAssetPackArt === 'function') window.applyAssetPackArt();
     progress = 1;
-    finishBoot();
-  }).catch(error => {
-    console.warn('Asset loading completed with recoverable errors:', error);
-    finishBoot();
+    document.body.classList.add('ready');
   });
-  // In-game chat overlay inside the game viewport.
+    // In-game chat overlay inside the game viewport.
   const input = document.getElementById('chatinput');
   const form = document.getElementById('chatform');
   const chatHide = document.getElementById('chatHide'), chatShow = document.getElementById('chatShow');
