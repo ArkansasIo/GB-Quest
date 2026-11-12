@@ -18,9 +18,29 @@ class GBQuestMMOApi {
   async register(username,password) { const result=await this.request('/api/register',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   async login(username,password) { const result=await this.request('/api/login',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   me() { return this.request('/api/me'); }
-  characters() { return this.request('/api/characters'); }
-  createCharacter(name,characterClass) { return this.request('/api/characters',{method:'POST',body:{name,class:characterClass}}); }
+  regions() { return this.request('/api/regions',{auth:false}); }
+  realms(regionId) { return this.request('/api/realms'+(regionId?'?region='+encodeURIComponent(regionId):''),{auth:false}); }
+  characters(realmId) { return this.request('/api/characters'+(realmId?'?realm='+encodeURIComponent(realmId):'')); }
+  createCharacter(name,characterClass,realmId,species,background) {
+    return this.request('/api/characters',{method:'POST',body:{name,class:characterClass,...(realmId?{realmId}:{}),...(species?{species}:{}),...(background?{background}:{})}});
+  }
+  whispers(characterId,peerId,limit=50) {
+    const query=new URLSearchParams(); if(peerId)query.set('with',peerId);query.set('limit',String(limit));
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers?'+query.toString());
+  }
+  sendWhisper(characterId,toCharacterId,text) {
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers',{method:'POST',body:{toCharacterId,text}});
+  }
   inventory(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/inventory'); }
+  dungeonCatalog() { return this.request('/api/dungeons/catalog',{auth:false}); }
+  joinDungeonQueue(characterId,dungeonId,role) {
+    return this.request('/api/dungeons/queue',{method:'POST',body:{characterId,dungeonId,role}});
+  }
+  dungeonQueueStatus(characterId) { return this.request('/api/dungeons/queue/'+encodeURIComponent(characterId)); }
+  leaveDungeonQueue(characterId) { return this.request('/api/dungeons/queue/'+encodeURIComponent(characterId),{method:'DELETE'}); }
+  dungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)); }
+  startDungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)+'/start',{method:'POST',body:{}}); }
+  completeDungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)+'/complete',{method:'POST',body:{}}); }
   trades(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades'); }
   createTrade(id,toCharacterId,offer={}) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades',{method:'POST',body:{...offer,toCharacterId}}); }
   acceptTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/accept',{method:'POST',body:{}}); }

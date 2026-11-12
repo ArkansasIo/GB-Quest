@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { isAllowedOrigin, createAuthLimiter } = require('../backend/mmorpg-security.cjs');
+const { isAllowedOrigin, corsHeaders, createAuthLimiter } = require('../backend/mmorpg-security.cjs');
 
 test('browser origins require an exact HTTPS allowlist match', () => {
   const allow = new Set(['https://game.example.test', 'https://publisher.example.test']);
@@ -15,6 +15,19 @@ test('browser origins require an exact HTTPS allowlist match', () => {
   assert.equal(isAllowedOrigin('http://game.example.test', allow), false);
   assert.equal(isAllowedOrigin('not a URL', allow), false);
   assert.equal(isAllowedOrigin('https://game.example.test', new Set()), false, 'empty production allowlist fails closed');
+});
+
+test('CORS preflight headers are returned only for an exact allowed origin', () => {
+  const allow = new Set(['https://game.example.test']);
+  assert.deepEqual(corsHeaders(undefined, allow), {});
+  assert.equal(corsHeaders('https://attacker.invalid', allow), null);
+  assert.deepEqual(corsHeaders('https://game.example.test', allow), {
+    'access-control-allow-origin': 'https://game.example.test',
+    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-headers': 'content-type,authorization',
+    'access-control-max-age': '600',
+    vary: 'Origin'
+  });
 });
 
 test('authentication limiter blocks after threshold and resets after the window', () => {

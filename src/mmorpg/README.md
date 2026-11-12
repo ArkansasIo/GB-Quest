@@ -52,10 +52,10 @@ No proprietary World of Warcraft code, assets, quests or data are copied. D&D da
 - Character mail supports one-time atomic claims that stage attachments against inventory capacity/weight before crediting currency; failed claims remain retryable.
 - Direct player trades require both players to accept the current offers, then stage inventory and currency changes before committing; invalid capacity, stock or wallet state leaves both characters unchanged.
 - Social state supports reciprocal friend requests, ignore lists, friend-only whispers, bounded chat text and per-sender rate limiting. Party/guild channel membership authorization remains the responsibility of the server adapter.
-- Parties support leader-issued expiring invites, role assignments, leader handoff and bounded ready checks; matchmaking and authoritative online membership still need a server adapter.
+- Parties support leader-issued expiring invites, role assignments, leader handoff and bounded ready checks. The dedicated MMO service now adds persistent PostgreSQL dungeon queues, realm-scoped role composition, and formed group records.
 - `systems/instance-finder.js` indexes 20 dungeon and 14 raid entrances, with level/zone/continent/difficulty/party-size filters, and tower checkpoint validation. `systems/event-finder.js` schedules six original recurring public events plus the 300 world-boss roster and supports active-event joining. The browser's Activity Finder exposes dungeon/raid entry, the Spire, and local event travel/join actions; this is a local simulation, not shared live-world scheduling.
 - Appearance/mount/title collections and transmog unlocks.
-- Role-based dungeon finder queue for tank/healer/damage compositions.
+- Role-based dungeon finder queue for tank/healer/damage compositions: the browser simulation remains available offline, while authenticated server endpoints provide durable queue state, five-player composition (1 tank, 1 healer, 3 damage), level eligibility, group membership, instance IDs, and tank-led start/completion.
 - Map registry for the 90-map atlas.
 - Eighteen original gathering and crafting professions with 1-720 skill progression, Apprentice through Grandmaster rank bands, and one specialization point per skill level (up to 720 per profession). Each gathering and crafting job has three talent branches that affect resource yield, cooldowns, ingredient use, output quantity or skill experience. Recipes remain skill-gated, use station checks, and craft transactionally.
 

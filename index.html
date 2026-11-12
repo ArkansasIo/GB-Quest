@@ -430,6 +430,58 @@ body.title-screen .game-viewport > #lcd {
   body.title-screen .game-client { padding:0 !important; }
   body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
 }
+
+/* BOOT SPLASH — branded startup layer above the game viewport. */
+#gbq-boot-screen {
+  position:fixed; z-index:100000; inset:0; display:grid; place-items:center;
+  overflow:hidden; padding:24px; color:#ead9b2;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(91,47,28,.42), transparent 44%),
+    radial-gradient(ellipse at 50% 110%, rgba(98,57,25,.2), transparent 52%),
+    linear-gradient(145deg,#090707 0%,#160e0c 48%,#050607 100%);
+  opacity:1; visibility:visible;
+  transition:opacity .8s ease, visibility .8s ease;
+  font-family:var(--san-title, Cinzel, Georgia, serif);
+}
+#gbq-boot-screen::before,#gbq-boot-screen::after {
+  content:""; position:absolute; pointer-events:none; inset:18px;
+  border:1px solid rgba(196,151,81,.28);
+}
+#gbq-boot-screen::after { inset:25px; border-color:rgba(196,151,81,.1); }
+#gbq-boot-screen.is-hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.gbq-boot-inner {
+  position:relative; z-index:1; width:min(620px,100%); display:grid;
+  justify-items:center; text-align:center; gap:clamp(12px,2.4vh,24px);
+}
+.gbq-boot-mark {
+  width:clamp(88px,16vw,142px); aspect-ratio:1; filter:drop-shadow(0 0 18px rgba(218,164,81,.28));
+  animation:gbq-boot-glow 3.2s ease-in-out infinite;
+}
+.gbq-boot-kicker { color:#bd9458; font:700 10px/1.5 Arial,sans-serif; letter-spacing:.42em; }
+.gbq-boot-title {
+  margin:0; color:#f4dfb4; font:700 clamp(26px,5.4vw,48px)/1.08 var(--san-title,Georgia,serif);
+  letter-spacing:.13em; text-shadow:0 3px 0 #27150e,0 0 28px rgba(205,151,76,.22);
+}
+.gbq-boot-subtitle {
+  max-width:520px; color:#d0b98f; font:600 clamp(10px,1.7vw,13px)/1.7 var(--san-title,Georgia,serif);
+  letter-spacing:.16em; text-transform:uppercase;
+}
+.gbq-boot-divider { width:min(330px,70%); height:1px; background:linear-gradient(90deg,transparent,#a77a42,transparent); }
+.gbq-boot-credit { color:#8f8068; font:10px/1.6 Arial,sans-serif; letter-spacing:.2em; text-transform:uppercase; }
+.gbq-boot-credit strong { display:block; margin-top:4px; color:#d4b77e; font:700 12px/1.6 var(--san-title,Georgia,serif); letter-spacing:.24em; }
+.gbq-boot-load { width:min(360px,82vw); display:grid; gap:9px; margin-top:clamp(4px,1vh,12px); }
+.gbq-boot-load-head { display:flex; justify-content:space-between; gap:12px; color:#b49b75; font:10px/1.4 Arial,sans-serif; letter-spacing:.12em; text-transform:uppercase; }
+.gbq-boot-track { height:7px; padding:1px; border:1px solid #785936; background:#090706; box-shadow:inset 0 1px 3px #000; }
+#gbq-boot-progress { width:8%; height:100%; background:linear-gradient(90deg,#8c542c,#f0cf8b); box-shadow:0 0 12px rgba(224,174,95,.4); transition:width .35s ease; }
+#gbq-boot-status { min-height:16px; color:#98866b; font:10px/1.5 Arial,sans-serif; letter-spacing:.08em; }
+#gbq-boot-retry {
+  display:none; padding:9px 18px; border:1px solid #987344; background:#21140f; color:#e8c98e;
+  font:700 10px var(--san-title,Georgia,serif); letter-spacing:.16em; cursor:pointer;
+}
+#gbq-boot-retry:focus-visible { outline:2px solid #f0cf8b; outline-offset:3px; }
+@keyframes gbq-boot-glow { 0%,100% { filter:drop-shadow(0 0 10px rgba(218,164,81,.18)); transform:scale(1); } 50% { filter:drop-shadow(0 0 24px rgba(218,164,81,.42)); transform:scale(1.025); } }
+@media(prefers-reduced-motion:reduce) { #gbq-boot-screen *,#gbq-boot-screen::before,#gbq-boot-screen::after { animation:none !important; transition:none !important; } }
+
 </style>
 <style>
 /* CITADEL HD theme — cinematic fantasy command interface.
@@ -947,6 +999,39 @@ body.chat-on .gbq-player-hud { right:300px; }
 
 </head><body class="theme-shadows">
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
+
+<section id="gbq-boot-screen" role="status" aria-live="polite" aria-label="GB Quest startup">
+  <div class="gbq-boot-inner">
+    <svg class="gbq-boot-mark" viewBox="0 0 160 160" role="img" aria-labelledby="gbq-boot-logo-title">
+      <title id="gbq-boot-logo-title">GB Quest crest — lantern and crown</title>
+      <defs>
+        <linearGradient id="gbqGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0c3"/><stop offset=".48" stop-color="#d7aa62"/><stop offset="1" stop-color="#80502c"/></linearGradient>
+        <radialGradient id="gbqFlame"><stop stop-color="#fff5bd"/><stop offset=".45" stop-color="#eab45d"/><stop offset="1" stop-color="#a94422" stop-opacity=".1"/></radialGradient>
+      </defs>
+      <path d="M80 7 139 30v47c0 35-24 59-59 76C45 136 21 112 21 77V30Z" fill="#100b09" stroke="url(#gbqGold)" stroke-width="3"/>
+      <path d="M80 16 130 36v41c0 29-20 50-50 65C50 127 30 106 30 77V36Z" fill="none" stroke="#6f4b2a" stroke-width="1.5"/>
+      <path d="m49 55 7-19 17 13 7-24 8 24 17-13 7 19-12 12H61Z" fill="url(#gbqGold)" stroke="#5f3d24" stroke-width="2"/>
+      <path d="M57 71h46l-5 13H62Z" fill="#c08b49"/>
+      <path d="M80 68c-15 17-16 27-7 37 3 4 10 7 14 2 10-10 6-23-7-39Z" fill="url(#gbqFlame)"/>
+      <path d="M80 81c-7 9-7 15-2 20 2 2 5 2 7-1 4-6 1-12-5-19Z" fill="#fff2bc"/>
+      <path d="M55 111h50M62 119h36" stroke="url(#gbqGold)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="80" cy="144" r="3" fill="#e4bd79"/>
+    </svg>
+    <div class="gbq-boot-kicker">A WORLD OF LEGENDS AWAITS</div>
+    <h1 class="gbq-boot-title">GB QUEST</h1>
+    <div class="gbq-boot-subtitle">Lost Kingdom of ShadowBane Chronicles<br>Lanterns of Aelmoor</div>
+    <div class="gbq-boot-divider"></div>
+    <div class="gbq-boot-credit">Game Engine<strong>ARKANSAS - IO ENGINE · v2.5.0</strong></div>
+    <div class="gbq-boot-credit">Developed by<strong>ARKANSASIO</strong></div>
+    <div class="gbq-boot-load">
+      <div class="gbq-boot-load-head"><span>Initializing Aelmoor</span><span id="gbq-boot-percent">8%</span></div>
+      <div class="gbq-boot-track" role="progressbar" aria-label="Game loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8" id="gbq-boot-bar"><div id="gbq-boot-progress"></div></div>
+      <div id="gbq-boot-status">Awakening the lanterns…</div>
+    </div>
+    <button id="gbq-boot-retry" type="button">RETRY STARTUP</button>
+  </div>
+</section>
+
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
   <div class="game-viewport">
     <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
@@ -1074,4 +1159,5 @@ body.chat-on .gbq-player-hud { right:300px; }
 <script src="src/player_hud.js"></script>
 <script src="client/mmorpg-trade.js"></script>
 <script src="src/debug.js"></script>
+<script src="src/boot_screen.js"></script>
 </body></html>
