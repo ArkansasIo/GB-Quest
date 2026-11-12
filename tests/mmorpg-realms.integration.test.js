@@ -39,8 +39,10 @@ test('regions list realms; realms keep separate worlds, names and chat', { skip:
     assert.equal((await post('/api/characters', { name: name.toUpperCase(), class: 'shade', realmId: 'moonfall' }, b)).status, 409);
     const cbOther = await post('/api/characters', { name, class: 'shade', realmId: 'emberwild' }, b);
     assert.equal(cbOther.status, 201); const charBOther = (await cbOther.json()).character;
-    const cb = await post('/api/characters', { name: 'Mate' + crypto.randomBytes(2).toString('hex'), class: 'cleric', realmId: 'moonfall' }, b);
+    const cb = await post('/api/characters', { name: 'Mate' + crypto.randomBytes(2).toString('hex'), class: 'chaplain', realmId: 'moonfall' }, b);
     assert.equal(cb.status, 201); const charB = (await cb.json()).character;
+    const offlineCreate = await post('/api/characters', { name: 'Offline' + crypto.randomBytes(2).toString('hex'), class: 'warden', realmId: 'moonfall' }, b);
+    assert.equal(offlineCreate.status, 201); const charOffline = (await offlineCreate.json()).character;
     assert.equal((await post('/api/characters', { name: 'Nowhere', class: 'arcanist', realmId: 'atlantis' }, a)).status, 400);
     // per-realm cap: 3 on one realm
     for (let i = 0; i < 2; i++) assert.equal((await post('/api/characters', { name: 'Alt' + i + crypto.randomBytes(2).toString('hex'), class: 'arcanist', realmId: 'moonfall' }, a)).status, 201);
@@ -98,6 +100,18 @@ test('regions list realms; realms keep separate worlds, names and chat', { skip:
     assert.equal(savedWhisper.message.delivered, true);
     const apiWhisper = await Bx.waitFor('chat.message', m => m.text === 'API whisper');
     assert.equal(apiWhisper.channel, 'whisper');
+    const offlineWhisper = await post(`/api/characters/${charA.id}/whispers`, {
+      toCharacterId: charOffline.id, text: 'Delivered when you return'
+    }, a);
+    assert.equal(offlineWhisper.status, 201);
+    const offlinePayload = await offlineWhisper.json();
+    assert.equal(offlinePayload.message.delivered, false);
+    const offlineInboxResponse = await fetch(base + `/api/characters/${charOffline.id}/whispers`, {
+      headers: { authorization: 'Bearer ' + b }
+    });
+    assert.equal(offlineInboxResponse.status, 200);
+    const offlineInbox = await offlineInboxResponse.json();
+    assert.ok(offlineInbox.messages.some(message => message.message === 'Delivered when you return'));
     await new Promise(r => setTimeout(r, 1300));
     A.send('chat.send', { text: 'anyone', channel: 'whisper', to: 'Nobody' + crypto.randomBytes(2).toString('hex') });
     assert.equal((await A.waitFor('error', p => p.code === 'whisper_target_not_found')).code, 'whisper_target_not_found');
