@@ -165,3 +165,8 @@ Authenticated endpoints:
 Match formation assigns two equal-sized teams and writes a durable `competitive.match_found` notification for each participant in the same transaction. Duplicate characters from one account are excluded from a single match, as are blocked opponents. Notifications are retrieved by HTTP polling; no cross-instance push transport is claimed.
 
 **Scope boundary:** this delivers persistent queueing and match allocation, not arena map instances, battleground objectives, live combat-result validation, ranked season rewards, or rating settlement for these new modes. The existing 1v1 PvP forfeit flow remains separate. Apply migrations and run the PostgreSQL integration suite before deployment.
+
+
+## Dedicated PostgreSQL MMO deployment
+
+The authoritative PostgreSQL/WebSocket service is containerized separately from the legacy JSON/SSE realm service. From the repository root, copy `.env.example` to `.env`, replace `POSTGRES_PASSWORD` and `GBQ_TOKEN_SECRET` with independently generated secrets, set `GBQ_ALLOWED_ORIGINS` to the exact game website origin, then run `docker compose --env-file .env -f docker-compose.mmorpg.yml up -d --build`. The stack starts PostgreSQL, waits for its health check, applies the ordered `backend/migrations/*.sql` files using a one-shot migration container, and then starts `backend/mmorpg-server.cjs`. The database is persisted in the `gbquest_pg_data` Docker volume. See [the deployment runbook](../ops/mmorpg-server/README.md) for TLS/WebSocket proxying, backups, Windows and Linux startup, and operational limits.

@@ -1,0 +1,15 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+node_modules
+release
+build
+dist
+assets
+assets_hd64
+art_source
+server/data
+*.zip
+*.log
