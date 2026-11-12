@@ -984,7 +984,7 @@ class Battle {
     this.run(steps, () => {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }
-      for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); }
+      for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); const DM = derive(u.ch); if (u.ch.hp > DM.hpMax) u.ch.hp = DM.hpMax; } // an expiring WELL FED lowers max HP
       const res = this.noRewards ? { ups: [] } : gainXP(G, xp);
       if (!this.noRewards) for (const u of this.party) if (isChar(u) && u.ch !== G && u.ch.ai) { if (u.ch.lvl < G.lvl) { u.ch.lvl = G.lvl; u.ch.xp = xpForLevel(G.lvl); const DD = derive(u.ch); u.ch.hp = DD.hpMax; u.ch.res = resMax(u.ch, DD); } }
       if (!this.noRewards) recordVictory(this);

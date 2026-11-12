@@ -952,6 +952,7 @@ class Field {
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
+      else if (e.kind === 'building') { if (typeof drawBuilding === 'function') drawBuilding(e, ex, ey); }
       else if (e.kind === 'woods') {
         const tree = woodsSprite(e.variant, e.biome);
         if (tree) {
