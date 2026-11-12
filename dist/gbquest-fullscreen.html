@@ -1253,26 +1253,26 @@ const SCHOOLS = {
 
 // ---------------------------------------------------------------- conditions
 const CONDITIONS = {
-  poisoned: { name: 'POISONED', attackDis: true, checkDis: true },
-  frightened: { name: 'FRIGHTENED', attackDis: true },
-  blinded: { name: 'BLINDED', attackDis: true, attackedAdv: true },
-  prone: { name: 'PRONE', attackDis: true, attackedAdv: true, standUp: true },
-  restrained: { name: 'RESTRAINED', attackDis: true, attackedAdv: true, dexSaveDis: true },
-  stunned: { name: 'STUNNED', skip: true, attackedAdv: true, failStrDex: true },
-  paralyzed: { name: 'PARALYZED', skip: true, attackedAdv: true, failStrDex: true, autoCrit: true },
-  asleep: { name: 'ASLEEP', skip: true, attackedAdv: true, autoCrit: true, wakeOnDmg: true },
-  charmed: { name: 'CHARMED', noAttack: true },
-  dominated: { name: 'DOMINATED', turncoat: true },
-  invisible: { name: 'INVISIBLE', attackAdv: true, attackedDis: true, endOnAttack: true },
-  silenced: { name: 'SILENCED', noSpells: true },
-  banished: { name: 'BANISHED', skip: true, untargetable: true },
-  dodging: { name: 'DODGING', attackedDis: true },
-  marked: { name: 'MARKED' },
-  hexed: { name: 'HEXED' },
-  outlined: { name: 'OUTLINED', attackedAdv: true, noInvis: true },
-  cursed: { name: 'NO HEALING', noHeal: true },
-  reckless: { name: 'RECKLESS', attackedAdv: true },
-  beast: { name: 'BEASTSHAPE', skip: true },
+  poisoned: { name: 'POISONED', desc: 'Disadvantage on attack rolls.', attackDis: true, checkDis: true },
+  frightened: { name: 'FRIGHTENED', desc: 'Disadvantage on attack rolls.', attackDis: true },
+  blinded: { name: 'BLINDED', desc: 'Disadvantage on attack rolls; attacks against you have advantage.', attackDis: true, attackedAdv: true },
+  prone: { name: 'PRONE', desc: 'Disadvantage on attack rolls; attacks against you have advantage. You stand up at the start of your turn.', attackDis: true, attackedAdv: true, standUp: true },
+  restrained: { name: 'RESTRAINED', desc: 'Disadvantage on attack rolls and DEX saves; attacks against you have advantage.', attackDis: true, attackedAdv: true, dexSaveDis: true },
+  stunned: { name: 'STUNNED', desc: 'Lose your turns; automatically fail STR and DEX saves; attacks against you have advantage.', skip: true, attackedAdv: true, failStrDex: true },
+  paralyzed: { name: 'PARALYZED', desc: 'Lose your turns; automatically fail STR and DEX saves; attacks against you have advantage and every hit is a critical hit.', skip: true, attackedAdv: true, failStrDex: true, autoCrit: true },
+  asleep: { name: 'ASLEEP', desc: 'Lose your turns until damaged; attacks against you have advantage and every hit is a critical hit.', skip: true, attackedAdv: true, autoCrit: true, wakeOnDmg: true },
+  charmed: { name: 'CHARMED', desc: 'You will not attack: you lose your turns.', noAttack: true },
+  dominated: { name: 'DOMINATED', desc: 'Fights for the side that dominated it.', turncoat: true },
+  invisible: { name: 'INVISIBLE', desc: 'Advantage on attacks; attacks against you have disadvantage. Ends when you attack.', attackAdv: true, attackedDis: true, endOnAttack: true },
+  silenced: { name: 'SILENCED', desc: 'Cannot cast spells.', noSpells: true },
+  banished: { name: 'BANISHED', desc: 'Removed from the fight: lose your turns and cannot be targeted.', skip: true, untargetable: true },
+  dodging: { name: 'DODGING', desc: 'Attacks against you have disadvantage.', attackedDis: true },
+  marked: { name: 'MARKED', desc: 'The hunter who marked you deals +1d6 damage to you with weapon hits.' },
+  hexed: { name: 'HEXED', desc: 'The caster who hexed you deals +1d6 damage to you with weapon hits.' },
+  outlined: { name: 'OUTLINED', desc: 'Attacks against you have advantage, and you gain no benefit from being invisible.', attackedAdv: true, noInvis: true },
+  cursed: { name: 'NO HEALING', desc: 'Cannot be healed.', noHeal: true },
+  reckless: { name: 'RECKLESS', desc: 'Attacks against you have advantage.', attackedAdv: true },
+  beast: { name: 'BEASTSHAPE', desc: 'Turned into a harmless beast: lose your turns.', skip: true },
 };
 
 // ---------------------------------------------------------------- species
@@ -1918,35 +1918,41 @@ const MYTHIC_BOONS = [
 ];
 
 // ================================================================ buffs & debuffs
-// mods: substat/attr deltas while active. tick: per-turn dmg/heal (as % max HP or dice). stack: max stacks
+// What each field does in combat is defined in src/effect_engine.js:
+//   mods  numeric deltas x stacks: hit, saves, acb (AC), crit %, dodge %, haste % (extra-action chance), dmg % dealt,
+//         resist % less taken, takenPct % more taken, thorns, extraAttack, hpPct (saved buffs only)
+//   dice  dice added to every roll of a kind ({ hit, saves }); once: a bonus spent by the next roll of that kind
+//   flags attackAdv / attackedDis / saveAdv; tick: per-turn heal (healPct of max HP) or damage (dice + type)
+//   stack max stacks. Effects with special mechanics in combat.js (shields, images, auras) say so in desc.
+// Entries without desc get one generated from their numbers (GBQEffects.describe), so text and effect match.
 const BUFFS = {
   // buffs
-  bless: { name: 'BLESSED', good: true, mods: { hit: 2, saves: 2 }, desc: '+1d4 attacks and saves.' },
+  bless: { name: 'BLESSED', good: true, dice: { hit: '1d4', saves: '1d4' } },
   haste: { name: 'HASTED', good: true, mods: { acb: 2, extraAttack: 1, haste: 25 } },
   regen: { name: 'REGENERATING', good: true, tick: { healPct: 6 } },
   fortify: { name: 'FORTIFIED', good: true, mods: { resist: 25 } },
   might: { name: 'MIGHTY', good: true, mods: { dmg: 15 } },
-  fed: { name: 'WELL FED', good: true, mods: { hp: 0, hpPct: 10, saves: 1 } },
-  inspired: { name: 'INSPIRED', good: true, mods: { hit: 3, saves: 3 }, oneShot: true },
-  rage: { name: 'RAGING', good: true, mods: { dmgFlat: 2, resistPhys: 50 } },
-  barrier: { name: 'BARRIER', good: true, shield: true },
-  ac: { name: 'WARDED', good: true, mods: { acb: 0 } },
-  mirror: { name: 'MIRRORED', good: true, mirror: true },
-  host: { name: 'SPIRIT HOST', good: true, aura: true },
-  trueveil: { name: 'VEILED', good: true, mods: { attackAdv: 1, attackedDis: 1 } },
-  foresight: { name: 'FORESIGHT', good: true, mods: { attackAdv: 1, attackedDis: 1, saveAdv: 1 } },
-  frenzy: { name: 'FRENZIED', good: true, mods: { haste: 30, dmg: 10 }, stack: 3 },
+  fed: { name: 'WELL FED', good: true, mods: { hpPct: 10, saves: 1 } },
+  inspired: { name: 'INSPIRED', good: true, once: { hit: 3, saves: 3 } },
+  rage: { name: 'RAGING', good: true, desc: 'Weapon hits deal +2 damage (+3 at class level 9, +4 at 16); physical damage taken is halved.' },
+  barrier: { name: 'BARRIER', good: true, shield: true, desc: 'A shield absorbs damage until its pool is used up.' },
+  ac: { name: 'WARDED', good: true, desc: 'Raises AC by the ward\'s strength.' },
+  mirror: { name: 'MIRRORED', good: true, mirror: true, desc: 'Illusory images: each one may take a hit in your place.' },
+  host: { name: 'SPIRIT HOST', good: true, aura: true, desc: 'Guardian spirits sear every enemy for 3d8 radiant each turn (WIS save for half).' },
+  trueveil: { name: 'VEILED', good: true, flags: { attackAdv: true, attackedDis: true } },
+  foresight: { name: 'FORESIGHT', good: true, flags: { attackAdv: true, attackedDis: true, saveAdv: true } },
+  frenzy: { name: 'FRENZIED', good: true, mods: { haste: 10, dmg: 10 }, stack: 3 },
   focus: { name: 'FOCUSED', good: true, mods: { crit: 15 } },
   thornskin: { name: 'THORNSKIN', good: true, mods: { thorns: 6 } },
-  wildshape: { name: 'BEASTSHAPE', good: true, shield: true },
+  wildshape: { name: 'BEASTSHAPE', good: true, shield: true, desc: 'A beast body soaks damage until its hit points run out.' },
   // debuffs
   burning: { name: 'BURNING', tick: { dice: '1d6', type: 'fire' }, stack: 5 },
   bleeding: { name: 'BLEEDING', tick: { dice: '1d4', type: 'slashing' }, stack: 5 },
   venom: { name: 'ENVENOMED', tick: { dice: '1d6', type: 'poison' }, stack: 5 },
   frostbite: { name: 'FROSTBITTEN', mods: { haste: -25, acb: -1 }, stack: 3 },
-  shocked: { name: 'SHOCKED', mods: { dodge: -10 }, takenPct: 10 },
+  shocked: { name: 'SHOCKED', mods: { dodge: -10, takenPct: 10 } },
   weakened: { name: 'WEAKENED', mods: { dmg: -25 } },
-  vulnerable: { name: 'VULNERABLE', takenPct: 25 },
+  vulnerable: { name: 'VULNERABLE', mods: { takenPct: 25 } },
   sundered: { name: 'SUNDERED', mods: { acb: -2 }, stack: 3 },
   slowed: { name: 'SLOWED', mods: { haste: -50, acb: -2 } },
   doomed: { name: 'DOOMED', mods: { saves: -2, hit: -2 } },
@@ -5084,6 +5090,111 @@ const ROLE_CLASSES = { tank: ['warden', 'vanguard', 'berserker'], healer: ['chap
 
 </script>
 <script>
+'use strict';
+// ================================================================ EFFECT ENGINE: what active buffs and debuffs do in combat
+// One place that turns a unit's active effects (BUFFS in src/data_world.js) into combat numbers, so every buff and
+// debuff changes the fight the way its description says, for heroes, companions and monsters alike.
+// Pure functions: no game state, no randomness. src/combat.js calls them for attack rolls, AC, saves, crits, dodge,
+// haste, damage dealt and taken, resistance, thorns and extra attacks.
+//
+// A BUFFS entry may carry:
+//   mods   numeric deltas, multiplied by stacks (see MOD_KEYS)
+//   dice   dice added to a roll each time it is made, e.g. { hit: '1d4', saves: '1d4' } (BLESSED)
+//   once   a bonus spent by the next roll of that kind, e.g. { hit: 3, saves: 3 } (INSPIRED is used up by either)
+//   flags  advantage-style switches read by condFlag(): attackAdv, attackedDis, saveAdv
+//
+// Heroes' saved buffs (food, potions, tier guards kept between fights: character.buffs, marked persist: true in
+// battle) are already part of derive() through gearAffixes(), so their DERIVED_KEYS are skipped here for heroes;
+// counting them again was how a saved HASTED once gave +4 AC.
+(() => {
+  const MOD_KEYS = {
+    hit: 'attack rolls (weapon, spell and monster attacks)',
+    saves: 'saving throws',
+    acb: 'armour class',
+    crit: '% chance that a hit becomes a critical hit',
+    dodge: '% chance to dodge an attack that hits',
+    haste: '% chance of an extra action at the start of each turn',
+    dmg: '% damage dealt (every kind of damage)',
+    resist: '% less damage taken (every kind)',
+    takenPct: '% more damage taken (every kind)',
+    thorns: 'damage dealt back to melee attackers',
+    extraAttack: 'extra attacks with each attack action',
+    hpPct: '% maximum HP (saved buffs only: applied through derive)',
+  };
+  // keys derive() already includes for a hero's saved buffs (gearAffixes sums character.buffs[].mods)
+  const DERIVED_KEYS = new Set(['hit', 'saves', 'acb', 'crit', 'dodge', 'haste', 'dmg', 'resist', 'thorns', 'hpPct', 'hp', 'heal', 'leech', 'block', 'critdmg']);
+  // combined gear + effect ceilings in combat (gear alone stays at SUBSTATS[].max; effects may push past it)
+  const CAPS = { crit: 75, dodge: 60, haste: 75, resist: 75 };
+
+  const stacksOf = e => Math.max(1, Number(e.stacks) || 1);
+  const skip = (e, hero, key) => hero && e.persist && DERIVED_KEYS.has(key);
+
+  // summed numeric mods of every active effect (stacks multiply); hero = the unit is a player character
+  function mods(effects, table, hero = false) {
+    const out = {};
+    for (const e of effects || []) {
+      const def = table[e.id]; if (!def || !def.mods) continue;
+      for (const k in def.mods) {
+        if (skip(e, hero, k)) continue;
+        const v = Number(def.mods[k]); if (!Number.isFinite(v)) continue;
+        out[k] = (out[k] || 0) + v * stacksOf(e);
+      }
+    }
+    return out;
+  }
+  // dice expressions added to a roll of this kind ('hit' or 'saves'), one per stack
+  function dice(effects, table, kind) {
+    const out = [];
+    for (const e of effects || []) { const d = table[e.id] && table[e.id].dice && table[e.id].dice[kind]; if (d) for (let i = 0; i < stacksOf(e); i++) out.push(d); }
+    return out;
+  }
+  // one-shot bonuses for a roll of this kind: [{ id, value }]; the caller removes each effect after using it
+  function onceBonuses(effects, table, kind) {
+    const out = [];
+    for (const e of effects || []) { const o = table[e.id] && table[e.id].once; if (o && Number.isFinite(o[kind])) out.push({ id: e.id, value: o[kind] }); }
+    return out;
+  }
+  const flag = (effects, table, name) => (effects || []).some(e => table[e.id] && table[e.id].flags && table[e.id].flags[name]);
+  const cap = (key, v) => Math.max(key === 'resist' ? -100 : 0, Math.min(CAPS[key] == null ? Infinity : CAPS[key], v));
+
+  // a one-line, player-facing description generated from the numbers, so text and effect cannot drift apart
+  function describe(def) {
+    if (!def) return '';
+    const parts = [], m = def.mods || {}, sign = v => (v > 0 ? '+' : '') + v;
+    if (def.dice && def.dice.hit) parts.push(`+${def.dice.hit} to attack rolls`);
+    if (def.dice && def.dice.saves) parts.push(`+${def.dice.saves} to saving throws`);
+    if (def.once) parts.push(`${sign(def.once.hit || def.once.saves)} to the next attack roll or saving throw`);
+    if (m.hit) parts.push(`${sign(m.hit)} to attack rolls`);
+    if (m.saves) parts.push(`${sign(m.saves)} to saving throws`);
+    if (m.acb) parts.push(`${sign(m.acb)} AC`);
+    if (m.extraAttack) parts.push(`${m.extraAttack} extra attack${m.extraAttack > 1 ? 's' : ''} per attack action`);
+    if (m.haste) parts.push(m.haste > 0 ? `${m.haste}% chance of an extra action each turn` : `${-m.haste}% less chance of extra actions`);
+    if (m.crit) parts.push(`${sign(m.crit)}% critical chance`);
+    if (m.dodge) parts.push(`${sign(m.dodge)}% dodge`);
+    if (m.dmg) parts.push(`${sign(m.dmg)}% damage dealt`);
+    if (m.resist) parts.push(`${m.resist}% less damage taken`);
+    if (m.takenPct) parts.push(`${m.takenPct}% more damage taken`);
+    if (m.thorns) parts.push(`melee attackers take ${m.thorns} damage`);
+    if (m.hpPct) parts.push(`${sign(m.hpPct)}% maximum HP`);
+    if (def.tick && def.tick.healPct) parts.push(`heals ${def.tick.healPct}% of maximum HP each turn`);
+    if (def.tick && def.tick.dice) parts.push(`${def.tick.dice} ${def.tick.type} damage each turn per stack, +1 per 3 levels of whoever applied it`);
+    if (def.flags && def.flags.attackAdv) parts.push('advantage on attacks');
+    if (def.flags && def.flags.attackedDis) parts.push('attacks against you have disadvantage');
+    if (def.flags && def.flags.saveAdv) parts.push('advantage on saving throws');
+    let s = parts.join(', ');
+    if (def.stack) s += ` (stacks up to ${def.stack})`;
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) + '.' : '';
+  }
+
+  const api = { MOD_KEYS, DERIVED_KEYS, CAPS, mods, dice, onceBonuses, flag, cap, describe };
+  // give every buff/debuff without a hand-written description one generated from its numbers
+  if (typeof BUFFS !== 'undefined') for (const id in BUFFS) if (!BUFFS[id].desc) BUFFS[id].desc = describe(BUFFS[id]);
+  if (typeof window !== 'undefined') window.GBQEffects = api;
+  if (typeof globalThis !== 'undefined') globalThis.GBQEffects = api;
+})();
+
+</script>
+<script>
 // LOST KINGDOM OF SHADOWBANE CHRONICLES combat: d20 initiative, attack rolls vs AC, saving throws vs DC, spells by slot,
 // class features, conditions & buffs, death saves, threat, legendary actions, boss mechanics,
 // companion & monster AI, loot and XP. Host-authoritative for multiplayer.
@@ -5121,14 +5232,30 @@ const maxHpOf = u => isChar(u) ? derive(u.ch).hpMax : u.maxhp;
 function setHp(u, v) { if (isChar(u)) u.ch.hp = v; else u.hp = v; }
 const hasEff = (u, id) => u.effects.some(e => e.id === id);
 const effOf = (u, id) => u.effects.find(e => e.id === id);
-const condFlag = (u, flag) => u.effects.some(e => CONDITIONS[e.id] && CONDITIONS[e.id][flag]) || u.effects.some(e => BUFFS[e.id] && BUFFS[e.id].mods && BUFFS[e.id].mods[flag]);
+// OUTLINED (noInvis) cancels the invisible / hidden conditions' own flags as well
+const revealed = u => u.effects.some(e => CONDITIONS[e.id] && CONDITIONS[e.id].noInvis);
+const condFlag = (u, flag) => u.effects.some(e => CONDITIONS[e.id] && CONDITIONS[e.id][flag] && !((e.id === 'invisible' || e.id === 'hidden') && revealed(u))) || GBQEffects.flag(u.effects, BUFFS, flag);
 const downed = u => isChar(u) ? (u.ch.hp <= 0) : u.hp <= 0;
 const alive = u => !downed(u) && !hasEff(u, 'banished');
+// summed buff/debuff numbers for a unit (src/effect_engine.js); a hero's saved buffs are already inside derive()
+const effMods = u => GBQEffects.mods(u.effects, BUFFS, isChar(u));
+// effect bonus to one roll of a kind ('hit' or 'saves'): flat mods + dice (BLESSED) + one-shot bonuses (INSPIRED,
+// removed once used)
+function effRollBonus(u, kind) {
+  let b = effMods(u)[kind] || 0;
+  for (const d of GBQEffects.dice(u.effects, BUFFS, kind)) b += roll(d).total;
+  for (const o of GBQEffects.onceBonuses(u.effects, BUFFS, kind)) { b += o.value; removeEffect(u, o.id); }
+  return b;
+}
 function acOf(u) {
   let ac = isChar(u) ? derive(u.ch).ac : u.ac;
-  for (const e of u.effects) { if (e.id === 'ac') ac += e.val || 0; if (e.id === 'haste') ac += 2; if (e.id === 'frostbite') ac -= 1 * (e.stacks || 1); if (e.id === 'sundered') ac -= 2 * (e.stacks || 1); if (e.id === 'slowed') ac -= 2; }
-  return ac;
+  const ward = effOf(u, 'ac'); if (ward) ac += ward.val || 0;
+  return ac + (effMods(u).acb || 0);
 }
+// combat percentages: gear/derive part (heroes) plus active effects, within GBQEffects.CAPS
+const dodgeOf = u => GBQEffects.cap('dodge', (isChar(u) ? derive(u.ch).dodge : 0) + (effMods(u).dodge || 0));
+const hasteOf = u => GBQEffects.cap('haste', (isChar(u) ? derive(u.ch).haste : 0) + (effMods(u).haste || 0));
+const resistOf = u => GBQEffects.cap('resist', (isChar(u) ? derive(u.ch).resistAll : 0) + (effMods(u).resist || 0));
 function addEffect(u, e) {
   const def = BUFFS[e.id];
   const ex = effOf(u, e.id);
@@ -5308,9 +5435,15 @@ class Battle {
       this.decay(u);
       this.run(steps, () => this.after()); return null;
     }
+    // charmed (noAttack): heroes and companions lose the turn too, not only monsters
+    if (u.side === 'party' && condFlag(u, 'noAttack')) {
+      steps.push(this.say(`${u.name} is charmed and will not attack.`));
+      this.decay(u);
+      this.run(steps, () => this.after()); return null;
+    }
     if (hasEff(u, 'prone')) { removeEffect(u, 'prone'); steps.push(this.say(`${u.name} stands up.`)); }
-    // haste substat: chance of a bonus extra action
-    const hasteP = isChar(u) ? derive(u.ch).haste : (effOf(u, 'frenzy') ? 10 * effOf(u, 'frenzy').stacks : 0);
+    // haste: gear substat (heroes) plus HASTED / FRENZIED / FROSTBITTEN / SLOWED, as a chance of an extra action
+    const hasteP = hasteOf(u);
     if (hasteP && R() * 100 < hasteP) { this.extraAction = true; steps.push(this.say(`${u.name} moves with haste! Extra action.`)); }
     return steps;
   }
@@ -5364,12 +5497,14 @@ class Battle {
   advState(att, tgt, opt = {}) {
     let adv = 0, dis = 0;
     if (condFlag(att, 'attackDis')) dis++;
-    if (hasEff(att, 'invisible') || hasEff(att, 'hidden') || condFlag(att, 'attackAdv')) adv++;
+    // OUTLINED (noInvis): an outlined unit gets no benefit from being invisible or hidden
+    const unseen = u => (hasEff(u, 'invisible') || hasEff(u, 'hidden')) && !condFlag(u, 'noInvis');
+    if (unseen(att) || condFlag(att, 'attackAdv')) adv++;
     if (hasEff(att, 'reckless') && opt.reckless) adv++;
     if (opt.reckless) adv++;
     if (tgt && tgt.effects.some(e => e.id === 'vowed' && e.src === att.id)) adv++;
     if (tgt && condFlag(tgt, 'attackedAdv')) adv++;
-    if (tgt && (hasEff(tgt, 'dodging') || hasEff(tgt, 'invisible') || condFlag(tgt, 'attackedDis'))) dis++;
+    if (tgt && (hasEff(tgt, 'dodging') || (hasEff(tgt, 'invisible') && !condFlag(tgt, 'noInvis')) || condFlag(tgt, 'attackedDis'))) dis++;
     if (!isChar(att) && att.traits && att.traits.includes('pack') && this.alliesOf(att).filter(alive).length > 1) adv++;
     return adv && !dis ? 1 : dis && !adv ? -1 : 0;
   }
@@ -5384,11 +5519,10 @@ class Battle {
     if (isChar(u)) { const D = derive(u.ch); bonus = D.saves[abil] + (opt.cond ? D.condSave : 0); if (D.sp.traits.includes('feyblood') && opt.charm) opt.adv = 1; if (D.sp.traits.includes('stoneblood') && opt.poison) opt.adv = 1; if (D.sp.traits.includes('cunning') && opt.spell && ['INT', 'WIS', 'CHA'].includes(abil)) opt.adv = 1; }
     else bonus = (u.saves[abil] || 0);
     for (const v of this.party) if (u.side === 'party' && isChar(v) && hasFeature(v.ch, 'aura') && alive(v)) { bonus += Math.max(1, derive(v.ch).M.CHA); break; }
-    if (hasEff(u, 'bless')) bonus += roll('1d4').total;
-    if (hasEff(u, 'bane') || hasEff(u, 'doomed')) bonus -= 2;
+    bonus += effRollBonus(u, 'saves'); // BLESSED 1d4, INSPIRED +3 once, WELL FED +1, BANED / DOOMED -2
     let adv = opt.adv || 0;
     if (!isChar(u) && opt.spell && u.traits.includes('magicres')) adv = 1;
-    if (hasEff(u, 'foresight')) adv = 1;
+    if (condFlag(u, 'saveAdv')) adv = 1; // FORESIGHT
     if ((abil === 'STR' || abil === 'DEX') && condFlag(u, 'failStrDex')) return { ok: false, roll: 0, total: 0, auto: true };
     if (abil === 'DEX' && condFlag(u, 'dexSaveDis')) adv = adv > 0 ? 0 : -1;
     const r = this.d20adv(adv, u), total = r + bonus;
@@ -5411,6 +5545,9 @@ class Battle {
   applyDamage(src, tgt, amt, type, opt = {}) {
     if (amt <= 0 || !tgt) return 0;
     let a = amt;
+    // attacker's damage effects (MIGHTY, FRENZIED, WEAKENED) scale every kind of damage it deals; damage over time
+    // (opt.tick) has no attacker here. A hero's gear damage % is already in the weapon and spell rolls.
+    if (src && !opt.tick) { const dm = effMods(src).dmg || 0; if (dm) a = Math.max(0, Math.round(a * (1 + dm / 100))); }
     const resists = isChar(tgt) ? derive(tgt.ch).res : new Set(tgt.res);
     const imm = isChar(tgt) ? [] : tgt.imm, vuln = isChar(tgt) ? [] : tgt.vuln;
     const phys = ['slashing', 'piercing', 'bludgeoning'].includes(type);
@@ -5418,8 +5555,10 @@ class Battle {
     if (resists.has(type) || (phys && !opt.magic && resists.has('bph')) || (phys && !opt.magic && !isChar(tgt) && tgt.res.includes('bph'))) a = Math.floor(a / 2);
     if (vuln.includes(type)) a *= 2;
     if (hasEff(tgt, 'rage') && (phys || (isChar(tgt) && subKey(tgt.ch, 'totem') && type !== 'psychic'))) a = Math.floor(a / 2);
-    if (isChar(tgt)) { const D = derive(tgt.ch); a = Math.round(a * (1 - D.resistAll / 100)); if (opt.attack && D.block && R() * 100 < D.block) { a = Math.floor(a / 2); SFX.block(); } }
-    for (const e of tgt.effects) { const d = BUFFS[e.id]; if (d && d.takenPct) a = Math.round(a * (1 + d.takenPct / 100)); }
+    // resistance: gear RESIST ALL (heroes) plus FORTIFIED etc., for heroes and monsters alike
+    const resistP = resistOf(tgt); if (resistP) a = Math.round(a * (1 - resistP / 100));
+    if (isChar(tgt)) { const D = derive(tgt.ch); if (opt.attack && D.block && R() * 100 < D.block) { a = Math.floor(a / 2); SFX.block(); } }
+    const takenP = effMods(tgt).takenPct || 0; if (takenP) a = Math.round(a * (1 + takenP / 100)); // SHOCKED, VULNERABLE
     if (opt.attack && isChar(tgt) && hasFeature(tgt.ch, 'uncanny') && !this.uncannyFor) { this.uncannyFor = tgt.id; a = Math.floor(a / 2); }
     // temp HP / wild shape pool
     const ws = effOf(tgt, 'wildshape'); if (ws) { const take = Math.min(ws.pool, a); ws.pool -= take; a -= take; if (ws.pool <= 0) removeEffect(tgt, 'wildshape'); }
@@ -5440,7 +5579,7 @@ class Battle {
     if (a > 0 && !opt.proc && typeof gearTierProc === 'function') { gearTierProc(this, src, tgt, a); if (src && !isChar(src)) gearTierGuard(this, tgt); }
     if (src && a > 0 && opt.attack && !opt.ranged) {
       let th = isChar(tgt) ? derive(tgt.ch).thorns : (tgt.mechs && tgt.mechs.includes('reflect') ? Math.ceil(a * 0.15) : 0);
-      if (hasEff(tgt, 'thornskin')) th += 6;
+      th += effMods(tgt).thorns || 0; // THORNSKIN
       if (th) { setHp(src, hpOf(src) - th); FX.number(this.posOf(src)[0], this.posOf(src)[1] - 12, th, 2); }
     }
     if (src && !isChar(src) && src.mechs && src.mechs.includes('drain') && opt.attack) src.hp = Math.min(src.maxhp, src.hp + Math.ceil(a / 2));
@@ -5474,7 +5613,7 @@ class Battle {
     const steps = [];
     const D = isChar(att) ? derive(att.ch) : null;
     let n = opt.single ? 1 : (D ? D.attacks : 1);
-    if (D && hasEff(att, 'haste') && !opt.single) n++;
+    if (D && !opt.single) n += effMods(att).extraAttack || 0; // HASTED
     if (D && hasEff(att, 'rage') && subKey(att.ch, 'frenzy') && !opt.single) n++;
     for (let i = 0; i < n; i++) {
       steps.push({ text: '', act: null, dyn: () => {
@@ -5488,15 +5627,17 @@ class Battle {
     const D = derive(att.ch), w = D.weapon, ws = effOf(att, 'wildshape');
     const adv = this.advState(att, tgt, opt);
     let r = this.d20adv(adv, att);
-    let bonus = (ws ? D.pb + Math.max(D.M.STR, D.M.WIS) : w.hit) + (hasEff(att, 'bless') ? roll('1d4').total : 0) + (effOf(att, 'inspired') ? 3 : 0) + (effOf(att, 'sacred') ? Math.max(1, D.M.CHA) : 0);
-    if (effOf(att, 'inspired')) removeEffect(att, 'inspired');
-    if (hasEff(att, 'bane') || hasEff(att, 'doomed')) bonus -= 2;
+    // effect bonus: BLESSED 1d4, INSPIRED +3 (spent), BANED / DOOMED -2
+    let bonus = (ws ? D.pb + Math.max(D.M.STR, D.M.WIS) : w.hit) + effRollBonus(att, 'hit') + (effOf(att, 'sacred') ? Math.max(1, D.M.CHA) : 0);
     const ac = acOf(tgt);
     if (r === 1 && att.ch.res.lucky > 0) { att.ch.res.lucky--; r = d20(); }
     const nat = r, total = r + bonus;
     const assassin = subKey(att.ch, 'assassinate') && !tgt.acted;
-    const crit = nat >= D.critRange || condFlag(tgt, 'autoCrit') || assassin || (D.crit && R() * 100 < D.crit && nat !== 1 && total >= ac);
+    const critP = GBQEffects.cap('crit', D.crit + (effMods(att).crit || 0)); // gear crit plus FOCUSED
+    const crit = nat >= D.critRange || condFlag(tgt, 'autoCrit') || assassin || (critP > 0 && R() * 100 < critP && nat !== 1 && total >= ac);
     let hit = nat === 20 || crit || (nat !== 1 && total >= ac);
+    // a monster with dodge from effects can dodge a hit (a non-critical one)
+    if (hit && !crit && !isChar(tgt)) { const dg = dodgeOf(tgt); if (dg > 0 && R() * 100 < dg) return { text: `${att.name}: ${ws ? 'CLAWS' : w.name}\n${tgt.name} DODGES!`, act: () => SFX.dodge() }; }
     if (hasEff(att, 'hidden')) removeEffect(att, 'hidden');
     if (hasEff(att, 'invisible') && !hasEff(att, 'trueveil')) removeEffect(att, 'invisible');
     if (nat === 20 && !att.ch.ai) G.stats.nat20++; if (nat === 1 && !att.ch.ai) G.stats.nat1++;
@@ -5521,7 +5662,8 @@ class Battle {
     let smiteTxt = '';
     if (opt.execute && hpOf(tgt) < maxHpOf(tgt) / 2) { dmg *= 2; parts.push('EXECUTE'); }
     if (opt.smite) { const sl = this.spendSlot(att, 1, true); if (sl) { const nd = Math.min(5, 1 + sl) + (['undead', 'fiend'].includes(tgt.fam) ? 1 : 0); const sd = roll(`${nd}d8`, crit).total; smiteTxt = ` SMITE +${sd}`; dmg += sd; } }
-    dmg = Math.round(dmg * (1 + (D.dmgPct + (effOf(att, 'might') ? 15 : 0) + (effOf(att, 'weakened') ? -25 : 0)) / 100) * (crit ? D.critdmg / 100 : 1));
+    // gear damage % and crit damage here; MIGHTY / WEAKENED / FRENZIED apply in applyDamage for every damage source
+    dmg = Math.round(dmg * (1 + D.dmgPct / 100) * (crit ? D.critdmg / 100 : 1));
     const type = ws ? 'slashing' : w.type, magic = w.magic || !!ws;
     return { text: `${line1}\n${rollTxt}\n${crit ? 'CRITICAL! ' : 'Hit! '}${dmg} ${type}${smiteTxt}`,
       act: () => {
@@ -5590,10 +5732,10 @@ class Battle {
           steps.push({ text: '', dyn: () => {
             if (!alive(t)) return null;
             if (sp.atk) {
-              const adv = this.advState(u, t), r = this.d20adv(adv, u), tot = r + atk, ac = acOf(t), crit = r === 20 || condFlag(t, 'autoCrit');
-              if (!(crit || (r !== 1 && tot >= ac))) return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${atk}=${tot} vs AC${ac}\nMiss!`, act: () => SFX.miss() };
+              const adv = this.advState(u, t), r = this.d20adv(adv, u), hb = atk + effRollBonus(u, 'hit'), tot = r + hb, ac = acOf(t), crit = r === 20 || condFlag(t, 'autoCrit');
+              if (!(crit || (r !== 1 && tot >= ac))) return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${hb}=${tot} vs AC${ac}\nMiss!`, act: () => SFX.miss() };
               const d = dmgRoll(crit);
-              return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${atk}=${tot} vs AC${ac}\n${crit ? 'CRIT! ' : ''}${d} ${sp.dt}`, act: () => { SFX[sp.school + '_hit'](); this.applyDamage(u, t, d, sp.dt, { magic: true, crit }); this.spellCond(u, sp, t, dc, true); } };
+              return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${hb}=${tot} vs AC${ac}\n${crit ? 'CRIT! ' : ''}${d} ${sp.dt}`, act: () => { SFX[sp.school + '_hit'](); this.applyDamage(u, t, d, sp.dt, { magic: true, crit }); this.spellCond(u, sp, t, dc, true); } };
             }
             if (sp.save) {
               const sv = this.save(t, sp.save, dc, { spell: true });
@@ -5802,7 +5944,7 @@ class Battle {
     }
     // multiattack
     const atks = m.attacks.filter(a => !(a.eff && a.eff.recharge));
-    const n = m.multi + (effOf(m, 'haste') ? 1 : 0);
+    const n = m.multi + (effMods(m).extraAttack || 0); // HASTED
     for (let i = 0; i < n; i++) {
       const a = atks[i % atks.length];
       steps.push({ text: '', dyn: () => {
@@ -5816,17 +5958,19 @@ class Battle {
   }
   monsterAttack(m, t, a) {
     const adv = this.advState(m, t);
-    const r = this.d20adv(adv), total = r + a.hit + (effOf(m, 'bless') ? 2 : 0) - (hasEff(m, 'doomed') ? 2 : 0), ac = acOf(t);
-    const crit = r === 20 || condFlag(t, 'autoCrit');
+    // effect bonus: BLESSED 1d4, INSPIRED +3 (spent), BANED / DOOMED -2 (monsters used to ignore BANED)
+    const hb = a.hit + effRollBonus(m, 'hit'), r = this.d20adv(adv), total = r + hb, ac = acOf(t);
+    const critP = GBQEffects.cap('crit', effMods(m).crit || 0); // FOCUSED
+    const crit = r === 20 || condFlag(t, 'autoCrit') || (critP > 0 && r !== 1 && total >= ac && R() * 100 < critP);
     // mirror images
     const mir = effOf(t, 'mirror');
     if (mir && mir.stacks > 0 && R() < mir.stacks / (mir.stacks + 1)) return { text: `${m.name}: ${a.name}\nIt strikes an illusion!`, act: () => { mir.stacks--; if (mir.stacks <= 0) removeEffect(t, 'mirror'); SFX.veil_hit(); } };
-    if (!(crit || (r !== 1 && total >= ac))) return { text: `${m.name}: ${a.name}\nd20 ${r}+${a.hit}=${total} vs AC${ac}\nMiss!`, act: () => { this.anim.lunge = m.id; SFX.miss(); } };
-    if (isChar(t) && R() * 100 < derive(t.ch).dodge) return { text: `${m.name}: ${a.name}\n${t.name} DODGES!`, act: () => SFX.dodge() };
+    if (!(crit || (r !== 1 && total >= ac))) return { text: `${m.name}: ${a.name}\nd20 ${r}+${hb}=${total} vs AC${ac}\nMiss!`, act: () => { this.anim.lunge = m.id; SFX.miss(); } };
+    // dodge: hero gear dodge plus effects (SHOCKED lowers it); also a dominated monster's ally target
+    const dg = dodgeOf(t); if (dg > 0 && R() * 100 < dg) return { text: `${m.name}: ${a.name}\n${t.name} DODGES!`, act: () => SFX.dodge() };
     let d = roll(a.dice, crit).total; if (hasEff(m, 'rage')) d += 2;
-    if (hasEff(t, 'ac') && effOf(t, 'ac').val >= 5) { /* ward of force already in AC */ }
-    if (effOf(m, 'weakened')) d = Math.round(d * 0.75);
-    return { text: `${m.name}: ${a.name}\nd20 ${r}+${a.hit}=${total} vs AC${ac}\n${crit ? 'CRITICAL! ' : ''}${d} ${a.type}`, act: () => {
+    // WEAKENED / MIGHTY / FRENZIED scale the damage in applyDamage
+    return { text: `${m.name}: ${a.name}\nd20 ${r}+${hb}=${total} vs AC${ac}\n${crit ? 'CRITICAL! ' : ''}${d} ${a.type}`, act: () => {
       this.anim.lunge = m.id; if (crit) shake = 8;
       const dealt = this.applyDamage(m, t, d, a.type, { attack: true, crit, ranged: m.ranged });
       if (a.eff && alive(t)) {
