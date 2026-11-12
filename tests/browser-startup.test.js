@@ -30,14 +30,12 @@ test('title music is optional and cannot prevent the title scene from entering',
   assert.match(title, /resume\(\) \{ try \{ Music\.play\('title'\); \} catch/);
 });
 
-test('the branded boot overlay remains visible until the asset loader settles', () => {
-  const main = read('client/main.js');
+test('the HTML boot fallback is hidden only after a successful canvas render', () => {
+  const engine = read('src/engine.js');
   const shell = read('client/shell.html');
-  assert.match(main, /const loading = loadAssets\([\s\S]*?finishBoot\(\)/);
-  assert.match(main, /document\.body\.classList\.add\('ready', 'boot-complete'\)/);
-  assert.match(shell, /body\.boot-complete \.game-start-fallback \{ opacity:0; visibility:hidden; pointer-events:none; \}/);
+  assert.match(engine, /function render\(\)[\s\S]*document\.body\.classList\.add\('game-rendered'\)/);
+  assert.match(shell, /body\.game-rendered \.game-start-fallback \{ display:none; \}/);
 });
-
 
 test('title scene removes the outer browser shell and expands the game viewport', () => {
   const engine = read('src/engine.js');
