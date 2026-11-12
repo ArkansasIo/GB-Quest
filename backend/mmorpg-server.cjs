@@ -610,7 +610,8 @@ const server = http.createServer(async (req, res) => {
     if (whispersMatch && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const characterId = whispersMatch[1], peerId = url.searchParams.get('with');
-      const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit') || 50)));
+      const requestedLimit = Number.parseInt(url.searchParams.get('limit') || '50', 10);
+      const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(100, requestedLimit)) : 50;
       const owned = await pool.query('SELECT id,realm_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
       if (peerId && !/^[0-9a-f-]{36}$/i.test(peerId)) return json(res, 400, { error: 'invalid_peer_id' });
@@ -837,5 +838,20 @@ const respawnTimer = setInterval(async () => {
   } catch (error) { console.error('Mob respawn worker failed:', error.message); }
 }, 10000);
 respawnTimer.unref();
+const whisperCleanupTimer = setInterval(async () => {
+  try {
+    await pool.query("DELETE FROM player_whispers WHERE created_at < now() - interval '30 days'");
+  } catch (error) {
+    console.error('Whisper retention cleanup failed:', error.message);
+  }
+}, 60 * 60 * 1000);
+whisperCleanupTimer.unref();
 server.listen(PORT, HOST, () => console.log('GB Quest authoritative MMO service listening on ' + HOST + ':' + PORT));
-for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });
+for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => {
+  clearInterval(respawnTimer);
+  clearInterval(whisperCleanupTimer);
+  for (const ws of wss.clients) ws.close(1001, 'server shutting down');
+  await new Promise(resolve => server.close(resolve));
+  await pool.end();
+  process.exit(0);
+});
