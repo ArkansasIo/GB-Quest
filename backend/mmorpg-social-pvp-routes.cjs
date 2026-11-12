@@ -1,7 +1,7 @@
 'use strict';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const cleanText = (value, max) => typeof value === 'string' ? value.trim().replace(/[\x00-\x1f\x7f]/g, '').slice(0, max) : '';
+const cleanText = (value, max) => typeof value === 'string' ? Array.from(value.trim()).filter(ch => { const code = ch.charCodeAt(0); return code >= 32 && code !== 127; }).join('').slice(0, max) : '';
 const orderedPair = (a, b) => a < b ? [a, b] : [b, a];
 
 async function ownedCharacter(pool, characterId, accountId, lock = false) {
@@ -184,8 +184,8 @@ async function handleSocialPvpRequest({ req, res, pool, accountFor, json, readBo
         [characterId,account.id,hero.rows[0].realm_id,mode,hero.rows[0].rating]);
       await tx.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))',[hero.rows[0].realm_id,mode]);
       const opponent=await tx.query(
-        "SELECT q.id,q.character_id,q.rating FROM pvp_queue_entries q WHERE q.realm_id=$1 AND q.mode=$2 AND q.status='queued' AND q.expires_at>now() AND q.character_id<>$3 AND q.rating BETWEEN $4 AND $5 AND NOT EXISTS(SELECT 1 FROM character_blocks b WHERE (b.character_id=q.character_id AND b.blocked_character_id=$3) OR (b.character_id=$3 AND b.blocked_character_id=q.character_id)) ORDER BY q.created_at,q.id LIMIT 1 FOR UPDATE SKIP LOCKED",
-        [hero.rows[0].realm_id,mode,characterId,Math.max(0,hero.rows[0].rating-300),Math.min(5000,hero.rows[0].rating+300)]);
+        "SELECT q.id,q.character_id,q.rating FROM pvp_queue_entries q WHERE q.realm_id=$1 AND q.mode=$2 AND q.status='queued' AND q.expires_at>now() AND q.character_id<>$3 AND q.rating BETWEEN $4 AND $5 AND NOT EXISTS(SELECT 1 FROM characters own WHERE own.id=q.character_id AND own.account_id=$6) AND NOT EXISTS(SELECT 1 FROM character_blocks b WHERE (b.character_id=q.character_id AND b.blocked_character_id=$3) OR (b.character_id=$3 AND b.blocked_character_id=q.character_id)) ORDER BY q.created_at,q.id LIMIT 1 FOR UPDATE SKIP LOCKED",
+        [hero.rows[0].realm_id,mode,characterId,Math.max(0,hero.rows[0].rating-300),Math.min(5000,hero.rows[0].rating+300),account.id]);
       if(!opponent.rowCount){await tx.query('COMMIT');json(res,201,{queue:{id:inserted.rows[0].id,status:'queued',expiresAt:inserted.rows[0].expires_at}});return true;}
       const match=await tx.query("INSERT INTO pvp_matches(realm_id,mode) VALUES($1,$2) RETURNING id,instance_id,status",[hero.rows[0].realm_id,mode]);
       const matchId=match.rows[0].id,other=opponent.rows[0];
