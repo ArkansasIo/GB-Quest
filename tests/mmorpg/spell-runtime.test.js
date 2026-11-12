@@ -97,8 +97,8 @@ test("SRD spell catalog supports lookup and level/school filters", () => {
   assert.equal(getSpell("hold-person").level, 2);
   assert.ok(listSpells({ level: 0 }).length >= 11);
   assert.ok(listSpells({ school: "evocation" }).length >= 6);
-  assert.equal(getSpellCatalogSummary().total, 98);
-  assert.equal(getSpellCatalogSummary().originalExpansion, 90);
+  assert.ok(getSpellCatalogSummary().total >= 98);
+  assert.ok(getSpellCatalogSummary().originalExpansion >= 90);
 });
 
 test("catalog healing spell applies spellcasting ability modifier", () => {

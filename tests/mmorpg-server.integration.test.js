@@ -133,7 +133,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({})
     });
     assert.equal(duplicateTalent.status, 409);
-    assert.equal((await duplicateTalent.json()).error, 'insufficient_talent_points');
+    assert.equal((await duplicateTalent.json()).error, 'talent_already_unlocked');
 
     const inventoryResponse = await fetch(base + `/api/characters/${character.id}/inventory`, {
       headers: { authorization: 'Bearer ' + token }

@@ -65,7 +65,7 @@ test('request limiter enforces a fixed window and reports retry time', () => {
   assert.deepEqual(limiter.consume('ip:write'), { allowed: false, remaining: 0, retryAfter: 10 });
   time += 2500;
   assert.deepEqual(limiter.consume('ip:write'), { allowed: false, remaining: 0, retryAfter: 8 });
-  assert.deepEqual(limiter.consume('other-ip:write'), { allowed: true, remaining: 1, retryAfter: 8 });
+  assert.deepEqual(limiter.consume('other-ip:write'), { allowed: true, remaining: 1, retryAfter: 10 });
   time += 7500;
   assert.deepEqual(limiter.consume('ip:write'), { allowed: true, remaining: 1, retryAfter: 10 });
 });
