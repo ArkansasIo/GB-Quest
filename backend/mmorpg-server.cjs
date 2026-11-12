@@ -116,10 +116,11 @@ const recordAuthFailure = ip => authLimiter.fail(ip);
 setInterval(() => authLimiter.sweep(), 600000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
-  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
+  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false };
   socketState.set(ws, state); activeSockets.set(ws, state);
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
   const messageQueue = createSocketMessageQueue(async raw => {
+    if (state.closed) return;
     try {
       if (raw.length > MAX_MESSAGE) return ws.close(1009, 'message too large');
       const msg = JSON.parse(raw.toString());
@@ -292,6 +293,7 @@ function attachSocket(ws, req) {
     if (pending > 64) ws.close(4429, 'message queue overloaded');
   });
   ws.on('close', () => {
+    state.closed = true;
     activeSockets.delete(ws);
     if (state.zoneId && state.character) broadcastZone(state.realmId, state.zoneId, 'presence.left', { characterId: state.character.id });
   });
