@@ -19,6 +19,9 @@ const DATABASE_URL = process.env.DATABASE_URL;
 const TOKEN_SECRET = process.env.GBQ_TOKEN_SECRET;
 const ALLOWED_ORIGINS = new Set((process.env.GBQ_ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean));
 const MAX_MESSAGE = 8192;
+const MAX_SOCKET_BUFFERED_BYTES = Number(process.env.GBQ_WS_MAX_BUFFERED_BYTES || 1048576);
+const AUTH_TIMEOUT_MS = Number(process.env.GBQ_WS_AUTH_TIMEOUT_MS || 10000);
+const HEARTBEAT_INTERVAL_MS = Number(process.env.GBQ_WS_HEARTBEAT_MS || 30000);
 const TOKEN_TTL = 30 * 24 * 60 * 60;
 const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
@@ -67,7 +70,30 @@ async function accountFor(req) {
 const sessions = new Map(); // accountId -> Set<WebSocket>
 const socketState = new WeakMap();
 function send(ws, type, payload = {}) {
-  if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type, sequence: ++socketState.get(ws).outSequence, payload, serverTimestamp: Date.now() }));
+  const state = socketState.get(ws);
+  if (!state || state.closed || ws.readyState !== WebSocket.OPEN) return false;
+  if (ws.bufferedAmount > MAX_SOCKET_BUFFERED_BYTES) {
+    state.closed = true;
+    activeSockets.delete(ws);
+    ws.terminate();
+    return false;
+  }
+  const packet = JSON.stringify({ type, sequence: ++state.outSequence, payload, serverTimestamp: Date.now() });
+  try {
+    ws.send(packet, error => {
+      if (error && !state.closed) {
+        state.closed = true;
+        activeSockets.delete(ws);
+        ws.terminate();
+      }
+    });
+    return true;
+  } catch {
+    state.closed = true;
+    activeSockets.delete(ws);
+    ws.terminate();
+    return false;
+  }
 }
 function broadcastZone(realmId, zoneId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && state.zoneId === zoneId && ws !== except) send(ws, type, payload);
@@ -116,8 +142,12 @@ const recordAuthFailure = ip => authLimiter.fail(ip);
 setInterval(() => authLimiter.sweep(), 600000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
-  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false };
+  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
   socketState.set(ws, state); activeSockets.set(ws, state);
+  state.authTimer = setTimeout(() => {
+    if (!state.authenticated && !state.closed) ws.close(4408, 'authentication timeout');
+  }, AUTH_TIMEOUT_MS);
+  state.authTimer.unref();
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
   const messageQueue = createSocketMessageQueue(async raw => {
     if (state.closed) return;
@@ -135,6 +165,7 @@ function attachSocket(ws, req) {
         const acct = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
         if (!acct.rowCount) { recordAuthFailure(state.ip); return ws.close(4401, 'account unavailable'); }
         authLimiter.clear(state.ip);
+        clearTimeout(state.authTimer); state.authTimer = null;
         state.account = acct.rows[0]; state.authenticated = true;
         const chars = await pool.query(`SELECT ${CHAR_COLS} FROM characters WHERE account_id=$1 ORDER BY created_at`, [state.account.id]);
         const rd = await realmData(), counts = await characterCounts(state.account.id);
@@ -146,6 +177,9 @@ function attachSocket(ws, req) {
         const result = await pool.query(`SELECT ${CHAR_COLS} FROM characters WHERE id=$1 AND account_id=$2`, [id, state.account.id]);
         if (!result.rowCount) return send(ws, 'error', { code: 'character_not_found' });
         const ch = result.rows[0], rd = await realmData(), realm = rd.realms.find(r => r.id === ch.realm_id);
+        const alreadyOnline = [...activeSockets.entries()].some(([other, active]) =>
+          other !== ws && !active.closed && active.authenticated && active.character && active.character.id === ch.id);
+        if (alreadyOnline) return send(ws, 'error', { code: 'character_already_online', characterId: ch.id });
         if (!realm) return send(ws, 'error', { code: 'realm_not_found', realmId: ch.realm_id });
         if (realm.status !== 'online') return send(ws, 'error', { code: 'realm_unavailable', realmId: realm.id, status: realm.status });
         const switchingWithin = state.realmId === realm.id && state.character;
@@ -169,8 +203,8 @@ function attachSocket(ws, req) {
         if (!dx && !dy) return;
         const nx = Math.max(0, Math.min(WORLD.width - 1, state.x + dx));
         const ny = Math.max(0, Math.min(WORLD.height - 1, state.y + dy));
+        await pool.query('UPDATE characters SET x=$1,y=$2,updated_at=now() WHERE id=$3 AND account_id=$4', [nx, ny, state.character.id, state.account.id]);
         state.x = nx; state.y = ny;
-        await pool.query('UPDATE characters SET x=$1,y=$2,updated_at=now() WHERE id=$3', [nx, ny, state.character.id]);
         const update = { characterId: state.character.id, x: nx, y: ny, zoneId: state.zoneId };
         send(ws, 'movement.accepted', update); broadcastZone(state.realmId, state.zoneId, 'presence.moved', update, ws);
         return;
@@ -288,6 +322,10 @@ function attachSocket(ws, req) {
       send(ws, 'error', { code: 'server_error' });
     }
   });
+  ws.on('pong', () => { state.alive = true; });
+  ws.on('error', error => {
+    console.error('MMO WebSocket transport error:', error.message);
+  });
   ws.on('message', raw => {
     if (state.closed) return;
     const pending = messageQueue.enqueue(raw);
@@ -299,6 +337,8 @@ function attachSocket(ws, req) {
   });
   ws.on('close', () => {
     state.closed = true;
+    clearTimeout(state.authTimer);
+    state.authTimer = null;
     activeSockets.delete(ws);
     if (state.zoneId && state.character) broadcastZone(state.realmId, state.zoneId, 'presence.left', { characterId: state.character.id });
   });
@@ -833,12 +873,33 @@ const server = http.createServer(async (req, res) => {
     return json(res, 404, { error: 'not_found' });
   } catch (error) { console.error('MMO HTTP error:', error.message); return json(res, error.status || 500, { error: error.status ? error.message : 'internal_server_error' }); }
 });
-const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE });
+const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE, perMessageDeflate: false });
 server.on('upgrade', (req, socket, head) => {
-  if (new URL(req.url, 'http://localhost').pathname !== '/ws' || !originAllowed(req)) return socket.destroy();
+  let pathname;
+  try { pathname = new URL(req.url, 'http://localhost').pathname; } catch { return socket.destroy(); }
+  if (req.method !== 'GET' || pathname !== '/ws' || !originAllowed(req)) return socket.destroy();
   wss.handleUpgrade(req, socket, head, ws => { wss.emit('connection', ws, req); });
 });
 wss.on('connection', (ws, req) => attachSocket(ws, req));
+const heartbeatTimer = setInterval(() => {
+  for (const ws of wss.clients) {
+    const state = socketState.get(ws);
+    if (!state || state.closed) continue;
+    if (!state.alive) {
+      state.closed = true;
+      activeSockets.delete(ws);
+      ws.terminate();
+      continue;
+    }
+    state.alive = false;
+    try { ws.ping(); } catch {
+      state.closed = true;
+      activeSockets.delete(ws);
+      ws.terminate();
+    }
+  }
+}, HEARTBEAT_INTERVAL_MS);
+heartbeatTimer.unref();
 const respawnTimer = setInterval(async () => {
   try {
     const result = await pool.query("UPDATE world_mobs SET hp=max_hp,alive=true,respawn_at=NULL,updated_at=now() WHERE alive=false AND respawn_at IS NOT NULL AND respawn_at<=now() RETURNING id,realm_id,zone_id,name,level,x,y,hp,max_hp");
@@ -858,6 +919,7 @@ server.listen(PORT, HOST, () => console.log('GB Quest authoritative MMO service 
 for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => {
   clearInterval(respawnTimer);
   clearInterval(whisperCleanupTimer);
+  clearInterval(heartbeatTimer);
   for (const ws of wss.clients) ws.close(1001, 'server shutting down');
   await new Promise(resolve => server.close(resolve));
   await pool.end();
