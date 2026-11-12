@@ -338,7 +338,7 @@ function attachSocket(ws, req) {
       if (msg.type === 'guild.create') {
         if(state.guildId) return send(ws,'error',{code:'already_in_guild'});
         const name=String(msg.payload.name||'').trim();
-        if(!/^[\\p{L}\\p{N}][\\p{L}\\p{N} '\\-]{1,30}[\\p{L}\\p{N}]$/u.test(name))
+        if(!/^[A-Za-z0-9][A-Za-z0-9 '-]{1,30}[A-Za-z0-9]$/.test(name))
           return send(ws,'error',{code:'invalid_guild_name'});
         const tx=await pool.connect(); let guildId;
         try {
