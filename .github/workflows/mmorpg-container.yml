@@ -5,7 +5,11 @@ on:
       - "Dockerfile.mmorpg"
       - "docker-compose.mmorpg.yml"
       - ".dockerignore"
+      - ".env.example"
       - "backend/**"
+      - "tests/mmorpg-deployment.test.js"
+      - "tests/mmorpg-server-security.test.js"
+      - "tests/mmorpg-socket-queue.test.js"
       - "package.json"
       - ".github/workflows/mmorpg-container.yml"
   push:
@@ -16,7 +20,11 @@ on:
       - "Dockerfile.mmorpg"
       - "docker-compose.mmorpg.yml"
       - ".dockerignore"
+      - ".env.example"
       - "backend/**"
+      - "tests/mmorpg-deployment.test.js"
+      - "tests/mmorpg-server-security.test.js"
+      - "tests/mmorpg-socket-queue.test.js"
       - "package.json"
       - ".github/workflows/mmorpg-container.yml"
 
@@ -25,6 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install production server dependencies
+        run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Validate server JavaScript
         run: |
           node --check backend/mmorpg-server.cjs
@@ -32,9 +46,11 @@ jobs:
           node --check backend/mmorpg-competitive-routes.cjs
           node --check backend/dungeon-matchmaking.cjs
           node --check backend/migrate.cjs
+      - name: Run deployment and protocol unit tests
+        run: node --test tests/mmorpg-deployment.test.js tests/mmorpg-server-security.test.js tests/mmorpg-socket-queue.test.js
       - name: Validate Compose configuration
         run: |
-          printf '%s\n' 'POSTGRES_PASSWORD=0123456789abcdef0123456789abcdef' 'GBQ_TOKEN_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789' > .env.ci
+          printf '%s\\n' 'POSTGRES_PASSWORD=0123456789abcdef0123456789abcdef' 'GBQ_TOKEN_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789' > .env.ci
           docker compose --env-file .env.ci -f docker-compose.mmorpg.yml config --quiet
           rm .env.ci
       - name: Build dedicated MMO server image
