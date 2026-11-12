@@ -32,9 +32,10 @@ async function tryFormGroup(tx, realmId, dungeonId) {
   // Serialize formation for a realm/dungeon pair. Row locks prevent one player
   // from being consumed by two simultaneous matchmaking requests.
   await tx.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))', [realmId, dungeonId]);
+  await tx.query("UPDATE dungeon_queue_entries SET status='expired' WHERE realm_id=$1 AND dungeon_id=$2 AND status='queued' AND expires_at<=now()", [realmId, dungeonId]);
   const candidates = await tx.query(
     `SELECT id,character_id,role FROM dungeon_queue_entries
-      WHERE realm_id=$1 AND dungeon_id=$2 AND status='queued'
+      WHERE realm_id=$1 AND dungeon_id=$2 AND status='queued' AND expires_at>now()
       ORDER BY created_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`,
     [realmId, dungeonId]
   );
@@ -114,6 +115,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
         json(res, 409, { error: 'dungeon_level_ineligible', minLevel: target.min_level, maxLevel: target.max_level, characterLevel: hero.level });
         return true;
       }
+      await tx.query("UPDATE dungeon_queue_entries SET status='expired' WHERE character_id=$1 AND status='queued' AND expires_at<=now()", [characterId]);
       const active = await tx.query(
         "SELECT id,status,group_id FROM dungeon_queue_entries WHERE character_id=$1 AND status IN ('queued','matched') FOR UPDATE",
         [characterId]
@@ -125,7 +127,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
       }
       const inserted = await tx.query(
         `INSERT INTO dungeon_queue_entries(character_id,account_id,realm_id,dungeon_id,role,character_level)
-         VALUES($1,$2,$3,$4,$5,$6) RETURNING id,created_at`,
+         VALUES($1,$2,$3,$4,$5,$6) RETURNING id,created_at,expires_at`,
         [characterId, account.id, hero.realm_id, dungeonId, role, hero.level]
       );
       const groupId = await tryFormGroup(tx, hero.realm_id, dungeonId);
@@ -136,7 +138,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
         json(res, 201, {
           status: 'queued', queueEntryId: inserted.rows[0].id,
           dungeonId, dungeonName: target.name, role, realmId: hero.realm_id,
-          createdAt: inserted.rows[0].created_at,
+          createdAt: inserted.rows[0].created_at, expiresAt: inserted.rows[0].expires_at,
           roleCounts: await getRoleCounts(pool, hero.realm_id, dungeonId)
         });
       }
@@ -152,8 +154,9 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
     const characterId = queuePath[1];
     const owned = await pool.query('SELECT 1 FROM characters WHERE id=$1 AND account_id=$2', [characterId, account.id]);
     if (!owned.rowCount) { json(res, 404, { error: 'character_not_found' }); return true; }
+    await pool.query("UPDATE dungeon_queue_entries SET status='expired' WHERE character_id=$1 AND status='queued' AND expires_at<=now()", [characterId]);
     const result = await pool.query(
-      `SELECT q.id,q.status,q.role,q.realm_id,q.dungeon_id,d.name AS dungeon_name,q.created_at,q.group_id
+      `SELECT q.id,q.status,q.role,q.realm_id,q.dungeon_id,d.name AS dungeon_name,q.created_at,q.expires_at,q.group_id
          FROM dungeon_queue_entries q JOIN dungeon_catalog d ON d.id=q.dungeon_id
         WHERE q.character_id=$1 AND q.status IN ('queued','matched')
         ORDER BY q.created_at DESC LIMIT 1`,
@@ -166,7 +169,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
     } else {
       json(res, 200, {
         status: 'queued', queueEntryId: row.id, role: row.role, realmId: row.realm_id,
-        dungeonId: row.dungeon_id, dungeonName: row.dungeon_name, createdAt: row.created_at,
+        dungeonId: row.dungeon_id, dungeonName: row.dungeon_name, createdAt: row.created_at, expiresAt: row.expires_at,
         roleCounts: await getRoleCounts(pool, row.realm_id, row.dungeon_id)
       });
     }
@@ -175,6 +178,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
 
   if (queuePath && req.method === 'DELETE') {
     const characterId = queuePath[1];
+    await pool.query("UPDATE dungeon_queue_entries SET status='expired' WHERE character_id=$1 AND status='queued' AND expires_at<=now()", [characterId]);
     const result = await pool.query(
       `UPDATE dungeon_queue_entries SET status='cancelled',cancelled_at=now()
         WHERE character_id=$1 AND account_id=$2 AND status='queued' RETURNING id`,
@@ -251,7 +255,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
 async function getRoleCounts(pool, realmId, dungeonId) {
   const result = await pool.query(
     `SELECT role,count(*)::integer AS count FROM dungeon_queue_entries
-      WHERE realm_id=$1 AND dungeon_id=$2 AND status='queued' GROUP BY role`,
+      WHERE realm_id=$1 AND dungeon_id=$2 AND status='queued' AND expires_at>now() GROUP BY role`,
     [realmId, dungeonId]
   );
   return Object.fromEntries(['tank','healer','damage'].map(role => [role, Number(result.rows.find(row => row.role === role)?.count || 0)]));
