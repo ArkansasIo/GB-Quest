@@ -30,9 +30,31 @@ export class GBQuestMMOApi {
     this.token = result.token; return result;
   }
   me() { return this.request('/api/me'); }
-  characters() { return this.request('/api/characters'); }
-  createCharacter(name, characterClass) {
-    return this.request('/api/characters', { method: 'POST', body: { name, class: characterClass } });
+  characters(realmId) {
+    const query = realmId ? '?realm=' + encodeURIComponent(realmId) : '';
+    return this.request('/api/characters' + query);
+  }
+  regions() { return this.request('/api/regions', { auth: false }); }
+  realms(regionId) {
+    const query = regionId ? '?region=' + encodeURIComponent(regionId) : '';
+    return this.request('/api/realms' + query, { auth: false });
+  }
+  createCharacter(name, characterClass, realmId) {
+    return this.request('/api/characters', {
+      method: 'POST', body: { name, class: characterClass, ...(realmId ? { realmId } : {}) }
+    });
+  }
+  whispers(characterId, { withCharacterId, limit } = {}) {
+    const query = new URLSearchParams();
+    if (withCharacterId) query.set('with', withCharacterId);
+    if (limit) query.set('limit', String(limit));
+    const suffix = query.size ? '?' + query.toString() : '';
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/whispers' + suffix);
+  }
+  sendWhisper(characterId, toCharacterId, text) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/whispers', {
+      method: 'POST', body: { toCharacterId, text }
+    });
   }
   inventory(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/inventory');
