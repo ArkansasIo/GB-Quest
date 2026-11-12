@@ -91,3 +91,8 @@ CREATE TABLE IF NOT EXISTS pvp_character_ratings (
   rating integer NOT NULL DEFAULT 1000 CHECK (rating BETWEEN 0 AND 5000),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Keep the migration repeatable when an earlier version of migration 015 was already applied.
+ALTER TABLE pvp_queue_entries DROP CONSTRAINT IF EXISTS pvp_queue_entries_status_check;
+ALTER TABLE pvp_queue_entries ADD CONSTRAINT pvp_queue_entries_status_check
+  CHECK (status IN ('queued','matched','cancelled','expired','completed'));
