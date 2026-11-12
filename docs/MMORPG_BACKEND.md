@@ -64,7 +64,7 @@ Allowed jobs: warden, berserker, vanguard, strider, shade, ascetic, arcanist, wi
 
 ## Dungeon matchmaking
 
-Migration `014_dungeon_matchmaking.sql` seeds the 20 world-map dungeons and stores queue entries, role assignments, formed groups and instance IDs in PostgreSQL. Queue formation is scoped to a realm and dungeon and atomically builds one tank, one healer and three damage roles. Character ownership and level ranges are validated by the service; the tank is group lead for starting and completing the run. Completing the group marks all five queue records complete so the characters may queue again. Instance IDs are allocated by the backend; loading the dungeon map and running encounters remain game-runtime operations.
+Migration `014_dungeon_matchmaking.sql` seeds the 20 world-map dungeons and stores queue entries, role assignments, formed groups and instance IDs in PostgreSQL. Queue entries expire after 15 minutes if no match forms. Queue formation is scoped to a realm and dungeon and atomically builds one tank, one healer and three damage roles. Character ownership and level ranges are validated by the service; the tank is group lead for starting and completing the run. Completing the group marks all five queue records complete so the characters may queue again. Instance IDs are allocated by the backend; loading the dungeon map and running encounters remain game-runtime operations.
 
 ## WebSocket protocol
 
