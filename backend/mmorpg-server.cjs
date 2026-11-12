@@ -14,6 +14,7 @@ const { isAllowedOrigin, corsHeaders, createAuthLimiter } = require('./mmorpg-se
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 const { handleDungeonQueueRequest } = require('./dungeon-matchmaking.cjs');
 const { handleSocialPvpRequest } = require('./mmorpg-social-pvp-routes.cjs');
+const { handleCompetitiveRequest } = require('./mmorpg-competitive-routes.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -715,6 +716,7 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (await handleSocialPvpRequest({ req, res, pool, accountFor, json, readBody })) return;
+    if (await handleCompetitiveRequest({ req, res, pool, accountFor, json, readBody })) return;
     if (await handleDungeonQueueRequest({ req, res, pool, accountFor, json, readBody })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });

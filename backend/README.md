@@ -150,3 +150,18 @@ Apply the new schema with `npm run mmorpg:migrate`. The dedicated MMO service no
 - `POST /api/pvp/queue`, `GET|DELETE /api/pvp/queue/:characterId`, and `GET /api/pvp/matches/:matchId` for realm-scoped 1v1 duel matchmaking. The queue uses the server-owned character rating (default 1000), matches within a 300-rating window under a PostgreSQL advisory lock, and excludes opponents who have blocked one another. A participant can forfeit with `POST /api/pvp/matches/:matchId/forfeit`; the server records the winner and applies an Elo-style rating change transactionally. Clients cannot submit a winner or arbitrary rating. Live combat-result integration remains a follow-up.
 
 The browser `GBQuestMMOApi` exposes matching methods. This first phase uses authenticated HTTP polling; cross-instance push notifications, item-attached mail, auction-house UI and authoritative PvP result settlement are not claimed as complete.
+
+
+## Competitive arenas, battleground queues and notifications (migration 016)
+
+Migration `016_competitive_notifications.sql` adds an account-scoped notification inbox and persistent competitive queue/match records.
+
+Authenticated endpoints:
+- `GET /api/notifications?limit=50` returns the caller's latest unexpired notifications (1–100); `POST /api/notifications/:id/read` marks one caller-owned notification as read.
+- `POST /api/competitive/queue` accepts `{ characterId, mode }`, where mode is `arena_2v2`, `arena_3v3`, or `battleground_10v10`. The server uses the persisted PvP rating (default 1000), same-realm queueing, advisory locks, and a 500-point rating window. It forms a match only when all 4, 6, or 20 slots are filled.
+- `GET /api/competitive/queue/:characterId` reads the caller's active queue/match; `DELETE` cancels a queued entry (not a formed match).
+- `GET /api/competitive/matches/:matchId` returns the match only to a participating account.
+
+Match formation assigns two equal-sized teams and writes a durable `competitive.match_found` notification for each participant in the same transaction. Duplicate characters from one account are excluded from a single match, as are blocked opponents. Notifications are retrieved by HTTP polling; no cross-instance push transport is claimed.
+
+**Scope boundary:** this delivers persistent queueing and match allocation, not arena map instances, battleground objectives, live combat-result validation, ranked season rewards, or rating settlement for these new modes. The existing 1v1 PvP forfeit flow remains separate. Apply migrations and run the PostgreSQL integration suite before deployment.
