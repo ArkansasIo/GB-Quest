@@ -22,7 +22,8 @@ test('MMORPG API exposes authenticated social, mail and PvP endpoints', async ()
   await api.mail('character-1');
   await api.sendMail('character-1', 'character-2', 'Hello', 'Welcome to Aelmoor');
   await api.markMailRead('mail-1');
-  await api.joinPvpQueue('character-1', 1200);
+  await api.joinPvpQueue('character-1');
+  await api.forfeitPvpMatch('match-1');
   await api.pvpQueueStatus('character-1');
   await api.leavePvpQueue('character-1');
   await api.pvpMatch('match-1');
@@ -37,11 +38,12 @@ test('MMORPG API exposes authenticated social, mail and PvP endpoints', async ()
     ['/api/characters/character-1/mail','POST'],
     ['/api/mail/mail-1/read','POST'],
     ['/api/pvp/queue','POST'],
+    ['/api/pvp/matches/match-1/forfeit','POST'],
     ['/api/pvp/queue/character-1','GET'],
     ['/api/pvp/queue/character-1','DELETE'],
     ['/api/pvp/matches/match-1','GET']
   ]);
   assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer realm-token'));
-  assert.deepEqual(JSON.parse(calls[9].options.body), { characterId: 'character-1', rating: 1200 });
+  assert.deepEqual(JSON.parse(calls[9].options.body), { characterId: 'character-1' });
   assert.throws(() => api.respondFriendRequest('request-1', 'remove'), /accept or decline/);
 });
