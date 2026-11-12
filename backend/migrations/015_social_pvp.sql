@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS pvp_queue_entries (
   realm_id varchar(24) NOT NULL REFERENCES realms(id) ON DELETE CASCADE,
   mode varchar(16) NOT NULL CHECK (mode IN ('duel')),
   rating integer NOT NULL DEFAULT 1000 CHECK (rating BETWEEN 0 AND 5000),
-  status varchar(12) NOT NULL DEFAULT 'queued' CHECK (status IN ('queued','matched','cancelled','expired')),
+  status varchar(12) NOT NULL DEFAULT 'queued' CHECK (status IN ('queued','matched','cancelled','expired','completed')),
   match_id uuid,
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL DEFAULT (now() + interval '10 minutes')
@@ -85,3 +85,9 @@ CREATE TABLE IF NOT EXISTS pvp_match_members (
 );
 CREATE INDEX IF NOT EXISTS pvp_match_members_character
   ON pvp_match_members(character_id,match_id);
+
+CREATE TABLE IF NOT EXISTS pvp_character_ratings (
+  character_id uuid PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
+  rating integer NOT NULL DEFAULT 1000 CHECK (rating BETWEEN 0 AND 5000),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
