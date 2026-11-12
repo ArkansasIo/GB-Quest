@@ -39,9 +39,12 @@ export class GBQuestMMOApi {
     const query = regionId ? '?region=' + encodeURIComponent(regionId) : '';
     return this.request('/api/realms' + query, { auth: false });
   }
-  createCharacter(name, characterClass, realmId) {
+  createCharacter(name, characterClass, realmId, species, background) {
     return this.request('/api/characters', {
-      method: 'POST', body: { name, class: characterClass, ...(realmId ? { realmId } : {}) }
+      method: 'POST', body: {
+        name, class: characterClass, ...(realmId ? { realmId } : {}),
+        ...(species ? { species } : {}), ...(background ? { background } : {})
+      }
     });
   }
   whispers(characterId, { withCharacterId, limit } = {}) {
