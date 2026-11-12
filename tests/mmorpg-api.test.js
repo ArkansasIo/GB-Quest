@@ -86,14 +86,14 @@ test('MMORPG API supports region selection, realm-scoped characters and persiste
   api.token = 'realm-token';
   await api.regions();
   await api.realms('lordeon');
-  await api.createCharacter('Aelwyn', 'strider', 'moonfall');
+  await api.createCharacter('Aelwyn', 'strider', 'moonfall', 'thornelf', 'scholar');
   await api.characters('moonfall');
   await api.whispers('character-1', { withCharacterId: 'character-2', limit: 25 });
   await api.sendWhisper('character-1', 'character-2', 'Meet at the gate');
   assert.equal(calls[0].url, 'https://realm.example.test/api/regions');
   assert.equal(calls[0].options.headers.authorization, undefined);
   assert.equal(calls[1].url, 'https://realm.example.test/api/realms?region=lordeon');
-  assert.deepEqual(JSON.parse(calls[2].options.body), { name: 'Aelwyn', class: 'strider', realmId: 'moonfall' });
+  assert.deepEqual(JSON.parse(calls[2].options.body), { name: 'Aelwyn', class: 'strider', realmId: 'moonfall', species: 'thornelf', background: 'scholar' });
   assert.equal(calls[3].url, 'https://realm.example.test/api/characters?realm=moonfall');
   assert.equal(calls[4].url, 'https://realm.example.test/api/characters/character-1/whispers?with=character-2&limit=25');
   assert.deepEqual(JSON.parse(calls[5].options.body), { toCharacterId: 'character-2', text: 'Meet at the gate' });
