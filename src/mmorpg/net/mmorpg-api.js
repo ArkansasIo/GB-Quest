@@ -77,6 +77,23 @@ export class GBQuestMMOApi {
   acceptQuest(characterId, questId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/quests', { method: 'POST', body: { questId } });
   }
+  dungeonCatalog() {
+    return this.request('/api/dungeons/catalog', { auth: false });
+  }
+  joinDungeonQueue(characterId, dungeonId, role) {
+    return this.request('/api/dungeons/queue', {
+      method: 'POST', body: { characterId, dungeonId, role }
+    });
+  }
+  dungeonQueueStatus(characterId) {
+    return this.request('/api/dungeons/queue/' + encodeURIComponent(characterId));
+  }
+  leaveDungeonQueue(characterId) {
+    return this.request('/api/dungeons/queue/' + encodeURIComponent(characterId), { method: 'DELETE' });
+  }
+  dungeonGroup(groupId) {
+    return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId));
+  }
   trades(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades');
   }
