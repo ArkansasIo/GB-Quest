@@ -50,7 +50,7 @@ jobs:
         run: node --test tests/mmorpg-deployment.test.js tests/mmorpg-server-security.test.js tests/mmorpg-socket-queue.test.js
       - name: Validate Compose configuration
         run: |
-          printf '%s\\n' 'POSTGRES_PASSWORD=0123456789abcdef0123456789abcdef' 'GBQ_TOKEN_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789' > .env.ci
+          printf '%s\n' 'POSTGRES_PASSWORD=0123456789abcdef0123456789abcdef' 'GBQ_TOKEN_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789' > .env.ci
           docker compose --env-file .env.ci -f docker-compose.mmorpg.yml config --quiet
           rm .env.ci
       - name: Build dedicated MMO server image
