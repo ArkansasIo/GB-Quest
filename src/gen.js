@@ -74,7 +74,7 @@ function spawnTable(biome, lvl) {
 // ================================================================ 350 bosses
 const BOSSES = [];
 (function buildBosses() {
-  const r = RNG('bosses-v2');
+  let r = RNG('bosses-v2');
   const name = () => r.pick(BOSS_SYL.a) + r.pick(BOSS_SYL.b);
   const add = (cat, where, lvl, base, extra = {}) => {
     const b = BEAST_BY_ID[base] || null;
@@ -86,12 +86,28 @@ const BOSSES = [];
   ARC_BOSSES.forEach(a => { const m = MONSTERS[a.id]; const z = regionLastZone(REGIONS.find(zz => zz.act === a.act).id);
     add('arc', z.id, Math.max(z.lvl[1] + 1, Math.round(m.cr) + 2), null, { name: a.name || m.name, title: a.title, unique: a.id, spr: m.spr, fam: m.type, dt: m.a[0][3], res: (m.res || []).concat(m.imm || []), act: a.act }); });
   const pickBase = biome => { const t = spawnTable(biome); return r.pick(t.length ? t : BESTIARY).id; };
-  DUNGEONS.forEach(d => { const z = REGIONS.find(zz => zz.id === d.zone); for (let i = 0; i < 3; i++) add('dungeon', d.id, d.lvl + i, pickBase(z.biome), { order: i }); });
-  RAIDS.forEach(d => { const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0]; for (let i = 0; i < d.bosses; i++) add('raid', d.id, d.lvl + i * 2, pickBase(z.biome), { order: i }); });
-  TRIALS.forEach(t => { for (let i = 0; i < 5; i++) add('trial', t.id, t.lvl + i * 3, r.pick(BESTIARY).id, { order: i }); });
+  // the original content (content wave 3 is added after the world bosses, below, so these ids never shift)
+  const dungeonBosses = d => { const z = REGIONS.find(zz => zz.id === d.zone); for (let i = 0; i < 3; i++) add('dungeon', d.id, d.lvl + i, pickBase(z.biome), { order: i }); };
+  const raidBosses = d => { const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0]; for (let i = 0; i < d.bosses; i++) add('raid', d.id, d.lvl + i * 2, pickBase(z.biome), { order: i }); };
+  const trialBosses = t => { for (let i = 0; i < (t.stages || 5); i++) add('trial', t.id, t.lvl + i * 3, r.pick(BESTIARY).id, { order: i }); };
+  DUNGEONS.filter(d => !d.v).forEach(dungeonBosses);
+  RAIDS.filter(d => !d.v).forEach(raidBosses);
+  TRIALS.filter(t => !t.v).forEach(trialBosses);
   for (let f = 5; f <= TOWER.floors; f += 5) add('tower', 'tower', TOWER.baseLvl + f * TOWER.perFloor, r.pick(BESTIARY).id, { floor: f });
-  const wild = ZONES.filter(z => !z.town);
+  const wild = ZONES.filter(z => !z.town && !z.v); // expansions 14-20 get theirs in the v4 pass
   for (let i = 0; BOSSES.length < 350; i++) { const z = wild[i % wild.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild.length) }); }
+  // content wave 3 (v: 3): new dungeons, raids, trials and towers, from their own seed, after the original 350
+  r = RNG('bosses-v3');
+  DUNGEONS.filter(d => d.v === 3).forEach(dungeonBosses);
+  RAIDS.filter(d => d.v === 3).forEach(raidBosses);
+  TRIALS.filter(t => t.v === 3).forEach(trialBosses);
+  for (const tw of TOWERS) if (tw.v === 3) for (let f = 5; f <= tw.floors; f += 5) add('tower', tw.id, tw.baseLvl + f * tw.perFloor, r.pick(BESTIARY).id, { floor: f });
+  // expansion wave 4 (v: 4): expansions 14-20, from their own seed: their dungeons and raids, and two world bosses per zone
+  r = RNG('bosses-v4');
+  DUNGEONS.filter(d => d.v === 4).forEach(dungeonBosses);
+  RAIDS.filter(d => d.v === 4).forEach(raidBosses);
+  const wild4 = ZONES.filter(z => !z.town && z.v === 4);
+  for (let i = 0; i < wild4.length * 2; i++) { const z = wild4[i % wild4.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild4.length) }); }
 })();
 const BOSS_BY_ID = Object.fromEntries(BOSSES.map(b => [b.id, b]));
 
@@ -100,6 +116,7 @@ const TILE_LAYOUT = {
   '.': [0, 0], ',': [1, 4], '"': [3, 3], 'T': [0, 1], 'F': [1, 1], 'D': [1, 0], 'P': [0, 4], 'M': [0, 3], 'N': [1, 3],
   '~': [0, 2], 'W': [1, 2], 'w': [0, 7], 'v': [1, 7], '=': [2, 2], '|': [1, 5], 'X': [2, 3], 'h': [1, 5], 's': [0, 6], 'S': [1, 6],
   'A': [2, 0], 'a': [3, 0], 'K': [2, 4], 'k': [3, 4], 'H': [2, 6], 'J': [2, 7], 'r': [3, 6], 'q': [3, 7], 'R': [2, 6], 'Q': [2, 4],
+  'B': [3, 3], // a hub building's footprint: ground underneath, drawn over by its sprite (see m.buildings)
 };
 const WALKABLE = new Set(['.', ',', '"', 'T', 'F', 'D', '=', '|', 'X', 'h', 's', 'S']);
 const ZONE_OF = { '.': 'open', ',': 'open', 'T': 'wood', 'F': 'wood', 'D': 'wood', 's': 'open' };
@@ -122,7 +139,7 @@ function dungeonTiles(theme) {
 
 // ================================================================ Game Boy pixel tile graphics (auto-tiled)
 const GT_KEY = { '.': 'grass', ',': 'meadow', '"': 'ground', 'T': 'tree', 'F': 'pine', 'D': 'dense', 'P': 'single', 'M': 'rock', 'N': 'peak', 'W': 'deep%f', '=': 'bridge%f',
-  's': 'sand', 'S': 'sand2', 'A': 'wall', 'a': 'gate', 'K': 'keep', 'k': 'keepdoor', 'H': 'shop', 'J': 'inn', 'r': 'shrine', 'q': 'statue', 'R': 'temple', 'Q': 'arena' };
+  's': 'sand', 'S': 'sand2', 'A': 'wall', 'a': 'gate', 'K': 'keep', 'k': 'keepdoor', 'H': 'shop', 'J': 'inn', 'r': 'shrine', 'q': 'statue', 'R': 'temple', 'Q': 'arena', 'B': 'ground' };
 const WATERS = new Set(['~', 'w', 'v', 'W', '=']), ROADS = new Set(['|', 'h', 'X', '=', 'a', 'k', 'J', 'H']);
 function zoneGfx(rows, biome, town) {
   const b = biome === 'meadow' || !biome ? 'meadow' : biome, H = rows.length, W = rows[0].length;
@@ -168,7 +185,7 @@ const OPP = { N: 'S', S: 'N', E: 'W', W: 'E' };
 
 function carve(g, x0, y0, x1, y1, vertFirst) { // L-shaped road
   let x = x0, y = y0;
-  const put = (cx, cy, horiz) => { const c = g[cy][cx]; if (!'AaKkHJrqRQ'.includes(c)) g[cy][cx] = horiz ? 'h' : '|'; };
+  const put = (cx, cy, horiz) => { const c = g[cy][cx]; if (!'AaKkHJrqRQB'.includes(c)) g[cy][cx] = horiz ? 'h' : '|'; };
   if (vertFirst) while (y !== y1) { put(x, y, false); y += Math.sign(y1 - y); }
   while (x !== x1) { put(x, y, true); x += Math.sign(x1 - x); }
   while (y !== y1) { put(x, y, false); y += Math.sign(y1 - y); }
@@ -242,15 +259,116 @@ function buildZone(z) {
     const arc = BOSSES.find(b => b.cat === 'arc' && b.where === z.id);
     if (arc) { const [x, y] = free(); bosses.push({ id: arc.id, x, y, arc: true }); }
   }
+  const buildings = !z.town && !z.hand && z.id === z.region ? placeHubBuildings(z, g, hub, exits, poi, nodes, bosses) : [];
   const rows = g.map(rw => rw.join(''));
   const prefix = bio.tiles;
   const tiles = worldTiles(prefix, { safe: z.town, sandEnc: z.biome === 'badlands' || z.biome === 'coast' });
   // areas = quadrants
   const ar = RNG('areas-' + z.id), names = ar.shuffle(ZONE_AREAS);
   const areas = [[1, 1, 15, 11], [16, 1, 15, 11], [1, 12, 15, 11], [16, 12, 15, 11]].map((rc, i) => ({ id: `${z.id}_a${i}`, r: rc, name: `${z.name.split(' ')[0]} ${names[i]}` }));
-  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field'), lvl: z.lvl, biome: z.biome };
+  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, buildings, hub, areas, name: z.name, music: typeof GBQMusic !== 'undefined' ? GBQMusic.zoneMusic(z, z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field')) : (z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field')), lvl: z.lvl, biome: z.biome };
 }
 const MUSIC_BY_BIOME = { meadow: 'field', coast: 'coast', marsh: 'marsh', jungle: 'jungle', snow: 'snow', badlands: 'desert', desert: 'desert', oasis: 'coast', savanna: 'field', steppe: 'field', forest: 'field', deepforest: 'jungle', hills: 'field', mountains: 'snow', volcanic: 'volcano', dusk: 'dusk', ruins: 'dungeon', corruption: 'dusk', aether: 'crystal', crystal: 'crystal', mushroom: 'jungle', ocean: 'coast', river: 'coast', frozen: 'snow', sky: 'crystal' };
+// ================================================================ hub buildings (towns and villages)
+// Every wild region hub is a settlement. Villages get an inn, a general store and a shrine; towns
+// (every third region, and the first region of each expansion) add a smithy, stable, post office
+// and bank. Each building is a 2x2 footprint ('B' tiles, solid) drawn with an asset-pack sprite; you
+// use it by facing any of its tiles. Placement runs after everything else in buildZone, from its own
+// seed, never covers a road, exit, node, boss, waypoint or entrance, and is undone if it would cut
+// anything off from the hub. Then a path is laid from its door to the camp.
+const HUB_BUILDINGS = {
+  VILLAGE: [['inn', 'INN', 0], ['vendor', 'GENERAL STORE', 3], ['shrine', 'SHRINE', 8], ['house', 'COTTAGE'], ['house', 'COTTAGE'], ['mill', 'WINDMILL', 2]],
+  TOWN: [['inn', 'INN', 0], ['vendor', 'GENERAL STORE', 3], ['blacksmith', 'SMITHY', 11], ['stable', 'STABLE', 7], ['mail', 'POST OFFICE', 4], ['bank', 'BANK', 13],
+    ['shrine', 'SHRINE', 8], ['house', 'HOUSE'], ['house', 'HOUSE'], ['house', 'HOUSE'], ['mill', 'WINDMILL', 5]],
+};
+const HOUSE_SPRITES = [9, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26];
+const BUILD_ON = new Set(['.', ',', '"', 's', 'S', 'T', 'F', 'D']);
+// cheapest path from a door to the camp: open ground costs 1, water and rock 6, buildings and the border can't be crossed
+function lane(g, x0, y0, x1, y1) {
+  const H = g.length, Wd = g[0].length, cost = new Map(), from = new Map(), k = (x, y) => y * Wd + x, q = [[0, x0, y0]];
+  cost.set(k(x0, y0), 0);
+  while (q.length) {
+    let bi = 0; for (let i = 1; i < q.length; i++) if (q[i][0] < q[bi][0]) bi = i;
+    const [c, x, y] = q.splice(bi, 1)[0];
+    if (x === x1 && y === y1) break;
+    if (c > cost.get(k(x, y))) continue;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 1 || ny < 1 || nx >= Wd - 1 || ny >= H - 1) continue;
+      const ch = g[ny][nx]; if ('BAaKkHJrqRQ'.includes(ch)) continue;
+      const nc = c + (WALKABLE.has(ch) ? (ch === '|' || ch === 'h' ? 0.5 : 1) : 6);
+      if (nc < (cost.has(k(nx, ny)) ? cost.get(k(nx, ny)) : Infinity)) { cost.set(k(nx, ny), nc); from.set(k(nx, ny), k(x, y)); q.push([nc, nx, ny]); }
+    }
+  }
+  if (!cost.has(k(x1, y1))) return;
+  const path = []; for (let p = k(x1, y1); p !== undefined; p = from.get(p)) path.push([p % Wd, Math.floor(p / Wd)]);
+  path.reverse();
+  path.forEach(([x, y], i) => {
+    if (g[y][x] === '|' || g[y][x] === 'h' || g[y][x] === 'X') return;
+    const [px, py] = path[i - 1] || path[i + 1] || [x, y - 1];
+    g[y][x] = py === y ? 'h' : '|';
+  });
+}
+function hubSettlementKind(z) {
+  if (!z || z.town || z.id !== z.region) return null;
+  if (z.exp) return /_0$/.test(z.region) ? 'TOWN' : 'VILLAGE';
+  return REGIONS.findIndex(r => r.id === z.region) % 3 === 0 ? 'TOWN' : 'VILLAGE';
+}
+function placeHubBuildings(z, g, hub, exits, poi, nodes, bosses) {
+  const kind = hubSettlementKind(z); if (!kind) return [];
+  const r = RNG('buildings-' + z.id), H = g.length, Wd = g[0].length, out = [];
+  const key = (x, y) => x + ',' + y, keep = new Set(), targets = [];
+  const hold = (x, y, reach = true) => { keep.add(key(x, y)); if (reach) targets.push([x, y]); };
+  for (const e of Object.values(exits)) { hold(e.x, e.y); hold(e.ix, e.iy); }
+  for (const p of Object.values(poi)) if (p && Number.isFinite(p.x)) { hold(p.x, p.y); if (p === poi.dungeon) hold(p.x, p.y - 1, false); }
+  for (const [x, y] of nodes) hold(x, y);
+  for (const b of bosses) hold(b.x, b.y);
+  // the camp, the warden, and room around the hub for the settlement's trainers
+  for (let y = hub[1] - 2; y <= hub[1] + 4; y++) for (let x = hub[0] - 3; x <= hub[0] + 3; x++) keep.add(key(x, y));
+  const walk = c => WALKABLE.has(c);
+  const reachAll = () => {
+    const seen = new Set([key(hub[0], hub[1])]), q = [[hub[0], hub[1]]];
+    while (q.length) {
+      const [x, y] = q.pop();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = key(nx, ny);
+        if (nx < 0 || ny < 0 || nx >= Wd || ny >= H || seen.has(k) || !walk(g[ny][nx])) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    const ok = ([x, y]) => seen.has(key(x, y)) || [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(key(x + dx, y + dy)));
+    return targets.every(ok) && out.every(b => seen.has(key(b.x, b.y + 1)) || seen.has(key(b.x + 1, b.y + 1)));
+  };
+  // only what the hub can already reach has to stay reachable (some nodes sit across water)
+  { const all = targets.splice(0); targets.push(...all.filter(t => { targets.length = 0; targets.push(t); return reachAll(); })); }
+  // candidate spots ring the hub, nearest first with a little seeded jitter
+  const spots = [];
+  for (let y = 3; y <= H - 4; y++) for (let x = 2; x <= Wd - 4; x++) {
+    const d = Math.max(Math.abs(x + 0.5 - hub[0]), Math.abs(y - 0.5 - hub[1]));
+    if (d >= 3 && d <= 11) spots.push([x, y, d + r() * 2.5]);
+  }
+  spots.sort((a, b) => a[2] - b[2]);
+  const near = (x, y) => out.some(b => x >= b.x - 2 && x <= b.x + 3 && y >= b.y - 2 && y <= b.y + 2);
+  for (const [svc, name, spr] of HUB_BUILDINGS[kind]) {
+    for (const [x, y] of spots) {
+      const foot = [[x, y - 1], [x + 1, y - 1], [x, y], [x + 1, y]], front = [[x, y + 1], [x + 1, y + 1]];
+      if (foot.some(([fx, fy]) => !BUILD_ON.has(g[fy][fx]) || keep.has(key(fx, fy)))) continue;
+      if (!front.some(([fx, fy]) => walk(g[fy][fx]) && !keep.has(key(fx, fy)) || walk(g[fy][fx]) && (g[fy][fx] === '|' || g[fy][fx] === 'h'))) continue;
+      if (near(x, y)) continue;
+      const before = foot.map(([fx, fy]) => g[fy][fx]);
+      foot.forEach(([fx, fy]) => { g[fy][fx] = 'B'; });
+      const b = { x, y, svc, name, spr: 'ap_buildings_' + String(spr != null ? spr : r.pick(HOUSE_SPRITES)).padStart(3, '0'), kind };
+      out.push(b);
+      if (!walk(g[y + 1][x]) && !walk(g[y + 1][x + 1])) { out.pop(); foot.forEach(([fx, fy], i) => { g[fy][fx] = before[i]; }); continue; }
+      if (!reachAll()) { out.pop(); foot.forEach(([fx, fy], i) => { g[fy][fx] = before[i]; }); continue; }
+      foot.forEach(([fx, fy]) => keep.add(key(fx, fy)));
+      break;
+    }
+  }
+  // paths from each door to the camp (only the shops; houses sit off the lanes)
+  for (const b of out) if (b.svc !== 'house' && b.svc !== 'mill') lane(g, walk(g[b.y + 1][b.x]) ? b.x : b.x + 1, b.y + 1, hub[0], hub[1] + 1);
+  return out;
+}
 function buildHarbor(r) {
   const g = Array.from({ length: ZH }, () => Array(ZW).fill('"'));
   for (let x = 0; x < ZW; x++) { g[0][x] = 'M'; g[1][x] = 'A'; }

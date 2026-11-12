@@ -14,7 +14,8 @@ This deployment runs the PostgreSQL-backed service in `mmorpg-server.cjs`. It is
 - Server-authoritative movement coordinates and persisted character positions.
 - Zone presence and snapshots.
 - Transaction-locked mob combat, server-calculated damage, XP awards and timed mob respawns.
-- Zone chat with per-connection rate limits.
+- Zone and realm chat plus durable same-realm direct messages, including offline inbox delivery and read receipts.
+- Serialized per-connection WebSocket message processing so asynchronous database operations cannot reorder player actions.
 - Database health endpoint at `GET /health`.
 
 ## Start with Docker Compose
@@ -51,7 +52,7 @@ Do not expose PostgreSQL publicly. Keep `.env` out of version control, rotate se
 
 This is a real database-backed, authoritative **single service instance**, not 85 deployed game worlds. The current implementation keeps connected sockets and zone broadcasts in process memory. Do not run multiple replicas behind a load balancer yet: players in different replicas would not share presence, zone broadcasts, or consistent live-zone state. Horizontal scaling requires a shared pub/sub layer (for example Redis), zone ownership/partitioning, distributed rate limits, and reconnect/session coordination.
 
-The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but general loot tables beyond the seeded slime-gel drop, vendor transactions, player trading, auction house and an economy ledger are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
+The current world is a 256×256 coordinate grid. Inventory and equipment are persisted in PostgreSQL, but general loot tables beyond the seeded slime-gel drop and an auction house are not yet implemented. Movement is bounded and persisted, but a production collision/navmesh service, map-specific spawn data, anti-cheat telemetry, quest persistence, party/guild systems, and operational moderation tooling still need implementation before a public large-scale MMORPG launch. The combat endpoint currently provides a basic server-calculated attack loop; it is not yet the complete RPG ability, status-effect, loot-table, or PvP simulation.
 
 ## Local development without Docker
 
@@ -111,3 +112,18 @@ The game HUD includes a Trading action backed by `client/mmorpg-trade.js` and `c
 ### In-game bank interface
 
 The Trading panel's Bank tab uses the authenticated `GET /api/characters/:id/bank`, `POST /api/characters/:id/bank/deposit`, and `POST /api/characters/:id/bank/withdraw` endpoints. The client refreshes both wallet and bank balances after each successful transfer. The server validates whole-gold amounts, checks wallet/bank funds and safe-integer limits, locks the character row, updates balances and writes the `bank_transactions` audit row in the same PostgreSQL transaction. The interface is bundled into the single-file itch.io HTML build with the existing trade-panel stylesheet.
+
+## Character jobs and progression
+
+- The authoritative server accepts the browser game's 27 jobs and level 1–720 progression, plus all 15 playable species and six character backgrounds.
+- Migration `009_jobs_level_720.sql` maps legacy class IDs to current jobs and installs `gbq_level_for_xp(bigint)`, matching the browser XP thresholds through level 20 and the cubic ascension curve thereafter.
+- The database keeps class feature progression and post-20 ascension as distinct game concepts; the current server's combat rewards update the overall level from total XP.
+
+## Direct messages and inbox
+
+- WebSocket `chat.send` with `channel: "whisper"` resolves a character by name within the sender's realm and stores the message in `player_whispers` before attempting live delivery.
+- A whisper to an offline character is retained and appears in the recipient's inbox the next time they load messages.
+- `GET /api/characters/:id/whispers?with=:peerCharacterId&limit=50` returns the character's recent conversations. The limit is clamped to 1–100; reading an inbox marks matching incoming messages as read.
+- `POST /api/characters/:id/whispers` accepts `{"toCharacterId":"<uuid>","text":"Hello"}`. The sender must own the character, the recipient must exist on the same realm, and message text is limited to 180 characters.
+- Direct messages are retained in PostgreSQL; the schema includes a timestamp index for the 30-day retention policy. Operators should schedule deletion of messages older than 30 days during routine database maintenance.
+- HTTP and WebSocket actions are serialized per connection; if a connection accumulates more than 64 queued messages it is closed to prevent unbounded memory growth.

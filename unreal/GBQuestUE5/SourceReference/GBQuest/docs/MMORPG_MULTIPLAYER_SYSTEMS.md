@@ -1,0 +1,97 @@
+# GB Quest — Multiplayer Server Systems
+
+This specification defines the authoritative multiplayer domain and deployment contract. The PostgreSQL MMO service remains the source of truth for accounts, characters, inventory, movement and combat. Migration 003 adds persistent tables for social groups, instances, mail, auctions, PvP and economy audit.
+
+## Service boundaries
+- Gateway/session: HTTPS REST + WSS, signed bearer sessions, origin allowlist, authentication throttling, message-size and sequence validation.
+- Realm simulation: realm isolation, zone membership, movement validation, combat resolution, mob state, quest progress and reward grants.
+- Social: friends, block list, whispers, parties (5), role assignment, invites, ready checks, guilds and guild ranks.
+- Group content: dungeon instances, raid groups (up to 20), difficulty, membership snapshots, lockouts, encounter state and completion.
+- Economy: server-owned inventory, player-to-player trade escrow, auction listings, mailbox attachments, bank and append-only ledger.
+- Competitive: duels, arena 2v2/3v3, battleground queues, rating and match results.
+- Operations: player reports, moderation queue, GM permissions, audit trails, realm maintenance and health checks.
+
+## Security invariants
+1. Every REST and WSS command is authenticated and character ownership is checked against the account.
+2. Realm and zone are derived from the selected character and server-side records, never trusted from client payloads.
+3. Client messages express intent only. Damage, cooldowns, movement speed, item quantity, gold, XP, loot and rating are calculated by the server.
+4. Transfers and reward grants use PostgreSQL transactions and row locks. Trade, auction and mail claims must be idempotent and write the economy ledger in the same transaction.
+5. Party, guild, whisper, trade, mail and instance membership cannot cross realm boundaries unless a future cross-realm transfer protocol explicitly allows it.
+6. WSS requires TLS outside localhost. Configure GBQ_ALLOWED_ORIGINS with exact HTTPS origins; do not use wildcard origins.
+7. Staff actions require permissions and audit entries. Staff secrets never ship in the browser bundle.
+
+## Feature contracts
+| System | Persistent state | Expected events/API |
+|---|---|---|
+| Presence | active socket + character zone | presence.joined, presence.moved, presence.left |
+| Party | parties, party_members, party_invites, ready_checks | party.create/invite/accept/leave/role/ready |
+| Guild | guilds, guild_members, guild_permissions | guild.create/invite/accept/leave/motd/rank |
+| Dungeon/raid | dungeon_instances, dungeon_instance_members, raid_lockouts, ready_checks, ready_check_responses | instance.create/leave/complete, ready-check.start/respond/status |
+| Friends/mail | player_friends, player_mail | friend.request/accept/block/remove, mail.send/claim |
+| Economy | auction_listings, economy_ledger plus existing inventory/bank/trade tables | trade.offer/accept, auction.list/buy/cancel |
+| PvP | pvp_matches, pvp_ratings | pvp.queue/leave/duel/result |
+| Safety | player_reports | report.player and staff moderation routes |
+
+## Scaling and runtime
+- Shared online presence is stored in PostgreSQL `world_presence` leases (45-second default TTL, renewed every 15 seconds); expired leases are swept by each running process. Realm admission is serialized with PostgreSQL advisory transaction locks to avoid concurrent cross-instance capacity overbooking.
+- Zone and realm events are relayed through PostgreSQL `LISTEN/NOTIFY`. This is transient, best-effort fan-out, not a durable queue; reconnecting clients must request a fresh authoritative zone snapshot. The listener currently does not auto-reconnect after a database connection failure.
+- This is a shared presence/event relay foundation, not complete horizontal simulation sharding. Keep one authoritative simulation owner per realm/zone; multi-node deployments still need distributed ownership/fencing, durable event delivery for critical events, listener reconnection, distributed rate limiting and operational load testing.
+- PostgreSQL is authoritative for durable state. Redis may cache presence, queues and short-lived invitations, never the sole copy of inventory or currency.
+- Separate workers for simulation, chat fan-out, persistence and background jobs as load grows.
+- Add per-account, per-IP and per-message-type limits; disconnect malformed clients; record request IDs and security events.
+- Back up PostgreSQL, test restore, cap connection pools, and monitor p95/p99 latency, queue depth, active sockets, DB wait time, errors and memory.
+- A configured 1,000-player realm cap is a product setting, not a demonstrated capacity benchmark.
+
+## Migration and verification
+Run npm run mmorpg:migrate with DATABASE_URL configured. The migration is additive and idempotent. Run npm test and npm run check:syntax before deployment.
+
+**Implementation status:** party REST routes are now wired to PostgreSQL and exposed through the game API client: GET/POST/DELETE `/api/characters/:id/party`, POST `/api/parties/:id/invites`, and POST `/api/party-invites/:id/accept`. Party creation, membership, invitation expiry, realm checks, five-member cap and leader succession are persisted transactionally. Guild REST routes are also wired: GET/POST/DELETE `/api/characters/:id/guild`, POST `/api/guilds/:id/invites`, POST `/api/guild-invites/:id/accept`, and POST `/api/guilds/:id/motd`, POST `/api/guilds/:id/transfer`, and DELETE `/api/guilds/:id?characterId=...`. Guild leadership transfer is leader-only, requires an existing guild member as successor, and updates both the guild leader pointer and member ranks transactionally; disband is leader-only and deletes guild-owned memberships/invitations by cascade. Guild creation, realm-scoped names, invite permissions, invitation expiry, same-realm membership, ranks and MOTD permissions are persisted. Friend and block-list REST routes are now wired and exposed through the API client: GET/POST `/api/characters/:id/friends`, POST `/api/characters/:id/friends/:friendId/accept`, DELETE `/api/characters/:id/friends/:friendId`, and POST `/api/characters/:id/blocks`. Friend requests are same-realm, reciprocal pending requests auto-accept, and blocking removes the reverse relationship and prevents new requests. Dungeon instance and ready-check REST routes are now wired and exposed through the API client: GET/POST `/api/characters/:id/instances`, POST `/api/instances/:id/leave`, POST `/api/instances/:id/complete`, POST `/api/characters/:id/ready-checks`, GET `/api/ready-checks/:id?characterId=...`, and POST `/api/ready-checks/:id/respond`. Instance creation snapshots the caller's current party (leader-only) or creates a solo instance, enforces a five-player dungeon cap, same-realm membership, one active instance per character, server-generated seed and two-hour expiry. Ready checks are party-leader initiated, member-only, and expire after 30 seconds. Mail and auction REST routes are now wired into the server and API client. Mail supports same-realm delivery, up to five item attachments, gold, 30-day expiry, and atomic claim into inventory. Auction listings support 12/24/48-hour durations, a 2% refundable deposit, buyout, a 5% sale fee, cancellation/refund, and same-realm settlement through economy_ledger. PvP duel challenge REST routes are now wired: challenge, accept, decline, cancel, match history, and voluntary forfeit. Forfeits settle the duel and update both participants' duel bracket Elo ratings transactionally. This is a duel MVP only; ranked matchmaking, arena team queues, battlegrounds, authoritative live combat results, and client UI remain outstanding. All new REST flows still need database integration tests, rate limits, real-time event fan-out, and UI panels. The new routes still require a live PostgreSQL integration test before public launch.
+
+
+## Recent backend and client API hardening
+- HTTP CORS now emits an exact allowlisted origin, `Vary: Origin`, explicit methods and request headers, and a bounded preflight cache. Preflight requests reject unsupported methods and headers rather than returning a misleading success response.
+- JSON responses include `Referrer-Policy: no-referrer` and `X-Frame-Options: DENY` in addition to no-store and nosniff.
+- The browser API client exposes `regions()` and `realms(regionId)` for the realm-selection screen. `createCharacter(name, characterClass, realmId)` can now submit the selected realm while retaining compatibility with callers that omit it.
+- Security-helper and API-client regression tests cover exact CORS policy, allowed preflight methods/headers, realm discovery URLs and realm-aware character creation.
+
+
+## API write-rate protection
+- Authenticated MMO API mutations (POST/DELETE under `/api/*), excluding login and registration which retain their dedicated failed-authentication limiter, are throttled by remote IP.
+- Default policy is 90 write requests per IP per 60-second fixed window. Configure with `GBQ_API_WRITE_LIMIT` and `GBQ_API_WRITE_WINDOW_MS`; invalid values fail service startup rather than silently disabling protection.
+- Responses include `X-RateLimit-Limit` and `X-RateLimit-Remaining`; rejected writes return HTTP 429, `Retry-After`, and `api_write_rate_limited`.
+- The in-memory limiter uses bounded key storage and periodic expiry sweeps. It is per process; multi-node deployments should move this policy to a shared Redis-backed limiter before horizontal scaling.
+- Unit tests cover threshold behavior, independent keys, reset timing, retry metadata, bounded storage, and invalid configuration.
+
+
+## In-game guild hall menu
+- The main in-game menu now includes **GUILD**, opening a guild hall with overview, member roster, create guild, accept invitation, invite player, guild message of the day, leadership transfer, leave, disband and refresh actions.
+- Guild mutations call the existing `GBQuestMMOApi` client methods and remain server-authoritative; the menu does not create fake local guild records. The game bootstrap must expose its authenticated API instance as `window.GBQ_MMO_API` and the selected server character UUID as `window.GBQ_MMO_CHARACTER_ID` before guild actions can run. Offline/local save characters are not interchangeable with MMO character IDs.
+- Text-entry actions currently use the browser prompt while the scene itself follows the Aelmoor in-game menu navigation. A dedicated pixel-art text-entry modal and invitation inbox endpoint are follow-up UI improvements.
+
+
+## World population and realm capacity dashboard
+- The realm configuration seeds three regions with three logical realms each. Each realm defaults to 1,000 player slots (9,000 configured slots total).
+- `GET /api/world/status` reports current online players by region, realm and zone, configured capacity and utilization, registered account/character totals, and the persisted peak-concurrent count.
+- `GET /api/world/status?refresh=1` bypasses the short response cache. The API client exposes `worldStatus({ refresh })`.
+- Current online population is explicitly scoped to one server process. This endpoint is monitoring and does not claim the service has been load-tested to 9,000 concurrent users. Cross-instance live population, admission control and real-time fan-out require shared presence and pub/sub before horizontal scaling.
+
+
+## Shared realm presence implementation
+Migration 006 creates `world_presence` leases keyed by WebSocket session. Every selected character session renews its lease, and disconnects remove it immediately; crashed processes are recovered by lease expiry. The public world status endpoint aggregates unexpired leases across instances. Realm capacity admission uses a PostgreSQL advisory transaction lock per realm and commits the presence lease atomically with the capacity check. Each server process uses a unique `GBQ_SERVER_INSTANCE_ID`; `GBQ_PRESENCE_TTL_SECONDS` configures the lease lifetime. PostgreSQL `LISTEN/NOTIFY` relays zone and realm events to other processes. Because notifications are not durable, zone snapshots remain the recovery mechanism after reconnects.
+
+
+## Persistent zone and realm chat
+Migration 007 adds `world_chat_messages`. Zone and realm messages are committed to PostgreSQL before broadcast, then relayed to other instances using the shared event channel. `GET /api/characters/:id/chat` returns the latest 1–100 messages from the authenticated character's own current zone or realm; clients cannot request arbitrary realm/zone history by supplying IDs. Whisper currently remains online-only and local to the originating process; cross-instance whisper routing and durable direct-message history remain to be implemented.
+
+
+## Original Aelmoor combat content expansion
+The original expansion data lives in `src/mmorpg/data/aelmoor-expansion.json` and is intentionally original fantasy content, using broad genre conventions rather than reproducing named equipment, spell text, characters, art or lore from Elden Ring, World of Warcraft or Final Fantasy XIV.
+
+Current catalogue size in this expansion:
+- 48 original weapons across 18 weapon families and multiple rarity/item-level bands.
+- 120 armor pieces across 10 equipment slots and cloth, leather, mail and plate weights.
+- 120 original spells across eight schools and eight elemental/arcane damage themes.
+- 60 class abilities distributed across all twelve supported classes and unlocked by class level.
+- 60 class talents across offense, defense, utility, support and mastery branches. `TALENT_CATALOG` provides lookup, character filtering and point-costed learning with class and level checks.
+
+Integration: equipment records are included in the itemization catalog, spells in the spell catalog, and active abilities in the validated class-ability catalog. Talent learning is exposed through `src/mmorpg/systems/talent-catalog.js`; character persistence and the in-game talent-tree screen still need integration before these talents are available in live account progression.

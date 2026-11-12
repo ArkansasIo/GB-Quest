@@ -1,0 +1,204 @@
+{
+  "repo": "ArkansasIo/GB-Quest",
+  "releases": [
+    {
+      "version": "2.8.0",
+      "date": "2026-11-10",
+      "title": "Friends",
+      "sections": [
+        {
+          "name": "New",
+          "notes": [
+            "FRIENDS screen (ONLINE / ACCOUNT menu, or SOCIAL in the main menu): your account friends across every realm. Online friends come first with the hero and level they are playing; select one to see their realm, or when an offline friend was last seen.",
+            "WHISPER a friend who is online on your realm straight from the list, or REMOVE them.",
+            "REQUESTS tab: accept or decline friend requests, and see or cancel the ones you sent.",
+            "ADD FRIEND: type their account name on the game screen.",
+            "Live updates: a FRIEND REQUEST or NEW FRIEND notice pops up as soon as it happens, and the list updates when friends come online or go offline."
+          ]
+        },
+        {
+          "name": "Realm server",
+          "notes": [
+            "Friends lists hold up to 100 friends, with up to 50 pending requests.",
+            "The server remembers when each account was last online."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.7.0",
+      "date": "2026-11-10",
+      "title": "Character Select",
+      "sections": [
+        {
+          "name": "New",
+          "notes": [
+            "CHARACTER SELECT: after you pick a realm, see every hero you have there, from this device and from your cloud saves, with class, level, zone and last save.",
+            "ENTER WORLD with A. A hero that is newer in the cloud downloads first; a hero only on this device is uploaded to your account.",
+            "CREATE NEW HERO uses a slot that is free on both this device and the cloud, so a new hero never overwrites a cloud save.",
+            "DELETE a hero with SELECT (asks first). The list also shows how many heroes you have on other realms.",
+            "CHARACTERS in the ONLINE / ACCOUNT menu opens the list for your current realm."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.6.0",
+      "date": "2026-11-10",
+      "title": "Accounts & Realm Select",
+      "sections": [
+        {
+          "name": "New",
+          "notes": [
+            "ACCOUNTS: new sign-in and CREATE ACCOUNT screens. Type your name and password right on the game screen (Tab or arrows move between fields, Enter confirms, Esc goes back). A password strength meter, confirm field and your last name remembered.",
+            "REALM SELECT: realms grouped by region (NA, EU, AP; switch with left/right). Each realm shows its type (PvE, PvP, RP), live load, and how many of your heroes live there. The details panel lists the realm rules and population. START jumps to the suggested realm (★).",
+            "NEW GAME with the realm server running: sign in, pick a realm, then create your hero. Without a server, NEW GAME plays offline as before.",
+            "ONLINE on the title screen and ACCOUNT in the main menu: choose or switch realm, cloud saves, change password, log out.",
+            "Cloud saves remember each hero's realm."
+          ]
+        },
+        {
+          "name": "Fixes",
+          "notes": [
+            "The game now finds a realm server that starts after the page has loaded (it keeps checking for a minute)."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.5.0",
+      "date": "2026-11-10",
+      "title": "Realm Worlds",
+      "sections": [
+        {
+          "name": "Multiplayer",
+          "notes": [
+            "Every realm is now its own world on the realm server: you only see, chat with and battle beside players on your realm.",
+            "Picking a realm in REALM SELECT moves your account there; a full or offline realm is refused with a message. Loading a hero re-enters that hero's realm.",
+            "Realm select shows live population and status from the server.",
+            "All chat channels (say, yell, party, guild, whisper, world, trade, LFG) and party battles stay on your realm.",
+            "New one-click Windows launcher tools/windows/start-realm-server.bat runs the realm server for your network and shows the addresses friends can join."
+          ]
+        },
+        {
+          "name": "Fixes",
+          "notes": [
+            "The realm server no longer crashes a connection when a realm is full; population is counted live instead of with counters that could drift."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.4.1",
+      "date": "2026-11-10",
+      "title": "Debug pass",
+      "sections": [
+        {
+          "name": "Fixes",
+          "notes": [
+            "Button hints that were drawn below the bottom of the screen are visible again on Skills, Activity Finder, Talents, the profession screens, Boss Journal, Art Gallery and the Auction House.",
+            "Account & Heroes shows all 5 save slots; the list scrolls (it showed 3 and hid slots 4 and 5).",
+            "Empty earring, trinket, relic and artifact slots on the equipment screens have their own icons instead of a blank cell.",
+            "Full debug sweep of every screen: no script errors, warnings, failed file requests or missing sprites."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.4.0",
+      "date": "2026-11-10",
+      "title": "Character Details",
+      "sections": [
+        {
+          "name": "New",
+          "notes": [
+            "DETAILS (in the main menu, under CHARACTER): a hub of in-depth character and gear pages.",
+            "STAT BREAKDOWN: every substat with each source it comes from: item affixes, gems, runes, tier implicits, awakening, armour sets, ascension, companion bond, talents, boons and buffs, plus the final value after attributes and caps. SELECT shows CORE STATS: HP, AC, accuracy, initiative, proficiency, attributes and saves.",
+            "GEAR OVERVIEW: every equipment slot with rarity, item level, durability, gems, runes and awakening stars. A opens ITEM DETAIL with OVERVIEW, STATS, SOCKETS and VALUE pages.",
+            "PROGRESS SUMMARY: character, gear, collections and endgame on one page each."
+          ]
+        },
+        {
+          "name": "UI",
+          "notes": [
+            "Short header titles for the new pages and for rifts, gambler, skill runes, season pass, patch notes and gear awakening, so none are cut off."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.3.0",
+      "date": "2026-11-10",
+      "title": "Rifts, Gambler & Runes",
+      "sections": [
+        {
+          "name": "New",
+          "notes": [
+            "RIFTS: normal rifts are chains of battles from random biomes. Foes fill the progress bar; at 100% the RIFT GUARDIAN appears. Closing a rift pays gold, XP, an item, awakening stones, glimmer shards and a GREATER RIFT KEY.",
+            "GREATER RIFTS: pick any level up to your best + 1 (foes x1.12 HP and x1.07 damage per level). Beat the 15:00 timer to unlock up to 3 more levels. Pylons (healing, power, speed), a death penalty and a top-10 leaderboard.",
+            "GAMBLER: spend glimmer shards on gear of a chosen slot, from weapons to relics and artifacts. Rare 30%, epic 11%, legendary 3.5%, mythic 0.5%; 20 gambles without a legendary guarantee one.",
+            "LOOT FILTER: drops below COMMON, UNCOMMON or RARE are auto-salvaged or auto-sold. Favourites, heirlooms, relics, artifacts, awakened, set and epic+ items are never filtered.",
+            "SKILL RUNES: 24 runes, three for each active skill (Cleave, Sunder, War Cry, Smoke Bomb, Echo, Pack Leader...), unlocked at the skill's level +5, +15 and +30. Runed skills show * in battle."
+          ]
+        },
+        {
+          "name": "Season Pass",
+          "notes": [
+            "New SEASON PASS page: the reward track, XP bar, days left; claim one tier with A or all with START.",
+            "New rewards: awakening stones every third tier, greater rift keys every seventh, and an awakening cache with 2 keys at tier 40.",
+            "Rifts give season XP."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.2.0",
+      "date": "2026-11-09",
+      "title": "Awakening & Aelmoor UI",
+      "sections": [
+        {
+          "name": "New",
+          "notes": [
+            "GEAR AWAKENING: awaken any weapon, armour or shield up to 5 stars. Choose one of 11 paths (Ember, Frost, Storm, Void, Dawn, Titan; Bulwark, Warding, Vigor, Shadow, Thorn). Traits unlock at stars III and V.",
+            "Awakening stones come from salvaging uncommon+ gear or from TRANSMUTE (6 scrap + 1 shard + 50 G). REFORGE changes a path and keeps the stars.",
+            "RELIC and ARTIFACT pages in the Character menu: all 42 of each, with found count, bonuses and equip from the codex.",
+            "PATCH NOTES page with an update check against the GitHub releases.",
+            "Regions, realms and a shared world on the multiplayer server."
+          ]
+        },
+        {
+          "name": "UI",
+          "notes": [
+            "Every menu and page uses the title menu's style: navy panels, gold frames and the amber selection bar with cream text.",
+            "The HTML overlay panels around the game screen are removed; the in-screen HUD shows instead.",
+            "Text that was too wide for the screen is fitted or shortened instead of running off the edge.",
+            "Realm select and expansion map layouts no longer overlap."
+          ]
+        },
+        {
+          "name": "Fixes",
+          "notes": [
+            "Title screen no longer starts blank while assets load; it shows LOADING %.",
+            "The game is centred and no longer clipped in full-window mode.",
+            "Quest board and home screen no longer crash on missing data."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "2.1.1",
+      "date": "2026-11-01",
+      "title": "Full Detail",
+      "sections": [
+        {
+          "name": "Changes",
+          "notes": [
+            "FULL DETAIL sprite redesign: new heroes, townsfolk, monsters and field props.",
+            "Retro 8-bit item icons at true 16x16 resolution.",
+            "Title screen shows the Lanterns of Aelmoor key art."
+          ]
+        }
+      ]
+    }
+  ]
+}

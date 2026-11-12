@@ -124,8 +124,35 @@ test('8-bit item sheet: every icon the RETRO index names exists, the key-art wor
   const c = {}; c.globalThis = c; vm.runInNewContext(read('src/itemsheet_index.js'), c); const K = c.ITEMSHEET;
   const names = [...Object.values(K.equip).flat(), ...Object.values(K.consumables)];
   assert.ok(names.length > 150, 'item sheet indexed');
-  for (const n of names) assert.ok(has(n), n);
+  for (const n of names) {
+    assert.ok(has(n), n);
+    const png = fs.readFileSync(new URL(`../assets/${n}.png`, import.meta.url));
+    assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [16, 16], `${n} is a true 16x16 8-bit icon`);
+  }
   assert.ok(!fs.readdirSync(new URL('../assets/', import.meta.url)).some(f => /^ki_(dragons|undead|oozes|slimes|ui)/.test(f)), 'no creature or UI rows');
   assert.match(read('src/art.js'), /ITEMSHEET\.equip\[cat\]/);
   assert.match(read('src/scenes_world.js'), /ka_worldmap_01/);
+});
+
+test('FULL DETAIL redesign: heroes for every class and species, townsfolk, monsters, bosses and field props exist and are wired', { skip: needs(IMAGES) }, () => {
+  const rules = read('src/data_rules.js');
+  const classes = [...(/const CLASSES = \{([\s\S]*?)\n\};/.exec(rules)[1].matchAll(/^  ([a-z]+): \{/gm))].map(m => m[1]);
+  const species = [...(/const SPECIES = \{([\s\S]*?)\n\};/.exec(rules)[1].matchAll(/^  ([a-z]+): \{/gm))].map(m => m[1]);
+  assert.ok(classes.length >= 16 && species.length >= 9, 'classes and species parsed');
+  for (const c of classes) for (const sp of species) for (const d of ['down', 'up', 'side']) for (const f of [0, 1]) {
+    const n = sp === 'hearthkin' ? `fdw_${c}_${d}${f}` : `fdw_${c}_${sp}_${d}${f}`;
+    assert.ok(has(n), n);
+  }
+  const F = families();
+  for (const fam of Object.values(F)) for (const [sub] of fam.sub) {
+    for (const v of ['base', 'ember', 'frost', 'venom', 'shadow', 'gilded', 'ash']) assert.ok(has(`fdm_${slug(sub)}_${v}`), `fdm_${slug(sub)}_${v}`);
+    for (const k of [0, 1, 2]) assert.ok(has(`fdb_${slug(sub)}_${k}`), `fdb_${slug(sub)}_${k}`);
+  }
+  for (const r of ['guard', 'merchant', 'innkeeper', 'blacksmith', 'realmstone']) for (const k of [0, 1]) assert.ok(has(`fdn_${r}_${k}`));
+  for (const k of ['tree', 'pine', 'rock', 'inn', 'shop', 'temple', 'keep', 'wall', 'gate']) assert.ok(has(`gt_fdmeadow_${k}`) && has(`gt_fdcoast_${k}`), k);
+  const art = read('src/art.js');
+  for (const fn of ['function fdMonsterArt', 'function fdWorldTile', 'function fdWalker', 'function fdNpcArt']) assert.ok(art.includes(fn), fn);
+  assert.match(read('src/scenes_world.js'), /fdWalker\(G, G\.dir/);
+  assert.match(read('src/npc_art.js'), /fdNpcArt\(role, blink\)/);
+  assert.match(read('src/combat.js'), /fdWalkerName\(c, 'right'/);
 });

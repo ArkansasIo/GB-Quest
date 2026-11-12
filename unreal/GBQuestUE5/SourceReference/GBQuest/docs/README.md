@@ -15,6 +15,11 @@
 | [BUILD.md](BUILD.md) | Build, run, full-screen build, tests, release checklist |
 | [SERVER.md](SERVER.md) | Realm server, accounts (register/login/logout), cloud saves, offline/online modes, API |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Code map and separation of client, MMORPG backend, store, and admin control plane |
+| [adr/0001-backend-modes.md](adr/0001-backend-modes.md) | Which server to run (realm server or MMO service) and which client code talks to each |
+| [COMBAT_EFFECTS.md](COMBAT_EFFECTS.md) | Every attribute, substat, buff, debuff and condition, with what it does in combat |
+| [EXPANSIONS.md](EXPANSIONS.md) | All 20 expansions: levels, regions, dungeons, raids and campaigns |
+| [INSTANCES.md](INSTANCES.md) | All 104 dungeons, 35 raids, 16 trials and 18 towers |
+| [BUILDINGS.md](BUILDINGS.md) | Inns, shops, shrines and houses in every town and village |
 | [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md) | Nine-realm directory, friends, invite codes, and in-game store frame |
 | [DEBUGGING.md](DEBUGGING.md) | Debug panel, automated sweep, debug hooks, bugs fixed |
 | **Generated reference** (`node tools/gen_docs.cjs`) | |

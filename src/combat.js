@@ -71,12 +71,13 @@ function removeEffect(u, id) { u.effects = u.effects.filter(e => e.id !== id); }
 class Battle {
   constructor(opt) {
     this.opaque = true;
-    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.noRewards = opt.noRewards === true;
+    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.trialFx = opt.trialFx || null; this.noRewards = opt.noRewards === true;
     this.party = opt.party; this.foes = opt.foes.map(foeMember); this.all = [...this.party, ...this.foes];
     this.noFlee = opt.noFlee || this.foes.some(f => f.boss) || ['dungeon', 'raid', 'trial', 'tower', 'arena'].includes(this.kind);
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
     this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
+    if (typeof GBQMusic !== 'undefined') this.music = GBQMusic.battleMusic(this.music, this); // area, boss, elite, arena and trial tracks
     this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
     combatHotkeyHandler = index => this.useHotbar(index);
     window.GBQCombatHotbar = { entries: () => ['menu', 'list', 'realtime'].includes(this.state) && this.actor?.ch === G ? this.hotbarEntries(this.actor).map(entry => { const cooldown = Number(this.rt?.cooldowns?.[entry.id] || 0), gcd = this.combatMode === 'realtime' ? Number(this.rt?.gcd || 0) : 0; return { id: entry.id, name: entry.name, ok: !!entry.ok, sub: entry.sub || '', remaining: Math.max(cooldown, gcd), cooldown, gcd, paused: !!this.rt?.paused }; }) : [], use: index => this.useHotbar(index) };
@@ -151,6 +152,13 @@ class Battle {
   enter() { Music.play(this.music); }
   resume() { if (this.state !== 'over') Music.play(this.music); }
   setupEffects() {
+    // trial rules (TRIALS[].partyFx / foeFx / foeHp): effects for the whole fight; ids may be [id, stacks]
+    const fx = this.trialFx;
+    if (fx) {
+      const apply = (u, list) => { for (const x of list) { const [id, stacks] = Array.isArray(x) ? x : [x, 1]; if (BUFFS[id] || CONDITIONS[id]) addEffect(u, { id, rounds: 999, stacks, trial: true }); } };
+      for (const u of this.party) apply(u, fx.party || []);
+      for (const f of this.foes) { apply(f, fx.foes || []); if (fx.foeHp > 1) { f.maxhp = Math.round(f.maxhp * fx.foeHp); f.hp = f.maxhp; } }
+    }
     for (const u of this.party.slice()) {
       if (!isChar(u)) continue;
       const c = u.ch; c.buffs = (c.buffs || []);
@@ -976,7 +984,7 @@ class Battle {
     this.run(steps, () => {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }
-      for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); }
+      for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); const DM = derive(u.ch); if (u.ch.hp > DM.hpMax) u.ch.hp = DM.hpMax; } // an expiring WELL FED lowers max HP
       const res = this.noRewards ? { ups: [] } : gainXP(G, xp);
       if (!this.noRewards) for (const u of this.party) if (isChar(u) && u.ch !== G && u.ch.ai) { if (u.ch.lvl < G.lvl) { u.ch.lvl = G.lvl; u.ch.xp = xpForLevel(G.lvl); const DD = derive(u.ch); u.ch.hp = DD.hpMax; u.ch.res = resMax(u.ch, DD); } }
       if (!this.noRewards) recordVictory(this);

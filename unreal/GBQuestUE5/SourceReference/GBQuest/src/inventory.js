@@ -55,7 +55,9 @@ function compareDelta(c, it) {
   const after = derive(copy);
   return { cur, d: { ac: after.ac - before.ac, hp: after.hpMax - before.hpMax, hit: after.weapon.hit - before.weapon.hit, dmg: diceAvg(after.weapon.dice) + after.weapon.dmg - diceAvg(before.weapon.dice) - before.weapon.dmg, init: after.init - before.init } };
 }
-const salvageYield = it => it.rarity >= 5 ? { ember: 1, shard: 2, scrap: 4 } : it.rarity >= 3 ? { shard: 1, scrap: 2 + (it.rarity - 3) } : { scrap: 1 + it.rarity };
+const salvageBaseYield = it => it.rarity >= 5 ? { ember: 1, shard: 2, scrap: 4 } : it.rarity >= 3 ? { shard: 1, scrap: 2 + (it.rarity - 3) } : { scrap: 1 + it.rarity };
+// Other systems add to salvage through window.SALVAGE_EXTRAS (each: item -> { material: count }).
+const salvageYield = it => { const y = salvageBaseYield(it); for (const f of (typeof window !== 'undefined' && window.SALVAGE_EXTRAS) || []) { const e = f(it) || {}; for (const k in e) if (e[k] > 0) y[k] = (y[k] || 0) + e[k]; } return y; };
 const upgradeCost = it => { const n = Math.max(0, it.plus) + 1; return { scrap: 3 * n, shard: it.rarity >= 3 ? n : 0, ember: it.rarity >= 5 ? Math.max(0, n - 3) : 0, gold: 50 * n * Math.max(1, Math.floor(it.ilvl / 5)) }; };
 function canAfford(cost) { return (G.inv.scrap || 0) >= cost.scrap && (G.inv.shard || 0) >= cost.shard && (G.inv.ember || 0) >= cost.ember && G.gold >= cost.gold; }
 function salvage(it) { const y = salvageYield(it); for (const k in y) addItem(k, y[k]); const i = G.bag.indexOf(it); if (i >= 0) G.bag.splice(i, 1); return y; }

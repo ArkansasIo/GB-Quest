@@ -1,0 +1,6 @@
+/* Atlas of Valendria fonts (SIL Open Font License 1.1, see client/fonts/LICENSE-*.txt).
+   Inlined as data URIs by tools/build_atlas.py so the atlas makes no external font requests. */
+@font-face { font-family: "IM Fell English"; font-style: normal; font-weight: 400; font-display: swap; src: url("im-fell-english-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IM Fell English"; font-style: italic; font-weight: 400; font-display: swap; src: url("im-fell-english-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "IM Fell English SC"; font-style: normal; font-weight: 400; font-display: swap; src: url("im-fell-english-sc-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Silkscreen"; font-style: normal; font-weight: 400; font-display: swap; src: url("silkscreen-latin-400-normal.woff2") format("woff2"); }

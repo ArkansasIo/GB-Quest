@@ -865,8 +865,8 @@ class Field {
     if (this.zone.town && this.zone.id === this.zone.region) {
       const svc = { K: 'tower', k: 'tower', Q: 'arena', R: 'portal', H: 'auction', J: 'inn', r: 'mail', q: 'trainer' }[ch]; if (svc) return npcService({ svc, name: svc.toUpperCase() });
     } else if (this.zone.town) { const svc = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', Q: 'portal', R: 'portal' }[ch]; if (svc) return npcService({ svc, name: svc.toUpperCase() }); }
-    if (ch === 'k' || ch === 'K') { const dg = this.m.poi.dungeon; if (dg) return instanceMenu('dungeon', DUNGEONS.find(d => d.id === dg.id)); }
-    if (ch === 'R' && this.m.poi.raid) return instanceMenu('raid', RAIDS.find(d => d.id === this.m.poi.raid.id));
+    if (ch === 'k' || ch === 'K') { const dg = this.m.poi.dungeon; if (dg) return instancePicker('dungeon', DUNGEONS, dg.id); }
+    if (ch === 'R' && this.m.poi.raid) return instancePicker('raid', RAIDS, this.m.poi.raid.id);
     if (TILE_SVC[ch] && this.zone.id === 'elderwood') return npcService({ svc: TILE_SVC[ch], name: TILE_SVC[ch].toUpperCase() });
     if (ch === 'H' || ch === 'J') return say('A cosy house. Nobody answers.');
     if (ch === 'r' || ch === 'q') return say('A small shrine. You feel calm.');
@@ -952,6 +952,7 @@ class Field {
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
+      else if (e.kind === 'building') { if (typeof drawBuilding === 'function') drawBuilding(e, ex, ey); }
       else if (e.kind === 'woods') {
         const tree = woodsSprite(e.variant, e.biome);
         if (tree) {
@@ -1521,6 +1522,13 @@ function runBattlegroundRound(match) {
     },
   });
 }
+// a region's entrance leads to every dungeon (or raid) of that region: one opens straight away, several give a choice
+function instancePicker(kind, list, id) {
+  const first = list.find(d => d.id === id); if (!first) return;
+  const here = list.filter(d => d.zone === first.zone);
+  if (here.length === 1) return instanceMenu(kind, first);
+  choose(here.map(d => `${d.name.slice(0, 17)} ${d.lvl}`), i => { if (i >= 0) instanceMenu(kind, here[i]); }, `${here.length} ${kind === 'raid' ? 'RAIDS' : 'DUNGEONS'} lie beyond this entrance.`);
+}
 function lfgMenu() {
   const dgs = DUNGEONS.filter(d => d.lvl <= G.lvl + 6), rds = RAIDS.filter(r => r.lvl <= G.lvl + 6);
   const opts = dgs.map(d => ({ t: `DG ${d.name} ${d.lvl}`, k: 'dungeon', d })).concat(rds.map(r => ({ t: `RAID ${r.name} ${r.lvl}`, k: 'raid', d: r })));
@@ -1621,7 +1629,7 @@ function fightPull(p) {
       if (inst.kind === 'raid') { G.stats.raids++; G.raidWeek[inst.def.id] = weekKey(); questEvent('raid', inst.def.id); toast('RAID CLEARED', inst.def.name, 'px_crown', 'act_complete'); }
       checkAchievements();
     }
-    if (inst.kind === 'tower' && p.boss) { G.towerBest = Math.max(G.towerBest, inst.floor); NET.publishHero(); checkAchievements(); }
+    if (inst.kind === 'tower' && p.boss) { setTowerBest(towerSpec(inst.def).id, inst.floor); NET.publishHero(); checkAchievements(); }
     if (p.boss && inst.size > 1 && R() < 0.6) push(new LootRoll(makeItem({ lvl: p.lvl, boss: true, mf: derive(G).mf, loot: DIFFICULTY[difficulty - 1].loot }), inst.size));
   } });
 }
@@ -1637,21 +1645,36 @@ function openInstanceChest() {
 function leaveInstance() {
   choose(['LEAVE', 'STAY'], k => { if (k !== 0) return; const r = G.inst.return; fadeTo(() => { G.inst = null; G.map = r.map; G.x = r.x; G.y = r.y + 1; FIELD.reload(); safeSpot(); }); }, 'Leave the instance? Progress resets.');
 }
-function towerMenu() {
-  const cps = [1]; for (let f = 10; f <= Math.min(100, G.towerBest + 1); f += 10) if (f <= G.towerBest + 1) cps.push(f);
-  choose(cps.map(f => `START FLOOR ${f}`).concat([`BEST: ${G.towerBest}F`]), i => {
+// ---- towers: the SPIRE OF A HUNDRED plus 17 more (TOWERS in data_world.js). The Spire keeps its progress in
+// G.towerBest (achievements, titles and leaderboards read it); the others keep theirs in G.towerBests[id].
+function towerBestOf(id) { return id === 'tower' ? (G.towerBest || 0) : ((G.towerBests || {})[id] || 0); }
+function setTowerBest(id, floor) {
+  if (id === 'tower') G.towerBest = Math.max(G.towerBest || 0, floor);
+  else { G.towerBests = G.towerBests || {}; G.towerBests[id] = Math.max(G.towerBests[id] || 0, floor); }
+}
+function towerDef(tw, floor) { return { id: tw.id, towerId: tw.id, name: tw.name, lvl: tw.baseLvl, theme: towerTheme(tw, floor) }; }
+function towerMenu(towerId) {
+  const tw = towerId && TOWER_BY_ID[towerId];
+  if (!tw) {
+    const open = TOWERS.filter(t => t.baseLvl <= G.lvl + 10);
+    const label = t => `${t.name.slice(0, 15)} ${towerBestOf(t.id)}/${t.floors}`;
+    return choose(open.map(label), i => { if (i >= 0) towerMenu(open[i].id); },
+      `TOWERS: ${open.length} of ${TOWERS.length} open. More open as you level.`);
+  }
+  const best = towerBestOf(tw.id), cps = [1];
+  for (let f = 10; f <= Math.min(tw.floors, best + 1); f += 10) cps.push(f);
+  choose(cps.map(f => `START FLOOR ${f}`).concat([`BEST: ${best}F`]), i => {
     if (i < 0 || i >= cps.length) return;
-    enterInstance('tower', { id: 'tower', name: TOWER.name, lvl: TOWER.baseLvl, theme: ['void', 'crypt', 'lava', 'ice', 'temple'][Math.floor(cps[i] / 20) % 5] }, cps[i], Math.max(1, Math.min(4, fieldPartySize())));
-  }, `${TOWER.name}: 100 floors. Boss every 5th.`);
+    enterInstance('tower', towerDef(tw, cps[i]), cps[i], Math.max(1, Math.min(4, fieldPartySize())));
+  }, `${tw.name}: ${tw.desc} Boss every ${tw.bossEvery}th.`);
 }
 function towerNext() {
-  const inst = G.inst;
+  const inst = G.inst, tw = towerSpec(inst.def);
   const bossLeft = inst.map.pulls.some(p => p.boss && !inst.cleared.includes(p.id));
   if (bossLeft) return say('The stairs are sealed. Defeat this floor\'s guardian.');
-  G.towerBest = Math.max(G.towerBest, inst.floor);
-  if (inst.floor >= TOWER.floors) { checkAchievements(); return say(['You stand atop the SPIRE OF A HUNDRED.', 'The whole of AELMOOR glitters below. LEGEND.']); }
-  const def = Object.assign({}, inst.def, { theme: ['void', 'crypt', 'lava', 'ice', 'temple'][Math.floor((inst.floor + 1) / 20) % 5] });
-  enterInstance('tower', def, inst.floor + 1, inst.size);
+  setTowerBest(tw.id, inst.floor);
+  if (inst.floor >= tw.floors) { checkAchievements(); return say([`You stand atop the ${tw.name}.`, tw.id === 'tower' ? 'The whole of AELMOOR glitters below. LEGEND.' : `${tw.floors} floors conquered.`]); }
+  enterInstance('tower', Object.assign({}, inst.def, { theme: towerTheme(tw, inst.floor + 1) }), inst.floor + 1, inst.size);
 }
 
 // ================================================================ trials (boss rush etc)
@@ -1664,15 +1687,20 @@ function trialsMenu() {
 function runTrial(t, stage) {
   const bosses = BOSSES.filter(b => b.where === t.id).sort((a, b) => a.order - b.order);
   const lvl = Math.max(t.lvl, G.lvl) + stage;
+  const bossFoe = k => { const B = bosses[k % bosses.length]; const f = makeMonster(B, lvl, G.difficulty, { bossId: B.id, cat: 'trial' }); f.name = B.name.slice(0, 16); return f; };
   let foes;
   if (t.rule === 'waves') foes = Array.from({ length: 3 }, () => makeMonster(pick(BESTIARY), lvl - 1, G.difficulty));
   else if (t.rule === 'mirror') foes = [adventurerFoe(makeAdventurer(G.cls, G.lvl, 'MIRROR ' + G.name.slice(0, 8)))];
-  else { const B = bosses[stage % bosses.length]; const f = makeMonster(B, lvl, G.difficulty, { bossId: B.id, cat: 'trial' }); f.name = B.name.slice(0, 16); foes = [f]; }
-  const stages = t.rule === 'waves' ? 10 : t.rule === 'mirror' ? 3 : 5;
-  startBattle(foes, { size: t.rule === 'solo' || t.rule === 'mirror' ? 1 : Math.min(4, fieldPartySize()), kind: 'trial', rule: t.rule, noFlee: true, music: 'boss', onEnd: r => {
+  else if (t.pair) foes = [bossFoe(stage), bossFoe(stage + 1)];   // TRIAL OF TWO: two bosses at once
+  else foes = [bossFoe(stage)];
+  const stages = t.stages || (t.rule === 'waves' ? 10 : t.rule === 'mirror' ? 3 : 5);
+  const size = t.size || (t.rule === 'solo' || t.rule === 'mirror' ? 1 : Math.min(4, fieldPartySize()));
+  // trial rules built on combat effects: applied when the battle starts and kept for the whole fight
+  const trialFx = t.partyFx || t.foeFx || t.foeHp ? { party: t.partyFx || [], foes: t.foeFx || [], foeHp: t.foeHp || 1 } : null;
+  startBattle(foes, { size: Math.min(size, fieldPartySize()), kind: 'trial', rule: t.rule, trialFx, noFlee: true, music: 'boss', onEnd: r => {
     if (r !== 'win') { G.hp = Math.max(1, G.hp); return say(`Trial failed at stage ${stage + 1}.`); }
     if (stage + 1 >= stages) { G.stats.trials++; const it = makeItem({ lvl: lvl + 2, rarity: 4 }); addGear(it); checkAchievements(); return say([`${t.name} COMPLETE!`, `Reward: ${it.name}`]); }
-    if (t.rule !== 'rush') { const D = derive(G); G.hp = Math.min(D.hpMax, G.hp + Math.ceil(D.hpMax * 0.3)); }
+    if (t.rule !== 'rush' && !t.noRest) { const D = derive(G); G.hp = Math.min(D.hpMax, G.hp + Math.ceil(D.hpMax * 0.3)); }
     say(`Stage ${stage + 1}/${stages} cleared! Next...`, () => runTrial(t, stage + 1));
   } });
 }

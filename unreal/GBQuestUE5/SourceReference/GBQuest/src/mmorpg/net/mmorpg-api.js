@@ -2,7 +2,7 @@ import { MultiplayerClient } from './multiplayer-client.js';
 
 /** HTTP account API plus the authoritative WSS transport for the standalone itch.io client. */
 export class GBQuestMMOApi {
-  constructor({ baseUrl, fetchImpl = globalThis.fetch, WebSocketImpl = globalThis.WebSocket, onMessage, onStatus } = {}) {
+  constructor({ baseUrl, fetchImpl = globalThis.fetch, WebSocketImpl = globalThis.WebSocket, onMessage, onStatus, autoReconnect = false, reconnectDelayMs = 1000, maxReconnectDelayMs = 30000 } = {}) {
     if (!baseUrl) throw new TypeError('baseUrl is required');
     this.baseUrl = new URL(baseUrl).origin;
     const parsedBase = new URL(baseUrl);
@@ -10,7 +10,7 @@ export class GBQuestMMOApi {
     if (parsedBase.protocol !== 'https:' && !(parsedBase.protocol === 'http:' && localDevelopmentHost)) throw new TypeError('Remote MMO API must use HTTPS; HTTP is allowed only on localhost');
     this.fetch = fetchImpl;
     this.token = null;
-    this.multiplayer = new MultiplayerClient({ onMessage, onStatus, WebSocketImpl });
+    this.multiplayer = new MultiplayerClient({ onMessage, onStatus, WebSocketImpl, autoReconnect, reconnectDelayMs, maxReconnectDelayMs });
   }
   async request(path, { method = 'GET', body, auth = true } = {}) {
     const headers = { accept: 'application/json' };
@@ -31,29 +31,87 @@ export class GBQuestMMOApi {
   }
   me() { return this.request('/api/me'); }
   characters() { return this.request('/api/characters'); }
-  createCharacter(name, characterClass) {
-    return this.request('/api/characters', { method: 'POST', body: { name, class: characterClass } });
+  worldStatus({ refresh = false } = {}) { return this.request('/api/world/status' + (refresh ? '?refresh=1' : '')); }
+  chatHistory(characterId, channel = 'zone', limit = 50) {
+    const query = '?channel=' + encodeURIComponent(channel) + '&limit=' + encodeURIComponent(limit);
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/chat' + query);
   }
-  dungeonCatalog() {
-    return this.request('/api/dungeons/catalog', { auth: false });
+  whisperHistory(characterId, peerCharacterId, limit = 50) {
+    const query = '?with=' + encodeURIComponent(peerCharacterId) + '&limit=' + encodeURIComponent(limit);
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/whispers' + query);
   }
-  joinDungeonQueue(characterId, dungeonId, role) {
-    return this.request('/api/dungeons/queue', { method: 'POST', body: { characterId, dungeonId, role } });
+
+  /**
+   * Rebuild the character's durable UI state after reconnecting. WebSocket events
+   * are transient, so each resource is fetched independently and failures are
+   * returned without discarding successful recovery results.
+   */
+  async recoverSession(characterId, { chatLimit = 50 } = {}) {
+    if (typeof characterId !== 'string' || !characterId.trim()) throw new TypeError('characterId is required');
+    const resources = {
+      profile: () => this.characterProfile(characterId),
+      collections: () => this.collections(characterId),
+      inventory: () => this.inventory(characterId),
+      quests: () => this.quests(characterId),
+      party: () => this.party(characterId),
+      raidGroup: () => this.raidGroup(characterId),
+      raidLockouts: () => this.raidLockouts(characterId),
+      guild: () => this.guild(characterId),
+      instance: () => this.instance(characterId),
+      mail: () => this.mail(characterId),
+      friends: () => this.friends(characterId),
+      trades: () => this.trades(characterId),
+      zoneChat: () => this.chatHistory(characterId, 'zone', chatLimit),
+      realmChat: () => this.chatHistory(characterId, 'realm', chatLimit)
+    };
+    const names = Object.keys(resources);
+    const results = await Promise.allSettled(names.map(name => resources[name]()));
+    const recovered = {}, errors = [];
+    results.forEach((result, index) => {
+      const name = names[index];
+      if (result.status === 'fulfilled') recovered[name] = result.value;
+      else errors.push({ resource: name, message: result.reason?.message || 'recovery_failed', status: result.reason?.status || null });
+    });
+    return { characterId, recoveredAt: new Date().toISOString(), resources: recovered, errors };
   }
-  dungeonQueueStatus(characterId) {
-    return this.request('/api/dungeons/queue/' + encodeURIComponent(characterId));
+  regions() { return this.request('/api/regions'); }
+  realms(regionId) {
+    const query = regionId ? '?region=' + encodeURIComponent(regionId) : '';
+    return this.request('/api/realms' + query);
   }
-  leaveDungeonQueue(characterId) {
-    return this.request('/api/dungeons/queue/' + encodeURIComponent(characterId), { method: 'DELETE' });
+  createCharacter(name, characterClass, realmId) {
+    const body = { name, class: characterClass };
+    if (realmId) body.realmId = realmId;
+    return this.request('/api/characters', { method: 'POST', body });
   }
-  dungeonGroup(groupId) {
-    return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId));
+  talentTrees(characterClass) {
+    return this.request('/api/talents?class=' + encodeURIComponent(characterClass));
   }
-  startDungeonGroup(groupId) {
-    return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId) + '/start', { method: 'POST', body: {} });
+  chooseSpecialization(characterId, specializationId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/specialization', {
+      method: 'POST', body: { specializationId }
+    });
   }
-  completeDungeonGroup(groupId) {
-    return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId) + '/complete', { method: 'POST', body: {} });
+  unlockTalent(characterId, nodeId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/talents/' + encodeURIComponent(nodeId) + '/unlock', {
+      method: 'POST', body: {}
+    });
+  }
+  collections(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/collections');
+  }
+  activateCollectionEntry(characterId, category, entryId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/collections/activate', {
+      method: 'POST', body: { category, entryId }
+    });
+  }
+  characterProfile(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/profile');
+  }
+  allocateAttribute(characterId, attribute, points = 1) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/attributes', {
+      method: 'POST', body: { attribute, points }
+    });
   }
   inventory(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/inventory');
@@ -75,6 +133,170 @@ export class GBQuestMMOApi {
   }
   trades(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades');
+  }
+  party(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party');
+  }
+  createParty(characterId, name = '') {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'POST', body: { name } });
+  }
+  inviteToParty(partyId, inviterCharacterId, inviteeCharacterId) {
+    return this.request('/api/parties/' + encodeURIComponent(partyId) + '/invites', {
+      method: 'POST', body: { inviterCharacterId, inviteeCharacterId }
+    });
+  }
+  acceptPartyInvite(inviteId, characterId) {
+    return this.request('/api/party-invites/' + encodeURIComponent(inviteId) + '/accept', {
+      method: 'POST', body: { characterId }
+    });
+  }
+  leaveParty(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/party', { method: 'DELETE' });
+  }
+  setPartyRole(partyId, actorCharacterId, targetCharacterId, role) {
+    return this.request('/api/parties/' + encodeURIComponent(partyId) + '/members/' + encodeURIComponent(targetCharacterId) + '/role', {
+      method: 'POST', body: { actorCharacterId, role }
+    });
+  }
+  pvpMatches(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/pvp-matches');
+  }
+  challengeDuel(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/pvp-challenges', { method: 'POST', body: { targetCharacterId } });
+  }
+  acceptDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/accept', { method: 'POST', body: { characterId } });
+  }
+  declineDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/decline', { method: 'POST', body: { characterId } });
+  }
+  cancelDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/cancel', { method: 'POST', body: { characterId } });
+  }
+  forfeitDuel(matchId, characterId) {
+    return this.request('/api/pvp-matches/' + encodeURIComponent(matchId) + '/forfeit', { method: 'POST', body: { characterId } });
+  }
+  mail(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail');
+  }
+  sendMail(characterId, recipientCharacterId, { subject = '', body = '', gold = 0, attachments = [] } = {}) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail/send', { method: 'POST', body: { recipientCharacterId, subject, body, gold, attachments } });
+  }
+  claimMail(mailId, characterId) {
+    return this.request('/api/mail/' + encodeURIComponent(mailId) + '/claim', { method: 'POST', body: { characterId } });
+  }
+  auctions(realmId, itemId = '') {
+    const query = '?realmId=' + encodeURIComponent(realmId) + (itemId ? '&itemId=' + encodeURIComponent(itemId) : '');
+    return this.request('/api/auctions' + query);
+  }
+  createAuction(characterId, itemId, quantity, buyoutGold, durationHours = 24) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/auctions', { method: 'POST', body: { itemId, quantity, buyoutGold, durationHours } });
+  }
+  buyAuction(listingId, characterId) {
+    return this.request('/api/auctions/' + encodeURIComponent(listingId) + '/buy', { method: 'POST', body: { characterId } });
+  }
+  cancelAuction(listingId, characterId) {
+    return this.request('/api/auctions/' + encodeURIComponent(listingId) + '/cancel', { method: 'POST', body: { characterId } });
+  }
+  friends(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends');
+  }
+  requestFriend(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends', { method: 'POST', body: { targetCharacterId } });
+  }
+  acceptFriend(characterId, friendCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/' + encodeURIComponent(friendCharacterId) + '/accept', { method: 'POST', body: {} });
+  }
+  removeFriend(characterId, friendCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/' + encodeURIComponent(friendCharacterId), { method: 'DELETE' });
+  }
+  blockPlayer(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks', { method: 'POST', body: { targetCharacterId } });
+  }
+  raidGroup(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group');
+  }
+  raidLockouts(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-lockouts');
+  }
+  createRaidGroup(characterId, { name = '', raidSize = 10 } = {}) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group', { method: 'POST', body: { name, raidSize } });
+  }
+  inviteToRaid(raidGroupId, inviterCharacterId, inviteeCharacterId) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '/invites', { method: 'POST', body: { inviterCharacterId, inviteeCharacterId } });
+  }
+  acceptRaidInvite(inviteId, characterId) {
+    return this.request('/api/raid-invites/' + encodeURIComponent(inviteId) + '/accept', { method: 'POST', body: { characterId } });
+  }
+  setRaidRole(raidGroupId, actorCharacterId, targetCharacterId, role) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '/members/' + encodeURIComponent(targetCharacterId) + '/role', { method: 'POST', body: { actorCharacterId, role } });
+  }
+  transferRaidLeadership(raidGroupId, actorCharacterId, targetCharacterId) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '/transfer', { method: 'POST', body: { actorCharacterId, targetCharacterId } });
+  }
+  leaveRaid(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/raid-group', { method: 'DELETE' });
+  }
+  disbandRaid(raidGroupId, characterId) {
+    return this.request('/api/raids/' + encodeURIComponent(raidGroupId) + '?characterId=' + encodeURIComponent(characterId), { method: 'DELETE' });
+  }
+  instance(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/instances');
+  }
+  createInstance(characterId, dungeonId, difficulty = 'normal') {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/instances', { method: 'POST', body: { dungeonId, difficulty } });
+  }
+  leaveInstance(instanceId, characterId) {
+    return this.request('/api/instances/' + encodeURIComponent(instanceId) + '/leave', { method: 'POST', body: { characterId } });
+  }
+  completeInstance(instanceId, characterId, status = 'completed') {
+    return this.request('/api/instances/' + encodeURIComponent(instanceId) + '/complete', { method: 'POST', body: { characterId, status } });
+  }
+  startReadyCheck(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/ready-checks', { method: 'POST', body: {} });
+  }
+  readyCheck(readyCheckId, characterId) {
+    return this.request('/api/ready-checks/' + encodeURIComponent(readyCheckId) + '?characterId=' + encodeURIComponent(characterId));
+  }
+  respondReadyCheck(readyCheckId, characterId, ready) {
+    return this.request('/api/ready-checks/' + encodeURIComponent(readyCheckId) + '/respond', { method: 'POST', body: { characterId, ready } });
+  }
+  guild(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild');
+  }
+  createGuild(characterId, name) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild', { method: 'POST', body: { name } });
+  }
+  inviteToGuild(guildId, inviterCharacterId, inviteeCharacterId) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/invites', {
+      method: 'POST', body: { inviterCharacterId, inviteeCharacterId }
+    });
+  }
+  acceptGuildInvite(inviteId, characterId) {
+    return this.request('/api/guild-invites/' + encodeURIComponent(inviteId) + '/accept', {
+      method: 'POST', body: { characterId }
+    });
+  }
+  leaveGuild(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/guild', { method: 'DELETE' });
+  }
+  setGuildMemberRank(guildId, actorCharacterId, targetCharacterId, rank) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/members/' + encodeURIComponent(targetCharacterId) + '/rank', {
+      method: 'POST', body: { actorCharacterId, rank }
+    });
+  }
+  updateGuildMotd(guildId, characterId, motd) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/motd', {
+      method: 'POST', body: { characterId, motd }
+    });
+  }
+  transferGuildLeadership(guildId, actorCharacterId, targetCharacterId) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '/transfer', {
+      method: 'POST', body: { actorCharacterId, targetCharacterId }
+    });
+  }
+  disbandGuild(guildId, characterId) {
+    return this.request('/api/guilds/' + encodeURIComponent(guildId) + '?characterId=' + encodeURIComponent(characterId), { method: 'DELETE' });
   }
   createTrade(characterId, toCharacterId, offer = {}) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades', {
@@ -123,9 +345,20 @@ export class GBQuestMMOApi {
     this.multiplayer.connect(wsUrl.toString(), this.token);
   }
   selectCharacter(characterId) {
-    if (!this.multiplayer.send('character.select', { characterId })) throw new Error('Connect to the realm before selecting a character');
+    if (!this.multiplayer.selectCharacter(characterId)) throw new Error('Connect to the realm before selecting a character');
   }
   send(type, payload) { return this.multiplayer.send(type, payload); }
   disconnect() { this.multiplayer.disconnect(); }
+  /** Forget this session locally (the token stays valid on the server until it expires or is revoked). */
   logout() { this.disconnect(); this.token = null; }
+  /** Sign out everywhere: the server revokes every token issued to this account, then this session is forgotten. */
+  async signOut() {
+    try { if (this.token) await this.request('/api/logout', { method: 'POST', body: {} }); }
+    finally { this.logout(); }
+  }
+  /** Change the password; the server revokes all other sessions and returns a fresh token for this one. */
+  async changePassword(oldPassword, newPassword) {
+    const result = await this.request('/api/password', { method: 'POST', body: { oldPassword, newPassword } });
+    this.token = result.token; return result;
+  }
 }

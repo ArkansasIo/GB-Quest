@@ -166,7 +166,7 @@ class PerkTreeScene {
       if (hasPerk(k, p.id)) { this.msg = 'ALREADY LEARNED.'; SFX.error(); return; }
       const e = learnPerk(k, p.id);
       if (e) { this.msg = e.toUpperCase(); SFX.error(); }
-      else { this.msg = `LEARNED ${p.name}!`; SFX.levelup(); checkAchievements(); saveGame(); }
+      else { this.msg = `LEARNED ${p.name}!`; SFX.perk_learn(); checkAchievements(); saveGame(); }
     }
   }
   draw() {

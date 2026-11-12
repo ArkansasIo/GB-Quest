@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Paint a world map for each new expansion (6-13), in the style of the VALENDRIA map:
+"""Paint a world map for each expansion world (6-20), in the style of the VALENDRIA map:
 dark teal ocean with wave flecks, shallows, inked coastlines, biome-coloured lands with texture,
 mountains, forests, rivers, a parchment border, a title cartouche and a compass rose.
 
@@ -28,6 +28,13 @@ WORLDS = [
     (11, 'WHISPERS OF VALHALLA', ['snow', 'coast', 'meadow'], [(.35, .40, .22, .30), (.68, .45, .22, .28), (.50, .80, .14, .10)], [(.32, .30), (.70, .48), (.48, .72)]),
     (12, 'NIGHTSHADE CHRONICLES', ['dusk', 'jungle', 'marsh'], [(.45, .45, .30, .30), (.72, .62, .16, .18), (.22, .70, .10, .12)], [(.42, .34), (.70, .62), (.36, .62)]),
     (13, 'MYTHICAL MEADOWLANDS', ['meadow', 'jungle', 'coast'], [(.50, .48, .38, .34), (.18, .28, .08, .09), (.84, .76, .08, .09)], [(.40, .38), (.64, .58), (.30, .66)]),
+    (14, 'CLOCKWORK EMPIRE', ['badlands', 'volcanic', 'crystal'], [(.38, .40, .26, .24), (.66, .55, .22, .24), (.30, .74, .12, .10)], [(.34, .36), (.66, .52), (.32, .72)]),
+    (15, 'TIDES OF THE LEVIATHAN', ['coast', 'marsh', 'jungle'], [(.26, .36, .14, .16), (.50, .62, .16, .14), (.76, .38, .14, .18), (.62, .20, .06, .06), (.18, .76, .06, .07)], [(.26, .36), (.50, .62), (.76, .40)]),
+    (16, 'SANDS OF ETERNITY', ['badlands', 'coast', 'volcanic'], [(.50, .46, .40, .30), (.26, .76, .14, .10)], [(.44, .36), (.30, .70), (.72, .56)]),
+    (17, 'THE HOLLOW STARS', ['crystal', 'dusk', 'snow'], [(.30, .50, .18, .26), (.60, .40, .16, .18), (.78, .66, .14, .16), (.48, .78, .07, .07)], [(.30, .48), (.60, .38), (.78, .66)]),
+    (18, 'COURTS OF THE FEY', ['jungle', 'crystal', 'meadow'], [(.40, .44, .30, .30), (.74, .40, .14, .20), (.60, .78, .10, .10)], [(.32, .40), (.74, .40), (.52, .66)]),
+    (19, 'IRON LEGION', ['snow', 'badlands', 'volcanic'], [(.50, .34, .40, .22), (.34, .66, .20, .18), (.70, .70, .18, .16)], [(.50, .28), (.34, .64), (.70, .68)]),
+    (20, 'TWILIGHT OF THE GODS', ['dusk', 'volcanic', 'crystal'], [(.24, .44, .16, .22), (.52, .52, .14, .26), (.80, .44, .14, .22)], [(.24, .44), (.52, .56), (.80, .44)]),
 ]
 
 
@@ -148,7 +155,8 @@ def paint(n, title, biomes, blobs, seeds):
         x, y = R.randrange(0, W), R.choice([R.randrange(0, border), R.randrange(H - border, H)])
         d.point((x, y), fill=(40, 30, 20, 255))
     # title cartouche and compass
-    label = title.split(' ')[0] if len(title) > 14 else title
+    short = title[4:] if title.startswith('THE ') else title
+    label = short.split(' ')[0] if len(short) > 14 else short
     tw = len(label) * 12 + 24
     d.rectangle([20, 18, 20 + tw, 50], fill=(196, 168, 118, 255), outline=(40, 28, 18, 255), width=2)
     d.rectangle([24, 22, 16 + tw, 46], outline=(120, 86, 52, 255))
@@ -168,14 +176,18 @@ def paint(n, title, biomes, blobs, seeds):
 
 
 if __name__ == '__main__':
-    pins = {}
+    import sys
+    only = {int(a) for a in sys.argv[1:]}  # e.g. `gen_worldmaps.py 14 15` repaints just those worlds
+    pinfile = os.path.join(ROOT, 'tools', 'worldmap_pins.json')
+    pins = json.load(open(pinfile)) if only and os.path.exists(pinfile) else {}
     for n, title, biomes, blobs, seeds in WORLDS:
+        if only and n not in only: continue
         pins[f'x{n}'] = paint(n, title, biomes, blobs, seeds)
         print('painted', n, title)
-    json.dump(pins, open(os.path.join(ROOT, 'tools', 'worldmap_pins.json'), 'w'), indent=1)
+    json.dump(pins, open(pinfile, 'w'), indent=1)
     # contact sheet
     ims = [Image.open(os.path.join(A, f'gm_x{n}.png')) for n, *_ in WORLDS]
-    sheet = Image.new('RGBA', (320 * 4 + 12, 199 * 2 + 4), (0, 0, 0, 255))
+    sheet = Image.new('RGBA', (320 * 4 + 12, 203 * ((len(ims) + 3) // 4)), (0, 0, 0, 255))
     for i, im in enumerate(ims): sheet.paste(im, ((i % 4) * 324, (i // 4) * 203))
     os.makedirs(os.path.join(ROOT, 'assets_preview'), exist_ok=True)
     sheet.save(os.path.join(ROOT, 'assets_preview', 'expansion_maps.png'))

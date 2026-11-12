@@ -236,11 +236,11 @@ function restMenu() {
 }
 class ActivityFinderScene extends ListScene {
   constructor() { super(7); this.category = 0; }
-  categories() { return ['DUNGEONS', 'RAIDS', 'SPIRE', 'EVENTS']; }
+  categories() { return ['DUNGEONS', 'RAIDS', 'TOWERS', 'EVENTS']; }
   items() {
     if (this.category === 0) return DUNGEONS.filter(entry => entry.lvl <= G.lvl + 6).map(entry => ({ ...entry, activityKind: 'dungeon' }));
     if (this.category === 1) return RAIDS.filter(entry => entry.lvl <= G.lvl + 6).map(entry => ({ ...entry, activityKind: 'raid' }));
-    if (this.category === 2) return [{ id: 'tower', name: TOWER.name, lvl: TOWER.baseLvl, activityKind: 'tower' }];
+    if (this.category === 2) return TOWERS.filter(t => t.baseLvl <= G.lvl + 10).map(t => ({ id: t.id, name: t.name, lvl: t.baseLvl, floors: t.floors, activityKind: 'tower' }));
     return WORLD_EVENTS.map(event => ({ ...event, ...worldEventWindow(event) }))
       .sort((a, b) => a.startsAt - b.startsAt);
   }
@@ -253,7 +253,7 @@ class ActivityFinderScene extends ListScene {
     if (!entry) return;
     SFX.select();
     if (entry.activityKind === 'dungeon' || entry.activityKind === 'raid') return instanceMenu(entry.activityKind, entry);
-    if (entry.activityKind === 'tower') return towerMenu();
+    if (entry.activityKind === 'tower') return towerMenu(entry.id);
     return worldEventMenu(entry);
   }
   draw() {
@@ -278,7 +278,7 @@ class ActivityFinderScene extends ListScene {
     const entry = list[this.i];
     if (entry) {
       frame(3, 110, 153, 25);
-      const detail = entry.activityKind === 'tower' ? '100 FLOORS - CHECKPOINTS' :
+      const detail = entry.activityKind === 'tower' ? `${entry.floors} FLOORS - BEST ${towerBestOf(entry.id)}F` :
         entry.activityKind === 'dungeon' || entry.activityKind === 'raid' ? `${entry.activityKind.toUpperCase()} ENTRANCE` :
           `${ZONE_BY_ID[entry.zone]?.name || entry.zone} - ${entry.status === 'active' ? 'ACTIVE NOW' : 'UPCOMING'}`;
       text(wrap(detail, 24).slice(0, 2).join('\n'), 7, 113, 2);
@@ -935,7 +935,7 @@ class TalentScene extends ListScene {
       return say('Learn ' + (prerequisite ? prerequisite.name : 'the previous talent') + ' first.');
     }
     if ((G.talentPts || 0) < 1) return say('No talent points available.');
-    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
+    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.talent_learn();
   }
   draw() {
     fill(0, 0, W, H, 0); hdr(); textC(this.online ? 'ONLINE TALENTS' : 'TALENT SYSTEM', 80, 13, 'gold');

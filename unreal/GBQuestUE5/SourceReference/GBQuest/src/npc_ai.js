@@ -140,6 +140,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     npcSprite = function (e) {
       if (!e || !e.ai || !e.dir || e.dir === 'down' && !e.walkF) return s0.apply(this, arguments);
       const role = typeof npcRole === 'function' ? npcRole(e) : null, base = role ? `gh_npc_${role}` : null, d = e.dir === 'left' || e.dir === 'right' ? 'side' : e.dir;
+      if (role && S.art === 'packs' && IMG[`fdn_${role}_${d}${e.walkF ? 1 : 0}`]) return spr(`fdn_${role}_${d}${e.walkF ? 1 : 0}`, 16, 24, { flip: e.dir === 'left' });
       if (base && IMG[`${base}_${d}${e.walkF}`]) return spr(`${base}_${d}${e.walkF}`, 16, 16, { flip: e.dir === 'left' });
       return walker(npcLook(e.spr), e.dir, e.walkF);
     };

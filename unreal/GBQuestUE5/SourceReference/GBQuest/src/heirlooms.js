@@ -317,7 +317,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
             if (k !== 0) return;
             if (G.gold < total) { SFX.error(); return say(`That costs ${fmt(total)} G. You have ${fmt(G.gold)} G.`); }
             for (const p of miss) buyHeirloomForAccount(p.id);
-            SFX.buy(); say([`Unlocked ${miss.length} heirlooms for your account.`, 'Summon them from MENU > HEIRLOOMS.']);
+            SFX.heirloom_unlock(); say([`Unlocked ${miss.length} heirlooms for your account.`, 'Summon them from MENU > HEIRLOOMS.']);
           }, 'Unlock every missing piece for the whole account.');
         }
         const r = summonHeirloomSet();

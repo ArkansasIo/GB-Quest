@@ -35,14 +35,30 @@ const maxHpOf = u => isChar(u) ? derive(u.ch).hpMax : u.maxhp;
 function setHp(u, v) { if (isChar(u)) u.ch.hp = v; else u.hp = v; }
 const hasEff = (u, id) => u.effects.some(e => e.id === id);
 const effOf = (u, id) => u.effects.find(e => e.id === id);
-const condFlag = (u, flag) => u.effects.some(e => CONDITIONS[e.id] && CONDITIONS[e.id][flag]) || u.effects.some(e => BUFFS[e.id] && BUFFS[e.id].mods && BUFFS[e.id].mods[flag]);
+// OUTLINED (noInvis) cancels the invisible / hidden conditions' own flags as well
+const revealed = u => u.effects.some(e => CONDITIONS[e.id] && CONDITIONS[e.id].noInvis);
+const condFlag = (u, flag) => u.effects.some(e => CONDITIONS[e.id] && CONDITIONS[e.id][flag] && !((e.id === 'invisible' || e.id === 'hidden') && revealed(u))) || GBQEffects.flag(u.effects, BUFFS, flag);
 const downed = u => isChar(u) ? (u.ch.hp <= 0) : u.hp <= 0;
 const alive = u => !downed(u) && !hasEff(u, 'banished');
+// summed buff/debuff numbers for a unit (src/effect_engine.js); a hero's saved buffs are already inside derive()
+const effMods = u => GBQEffects.mods(u.effects, BUFFS, isChar(u));
+// effect bonus to one roll of a kind ('hit' or 'saves'): flat mods + dice (BLESSED) + one-shot bonuses (INSPIRED,
+// removed once used)
+function effRollBonus(u, kind) {
+  let b = effMods(u)[kind] || 0;
+  for (const d of GBQEffects.dice(u.effects, BUFFS, kind)) b += roll(d).total;
+  for (const o of GBQEffects.onceBonuses(u.effects, BUFFS, kind)) { b += o.value; removeEffect(u, o.id); }
+  return b;
+}
 function acOf(u) {
   let ac = isChar(u) ? derive(u.ch).ac : u.ac;
-  for (const e of u.effects) { if (e.id === 'ac') ac += e.val || 0; if (e.id === 'haste') ac += 2; if (e.id === 'frostbite') ac -= 1 * (e.stacks || 1); if (e.id === 'sundered') ac -= 2 * (e.stacks || 1); if (e.id === 'slowed') ac -= 2; }
-  return ac;
+  const ward = effOf(u, 'ac'); if (ward) ac += ward.val || 0;
+  return ac + (effMods(u).acb || 0);
 }
+// combat percentages: gear/derive part (heroes) plus active effects, within GBQEffects.CAPS
+const dodgeOf = u => GBQEffects.cap('dodge', (isChar(u) ? derive(u.ch).dodge : 0) + (effMods(u).dodge || 0));
+const hasteOf = u => GBQEffects.cap('haste', (isChar(u) ? derive(u.ch).haste : 0) + (effMods(u).haste || 0));
+const resistOf = u => GBQEffects.cap('resist', (isChar(u) ? derive(u.ch).resistAll : 0) + (effMods(u).resist || 0));
 function addEffect(u, e) {
   const def = BUFFS[e.id];
   const ex = effOf(u, e.id);
@@ -55,12 +71,13 @@ function removeEffect(u, id) { u.effects = u.effects.filter(e => e.id !== id); }
 class Battle {
   constructor(opt) {
     this.opaque = true;
-    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.noRewards = opt.noRewards === true;
+    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.trialFx = opt.trialFx || null; this.noRewards = opt.noRewards === true;
     this.party = opt.party; this.foes = opt.foes.map(foeMember); this.all = [...this.party, ...this.foes];
     this.noFlee = opt.noFlee || this.foes.some(f => f.boss) || ['dungeon', 'raid', 'trial', 'tower', 'arena'].includes(this.kind);
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
     this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
+    if (typeof GBQMusic !== 'undefined') this.music = GBQMusic.battleMusic(this.music, this); // area, boss, elite, arena and trial tracks
     this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
     combatHotkeyHandler = index => this.useHotbar(index);
     window.GBQCombatHotbar = { entries: () => ['menu', 'list', 'realtime'].includes(this.state) && this.actor?.ch === G ? this.hotbarEntries(this.actor).map(entry => { const cooldown = Number(this.rt?.cooldowns?.[entry.id] || 0), gcd = this.combatMode === 'realtime' ? Number(this.rt?.gcd || 0) : 0; return { id: entry.id, name: entry.name, ok: !!entry.ok, sub: entry.sub || '', remaining: Math.max(cooldown, gcd), cooldown, gcd, paused: !!this.rt?.paused }; }) : [], use: index => this.useHotbar(index) };
@@ -135,6 +152,13 @@ class Battle {
   enter() { Music.play(this.music); }
   resume() { if (this.state !== 'over') Music.play(this.music); }
   setupEffects() {
+    // trial rules (TRIALS[].partyFx / foeFx / foeHp): effects for the whole fight; ids may be [id, stacks]
+    const fx = this.trialFx;
+    if (fx) {
+      const apply = (u, list) => { for (const x of list) { const [id, stacks] = Array.isArray(x) ? x : [x, 1]; if (BUFFS[id] || CONDITIONS[id]) addEffect(u, { id, rounds: 999, stacks, trial: true }); } };
+      for (const u of this.party) apply(u, fx.party || []);
+      for (const f of this.foes) { apply(f, fx.foes || []); if (fx.foeHp > 1) { f.maxhp = Math.round(f.maxhp * fx.foeHp); f.hp = f.maxhp; } }
+    }
     for (const u of this.party.slice()) {
       if (!isChar(u)) continue;
       const c = u.ch; c.buffs = (c.buffs || []);
@@ -222,9 +246,15 @@ class Battle {
       this.decay(u);
       this.run(steps, () => this.after()); return null;
     }
+    // charmed (noAttack): heroes and companions lose the turn too, not only monsters
+    if (u.side === 'party' && condFlag(u, 'noAttack')) {
+      steps.push(this.say(`${u.name} is charmed and will not attack.`));
+      this.decay(u);
+      this.run(steps, () => this.after()); return null;
+    }
     if (hasEff(u, 'prone')) { removeEffect(u, 'prone'); steps.push(this.say(`${u.name} stands up.`)); }
-    // haste substat: chance of a bonus extra action
-    const hasteP = isChar(u) ? derive(u.ch).haste : (effOf(u, 'frenzy') ? 10 * effOf(u, 'frenzy').stacks : 0);
+    // haste: gear substat (heroes) plus HASTED / FRENZIED / FROSTBITTEN / SLOWED, as a chance of an extra action
+    const hasteP = hasteOf(u);
     if (hasteP && R() * 100 < hasteP) { this.extraAction = true; steps.push(this.say(`${u.name} moves with haste! Extra action.`)); }
     return steps;
   }
@@ -278,12 +308,14 @@ class Battle {
   advState(att, tgt, opt = {}) {
     let adv = 0, dis = 0;
     if (condFlag(att, 'attackDis')) dis++;
-    if (hasEff(att, 'invisible') || hasEff(att, 'hidden') || condFlag(att, 'attackAdv')) adv++;
+    // OUTLINED (noInvis): an outlined unit gets no benefit from being invisible or hidden
+    const unseen = u => (hasEff(u, 'invisible') || hasEff(u, 'hidden')) && !condFlag(u, 'noInvis');
+    if (unseen(att) || condFlag(att, 'attackAdv')) adv++;
     if (hasEff(att, 'reckless') && opt.reckless) adv++;
     if (opt.reckless) adv++;
     if (tgt && tgt.effects.some(e => e.id === 'vowed' && e.src === att.id)) adv++;
     if (tgt && condFlag(tgt, 'attackedAdv')) adv++;
-    if (tgt && (hasEff(tgt, 'dodging') || hasEff(tgt, 'invisible') || condFlag(tgt, 'attackedDis'))) dis++;
+    if (tgt && (hasEff(tgt, 'dodging') || (hasEff(tgt, 'invisible') && !condFlag(tgt, 'noInvis')) || condFlag(tgt, 'attackedDis'))) dis++;
     if (!isChar(att) && att.traits && att.traits.includes('pack') && this.alliesOf(att).filter(alive).length > 1) adv++;
     return adv && !dis ? 1 : dis && !adv ? -1 : 0;
   }
@@ -298,11 +330,10 @@ class Battle {
     if (isChar(u)) { const D = derive(u.ch); bonus = D.saves[abil] + (opt.cond ? D.condSave : 0); if (D.sp.traits.includes('feyblood') && opt.charm) opt.adv = 1; if (D.sp.traits.includes('stoneblood') && opt.poison) opt.adv = 1; if (D.sp.traits.includes('cunning') && opt.spell && ['INT', 'WIS', 'CHA'].includes(abil)) opt.adv = 1; }
     else bonus = (u.saves[abil] || 0);
     for (const v of this.party) if (u.side === 'party' && isChar(v) && hasFeature(v.ch, 'aura') && alive(v)) { bonus += Math.max(1, derive(v.ch).M.CHA); break; }
-    if (hasEff(u, 'bless')) bonus += roll('1d4').total;
-    if (hasEff(u, 'bane') || hasEff(u, 'doomed')) bonus -= 2;
+    bonus += effRollBonus(u, 'saves'); // BLESSED 1d4, INSPIRED +3 once, WELL FED +1, BANED / DOOMED -2
     let adv = opt.adv || 0;
     if (!isChar(u) && opt.spell && u.traits.includes('magicres')) adv = 1;
-    if (hasEff(u, 'foresight')) adv = 1;
+    if (condFlag(u, 'saveAdv')) adv = 1; // FORESIGHT
     if ((abil === 'STR' || abil === 'DEX') && condFlag(u, 'failStrDex')) return { ok: false, roll: 0, total: 0, auto: true };
     if (abil === 'DEX' && condFlag(u, 'dexSaveDis')) adv = adv > 0 ? 0 : -1;
     const r = this.d20adv(adv, u), total = r + bonus;
@@ -325,6 +356,9 @@ class Battle {
   applyDamage(src, tgt, amt, type, opt = {}) {
     if (amt <= 0 || !tgt) return 0;
     let a = amt;
+    // attacker's damage effects (MIGHTY, FRENZIED, WEAKENED) scale every kind of damage it deals; damage over time
+    // (opt.tick) has no attacker here. A hero's gear damage % is already in the weapon and spell rolls.
+    if (src && !opt.tick) { const dm = effMods(src).dmg || 0; if (dm) a = Math.max(0, Math.round(a * (1 + dm / 100))); }
     const resists = isChar(tgt) ? derive(tgt.ch).res : new Set(tgt.res);
     const imm = isChar(tgt) ? [] : tgt.imm, vuln = isChar(tgt) ? [] : tgt.vuln;
     const phys = ['slashing', 'piercing', 'bludgeoning'].includes(type);
@@ -332,8 +366,10 @@ class Battle {
     if (resists.has(type) || (phys && !opt.magic && resists.has('bph')) || (phys && !opt.magic && !isChar(tgt) && tgt.res.includes('bph'))) a = Math.floor(a / 2);
     if (vuln.includes(type)) a *= 2;
     if (hasEff(tgt, 'rage') && (phys || (isChar(tgt) && subKey(tgt.ch, 'totem') && type !== 'psychic'))) a = Math.floor(a / 2);
-    if (isChar(tgt)) { const D = derive(tgt.ch); a = Math.round(a * (1 - D.resistAll / 100)); if (opt.attack && D.block && R() * 100 < D.block) { a = Math.floor(a / 2); SFX.block(); } }
-    for (const e of tgt.effects) { const d = BUFFS[e.id]; if (d && d.takenPct) a = Math.round(a * (1 + d.takenPct / 100)); }
+    // resistance: gear RESIST ALL (heroes) plus FORTIFIED etc., for heroes and monsters alike
+    const resistP = resistOf(tgt); if (resistP) a = Math.round(a * (1 - resistP / 100));
+    if (isChar(tgt)) { const D = derive(tgt.ch); if (opt.attack && D.block && R() * 100 < D.block) { a = Math.floor(a / 2); SFX.block(); } }
+    const takenP = effMods(tgt).takenPct || 0; if (takenP) a = Math.round(a * (1 + takenP / 100)); // SHOCKED, VULNERABLE
     if (opt.attack && isChar(tgt) && hasFeature(tgt.ch, 'uncanny') && !this.uncannyFor) { this.uncannyFor = tgt.id; a = Math.floor(a / 2); }
     // temp HP / wild shape pool
     const ws = effOf(tgt, 'wildshape'); if (ws) { const take = Math.min(ws.pool, a); ws.pool -= take; a -= take; if (ws.pool <= 0) removeEffect(tgt, 'wildshape'); }
@@ -354,7 +390,7 @@ class Battle {
     if (a > 0 && !opt.proc && typeof gearTierProc === 'function') { gearTierProc(this, src, tgt, a); if (src && !isChar(src)) gearTierGuard(this, tgt); }
     if (src && a > 0 && opt.attack && !opt.ranged) {
       let th = isChar(tgt) ? derive(tgt.ch).thorns : (tgt.mechs && tgt.mechs.includes('reflect') ? Math.ceil(a * 0.15) : 0);
-      if (hasEff(tgt, 'thornskin')) th += 6;
+      th += effMods(tgt).thorns || 0; // THORNSKIN
       if (th) { setHp(src, hpOf(src) - th); FX.number(this.posOf(src)[0], this.posOf(src)[1] - 12, th, 2); }
     }
     if (src && !isChar(src) && src.mechs && src.mechs.includes('drain') && opt.attack) src.hp = Math.min(src.maxhp, src.hp + Math.ceil(a / 2));
@@ -388,7 +424,7 @@ class Battle {
     const steps = [];
     const D = isChar(att) ? derive(att.ch) : null;
     let n = opt.single ? 1 : (D ? D.attacks : 1);
-    if (D && hasEff(att, 'haste') && !opt.single) n++;
+    if (D && !opt.single) n += effMods(att).extraAttack || 0; // HASTED
     if (D && hasEff(att, 'rage') && subKey(att.ch, 'frenzy') && !opt.single) n++;
     for (let i = 0; i < n; i++) {
       steps.push({ text: '', act: null, dyn: () => {
@@ -402,15 +438,17 @@ class Battle {
     const D = derive(att.ch), w = D.weapon, ws = effOf(att, 'wildshape');
     const adv = this.advState(att, tgt, opt);
     let r = this.d20adv(adv, att);
-    let bonus = (ws ? D.pb + Math.max(D.M.STR, D.M.WIS) : w.hit) + (hasEff(att, 'bless') ? roll('1d4').total : 0) + (effOf(att, 'inspired') ? 3 : 0) + (effOf(att, 'sacred') ? Math.max(1, D.M.CHA) : 0);
-    if (effOf(att, 'inspired')) removeEffect(att, 'inspired');
-    if (hasEff(att, 'bane') || hasEff(att, 'doomed')) bonus -= 2;
+    // effect bonus: BLESSED 1d4, INSPIRED +3 (spent), BANED / DOOMED -2
+    let bonus = (ws ? D.pb + Math.max(D.M.STR, D.M.WIS) : w.hit) + effRollBonus(att, 'hit') + (effOf(att, 'sacred') ? Math.max(1, D.M.CHA) : 0);
     const ac = acOf(tgt);
     if (r === 1 && att.ch.res.lucky > 0) { att.ch.res.lucky--; r = d20(); }
     const nat = r, total = r + bonus;
     const assassin = subKey(att.ch, 'assassinate') && !tgt.acted;
-    const crit = nat >= D.critRange || condFlag(tgt, 'autoCrit') || assassin || (D.crit && R() * 100 < D.crit && nat !== 1 && total >= ac);
+    const critP = GBQEffects.cap('crit', D.crit + (effMods(att).crit || 0)); // gear crit plus FOCUSED
+    const crit = nat >= D.critRange || condFlag(tgt, 'autoCrit') || assassin || (critP > 0 && R() * 100 < critP && nat !== 1 && total >= ac);
     let hit = nat === 20 || crit || (nat !== 1 && total >= ac);
+    // a monster with dodge from effects can dodge a hit (a non-critical one)
+    if (hit && !crit && !isChar(tgt)) { const dg = dodgeOf(tgt); if (dg > 0 && R() * 100 < dg) return { text: `${att.name}: ${ws ? 'CLAWS' : w.name}\n${tgt.name} DODGES!`, act: () => SFX.dodge() }; }
     if (hasEff(att, 'hidden')) removeEffect(att, 'hidden');
     if (hasEff(att, 'invisible') && !hasEff(att, 'trueveil')) removeEffect(att, 'invisible');
     if (nat === 20 && !att.ch.ai) G.stats.nat20++; if (nat === 1 && !att.ch.ai) G.stats.nat1++;
@@ -435,7 +473,8 @@ class Battle {
     let smiteTxt = '';
     if (opt.execute && hpOf(tgt) < maxHpOf(tgt) / 2) { dmg *= 2; parts.push('EXECUTE'); }
     if (opt.smite) { const sl = this.spendSlot(att, 1, true); if (sl) { const nd = Math.min(5, 1 + sl) + (['undead', 'fiend'].includes(tgt.fam) ? 1 : 0); const sd = roll(`${nd}d8`, crit).total; smiteTxt = ` SMITE +${sd}`; dmg += sd; } }
-    dmg = Math.round(dmg * (1 + (D.dmgPct + (effOf(att, 'might') ? 15 : 0) + (effOf(att, 'weakened') ? -25 : 0)) / 100) * (crit ? D.critdmg / 100 : 1));
+    // gear damage % and crit damage here; MIGHTY / WEAKENED / FRENZIED apply in applyDamage for every damage source
+    dmg = Math.round(dmg * (1 + D.dmgPct / 100) * (crit ? D.critdmg / 100 : 1));
     const type = ws ? 'slashing' : w.type, magic = w.magic || !!ws;
     return { text: `${line1}\n${rollTxt}\n${crit ? 'CRITICAL! ' : 'Hit! '}${dmg} ${type}${smiteTxt}`,
       act: () => {
@@ -504,10 +543,10 @@ class Battle {
           steps.push({ text: '', dyn: () => {
             if (!alive(t)) return null;
             if (sp.atk) {
-              const adv = this.advState(u, t), r = this.d20adv(adv, u), tot = r + atk, ac = acOf(t), crit = r === 20 || condFlag(t, 'autoCrit');
-              if (!(crit || (r !== 1 && tot >= ac))) return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${atk}=${tot} vs AC${ac}\nMiss!`, act: () => SFX.miss() };
+              const adv = this.advState(u, t), r = this.d20adv(adv, u), hb = atk + effRollBonus(u, 'hit'), tot = r + hb, ac = acOf(t), crit = r === 20 || condFlag(t, 'autoCrit');
+              if (!(crit || (r !== 1 && tot >= ac))) return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${hb}=${tot} vs AC${ac}\nMiss!`, act: () => SFX.miss() };
               const d = dmgRoll(crit);
-              return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${atk}=${tot} vs AC${ac}\n${crit ? 'CRIT! ' : ''}${d} ${sp.dt}`, act: () => { SFX[sp.school + '_hit'](); this.applyDamage(u, t, d, sp.dt, { magic: true, crit }); this.spellCond(u, sp, t, dc, true); } };
+              return { text: `${sp.name} vs ${t.name}\nd20 ${r}+${hb}=${tot} vs AC${ac}\n${crit ? 'CRIT! ' : ''}${d} ${sp.dt}`, act: () => { SFX[sp.school + '_hit'](); this.applyDamage(u, t, d, sp.dt, { magic: true, crit }); this.spellCond(u, sp, t, dc, true); } };
             }
             if (sp.save) {
               const sv = this.save(t, sp.save, dc, { spell: true });
@@ -716,7 +755,7 @@ class Battle {
     }
     // multiattack
     const atks = m.attacks.filter(a => !(a.eff && a.eff.recharge));
-    const n = m.multi + (effOf(m, 'haste') ? 1 : 0);
+    const n = m.multi + (effMods(m).extraAttack || 0); // HASTED
     for (let i = 0; i < n; i++) {
       const a = atks[i % atks.length];
       steps.push({ text: '', dyn: () => {
@@ -730,17 +769,19 @@ class Battle {
   }
   monsterAttack(m, t, a) {
     const adv = this.advState(m, t);
-    const r = this.d20adv(adv), total = r + a.hit + (effOf(m, 'bless') ? 2 : 0) - (hasEff(m, 'doomed') ? 2 : 0), ac = acOf(t);
-    const crit = r === 20 || condFlag(t, 'autoCrit');
+    // effect bonus: BLESSED 1d4, INSPIRED +3 (spent), BANED / DOOMED -2 (monsters used to ignore BANED)
+    const hb = a.hit + effRollBonus(m, 'hit'), r = this.d20adv(adv), total = r + hb, ac = acOf(t);
+    const critP = GBQEffects.cap('crit', effMods(m).crit || 0); // FOCUSED
+    const crit = r === 20 || condFlag(t, 'autoCrit') || (critP > 0 && r !== 1 && total >= ac && R() * 100 < critP);
     // mirror images
     const mir = effOf(t, 'mirror');
     if (mir && mir.stacks > 0 && R() < mir.stacks / (mir.stacks + 1)) return { text: `${m.name}: ${a.name}\nIt strikes an illusion!`, act: () => { mir.stacks--; if (mir.stacks <= 0) removeEffect(t, 'mirror'); SFX.veil_hit(); } };
-    if (!(crit || (r !== 1 && total >= ac))) return { text: `${m.name}: ${a.name}\nd20 ${r}+${a.hit}=${total} vs AC${ac}\nMiss!`, act: () => { this.anim.lunge = m.id; SFX.miss(); } };
-    if (isChar(t) && R() * 100 < derive(t.ch).dodge) return { text: `${m.name}: ${a.name}\n${t.name} DODGES!`, act: () => SFX.dodge() };
+    if (!(crit || (r !== 1 && total >= ac))) return { text: `${m.name}: ${a.name}\nd20 ${r}+${hb}=${total} vs AC${ac}\nMiss!`, act: () => { this.anim.lunge = m.id; SFX.miss(); } };
+    // dodge: hero gear dodge plus effects (SHOCKED lowers it); also a dominated monster's ally target
+    const dg = dodgeOf(t); if (dg > 0 && R() * 100 < dg) return { text: `${m.name}: ${a.name}\n${t.name} DODGES!`, act: () => SFX.dodge() };
     let d = roll(a.dice, crit).total; if (hasEff(m, 'rage')) d += 2;
-    if (hasEff(t, 'ac') && effOf(t, 'ac').val >= 5) { /* ward of force already in AC */ }
-    if (effOf(m, 'weakened')) d = Math.round(d * 0.75);
-    return { text: `${m.name}: ${a.name}\nd20 ${r}+${a.hit}=${total} vs AC${ac}\n${crit ? 'CRITICAL! ' : ''}${d} ${a.type}`, act: () => {
+    // WEAKENED / MIGHTY / FRENZIED scale the damage in applyDamage
+    return { text: `${m.name}: ${a.name}\nd20 ${r}+${hb}=${total} vs AC${ac}\n${crit ? 'CRITICAL! ' : ''}${d} ${a.type}`, act: () => {
       this.anim.lunge = m.id; if (crit) shake = 8;
       const dealt = this.applyDamage(m, t, d, a.type, { attack: true, crit, ranged: m.ranged });
       if (a.eff && alive(t)) {
@@ -943,7 +984,7 @@ class Battle {
     this.run(steps, () => {
       // revive the fallen at 1 HP
       for (const u of this.party) if (isChar(u) && u.ch.hp <= 0) { u.ch.hp = 1; delete u.ch.dying; delete u.ch.stable; delete u.ch.dead; }
-      for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); }
+      for (const u of this.party) if (isChar(u)) { u.ch.buffs = (u.ch.buffs || []).map(b => Object.assign(b, { fights: (b.fights || 5) - 1 })).filter(b => b.fights > 0); const DM = derive(u.ch); if (u.ch.hp > DM.hpMax) u.ch.hp = DM.hpMax; } // an expiring WELL FED lowers max HP
       const res = this.noRewards ? { ups: [] } : gainXP(G, xp);
       if (!this.noRewards) for (const u of this.party) if (isChar(u) && u.ch !== G && u.ch.ai) { if (u.ch.lvl < G.lvl) { u.ch.lvl = G.lvl; u.ch.xp = xpForLevel(G.lvl); const DD = derive(u.ch); u.ch.hp = DD.hpMax; u.ch.res = resMax(u.ch, DD); } }
       if (!this.noRewards) recordVictory(this);
@@ -1006,13 +1047,15 @@ class Battle {
     shownP.forEach((u, k) => {
       const c = u.ch, look = `c_${c.cls}_4`, por = heroPortrait(c);
       const cl = S.battleBg !== 'painted' ? { clean: true } : undefined;
-      let s = por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
+      const fdName = typeof fdWalkerName === 'function' && fdWalkerName(c, 'right', (frameN >> 4) % 2);  // FULL DETAIL: the same hero as on the field
+      let s = fdName ? spr(fdName, 32, 48) : por ? sprH(por, 34, cl) : IMG[look] ? sprH(look, 30, cl) : sprH('hero_4', 30, cl);
       if (hasEff(u, 'wildshape')) s = sprH('enemy_goblinking', 30);
       if (!s) return;                         // portrait still loading (the source build streams images in)
       const [px, py] = this.posOf(u);
       if (this.anim.flash[u.id] && (this.anim.flash[u.id] >> 1) % 2) return;
       const lx = this.anim.lunge === u.id ? 4 : 0;
       if (c.hp <= 0) {
+        if (fdName) { blit(spr(fdName, 32, 48, { ghost: true }), px - 10, 64); return; }
         const deadHd = battleHDFrame(c, 'death', (frameN >> 2) % 8, 'east');
         if (deadHd) { const h = 30, w = Math.max(1, Math.round(deadHd.width * h / Math.max(1, deadHd.height))); ctx.drawImage(deadHd, Math.round(px - w / 2), 78, w, h); }
         else blit(spr(look in IMG ? look : 'hero_4', 30, 14, { ghost: true }), px - 15, 78);
@@ -1020,11 +1063,12 @@ class Battle {
       }
       const activePose = this.anim.pose && this.anim.pose.id === u.id && this.anim.pose.until > frameN ? this.anim.pose.state : 'idle';
       const pose = this.anim.flash[u.id] ? 'hit' : activePose;
-      const hd = battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
+      const hd = fdName ? null : battleHDFrame(c, pose, (frameN >> 2) % 8, 'east');
       if (hd) {
         const h = s.height, w = Math.max(1, Math.round(hd.width * h / Math.max(1, hd.height)));
         ctx.drawImage(hd, Math.round(px - w / 2 + lx), Math.round(py - h + 14), w, h);
-      } else blit(s, px - s.width / 2 + lx, py - s.height + 14);
+      } else if (fdName) blit(s, px - 10 + lx, py - s.height + 14);  // FULL DETAIL heroes are 32 px wide: keep the first one on screen
+      else blit(s, px - s.width / 2 + lx, py - s.height + 14);
       if (hasEff(u, 'invisible') || hasEff(u, 'hidden')) { ctx.globalAlpha = 0.4; fill(px - 8, py - 16, 16, 30, 0); ctx.globalAlpha = 1; }
     });
     this.foes.slice(0, 4).forEach(f => {

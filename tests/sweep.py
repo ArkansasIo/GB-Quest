@@ -21,6 +21,8 @@ async () => {
   // screen-text probe: anything drawn that contains undefined / NaN / null / [object
   const _text = text; let curStep = '';
   window.text = text = function (s, ...a) { const str = String(s); if (/undefined|NaN|\bnull\b|\[object/.test(str)) (bad[curStep + ' :: ' + (topScene() ? topScene().constructor.name : '') + ' :: ' + str.slice(0, 40)] = 1); return _text(s, ...a); };
+  // dialog and prompt windows draw with proportional spacing (textProp): probe them too
+  if (typeof textProp === 'function') { const _tp = textProp; window.textProp = textProp = function (s, ...a) { const str = String(s); if (/undefined|NaN|\bnull\b|\[object/.test(str)) (bad[curStep + ' :: ' + (topScene() ? topScene().constructor.name : '') + ' :: ' + str.slice(0, 40)] = 1); return _tp(s, ...a); }; }
   const scan = (o, path, out, depth = 0) => {
     if (depth > 6 || out.length > 5) return;
     if (typeof o === 'number' && !Number.isFinite(o)) out.push(path + '=' + o);

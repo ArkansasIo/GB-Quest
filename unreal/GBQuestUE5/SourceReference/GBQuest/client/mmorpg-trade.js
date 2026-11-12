@@ -10,16 +10,31 @@ class GBQuestMMOApi {
     const headers={accept:'application/json'};
     if(body!==undefined) headers['content-type']='application/json';
     if(auth&&this.token) headers.authorization='Bearer '+this.token;
-    const response=await fetch(this.baseUrl+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),credentials:'omit'});
-    const data=await response.json();
-    if(!response.ok) throw Object.assign(new Error(data.error||'request_failed'),{status:response.status,code:data.error});
+    // errors get the same plain-language messages as the account panel (never the raw code "request_failed")
+    const explain=error=>{const d=window.GBQMMOAccount&&window.GBQMMOAccount.describeError;if(d)error.message=d(error,this.baseUrl);return error;};
+    let response;
+    try{response=await fetch(this.baseUrl+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),credentials:'omit'});}
+    catch(cause){throw explain(Object.assign(new Error('Cannot reach the MMO server.'),{network:true,cause}));}
+    let data={},notJson=false;try{data=await response.json();}catch{notJson=true;}
+    if(!response.ok||notJson) throw explain(Object.assign(new Error(data.error||'The MMO server request failed.'),{status:response.status,code:data.error,notJson}));
     return data;
   }
   async register(username,password) { const result=await this.request('/api/register',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   async login(username,password) { const result=await this.request('/api/login',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   me() { return this.request('/api/me'); }
-  characters() { return this.request('/api/characters'); }
-  createCharacter(name,characterClass) { return this.request('/api/characters',{method:'POST',body:{name,class:characterClass}}); }
+  regions() { return this.request('/api/regions',{auth:false}); }
+  realms(regionId) { return this.request('/api/realms'+(regionId?'?region='+encodeURIComponent(regionId):''),{auth:false}); }
+  characters(realmId) { return this.request('/api/characters'+(realmId?'?realm='+encodeURIComponent(realmId):'')); }
+  createCharacter(name,characterClass,realmId,species,background) {
+    return this.request('/api/characters',{method:'POST',body:{name,class:characterClass,...(realmId?{realmId}:{}),...(species?{species}:{}),...(background?{background}:{})}});
+  }
+  whispers(characterId,peerId,limit=50) {
+    const query=new URLSearchParams(); if(peerId)query.set('with',peerId);query.set('limit',String(limit));
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers?'+query.toString());
+  }
+  sendWhisper(characterId,toCharacterId,text) {
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers',{method:'POST',body:{toCharacterId,text}});
+  }
   inventory(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/inventory'); }
   dungeonCatalog() { return this.request('/api/dungeons/catalog',{auth:false}); }
   joinDungeonQueue(characterId,dungeonId,role) {
@@ -63,9 +78,12 @@ class GBQuestMMOApi {
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const state = { api:null, characters:[], selected:null, players:[], inventory:[], offers:[], bank:null, status:'disconnected', busy:false, error:'', tab:'trade', seenOfferIds:new Set(), offersInitialized:false, pollHandle:null, refreshing:false, offerFilter:'all' };
   const storageKey = 'gbq.mmo.trade.realm';
+  // same default as the account panel: a saved address, a baked-in one, or this page's server (not on itch.io or a file)
   function apiBase() {
-    try { return localStorage.getItem(storageKey) || window.GBQ_MMO_REALM_URL || location.origin; }
-    catch { return window.GBQ_MMO_REALM_URL || location.origin; }
+    let saved=''; try { saved=localStorage.getItem(storageKey)||''; } catch {}
+    if(saved) return saved;
+    if(window.GBQMMOAccount&&window.GBQMMOAccount.defaultServer) return window.GBQMMOAccount.defaultServer();
+    return window.GBQ_MMO_REALM_URL||(/^https?:$/.test(location.protocol)&&!window.GBQ_STATIC_HOST?location.origin:'');
   }
   function setStatus(value) { state.status=value; const node=document.querySelector('[data-mmo-status]'); if(node) node.textContent=value.toUpperCase(); if(value==='error'||value==='disconnected') state.authReject?.(new Error('Realm connection '+value)); }
   function panel() { return document.getElementById('gbq-trade-panel'); }

@@ -46,12 +46,13 @@ const TOWER_MODS = [
 function buildInstance(kind, def, floor = 0) {
   const r = RNG(`${kind}-${def.id}-${floor}`), theme = def.theme || 'dungeon';
   const tier = Math.max(1, Math.min(9, Math.floor(Number(G && G.difficulty) || 2)));
-  const lvl = (def.lvl ?? def.baseLvl ?? 1) + (kind === 'tower' ? floor * TOWER.perFloor : 0);
+  const TW = kind === 'tower' ? towerSpec(def) : null; // which of the 18 towers
+  const lvl = (def.lvl ?? def.baseLvl ?? 1) + (TW ? floor * TW.perFloor : 0);
   const table = kind === 'tower' ? BESTIARY : spawnTable((REGIONS.find(z => z.id === def.zone) || { biome: 'dusk' }).biome);
   const mob = () => r.pick(table.length ? table : BESTIARY).id;
-  const bosses = kind === 'tower' ? BOSSES.filter(b => b.cat === 'tower' && b.floor === floor)
+  const bosses = kind === 'tower' ? BOSSES.filter(b => b.cat === 'tower' && b.floor === floor && b.where === TW.id)
     : BOSSES.filter(b => b.where === def.id).sort((a, b) => (a.order || 0) - (b.order || 0));
-  const M = kind === 'tower' ? towerLayout(r, floor) : kind === 'trial' ? trialLayout(r) : gridLayout(r, kind, bosses.length);
+  const M = kind === 'tower' ? towerLayout(r, floor, TW) : kind === 'trial' ? trialLayout(r) : gridLayout(r, kind, bosses.length);
   const { g, rooms } = M, H = g.length, W = g[0].length;
   const at = (x, y) => (y >= 0 && y < H && x >= 0 && x < W) ? g[y][x] : '#';
   const set = (x, y, c) => { if (y > 0 && y < H - 1 && x > 0 && x < W - 1) g[y][x] = c; };
@@ -148,7 +149,7 @@ function buildInstance(kind, def, floor = 0) {
   // ---------------------------------------------------------------- tower floors: packs spread over the layout, boss at the top
   if (kind === 'tower') {
     const o = rooms[0], spots = M.spots || [];
-    const bossF = floor % TOWER.bossEvery === 0, miniF = floor % TOWER.miniEvery === 0;
+    const bossF = floor % TW.bossEvery === 0, miniF = floor % TW.miniEvery === 0;
     const nPacks = bossF ? 1 : miniF ? 2 : r.int(2, 3);
     spots.slice(0, nPacks).forEach(([sx, sy]) => pack(r.int(2, 3), sx, sy));
     if (bosses.length) bossPull(bosses[bosses.length - 1], M.boss[0], M.boss[1], { final: true });
@@ -207,7 +208,7 @@ function buildInstance(kind, def, floor = 0) {
   return {
     id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, theme), tiles: dungeonTiles(theme), entry: M.entry, pulls, chest, traps, lvl,
     rooms: rooms.map(({ x, y, w, h, type, name, desc, number }) => ({ x, y, w, h, type, name, desc, number, difficulty: tier })), roomCount: rooms.length, difficulty: tier, vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)) + tier, spikeDmg: `${1 + Math.floor(lvl / 8) + Math.floor(tier / 3)}d4`,
-    name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind,
+    name: kind === 'tower' ? `${TW.name} ${floor}F` : def.name, music: typeof GBQMusic !== 'undefined' ? GBQMusic.roomMusic(kind, def, kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon') : (kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon'), instance: kind,
   };
 }
 const neighbours = t => [[t.x + 1, t.y], [t.x - 1, t.y], [t.x, t.y + 1], [t.x, t.y - 1]];
@@ -328,9 +329,9 @@ function trialLayout(r) {
 }
 
 // ---------------------------------------------------------------- tower: one floor, six layouts
-function towerLayout(r, floor) {
+function towerLayout(r, floor, tw = TOWER) {
   const W = 24, H = 18, g = Array.from({ length: H }, () => Array(W).fill('#'));
-  const shape = TOWER_SHAPES[(floor - 1 + 6) % 6], bossF = floor % TOWER.bossEvery === 0;
+  const shape = TOWER_SHAPES[(floor - 1 + 6) % 6], bossF = floor % tw.bossEvery === 0;
   const o = { x: 2, y: 2, w: W - 4, h: H - 4, type: 'towerRoom' }; o.cx = o.x + (o.w >> 1); o.cy = o.y + (o.h >> 1);
   const fillR = (x, y, w, h, c = '.') => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) g[j][i] = c; };
   const keep = [], K = (x, y) => keep.push(x + ',' + y);

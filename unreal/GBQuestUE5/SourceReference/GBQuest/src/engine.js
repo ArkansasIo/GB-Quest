@@ -191,19 +191,29 @@ async function loadCitadelAssets() {
   window.GBQ_CITADEL_ASSET_COUNT = loaded;
   return loaded;
 }
+// Images the first screens need: the text font and the title key art. Loaded ahead of everything else.
+const BOOT_ASSETS = ['font_6x9', 'title_aelmoor', 'title_aelmoor_hi', 'r9_title', 'ap_scene_wilderness'];
+let ASSET_PROGRESS = 0;
 async function loadAssets(onProgress) {
+  const report = onProgress;
+  onProgress = p => { ASSET_PROGRESS = p; report && report(p); };
   if (window.GB_ASSETS) ASSET_NAMES = Object.keys(window.GB_ASSETS);
   else { try { ASSET_NAMES = await (await fetch('assets/index.json')).json(); } catch (e) { ASSET_NAMES = []; } }
   if (!ASSET_NAMES.length) onProgress && onProgress(0.9);
   let done = 0;
-  await Promise.all(ASSET_NAMES.map(n => new Promise(res => {
+  const loadOne = n => new Promise(res => {
     const im = new Image();
     let settled = false;
     const finish = () => { if (settled) return; settled = true; done++; onProgress && onProgress(0.9 * done / Math.max(1, ASSET_NAMES.length)); res(); };
     im.onload = () => { IMG[n] = im; finish(); };
     im.onerror = finish;
     im.src = (window.GB_ASSETS && window.GB_ASSETS[n]) || `assets/${n}.png`;
-  })));
+  });
+  // The title screen is shown before the full batch finishes. Fetch the pixel font and title art first so
+  // its text and key art appear at once instead of queuing behind thousands of other images.
+  const core = BOOT_ASSETS.filter(n => ASSET_NAMES.includes(n));
+  await Promise.all(core.map(loadOne));
+  await Promise.all(ASSET_NAMES.filter(n => !core.includes(n)).map(loadOne));
   await loadCitadelAssets();
   onProgress && onProgress(1);
 }
@@ -346,20 +356,115 @@ function fitText(s, maxChars) {
 }
 // a list row highlighted with shade 1 must not hide text drawn in shade 1 on top of it
 const HILITE = { frame: -1, rects: [] };
-function text(s, x, y, c = 3, sc = 1) {
+// Letter advance for a line of n glyphs that must fit in avail pixels: the normal 6px, or 5px if the line would run
+// off the 160px screen. Glyphs are 5px wide, so tighter would overlap. Returns 0 when 5px is still too wide (the
+// caller then shortens the line).
+function fitAdvance(n, avail, sc = 1) {
+  for (const a of [6, 5]) if (n * a * sc <= avail) return a * sc;
+  return 0;
+}
+// Pixel width a line will actually take once fitted (used by textC/textR to align fitted lines).
+function fittedWidth(line, avail, sc = 1) {
+  const n = line.length, a = fitAdvance(n, avail, sc);
+  return a ? n * a : Math.floor(avail / (5 * sc)) * 5 * sc;
+}
+function text(s, x, y, c = 3, sc = 1, right = W) {
   if (!IMG.font_6x9) return;
   s = gameText(s);
   if (c === 1 && HILITE.frame === frameN && HILITE.rects.some(r => x >= r[0] - 1 && x < r[0] + r[2] && y >= r[1] - 2 && y < r[1] + r[3])) c = 3;
-  const f = font(c); let cx = x;
-  for (const ch of s) {
-    if (ch === '\n') { y += 10 * sc; cx = x; continue; }
-    let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
-    if (code !== 32) ctx.drawImage(f, (code - 32) * 6, 0, 6, 9, Math.round(cx), Math.round(y), 6 * sc, 9 * sc);
-    cx += 6 * sc;
+  const f = font(c);
+  for (let line of String(s).split('\n')) {
+    let adv = 6 * sc;
+    // Only lines that start on screen are fitted; text placed off screen on purpose (markers, scrollers) is left alone.
+    if (x >= 0 && x < right && line.length * adv > right - x) {
+      const avail = right - x;
+      adv = fitAdvance(line.length, avail, sc);
+      if (!adv) { adv = 5 * sc; const keep = Math.max(1, Math.floor(avail / adv)); line = line.slice(0, keep - 1).trimEnd() + '.'; }
+    }
+    let cx = x;
+    for (const ch of line) {
+      let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
+      if (code !== 32) ctx.drawImage(f, (code - 32) * 6, 0, 6, 9, Math.round(cx), Math.round(y), 6 * sc, 9 * sc);
+      cx += adv;
+    }
+    y += 10 * sc;
   }
 }
-const textR = (s, rx, y, c, sc = 1) => { const value = gameText(s); text(value, rx - value.length * 6 * sc, y, c, sc); };
-const textC = (s, cx, y, c, sc = 1) => { const value = gameText(s); text(value, Math.round(cx - value.length * 3 * sc), y, c, sc); };
+// ---------------------------------------------------------------- proportional reading text
+// Dialog and prompt windows space letters by their real width (+1px gap; spaces 3px) instead of a fixed 6px cell,
+// so narrow letters (i, l, t, '.') no longer leave wide gaps and more words fit per line. Menus keep the fixed grid
+// they are laid out on. Widths are measured once from the font image.
+let GLYPHS = null;
+function glyphMetrics() {
+  if (GLYPHS || !IMG.font_6x9) return GLYPHS;
+  const im = IMG.font_6x9, c = mkCanvas(im.width, im.height), x = c.getContext('2d');
+  x.drawImage(im, 0, 0);
+  let d; try { d = x.getImageData(0, 0, im.width, im.height).data; } catch (e) { return null; }
+  GLYPHS = [];
+  for (let g = 0; g < 95; g++) {
+    let lo = 6, hi = -1;
+    for (let cx = 0; cx < 6; cx++) for (let cy = 0; cy < 9; cy++) if (d[(cy * im.width + g * 6 + cx) * 4 + 3] > 0) { if (cx < lo) lo = cx; if (cx > hi) hi = cx; }
+    GLYPHS.push(hi < 0 ? null : [lo, hi - lo + 1]);
+  }
+  return GLYPHS;
+}
+const PROP_SPACE = 3, PROP_GAP = 1;
+function glyphAdvance(ch) {
+  const m = glyphMetrics(), code = ch.charCodeAt(0);
+  if (!m) return 6;
+  if (ch === ' ') return PROP_SPACE;
+  const g = m[(code < 32 || code > 126 ? 63 : code) - 32];
+  return g ? g[1] + PROP_GAP : PROP_SPACE;
+}
+function measureText(s) { let w = 0; for (const ch of gameText(s)) w += glyphAdvance(ch); return Math.max(0, w - PROP_GAP); }
+function textProp(s, x, y, c = 3) {
+  if (!IMG.font_6x9) return;
+  const m = glyphMetrics(); if (!m) return text(s, x, y, c);
+  const f = font(c);
+  for (const line of gameText(s).split('\n')) {
+    let cx = x;
+    for (const ch of line) {
+      let code = ch.charCodeAt(0); if (code < 32 || code > 126) code = 63;
+      const g = m[code - 32];
+      if (code !== 32 && g) ctx.drawImage(f, (code - 32) * 6 + g[0], 0, g[1], 9, Math.round(cx), Math.round(y), g[1], 9);
+      cx += glyphAdvance(ch);
+    }
+    y += 10;
+  }
+}
+// word-wrap to a pixel width with proportional spacing (falls back to the fixed grid before the font loads)
+function wrapPx(s, maxPx) {
+  if (!glyphMetrics()) return wrap(s, Math.floor((maxPx + 1) / 6));
+  const out = [];
+  for (const para of gameText(s).split('\n')) {
+    let line = '';
+    for (let word of para.trim().split(/\s+/)) {
+      if (!word) continue;
+      while (measureText(word) > maxPx) { // a single word wider than the window: break it
+        if (line) { out.push(line); line = ''; }
+        let cut = word.length; while (cut > 1 && measureText(word.slice(0, cut)) > maxPx) cut--;
+        out.push(word.slice(0, cut)); word = word.slice(cut);
+      }
+      const next = line ? line + ' ' + word : word;
+      if (measureText(next) <= maxPx) line = next; else { if (line) out.push(line); line = word; }
+    }
+    out.push(line);
+  }
+  return out;
+}
+// Right- and centre-aligned text. A line too long for the screen is fitted (tighter spacing) and kept inside 2..W-2.
+const textR = (s, rx, y, c, sc = 1) => {
+  const value = String(gameText(s)), full = value.length * 6 * sc;
+  if (rx - full >= 0) return text(value, rx - full, y, c, sc);
+  const right = Math.min(W - 2, rx), w = fittedWidth(value, right - 2, sc);
+  text(value, Math.max(2, right - w), y, c, sc, right);
+};
+const textC = (s, cx, y, c, sc = 1) => {
+  const value = String(gameText(s)), full = value.length * 6 * sc, x = Math.round(cx - full / 2);
+  if (x >= 0 && x + full <= W) return text(value, x, y, c, sc);
+  const w = fittedWidth(value, W - 4, sc);
+  text(value, Math.max(2, Math.min(W - 2 - w, Math.round(cx - w / 2))), y, c, sc);
+};
 function fill(x, y, w, h, c) { ctx.fillStyle = col(c); ctx.fillRect(x, y, w, h); if (c === 1 && h >= 8 && h <= 14 && w >= 30) { if (HILITE.frame !== frameN) { HILITE.frame = frameN; HILITE.rects = []; } HILITE.rects.push([x, y, w, h]); } }
 function frame(x, y, w, h, bg = 0) {
   fill(x, y, w, h, 3); fill(x + 1, y + 1, w - 2, h - 2, bg);
@@ -464,6 +569,13 @@ function pages(lines, rows = 3, n = 23) {
   for (const l of lines) { const w = wrap(l, n); for (let i = 0; i < w.length; i += rows) res.push(w.slice(i, i + rows).join('\n')); }
   return res;
 }
+// the dialog window's pages: proportional text wrapped to the window's 144px reading width
+const DIALOG_TEXT_W = 144;
+function pagesPx(lines, rows = 3, px = DIALOG_TEXT_W) {
+  const res = [];
+  for (const l of lines) { const w = wrapPx(l, px); for (let i = 0; i < w.length; i += rows) res.push(w.slice(i, i + rows).join('\n')); }
+  return res;
+}
 
 // ================================================================ input
 const BTNS = ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'];
@@ -506,7 +618,7 @@ setTimeout(focusGame, 300);
 addEventListener('keyup', e => { const b = keyAction(e); if (b) { if (b === 'a' || b === 'b') { bUp('a'); bUp('b'); } else bUp(b); } });
 addEventListener('blur', () => BTNS.forEach(bUp));
 LCD.addEventListener('contextmenu', e => e.preventDefault());
-LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); const rect = LCD.getBoundingClientRect(), x = (e.clientX - rect.left) * LCD.width / rect.width, y = (e.clientY - rect.top) * LCD.height / rect.height; if (e.button === 0 && combatHotkeyHandler && y >= 81 && y < 94) { combatHotkeyHandler(Math.max(0, Math.min(9, Math.floor((x - 2) / 15.6)))); return; } LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
+LCD.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); const rect = LCD.getBoundingClientRect(), x = (e.clientX - rect.left) * W / rect.width, y = (e.clientY - rect.top) * H / rect.height; /* game pixels (160x144), whatever the canvas resolution */ if (e.button === 0 && combatHotkeyHandler && y >= 81 && y < 94) { combatHotkeyHandler(Math.max(0, Math.min(9, Math.floor((x - 2) / 15.6)))); return; } LCD.setPointerCapture(e.pointerId); bDown(mapBtn(e.button === 2 ? 'b' : 'a')); });
 const releaseMouse = e => { if (e.pointerType === 'mouse') { bUp('a'); bUp('b'); } };
 LCD.addEventListener('pointerup', releaseMouse); LCD.addEventListener('pointercancel', releaseMouse); LCD.addEventListener('lostpointercapture', releaseMouse);
 LCD.addEventListener('wheel', e => { e.preventDefault(); bDown(e.deltaY < 0 ? 'up' : 'down'); setTimeout(() => bUp(e.deltaY < 0 ? 'up' : 'down'), 80); }, { passive: false });
@@ -740,8 +852,11 @@ function reset(s) { scenes.length = 0; Physics.clear(); push(s); }
 function removeScene(s) { const i = scenes.indexOf(s); if (i >= 0) scenes.splice(i, 1); }
 
 class Dialog {
-  constructor(lines, cb, opts = {}) { this.p = pages(lines); this.i = 0; this.c = 0; this.cb = cb; this.who = opts.who; this.portrait = opts.portrait; }
+  constructor(lines, cb, opts = {}) { this.lines = lines; this.p = null; this.i = 0; this.c = 0; this.cb = cb; this.who = opts.who; this.portrait = opts.portrait; }
+  // pages are built on first use, once the font is loaded, so proportional widths are known
+  pagesNow() { if (!this.p) this.p = glyphMetrics() ? pagesPx(this.lines) : pages(this.lines); return this.p; }
   update() {
+    this.pagesNow();
     const L = this.p[this.i];
     if (this.c < L.length) { this.c += [0.8, 1.5, 3, 99][S.textSpeed]; if (frameN % 3 === 0) SFX.type(); if (P('a') || P('b')) this.c = L.length; return; }
     if (P('a') || P('b')) { SFX.cursor(); this.i++; this.c = 0; if (this.i >= this.p.length) { removeScene(this); this.cb && this.cb(); } }
@@ -751,8 +866,8 @@ class Dialog {
     if (blackbird) { fill(1, y - 1, W - 2, 43, '#b09258'); fill(2, y, W - 4, 41, '#080a0c'); fill(3, y + 1, W - 6, 39, '#171a1f'); fill(4, y + 2, W - 8, 1, '#343941'); }
     else drawOrnatePanel(2, y, W - 4, 42);
     if (this.who) { const w = this.who.length * 6 + 8; if (blackbird) { fill(3, y - 12, w + 2, 13, '#b09258'); fill(4, y - 11, w, 11, '#171a1f'); } else drawOrnatePanel(4, y - 11, w, 12); text(this.who, 8, y - 9, blackbird ? '#e1c78f' : '#ffe3a0'); }
-    const L = this.p[this.i]; if (!L) return;
-    text(L.slice(0, Math.floor(this.c)), 8, y + 6);
+    const L = this.pagesNow()[this.i]; if (!L) return;
+    textProp(L.slice(0, Math.floor(this.c)), 8, y + 6);
     if (this.c >= L.length && (frameN >> 4) % 2) text('v', W - 14, y + 31);
   }
 }
@@ -777,7 +892,7 @@ class Choice { // scrolling list with optional prompt
         fill(2, H - 44, W - 4, 1, '#b09258');
         fill(2, H - 3, W - 4, 1, '#51432f');
       } else drawOrnatePanel(2, H - 44, W - 4, 42);
-      text(wrap(this.prompt).slice(0, 3).join('\n'), 8, H - 38, blackbird ? '#e1c78f' : '#fff0c2');
+      textProp(wrapPx(this.prompt, DIALOG_TEXT_W).slice(0, 3).join('\n'), 8, H - 38, blackbird ? '#e1c78f' : '#fff0c2');
       bottom = H - 46;
     }
     const vis = this.o.slice(this.top, this.top + this.rows);
@@ -836,7 +951,7 @@ function drawToasts() {
   const y = Math.round(-26 + 28 * slide);
   frame(4, y, 152, 25, 0);
   if (t.icon) blit(sprFit(t.icon, 14), 8, y + 5);
-  text(String(t.title).slice(0, 22), 26, y + 4, 2); text(String(t.sub || '').slice(0, 22), 26, y + 14);
+  text(String(t.title), 26, y + 4, 2, 1, 153); text(String(t.sub || ''), 26, y + 14, 3, 1, 153);
 }
 
 // ================================================================ main loop
@@ -863,7 +978,42 @@ function render() {
   document.body.classList.toggle('title-screen', scenes.length > 0 && scenes[scenes.length - 1].constructor?.name === 'Title');
   document.body.classList.add('game-rendered');
 }
+// ---------------------------------------------------------------- sharp output
+// The screen canvas used to stay at 160x144 or 640x576 and the browser stretched it to the window with smoothing
+// (image-rendering: auto), which blurred every pixel. With the default NATIVE output the canvas now matches the
+// window's real device pixels and presentSharp draws the frame at a whole-number scale (below).
+const SHARP = { w: 0, h: 0 };
+function lcdDeviceSize() {
+  if (!SHARP.w) {
+    const r = LCD.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    SHARP.w = Math.round(r.width * dpr); SHARP.h = Math.round(r.height * dpr);
+  }
+  return [SHARP.w, SHARP.h];
+}
+// re-measure when the screen element or the window (zoom, moving to another monitor) changes size
+if (typeof ResizeObserver === 'function') new ResizeObserver(() => { SHARP.w = 0; }).observe(LCD);
+addEventListener('resize', () => { SHARP.w = 0; });
+// Pixel-perfect: each game pixel (160x144 grid) becomes exactly g x g device pixels, g the largest whole number
+// that fits, centred with a thin dark border (like an emulator's integer scaling). The source may be the 160x144
+// frame or the 640x576 HD stage (4 stage pixels per game pixel), so game-pixel edges always land on device pixels
+// and nearest-neighbour keeps them hard. Windows too small for 1x fall back to smooth scaling.
+function presentSharp(src, sw, sh) {
+  let [dw, dh] = lcdDeviceSize();
+  if (!(dw > 0 && dh > 0)) { dw = sw; dh = sh; } // not laid out yet (hidden, headless)
+  dw = Math.min(dw, 7680); dh = Math.min(dh, 6912);
+  if (LCD.width !== dw || LCD.height !== dh) { LCD.width = dw; LCD.height = dh; }
+  const g = Math.floor(Math.min(dw / W, dh / H));
+  if (g < 1) { lctx.imageSmoothingEnabled = true; lctx.imageSmoothingQuality = 'high'; lctx.drawImage(src, 0, 0, dw, dh); return; }
+  const gw = W * g, gh = H * g, ox = Math.floor((dw - gw) / 2), oy = Math.floor((dh - gh) / 2);
+  if (ox || oy) { lctx.fillStyle = '#05070a'; lctx.fillRect(0, 0, dw, dh); }
+  lctx.imageSmoothingEnabled = false;
+  lctx.drawImage(src, 0, 0, sw, sh, ox, oy, gw, gh);
+}
 function present() {
+  if (S.hdRes === 'native' || !S.hdRes) {
+    if (S.video === 'hd64' && typeof present64 === 'function') return present64(LCD, lctx, 0, 0);
+    return presentSharp(cv, W, H);
+  }
   const sourceW = S.video === 'hd64' ? W * 4 : W, sourceH = S.video === 'hd64' ? H * 4 : H;
   // Keep output sizes honest and bounded: 2K is 1920 px wide, 4K is 3840.
   const requestedW = S.hdRes === '4k' ? 3840 : S.hdRes === '2k' ? 1920 : sourceW;

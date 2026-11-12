@@ -15,19 +15,62 @@
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   })[ch]);
 
+  // Plain-language message for a failed MMO request (players used to see the raw code "request_failed").
+  function describeError(error, base) {
+    const where = base ? base.replace(/^https?:\/\//, '') : 'the MMO server';
+    const code = error && error.code, status = error && error.status;
+    if (error && error.network) return 'Cannot reach an MMO server at ' + where + '. Check the address and that the server is running.';
+    if (code === 'invalid_credentials') return 'The account name or password is incorrect.';
+    if (code === 'username_taken') return 'That account name is already in use.';
+    if (code === 'too_many_auth_attempts' || code === 'api_write_rate_limited' || status === 429) return 'Too many attempts. Wait a minute, then try again.';
+    if (code === 'origin_not_allowed' || code === 'cors_preflight_not_allowed') return 'This MMO server does not allow games from this site. Its owner must add ' + location.origin + ' to GBQ_ALLOWED_ORIGINS.';
+    if (code === 'unauthorized' || status === 401) return 'Your online session has ended. Sign in again.';
+    if (status === 404 || status === 405 || error && error.notJson) return where + ' is not a GB-Quest MMO server. Check the MMO SERVER URL.';
+    if (status >= 500) return 'The MMO server had a problem (HTTP ' + status + '). Try again later.';
+    if (code) return 'The MMO server refused the request: ' + String(code).replace(/_/g, ' ') + '.';
+    return (error && error.message) || 'The MMO server request failed.';
+  }
+
   async function request(base, path, token, options = {}) {
     const headers = { accept: 'application/json' };
     if (options.body !== undefined) headers['content-type'] = 'application/json';
     if (token) headers.authorization = 'Bearer ' + token;
-    const response = await fetch(base.replace(/\/+$/, '') + path, {
-      method: options.method || 'GET', headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
-      credentials: 'omit', cache: 'no-store'
-    });
-    let data = {};
-    try { data = await response.json(); } catch (_) {}
-    if (!response.ok) throw Object.assign(new Error(data.error || 'request_failed'), { status: response.status, code: data.error });
+    let response;
+    try {
+      response = await fetch(base.replace(/\/+$/, '') + path, {
+        method: options.method || 'GET', headers,
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        credentials: 'omit', cache: 'no-store'
+      });
+    } catch (cause) {
+      const error = Object.assign(new Error('network'), { network: true, cause });
+      error.message = describeError(error, base); throw error;
+    }
+    let data = {}, notJson = false;
+    try { data = await response.json(); } catch (_) { notJson = true; }
+    if (!response.ok || notJson) {
+      const error = Object.assign(new Error(data.error || 'request_failed'), { status: response.status, code: data.error, notJson });
+      error.message = describeError(error, base); throw error;
+    }
     return data;
+  }
+
+  // Is this address a GB-Quest MMO server? (GET /health answers { service: 'gbquest-mmorpg' }.)
+  async function checkServer(base) {
+    const health = await request(base, '/health', null);
+    if (!health || health.service !== 'gbquest-mmorpg') {
+      throw new Error(base.replace(/^https?:\/\//, '') + ' is a different kind of server, not a GB-Quest MMO server. (A realm server is set in ONLINE > SERVER ADDRESS instead.)');
+    }
+  }
+
+  // Default MMO address: one the player used before, one the build bakes in, or this page's own server when the
+  // page could be served by it. Static hosts (itch.io) and local files have no MMO server of their own.
+  function defaultServer() {
+    let saved = ''; try { saved = localStorage.getItem('gbq_mmo_server_url') || ''; } catch (_) {}
+    if (saved) return saved;
+    if (window.GBQ_MMO_REALM_URL) return window.GBQ_MMO_REALM_URL;
+    if (/^https?:$/.test(location.protocol) && !window.GBQ_STATIC_HOST) return location.origin;
+    return '';
   }
 
   function setMessage(message, isError = false) {
@@ -40,7 +83,8 @@
 
   function apiBase() {
     const input = overlay && overlay.querySelector('[data-server-url]');
-    const raw = (input && input.value.trim()) || window.GBQ_MMO_REALM_URL || location.origin;
+    const raw = input ? input.value.trim() : defaultServer();
+    if (!raw) return '';
     let parsed;
     try { parsed = new URL(raw); } catch (_) { throw new Error('Enter a valid MMO server URL.'); }
     const local = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname.toLowerCase());
@@ -105,14 +149,18 @@
     try { base = apiBase(); } catch (error) { return setMessage(error.message, true); }
     const username = overlay.querySelector('[data-username]').value.trim();
     const password = overlay.querySelector('[data-password]').value;
-    if (!base || !username || !password) return setMessage('Enter the MMO server URL, account name and password.', true);
+    if (!base) return setMessage('Enter the MMO server URL, or choose PLAY OFFLINE INSTEAD.', true);
+    if (!username || !password) return setMessage('Enter your account name and password.', true);
     if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return setMessage('Account names must be 3–16 letters, numbers or underscores.', true);
     if (mode === 'register' && (password.length < 10 || password.length > 72)) return setMessage('New passwords must be 10–72 characters.', true);
     if (mode === 'login' && password.length > 72) return setMessage('Password is too long.', true);
     const buttons = overlay.querySelectorAll('[data-login], [data-register]');
     buttons.forEach(button => { button.disabled = true; });
-    setMessage(mode === 'register' ? 'Creating account…' : 'Signing in…');
+    setMessage('Connecting to ' + base.replace(/^https?:\/\//, '') + '…');
     try {
+      await checkServer(base);
+      try { localStorage.setItem('gbq_mmo_server_url', base); } catch (_) {}
+      setMessage(mode === 'register' ? 'Creating account…' : 'Signing in…');
       const result = await request(base, '/api/' + (mode === 'register' ? 'register' : 'login'), null, {
         method: 'POST', body: { username, password }
       });
@@ -125,10 +173,7 @@
       showStep('realm');
     } catch (error) {
       activeSession = null;
-      setMessage(error.code === 'username_taken' ? 'That account name is already in use.' :
-        error.code === 'invalid_credentials' ? 'The account name or password is incorrect.' :
-        error.code === 'too_many_auth_attempts' ? 'Too many attempts. Wait before trying again.' :
-        error.message || 'Account sign-in failed.', true);
+      setMessage(error.message || 'Account sign-in failed.', true);
     } finally {
       buttons.forEach(button => { button.disabled = false; });
     }
@@ -156,7 +201,7 @@
         '<div class="gbq-account-message" data-account-message hidden role="status"></div>' +
         '<section class="gbq-account-step" data-account-step="auth">' +
           '<p class="gbq-account-intro">Create an online account or sign in to choose a realm and save your hero to the server.</p>' +
-          '<label>MMO SERVER URL<input data-server-url type="url" spellcheck="false" value="' + esc(window.GBQ_MMO_REALM_URL || location.origin) + '" placeholder="https://your-realm-server.example"></label>' +
+          '<label>MMO SERVER URL<input data-server-url type="url" spellcheck="false" value="' + esc(defaultServer()) + '" placeholder="https://your-realm-server.example"></label>' +
           '<label>ACCOUNT NAME<input data-username autocomplete="username" minlength="3" maxlength="16" required></label>' +
           '<label>PASSWORD<input data-password type="password" autocomplete="current-password" minlength="10" maxlength="72" required></label>' +
           '<div class="gbq-account-actions"><button type="button" data-login>SIGN IN</button><button type="button" data-register>CREATE ACCOUNT</button></div>' +
@@ -197,7 +242,10 @@
       event.stopPropagation();
       if (event.key === 'Escape') { event.preventDefault(); close(); }
     });
-    overlay.querySelector('[data-username]').focus();
+    if (!defaultServer()) {
+      setMessage('No MMO server is set. Enter its address to play online, or choose PLAY OFFLINE INSTEAD.');
+      overlay.querySelector('[data-server-url]').focus();
+    } else overlay.querySelector('[data-username]').focus();
   }
 
   async function createCharacter(session, name, localClass) {
@@ -235,6 +283,8 @@
       return true;
     },
     gameplayRequest,
+    describeError,
+    defaultServer,
     get hasGameplaySession() { return !!(gameplaySession && gameplaySession.token); },
     get session() { return activeSession; },
     logout() { activeSession = null; gameplaySession = null; }

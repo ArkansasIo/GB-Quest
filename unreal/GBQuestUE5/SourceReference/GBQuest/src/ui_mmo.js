@@ -100,7 +100,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
     if (isBlackbird() && IMG.bb_vitals_bg) ctx.drawImage(IMG.bb_vitals_bg, U.x + 21, U.y + 9, U.w - 23, 12);
     fill(U.x + 3, U.y + 3, 17, 17, rgb(C.ink, 3)); fill(U.x + 4, U.y + 4, 15, 15, rgb([196, 214, 236], 1));
     const por = heroPortrait(G); if (por) { const s = sprFit(por, 15); blit(s, U.x + 4 + ((15 - s.width) >> 1), U.y + 4 + ((15 - s.height) >> 1)); }
-    else { const w = typeof walker === 'function' ? walker(heroLook(G), 'down', 0) : null; if (w) blit(w, U.x + 3, U.y + 4); }
+    else { const w = (typeof fdWalker === 'function' && fdWalker(G, 'down', 0)) || (typeof walker === 'function' ? walker(heroLook(G), 'down', 0) : null); if (w) blit(w, U.x + 3, U.y + 4); }
     text(`L${G.lvl} ${G.name}`.slice(0, 7), U.x + 22, U.y + 3, 3);
     const barX = isBlackbird() ? U.x + 29 : U.x + 22, barW = U.x + U.w - 3 - barX;
     hbar(barX, U.y + 11, barW, 5, hpF, G.hp < D.hpMax * 0.3 && (frameN >> 3) % 2 ? C.hpLow : C.hp, 'red');
@@ -174,7 +174,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       const items = this.items(), D = derive(G);
       // trainer card
       frame(2, 2, 50, 72);
-      const por = heroPortrait(G); if (por) { const sp = sprFit(por, 24); blit(sp, 27 - (sp.width >> 1), 6); } else { const wk = typeof walker === 'function' ? walker(heroLook(G), 'down', (frameN >> 4) % 2) : null; if (wk) blit(wk, 19, 10); }
+      const por = heroPortrait(G); if (por) { const sp = sprFit(por, 24); blit(sp, 27 - (sp.width >> 1), 6); } else { const wk = (typeof fdWalker === 'function' && fdWalker(G, 'down', (frameN >> 4) % 2)) || (typeof walker === 'function' ? walker(heroLook(G), 'down', (frameN >> 4) % 2) : null); if (wk) blit(wk, 19, 10 + 16 - wk.height); }
       textC(G.name.slice(0, 7), 27, 32, 3); textC(`LV${G.lvl}`, 27, 41, 2);
       text('HP', 6, 51, 2); bar(19, 52, 29, 4, G.hp, D.hpMax, G.hp < D.hpMax * 0.3 ? 'red' : 'hp');
       // menu list
@@ -190,7 +190,7 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
   }
 
   // ---------------------------------------------------------------- WoW-style window title bars on full-screen pages
-  const WIN_TITLE = { CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', PaperDoll: 'EQUIPMENT', EquipScene: 'EQUIPMENT', InventoryScene: 'BAGS', BagScene: 'BAGS', BankScene: 'BANK', StashScene: 'STASH',
+  const WIN_TITLE = { CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS', StatBreakdownScene: 'STATS', GearOverviewScene: 'GEAR', ItemDetailScene: 'ITEM', ProgressSummaryScene: 'PROGRESS', DetailHubScene: 'DETAILS', GearAwakenScene: 'AWAKENING', RiftScene: 'RIFTS', RiftBoardScene: 'LEADERBOARD', SkillRuneScene: 'SKILL RUNES', GamblerScene: 'GAMBLER', LootFilterScene: 'LOOT FILTER', SeasonPassScene: 'SEASON PASS', PatchNotesScene: 'PATCH NOTES', EquipScene: 'EQUIPMENT', InventoryScene: 'BAGS', BagScene: 'BAGS', BankScene: 'BANK', StashScene: 'STASH',
     Spellbook: 'SPELLBOOK', TalentScene: 'TALENTS', GrowthScene: 'GROWTH', AbilitySkillsScene: 'SKILLS', QuestLog: 'QUEST LOG', SocialScene: 'SOCIAL', SettingsScene: 'GAME MENU', KeybindScene: 'KEY BINDINGS',
     RepScene: 'REPUTATION', AchievementScene: 'ACHIEVEMENTS', BestiaryScene: 'BESTIARY', BossJournalScene: 'ADVENTURE GUIDE', ActivityFinderScene: 'GROUP FINDER', CraftScene: 'PROFESSIONS',
     ProfessionTreeScene: 'PROFESSIONS', ProfessionQuestScene: 'PROFESSIONS', BlueprintScene: 'BLUEPRINTS', AuctionHouse: 'AUCTION HOUSE', RealmStoreScene: 'SHOP', HousingScene: 'HOUSING',
@@ -237,6 +237,6 @@ if (typeof window !== 'undefined' && typeof Field !== 'undefined') {
       const slide = Math.min(1, (110 - t.t) / 10, t.t / 10), y = MMO_LAYOUT.toastY + (isMu() ? 8 : 0) - Math.round(6 * (1 - slide));
       ctx.globalAlpha = Math.max(0.2, slide); panel(4, y, 152, 25);
       if (t.icon) blit(sprFit(t.icon, 14), 9, y + 6);
-      text(String(t.title).slice(0, 21), 27, y + 4, 3); text(String(t.sub || '').slice(0, 21), 27, y + 14, 2); ctx.globalAlpha = 1;
+      text(String(t.title), 27, y + 4, 3, 1, 153); text(String(t.sub || ''), 27, y + 14, 2, 1, 153); ctx.globalAlpha = 1;
     }; }
 }

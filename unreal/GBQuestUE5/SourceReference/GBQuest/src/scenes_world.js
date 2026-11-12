@@ -85,6 +85,9 @@ function titleExtras() {
     if (k === 3) say([`${BUILD.game}`, `Version ${BUILD.version} ${BUILD.build}`, `Engine ${BUILD.engine} ${BUILD.engineVersion}`, `By ${BUILD.studio}`]);
   }, 'EXTRAS');
 }
+// True while the asset batch is still loading (dev builds fetch thousands of PNGs one by one).
+function titleLoading() { return typeof ASSET_PROGRESS === 'number' && ASSET_PROGRESS < 1; }
+function titleLoadingLabel() { return `LOADING ${Math.floor(ASSET_PROGRESS * 100)}%`; }
 class Title {
   constructor() { this.opaque = true; this.t = 0; this.i = 0; this.top = 0; }
   enter() { try { Music.play('title'); } catch (error) { console.warn('Title music unavailable; continuing without audio.', error); } }
@@ -98,12 +101,17 @@ class Title {
     this.i = Math.min(this.i, o.length - 1);
     if (P('b')) { SFX.back(); return; }
     if (!(P('a') || P('start'))) return;
+    if (titleLoading()) { SFX.back(); return; } // world art is still arriving; starting now would show blank tiles
     SFX.select();
     const c = o[this.i];
     if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
     // the Aelmoor menu suite (src/menus_aelmoor.js); the older screens remain as fallbacks
     const AM = window.GBQAelmoorMenus;
-    if (c === 'NEW GAME') push(AM ? new AM.AelNewGame() : new RealmSelect());
+    if (c === 'NEW GAME') {
+      const beginCreation = session => push(AM ? new AM.AelNewGame(undefined, session) : new RealmSelect());
+      if (window.GBQMMOAccount) window.GBQMMOAccount.open({ onReady: beginCreation });
+      else beginCreation(null);
+    }
     if (c === 'LOAD GAME') push(AM ? new AM.AelLoad() : new RealmSelect());
     if (c === 'OPTIONS') push(AM ? new AM.AelOptions() : new SettingsScene());
     if (c === 'CREDITS') push(AM ? new AM.AelCredits() : new Credits());
@@ -143,7 +151,7 @@ class Title {
     // left border accent
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
-    textC('A  SELECT   B  BACK', 80, 137, '#e8dab8');
+    textC(titleLoading() ? titleLoadingLabel() : 'A  SELECT   B  BACK', 80, 137, '#e8dab8');
   }
   drawKeyArt() {
     const smooth = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
@@ -155,7 +163,7 @@ class Title {
     fill(0, 136, W, 8, '#05060f');
     ctx.save(); ctx.strokeStyle = '#b8922a'; ctx.lineWidth = 1; ctx.strokeRect(.5, 136.5, W - 1, 7); ctx.restore();
     text(`v${BUILD.version}`, 4, 137, '#c8a84a');
-    textR('A SELECT  B BACK', W - 4, 137, '#e8dab8');
+    textR(titleLoading() ? titleLoadingLabel() : 'A SELECT  B BACK', W - 4, 137, '#e8dab8');
     this.keep = [[panelX - 1, panelY - 1, panelW + 1, panelH + 2], [0, 136, W, 8]];
   }
 }
@@ -217,6 +225,10 @@ class RealmSelect {
   constructor() {
     this.opaque = true; this.i = 0; this.j = 0; this.regionIds = Object.keys(REALM_INFO);
     this.region = this.regionIds[0]; this.realms = REALM_INFO[this.region].realms;
+    // live population and status from the realm server, when there is one
+    if (typeof LocalRealm !== 'undefined' && LocalRealm.available) LocalRealm.api('/api/realms').then(j => {
+      for (const r of (j && j.realms) || []) { const m = REALMS.find(x => x.id === r.id); if (m) { m.population = r.population || 0; m.status = r.status || m.status; m.maxPlayers = r.maxPlayers || m.maxPlayers; } }
+    }).catch(() => {});
   }
   setRegion(id) { this.region = id; this.realms = REALM_INFO[id].realms; this.j = 0; }
   update() {
@@ -228,8 +240,13 @@ class RealmSelect {
     if (!P('a')) return;
     SFX.select();
     const realmId = this.realms[this.j];
-    G.realm = realmId;
-    fadeTo(() => { scenes.length = 0; push(new SlotPicker('new')); });
+    const enter = () => { G.realm = realmId; fadeTo(() => { scenes.length = 0; push(new SlotPicker('new')); }); };
+    // on a realm server, the server must accept the realm (it may be full or offline)
+    if (typeof LocalRealm !== 'undefined' && LocalRealm.available && LocalRealm.account) {
+      LocalRealm.selectRealm(realmId).then(enter).catch(e => { SFX.error(); say([`${(REALMS.find(r => r.id === realmId) || { name: realmId }).name}:`, String(e.message || e)]); });
+      return;
+    }
+    enter();
   }
   draw() {
     drawMenuBackdrop();
@@ -248,16 +265,17 @@ class RealmSelect {
       const y = 18 + k * 24, sel = rid === this.realms[this.j];
       fill(86, y, 68, 21, sel ? 'rgba(157,91,33,.5)' : 'rgba(12,13,28,.75)');
       const info = REALMS.find(r => r.id === rid) || { name: rid, type: '?', status: 'offline', maxPlayers: 1000, population: 0 };
-      const pop = info.population || 0;
-      text(String(info.name).slice(0, 11), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6');
-      text(REALM_TYPE[rid] || '?', 90, y + 12, info.status === 'online' ? 'green' : 'red');
-      textR(`${pop}/${info.maxPlayers}`, 142, y + 12, pop >= info.maxPlayers ? 'red' : 2);
-      text(info.status === 'online' ? 'ONLINE' : 'OFFLINE', 90, y + 19, info.status === 'online' ? 'green' : 'red');
+      const pop = info.population || 0, online = info.status === 'online';
+      // Two rows per card: name + status dot, then a short type tag and the population.
+      text(String(info.name), 90, y + 2, sel ? '#ffe3a0' : '#ddd3e6', 1, 145);
+      fill(147, y + 4, 4, 4, online ? 'green' : 'red');
+      const type = REALM_TYPE[rid] || '?', short = { ROLEPLAY: 'RP', SEASONAL: 'SEAS' }[type] || type;
+      text(short, 90, y + 12, online ? 'green' : 'red');
+      const max = info.maxPlayers || 1000, cap = max >= 1000 && max % 1000 === 0 ? `${max / 1000}K` : String(max);
+      textR(`${pop}/${cap}`, 152, y + 12, pop >= max ? 'red' : 2);
     });
-    const info = REALMS.find(r => r.id === this.realms[this.j]) || {};
-    fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
-    textC(`A ENTER WORLD   B BACK   LEFT/RIGHT REGION`, 80, 129, '#fff0c2');
-    textC(`WORLD CAPACITY: ${(info.population||0)}/${(info.maxPlayers||1000)} PLAYERS`, 80, 139, '#cbb9ed');
+    fill(4, 130, 152, 10, 'rgba(5,6,15,.78)');
+    textC('A ENTER  B BACK  </>: REGION', 80, 131, '#fff0c2');
   }
 }
 // ================================================================ SAVE SLOTS
@@ -302,7 +320,7 @@ class SlotPicker {
       }
     }
     fill(4, 128, 152, 9, 'rgba(5,6,15,.78)');
-    textC('UP/DOWN CHOOSE   A CONFIRM   B BACK', 80, 129, '#fff0c2');
+    textC('UP/DN CHOOSE  A OK  B BACK', 80, 129, '#fff0c2');
   }
 }
 
@@ -540,6 +558,8 @@ class CharCreate {
   }
   drawWalker(look, x, y, size = 32) {
     const seq = ['down', 'side', 'up', 'sideL'], d = seq[Math.floor(this.t / 48) % 4], f = (this.t >> 4) % 2;
+    const fd = typeof fdWalkerName === 'function' && fdWalkerName({ cls: look, look, species: this.pick && this.pick.species }, d === 'sideL' ? 'left' : d, f);
+    if (fd) { const w = Math.round(size * 2 / 3), h = size; blit(spr(fd, w, h, { flip: d === 'sideL' }), x + Math.round((size - w) / 2), y); return; }
     const name = `gh_${look}_${d === 'sideL' ? 'side' : d}${f}`;
     blit(spr(IMG[name] ? name : `gh_warden_down${f}`, size, size, { flip: d === 'sideL' }), x, y);
   }
@@ -845,8 +865,8 @@ class Field {
     if (this.zone.town && this.zone.id === this.zone.region) {
       const svc = { K: 'tower', k: 'tower', Q: 'arena', R: 'portal', H: 'auction', J: 'inn', r: 'mail', q: 'trainer' }[ch]; if (svc) return npcService({ svc, name: svc.toUpperCase() });
     } else if (this.zone.town) { const svc = { H: 'auction', J: 'inn', r: 'mail', q: 'trainer', Q: 'portal', R: 'portal' }[ch]; if (svc) return npcService({ svc, name: svc.toUpperCase() }); }
-    if (ch === 'k' || ch === 'K') { const dg = this.m.poi.dungeon; if (dg) return instanceMenu('dungeon', DUNGEONS.find(d => d.id === dg.id)); }
-    if (ch === 'R' && this.m.poi.raid) return instanceMenu('raid', RAIDS.find(d => d.id === this.m.poi.raid.id));
+    if (ch === 'k' || ch === 'K') { const dg = this.m.poi.dungeon; if (dg) return instancePicker('dungeon', DUNGEONS, dg.id); }
+    if (ch === 'R' && this.m.poi.raid) return instancePicker('raid', RAIDS, this.m.poi.raid.id);
     if (TILE_SVC[ch] && this.zone.id === 'elderwood') return npcService({ svc: TILE_SVC[ch], name: TILE_SVC[ch].toUpperCase() });
     if (ch === 'H' || ch === 'J') return say('A cosy house. Nobody answers.');
     if (ch === 'r' || ch === 'q') return say('A small shrine. You feel calm.');
@@ -898,7 +918,7 @@ class Field {
     for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++)
       for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
         const d = this.tileAt(tx, ty); if (!d) continue;
-        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
+        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.fdWorldTile === 'function' && window.fdWorldTile(tile) ? window.fdWorldTile(tile) : S.art === 'packs' && typeof window.packFieldOn === 'function' && window.packFieldOn() && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
         else blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
       }
     const list = this.entities().map(e => Object.assign(e, { sy: e.y * T }));
@@ -914,7 +934,7 @@ class Field {
         if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
         const walkFrame = (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0;
-        const hdFrame = hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
+        const hdFrame = (typeof fdWalker === 'function' && fdWalker(G, G.dir, walkFrame, ghost)) || hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
         const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(G, G.dir, ghost) : null;
         const gearWalker = worldGearWalker(G, G.dir, walkFrame, ghost);
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(G, G.dir, ghost);
@@ -923,7 +943,7 @@ class Field {
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); if (c) blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
         const bob = (this.walk >> 3) % 2;
-        const hdFrame = hdWorldFrame(e.c, e.dir, bob, true, false);
+        const hdFrame = (typeof fdWalker === 'function' && fdWalker(e.c, e.dir, bob)) || hdWorldFrame(e.c, e.dir, bob, true, false);
         const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(e.c, e.dir) : null;
         const gearWalker = worldGearWalker(e.c, e.dir, bob);
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(e.c, e.dir);
@@ -932,6 +952,7 @@ class Field {
         else { const c = sprH(`c_${e.c.cls}_${LOOK_F[e.dir][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
       }
       else if (e.kind === 'pet') blit(sprH(G.pet === 'slime' ? 'enemy_slime' : 'enemy_bat', 9), ex + 3, ey + 6);
+      else if (e.kind === 'building') { if (typeof drawBuilding === 'function') drawBuilding(e, ex, ey); }
       else if (e.kind === 'woods') {
         const tree = woodsSprite(e.variant, e.biome);
         if (tree) {
@@ -951,7 +972,7 @@ class Field {
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
         const avatar = { cls: CLASSES[p.cls] ? p.cls : 'warden' };
-        const portrait = (typeof assetPackCharacter === 'function' ? assetPackCharacter(avatar, p.dir || 'down') : null) || worldPortrait(avatar, p.dir || 'down');
+        const portrait = (typeof fdWalker === 'function' && fdWalker(avatar, p.dir || 'down')) || (typeof assetPackCharacter === 'function' ? assetPackCharacter(avatar, p.dir || 'down') : null) || worldPortrait(avatar, p.dir || 'down');
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1);
         else if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3);
         else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
@@ -1218,9 +1239,10 @@ function wardenMenu(e) {
   }, `${e.name}: Well met, ${G.name}.`);
 }
 class SideQuestBoard {
-  constructor(zid, who) { this.opaque = true; this.zid = zid; this.who = who; this.i = 0; }
+  constructor(zid, who) { this.opaque = true; this.zid = zid; this.who = String(who || 'QUEST BOARD'); this.i = 0; }
   update() {
     const qs = sideQuestsFor(this.zid);
+    if (!qs.length) { if (P('a') || P('b')) { removeScene(this); SFX.back(); } return; }
     if (nav('up')) { this.i = (this.i + qs.length - 1) % qs.length; SFX.cursor(); }
     if (nav('down')) { this.i = (this.i + 1) % qs.length; SFX.cursor(); }
     if (P('b')) { removeScene(this); SFX.back(); return; }
@@ -1237,6 +1259,7 @@ class SideQuestBoard {
     fill(0, 0, W, H, 0); frame(2, 2, 156, 140);
     text(`${this.who.slice(0, 22)}`, 7, 6, 2);
     const qs = sideQuestsFor(this.zid);
+    if (!qs.length) { text('NO QUESTS POSTED HERE.', 7, 24, 3); text('B  BACK', 7, 130, 2); return; }
     qs.forEach((q, i) => { const y = 18 + i * 13, st = G.sideq[q.id]; if (i === this.i) fill(4, y - 2, 152, 12, 1); text(st ? (st.state === 'done' ? '#' : st.state === 'ready' ? '?' : '-') : '!', 7, y, st && st.state === 'ready' ? 'gold' : 3); text(q.name.slice(0, 22), 15, y); });
     const q = qs[this.i]; frame(4, 98, 152, 42); text(wrap(q.text, 24).slice(0, 3).join('\n'), 8, 102); text(`${fmt(q.xp)}XP ${q.gold}G`, 8, 131, 2);
   }
@@ -1499,6 +1522,13 @@ function runBattlegroundRound(match) {
     },
   });
 }
+// a region's entrance leads to every dungeon (or raid) of that region: one opens straight away, several give a choice
+function instancePicker(kind, list, id) {
+  const first = list.find(d => d.id === id); if (!first) return;
+  const here = list.filter(d => d.zone === first.zone);
+  if (here.length === 1) return instanceMenu(kind, first);
+  choose(here.map(d => `${d.name.slice(0, 17)} ${d.lvl}`), i => { if (i >= 0) instanceMenu(kind, here[i]); }, `${here.length} ${kind === 'raid' ? 'RAIDS' : 'DUNGEONS'} lie beyond this entrance.`);
+}
 function lfgMenu() {
   const dgs = DUNGEONS.filter(d => d.lvl <= G.lvl + 6), rds = RAIDS.filter(r => r.lvl <= G.lvl + 6);
   const opts = dgs.map(d => ({ t: `DG ${d.name} ${d.lvl}`, k: 'dungeon', d })).concat(rds.map(r => ({ t: `RAID ${r.name} ${r.lvl}`, k: 'raid', d: r })));
@@ -1599,7 +1629,7 @@ function fightPull(p) {
       if (inst.kind === 'raid') { G.stats.raids++; G.raidWeek[inst.def.id] = weekKey(); questEvent('raid', inst.def.id); toast('RAID CLEARED', inst.def.name, 'px_crown', 'act_complete'); }
       checkAchievements();
     }
-    if (inst.kind === 'tower' && p.boss) { G.towerBest = Math.max(G.towerBest, inst.floor); NET.publishHero(); checkAchievements(); }
+    if (inst.kind === 'tower' && p.boss) { setTowerBest(towerSpec(inst.def).id, inst.floor); NET.publishHero(); checkAchievements(); }
     if (p.boss && inst.size > 1 && R() < 0.6) push(new LootRoll(makeItem({ lvl: p.lvl, boss: true, mf: derive(G).mf, loot: DIFFICULTY[difficulty - 1].loot }), inst.size));
   } });
 }
@@ -1615,21 +1645,36 @@ function openInstanceChest() {
 function leaveInstance() {
   choose(['LEAVE', 'STAY'], k => { if (k !== 0) return; const r = G.inst.return; fadeTo(() => { G.inst = null; G.map = r.map; G.x = r.x; G.y = r.y + 1; FIELD.reload(); safeSpot(); }); }, 'Leave the instance? Progress resets.');
 }
-function towerMenu() {
-  const cps = [1]; for (let f = 10; f <= Math.min(100, G.towerBest + 1); f += 10) if (f <= G.towerBest + 1) cps.push(f);
-  choose(cps.map(f => `START FLOOR ${f}`).concat([`BEST: ${G.towerBest}F`]), i => {
+// ---- towers: the SPIRE OF A HUNDRED plus 17 more (TOWERS in data_world.js). The Spire keeps its progress in
+// G.towerBest (achievements, titles and leaderboards read it); the others keep theirs in G.towerBests[id].
+function towerBestOf(id) { return id === 'tower' ? (G.towerBest || 0) : ((G.towerBests || {})[id] || 0); }
+function setTowerBest(id, floor) {
+  if (id === 'tower') G.towerBest = Math.max(G.towerBest || 0, floor);
+  else { G.towerBests = G.towerBests || {}; G.towerBests[id] = Math.max(G.towerBests[id] || 0, floor); }
+}
+function towerDef(tw, floor) { return { id: tw.id, towerId: tw.id, name: tw.name, lvl: tw.baseLvl, theme: towerTheme(tw, floor) }; }
+function towerMenu(towerId) {
+  const tw = towerId && TOWER_BY_ID[towerId];
+  if (!tw) {
+    const open = TOWERS.filter(t => t.baseLvl <= G.lvl + 10);
+    const label = t => `${t.name.slice(0, 15)} ${towerBestOf(t.id)}/${t.floors}`;
+    return choose(open.map(label), i => { if (i >= 0) towerMenu(open[i].id); },
+      `TOWERS: ${open.length} of ${TOWERS.length} open. More open as you level.`);
+  }
+  const best = towerBestOf(tw.id), cps = [1];
+  for (let f = 10; f <= Math.min(tw.floors, best + 1); f += 10) cps.push(f);
+  choose(cps.map(f => `START FLOOR ${f}`).concat([`BEST: ${best}F`]), i => {
     if (i < 0 || i >= cps.length) return;
-    enterInstance('tower', { id: 'tower', name: TOWER.name, lvl: TOWER.baseLvl, theme: ['void', 'crypt', 'lava', 'ice', 'temple'][Math.floor(cps[i] / 20) % 5] }, cps[i], Math.max(1, Math.min(4, fieldPartySize())));
-  }, `${TOWER.name}: 100 floors. Boss every 5th.`);
+    enterInstance('tower', towerDef(tw, cps[i]), cps[i], Math.max(1, Math.min(4, fieldPartySize())));
+  }, `${tw.name}: ${tw.desc} Boss every ${tw.bossEvery}th.`);
 }
 function towerNext() {
-  const inst = G.inst;
+  const inst = G.inst, tw = towerSpec(inst.def);
   const bossLeft = inst.map.pulls.some(p => p.boss && !inst.cleared.includes(p.id));
   if (bossLeft) return say('The stairs are sealed. Defeat this floor\'s guardian.');
-  G.towerBest = Math.max(G.towerBest, inst.floor);
-  if (inst.floor >= TOWER.floors) { checkAchievements(); return say(['You stand atop the SPIRE OF A HUNDRED.', 'The whole of AELMOOR glitters below. LEGEND.']); }
-  const def = Object.assign({}, inst.def, { theme: ['void', 'crypt', 'lava', 'ice', 'temple'][Math.floor((inst.floor + 1) / 20) % 5] });
-  enterInstance('tower', def, inst.floor + 1, inst.size);
+  setTowerBest(tw.id, inst.floor);
+  if (inst.floor >= tw.floors) { checkAchievements(); return say([`You stand atop the ${tw.name}.`, tw.id === 'tower' ? 'The whole of AELMOOR glitters below. LEGEND.' : `${tw.floors} floors conquered.`]); }
+  enterInstance('tower', Object.assign({}, inst.def, { theme: towerTheme(tw, inst.floor + 1) }), inst.floor + 1, inst.size);
 }
 
 // ================================================================ trials (boss rush etc)
@@ -1642,15 +1687,20 @@ function trialsMenu() {
 function runTrial(t, stage) {
   const bosses = BOSSES.filter(b => b.where === t.id).sort((a, b) => a.order - b.order);
   const lvl = Math.max(t.lvl, G.lvl) + stage;
+  const bossFoe = k => { const B = bosses[k % bosses.length]; const f = makeMonster(B, lvl, G.difficulty, { bossId: B.id, cat: 'trial' }); f.name = B.name.slice(0, 16); return f; };
   let foes;
   if (t.rule === 'waves') foes = Array.from({ length: 3 }, () => makeMonster(pick(BESTIARY), lvl - 1, G.difficulty));
   else if (t.rule === 'mirror') foes = [adventurerFoe(makeAdventurer(G.cls, G.lvl, 'MIRROR ' + G.name.slice(0, 8)))];
-  else { const B = bosses[stage % bosses.length]; const f = makeMonster(B, lvl, G.difficulty, { bossId: B.id, cat: 'trial' }); f.name = B.name.slice(0, 16); foes = [f]; }
-  const stages = t.rule === 'waves' ? 10 : t.rule === 'mirror' ? 3 : 5;
-  startBattle(foes, { size: t.rule === 'solo' || t.rule === 'mirror' ? 1 : Math.min(4, fieldPartySize()), kind: 'trial', rule: t.rule, noFlee: true, music: 'boss', onEnd: r => {
+  else if (t.pair) foes = [bossFoe(stage), bossFoe(stage + 1)];   // TRIAL OF TWO: two bosses at once
+  else foes = [bossFoe(stage)];
+  const stages = t.stages || (t.rule === 'waves' ? 10 : t.rule === 'mirror' ? 3 : 5);
+  const size = t.size || (t.rule === 'solo' || t.rule === 'mirror' ? 1 : Math.min(4, fieldPartySize()));
+  // trial rules built on combat effects: applied when the battle starts and kept for the whole fight
+  const trialFx = t.partyFx || t.foeFx || t.foeHp ? { party: t.partyFx || [], foes: t.foeFx || [], foeHp: t.foeHp || 1 } : null;
+  startBattle(foes, { size: Math.min(size, fieldPartySize()), kind: 'trial', rule: t.rule, trialFx, noFlee: true, music: 'boss', onEnd: r => {
     if (r !== 'win') { G.hp = Math.max(1, G.hp); return say(`Trial failed at stage ${stage + 1}.`); }
     if (stage + 1 >= stages) { G.stats.trials++; const it = makeItem({ lvl: lvl + 2, rarity: 4 }); addGear(it); checkAchievements(); return say([`${t.name} COMPLETE!`, `Reward: ${it.name}`]); }
-    if (t.rule !== 'rush') { const D = derive(G); G.hp = Math.min(D.hpMax, G.hp + Math.ceil(D.hpMax * 0.3)); }
+    if (t.rule !== 'rush' && !t.noRest) { const D = derive(G); G.hp = Math.min(D.hpMax, G.hp + Math.ceil(D.hpMax * 0.3)); }
     say(`Stage ${stage + 1}/${stages} cleared! Next...`, () => runTrial(t, stage + 1));
   } });
 }
@@ -1955,7 +2005,7 @@ class ExpansionMapsScene {
     textC(`${x.n}. ${x.name}`.slice(0, 25), 80, 2, 0);
     textC(`LEVEL ${x.lvl[0]}-${x.lvl[1]}  ${x.desc}`.slice(0, 25), 80, 15, 'gold');
     zones.forEach((z, index) => {
-      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 29 + row * 49;
+      const colIndex = index % 4, row = Math.floor(index / 4), ox = colIndex * 40 + 4, oy = 22 + row * 42;
       const m = buildZoneCached(z.id), seen = !!(G.visited[z.id] || G.waypoints[z.id]);
       for (let ty = 0; ty < ZH; ty++) for (let tx = 0; tx < ZW; tx++) {
         const ch = m.rows[ty][tx], rgb = MONO(S.palette) ? UI.ui[monoShade(ch)] : terrainColor(ch, z.biome, tx, ty);
@@ -1966,18 +2016,18 @@ class ExpansionMapsScene {
       if (m.poi.dungeon) { fill(ox + m.poi.dungeon.x, oy + 7 + m.poi.dungeon.y, 2, 2, 'red'); text('D', ox + m.poi.dungeon.x - 1, oy + 6 + m.poi.dungeon.y, 0); }
       if (m.poi.raid) { fill(ox + m.poi.raid.x, oy + 7 + m.poi.raid.y, 2, 2, 'gold'); text('R', ox + m.poi.raid.x - 1, oy + 6 + m.poi.raid.y, 3); }
       if (index === this.zoneIndex) { ctx.strokeStyle = col('gold'); ctx.lineWidth = 1; ctx.strokeRect(ox - 2.5, oy + 4.5, ZW + 5, ZH + 5); }
-      text(`${index + 1} ${z.name}`.slice(0, 10), ox - 2, oy + 34, index === this.zoneIndex ? 'gold' : 2);
-      textR(`LV${z.lvl[0]}`, ox + ZW + 1, oy + 34, 2);
+      // Number and level only; the selected zone's full name is in the bottom bar.
+      text(`${index + 1} LV${z.lvl[0]}`, ox - 1, oy + 33, index === this.zoneIndex ? 'gold' : 2, 1, ox + 38);
     });
     const campaign = EXPANSION_CAMPAIGNS[this.expIndex], progress = G.expansionCampaigns && G.expansionCampaigns[x.id];
     const story = progress ? (progress.done ? campaign.epilogue : campaign.beats[progress.step] || campaign.intro) : campaign.beats[0];
     const step = campaign.steps[progress?.step || 0];
     const objective = progress?.done ? 'CAMPAIGN COMPLETE' : !progress ? '0/4 ARRIVE AT FRONTIER' : step.kind === 'slay' ? `2/4 FOES ${progress.kills || 0}/${step.target}` : `${progress.step + 1}/4 ${step.kind === 'raid' ? 'RAID' : step.kind === 'dungeon' ? 'DUNGEON' : 'REACH'}: ${step.kind === 'raid' ? x.raid : step.kind === 'dungeon' ? EXP_ZONE_NAMES[this.expIndex][1] : EXP_ZONE_NAMES[this.expIndex][0]}`;
-    textC(story.toUpperCase().slice(0, 25), 80, 105, 2);
-    textC(objective.slice(0, 25), 80, 116, progress?.done ? 'gold' : 2);
+    textC(story.toUpperCase().slice(0, 25), 80, 106, 2);
+    textC(objective.slice(0, 25), 80, 115, progress?.done ? 'gold' : 2);
     const selected = zones[this.zoneIndex];
     fill(0, 125, W, 19, 0); textC(`${selected?.name || ''}  LV${selected?.lvl[0] || 0}-${selected?.lvl[1] || 0}`, 80, 126, 'gold');
-    textC('UP/DN: EXPANSION  LEFT/RIGHT: ZONE  A: DETAIL', 80, 136, 2);
+    textC('UP/DN: EXP  L/R: ZONE  A: INFO', 80, 136, 2);
   }
 }
 

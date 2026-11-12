@@ -198,8 +198,12 @@
     if (!root || !root.isConnected) { if (timer) window.clearInterval(timer); timer = null; return; }
     const g = getGame();
     const stack = window.GBQ && window.GBQ.scenes;
-    const activeScene = Array.isArray(stack) && stack.length ? stack[stack.length - 1] : null;
-    const onField = !!(activeScene && activeScene.constructor && activeScene.constructor.name === 'Field');
+    // Live while the overworld is visible: the Field is on the stack and nothing full-screen (a menu, battle or
+    // map, which mark themselves opaque) sits above it. Dialog boxes and toasts over the world keep the HUD up.
+    const scenes = Array.isArray(stack) ? stack : [];
+    let fieldAt = -1;
+    for (let i = scenes.length - 1; i >= 0; i--) if (scenes[i] && scenes[i].constructor && scenes[i].constructor.name === 'Field') { fieldAt = i; break; }
+    const onField = fieldAt >= 0 && !scenes.slice(fieldAt + 1).some(s => s && s.opaque);
     if (!g || !onField) { root.classList.remove('is-live'); return; }
     root.classList.add('is-live');
     const derived = typeof window.derive === 'function' ? window.derive(g) : {};
@@ -261,7 +265,10 @@
     const signature = [g.name,level,hp,mp,g.gold,g.map,g.x,g.y,companions.length,quests.length,arts.length,mapData?.x,mapData?.y].join('|');
     if (signature !== lastSignature) { root.dataset.updated = String(Date.now()); lastSignature = signature; }
   }
-  function init() { mount(); if (!root) window.setTimeout(init, 250); }
+  // The HTML overlay panels (top bar, side panels, bottom bar) are off: the game shows only its own in-screen UI.
+  // Set to true to bring the overlay back. The keyboard shortcuts below work either way.
+  const HUD_OVERLAY_ENABLED = false;
+  function init() { if (!HUD_OVERLAY_ENABLED) return; mount(); if (!root) window.setTimeout(init, 250); }
   // Keyboard shortcuts for the menus the old bottom bar listed (they were labels only before).
   // Field only, never while typing or in battle. Taken keys are avoided: WASD/arrows move, Z/J/Space = A,
   // X/K/Esc = B, Enter = START, Shift/Tab = SELECT, C = chat, M = atlas, F = full screen.

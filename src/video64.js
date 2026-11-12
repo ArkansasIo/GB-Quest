@@ -138,14 +138,19 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
   brightPass(src, new Uint32Array(V64.bpd.data.buffer)); V64.bpx.putImageData(V64.bpd, 0, 0);
   const bx = V64.hx; bx.imageSmoothingEnabled = true; bx.clearRect(0, 0, W / 2, H / 2); bx.drawImage(V64.bp, 0, 0, W / 2, H / 2);
   V64.bloom = V64.half;
-  screen.globalCompositeOperation = 'screen'; screen.globalAlpha = 0.24; screen.imageSmoothingEnabled = true; screen.drawImage(V64.bloom, 0, 0, BW, BH);
+  // 0.12 (was 0.24): a soft glow on bright pixels without a haze over the whole picture
+  screen.globalCompositeOperation = 'screen'; screen.globalAlpha = 0.12; screen.imageSmoothingEnabled = true; screen.drawImage(V64.bloom, 0, 0, BW, BH);
   screen.globalAlpha = 1; screen.globalCompositeOperation = 'source-over';
   // 4. vignette
-  if (!V64.vig) { V64.vig = mkCanvas(BW, BH); const vx = V64.vig.getContext('2d'), vg = vx.createRadialGradient(BW / 2, BH / 2, BH * 0.45, BW / 2, BH / 2, BH * 0.8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.38)'); vx.fillStyle = vg; vx.fillRect(0, 0, BW, BH); }
+  if (!V64.vig) { V64.vig = mkCanvas(BW, BH); const vx = V64.vig.getContext('2d'), vg = vx.createRadialGradient(BW / 2, BH / 2, BH * 0.45, BW / 2, BH / 2, BH * 0.8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.2)'); /* 0.2 (was 0.38): edges darkened without dimming the text windows */ vx.fillStyle = vg; vx.fillRect(0, 0, BW, BH); }
   screen.setTransform(1, 0, 0, 1, 0, 0); screen.drawImage(V64.vig, 0, 0);
   screen.restore();
   Profiler.frame(performance.now() - t0); Profiler.draw(screen);
-  if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
-  lctx.save(); lctx.imageSmoothingEnabled = S.art === 'packs'; lctx.drawImage(V64.stage, 0, 0, outW, outH); lctx.restore();
+  // NATIVE output (outW 0): sharp scaling to the window's device pixels (engine.js presentSharp)
+  if (!outW && typeof presentSharp === 'function') { lctx.save(); presentSharp(V64.stage, BW, BH); lctx.restore(); }
+  else {
+    if (LCD.width !== outW || LCD.height !== outH) { LCD.width = outW; LCD.height = outH; }
+    lctx.save(); lctx.imageSmoothingEnabled = false; lctx.drawImage(V64.stage, 0, 0, outW, outH); lctx.restore();
+  }
 }
 Events.on('sfx', k => { if (S.video === 'hd64' && ['crit', 'nat20', 'levelup', 'boss_appear', 'storm_hit', 'boss_die', 'world_boss'].includes(k)) Cam.pulse(k === 'levelup' ? 1.04 : 1.07, 24); });
