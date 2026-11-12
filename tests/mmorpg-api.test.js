@@ -99,3 +99,37 @@ test('MMORPG API supports region selection, realm-scoped characters and persiste
   assert.deepEqual(JSON.parse(calls[5].options.body), { toCharacterId: 'character-2', text: 'Meet at the gate' });
   assert.equal(calls[5].options.headers.authorization, 'Bearer realm-token');
 });
+
+test('MMORPG API exposes persistent dungeon matchmaking and group lifecycle operations', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ ok: true }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'realm-token';
+  await api.dungeonCatalog();
+  await api.joinDungeonQueue('character-1', 'map-instance-01', 'tank');
+  await api.dungeonQueueStatus('character-1');
+  await api.leaveDungeonQueue('character-1');
+  await api.dungeonGroup('group-1');
+  await api.startDungeonGroup('group-1');
+  await api.completeDungeonGroup('group-1');
+  assert.deepEqual(calls.map(call => [call.url, call.options.method || 'GET']), [
+    ['https://realm.example.test/api/dungeons/catalog', 'GET'],
+    ['https://realm.example.test/api/dungeons/queue', 'POST'],
+    ['https://realm.example.test/api/dungeons/queue/character-1', 'GET'],
+    ['https://realm.example.test/api/dungeons/queue/character-1', 'DELETE'],
+    ['https://realm.example.test/api/dungeons/groups/group-1', 'GET'],
+    ['https://realm.example.test/api/dungeons/groups/group-1/start', 'POST'],
+    ['https://realm.example.test/api/dungeons/groups/group-1/complete', 'POST']
+  ]);
+  assert.equal(calls[0].options.headers.authorization, undefined);
+  assert.equal(calls[1].options.headers.authorization, 'Bearer realm-token');
+  assert.deepEqual(JSON.parse(calls[1].options.body), {
+    characterId: 'character-1', dungeonId: 'map-instance-01', role: 'tank'
+  });
+});
