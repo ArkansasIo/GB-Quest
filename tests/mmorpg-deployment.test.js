@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const root = new URL('../', import.meta.url);
 const compose = fs.readFileSync(new URL('../docker-compose.mmorpg.yml', import.meta.url), 'utf8');
 const envExample = fs.readFileSync(new URL('../.env.example', import.meta.url), 'utf8');
 const dockerfile = fs.readFileSync(new URL('../Dockerfile.mmorpg', import.meta.url), 'utf8');
