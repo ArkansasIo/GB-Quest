@@ -176,8 +176,11 @@ export class GBQuestMMOApi {
   markMailRead(mailId) {
     return this.request('/api/mail/' + encodeURIComponent(mailId) + '/read', { method: 'POST', body: {} });
   }
-  joinPvpQueue(characterId, rating = 1000) {
-    return this.request('/api/pvp/queue', { method: 'POST', body: { characterId, rating } });
+  joinPvpQueue(characterId) {
+    return this.request('/api/pvp/queue', { method: 'POST', body: { characterId } });
+  }
+  forfeitPvpMatch(matchId) {
+    return this.request('/api/pvp/matches/' + encodeURIComponent(matchId) + '/forfeit', { method: 'POST', body: {} });
   }
   pvpQueueStatus(characterId) {
     return this.request('/api/pvp/queue/' + encodeURIComponent(characterId));
