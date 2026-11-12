@@ -606,7 +606,7 @@ const server = http.createServer(async (req, res) => {
         ORDER BY t.created_at DESC LIMIT 50`, [characterId]);
       return json(res, 200, { trades: result.rows });
     }
-    const whispersMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/whispers$/i);
+    const whispersMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/whispers$/i);
     if (whispersMatch && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const characterId = whispersMatch[1], peerId = url.searchParams.get('with');
@@ -631,7 +631,7 @@ const server = http.createServer(async (req, res) => {
       const characterId = whispersMatch[1], body = await readBody(req);
       const recipientId = String(body.toCharacterId || ''), message = String(body.text || '').trim();
       if (!/^[0-9a-f-]{36}$/i.test(recipientId) || recipientId === characterId ||
-          !message || message.length > 180 || /[\\u0000-\\u001f\\u007f]/.test(message)) {
+          !message || message.length > 180 || /[\u0000-\u001f\u007f]/.test(message)) {
         return json(res, 400, { error: 'invalid_whisper' });
       }
       const senderResult = await pool.query('SELECT id,name,realm_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
