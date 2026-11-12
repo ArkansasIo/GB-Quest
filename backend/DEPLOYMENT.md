@@ -113,6 +113,12 @@ The game HUD includes a Trading action backed by `client/mmorpg-trade.js` and `c
 
 The Trading panel's Bank tab uses the authenticated `GET /api/characters/:id/bank`, `POST /api/characters/:id/bank/deposit`, and `POST /api/characters/:id/bank/withdraw` endpoints. The client refreshes both wallet and bank balances after each successful transfer. The server validates whole-gold amounts, checks wallet/bank funds and safe-integer limits, locks the character row, updates balances and writes the `bank_transactions` audit row in the same PostgreSQL transaction. The interface is bundled into the single-file itch.io HTML build with the existing trade-panel stylesheet.
 
+## Character jobs and progression
+
+- The authoritative server accepts the browser game's 27 jobs and level 1–720 progression.
+- Migration `009_jobs_level_720.sql` maps legacy class IDs to current jobs and installs `gbq_level_for_xp(bigint)`, matching the browser XP thresholds through level 20 and the cubic ascension curve thereafter.
+- The database keeps class feature progression and post-20 ascension as distinct game concepts; the current server's combat rewards update the overall level from total XP.
+
 ## Direct messages and inbox
 
 - WebSocket `chat.send` with `channel: "whisper"` resolves a character by name within the sender's realm and stores the message in `player_whispers` before attempting live delivery.
