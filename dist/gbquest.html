@@ -14832,7 +14832,8 @@ class AccountScene {
   constructor() { this.opaque = true; this.i = 0; this.busy = false; this.msg = ''; this.cloud = null; if (LocalRealm.token || this.page()) this.refresh(); }
   page() { return !LocalRealm.available && !NET.offline && !!(NET.db && NET.myId); }
   async refresh() {
-    try { this.cloud = this.page() ? await PageCloud.list() : await LocalRealm.listSaves(); } catch (e) { this.cloud = null; }
+    // no realm server and no page cloud (a local file, itch.io without a server): nothing to ask, so no failed request
+    try { this.cloud = this.page() ? await PageCloud.list() : LocalRealm.available ? await LocalRealm.listSaves() : null; } catch (e) { this.cloud = null; }
     // role and first-run admin claim (see backend/server.cjs /api/admin/claim)
     try { this.me = LocalRealm.available && LocalRealm.account ? await LocalRealm.me() : null; } catch (e) { this.me = null; }
   }
