@@ -502,6 +502,68 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal((await noLongerQueued.json()).status, 'not_queued');
 
+    const tankQueue = await fetch(base + '/api/dungeons/queue', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ characterId: character.id, dungeonId: 'map-instance-01', role: 'tank' })
+    });
+    assert.equal((await tankQueue.json()).status, 'queued');
+    const matchmakingMembers = [{ character: secondCharacter, token: secondAccount.token, role: 'healer' }];
+    for (let index = 0; index < 3; index++) {
+      const extraUsername = 'dng' + crypto.randomBytes(5).toString('hex');
+      const extraRegister = await fetch(base + '/api/register', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ username: extraUsername, password: 'integration-password-789' })
+      });
+      assert.equal(extraRegister.status, 201);
+      const extraAccount = await extraRegister.json();
+      const extraCreate = await fetch(base + '/api/characters', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + extraAccount.token },
+        body: JSON.stringify({ name: 'Dps' + crypto.randomBytes(4).toString('hex'), class: 'warden', realmId: character.realm_id })
+      });
+      assert.equal(extraCreate.status, 201);
+      matchmakingMembers.push({ character: (await extraCreate.json()).character, token: extraAccount.token, role: 'damage' });
+    }
+    let formedGroup = null;
+    for (const member of matchmakingMembers) {
+      const response = await fetch(base + '/api/dungeons/queue', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + member.token },
+        body: JSON.stringify({ characterId: member.character.id, dungeonId: 'map-instance-01', role: member.role })
+      });
+      assert.equal(response.status, 201);
+      const result = await response.json();
+      if (result.status === 'matched') formedGroup = result.group;
+      else assert.equal(result.status, 'queued');
+    }
+    assert.ok(formedGroup, 'role composition should form a five-player dungeon group');
+    assert.equal(formedGroup.members.length, 5);
+    assert.deepEqual(
+      formedGroup.members.reduce((counts, member) => ({ ...counts, [member.role]: counts[member.role] + 1 }), { tank: 0, healer: 0, damage: 0 }),
+      { tank: 1, healer: 1, damage: 3 }
+    );
+    const groupRead = await fetch(base + `/api/dungeons/groups/${formedGroup.id}`, {
+      headers: { authorization: 'Bearer ' + secondAccount.token }
+    });
+    assert.equal(groupRead.status, 200);
+    const nonLeaderStart = await fetch(base + `/api/dungeons/groups/${formedGroup.id}/start`, {
+      method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + secondAccount.token }, body: '{}'
+    });
+    assert.equal(nonLeaderStart.status, 403);
+    const startGroup = await fetch(base + `/api/dungeons/groups/${formedGroup.id}/start`, {
+      method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: '{}'
+    });
+    assert.equal((await startGroup.json()).group.status, 'started');
+    const completeGroup = await fetch(base + `/api/dungeons/groups/${formedGroup.id}/complete`, {
+      method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: '{}'
+    });
+    assert.equal((await completeGroup.json()).group.status, 'completed');
+    const queueAfterCompletion = await fetch(base + `/api/dungeons/queue/${character.id}`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal((await queueAfterCompletion.json()).status, 'not_queued');
+
     // The quest can move the test hero to another zone; keep both trade participants
     // together in the current zone so this section tests the trade lifecycle, not zone gating.
     const alignTradeZonePool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
