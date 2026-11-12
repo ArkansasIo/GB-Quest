@@ -50,11 +50,12 @@ CREATE TABLE IF NOT EXISTS dungeon_queue_entries (
   dungeon_id varchar(64) NOT NULL REFERENCES dungeon_catalog(id),
   role varchar(8) NOT NULL CHECK(role IN ('tank','healer','damage')),
   character_level integer NOT NULL CHECK(character_level BETWEEN 1 AND 720),
-  status varchar(12) NOT NULL DEFAULT 'queued' CHECK(status IN ('queued','matched','cancelled','completed')),
+  status varchar(12) NOT NULL DEFAULT 'queued' CHECK(status IN ('queued','matched','cancelled','completed','expired')),
   group_id uuid REFERENCES dungeon_match_groups(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   matched_at timestamptz,
-  cancelled_at timestamptz
+  cancelled_at timestamptz,
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
 );
 CREATE UNIQUE INDEX IF NOT EXISTS dungeon_queue_one_active_character
   ON dungeon_queue_entries(character_id) WHERE status IN ('queued','matched');
