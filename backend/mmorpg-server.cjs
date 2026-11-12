@@ -21,6 +21,7 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
+const { handleSocialPvpRequest } = require('./mmorpg-social-pvp-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
@@ -550,6 +551,7 @@ const server = http.createServer(async (req, res) => {
     if (await handlePartyRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleGuildRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleInstanceRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleSocialPvpRequest({ req, res, pool, accountFor, readBody, json })) return;
     if (await handleFriendRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleMailRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleAuctionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
