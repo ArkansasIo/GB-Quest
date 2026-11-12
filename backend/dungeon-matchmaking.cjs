@@ -35,7 +35,7 @@ async function tryFormGroup(tx, realmId, dungeonId) {
   const candidates = await tx.query(
     `SELECT id,character_id,role FROM dungeon_queue_entries
       WHERE realm_id=$1 AND dungeon_id=$2 AND status='queued'
-      ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT 100`,
+      ORDER BY created_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`,
     [realmId, dungeonId]
   );
   const chosen = [];
