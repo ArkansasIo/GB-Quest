@@ -18,7 +18,8 @@ ALTER TABLE characters
     'warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood',
     'pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade',
     'ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer',
-    'dreadknight','voidhunter','scalesage','stormcaller'
+    'dreadknight','voidhunter','scalesage','stormcaller',
+    'warrior','mage','ranger','cleric','rogue','adventurer'
   ));
 
 ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_level_check;

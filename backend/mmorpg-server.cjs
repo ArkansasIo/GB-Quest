@@ -35,6 +35,9 @@ const AUTH_TIMEOUT_MS = Number(process.env.GBQ_WS_AUTH_TIMEOUT_MS || 10000);
 const HEARTBEAT_INTERVAL_MS = Number(process.env.GBQ_WS_HEARTBEAT_MS || 30000);
 const TOKEN_TTL = 30 * 24 * 60 * 60;
 const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
+const JOB_IDS = new Set(['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller']);
+const LEGACY_CLASSES = new Set(['warrior','mage','ranger','cleric','rogue','adventurer']);
+const CHARACTER_CLASSES = new Set([...JOB_IDS, ...LEGACY_CLASSES]);
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
 if (!TOKEN_SECRET || TOKEN_SECRET.length < 32) throw new Error('GBQ_TOKEN_SECRET must contain at least 32 characters');
 
@@ -239,7 +242,7 @@ async function optionalAccount(req) {
   const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
   return r.rowCount ? r.rows[0] : null;
 }
-const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes,specialization_id';
+const CHAR_COLS = 'id,name,class,species,background,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes,specialization_id';
 const PER_REALM_CHARACTERS = 3, PER_ACCOUNT_CHARACTERS = 12;
 const activeSockets = new Map();
 const authLimiter = createAuthLimiter();
@@ -588,7 +591,7 @@ const server = http.createServer(async (req, res) => {
       const rd = await realmData(), realmId = String(body.realmId || body.realm || rd.realms[0]?.id || 'ardenhold'), realm = rd.realms.find(r => r.id === realmId);
       if (!realm) return json(res, 400, { error: 'unknown_realm', realmId });
       if (realm.status !== 'online') return json(res, 409, { error: 'realm_unavailable', realmId, status: realm.status });
-      if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !['warrior','mage','ranger','cleric','rogue','adventurer'].includes(cls)) return json(res, 400, { error: 'invalid_character' });
+      if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !CHARACTER_CLASSES.has(cls.toLowerCase())) return json(res, 400, { error: 'invalid_character' });
       const tx = await pool.connect();
       try {
         await tx.query('BEGIN');
