@@ -84,7 +84,8 @@ test('regions list realms; realms keep separate worlds, names and chat', { skip:
     const wb = await Bx.waitFor('chat.message', m => m.text === 'psst'); assert.equal(wb.channel, 'whisper'); assert.equal(wb.to, charB.name);
     await new Promise(r => setTimeout(r, 1300));
     A.send('chat.send', { text: 'anyone', channel: 'whisper', to: 'Nobody' + crypto.randomBytes(2).toString('hex') });
-    assert.equal((await A.waitFor('error', p => p.code === 'whisper_target_offline')).code, 'whisper_target_offline');
+    // Whispers are persisted for offline characters, so only a name that exists nowhere on the realm is an error.
+    assert.equal((await A.waitFor('error', p => p.code === 'whisper_target_not_found')).code, 'whisper_target_not_found');
   } finally {
     for (const s of sockets) try { s.close(); } catch {}
     child.kill('SIGTERM');

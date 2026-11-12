@@ -1,5 +1,7 @@
 @echo off
 rem GB-Quest REALM SERVER (the multiplayer world). Double-click this file.
+rem This is the simple JSON-file realm server (no database). For the PostgreSQL MMO service use start-mmo-server.bat;
+rem docs\adr\0001-backend-modes.md explains which one to run.
 rem It updates from GitHub, then runs backend\server.cjs on port 8787 for this PC and your local network:
 rem accounts, cloud saves, 3 regions x 3 realms (each realm is its own world), live players, chat, party battles.
 rem Copy this file to the top of your GB-Quest folder (next to package.json) and run it from there.
