@@ -62,7 +62,18 @@ WebSocket:
 - `authenticated` also returns `regions` and `realms`.
 - `character.select` enters that character's realm. It fails with `realm_full` when the realm is at `maxPlayers`, or with `realm_unavailable` when the realm is not online.
 - `zone.snapshot` includes `realm`.
-- `chat.send` takes `channel`: `zone` (the default), `realm` (everyone on the realm) or `whisper` (with `to`, a character name on the same realm). An unknown name returns `whisper_target_offline`.
+- `chat.send` takes `channel`: `zone` (the default), `realm` (everyone on the realm) or `whisper` (with `to`, a character name on the same realm). Whispers are persisted before delivery, so an offline recipient can read them later. An unknown name returns `whisper_target_not_found`.
+
+Direct-message HTTP endpoints:
+
+- `GET /api/characters/:id/whispers?with=<peerCharacterId>&limit=50` returns recent inbox/conversation messages and marks incoming messages read.
+- `POST /api/characters/:id/whispers` accepts `{ toCharacterId, text }` and requires both characters to share a realm. Offline recipients are supported.
+- Messages are stored in `player_whispers` and automatically purged after 30 days. WebSocket commands are serialized per connection to preserve state order.
+
+Character progression:
+
+- Migration `009_jobs_level_720.sql` adds the full 27-job list and the browser game's level 1–720 XP curve. Legacy warrior/mage/ranger/cleric/rogue/adventurer values are mapped to warden/arcanist/strider/chaplain/shade/warden respectively.
+- `gbq_level_for_xp(bigint)` is the authoritative database progression function. Class-feature levels and post-20 ascension levels remain separate game concepts.
 
 Realm status lives in the `realms` table. Set a realm's `status` to `maintenance`, `offline` or `locked` to close it, or raise its `max_players`. The server rereads the table every 30 seconds.
 
