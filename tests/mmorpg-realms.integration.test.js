@@ -34,17 +34,17 @@ test('regions list realms; realms keep separate worlds, names and chat', { skip:
 
     // characters are created on a realm; names are unique per realm, not across realms
     const a = await account(), b = await account(), name = 'Rl' + crypto.randomBytes(3).toString('hex');
-    const ca = await post('/api/characters', { name, class: 'mage', realmId: 'moonfall' }, a);
+    const ca = await post('/api/characters', { name, class: 'arcanist', realmId: 'moonfall' }, a);
     assert.equal(ca.status, 201); const charA = (await ca.json()).character; assert.equal(charA.realm_id, 'moonfall');
-    assert.equal((await post('/api/characters', { name: name.toUpperCase(), class: 'rogue', realmId: 'moonfall' }, b)).status, 409);
-    const cbOther = await post('/api/characters', { name, class: 'rogue', realmId: 'emberwild' }, b);
+    assert.equal((await post('/api/characters', { name: name.toUpperCase(), class: 'shade', realmId: 'moonfall' }, b)).status, 409);
+    const cbOther = await post('/api/characters', { name, class: 'shade', realmId: 'emberwild' }, b);
     assert.equal(cbOther.status, 201); const charBOther = (await cbOther.json()).character;
     const cb = await post('/api/characters', { name: 'Mate' + crypto.randomBytes(2).toString('hex'), class: 'cleric', realmId: 'moonfall' }, b);
     assert.equal(cb.status, 201); const charB = (await cb.json()).character;
-    assert.equal((await post('/api/characters', { name: 'Nowhere', class: 'mage', realmId: 'atlantis' }, a)).status, 400);
+    assert.equal((await post('/api/characters', { name: 'Nowhere', class: 'arcanist', realmId: 'atlantis' }, a)).status, 400);
     // per-realm cap: 3 on one realm
-    for (let i = 0; i < 2; i++) assert.equal((await post('/api/characters', { name: 'Alt' + i + crypto.randomBytes(2).toString('hex'), class: 'mage', realmId: 'moonfall' }, a)).status, 201);
-    assert.equal((await post('/api/characters', { name: 'Alt9' + crypto.randomBytes(2).toString('hex'), class: 'mage', realmId: 'moonfall' }, a)).status, 409);
+    for (let i = 0; i < 2; i++) assert.equal((await post('/api/characters', { name: 'Alt' + i + crypto.randomBytes(2).toString('hex'), class: 'arcanist', realmId: 'moonfall' }, a)).status, 201);
+    assert.equal((await post('/api/characters', { name: 'Alt9' + crypto.randomBytes(2).toString('hex'), class: 'arcanist', realmId: 'moonfall' }, a)).status, 409);
     const mine = await (await fetch(base + '/api/regions', { headers: { authorization: 'Bearer ' + a } })).json();
     assert.equal(mine.regions.flatMap(r => r.realms).find(r => r.id === 'moonfall').characters, 3);
 
