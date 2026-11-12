@@ -88,6 +88,16 @@ test('regions list realms; realms keep separate worlds, names and chat', { skip:
     assert.equal(inboxResponse.status, 200);
     const inbox = await inboxResponse.json();
     assert.ok(inbox.messages.some(message => message.message === 'psst' && message.sender_character_id === charA.id));
+    const sendWhisper = await fetch(base + `/api/characters/${charA.id}/whispers`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + a },
+      body: JSON.stringify({ toCharacterId: charB.id, text: 'API whisper' })
+    });
+    assert.equal(sendWhisper.status, 201);
+    const savedWhisper = await sendWhisper.json();
+    assert.equal(savedWhisper.message.delivered, true);
+    const apiWhisper = await Bx.waitFor('chat.message', m => m.text === 'API whisper');
+    assert.equal(apiWhisper.channel, 'whisper');
     await new Promise(r => setTimeout(r, 1300));
     A.send('chat.send', { text: 'anyone', channel: 'whisper', to: 'Nobody' + crypto.randomBytes(2).toString('hex') });
     assert.equal((await A.waitFor('error', p => p.code === 'whisper_target_not_found')).code, 'whisper_target_not_found');
