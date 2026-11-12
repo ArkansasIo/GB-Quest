@@ -74,7 +74,7 @@ function spawnTable(biome, lvl) {
 // ================================================================ 350 bosses
 const BOSSES = [];
 (function buildBosses() {
-  const r = RNG('bosses-v2');
+  let r = RNG('bosses-v2');
   const name = () => r.pick(BOSS_SYL.a) + r.pick(BOSS_SYL.b);
   const add = (cat, where, lvl, base, extra = {}) => {
     const b = BEAST_BY_ID[base] || null;
@@ -86,12 +86,22 @@ const BOSSES = [];
   ARC_BOSSES.forEach(a => { const m = MONSTERS[a.id]; const z = regionLastZone(REGIONS.find(zz => zz.act === a.act).id);
     add('arc', z.id, Math.max(z.lvl[1] + 1, Math.round(m.cr) + 2), null, { name: a.name || m.name, title: a.title, unique: a.id, spr: m.spr, fam: m.type, dt: m.a[0][3], res: (m.res || []).concat(m.imm || []), act: a.act }); });
   const pickBase = biome => { const t = spawnTable(biome); return r.pick(t.length ? t : BESTIARY).id; };
-  DUNGEONS.forEach(d => { const z = REGIONS.find(zz => zz.id === d.zone); for (let i = 0; i < 3; i++) add('dungeon', d.id, d.lvl + i, pickBase(z.biome), { order: i }); });
-  RAIDS.forEach(d => { const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0]; for (let i = 0; i < d.bosses; i++) add('raid', d.id, d.lvl + i * 2, pickBase(z.biome), { order: i }); });
-  TRIALS.forEach(t => { for (let i = 0; i < 5; i++) add('trial', t.id, t.lvl + i * 3, r.pick(BESTIARY).id, { order: i }); });
+  // the original content (content wave 3 is added after the world bosses, below, so these ids never shift)
+  const dungeonBosses = d => { const z = REGIONS.find(zz => zz.id === d.zone); for (let i = 0; i < 3; i++) add('dungeon', d.id, d.lvl + i, pickBase(z.biome), { order: i }); };
+  const raidBosses = d => { const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0]; for (let i = 0; i < d.bosses; i++) add('raid', d.id, d.lvl + i * 2, pickBase(z.biome), { order: i }); };
+  const trialBosses = t => { for (let i = 0; i < (t.stages || 5); i++) add('trial', t.id, t.lvl + i * 3, r.pick(BESTIARY).id, { order: i }); };
+  DUNGEONS.filter(d => !d.v).forEach(dungeonBosses);
+  RAIDS.filter(d => !d.v).forEach(raidBosses);
+  TRIALS.filter(t => !t.v).forEach(trialBosses);
   for (let f = 5; f <= TOWER.floors; f += 5) add('tower', 'tower', TOWER.baseLvl + f * TOWER.perFloor, r.pick(BESTIARY).id, { floor: f });
   const wild = ZONES.filter(z => !z.town);
   for (let i = 0; BOSSES.length < 350; i++) { const z = wild[i % wild.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild.length) }); }
+  // content wave 3 (v: 3): new dungeons, raids, trials and towers, from their own seed, after the original 350
+  r = RNG('bosses-v3');
+  DUNGEONS.filter(d => d.v).forEach(dungeonBosses);
+  RAIDS.filter(d => d.v).forEach(raidBosses);
+  TRIALS.filter(t => t.v).forEach(trialBosses);
+  for (const tw of TOWERS) if (tw.v) for (let f = 5; f <= tw.floors; f += 5) add('tower', tw.id, tw.baseLvl + f * tw.perFloor, r.pick(BESTIARY).id, { floor: f });
 })();
 const BOSS_BY_ID = Object.fromEntries(BOSSES.map(b => [b.id, b]));
 

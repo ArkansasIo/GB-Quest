@@ -71,7 +71,7 @@ function removeEffect(u, id) { u.effects = u.effects.filter(e => e.id !== id); }
 class Battle {
   constructor(opt) {
     this.opaque = true;
-    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.noRewards = opt.noRewards === true;
+    this.kind = opt.kind || 'field'; this.diff = opt.diff || 2; this.onEnd = opt.onEnd; this.rule = opt.rule || null; this.trialFx = opt.trialFx || null; this.noRewards = opt.noRewards === true;
     this.party = opt.party; this.foes = opt.foes.map(foeMember); this.all = [...this.party, ...this.foes];
     this.noFlee = opt.noFlee || this.foes.some(f => f.boss) || ['dungeon', 'raid', 'trial', 'tower', 'arena'].includes(this.kind);
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
@@ -152,6 +152,13 @@ class Battle {
   enter() { Music.play(this.music); }
   resume() { if (this.state !== 'over') Music.play(this.music); }
   setupEffects() {
+    // trial rules (TRIALS[].partyFx / foeFx / foeHp): effects for the whole fight; ids may be [id, stacks]
+    const fx = this.trialFx;
+    if (fx) {
+      const apply = (u, list) => { for (const x of list) { const [id, stacks] = Array.isArray(x) ? x : [x, 1]; if (BUFFS[id] || CONDITIONS[id]) addEffect(u, { id, rounds: 999, stacks, trial: true }); } };
+      for (const u of this.party) apply(u, fx.party || []);
+      for (const f of this.foes) { apply(f, fx.foes || []); if (fx.foeHp > 1) { f.maxhp = Math.round(f.maxhp * fx.foeHp); f.hp = f.maxhp; } }
+    }
     for (const u of this.party.slice()) {
       if (!isChar(u)) continue;
       const c = u.ch; c.buffs = (c.buffs || []);

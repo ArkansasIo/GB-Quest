@@ -558,6 +558,66 @@ EXPANSIONS.forEach(x => {
   RAIDS.push({ id: 'rd_' + x.id, name: x.raid, theme: x.theme, lvl: x.lvl[1] - 10, bosses: 5, zone: `${x.id}_2`, exp: x.n });
   [0, 1].forEach(i => DUNGEONS.push({ id: `dg_${x.id}_${i}`, zone: `${x.id}_${i}`, name: `${EXP_ZONE_NAMES[x.n - 1][i]} DEPTHS`, theme: x.theme, lvl: x.lvl[0] + (i + 1) * 30, size: 4, exp: x.n }));
 });
+// ================================================================ content wave 3: 76 dungeons, 28 raids, 16 trials, 18 towers
+// Everything below carries v: 3. gen.js builds bosses for it in a second pass after the original 350, with its own
+// seed, so existing boss ids and names (and the saves that reference them) never change.
+(() => {
+  const base = id => REGIONS.find(r => r.id === id);
+  // a second dungeon in each of the 12 base regions
+  [['elderwood', 'OLD MILL CELLARS', 'dungeon'], ['hollowmere', 'SUNKEN BELLTOWER', 'temple'], ['thornwood', "THORNMOTHER'S NEST", 'temple'],
+   ['greypeak', 'FROSTFANG MINES', 'ice'], ['sandspire', 'TOMB OF THE SAND KING', 'crypt'], ['saltreach', "SMUGGLERS' GROTTO", 'dungeon'],
+   ['emberwaste', 'CINDERHEART CAVERNS', 'lava'], ['frostmarch', 'GLACIER CATACOMBS', 'ice'], ['verdantdeep', 'ROOTBOUND SANCTUM', 'temple'],
+   ['ashenbarrows', "HOLLOW KINGS' VAULT", 'crypt'], ['silverhaven', 'MIRROR LABYRINTH', 'void'], ['duskmoor', 'MOONLESS ABBEY', 'crypt'],
+  ].forEach(([zone, name, theme]) => DUNGEONS.push({ id: 'dg2_' + zone, zone, name, theme, lvl: base(zone).lvl[1] + 3, size: 4, v: 3 }));
+  // a sanctum in each expansion's second region and an undercroft in its third (the region that holds its raid)
+  const SANCTUMS = ['SALTGLASS ARCHIVE', 'WYRMEGG HATCHERY', 'EMBERFELL FORGEHALL', 'HALL OF FALSE STARS', 'PLAGUEWARD INFIRMARY', 'PRISM HEART',
+    'THRONE OF ICICLES', 'LEYLINE OBSERVATORY', 'BLOODMOON CHAPEL', 'DRAKE ROOST', 'SHIELDMAIDEN BARROW', 'NIGHTBLOOM GARDEN', 'ELDER GROVE HEART'];
+  const SANCTUM_THEMES = ['temple', 'lava', 'lava', 'void', 'crypt', 'void', 'ice', 'temple', 'crypt', 'lava', 'ice', 'void', 'temple'];
+  EXPANSIONS.forEach((x, i) => {
+    DUNGEONS.push({ id: `dg_${x.id}_s`, zone: `${x.id}_1`, name: SANCTUMS[i], theme: SANCTUM_THEMES[i], lvl: x.lvl[0] + 75, size: 4, exp: x.n, v: 3 });
+    DUNGEONS.push({ id: `dg_${x.id}_2`, zone: `${x.id}_2`, name: `${EXP_ZONE_NAMES[i][2]} UNDERCROFT`, theme: x.theme, lvl: x.lvl[0] + 90, size: 4, exp: x.n, v: 3 });
+  });
+  // 8 raids for base regions without one, and 3 endgame raids
+  [['rd_goblin', 'THE GOBLIN WARCAMP', 'dungeon', 'elderwood', 4], ['rd_cathedral', 'THE DROWNED CATHEDRAL', 'temple', 'hollowmere', 4],
+   ['rd_thorncourt', 'THE THORN COURT', 'temple', 'thornwood', 4], ['rd_stormhall', "THE STORM GIANT'S HALL", 'ice', 'greypeak', 5],
+   ['rd_kraken', "THE KRAKEN'S MAW", 'dungeon', 'saltreach', 5], ['rd_worldroot', 'THE WORLD ROOT', 'temple', 'verdantdeep', 5],
+   ['rd_barrowkings', 'THE BARROW KINGS', 'crypt', 'ashenbarrows', 5], ['rd_silver', 'THE SILVER CITADEL', 'void', 'silverhaven', 5],
+  ].forEach(([id, name, theme, zone, bosses]) => RAIDS.push({ id, name, theme, lvl: base(zone).lvl[1] + 8, bosses, zone, v: 3 }));
+  [['rd_pantheon', 'THE SHATTERED PANTHEON', 'void', 'x11_1', 690, 6], ['rd_eclipse', 'THE ETERNAL ECLIPSE', 'void', 'x12_1', 700, 6],
+   ['rd_worldbreaker', 'THE WORLDBREAKER', 'lava', 'x13_1', 706, 7],
+  ].forEach(([id, name, theme, zone, lvl, bosses]) => RAIDS.push({ id, name, theme, lvl, bosses, zone, endgame: true, v: 3 }));
+  // 10 trials with rules built on combat effects (src/effect_engine.js): partyFx / foeFx start every fight and last
+  // all of it; foeHp scales boss HP; pair puts two bosses in the arena; size caps the party; noRest skips healing
+  TRIALS.push(
+    { id: 'tr_embers', name: 'TRIAL OF EMBERS', rule: 'embers', desc: 'Bosses are MIGHTY and covered in THORNSKIN.', lvl: 30, foeFx: ['might', 'thornskin'], v: 3 },
+    { id: 'tr_frost', name: 'TRIAL OF FROST', rule: 'frost', desc: 'Your party fights FROSTBITTEN x3 (-3 AC, slow).', lvl: 35, partyFx: [['frostbite', 3]], v: 3 },
+    { id: 'tr_titans', name: 'TRIAL OF TITANS', rule: 'titans', desc: 'Bosses have double HP and are FORTIFIED.', lvl: 45, foeHp: 2, foeFx: ['fortify'], v: 3 },
+    { id: 'tr_storms', name: 'TRIAL OF STORMS', rule: 'storms', desc: 'Bosses are HASTED: extra attacks and actions.', lvl: 55, foeFx: ['haste'], v: 3 },
+    { id: 'tr_cursed', name: 'TRIAL OF THE CURSED', rule: 'cursed', desc: 'Your party cannot be healed.', lvl: 70, partyFx: ['cursed'], v: 3 },
+    { id: 'tr_doom', name: 'TRIAL OF DOOM', rule: 'doom', desc: 'Your party is DOOMED: -2 to attacks and saves.', lvl: 90, partyFx: ['doomed'], v: 3 },
+    { id: 'tr_shadows', name: 'TRIAL OF SHADOWS', rule: 'shadows', desc: 'Bosses are VEILED: advantage, and hard to hit.', lvl: 120, foeFx: ['trueveil'], v: 3 },
+    { id: 'tr_fury', name: 'TRIAL OF FURY', rule: 'fury', desc: 'Everyone is FRENZIED x3: +30% damage, fast turns.', lvl: 160, partyFx: [['frenzy', 3]], foeFx: [['frenzy', 3]], v: 3 },
+    { id: 'tr_two', name: 'TRIAL OF TWO', rule: 'two', desc: 'Two heroes against two bosses at once.', lvl: 220, size: 2, pair: true, v: 3 },
+    { id: 'tr_endurance', name: 'TRIAL OF ENDURANCE', rule: 'endurance', desc: '8 bosses in a row, no healing between.', lvl: 300, stages: 8, noRest: true, v: 3 },
+  );
+})();
+// 18 towers: the SPIRE OF A HUNDRED (TOWER, progress in G.towerBest) and 17 more (progress in G.towerBests[id])
+const TOWERS = [Object.assign(TOWER, { id: 'tower', themes: ['void', 'crypt', 'lava', 'ice', 'temple'], desc: '100 floors from level 3 to 703.' })];
+[['t_ossuary', 'OSSUARY STAIR', 30, 20, 3, ['crypt']], ['t_ember', 'EMBER CHIMNEY', 30, 60, 3, ['lava']], ['t_glacier', 'GLACIER NEEDLE', 30, 100, 3, ['ice']],
+ ['t_sunspire', 'SUNSPIRE', 40, 140, 3, ['temple']], ['t_obelisk', 'HOLLOW OBELISK', 40, 180, 3, ['void']], ['t_belfry', 'CLOCKWORK BELFRY', 50, 220, 3, ['dungeon', 'temple']],
+ ['t_thorn', 'THORNSPIRE', 50, 260, 3, ['temple', 'dungeon']], ['t_lighthouse', 'TIDEWATCH LIGHTHOUSE', 50, 300, 3, ['dungeon', 'ice']],
+ ['t_observatory', 'STARFALL OBSERVATORY', 60, 330, 3, ['void', 'temple']], ['t_dragonbone', 'DRAGONBONE PINNACLE', 60, 380, 3, ['lava', 'crypt']],
+ ['t_mirror', 'MIRROR STAIR', 60, 420, 3, ['void', 'ice']], ['t_crimson', 'CRIMSON KEEP', 70, 460, 3, ['crypt', 'lava']],
+ ['t_stormcrown', 'STORMCROWN', 70, 500, 3, ['ice', 'temple']], ['t_aether', 'AETHER LADDER', 80, 540, 2, ['void', 'temple']],
+ ['t_nightshade', 'NIGHTSHADE SPIRE', 80, 580, 1, ['void', 'crypt']], ['t_worldtree', 'WORLDTREE ASCENT', 90, 610, 1, ['temple', 'dungeon']],
+ ['t_endless', 'THE ENDLESS STAIR', 100, 620, 1, ['void', 'crypt', 'lava', 'ice', 'temple']],
+].forEach(([id, name, floors, baseLvl, perFloor, themes]) => TOWERS.push({ id, name, floors, bossEvery: 10, miniEvery: 5, baseLvl, perFloor, themes,
+  desc: `${floors} floors from level ${baseLvl} to ${baseLvl + floors * perFloor}.`, v: 3 }));
+const TOWER_BY_ID = Object.fromEntries(TOWERS.map(t => [t.id, t]));
+// the tower an instance def belongs to (defs carry towerId; the Spire's def id is 'tower')
+const towerSpec = def => TOWER_BY_ID[def && (def.towerId || def.id)] || TOWER;
+const towerTheme = (tw, floor) => tw.themes[Math.floor(floor / 20) % tw.themes.length];
+
 // Persistent campaign objectives per expansion, driven by normal travel, combat, and instance events.
 const EXPANSION_CAMPAIGNS = EXPANSIONS.map((x, i) => Object.freeze({
   exp: x.n, title: x.name, icon: `exp_icon_${x.n}`, intro: EXPANSION_STORIES[i].hook,
