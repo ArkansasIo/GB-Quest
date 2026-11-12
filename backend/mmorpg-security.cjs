@@ -84,4 +84,5 @@ function createRequestLimiter({ limit = 90, windowMs = 60000, maxKeys = 10000, c
   };
 }
 
-const corsHeaders = createCorsHeaders; // compatibility alias for the legacy HTTP server.\nmodule.exports = { isAllowedOrigin, createCorsHeaders, corsHeaders, createAuthLimiter, createRequestLimiter };
+const corsHeaders = createCorsHeaders; // compatibility alias for the legacy HTTP server.
+module.exports = { isAllowedOrigin, createCorsHeaders, corsHeaders, createAuthLimiter, createRequestLimiter };
