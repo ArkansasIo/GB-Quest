@@ -103,6 +103,11 @@ WebSocket commands after character selection:
 - `guild.rank` with `{characterId,rank:"officer"|"member"}` is leader-only.
 - `guild.kick` with `{characterId}` lets leaders remove nonleaders, and officers remove members.
 - `guild.leave` removes the character; leadership transfers to the longest-standing officer (otherwise oldest member), or deletes an empty guild.
+- `guild.bank.balance` returns the current vault balance to a guild member.
+- `guild.bank.deposit` with `{amount}` transfers wallet gold into the guild vault; any member may deposit.
+- `guild.bank.withdraw` with `{amount}` transfers vault gold to the caller; only leaders and officers may withdraw. Both operations lock and update wallet/vault balances in one PostgreSQL transaction and write an immutable audit row.
+- Bank replies are `guild.bank.result` to the actor and `guild.bank.updated` to connected guild members. Insufficient balances and invalid amounts are rejected without partial transfers.
+- Migration `013_guild_bank.sql` creates the persistent vault balance and transaction history. There is no item storage in the guild vault yet.
 - `chat.send` with `{channel:"guild",text}` broadcasts only to connected guild members.
 - Guild membership is delivered via `guild.snapshot` on character selection and `guild.updated` on membership/rank changes.
 
