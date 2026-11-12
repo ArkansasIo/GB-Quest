@@ -1,7 +1,7 @@
 'use strict';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const cleanText = (value, max) => typeof value === 'string' ? value.trim().replace(/[\\u0000-\\u001f\\u007f]/g, '').slice(0, max) : '';
+const cleanText = (value, max) => typeof value === 'string' ? value.trim().replace(/[\x00-\x1f\x7f]/g, '').slice(0, max) : '';
 const orderedPair = (a, b) => a < b ? [a, b] : [b, a];
 
 async function ownedCharacter(pool, characterId, accountId, lock = false) {
@@ -23,8 +23,9 @@ async function handleSocialPvpRequest({ req, res, pool, accountFor, json, readBo
   const pvpQueue = url.pathname === '/api/pvp/queue' && req.method === 'POST';
   const pvpStatus = url.pathname.match(/^\/api\/pvp\/queue\/([0-9a-f-]{36})$/i);
   const pvpMatch = url.pathname.match(/^\/api\/pvp\/matches\/([0-9a-f-]{36})$/i);
+  const pvpForfeit = url.pathname.match(/^\/api\/pvp\/matches\/([0-9a-f-]{36})\/forfeit$/i);
   const recognized = friendList || friendRequest || friendAction || blockList || blockDelete ||
-    mailList || mailRead || pvpQueue || pvpStatus || pvpMatch;
+    mailList || mailRead || pvpQueue || pvpStatus || pvpMatch || pvpForfeit;
   if (!recognized) return false;
 
   const account = await accountFor(req);
@@ -160,7 +161,7 @@ async function handleSocialPvpRequest({ req, res, pool, accountFor, json, readBo
   }
   if(mailRead&&req.method==='POST') {
     const updated=await pool.query(
-      'UPDATE character_mail m SET read_at=COALESCE(read_at,now()) FROM characters c WHERE m.id=$1 AND m.recipient_character_id=c.id AND c.account_id=$2 RETURNING m.id,m.read_at',
+      'UPDATE character_mail m SET read_at=COALESCE(read_at,now()) FROM characters c WHERE m.id=$1 AND m.recipient_character_id=c.id AND c.account_id=$2 AND m.expires_at>now() RETURNING m.id,m.read_at',
       [mailRead[1],account.id]);
     if(!updated.rowCount){json(res,404,{error:'mail_not_found'});return true;}
     json(res,200,{mail:updated.rows[0]}); return true;
@@ -168,29 +169,29 @@ async function handleSocialPvpRequest({ req, res, pool, accountFor, json, readBo
 
   if(pvpQueue) {
     const body=await readBody(req),characterId=String(body.characterId||''),mode='duel';
-    const rating=Number.isInteger(body.rating)?Math.max(0,Math.min(5000,body.rating)):1000;
+    const rating=1000;
     if(!UUID.test(characterId)){json(res,400,{error:'invalid_pvp_queue_request'});return true;}
     const tx=await pool.connect();
     try {
       await tx.query('BEGIN');
-      const hero=await tx.query('SELECT id,realm_id,level FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE',[characterId,account.id]);
+      const hero=await tx.query('SELECT c.id,c.realm_id,c.level,COALESCE(r.rating,1000)::int AS rating FROM characters c LEFT JOIN pvp_character_ratings r ON r.character_id=c.id WHERE c.id=$1 AND c.account_id=$2 FOR UPDATE OF c',[characterId,account.id]);
       if(!hero.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'character_not_found'});return true;}
       await tx.query("UPDATE pvp_queue_entries SET status='expired' WHERE character_id=$1 AND status='queued' AND expires_at<=now()",[characterId]);
       const active=await tx.query("SELECT id,status,match_id FROM pvp_queue_entries WHERE character_id=$1 AND status IN ('queued','matched') FOR UPDATE",[characterId]);
       if(active.rowCount){await tx.query('ROLLBACK');json(res,409,{error:'already_in_pvp_queue',status:active.rows[0].status,matchId:active.rows[0].match_id});return true;}
       const inserted=await tx.query(
         "INSERT INTO pvp_queue_entries(character_id,account_id,realm_id,mode,rating) VALUES($1,$2,$3,$4,$5) RETURNING id,created_at,expires_at",
-        [characterId,account.id,hero.rows[0].realm_id,mode,rating]);
+        [characterId,account.id,hero.rows[0].realm_id,mode,hero.rows[0].rating]);
       await tx.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))',[hero.rows[0].realm_id,mode]);
       const opponent=await tx.query(
-        "SELECT q.id,q.character_id,q.rating FROM pvp_queue_entries q WHERE q.realm_id=$1 AND q.mode=$2 AND q.status='queued' AND q.expires_at>now() AND q.character_id<>$3 AND q.rating BETWEEN $4 AND $5 ORDER BY q.created_at,q.id LIMIT 1 FOR UPDATE SKIP LOCKED",
-        [hero.rows[0].realm_id,mode,characterId,Math.max(0,rating-300),Math.min(5000,rating+300)]);
+        "SELECT q.id,q.character_id,q.rating FROM pvp_queue_entries q WHERE q.realm_id=$1 AND q.mode=$2 AND q.status='queued' AND q.expires_at>now() AND q.character_id<>$3 AND q.rating BETWEEN $4 AND $5 AND NOT EXISTS(SELECT 1 FROM character_blocks b WHERE (b.character_id=q.character_id AND b.blocked_character_id=$3) OR (b.character_id=$3 AND b.blocked_character_id=q.character_id)) ORDER BY q.created_at,q.id LIMIT 1 FOR UPDATE SKIP LOCKED",
+        [hero.rows[0].realm_id,mode,characterId,Math.max(0,hero.rows[0].rating-300),Math.min(5000,hero.rows[0].rating+300)]);
       if(!opponent.rowCount){await tx.query('COMMIT');json(res,201,{queue:{id:inserted.rows[0].id,status:'queued',expiresAt:inserted.rows[0].expires_at}});return true;}
       const match=await tx.query("INSERT INTO pvp_matches(realm_id,mode) VALUES($1,$2) RETURNING id,instance_id,status",[hero.rows[0].realm_id,mode]);
       const matchId=match.rows[0].id,other=opponent.rows[0];
       await tx.query("UPDATE pvp_queue_entries SET status='matched',match_id=$1 WHERE id=ANY($2::uuid[])",[matchId,[inserted.rows[0].id,other.id]]);
       await tx.query("INSERT INTO pvp_match_members(match_id,character_id,queue_entry_id,rating_at_match) VALUES($1,$2,$3,$4),($1,$5,$6,$7)",
-        [matchId,characterId,inserted.rows[0].id,rating,other.character_id,other.id,other.rating]);
+        [matchId,characterId,inserted.rows[0].id,hero.rows[0].rating,other.character_id,other.id,other.rating]);
       await tx.query('COMMIT');
       json(res,201,{queue:{id:inserted.rows[0].id,status:'matched',matchId},match:{id:matchId,instanceId:match.rows[0].instance_id,mode,realmId:hero.rows[0].realm_id}});
       return true;
@@ -212,6 +213,33 @@ async function handleSocialPvpRequest({ req, res, pool, accountFor, json, readBo
     const owner=await ownedCharacter(pool,pvpStatus[1],account.id);
     if(!owner.rowCount){json(res,404,{error:'character_not_found'});return true;}
     json(res,200,{cancelled:!!removed.rowCount});return true;
+  }
+  if(pvpForfeit&&req.method==='POST') {
+    const tx=await pool.connect();
+    try {
+      await tx.query('BEGIN');
+      const match=await tx.query("SELECT id,status FROM pvp_matches WHERE id=$1 FOR UPDATE",[pvpForfeit[1]]);
+      if(!match.rowCount){await tx.query('ROLLBACK');json(res,404,{error:'pvp_match_not_found'});return true;}
+      if(match.rows[0].status!=='matched'){await tx.query('ROLLBACK');json(res,409,{error:'pvp_match_not_active'});return true;}
+      const members=await tx.query(
+        'SELECT mm.character_id,mm.rating_at_match,c.account_id FROM pvp_match_members mm JOIN characters c ON c.id=mm.character_id WHERE mm.match_id=$1 ORDER BY mm.character_id FOR UPDATE OF mm,c',
+        [pvpForfeit[1]]);
+      const forfeiter=members.rows.find(member=>member.account_id===account.id);
+      if(!forfeiter||members.rowCount!==2){await tx.query('ROLLBACK');json(res,404,{error:'pvp_match_not_found'});return true;}
+      const winner=members.rows.find(member=>member.character_id!==forfeiter.character_id);
+      const expectedForfeiter=1/(1+Math.pow(10,(Number(winner.rating_at_match)-Number(forfeiter.rating_at_match))/400));
+      const forfeiterDelta=Math.round(32*(0-expectedForfeiter));
+      const winnerDelta=Math.round(32*(1-(1-expectedForfeiter)));
+      await tx.query(
+        'INSERT INTO pvp_character_ratings(character_id,rating,updated_at) VALUES($1,GREATEST(0,$2+$3),now()),($4,LEAST(5000,$5+$6),now()) ON CONFLICT(character_id) DO UPDATE SET rating=EXCLUDED.rating,updated_at=now()',
+        [forfeiter.character_id,forfeiter.rating_at_match,forfeiterDelta,winner.character_id,winner.rating_at_match,winnerDelta]);
+      await tx.query("UPDATE pvp_matches SET status='forfeited',winner_character_id=$2,completed_at=now() WHERE id=$1",[pvpForfeit[1],winner.character_id]);
+      await tx.query("UPDATE pvp_queue_entries SET status='completed' WHERE match_id=$1",[pvpForfeit[1]]);
+      await tx.query('COMMIT');
+      json(res,200,{matchId:pvpForfeit[1],status:'forfeited',winnerCharacterId:winner.character_id,forfeitedBy:forfeiter.character_id});
+      return true;
+    } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
+    finally { tx.release(); }
   }
   if(pvpMatch&&req.method==='GET') {
     const result=await pool.query(
