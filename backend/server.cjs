@@ -14,6 +14,7 @@
 'use strict';
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto'), { URL } = require('url');
 const { createDebugLog, createAuditLog } = require('./logs.cjs');
+const { isAllowedOrigin } = require('./mmorpg-security.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const PORT = +process.env.PORT || 8787, HOST = process.env.HOST || '127.0.0.1';
@@ -218,6 +219,13 @@ const STATIC = { '/': 'dist/gbquest.html', '/fullscreen': 'dist/gbquest-fullscre
 const TRUST_PROXY = process.env.GBQ_TRUST_PROXY === '1';
 const clientIp = req => (TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress || '?';
 const SLOW_MS = +process.env.GBQ_SLOW_MS || 1000;
+// Cross-origin game pages (e.g. the itch.io build) may use the realm API when their https origin is listed in
+// GBQ_ALLOWED_ORIGINS (comma-separated, e.g. https://html-classic.itch.zone). http://localhost pages are always
+// allowed for development. Pages served by this server are same-origin and need no entry.
+const ALLOWED_ORIGINS = new Set((process.env.GBQ_ALLOWED_ORIGINS || '').split(',').map(x => x.trim().replace(/\/+$/, '')).filter(Boolean));
+function sameOrigin(origin, req) {
+  try { const host = new URL(origin).host; return host === req.headers.host || host === String(req.headers['x-forwarded-host'] || '').split(',')[0].trim(); } catch (e) { return false; }
+}
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`), p = url.pathname, ip = clientIp(req);
@@ -235,6 +243,19 @@ const server = http.createServer(async (req, res) => {
   });
   const A = event => audit.record({ ip, reqId, ...event }); // audit with request context
   try {
+    // CORS for cross-origin game pages; the admin API is never exposed cross-origin.
+    const origin = req.headers.origin;
+    if (origin && p.startsWith('/api/') && !sameOrigin(origin, req)) {
+      if (p.startsWith('/api/admin/') || !isAllowedOrigin(origin, ALLOWED_ORIGINS)) return json(res, 403, { error: 'This game page is not allowed to use this realm server (set GBQ_ALLOWED_ORIGINS).' });
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Request-Id');
+      if (req.method === 'OPTIONS') {
+        const pna = req.headers['access-control-request-private-network'] === 'true' ? { 'Access-Control-Allow-Private-Network': 'true' } : {}; // Chrome: public page -> server on this PC/LAN
+        res.writeHead(204, { 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Access-Control-Max-Age': '600', ...pna, ...SEC });
+        return res.end();
+      }
+    }
     // Hide the control plane and deny every admin API route unless explicitly enabled.
     if (!ADMIN_ENABLED && (p === '/admin' || p.startsWith('/admin/') || p.startsWith('/api/admin/'))) return json(res, 404, { error: 'Not found.' });
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');

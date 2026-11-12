@@ -185,7 +185,7 @@ class LoginScene extends FormScene {
     if (r.button === 'offline') { SFX.select(); Fields.blur(this); if (typeof NET !== 'undefined' && NET.setMode) NET.setMode('offline'); removeScene(this); return this.done && this.done(null); }
     const why = checkCredentials(this.name.value, this.pw.value, this.pw2.value, this.mode === 'register');
     if (why) { SFX.error(); this.msg = why; this.msgColor = 'red'; return; }
-    if (!online()) { SFX.error(); this.msg = 'No realm server here. Start start-realm-server.bat.'; this.msgColor = 'red'; return; }
+    if (!online()) { SFX.error(); this.msg = (LocalRealm.lastError || 'NO REALM SERVER FOUND') + '. SET ONE IN ONLINE > SERVER ADDRESS.'; this.msgColor = 'red'; return; }
     this.busy = true; this.msg = this.mode === 'register' ? 'CREATING ACCOUNT...' : 'SIGNING IN...'; this.msgColor = 2;
     try {
       const a = this.mode === 'register' ? await LocalRealm.register(this.name.value, this.pw.value) : await LocalRealm.login(this.name.value, this.pw.value);
@@ -229,6 +229,49 @@ class ChangePasswordScene extends FormScene {
     if (this.pw.value) textR(passwordStrength(this.pw.value), 154, 32 + 13 + 2 + 13 + 13 + 2, passwordStrength(this.pw.value) === 'WEAK' ? 'red' : 'green');
     this.drawMsg(110);
     footer(this.busy ? 'PLEASE WAIT' : 'ENTER:OK TAB:NEXT', 'ESC:BACK');
+  }
+}
+
+// ---- SERVER ADDRESS: point a game hosted elsewhere (itch.io, a web host, a local file) at a realm server
+class ServerAddressScene extends FormScene {
+  constructor(done = null) {
+    super(); this.done = done;
+    this.addr = mkField('ADDRESS', { value: LocalRealm.savedServerUrl() || LocalRealm.serverUrl(), max: 120, filter: /\s/g, auto: 'url' });
+  }
+  rows() {
+    const r = [{ field: this.addr }, { button: 'connect', label: 'CONNECT' }];
+    if (LocalRealm.savedServerUrl()) r.push({ button: 'clear', label: 'FORGET THIS ADDRESS' });
+    return r.concat([{ button: 'back', label: 'BACK' }]);
+  }
+  async press(r) {
+    if (!r) return;
+    if (r.button === 'back') return this.back();
+    const raw = r.button === 'clear' ? '' : this.addr.value;
+    if (r.button === 'connect' && !raw.trim()) { SFX.error(); this.msg = 'TYPE THE REALM SERVER ADDRESS'; this.msgColor = 'red'; return; }
+    try { LocalRealm.normalizeServerUrl(raw); } catch (e) { SFX.error(); this.msg = e.message; this.msgColor = 'red'; return; }
+    this.busy = true; this.msg = raw ? 'LOOKING FOR THE REALM...' : 'FORGETTING ADDRESS...'; this.msgColor = 2;
+    const ok = await LocalRealm.setServerUrl(raw);
+    this.busy = false;
+    if (r.button === 'clear') this.addr.value = '';
+    if (ok) {
+      SFX.confirm(); Fields.blur(this); removeScene(this);
+      toast('REALM FOUND', String((LocalRealm.info && LocalRealm.info.realm) || 'REALM SERVER').toUpperCase().slice(0, 18), 'item_key', 'confirm');
+      return this.done && this.done(true);
+    }
+    if (!raw) { SFX.page(); this.msg = 'ADDRESS FORGOTTEN. OFFLINE PLAY STILL WORKS.'; this.msgColor = 2; this.i = 0; return this.syncFocus(); }
+    SFX.error(); this.msg = LocalRealm.lastError || 'NO REALM SERVER FOUND'; this.msgColor = 'red';
+  }
+  draw() {
+    fill(0, 0, W, H, 0); screenTitle('SERVER ADDRESS');
+    frame(2, 14, 156, 40);
+    text('REALM SERVER ADDRESS, E.G.', 6, 18, 2);
+    text('HTTPS://REALM.EXAMPLE.COM', 6, 27, 'gold');
+    text('OR LOCALHOST:8787 ON THIS PC', 6, 36, 2);
+    text(online() ? 'NOW: ' + (LocalRealm.base ? LocalRealm.base.replace(/^https?:\/\//, '') : 'THIS PAGE') : 'NOW: NOT CONNECTED', 6, 45, online() ? 'green' : 2, 1, 148);
+    frame(2, 56, 156, 78);
+    this.drawRows(60);
+    this.drawMsg(115);
+    footer(this.busy ? 'PLEASE WAIT' : 'ENTER:CONNECT', 'ESC:BACK');
   }
 }
 
@@ -535,8 +578,8 @@ class OnlineHubScene {
     try { this.saves = await LocalRealm.listSaves(); } catch (e) { this.saves = null; }
   }
   opts() {
-    if (!online()) return ['RETRY', 'BACK'];
-    if (!signedIn()) return ['LOG IN', 'CREATE ACCOUNT', 'BACK'];
+    if (!online()) return ['RETRY', 'SERVER ADDRESS', 'BACK'];
+    if (!signedIn()) return ['LOG IN', 'CREATE ACCOUNT', 'SERVER ADDRESS', 'BACK'];
     return ['CHARACTERS', 'FRIENDS', 'CHOOSE REALM', 'CLOUD SAVES', 'CHANGE PASSWORD', 'LOG OUT', 'BACK'];
   }
   update() {
@@ -547,7 +590,8 @@ class OnlineHubScene {
     if (!P('a')) return;
     const c = o[this.i]; SFX.select();
     if (c === 'BACK') return removeScene(this);
-    if (c === 'RETRY') { if (LocalRealm.detect) LocalRealm.detect(true).then(() => this.refresh()); return; }
+    if (c === 'RETRY') { if (LocalRealm.detect) LocalRealm.detect(true).then(ok => { if (ok && typeof NET !== 'undefined' && NET.init) NET.init().catch(() => {}); this.refresh(); }); return; }
+    if (c === 'SERVER ADDRESS') return push(new ServerAddressScene(() => this.refresh()));
     if (c === 'LOG IN' || c === 'CREATE ACCOUNT') return push(new LoginScene(c === 'LOG IN' ? 'login' : 'register', () => this.refresh()));
     if (c === 'CHARACTERS') return push(new CharacterSelectScene((typeof G !== 'undefined' && G && G.realm) || LocalRealm.realm || (REALMS[0] && REALMS[0].id)));
     if (c === 'FRIENDS') return push(new FriendsScene());
@@ -559,7 +603,7 @@ class OnlineHubScene {
   draw() {
     fill(0, 0, W, H, 0); screenTitle('ONLINE');
     frame(2, 14, 156, 42);
-    if (!online()) { text('NO REALM SERVER FOUND', 6, 18, 'red'); text('RUN START-REALM-SERVER.BAT', 6, 28, 2); text('AND OPEN :8787 TO PLAY', 6, 37, 2); text('ONLINE. OFFLINE STILL WORKS.', 6, 46, 2); }
+    if (!online()) { text(String(LocalRealm.lastError || 'NO REALM SERVER FOUND').slice(0, 25), 6, 18, 'red'); text(LocalRealm.base ? LocalRealm.base.replace(/^https?:\/\//, '').slice(0, 25) : 'SET A SERVER ADDRESS BELOW,', 6, 28, 2); text(LocalRealm.base ? 'CHECK THE SERVER IS RUNNING.' : 'OR OPEN THE GAME FROM THE', 6, 37, 2); text(LocalRealm.base ? 'OFFLINE PLAY STILL WORKS.' : 'REALM SERVER ITSELF.', 6, 46, 2); }
     else if (!signedIn()) { const info = LocalRealm.info || {}; text(String(info.realm || 'REALM SERVER').slice(0, 24), 6, 18, 'gold'); text(`${info.players || 0} ONLINE  ${info.accounts || 0} ACCOUNTS`, 6, 28, 2); text('SIGN IN TO KEEP YOUR HEROES', 6, 38, 3); text('ON THE SERVER.', 6, 47, 3); }
     else {
       const a = LocalRealm.account, realm = REALMS.find(r => r.id === (LocalRealm.realm || (this.me && this.me.account && this.me.account.realm)));
@@ -573,12 +617,12 @@ class OnlineHubScene {
     footer('A:SELECT', 'B:BACK');
   }
 }
-Object.assign(window, { LoginScene, ChangePasswordScene, RealmListScene, CharacterSelectScene, AddFriendScene, FriendsScene, OnlineHubScene });
+Object.assign(window, { LoginScene, ChangePasswordScene, ServerAddressScene, RealmListScene, CharacterSelectScene, AddFriendScene, FriendsScene, OnlineHubScene });
 
 // the start-up check for a realm server can time out while the page is still loading; keep looking every few
 // seconds until one answers, then switch the game to it (also covers starting the server after the page)
 // A 404/405 from /api/health means this host has no realm server at all (e.g. a static web host), so stop.
-if (typeof LocalRealm !== 'undefined' && /^https?:$/.test(location.protocol) && !window.GBQ_STATIC_HOST) {
+if (typeof LocalRealm !== 'undefined' && (LocalRealm.serverUrl() || (/^https?:$/.test(location.protocol) && !window.GBQ_STATIC_HOST))) {
   let tries = 0;
   const poll = setInterval(() => {
     if (LocalRealm.available || LocalRealm.noServer || ++tries > 60) return clearInterval(poll);

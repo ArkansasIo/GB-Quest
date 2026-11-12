@@ -68,7 +68,12 @@ let html = fs.readFileSync(index, 'utf8');
 const injectionPoint = '<script>window.NES_INDEX=';
 if (!html.includes(injectionPoint)) throw new Error('Could not locate safe HD64 pack injection point.');
 // itch.io serves static files only, so the game must not probe the page's own origin for a realm server.
-html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;</script>\n<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\n' + injectionPoint);
+// Optional default realm server: GBQ_REALM_URL=https://realm.example.com npm run build:itch
+// (players can still change it in ONLINE > SERVER ADDRESS; the server must allow the itch.io origin).
+const realmUrl = String(process.env.GBQ_REALM_URL || '').trim().replace(/\/+$/, '');
+if (realmUrl && !/^https:\/\/[^/\s]+$/.test(realmUrl)) throw new Error('GBQ_REALM_URL must be an https:// origin, e.g. https://realm.example.com');
+const realmScript = realmUrl ? 'window.GBQ_REALM_URL=' + JSON.stringify(realmUrl) + ';' : '';
+html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;' + realmScript + '</script>\n<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\n' + injectionPoint);
 fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');
