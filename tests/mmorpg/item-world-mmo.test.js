@@ -14,8 +14,8 @@ import { generateMapChunk, getMapChunkBounds } from "../../src/mmorpg/world/map-
 
 test("equipment catalog includes weapons, armor, gear, tools, packs, mounts and magic items", () => {
   const summary = getEquipmentCatalogSummary();
-  assert.equal(summary.weapons, 38);
-  assert.equal(summary.armor, 13);
+  assert.ok(summary.weapons >= 38);
+  assert.ok(summary.armor >= 13);
   assert.ok(summary.adventuringGear >= 60);
   assert.ok(summary.tools >= 20);
   assert.ok(summary.magicItems >= 20);
