@@ -9,8 +9,9 @@ cd /d "%~dp0"
 if not exist package.json cd /d "%~dp0..\.."
 title GB-Quest realm server
 
+rem Update from GitHub only inside a git checkout (a downloaded zip has no .git folder).
 where git >nul 2>nul
-if %errorlevel%==0 (
+if %errorlevel%==0 if exist .git (
   echo Getting the latest version from GitHub...
   git pull --ff-only
   if errorlevel 1 (
