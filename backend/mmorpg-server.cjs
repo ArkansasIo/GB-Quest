@@ -289,8 +289,13 @@ function attachSocket(ws, req) {
     }
   });
   ws.on('message', raw => {
+    if (state.closed) return;
     const pending = messageQueue.enqueue(raw);
-    if (pending > 64) ws.close(4429, 'message queue overloaded');
+    if (pending > 64) {
+      state.closed = true;
+      activeSockets.delete(ws);
+      ws.close(4429, 'message queue overloaded');
+    }
   });
   ws.on('close', () => {
     state.closed = true;
