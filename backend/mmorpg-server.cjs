@@ -11,6 +11,7 @@ const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
 const { isAllowedOrigin, corsHeaders, createAuthLimiter } = require('./mmorpg-security.cjs');
+const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -118,7 +119,7 @@ function attachSocket(ws, req) {
   const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
   socketState.set(ws, state); activeSockets.set(ws, state);
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
-  ws.on('message', async raw => {
+  const messageQueue = createSocketMessageQueue(async raw => {
     try {
       if (raw.length > MAX_MESSAGE) return ws.close(1009, 'message too large');
       const msg = JSON.parse(raw.toString());
@@ -268,6 +269,10 @@ function attachSocket(ws, req) {
       console.error('MMO socket handler error:', error.message);
       send(ws, 'error', { code: 'server_error' });
     }
+  });
+  ws.on('message', raw => {
+    const pending = messageQueue.enqueue(raw);
+    if (pending > 64) ws.close(4429, 'message queue overloaded');
   });
   ws.on('close', () => {
     activeSockets.delete(ws);
