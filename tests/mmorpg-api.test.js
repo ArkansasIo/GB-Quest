@@ -9,7 +9,7 @@ test('MMORPG API authenticates and sends bearer credentials to character endpoin
     calls.push({ url, options });
     const payload = url.endsWith('/api/register')
       ? { token: 'signed-session-token', account: { id: 'acct-1', username: 'HeroOne' } }
-      : { character: { id: 'char-1', name: 'Aelwyn', class: 'ranger' } };
+      : { character: { id: 'char-1', name: 'Aelwyn', class: 'strider' } };
     return { ok: true, status: 200, json: async () => payload };
   };
   const api = new GBQuestMMOApi({ baseUrl: 'https://realm.example.test', fetchImpl, WebSocketImpl: class {} });
@@ -93,7 +93,7 @@ test('MMORPG API supports region selection, realm-scoped characters and persiste
   assert.equal(calls[0].url, 'https://realm.example.test/api/regions');
   assert.equal(calls[0].options.headers.authorization, undefined);
   assert.equal(calls[1].url, 'https://realm.example.test/api/realms?region=lordeon');
-  assert.deepEqual(JSON.parse(calls[2].options.body), { name: 'Aelwyn', class: 'ranger', realmId: 'moonfall' });
+  assert.deepEqual(JSON.parse(calls[2].options.body), { name: 'Aelwyn', class: 'strider', realmId: 'moonfall' });
   assert.equal(calls[3].url, 'https://realm.example.test/api/characters?realm=moonfall');
   assert.equal(calls[4].url, 'https://realm.example.test/api/characters/character-1/whispers?with=character-2&limit=25');
   assert.deepEqual(JSON.parse(calls[5].options.body), { toCharacterId: 'character-2', text: 'Meet at the gate' });
