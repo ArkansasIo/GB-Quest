@@ -19,7 +19,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       GBQ_TOKEN_SECRET: 'integration-test-secret-'.padEnd(48, 'x'),
       GBQ_ALLOWED_ORIGINS: 'https://game.example.test',
       GBQ_WS_AUTH_TIMEOUT_MS: '500',
-      GBQ_WS_HEARTBEAT_MS: '500'
+      GBQ_WS_HEARTBEAT_MS: '5000'
     },
     stdio: ['ignore', 'pipe', 'pipe']
   });
@@ -239,6 +239,9 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     const remoteChat = await waitFor('chat.message');
     assert.equal(remoteChat.payload.text, 'Hello from player two');
     assert.equal(remoteChat.payload.characterId, secondCharacter.id);
+
+    sendSecond(5, 'chat.send', { channel: 'guild', text: 'must not leak into zone chat' });
+    assert.equal((await waitForSecond('error')).payload.code, 'unsupported_chat_channel');
 
     // The same character cannot be controlled by two live sockets at once.
     duplicateSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
