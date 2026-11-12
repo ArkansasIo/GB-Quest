@@ -17,15 +17,16 @@ This service is separate from itch.io. itch.io serves the HTML5 game ZIP; this N
 
 1. Install Docker Engine / Docker Desktop and Docker Compose.
 2. Copy .env.mmorpg.example to .env. Set unique random values for POSTGRES_PASSWORD and GBQ_TOKEN_SECRET (at least 32 characters).
-3. Start the service with:
+3. Set `GBQ_ALLOWED_ORIGINS` to the exact HTTPS origin serving the game (for example `https://YOURNAME.itch.io`). Multiple origins are comma-separated. An empty value intentionally denies remote browser origins; localhost remains allowed for development. HTTP preflight responses and WebSocket upgrades use the same allowlist.
+4. Start the service with:
 
     docker compose -f docker-compose.mmorpg.yml up --build -d
 
-4. Verify:
+5. Verify:
 
     curl http://localhost:8788/health
 
-The service listens on port 8788. PostgreSQL data is kept in the named gbquest_pg volume. Back up that volume before upgrades or destructive operations.
+The container listens on port 8788; the host publishes it on `127.0.0.1:8788` by default. Put a TLS reverse proxy on the host and keep the database private. Override `GBQ_BIND_ADDRESS` only when you intentionally need a different host interface. PostgreSQL data is kept in the named gbquest_pg volume. Back up that volume before upgrades or destructive operations.
 
 For a public deployment, put the service behind a TLS reverse proxy or a platform that supports persistent WebSocket connections. Publish HTTPS and WSS only. Set GBQ_ALLOWED_ORIGINS to the exact HTTPS origin(s) that host the game. Use a managed PostgreSQL database with backups for production. Do not expose PostgreSQL to the public internet.
 
