@@ -92,6 +92,22 @@ Character progression:
 
 Realm status lives in the `realms` table. Set a realm's `status` to `maintenance`, `offline` or `locked` to close it, or raise its `max_players`. The server rereads the table every 30 seconds.
 
+## Authoritative guilds
+
+Migration `012_guild_system.sql` adds persistent realm-scoped guilds, unique names per realm, one guild per character, ranks and expiring invitations. Guild membership survives reconnects.
+
+WebSocket commands after character selection:
+- `guild.create` with `{name}` creates a guild and grants the creator the leader rank.
+- `guild.invite` with `{to: "CharacterName"}` allows leaders and officers to invite ungrouped characters on the same realm. Invites expire after 24 hours.
+- `guild.accept` with `{invitationId}` joins the invited character; the server verifies invitation, realm and uniqueness transactionally.
+- `guild.rank` with `{characterId,rank:"officer"|"member"}` is leader-only.
+- `guild.kick` with `{characterId}` lets leaders remove nonleaders, and officers remove members.
+- `guild.leave` removes the character; leadership transfers to the longest-standing officer (otherwise oldest member), or deletes an empty guild.
+- `chat.send` with `{channel:"guild",text}` broadcasts only to connected guild members.
+- Guild membership is delivered via `guild.snapshot` on character selection and `guild.updated` on membership/rank changes.
+
+Guild operations currently coordinate inside a single authoritative server process; distributed presence and cross-replica events are not yet implemented. Guild banks, audit logs, applications and shared storage are not part of this migration.
+
 ## Running the realm server (the multiplayer world)
 
 `backend/server.cjs` is the realm server players connect to. It needs no database. On Windows, copy `tools/windows/start-realm-server.bat` next to `package.json` and double-click it. Anywhere else, run `HOST=0.0.0.0 PORT=8787 node backend/server.cjs`. The server serves the game itself at `http://<this computer>:8787`, so players open that address in a browser.
