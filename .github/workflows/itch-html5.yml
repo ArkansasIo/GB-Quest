@@ -96,6 +96,8 @@ jobs:
           assert manifest["items"], "Equipment manifest is empty"
           print(f"Validated {len(frames)} character frames and {len(manifest['items'])} equipment layers")
           PY
+      - name: Generate live world atlas
+        run: python tools/build_atlas.py
       - name: Build and validate itch.io ZIP
         run: npm run build:itch
       - name: Upload itch.io HTML5 package
