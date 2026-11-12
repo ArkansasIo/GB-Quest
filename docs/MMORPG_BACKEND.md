@@ -48,7 +48,7 @@ Allowed jobs: warden, berserker, vanguard, strider, shade, ascetic, arcanist, wi
 ## Realm and direct-message APIs
 
 - `GET /api/regions` lists regions and their realms; `GET /api/realms?region=<id>` filters realms by region.
-- `POST /api/characters` accepts `{ name, class, realmId }`. The `class` field uses one of the 27 game jobs. Existing legacy classes are mapped during migration 009.
+- `POST /api/characters` accepts `{ name, class, realmId }`. The `class` field uses one of the 27 game jobs; optional `species` and `background` fields use the 15 playable species and six backgrounds. Existing legacy classes are mapped during migration 009; migration 010 adds species/background persistence.
 - `GET /api/characters/:id/whispers?with=<peerCharacterId>&limit=50` reads recent same-realm direct messages and marks incoming messages as read.
 - `POST /api/characters/:id/whispers` accepts `{ toCharacterId, text }`. Messages are stored in PostgreSQL before live delivery, so offline recipients can read them later. Messages are limited to 180 characters and must stay within the same realm.
 - WebSocket `chat.send` with `channel: "whisper"` accepts a recipient character name. An unknown name returns `whisper_target_not_found`; offline characters are valid recipients.
