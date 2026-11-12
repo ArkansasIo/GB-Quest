@@ -288,7 +288,7 @@ function attachSocket(ws, req) {
         const t = Date.now(); if (t - state.lastChat < 1200) return send(ws, 'error', { code: 'chat_rate_limited' });
         state.lastChat = t;
         const text = String(msg.payload.text || '').trim();
-        if (!text || text.length > 180 || /[\\u0000-\\u001f\\u007f]/.test(text)) return send(ws, 'error', { code: 'invalid_chat' });
+        if (!text || text.length > 180 || /[\u0000-\u001f\u007f]/.test(text)) return send(ws, 'error', { code: 'invalid_chat' });
         const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
         if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
         if (channel === 'whisper') {
