@@ -21,8 +21,8 @@ class GBQuestMMOApi {
   regions() { return this.request('/api/regions',{auth:false}); }
   realms(regionId) { return this.request('/api/realms'+(regionId?'?region='+encodeURIComponent(regionId):''),{auth:false}); }
   characters(realmId) { return this.request('/api/characters'+(realmId?'?realm='+encodeURIComponent(realmId):'')); }
-  createCharacter(name,characterClass,realmId) {
-    return this.request('/api/characters',{method:'POST',body:{name,class:characterClass,...(realmId?{realmId}:{})}});
+  createCharacter(name,characterClass,realmId,species,background) {
+    return this.request('/api/characters',{method:'POST',body:{name,class:characterClass,...(realmId?{realmId}:{}),...(species?{species}:{}),...(background?{background}:{})}});
   }
   whispers(characterId,peerId,limit=50) {
     const query=new URLSearchParams(); if(peerId)query.set('with',peerId);query.set('limit',String(limit));
