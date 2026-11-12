@@ -52,4 +52,4 @@ function createAuthLimiter({ limit = 10, windowMs = 600000, clock = Date.now } =
   };
 }
 
-module.exports = { isAllowedOrigin, createAuthLimiter };
+module.exports = { isAllowedOrigin, corsHeaders, createAuthLimiter };
