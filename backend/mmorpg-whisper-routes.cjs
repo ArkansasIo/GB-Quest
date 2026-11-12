@@ -24,6 +24,9 @@ async function handleWhisperRequest({ req, res, url, pool, accountFor, json = (r
     const peer = await pool.query('SELECT id FROM characters WHERE id=$1 AND realm_id=$2', [withCharacter, owned.rows[0].realm_id]);
     if (!peer.rowCount) { json(res, 404, { error: 'same_realm_character_not_found' }); return true; }
     const limit = Math.max(1, Math.min(100, Number.parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+    await pool.query(`UPDATE player_whispers SET read_at=now()
+      WHERE realm_id=$1 AND sender_character_id=$2 AND recipient_character_id=$3 AND read_at IS NULL`,
+      [owned.rows[0].realm_id, withCharacter, characterId]);
     const result = await pool.query(`
       SELECT id, sender_character_id AS "senderCharacterId",
              recipient_character_id AS "recipientCharacterId", message,
@@ -34,9 +37,6 @@ async function handleWhisperRequest({ req, res, url, pool, accountFor, json = (r
          (sender_character_id=$3 AND recipient_character_id=$2))
       ORDER BY created_at DESC LIMIT $4`,
       [owned.rows[0].realm_id, characterId, withCharacter, limit]);
-    await pool.query(`UPDATE player_whispers SET read_at=now()
-      WHERE realm_id=$1 AND sender_character_id=$2 AND recipient_character_id=$3 AND read_at IS NULL`,
-      [owned.rows[0].realm_id, withCharacter, characterId]);
     json(res, 200, { withCharacter, messages: result.rows.reverse() });
     return true;
   }
