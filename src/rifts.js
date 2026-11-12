@@ -150,7 +150,7 @@ function closeRift() {
     }
     if (typeof addSeasonXp === 'function') addSeasonXp(res.timed ? 120 + 10 * a.level : 60);
   }
-  saveGame(); SFX.act_complete ? SFX.act_complete() : SFX.confirm();
+  saveGame(); SFX.rift_close();
   say(lines);
 }
 
@@ -172,10 +172,10 @@ class RiftScene {
     const o = opts[this.i];
     if (o === 'FIGHT') { SFX.select(); return fightPack(this); }
     if (o === 'ABANDON') return choose(['ABANDON RIFT', 'KEEP GOING'], k => { if (k === 0) { r.active = null; saveGame(); SFX.back(); } }, a.kind === 'greater' ? 'The key is lost.' : 'Progress is lost.');
-    if (o === 'NORMAL RIFT') { SFX.select(); r.active = { kind: 'normal', level: 0, progress: 0, packs: 0 }; saveGame(); this.i = 0; return; }
+    if (o === 'NORMAL RIFT') { SFX.rift_open(); r.active = { kind: 'normal', level: 0, progress: 0, packs: 0 }; saveGame(); this.i = 0; return; }
     if (o === 'GREATER RIFT') {
       if (r.keys < 1) { SFX.error(); return say(['A GREATER RIFT needs a key.', 'Close a NORMAL RIFT to earn one.']); }
-      r.keys--; SFX.select(); r.active = { kind: 'greater', level: Math.min(r.pick, maxUnlocked(r.best)), progress: 0, packs: 0, startedAt: 0, penalty: 0, bonus: 0 }; saveGame(); this.i = 0; return;
+      r.keys--; SFX.rift_open(); r.active = { kind: 'greater', level: Math.min(r.pick, maxUnlocked(r.best)), progress: 0, packs: 0, startedAt: 0, penalty: 0, bonus: 0 }; saveGame(); this.i = 0; return;
     }
     if (o === 'LEADERBOARD') { SFX.select(); return push(new RiftBoardScene()); }
   }

@@ -160,7 +160,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
     const codex = (G.codex ||= {});
     choose(['EXTRACT ASPECT', 'IMPRINT ASPECT', 'TEMPER', 'MASTERWORK', `CODEX (${Object.keys(codex).length}/${ASPECT_IDS.length})`, 'LEAVE'], k => {
       if (k === 0) return pickItem('EXTRACT: the item is destroyed.', o => o.it.aspect && o.where === 'bag', o => {
-        const a = o.it.aspect, had = codex[a.id] || 0; codex[a.id] = Math.max(had, a.val); G.bag.splice(G.bag.indexOf(o.it), 1); SFX.craft(); saveGame();
+        const a = o.it.aspect, had = codex[a.id] || 0; codex[a.id] = Math.max(had, a.val); G.bag.splice(G.bag.indexOf(o.it), 1); SFX.extract(); saveGame();
         say([`ASPECT OF ${ASPECTS[a.id].name} saved to your codex.`, had >= a.val ? `You already had a better one (${had}).` : `Value ${a.val}.`], occultistMenu);
       });
       if (k === 1) {
@@ -169,7 +169,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
           if (j < 0) return occultistMenu(); const id = ids[j];
           pickItem(`IMPRINT ${ASPECTS[id].name}`, o => (o.it.rarity || 0) >= 3 && fitsKind(id, o.it.kind), o => {
             const cost = imprintCost(o.it.ilvl); if (!pay(cost)) { SFX.error(); return say(`Imprinting costs ${fmt(cost)} G.`, occultistMenu); }
-            o.it.aspect = { id, val: codex[id] }; SFX.craft(); saveGame(); say(`${o.it.name.slice(0, 18)} now carries ASPECT OF ${ASPECTS[id].name}.`, occultistMenu);
+            o.it.aspect = { id, val: codex[id] }; SFX.imprint(); saveGame(); say(`${o.it.name.slice(0, 18)} now carries ASPECT OF ${ASPECTS[id].name}.`, occultistMenu);
           });
         }, 'Which aspect?');
       }
@@ -178,7 +178,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
         choose(cats, j => {
           if (j < 0) return occultistMenu(); const c = temperCost(o.it.ilvl); if (!pay(c.gold, c.scrap)) { SFX.error(); return say(`Tempering costs ${fmt(c.gold)} G and ${c.scrap} SCRAP.`, occultistMenu); }
           const stat = pick(TEMPER_POOLS[cats[j]]), v = temperValue(stat, o.it.ilvl); o.it.affixes = (o.it.affixes || []).concat([[stat, v]]); if (o.it.mwBase) o.it.mwBase.push([stat, v]); o.it.tempers = (o.it.tempers || 0) + 1;
-          if (typeof derive === 'function') derive(G); SFX.craft(); saveGame(); say(`Tempered: +${v} ${(SUBSTATS[stat] || { name: stat }).name}. (${o.it.tempers}/${TEMPER_MAX})`, occultistMenu);
+          if (typeof derive === 'function') derive(G); SFX.temper(); saveGame(); say(`Tempered: +${v} ${(SUBSTATS[stat] || { name: stat }).name}. (${o.it.tempers}/${TEMPER_MAX})`, occultistMenu);
         }, `TEMPER ${o.it.name.slice(0, 14)}: pick a recipe. Cost ${fmt(temperCost(o.it.ilvl).gold)} G + ${temperCost(o.it.ilvl).scrap} SCRAP.`);
       });
       if (k === 3) return pickItem('MASTERWORK which item?', o => (o.it.mw || 0) < MW_MAX && (o.it.affixes || []).length, o => {

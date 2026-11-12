@@ -935,7 +935,7 @@ class TalentScene extends ListScene {
       return say('Learn ' + (prerequisite ? prerequisite.name : 'the previous talent') + ' first.');
     }
     if ((G.talentPts || 0) < 1) return say('No talent points available.');
-    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
+    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.talent_learn();
   }
   draw() {
     fill(0, 0, W, H, 0); hdr(); textC(this.online ? 'ONLINE TALENTS' : 'TALENT SYSTEM', 80, 13, 'gold');
