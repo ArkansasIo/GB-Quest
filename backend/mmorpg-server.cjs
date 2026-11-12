@@ -254,11 +254,28 @@ function attachSocket(ws, req) {
         const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
         if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
         if (channel === 'whisper') {
-          const to = String(msg.payload.to || '').trim().toLowerCase();
-          const target = [...activeSockets.entries()].find(([, s]) => s.authenticated && s.character && s.realmId === state.realmId && s.character.name.toLowerCase() === to);
-          if (!target) return send(ws, 'error', { code: 'whisper_target_offline', to: msg.payload.to || '' });
-          const w = { ...message, to: target[1].character.name };
-          send(target[0], 'chat.message', w); if (target[0] !== ws) send(ws, 'chat.message', w);
+          const to = String(msg.payload.to || '').trim();
+          if (!to || to.length > 16) return send(ws, 'error', { code: 'invalid_whisper_target' });
+          const recipient = await pool.query(
+            'SELECT id,name FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)',
+            [state.realmId, to]
+          );
+          if (!recipient.rowCount) return send(ws, 'error', { code: 'whisper_target_not_found', to });
+          const targetCharacter = recipient.rows[0];
+          if (targetCharacter.id === state.character.id) return send(ws, 'error', { code: 'cannot_whisper_self' });
+          const saved = await pool.query(`INSERT INTO player_whispers(realm_id,sender_character_id,recipient_character_id,message)
+            VALUES($1,$2,$3,$4) RETURNING id,created_at`,
+            [state.realmId, state.character.id, targetCharacter.id, text]);
+          const liveTarget = [...activeSockets.entries()].find(([, s]) =>
+            s.authenticated && s.character && s.character.id === targetCharacter.id && s.realmId === state.realmId);
+          const whisper = {
+            id: saved.rows[0].id, characterId: state.character.id, name: state.character.name,
+            fromCharacterId: state.character.id, toCharacterId: targetCharacter.id,
+            to: targetCharacter.name, text, channel: 'whisper', realmId: state.realmId,
+            at: new Date(saved.rows[0].created_at).getTime(), delivered: !!liveTarget
+          };
+          if (liveTarget) send(liveTarget[0], 'chat.message', whisper);
+          send(ws, 'chat.message', whisper);
           return;
         }
         broadcastZone(state.realmId, state.zoneId, 'chat.message', message);
@@ -588,6 +605,50 @@ const server = http.createServer(async (req, res) => {
         WHERE t.from_character_id=$1 OR t.to_character_id=$1
         ORDER BY t.created_at DESC LIMIT 50`, [characterId]);
       return json(res, 200, { trades: result.rows });
+    }
+    const whispersMatch = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/whispers$/i);
+    if (whispersMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = whispersMatch[1], peerId = url.searchParams.get('with');
+      const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit') || 50)));
+      const owned = await pool.query('SELECT id,realm_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      if (peerId && !/^[0-9a-f-]{36}$/i.test(peerId)) return json(res, 400, { error: 'invalid_peer_id' });
+      await pool.query('UPDATE player_whispers SET read_at=now() WHERE recipient_character_id=$1 AND ($2::uuid IS NULL OR sender_character_id=$2) AND read_at IS NULL', [characterId, peerId]);
+      const result = await pool.query(`SELECT w.id,w.sender_character_id,w.recipient_character_id,w.message,w.created_at,w.read_at,
+        s.name AS sender_name,r.name AS recipient_name
+        FROM player_whispers w
+        JOIN characters s ON s.id=w.sender_character_id
+        JOIN characters r ON r.id=w.recipient_character_id
+        WHERE w.realm_id=$1 AND (w.sender_character_id=$2 OR w.recipient_character_id=$2)
+          AND ($3::uuid IS NULL OR (w.sender_character_id=$3 OR w.recipient_character_id=$3))
+        ORDER BY w.created_at DESC LIMIT $4`,
+        [owned.rows[0].realm_id, characterId, peerId, limit]);
+      return json(res, 200, { characterId, messages: result.rows.reverse() });
+    }
+    if (whispersMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = whispersMatch[1], body = await readBody(req);
+      const recipientId = String(body.toCharacterId || ''), message = String(body.text || '').trim();
+      if (!/^[0-9a-f-]{36}$/i.test(recipientId) || recipientId === characterId ||
+          !message || message.length > 180 || /[\\u0000-\\u001f\\u007f]/.test(message)) {
+        return json(res, 400, { error: 'invalid_whisper' });
+      }
+      const senderResult = await pool.query('SELECT id,name,realm_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+      const recipientResult = await pool.query('SELECT id,name,realm_id FROM characters WHERE id=$1', [recipientId]);
+      if (!senderResult.rowCount || !recipientResult.rowCount) return json(res, 404, { error: 'character_or_recipient_not_found' });
+      const sender = senderResult.rows[0], recipient = recipientResult.rows[0];
+      if (sender.realm_id !== recipient.realm_id) return json(res, 409, { error: 'different_realms' });
+      const saved = await pool.query(`INSERT INTO player_whispers(realm_id,sender_character_id,recipient_character_id,message)
+        VALUES($1,$2,$3,$4) RETURNING id,created_at`,
+        [sender.realm_id, characterId, recipientId, message]);
+      const liveTarget = [...activeSockets.entries()].find(([, state]) =>
+        state.authenticated && state.character && state.character.id === recipientId && state.realmId === sender.realm_id);
+      const payload = { id: saved.rows[0].id, fromCharacterId: characterId, toCharacterId: recipientId,
+        fromName: sender.name, toName: recipient.name, text: message, channel: 'whisper',
+        at: new Date(saved.rows[0].created_at).getTime(), delivered: !!liveTarget };
+      if (liveTarget) send(liveTarget[0], 'chat.message', { ...payload, characterId, name: sender.name, to: recipient.name, realmId: sender.realm_id });
+      return json(res, 201, { message: payload });
     }
     const tradeActionMatch = url.pathname.match(/^\/api\/trades\/([0-9a-f-]{36})\/(accept|cancel)$/i);
     if (tradeActionMatch && req.method === 'POST') {
