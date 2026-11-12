@@ -240,7 +240,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(remoteChat.payload.text, 'Hello from player two');
     assert.equal(remoteChat.payload.characterId, secondCharacter.id);
 
-    sendSecond(5, 'chat.send', { channel: 'guild', text: 'must not leak into zone chat' });
+    sendSecond(5, 'chat.send', { channel: 'trade', text: 'must not leak into zone chat' });
     assert.equal((await waitForSecond('error')).payload.code, 'unsupported_chat_channel');
 
     // Persistent party lifecycle: leader creates, invites a same-realm player,
@@ -268,6 +268,30 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal((await waitForSecond('party.kicked')).payload.partyId, partyId);
     const partyAfterKick = await waitFor('party.updated');
     assert.equal(partyAfterKick.payload.party.members.length, 1);
+
+
+    // Guilds persist separately from parties, with officer permissions and guild-only chat.
+    send(9, 'guild.create', { name: 'Test Guild ' + crypto.randomBytes(3).toString('hex') });
+    const guildCreated=await waitFor('guild.snapshot');
+    const guildId=guildCreated.payload.guild.id;
+    assert.equal(guildCreated.payload.guild.members.length,1);
+    send(10, 'guild.invite', { to: secondCharacter.name });
+    const guildInvite=await waitForSecond('guild.invited');
+    assert.equal((await waitFor('guild.invite_sent')).payload.invitation.id,guildInvite.payload.id);
+    sendSecond(8,'guild.accept',{invitationId:guildInvite.payload.id});
+    const guildUpdate=await waitFor('guild.updated');
+    assert.equal(guildUpdate.payload.guild.members.length,2);
+    assert.equal((await waitForSecond('guild.updated')).payload.guild.id,guildId);
+    send(11,'guild.rank',{characterId:secondCharacter.id,rank:'officer'});
+    const promoted=await waitForSecond('guild.updated');
+    assert.equal(promoted.payload.guild.members.find(x=>x.characterId===secondCharacter.id).rank,'officer');
+    await waitFor('guild.updated');
+    await new Promise(resolve=>setTimeout(resolve,1250));
+    sendSecond(9,'chat.send',{channel:'guild',text:'Guild chat works'});
+    assert.equal((await waitFor('chat.message')).payload.text,'Guild chat works');
+    sendSecond(10,'guild.leave',{});
+    assert.equal((await waitForSecond('guild.left')).payload.guildId,guildId);
+    assert.equal((await waitFor('guild.updated')).payload.guild.members.length,1);
 
     // The same character cannot be controlled by two live sockets at once.
     duplicateSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
@@ -304,7 +328,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ questId: 'first_slime' })
     });
     assert.equal(acceptQuest.status, 201);
-    let sequence = 9, defeated = false;
+    let sequence = 12, defeated = false;
     for (let attempt = 0; attempt < 8 && !defeated; attempt++) {
       send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001' });
       const combat = await waitFor('combat.resolved');
