@@ -54,7 +54,7 @@ export function collectAppearance(collection, item) {
 }
 export function applyTransmog(collection, item, appearanceId) {
   if (!collection || !(collection.appearances instanceof Set)) return { ok:false, reason:"invalid_collection" };
-  const slot = String(item?.slot ?? item?.equipmentSlot ?? "");
+  const slot = String(item?.slot ?? item?.equipmentSlot ?? item?.template?.equipSlot ?? item?.template?.equip_slot ?? item?.template?.slot ?? item?.template?.equipmentSlot ?? "");
   const id = String(appearanceId ?? "");
   if (!slot || !id) return { ok:false, reason:"invalid_transmog_selection" };
   if (!collection.appearances.has(id)) return { ok:false, reason:"appearance_not_unlocked" };

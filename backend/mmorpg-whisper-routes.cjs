@@ -1,7 +1,7 @@
 'use strict';
 
 // Authenticated, same-realm persistent direct-message history.
-async function handleWhisperRequest({ req, res, url, pool, accountFor, json }) {
+async function handleWhisperRequest({ req, res, url, pool, accountFor, json = (response, status, data) => {\n  response.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });\n  response.end(JSON.stringify(data));\n} }) {
   const match = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/whispers$/i);
   if (!match) return false;
   if (!['GET', 'POST'].includes(req.method)) return false;

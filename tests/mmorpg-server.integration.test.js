@@ -125,7 +125,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
       body: JSON.stringify({})
     });
-    assert.equal(unlockTalent.status, 200);
+    assert.equal(unlockTalent.status, 200, JSON.stringify(await unlockTalent.clone().json()));
     assert.equal((await unlockTalent.json()).talentPoints, 0);
     const duplicateTalent = await fetch(base + `/api/characters/${character.id}/talents/ranger_hunter_node_00/unlock`, {
       method: 'POST',

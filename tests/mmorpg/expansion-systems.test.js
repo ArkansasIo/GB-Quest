@@ -18,7 +18,7 @@ test("guild events, wars, MOTD and upgrades validate state",()=>{
  const event=startGuildEvent(g,"p1",{title:"Citadel Patrol",startsAt:new Date(Date.now()+3600000).toISOString(),capacity:5});
  assert.equal(event.ok,true); assert.equal(joinGuildEvent(g,"p2",event.event.id).ok,true);
  assert.equal(declareGuildWar(g,"p1","g2").ok,true);
- assert.equal(purchaseGuildUpgrade(g,"p1","guild-vault",[{id:"guild-vault",maxLevel:5,costs:[100,200,300,400,500]}]).level,1);
+ assert.equal(depositGuildBank(g,"p2",500).ok,true);\n assert.equal(purchaseGuildUpgrade(g,"p1","guild-vault",[{id:"guild-vault",maxLevel:5,costs:[100,200,300,400,500]}]).level,1);
  assert.ok(g.auditLog.length>=4);
 });
 test("collections unlock once, activate owned rewards and award achievements",()=>{
