@@ -7,7 +7,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const { createAuditLog, createDebugLog, redact, redactString } = require("../backend/logs.cjs");
+const { createAuditLog, createDebugLog, redact, redactString } = require("../../../../../backend/logs.cjs");
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "gbq-logs-"));
 const TOKEN = "ab".repeat(32);
 
@@ -78,7 +78,7 @@ test("debug log honours levels, redacts, rotates and tails newest first", () => 
 // ---------------------------------------------------------------- end to end against the realm server
 function startServer(env) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ["backend/server.cjs"], { env: { ...process.env, HOST: "127.0.0.1", GBQ_LOG_QUIET: "0", ...env }, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(process.execPath, ["backend/server.cjs"], { env: { ...process.env, HOST: "127.0.0.1", GBQ_LOG_QUIET: "0", GBQ_ENABLE_ADMIN: "1", ...env }, stdio: ["ignore", "pipe", "pipe"] });
     let out = "";
     const timer = setTimeout(() => { child.kill(); reject(new Error("server did not start: " + out)); }, 8000);
     child.stdout.on("data", d => { out += d; if (out.includes("realm server on")) { clearTimeout(timer); resolve(child); } });
