@@ -46,5 +46,5 @@ test('CI validates deployment unit tests, Compose interpolation and image build'
 test('runbook documents TLS proxying, backups and single-instance limits', () => {
   assert.match(runbook, /TLS|HTTPS/i);
   assert.match(runbook, /backup/i);
-  assert.match(runbook, /single-instance|single instance/i);
+  assert.match(runbook, /one MMO instance|single[- ]instance/i);
 });
