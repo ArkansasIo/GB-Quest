@@ -107,7 +107,11 @@ class Title {
     if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
     // the Aelmoor menu suite (src/menus_aelmoor.js); the older screens remain as fallbacks
     const AM = window.GBQAelmoorMenus;
-    if (c === 'NEW GAME') push(AM ? new AM.AelNewGame() : new RealmSelect());
+    if (c === 'NEW GAME') {
+      const beginCreation = session => push(AM ? new AM.AelNewGame(undefined, session) : new RealmSelect());
+      if (window.GBQMMOAccount) window.GBQMMOAccount.open({ onReady: beginCreation });
+      else beginCreation(null);
+    }
     if (c === 'LOAD GAME') push(AM ? new AM.AelLoad() : new RealmSelect());
     if (c === 'OPTIONS') push(AM ? new AM.AelOptions() : new SettingsScene());
     if (c === 'CREDITS') push(AM ? new AM.AelCredits() : new Credits());

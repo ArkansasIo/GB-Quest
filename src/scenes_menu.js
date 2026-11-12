@@ -25,10 +25,80 @@ class ListScene { // reusable scrolling list base
   scrollbar(x, y, h) { const n = this.items().length; if (n <= this.rows) return; fill(x, y, 3, h, 1); const bh = Math.max(6, h * this.rows / n); fill(x, y + (h - bh) * this.top / Math.max(1, n - this.rows), 3, bh, 3); }
 }
 
+// ================================================================ ONLINE COLLECTIONS
+class CollectionMenuScene extends ListScene {
+  constructor() {
+    super(8);
+    this.categoryIndex = 0;
+    this.collection = null;
+    this.busy = false;
+    this.msg = 'CONNECTING TO REALM COLLECTIONS…';
+    this.refresh();
+  }
+  categories() { return ['mounts', 'pets', 'titles', 'appearances', 'achievements']; }
+  category() { return this.categories()[this.categoryIndex]; }
+  api() { return window.GBQ_MMO_API || window.gbgMmoApi || null; }
+  characterId() { return String(window.GBQ_MMO_CHARACTER_ID || (G && (G.mmoCharacterId || G.characterId)) || ''); }
+  async refresh() {
+    const api = this.api(), id = this.characterId();
+    if (!api || !id) { this.collection = null; this.msg = 'ONLINE CHARACTER REQUIRED'; return; }
+    this.busy = true;
+    try {
+      const result = await api.collections(id);
+      this.collection = result.collections || null;
+      this.msg = this.collection ? 'COLLECTIONS SYNCHRONIZED' : 'NO COLLECTION DATA';
+    } catch (error) {
+      this.msg = String(error.message || error).toUpperCase().slice(0, 42);
+    } finally { this.busy = false; }
+  }
+  items() {
+    const entries = this.collection?.[this.category()] || [];
+    return entries.map(entry => typeof entry === 'string' ? entry : String(entry.name || entry.title || entry.id || 'UNKNOWN'));
+  }
+  update() {
+    if (nav('left')) { this.categoryIndex = (this.categoryIndex + 4) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
+    if (nav('right')) { this.categoryIndex = (this.categoryIndex + 1) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
+    const count = this.items().length;
+    if (count && nav('up')) { this.i = (this.i + count - 1) % count; SFX.cursor(); }
+    if (count && nav('down')) { this.i = (this.i + 1) % count; SFX.cursor(); }
+    if (this.i < this.top) this.top = this.i;
+    if (this.i >= this.top + this.rows) this.top = this.i - this.rows + 1;
+    if (P('b') || P('start')) { removeScene(this); SFX.back(); return; }
+    if (P('select')) return this.refresh();
+    if (!P('a') || this.busy) return;
+    const category = this.category(), entries = this.collection?.[category] || [], entry = entries[this.i];
+    if (!entry) { SFX.error(); this.msg = 'NO ENTRY SELECTED'; return; }
+    if (!['mounts', 'pets', 'titles'].includes(category)) { SFX.error(); this.msg = 'UNLOCKED BY GAMEPLAY REWARDS'; return; }
+    const entryId = typeof entry === 'string' ? entry : String(entry.id || '');
+    const api = this.api(), characterId = this.characterId();
+    if (!api || !characterId || !entryId) { SFX.error(); this.msg = 'ONLINE COLLECTION SERVICE REQUIRED'; return; }
+    this.busy = true; this.msg = 'UPDATING REALM COLLECTION…';
+    Promise.resolve(api.activateCollectionEntry(characterId, category, entryId))
+      .then(() => { SFX.confirm(); this.msg = 'COLLECTION UPDATED'; return this.refresh(); })
+      .catch(error => { SFX.error(); this.msg = String(error.message || error).toUpperCase().slice(0, 42); })
+      .finally(() => { this.busy = false; });
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC('COLLECTIONS', W / 2, 15, 'gold');
+    textC('< ' + this.category().toUpperCase() + ' >', W / 2, 28, 3);
+    const entries = this.items();
+    if (!entries.length) textC(this.collection ? 'NO UNLOCKED ENTRIES' : 'ONLINE SERVICE REQUIRED', W / 2, 72, 2);
+    entries.slice(this.top, this.top + this.rows).forEach((name, j) => {
+      const index = this.top + j, y = 44 + j * 12;
+      if (index === this.i) { fill(18, y - 2, W - 36, 11, 3); text(name.slice(0, 22), 23, y, 0); }
+      else text(name.slice(0, 22), 23, y);
+    });
+    this.scrollbar(W - 10, 43, 94);
+    textC(this.msg.slice(0, 34), W / 2, H - 13, 'blue');
+    text('L/R CATEGORY · A EQUIP · B BACK', 3, H - 3, 1);
+  }
+}
+
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'COLLECTIONS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'GUILD', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -37,7 +107,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), HEIRLOOMS: () => new HeirloomScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), 'SECRET ARCHIVE': () => new EasterEggArchiveScene(), 'HIDDEN WORLD': () => new SecretWorldJournalScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), GUILD: () => new GuildMenuScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
@@ -62,6 +132,102 @@ class MainMenu extends ListScene {
     this.scrollbar(156, 14, 128);
   }
 }
+
+/* ---------------------------------------------------------------- GUILD MENU
+ * Persistent guild management UI. The dedicated MMORPG client is injected as
+ * window.GBQ_MMO_API by the online bootstrap; offline saves never pretend to
+ * create server-side guild state.
+ */
+class GuildMenuScene {
+  constructor() { this.opaque = true; this.i = 0; this.page = 'home'; this.guild = null; this.busy = false; this.msg = ''; this.refresh(); }
+  api() { return window.GBQ_MMO_API || window.gbgMmoApi || null; }
+  characterId() { return String(window.GBQ_MMO_CHARACTER_ID || (G && (G.mmoCharacterId || G.characterId)) || ''); }
+  async refresh() {
+    const api = this.api(), id = this.characterId();
+    if (!api || !id) { this.guild = null; this.msg = !api ? 'ONLINE GUILD SERVICE NOT CONNECTED' : 'SELECT AN ONLINE CHARACTER'; return; }
+    this.busy = true;
+    try { const result = await api.guild(id); this.guild = result.guild || null; this.msg = this.guild ? 'GUILD DATA LOADED' : 'NO GUILD - CREATE OR ACCEPT AN INVITE'; }
+    catch (e) { this.msg = String(e.message || e).toUpperCase().slice(0, 44); }
+    finally { this.busy = false; }
+  }
+  rows() {
+    if (this.page === 'home') return this.guild
+      ? ['OVERVIEW', 'MEMBERS', 'INVITE PLAYER', 'GUILD MESSAGE', 'TRANSFER LEADERSHIP', 'LEAVE GUILD', 'DISBAND GUILD', 'REFRESH', 'BACK']
+      : ['CREATE GUILD', 'ACCEPT INVITE', 'REFRESH', 'BACK'];
+    if (this.page === 'members') return ['BACK'];
+    return ['BACK'];
+  }
+  update() {
+    const rows = this.rows();
+    if (nav('up')) { this.i = (this.i + rows.length - 1) % rows.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % rows.length; SFX.cursor(); }
+    if (P('b') || P('start')) { if (this.page !== 'home') { this.page = 'home'; this.i = 0; SFX.back(); } else { removeScene(this); SFX.back(); } return; }
+    if (!P('a') || this.busy) return;
+    const choice = rows[this.i], api = this.api(), id = this.characterId();
+    if (choice === 'BACK') { this.page = 'home'; this.i = 0; return; }
+    if (choice === 'REFRESH') return this.refresh();
+    if (!api || !id) { this.msg = 'ONLINE GUILD SERVICE NOT CONNECTED'; SFX.error(); return; }
+    if (choice === 'OVERVIEW') { this.page = 'overview'; this.i = 0; return; }
+    if (choice === 'MEMBERS') { this.page = 'members'; this.i = 0; return; }
+    const ask = (label, max = 64) => { const value = window.prompt(label); return value == null ? null : String(value).trim().slice(0, max); };
+    const run = async (fn, success) => {
+      this.busy = true; this.msg = 'CONTACTING REALM...';
+      try { await fn(); SFX.confirm(); this.msg = success; await this.refresh(); }
+      catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 44); }
+      finally { this.busy = false; }
+    };
+    if (choice === 'CREATE GUILD') {
+      const name = ask('Guild name (3-32 characters)', 32); if (name) return run(() => api.createGuild(id, name), 'GUILD CREATED');
+    } else if (choice === 'INVITE PLAYER') {
+      const target = ask('Invitee character ID (same realm)', 36); if (target) return run(() => api.inviteToGuild(this.guild.id, id, target), 'GUILD INVITATION SENT');
+    } else if (choice === 'ACCEPT INVITE') {
+      const invite = ask('Guild invitation ID', 36); if (invite) return run(() => api.acceptGuildInvite(invite, id), 'GUILD INVITATION ACCEPTED');
+    } else if (choice === 'GUILD MESSAGE') {
+      const motd = ask('Guild message of the day (max 180 characters)', 180); if (motd !== null) return run(() => api.updateGuildMotd(this.guild.id, id, motd), 'GUILD MESSAGE UPDATED');
+    } else if (choice === 'TRANSFER LEADERSHIP') {
+      const target = ask('New leader character ID (must be a member)', 36); if (target) return choose(['TRANSFER LEADERSHIP', 'CANCEL'], k => { if (k === 0) run(() => api.transferGuildLeadership(this.guild.id, id, target), 'LEADERSHIP TRANSFERRED'); }, 'Transfer guild leadership?');
+    } else if (choice === 'LEAVE GUILD') {
+      return choose(['LEAVE GUILD', 'CANCEL'], k => { if (k === 0) run(() => api.leaveGuild(id), 'LEFT GUILD'); }, 'Leave this guild? Guild leaders must transfer or disband first.');
+    } else if (choice === 'DISBAND GUILD') {
+      return choose(['DISBAND GUILD', 'CANCEL'], k => { if (k === 0) run(() => api.disbandGuild(this.guild.id, id), 'GUILD DISBANDED'); }, 'Permanently disband this guild?');
+    }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    text('GUILD HALL', 5, 14, 'gold');
+    if (this.guild) {
+      frame(3, 24, 154, 27);
+      text(String(this.guild.name || 'GUILD').slice(0, 23), 8, 28, 'gold');
+      text('MEMBERS ' + ((this.guild.members || []).length), 8, 39, 2);
+      if (this.page === 'overview') {
+        frame(3, 55, 154, 68);
+        text('GUILD: ' + String(this.guild.name).slice(0, 18), 8, 61, 'gold');
+        text('MOTD', 8, 75, 2);
+        wrap(String(this.guild.motd || 'No message set.'), 23).slice(0, 3).forEach((line, n) => text(line, 8, 85 + n * 9, 3));
+        text('LEADER ID ' + String(this.guild.leaderCharacterId || '').slice(0, 12), 8, 113, 2);
+      } else if (this.page === 'members') {
+        frame(3, 55, 154, 75);
+        (this.guild.members || []).slice(0, 7).forEach((m, n) => {
+          const y = 60 + n * 9;
+          text(String(m.name || m.characterId || '').slice(0, 17), 8, y, m.rank === 'leader' ? 'gold' : 3);
+          textR(String(m.rank || 'member').toUpperCase().slice(0, 8), 151, y, 2);
+        });
+        if (!(this.guild.members || []).length) text('NO MEMBERS RETURNED', 8, 66, 2);
+      } else {
+        this.rows().forEach((label, n) => { const y = 57 + n * 9; if (n === this.i) fill(4, y - 1, 152, 9, 1); text(label, 8, y, n === this.i ? 0 : 3); });
+      }
+    } else {
+      frame(3, 25, 154, 26);
+      text(this.busy ? 'LOADING GUILD...' : 'NO ACTIVE GUILD', 8, 31, 'gold');
+      text('CREATE ONE OR ACCEPT AN INVITE', 8, 41, 2);
+      this.rows().forEach((label, n) => { const y = 60 + n * 12; if (n === this.i) fill(4, y - 1, 152, 11, 1); text(label, 9, y + 1, n === this.i ? 0 : 3); });
+    }
+    if (this.page === 'home' && this.guild) this.rows().forEach((label, n) => { const y = 57 + n * 9; if (n === this.i) fill(4, y - 1, 152, 9, 1); text(label, 8, y, n === this.i ? 0 : 3); });
+    if (this.msg) text(this.msg.slice(0, 25), 4, 134, this.msg.includes('NOT CONNECTED') || this.msg.includes('ERROR') ? 'red' : 'gold');
+    aelHints([['A', 'SELECT'], ['B', 'BACK']]);
+  }
+}
+
 function restMenu() {
   choose(['SHORT REST (1 HOUR)', `LONG REST (CAMP KIT x${G.inv.campkit || 0})`, 'BACK'], k => {
     if (k === 0) { if (G.ghost) return say('Spirits cannot rest.'); const songs = G.companions.some(c => hasFeature(c, 'restsong')) || hasFeature(G, 'restsong'); const log = shortRest(G, songs); G.companions.forEach(c => shortRest(c, songs)); SFX.heal(); say(['You take a short rest.'].concat(log.length ? log : ['Nothing to recover (no hit dice?).'])); }
@@ -677,66 +843,159 @@ class AbilitySkillsScene extends ListScene {
 }
 
 class TalentScene extends ListScene {
-  constructor() { super(4); this.tree = 0; }
+  constructor() {
+    super(4); this.tree = 0; this.branch = 0; this.remoteTrees = []; this.profile = null;
+    this.online = !!(G && G.mmoCharacterId && window.GBQMMOAccount?.hasGameplaySession);
+    this.busy = false; this.error = ''; if (this.online) this.loadRemote();
+  }
   path() { return TALENT_TREES[this.tree]; }
-  items() { return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]); }
+  characterId() { return String(G.mmoCharacterId); }
+  request(path, options) { return window.GBQMMOAccount.gameplayRequest(path, options); }
+  async loadRemote() {
+    this.busy = true; this.error = '';
+    try {
+      const cls = encodeURIComponent(G.mmoCharacterClass || 'adventurer');
+      const [catalog, profile] = await Promise.all([
+        this.request('/api/talents?class=' + cls),
+        this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/profile')
+      ]);
+      this.remoteTrees = catalog.specializations || []; this.profile = profile;
+      const selected = this.remoteTrees.findIndex(tree => tree.id === profile.character?.specialization_id);
+      this.tree = Math.max(0, selected); this.i = this.top = 0;
+    } catch (error) { this.error = String(error.message || error); }
+    finally { this.busy = false; }
+  }
+  unlocked() { return new Set((this.profile?.talents || []).map(talent => talent.node_id)); }
+  remoteItems() { const tree = this.remoteTrees[this.tree]; return tree ? (tree.nodes || []).filter(node => node.branch === ['assault','utility','mastery'][this.branch]) : []; }
+  async chooseSpecialization() {
+    const tree = this.remoteTrees[this.tree]; if (!tree || this.busy) return;
+    this.busy = true;
+    try {
+      await this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/specialization', { method: 'POST', body: { specializationId: tree.id } });
+      await this.loadRemote();
+    } catch (error) { this.error = String(error.message || error); }
+    finally { this.busy = false; }
+  }
+  async unlockRemote(node) {
+    if (!node || this.busy) return;
+    this.busy = true; this.error = '';
+    try {
+      await this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/talents/' + encodeURIComponent(node.id) + '/unlock', { method: 'POST', body: {} });
+      await this.loadRemote(); SFX.levelup();
+    } catch (error) { this.error = String(error.message || error); SFX.error(); }
+    finally { this.busy = false; }
+  }
+  items() {
+    if (this.online) return this.remoteItems();
+    return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]);
+  }
   update() {
+    if (this.online) {
+      if (P('b')) { SFX.back(); removeScene(this); return; }
+      if (this.busy) return;
+      if (this.error) { if (P('a')) this.loadRemote(); return; }
+      if (!this.remoteTrees.length) return;
+      if (!this.profile?.character?.specialization_id) {
+        if (nav('left')) { this.tree = (this.tree + this.remoteTrees.length - 1) % this.remoteTrees.length; SFX.cursor(); }
+        if (nav('right')) { this.tree = (this.tree + 1) % this.remoteTrees.length; SFX.cursor(); }
+        if (P('a')) this.chooseSpecialization();
+        return;
+      }
+      if (P('select')) { this.branch = (this.branch + 1) % 3; this.i = this.top = 0; SFX.page(); }
+      this.navList();
+      if (P('a')) {
+        const node = this.items()[this.i], known = this.unlocked();
+        if (!node) return;
+        if (known.has(node.id)) return say('Already unlocked.');
+        if (this.profile.character.level < node.requiredLevel) return say('Unlocks at level ' + node.requiredLevel + '.');
+        if (node.prerequisiteId && !known.has(node.prerequisiteId)) return say('Unlock the previous node in this branch first.');
+        if (Number(this.profile.character.talent_points || 0) < Number(node.pointCost || 1)) return say('Not enough talent points.');
+        this.unlockRemote(node);
+      }
+      return;
+    }
     if (P('select')) { this.tree = (this.tree + 1) % TALENT_TREES.length; this.i = this.top = 0; SFX.page(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
-    const node = this.items()[this.i];
-    if (!node) return;
+    const node = this.items()[this.i]; if (!node) return;
     if (node.respec) {
       if (!G.talents.length) return say('No talents to reset.');
       choose(['RESET ALL TALENTS', 'CANCEL'], index => {
         if (index !== 0) return;
-        G.talentPts = (G.talentPts || 0) + G.talents.length;
-        G.talents = [];
-        G.hp = Math.min(G.hp, derive(G).hpMax);
-        SFX.levelup();
+        G.talentPts = (G.talentPts || 0) + G.talents.length; G.talents = [];
+        G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
       }, 'Refund all spent talent points?');
       return;
     }
-    if (G.talents.includes(node.id)) return say(`${node.name} is already learned.`);
-    if (G.lvl < node.level) return say(`Unlocks at level ${node.level}.`);
+    if (G.talents.includes(node.id)) return say(node.name + ' is already learned.');
+    if (G.lvl < node.level) return say('Unlocks at level ' + node.level + '.');
     if (node.requires && !G.talents.includes(node.requires)) {
       const prerequisite = this.path().nodes.find(candidate => candidate.id === node.requires);
-      return say(`Learn ${prerequisite ? prerequisite.name : 'the previous talent'} first.`);
+      return say('Learn ' + (prerequisite ? prerequisite.name : 'the previous talent') + ' first.');
     }
-    if ((G.talentPts || 0) < 1) return say('No talent points available. Earn one at levels 5, 10, 15 and 20.');
-    G.talents.push(node.id);
-    G.talentPts--;
-    G.hp = Math.min(G.hp, derive(G).hpMax);
-    SFX.levelup();
+    if ((G.talentPts || 0) < 1) return say('No talent points available.');
+    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr();
-    textC('TALENT SYSTEM', 80, 13, 'gold');
+    fill(0, 0, W, H, 0); hdr(); textC(this.online ? 'ONLINE TALENTS' : 'TALENT SYSTEM', 80, 13, 'gold');
+    if (this.online) {
+      if (this.busy) { textC('LOADING SERVER DATA…', 80, 65, 3); return; }
+      if (this.error) { textC(('SERVER: ' + this.error).slice(0, 25), 80, 55, 'red'); textC('A: RETRY   B: BACK', 80, 75, 2); return; }
+      if (!this.remoteTrees.length) { textC('NO SERVER TALENT TREES', 80, 65, 2); return; }
+      if (!this.profile?.character?.specialization_id) {
+        textC('CHOOSE SPECIALIZATION', 80, 27, 2);
+        this.remoteTrees.forEach((tree, index) => {
+          const y = 48 + index * 20; if (index === this.tree) fill(5, y - 1, 150, 16, 1);
+          text(tree.name.slice(0, 22), 10, y, index === this.tree ? 'gold' : 3);
+          text(String(tree.role || '').slice(0, 18), 10, y + 8, 2);
+        });
+        textC('LEFT/RIGHT: CHOOSE  A: CONFIRM', 80, 119, 2); return;
+      }
+      const tree = this.remoteTrees[this.tree], branches = ['ASSAULT','UTILITY','MASTERY'];
+      textC((tree?.name || 'SPECIALIZATION').slice(0, 20), 80, 24, 'gold');
+      branches.forEach((branch, index) => {
+        const x = 3 + index * 52; fill(x, 34, 49, 10, index === this.branch ? 3 : 1);
+        textC(branch.slice(0, 7), x + 24, 35, index === this.branch ? 0 : 3);
+      });
+      text('POINTS ' + (this.profile.character.talent_points || 0) + '  LV ' + (this.profile.character.level || G.lvl), 5, 47, 2);
+      const list = this.items(), known = this.unlocked();
+      list.slice(this.top, this.top + this.rows).forEach((node, offset) => {
+        const index = this.top + offset, y = 60 + offset * 9, learned = known.has(node.id);
+        const eligible = this.profile.character.level >= node.requiredLevel &&
+          (!node.prerequisiteId || known.has(node.prerequisiteId)) &&
+          Number(this.profile.character.talent_points || 0) >= Number(node.pointCost || 1);
+        if (index === this.i) fill(3, y - 1, 153, 9, 1);
+        text(learned ? '*' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+        text(node.name.slice(0, 19), 14, y, eligible ? 3 : 1);
+        textR('L' + node.requiredLevel, 153, y, learned ? 'gold' : 2);
+      });
+      const node = list[this.i]; frame(2, 98, 156, 37);
+      if (node) {
+        text(node.name.slice(0, 24), 6, 101, 'gold');
+        text(wrap(node.description || '', 24).slice(0, 2).join('\n'), 6, 111, 3);
+        text('COST ' + node.pointCost + '  ' + String(node.type || '').toUpperCase(), 6, 126, 2);
+      }
+      fill(0, 135, W, 9, 0); text('A: UNLOCK  SEL: BRANCH', 4, 136, 2); return;
+    }
     TALENT_TREES.forEach((tree, index) => {
-      const x = 3 + index * 52;
-      fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
+      const x = 3 + index * 52; fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
       textC(tree.name.slice(0, 8), x + 24, 25, index === this.tree ? 0 : 3);
     });
-    text(`POINTS ${G.talentPts || 0}   LEVEL ${G.lvl}`, 5, 38, 2);
+    text('POINTS ' + (G.talentPts || 0) + '   LEVEL ' + G.lvl, 5, 38, 2);
     const L = this.items();
     L.slice(this.top, this.top + this.rows).forEach((node, offset) => {
-      const index = this.top + offset, y = 50 + offset * 11;
-      const learned = !node.respec && G.talents.includes(node.id);
+      const index = this.top + offset, y = 50 + offset * 11, learned = !node.respec && G.talents.includes(node.id);
       const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
       if (index === this.i) fill(3, y - 1, 153, 10, 1);
-      if (node.icon && IMG[node.icon]) blit(spr(node.icon, 8, 8, { ghost: !eligible }), 4, y); else text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
-      if (learned) text('*', 134, y, 'gold');
+      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
       text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
-      if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
+      if (!node.respec) textR('L' + node.level, 152, y, learned ? 'gold' : 2);
     });
-    const node = L[this.i];
-    frame(2, 98, 156, 37);
+    const node = L[this.i]; frame(2, 98, 156, 37);
     if (node) {
-      const needReq = node.requires && !G.talents.includes(node.id);
-      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 101, 'gold');
-      text(wrap(node.desc, 24).slice(0, needReq ? 1 : 2).join('\n'), 6, 111, 3);
-      if (needReq) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 122, 2);
+      const known = G.talents.includes(node.id); text(node.name + (known ? ' LEARNED' : ''), 6, 101, 'gold');
+      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 111, 3);
     }
     fill(0, 135, W, 9, 0); text('SELECT: PATH', 4, 136, 2);
   }
@@ -1073,30 +1332,48 @@ class SocialScene extends ListScene {
   }
   async openFriends() {
     if (!LocalRealm.available || !LocalRealm.account) return say('FRIEND LIST REQUIRES A REALM ACCOUNT. LOG IN AT TITLE > ACCOUNT.');
-    if (typeof FriendsScene === 'function') return push(new FriendsScene());
     try {
       const data = await LocalRealm.friends();
-      const entries = data.friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${f.name}`).concat(data.requests.map(f => `REQUEST  ${f.name}`));
-      choose(['ADD FRIEND', ...entries, ...(data.friends.length ? ['REMOVE FRIEND'] : [])], i => {
+      // Treat API collections as untrusted input: older servers or partial responses
+      // may omit either collection. Normalize IDs because actions require account IDs,
+      // not display names or request-row positions.
+      const friends = Array.isArray(data && data.friends) ? data.friends.filter(f => f && (f.id || f.accountId)) : [];
+      const requests = Array.isArray(data && data.requests) ? data.requests.filter(f => f && (f.id || f.accountId)) : [];
+      const accountId = f => String(f.id || f.accountId || '');
+      const displayName = f => clean(String(f.name || f.username || 'UNKNOWN PLAYER')).slice(0, 16);
+      const entries = friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${displayName(f)}`).concat(requests.map(f => `REQUEST  ${displayName(f)}`));
+      choose(['ADD FRIEND', ...entries, ...(friends.length ? ['REMOVE FRIEND'] : [])], i => {
         if (i === 0) {
-          const name = window.prompt('Realm account name to add:');
-          if (name) LocalRealm.requestFriend(name.trim()).then(r => say(r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.')).catch(e => say(e.message));
+          const raw = window.prompt('Realm account name to add (3-16 letters, numbers or _):');
+          if (raw == null) return;
+          const username = String(raw).trim();
+          if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return say('INVALID ACCOUNT NAME. USE 3-16 LETTERS, NUMBERS OR _.');
+          LocalRealm.requestFriend(username)
+            .then(r => say(r && r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.'))
+            .catch(e => say(`FRIEND REQUEST FAILED: ${e.message || e}`));
           return;
         }
         const idx = i - 1;
-        if (idx >= data.friends.length && idx < data.friends.length + data.requests.length) {
-          const f = data.requests[idx - data.friends.length];
+        if (idx >= friends.length && idx < friends.length + requests.length) {
+          const f = requests[idx - friends.length], id = accountId(f), name = displayName(f);
           choose(['ACCEPT', 'DECLINE'], answer => {
-            if (answer === 0) LocalRealm.acceptFriend(f.id).then(() => say(`${f.name} ADDED TO FRIENDS.`)).catch(e => say(e.message));
-            else LocalRealm.removeFriend(f.id).catch(() => {});
-          }, `FRIEND REQUEST FROM ${f.name}`);
-        } else if (idx >= 0 && idx < data.friends.length) {
-          const f = data.friends[idx]; say(`${f.name} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
-        } else if (i === 1 + entries.length && data.friends.length) {
-          choose(data.friends.map(f => f.name), j => { if (j >= 0) LocalRealm.removeFriend(data.friends[j].id).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message)); }, 'REMOVE WHICH FRIEND?');
+            // Choice calls back with -1 when B is pressed. Cancellation must not
+            // be interpreted as DECLINE (which permanently removes the request).
+            if (answer !== 0 && answer !== 1) return;
+            const action = answer === 0 ? LocalRealm.acceptFriend(id) : LocalRealm.removeFriend(id);
+            action.then(() => say(answer === 0 ? `${name} ADDED TO FRIENDS.` : `REQUEST FROM ${name} DECLINED.`))
+              .catch(e => say(`FRIEND REQUEST UPDATE FAILED: ${e.message || e}`));
+          }, `FRIEND REQUEST FROM ${name}`);
+        } else if (idx >= 0 && idx < friends.length) {
+          const f = friends[idx]; say(`${displayName(f)} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
+        } else if (i === 1 + entries.length && friends.length) {
+          choose(friends.map(displayName), j => {
+            if (j < 0 || !friends[j]) return;
+            LocalRealm.removeFriend(accountId(friends[j])).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message));
+          }, 'REMOVE WHICH FRIEND?');
         }
       }, 'FRIENDS / REQUESTS');
-    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message}`); }
+    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message || e}`); }
   }
   async createInvite() {
     try { const invite = await LocalRealm.createInvite(); say([`INVITE CODE: ${invite.code}`, 'Share this code with a friend.', 'It expires in 15 minutes.']); }

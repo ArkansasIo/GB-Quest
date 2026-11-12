@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="384" viewBox="0 0 512 384" shape-rendering="crispEdges">
+<title>GB Quest Lanterns of Aelmoor pixel-art expansion atlas</title>
+<desc>Original 32 pixel grid icons for classes, weapons, armor, magic, materials and biomes.</desc>
+<defs>
+ <g id="tile"><rect width="32" height="32" rx="3" fill="#101629" stroke="#526b73"/></g>
+ <g id="sword"><path d="M7 25 22 6l4 2-14 19-3 1z" fill="#d8e6df"/><path d="m21 7 4-4 4 4-4 4z" fill="#e6c16a"/><path d="m6 24 6 5-3 2-5-5z" fill="#8a5b42"/></g>
+ <g id="shield"><path d="M16 3 27 7v9q-1 9-11 14Q6 25 5 16V7z" fill="#b68b45" stroke="#f4e9c8"/><path d="M16 7v18q7-4 7-10V9z" fill="#27334b"/><path d="M16 7v18q-7-4-7-10V9z" fill="#526b73"/></g>
+ <g id="helm"><path d="M5 24V15Q5 4 16 4t11 11v9h-5v-8H10v8z" fill="#8aa58a" stroke="#e6c16a"/><path d="M13 7h6v9h-6z" fill="#27334b"/><path d="M3 24h26v4H3z" fill="#b68b45"/></g>
+ <g id="potion"><path d="M12 4h8v5l5 5v12q-9 7-18 0V14l5-5z" fill="#7254a3" stroke="#f4e9c8"/><path d="M8 19h16v7q-8 5-16 0z" fill="#b45b50"/><path d="M12 3h8v4h-8z" fill="#e6c16a"/></g>
+ <g id="gem"><path d="M16 3 28 12 22 28H10L4 12z" fill="#7254a3" stroke="#e6c16a"/><path d="M16 3v25M4 12h24M10 28l6-16 6 16" fill="none" stroke="#d9c7ff" stroke-width="1.5"/></g>
+ <g id="tree"><path d="M15 3 4 18h7L5 26h22l-6-8h7z" fill="#527b59" stroke="#b4d49a"/><path d="M14 24h4v6h-4z" fill="#8a5b42"/></g>
+ <g id="mountain"><path d="m2 27 10-18 5 8 5-12 9 22z" fill="#526b73" stroke="#dce9e6"/><path d="m17 17 5-12 5 9-5-2-3 4z" fill="#f4e9c8"/></g>
+ <g id="flame"><path d="M16 2Q20 12 26 15q3 12-10 15Q2 29 5 17q6-5 6-11 4 4 5 9z" fill="#b45b50" stroke="#e6c16a"/><path d="M16 16q5 6 2 12-8 0-6-7z" fill="#f4e9c8"/></g>
+ <g id="moon"><path d="M24 5Q8 4 8 17t16 11Q5 34 3 17 4 2 24 5z" fill="#e6c16a"/><path d="M22 7q-6 5-4 12 2 5 8 6-13 5-17-7-2-9 13-11z" fill="#f4e9c8"/></g>
+ <g id="skull"><path d="M6 13Q6 3 16 3t10 10q0 7-5 10v5h-3v-4h-4v4h-3v-5q-5-3-5-10z" fill="#d9d6c8"/><path d="M10 13h4v4h-4zm8 0h4v4h-4z" fill="#101629"/><path d="M14 20h4v4h-4z" fill="#b45b50"/></g>
+</defs>
+<rect width="512" height="384" fill="#0a1020"/>
+<g font-family="monospace" font-size="9" fill="#f4e9c8">
+ <text x="8" y="12">CLASS &amp; CHARACTER</text>
+ <text x="8" y="108">WEAPONS &amp; ARMOR</text>
+ <text x="8" y="204">MAGIC &amp; MATERIALS</text>
+ <text x="8" y="300">BIOMES &amp; CREATURES</text>
+</g>
+<g transform="translate(8 18)">
+ <g transform="translate(0 0)"><use href="#tile"/><use href="#helm" x="0" y="0"/></g>
+ <g transform="translate(40 0)"><use href="#tile"/><use href="#moon"/></g>
+ <g transform="translate(80 0)"><use href="#tile"/><use href="#gem"/></g>
+ <g transform="translate(120 0)"><use href="#tile"/><use href="#skull"/></g>
+ <g transform="translate(160 0)"><use href="#tile"/><use href="#flame"/></g>
+ <g transform="translate(200 0)"><use href="#tile"/><use href="#tree"/></g>
+ <g transform="translate(240 0)"><use href="#tile"/><use href="#shield"/></g>
+ <g transform="translate(280 0)"><use href="#tile"/><use href="#potion"/></g>
+ <g transform="translate(320 0)"><use href="#tile"/><use href="#sword"/></g>
+ <g transform="translate(360 0)"><use href="#tile"/><use href="#mountain"/></g>
+</g>
+<g transform="translate(8 114)">
+ <g><use href="#tile"/><use href="#sword"/></g><g transform="translate(40)"><use href="#tile"/><use href="#shield"/></g>
+ <g transform="translate(80)"><use href="#tile"/><use href="#helm"/></g><g transform="translate(120)"><use href="#tile"/><use href="#gem"/></g>
+ <g transform="translate(160)"><use href="#tile"/><use href="#moon"/></g><g transform="translate(200)"><use href="#tile"/><use href="#flame"/></g>
+ <g transform="translate(240)"><use href="#tile"/><use href="#potion"/></g><g transform="translate(280)"><use href="#tile"/><use href="#tree"/></g>
+ <g transform="translate(320)"><use href="#tile"/><use href="#skull"/></g><g transform="translate(360)"><use href="#tile"/><use href="#mountain"/></g>
+</g>
+<g transform="translate(8 210)">
+ <g><use href="#tile"/><use href="#gem"/></g><g transform="translate(40)"><use href="#tile"/><use href="#potion"/></g>
+ <g transform="translate(80)"><use href="#tile"/><use href="#flame"/></g><g transform="translate(120)"><use href="#tile"/><use href="#moon"/></g>
+ <g transform="translate(160)"><use href="#tile"/><use href="#tree"/></g><g transform="translate(200)"><use href="#tile"/><use href="#shield"/></g>
+ <g transform="translate(240)"><use href="#tile"/><use href="#sword"/></g><g transform="translate(280)"><use href="#tile"/><use href="#skull"/></g>
+ <g transform="translate(320)"><use href="#tile"/><use href="#mountain"/></g><g transform="translate(360)"><use href="#tile"/><use href="#helm"/></g>
+</g>
+<g transform="translate(8 306)">
+ <g><use href="#tile"/><rect x="3" y="3" width="26" height="26" fill="#527b59"/><path d="M3 19 10 12 17 19 24 10 29 16v13H3z" fill="#8aa58a"/></g>
+ <g transform="translate(40)"><use href="#tile"/><rect x="3" y="3" width="26" height="26" fill="#b45b50"/><path d="m3 26 8-16 5 7 5-11 8 20z" fill="#e6c16a"/></g>
+ <g transform="translate(80)"><use href="#tile"/><rect x="3" y="3" width="26" height="26" fill="#526b73"/><path d="m3 26 8-16 5 7 5-11 8 20z" fill="#f4e9c8"/></g>
+ <g transform="translate(120)"><use href="#tile"/><rect x="3" y="3" width="26" height="26" fill="#27334b"/><circle cx="16" cy="15" r="7" fill="#7254a3"/><path d="M4 25h24" stroke="#e6c16a" stroke-width="2"/></g>
+ <g transform="translate(160)"><use href="#tile"/><use href="#tree"/></g><g transform="translate(200)"><use href="#tile"/><use href="#mountain"/></g>
+ <g transform="translate(240)"><use href="#tile"/><use href="#skull"/></g><g transform="translate(280)"><use href="#tile"/><use href="#flame"/></g>
+ <g transform="translate(320)"><use href="#tile"/><use href="#moon"/></g><g transform="translate(360)"><use href="#tile"/><use href="#gem"/></g>
+</g>
+</svg>

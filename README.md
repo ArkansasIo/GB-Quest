@@ -27,7 +27,7 @@ The Trading HUD opens a dedicated MMO realm account flow, lets players create/se
 
 ## Authoritative MMORPG server
 
-The PostgreSQL-backed HTTP/WebSocket service is documented in [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md). It includes account authentication, character persistence, zone presence, authoritative movement, basic mob combat/XP, persistent wallet and bank balances, auditable deposits/withdrawals, NPC vendor trading, player-to-player item/gold offers with transactional settlement, and zone chat. Start the single-node Docker deployment with `cp .env.example .env`, set the database password, token secret and exact HTTPS origin allowlist, then run `docker compose up -d --build`. This is a single live service instance; distributed multi-world scaling is not yet implemented.
+The PostgreSQL-backed HTTP/WebSocket service is documented in [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md). It includes account authentication, character persistence, shared zone presence, authoritative movement and mob combat/XP, persistent inventory/economy/quests, guilds, parties, instances, PvP, mail, auction house and chat. For local/single-node deployment use `cp .env.example .env` and `docker compose up -d --build`. For a three-node multiplayer cluster behind an Nginx WebSocket gateway, use [compose.cluster.yaml](compose.cluster.yaml) and follow [docs/MMORPG_MULTIPLAYER_CLUSTER.md](docs/MMORPG_MULTIPLAYER_CLUSTER.md). Cluster nodes share PostgreSQL presence and transient event fan-out; this is not yet independent regional world sharding.
 
 ## itch.io browser release
 

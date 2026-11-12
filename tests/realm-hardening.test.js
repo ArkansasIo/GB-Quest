@@ -82,6 +82,21 @@ test("realm server rejects prototype names, junk ids, oversized presence and bad
     const fresh = (await call("/api/register", { method: "POST", body: { username: "bob", password: "password1" } })).body.token;
     assert.equal((await call("/api/friends/request", { method: "POST", token: fresh, body: { username: "__proto__" } })).status, 404);
 
+    // Friend requests use username when creating and accountId when accepting.
+    // The GET response must expose incoming requests as { id, name, online } rows.
+    const alice = (await call("/api/me", { token })).body.account;
+    const bob = (await call("/api/me", { token: fresh })).body.account;
+    assert.equal((await call("/api/friends/request", { method: "POST", token, body: { username: "bob" } })).status, 200);
+    const incoming = (await call("/api/friends", { token: fresh })).body;
+    assert.ok(Array.isArray(incoming.requests));
+    assert.ok(incoming.requests.some(row => row.id === alice.id && row.name === "alice"));
+    assert.equal((await call("/api/friends/accept", { method: "POST", token: fresh, body: { accountId: alice.id } })).status, 200);
+    const aliceFriends = (await call("/api/friends", { token })).body.friends;
+    const bobFriends = (await call("/api/friends", { token: fresh })).body.friends;
+    assert.ok(aliceFriends.some(row => row.id === bob.id && row.name === "bob"));
+    assert.ok(bobFriends.some(row => row.id === alice.id && row.name === "alice"));
+    assert.equal((await call("/api/friends/remove", { method: "POST", token: fresh, body: { accountId: alice.id } })).status, 200);
+
     // a listing id of __proto__ is not a listing
     assert.equal((await call("/api/market/buy", { method: "POST", token, body: { id: "__proto__" } })).status, 404);
     assert.equal((await call("/api/market/cancel", { method: "POST", token, body: { id: "constructor" } })).status, 404);

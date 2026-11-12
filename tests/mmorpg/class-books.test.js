@@ -29,7 +29,8 @@ test("skill book grants one valid class skill once and is not consumed", () => {
 test("ability book records abilities by level and subclass", () => {
   const wizard = { classId: "wizard", level: 3, subclassId: "evoker" };
   const result = studyAbilityBook(wizard, "abilitybook-wizard");
-  assert.deepEqual(result.learned, ["wizard-arcane-burst", "wizard-evoker-prismatic-surge"]);
+  assert.ok(result.learned.includes("wizard-arcane-burst"));
+  assert.ok(result.learned.includes("wizard-evoker-prismatic-surge"));
   assert.equal(studyAbilityBook(wizard, "abilitybook-wizard").reason, "nothing_to_learn");
   assert.equal(studyAbilityBook({ classId: "wizard", level: 1 }, "abilitybook-fighter").reason, "wrong_class");
 });

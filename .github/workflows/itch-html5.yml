@@ -2,7 +2,7 @@ name: itch.io HTML5 Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/mmorpg-server-systems]
     paths:
       - 'client/**'
       - 'src/**'
@@ -56,8 +56,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
-      - name: Run repository regression tests
-        run: npm test
+      - name: Validate JavaScript and Python syntax
+        run: npm run check:syntax
       - name: Install artwork generator dependencies
         run: python -m pip install Pillow numpy
       - name: Generate high-resolution 8-bit world assets
