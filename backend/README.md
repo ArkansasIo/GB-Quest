@@ -72,7 +72,7 @@ Direct-message HTTP endpoints:
 
 Character progression:
 
-- Migration `009_jobs_level_720.sql` adds the full 27-job list and the browser game's level 1–720 XP curve. Legacy warrior/mage/ranger/cleric/rogue/adventurer values are mapped to warden/arcanist/strider/chaplain/shade/warden respectively.
+- Migration `009_jobs_level_720.sql` adds the full 27-job list and the browser game's level 1–720 XP curve. Migration `010_character_species_background.sql` persists all 15 playable species and six backgrounds. Legacy warrior/mage/ranger/cleric/rogue/adventurer values are mapped to warden/arcanist/strider/chaplain/shade/warden respectively.
 - `gbq_level_for_xp(bigint)` is the authoritative database progression function. Class-feature levels and post-20 ascension levels remain separate game concepts.
 
 Realm status lives in the `realms` table. Set a realm's `status` to `maintenance`, `offline` or `locked` to close it, or raise its `max_players`. The server rereads the table every 30 seconds.
