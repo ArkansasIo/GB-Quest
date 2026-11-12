@@ -37,6 +37,21 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     }
     assert.equal(ready, true, 'MMO server did not become healthy: ' + logs);
 
+    const preflight = await fetch(base + '/api/login', {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://game.example.test',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'content-type'
+      }
+    });
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get('access-control-allow-origin'), 'https://game.example.test');
+    assert.match(preflight.headers.get('access-control-allow-methods') || '', /POST/);
+    const blockedOrigin = await fetch(base + '/health', { headers: { origin: 'https://attacker.invalid' } });
+    assert.equal(blockedOrigin.status, 403);
+
+
     const username = 'it' + crypto.randomBytes(5).toString('hex');
     const register = await fetch(base + '/api/register', {
       method: 'POST',
