@@ -166,7 +166,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
         if (index >= 0) return messages.splice(index, 1)[0];
         await new Promise(resolve => setTimeout(resolve, 50));
       }
-      throw new Error(`Timed out waiting for ${type}; received: ${messages.map(m => m.type).join(', ')}`);
+      throw new Error(`Timed out waiting for ${type}; received: ${JSON.stringify(messages)}`);
     };
     const send = (sequence, type, payload) => socket.send(JSON.stringify({ sequence, type, payload }));
 
