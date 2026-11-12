@@ -86,7 +86,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(character.class, 'strider');
     assert.equal(character.species, 'thornelf');
     assert.equal(character.background, 'scholar');
-    const secondCreate = await fetch(base + '/api/characters', {
+    const multiplayerCreate = await fetch(base + '/api/characters', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
       body: JSON.stringify({ name: 'Recip' + crypto.randomBytes(4).toString('hex'), class: 'chaplain' })
@@ -200,8 +200,8 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + secondAccount.token },
       body: JSON.stringify({ name: 'Multi' + crypto.randomBytes(4).toString('hex'), class: 'warden', realmId: character.realm_id })
     });
-    assert.equal(secondCreate.status, 201);
-    const secondCharacter = (await secondCreate.json()).character;
+    assert.equal(multiplayerCreate.status, 201);
+    const secondCharacter = (await multiplayerCreate.json()).character;
 
     secondSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
     const secondMessages = [];
