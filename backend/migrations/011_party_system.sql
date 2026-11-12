@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS parties (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   leader_character_id uuid NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-  realm_id uuid NOT NULL REFERENCES realms(id) ON DELETE CASCADE,
+  realm_id varchar(24) NOT NULL REFERENCES realms(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
