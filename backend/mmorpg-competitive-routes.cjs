@@ -54,7 +54,7 @@ async function handleCompetitiveRequest({ req, res, pool, accountFor, json, read
         [characterId,account.id,hero.rows[0].realm_id,mode,rating]);
       await tx.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))',[hero.rows[0].realm_id,mode]);
       const candidates = await tx.query(
-        "SELECT q.id,q.character_id,q.account_id,q.rating FROM competitive_queue_entries q WHERE q.realm_id=$1 AND q.mode=$2 AND q.status='queued' AND q.expires_at>now() AND q.character_id<>$3 AND q.rating BETWEEN $4 AND $5 AND NOT EXISTS(SELECT 1 FROM competitive_queue_entries own WHERE own.id=q.id AND own.account_id=$6) ORDER BY q.created_at,q.id LIMIT $7 FOR UPDATE SKIP LOCKED",
+        "SELECT q.id,q.character_id,q.account_id,q.rating FROM competitive_queue_entries q WHERE q.realm_id=$1 AND q.mode=$2 AND q.status='queued' AND q.expires_at>now() AND q.character_id<>$3 AND q.rating BETWEEN $4 AND $5 AND NOT EXISTS(SELECT 1 FROM competitive_queue_entries own WHERE own.id=q.id AND own.account_id=$6) AND q.id=(SELECT q0.id FROM competitive_queue_entries q0 WHERE q0.account_id=q.account_id AND q0.realm_id=q.realm_id AND q0.mode=q.mode AND q0.status='queued' AND q0.expires_at>now() ORDER BY q0.created_at,q0.id LIMIT 1) AND NOT EXISTS(SELECT 1 FROM character_blocks b WHERE (b.character_id=q.character_id AND b.blocked_character_id=$3) OR (b.character_id=$3 AND b.blocked_character_id=q.character_id)) ORDER BY q.created_at,q.id LIMIT $7 FOR UPDATE SKIP LOCKED",
         [hero.rows[0].realm_id,mode,characterId,Math.max(0,rating-500),Math.min(5000,rating+500),account.id,needed-1]);
       if (candidates.rowCount < needed-1) {
         await tx.query('COMMIT');
