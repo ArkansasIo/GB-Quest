@@ -178,7 +178,7 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
 
   if (queuePath && req.method === 'DELETE') {
     const characterId = queuePath[1];
-    await pool.query("UPDATE dungeon_queue_entries SET status='expired' WHERE character_id=$1 AND status='queued' AND expires_at<=now()", [characterId]);
+    await pool.query("UPDATE dungeon_queue_entries SET status='expired' WHERE character_id=$1 AND account_id=$2 AND status='queued' AND expires_at<=now()", [characterId, account.id]);
     const result = await pool.query(
       `UPDATE dungeon_queue_entries SET status='cancelled',cancelled_at=now()
         WHERE character_id=$1 AND account_id=$2 AND status='queued' RETURNING id`,
