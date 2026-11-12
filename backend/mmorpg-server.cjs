@@ -625,7 +625,9 @@ const server = http.createServer(async (req, res) => {
           FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
           WHERE u.character_id=$1 ORDER BY n.required_level,n.node_index`, [characterId])
       ]);
-      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows, talents: talents.rows });    if (url.pathname === '/api/talents' && req.method === 'GET') {
+      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows, talents: talents.rows });
+    }
+    if (url.pathname === '/api/talents' && req.method === 'GET') {
       const classId = String(url.searchParams.get('class') || '').toLowerCase();
       if (!['warrior','mage','ranger','cleric','rogue','adventurer'].includes(classId)) {
         return json(res, 400, { error: 'invalid_class' });
