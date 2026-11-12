@@ -40,10 +40,20 @@ All request/response bodies are JSON.
 | POST | /api/register | No | { username, password }; username 3–16 chars, password 10–72 |
 | POST | /api/login | No | { username, password }; returns bearer token |
 | GET | /api/me | Bearer | Account and characters |
-| GET | /api/characters | Bearer | Character list |
-| POST | /api/characters | Bearer | { name, class }; up to three characters |
+| GET | /api/characters | Bearer | Character list; optional `?realm=<id>` filter |
+| POST | /api/characters | Bearer | `{ name, class, realmId }`; up to three characters per realm |
 
-Allowed classes: warrior, mage, ranger, cleric, rogue, adventurer.
+Allowed jobs: warden, berserker, vanguard, strider, shade, ascetic, arcanist, wildblood, pactbound, cantor, chaplain, verdant, necromancer, summoner, sunwarden, runeblade, ronin, shinobi, bladedancer, wyrmlancer, corsair, beastcaller, puppeteer, dreadknight, voidhunter, scalesage and stormcaller. Character progression is level 1–720 using the browser game's XP thresholds; class feature progression remains distinct from the MMO's post-20 ascension levels.
+
+## Realm and direct-message APIs
+
+- `GET /api/regions` lists regions and their realms; `GET /api/realms?region=<id>` filters realms by region.
+- `POST /api/characters` accepts `{ name, class, realmId }`. The `class` field uses one of the 27 game jobs. Existing legacy classes are mapped during migration 009.
+- `GET /api/characters/:id/whispers?with=<peerCharacterId>&limit=50` reads recent same-realm direct messages and marks incoming messages as read.
+- `POST /api/characters/:id/whispers` accepts `{ toCharacterId, text }`. Messages are stored in PostgreSQL before live delivery, so offline recipients can read them later. Messages are limited to 180 characters and must stay within the same realm.
+- WebSocket `chat.send` with `channel: "whisper"` accepts a recipient character name. An unknown name returns `whisper_target_not_found`; offline characters are valid recipients.
+- WebSocket messages are processed sequentially per connection to prevent overlapping asynchronous database operations from reordering commands. More than 64 queued messages closes the connection.
+- Migration `009_jobs_level_720.sql` aligns PostgreSQL class validation and XP progression with the browser game. The server exposes `gbq_level_for_xp(bigint)` for the shared 1–720 XP curve.
 
 ## WebSocket protocol
 
