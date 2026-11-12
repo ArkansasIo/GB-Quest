@@ -38,7 +38,7 @@ test('trading overlay enforces secure remote API and WebSocket transports', () =
 
 test('trading panel styles and script are bundled into the one-file itch release', () => {
   assert.match(shell, /client\/trade-panel\.css/);
-  assert.match(build, /'player_hud', 'mmorpg-trade', 'debug'/);
+  assert.match(build, /'player_hud', 'mmorpg-account', 'mmorpg-trade', 'debug'/);
   assert.match(build, /name === 'mmorpg-trade' \? 'client\/mmorpg-trade\.js'/);
   assert.match(build, /client\/trade-panel\.css/);
   assert.match(page, /client\/mmorpg-trade\.js/);

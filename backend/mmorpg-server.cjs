@@ -609,7 +609,23 @@ const server = http.createServer(async (req, res) => {
         FROM characters c JOIN realms r ON r.id=c.realm_id
         WHERE c.id=$1 AND c.account_id=$2`, [characterId, acct.id]);
       if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
-    if (url.pathname === '/api/talents' && req.method === 'GET') {
+      const [inventory, quests, equipment, talents] = await Promise.all([
+        pool.query(`SELECT ci.id AS inventory_id,ci.item_id,ic.name,ic.description,ic.item_type,
+          ic.equip_slot,ic.level_required,ic.stats,ci.quantity,
+          (ce.inventory_id IS NOT NULL) AS equipped
+          FROM character_inventory ci JOIN item_catalog ic ON ic.id=ci.item_id
+          LEFT JOIN character_equipment ce ON ce.inventory_id=ci.id AND ce.character_id=ci.character_id
+          WHERE ci.character_id=$1 ORDER BY ic.item_type,ic.name`, [characterId]),
+        pool.query(`SELECT cq.quest_id,q.name,q.description,cq.status,cq.objective_progress,
+          q.objective_required,q.reward_xp,q.reward_gold,cq.accepted_at,cq.completed_at
+          FROM character_quests cq JOIN quest_catalog q ON q.id=cq.quest_id
+          WHERE cq.character_id=$1 ORDER BY cq.accepted_at DESC`, [characterId]),
+        pool.query('SELECT slot,inventory_id,equipped_at FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId]),
+        pool.query(`SELECT u.node_id,n.name,n.branch,n.node_type,n.description,n.effect,n.required_level,u.unlocked_at
+          FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
+          WHERE u.character_id=$1 ORDER BY n.required_level,n.node_index`, [characterId])
+      ]);
+      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows, talents: talents.rows });    if (url.pathname === '/api/talents' && req.method === 'GET') {
       const classId = String(url.searchParams.get('class') || '').toLowerCase();
       if (!['warrior','mage','ranger','cleric','rogue','adventurer'].includes(classId)) {
         return json(res, 400, { error: 'invalid_class' });
@@ -704,24 +720,6 @@ const server = http.createServer(async (req, res) => {
         await tx.query('ROLLBACK').catch(() => {});
         throw error;
       } finally { tx.release(); }
-    }
-      const [inventory, quests, equipment, talents] = await Promise.all([
-        pool.query(`SELECT ci.id AS inventory_id,ci.item_id,ic.name,ic.description,ic.item_type,
-          ic.equip_slot,ic.level_required,ic.stats,ci.quantity,
-          (ce.inventory_id IS NOT NULL) AS equipped
-          FROM character_inventory ci JOIN item_catalog ic ON ic.id=ci.item_id
-          LEFT JOIN character_equipment ce ON ce.inventory_id=ci.id AND ce.character_id=ci.character_id
-          WHERE ci.character_id=$1 ORDER BY ic.item_type,ic.name`, [characterId]),
-        pool.query(`SELECT cq.quest_id,q.name,q.description,cq.status,cq.objective_progress,
-          q.objective_required,q.reward_xp,q.reward_gold,cq.accepted_at,cq.completed_at
-          FROM character_quests cq JOIN quest_catalog q ON q.id=cq.quest_id
-          WHERE cq.character_id=$1 ORDER BY cq.accepted_at DESC`, [characterId]),
-        pool.query('SELECT slot,inventory_id,equipped_at FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId]),
-        pool.query(`SELECT u.node_id,n.name,n.branch,n.node_type,n.description,n.effect,n.required_level,u.unlocked_at
-          FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
-          WHERE u.character_id=$1 ORDER BY n.required_level,n.node_index`, [characterId])
-      ]);
-      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows, talents: talents.rows });
     }
     const attributeMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/attributes$/i);
     if (attributeMatch && req.method === 'POST') {
