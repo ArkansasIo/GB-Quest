@@ -12,6 +12,7 @@ const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
 const { isAllowedOrigin, corsHeaders, createAuthLimiter } = require('./mmorpg-security.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
+const { handleDungeonQueueRequest } = require('./dungeon-matchmaking.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -712,6 +713,7 @@ const server = http.createServer(async (req, res) => {
     catch { return json(res, 503, { ok: false, service: 'gbquest-mmorpg', database: 'unavailable' }); }
   }
   try {
+    if (await handleDungeonQueueRequest({ req, res, pool, accountFor, json, readBody })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
