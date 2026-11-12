@@ -26,7 +26,7 @@ test('whisper history is account-owned and constrained to the same realm', async
   assert.equal(await handleWhisperRequest(h), true);
   assert.equal(h.response.status, 200);
   assert.equal(h.response.body.messages[0].message, 'hello');
-  assert.equal(h.calls.length, 3);
+  assert.equal(h.calls.length, 4);
   assert.match(h.calls[1].sql, /realm_id/);
   assert.match(h.calls[2].sql, /read_at IS NULL/);
 });

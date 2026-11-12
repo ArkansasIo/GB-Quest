@@ -4,14 +4,19 @@
 const MESSAGE_TYPE = /^[a-z]+(?:_[a-z]+)*(?:\.[a-z]+(?:_[a-z]+)*)*$/;
 
 export class MultiplayerClient {
-  constructor({ onMessage = () => {}, onStatus = () => {}, WebSocketImpl = globalThis.WebSocket } = {}) {
+  constructor({ onMessage = () => {}, onStatus = () => {}, WebSocketImpl = globalThis.WebSocket, autoReconnect = false, reconnectDelayMs = 1000, maxReconnectDelayMs = 30000 } = {}) {
     this.onMessage = onMessage; this.onStatus = onStatus; this.WebSocketImpl = WebSocketImpl; this.socket = null; this.sequence = 0;
+    this.autoReconnect = autoReconnect; this.reconnectDelayMs = reconnectDelayMs; this.maxReconnectDelayMs = maxReconnectDelayMs;
+    this.reconnectAttempt = 0; this.reconnectTimer = null; this.intentionalClose = false;
+    this.lastConnection = null; this.selectedCharacterId = null;
   }
   connect(url, token) {
     if (!this.WebSocketImpl) throw new Error("WebSocket is not available in this runtime");
     if (!/^wss:\/\//.test(url) && !(/^ws:\/\//.test(url) && /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(new URL(url).host))) throw new TypeError("Multiplayer requires wss://, or ws:// on localhost for development");
     if (!token || typeof token !== "string") throw new TypeError("An authentication token is required");
     this.disconnect();
+    this.intentionalClose = false;
+    this.lastConnection = { url, token };
     const socket = new this.WebSocketImpl(url);
     this.socket = socket;
     this.onStatus("connecting");
@@ -27,10 +32,59 @@ export class MultiplayerClient {
       let message;
       try { message = JSON.parse(event.data); } catch { this.onStatus("invalid_message"); return; }
       if (!message || typeof message.type !== "string" || typeof message.sequence !== "number") return;
+      if (message.type === "authenticated") {
+        this.reconnectAttempt = 0;
+        if (this.selectedCharacterId) this.send("character.select", { characterId: this.selectedCharacterId });
+      }
       this.onMessage(message);
     });
-    socket.addEventListener("close", () => { if (current()) { this.socket = null; this.onStatus("disconnected"); } });
+    socket.addEventListener("close", event => {
+      if (!current()) return;
+      this.socket = null;
+      // Authentication failures and server-side rate limits cannot be fixed by retrying
+      // the same credentials. Stop the loop and require the caller to obtain a fresh token.
+      const permanentAuthFailure = event?.code === 4401 || event?.code === 4403;
+      const rateLimited = event?.code === 4429;
+      if (permanentAuthFailure) {
+        this.lastConnection = null;
+        this.selectedCharacterId = null;
+        this.reconnectAttempt = 0;
+        this.onStatus("authentication_required");
+        return;
+      }
+      if (rateLimited) {
+        this.lastConnection = null;
+        this.reconnectAttempt = 0;
+        this.onStatus("rate_limited");
+        return;
+      }
+      this.onStatus("disconnected");
+      if (this.autoReconnect && !this.intentionalClose && this.lastConnection) this.scheduleReconnect();
+    });
     socket.addEventListener("error", () => { if (current()) this.onStatus("error"); });
+  }
+  scheduleReconnect() {
+    if (this.reconnectTimer !== null || !this.lastConnection) return;
+    const delay = Math.min(this.maxReconnectDelayMs, this.reconnectDelayMs * 2 ** Math.min(this.reconnectAttempt++, 10));
+    this.onStatus("reconnecting");
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (!this.intentionalClose && this.lastConnection) this.connect(this.lastConnection.url, this.lastConnection.token);
+    }, delay);
+  }
+  attack(targetId, abilityNodeId = null) {
+    if (typeof targetId !== "string" || !targetId) throw new TypeError("A target ID is required");
+    const payload = { targetId };
+    if (abilityNodeId !== null && abilityNodeId !== undefined && abilityNodeId !== "") {
+      if (typeof abilityNodeId !== "string" || !/^[a-z0-9_]{1,80}$/i.test(abilityNodeId)) throw new TypeError("Invalid talent ability ID");
+      payload.abilityNodeId = abilityNodeId;
+    }
+    return this.send("combat.intent", payload);
+  }
+  selectCharacter(characterId) {
+    if (typeof characterId !== "string" || !/^[0-9a-f-]{36}$/i.test(characterId)) throw new TypeError("Invalid character ID");
+    this.selectedCharacterId = characterId;
+    return this.send("character.select", { characterId });
   }
   send(type, payload = {}) {
     if (!this.socket || this.socket.readyState !== 1) return false;
@@ -39,6 +93,8 @@ export class MultiplayerClient {
     return true;
   }
   disconnect() {
+    this.intentionalClose = true;
+    if (this.reconnectTimer !== null) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
     const socket = this.socket;
     if (!socket) return;
     this.socket = null; // detach first so the socket's own close event is not reported twice

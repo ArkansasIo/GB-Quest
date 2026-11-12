@@ -1,7 +1,8 @@
 import catalog from "../data/spells.json" with { type: "json" };
+import expansion from "../data/aelmoor-expansion.json" with { type: "json" };
 import { EXPANSION_SPELLS, SPELL_SCHOOLS, SPELL_TYPES } from "../data/spell-content.js";
 
-const spells = [...catalog.spells, ...EXPANSION_SPELLS];
+const spells = [...catalog.spells, ...EXPANSION_SPELLS, ...expansion.spells];
 const byId = new Map(spells.map(spell => [spell.id, spell]));
 const byName = new Map(spells.map(spell => [spell.name.toLowerCase(), spell]));
 
@@ -26,7 +27,7 @@ export function listSpells({ level = null, school = null, classId = null, subcla
 export function getSpellCatalogSummary() {
   return {
     total: spells.length,
-    originalExpansion: EXPANSION_SPELLS.length,
+    originalExpansion: EXPANSION_SPELLS.length + expansion.spells.length,
     cantrips: spells.filter(spell => spell.level === 0).length,
     leveled: spells.filter(spell => spell.level > 0).length,
     schools: [...new Set(spells.map(spell => spell.school))].sort(),

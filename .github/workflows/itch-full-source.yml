@@ -2,10 +2,11 @@ name: itch.io Full Source Package
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/mmorpg-server-systems]
     paths:
       - '**'
       - '!README.md'
+      - 'tools/package-itch-source.py'
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "title": "Lanterns of Aelmoor: MMO Expansion Catalog",
+  "levelCap": 720,
+  "regions": [
+    {
+      "id": "aelmoor-heartlands",
+      "name": "Aelmoor Heartlands",
+      "biome": "temperate",
+      "recommendedLevel": [
+        1,
+        120
+      ],
+      "zones": [
+        "Lanternfall Coast",
+        "Elderbloom Vale",
+        "Aelmoor Citadel"
+      ]
+    },
+    {
+      "id": "ashen-reach",
+      "name": "The Ashen Reach",
+      "biome": "volcanic",
+      "recommendedLevel": [
+        121,
+        260
+      ],
+      "zones": [
+        "Cinderwake",
+        "Obsidian March",
+        "The Sundered Kiln"
+      ]
+    },
+    {
+      "id": "frostveil",
+      "name": "Frostveil Expanse",
+      "biome": "arctic",
+      "recommendedLevel": [
+        261,
+        400
+      ],
+      "zones": [
+        "Whiteglass Tundra",
+        "Hollow Aurora",
+        "The Pale Observatory"
+      ]
+    },
+    {
+      "id": "umbral-deep",
+      "name": "The Umbral Deep",
+      "biome": "shadow",
+      "recommendedLevel": [
+        401,
+        560
+      ],
+      "zones": [
+        "Gloamwood",
+        "Black Lantern Fen",
+        "The Drowned Archive"
+      ]
+    },
+    {
+      "id": "astral-crown",
+      "name": "The Astral Crown",
+      "biome": "astral",
+      "recommendedLevel": [
+        561,
+        720
+      ],
+      "zones": [
+        "Starfall Steps",
+        "Eternity Scar",
+        "Crown of the First Light"
+      ]
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "rootvault",
+      "name": "Rootvault Hollows",
+      "level": 30,
+      "players": 5,
+      "bosses": 3,
+      "roles": [
+        "tank",
+        "healer",
+        "damage"
+      ]
+    },
+    {
+      "id": "glasskeep",
+      "name": "Glasskeep Bastion",
+      "level": 95,
+      "players": 5,
+      "bosses": 4,
+      "roles": [
+        "tank",
+        "healer",
+        "damage"
+      ]
+    },
+    {
+      "id": "cinderkiln",
+      "name": "The Cinder Kiln",
+      "level": 210,
+      "players": 5,
+      "bosses": 4,
+      "roles": [
+        "tank",
+        "healer",
+        "damage"
+      ]
+    },
+    {
+      "id": "pale-observatory",
+      "name": "Pale Observatory",
+      "level": 360,
+      "players": 5,
+      "bosses": 5,
+      "roles": [
+        "tank",
+        "healer",
+        "damage"
+      ]
+    },
+    {
+      "id": "drowned-archive",
+      "name": "Drowned Archive",
+      "level": 510,
+      "players": 5,
+      "bosses": 5,
+      "roles": [
+        "tank",
+        "healer",
+        "damage"
+      ]
+    }
+  ],
+  "raids": [
+    {
+      "id": "lanternfall",
+      "name": "Siege of Lanternfall",
+      "level": 120,
+      "players": 10,
+      "bosses": 3
+    },
+    {
+      "id": "star-eater",
+      "name": "The Star-Eater Engine",
+      "level": 420,
+      "players": 20,
+      "bosses": 5
+    },
+    {
+      "id": "aethernox",
+      "name": "Aethernox: Nexus of Eternity",
+      "level": 720,
+      "players": 20,
+      "bosses": 7
+    }
+  ],
+  "professions": [
+    {
+      "id": "blacksmithing",
+      "name": "Blacksmithing",
+      "gathers": [
+        "ore"
+      ],
+      "makes": [
+        "weapons",
+        "plate",
+        "mail"
+      ]
+    },
+    {
+      "id": "armorsmithing",
+      "name": "Armorsmithing",
+      "gathers": [
+        "ore",
+        "hide"
+      ],
+      "makes": [
+        "armor",
+        "shields"
+      ]
+    },
+    {
+      "id": "alchemy",
+      "name": "Alchemy",
+      "gathers": [
+        "herbs",
+        "crystals"
+      ],
+      "makes": [
+        "potions",
+        "elixirs"
+      ]
+    },
+    {
+      "id": "enchanting",
+      "name": "Enchanting",
+      "gathers": [
+        "essence"
+      ],
+      "makes": [
+        "enchants",
+        "runes"
+      ]
+    },
+    {
+      "id": "leatherworking",
+      "name": "Leatherworking",
+      "gathers": [
+        "hide",
+        "scales"
+      ],
+      "makes": [
+        "leather",
+        "cloth"
+      ]
+    },
+    {
+      "id": "cooking",
+      "name": "Cooking",
+      "gathers": [
+        "meat",
+        "plants"
+      ],
+      "makes": [
+        "food",
+        "feasts"
+      ]
+    },
+    {
+      "id": "engineering",
+      "name": "Engineering",
+      "gathers": [
+        "scrap",
+        "crystals"
+      ],
+      "makes": [
+        "gadgets",
+        "devices"
+      ]
+    },
+    {
+      "id": "jewelcrafting",
+      "name": "Jewelcrafting",
+      "gathers": [
+        "gems",
+        "ore"
+      ],
+      "makes": [
+        "gems",
+        "rings",
+        "amulets"
+      ]
+    }
+  ],
+  "guildUpgrades": [
+    {
+      "id": "guild-vault",
+      "name": "Expanded Vault",
+      "maxLevel": 5,
+      "costs": [
+        10000,
+        25000,
+        50000,
+        100000,
+        250000
+      ]
+    },
+    {
+      "id": "guild-banner",
+      "name": "War Banner",
+      "maxLevel": 3,
+      "costs": [
+        15000,
+        40000,
+        90000
+      ]
+    },
+    {
+      "id": "guild-hall",
+      "name": "Guild Hall",
+      "maxLevel": 5,
+      "costs": [
+        25000,
+        75000,
+        150000,
+        300000,
+        600000
+      ]
+    },
+    {
+      "id": "guild-portal",
+      "name": "Waygate Network",
+      "maxLevel": 3,
+      "costs": [
+        50000,
+        125000,
+        300000
+      ]
+    }
+  ],
+  "achievements": [
+    {
+      "id": "first-lantern",
+      "name": "First Lantern",
+      "points": 10,
+      "rewards": [
+        {
+          "category": "titles",
+          "id": "lantern-bearer"
+        }
+      ]
+    },
+    {
+      "id": "guild-founder",
+      "name": "Founding Charter",
+      "points": 25,
+      "rewards": [
+        {
+          "category": "appearances",
+          "id": "founder-crest"
+        }
+      ]
+    },
+    {
+      "id": "world-walker",
+      "name": "World Walker",
+      "points": 50,
+      "rewards": [
+        {
+          "category": "mounts",
+          "id": "mossback-stag"
+        }
+      ]
+    },
+    {
+      "id": "star-conqueror",
+      "name": "Star Conqueror",
+      "points": 100,
+      "rewards": [
+        {
+          "category": "titles",
+          "id": "star-conqueror"
+        }
+      ]
+    }
+  ],
+  "assets": {
+    "atlas": "assets/mmorpg/lanterns-of-aelmoor/expansion-atlas.svg",
+    "tileSize": 32,
+    "palette": [
+      "#101629",
+      "#27334b",
+      "#526b73",
+      "#8aa58a",
+      "#e6c16a",
+      "#f4e9c8",
+      "#b45b50",
+      "#7254a3"
+    ]
+  }
+}

@@ -191,9 +191,20 @@ body.full-window-mode .game-client, body.fullscreen-mode .game-client { position
 body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
 body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
 .game-viewport { position: relative; }
-.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
-.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
-body.game-rendered .game-start-fallback { display: none; }
+.game-start-fallback { position:absolute; z-index:20; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:22px; text-align:center; box-sizing:border-box; overflow:hidden; background:radial-gradient(ellipse at 50% 42%,#263b50 0%,#111c2b 42%,#05080e 100%); color:#f3e7ce; font:700 clamp(13px,2.4vw,22px)/1.35 Cinzel,Georgia,serif; letter-spacing:.11em; transition:opacity .65s ease,visibility .65s ease; }
+.game-start-fallback::before,.game-start-fallback::after { content:""; position:absolute; width:75%; height:1px; background:linear-gradient(90deg,transparent,#d9b66e,transparent); opacity:.7; }
+.game-start-fallback::before { top:12%; } .game-start-fallback::after { bottom:12%; }
+.boot-crest { width:clamp(62px,13vw,112px); aspect-ratio:1; display:grid; place-items:center; border:1px solid #d9b66e; border-radius:50%; box-shadow:0 0 0 6px #d9b66e18,0 0 34px #d9b66e33,inset 0 0 24px #d9b66e22; background:radial-gradient(circle,#273d53,#0b1421 70%); }
+.boot-crest svg { width:72%; height:72%; filter:drop-shadow(0 0 8px #d9b66e88); }
+.boot-title { max-width:760px; text-shadow:0 2px 20px #000; }
+.boot-subtitle { color:#d9b66e; font:600 clamp(11px,1.7vw,15px)/1.4 Cinzel,Georgia,serif; letter-spacing:.3em; }
+.boot-engine { margin-top:6px; color:#b8c8d9; font:700 10px/1.5 Inter,Arial,sans-serif; letter-spacing:.2em; }
+.boot-engine strong { color:#e9c77e; }
+.boot-progress { width:min(340px,78%); height:6px; border:1px solid #8d754c; border-radius:99px; padding:1px; background:#050a12; overflow:hidden; }
+.boot-progress-fill { height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#5b91c8,#e9c77e); box-shadow:0 0 12px #d9b66e99; transition:width .2s ease; }
+.boot-status { color:#d5dce4; font:10px/1.5 Inter,Arial,sans-serif; letter-spacing:.08em; }
+.boot-footer { color:#8fa1b7; font:8px/1.5 Inter,Arial,sans-serif; letter-spacing:.2em; }
+body.game-rendered .game-start-fallback { display:none; }
 .game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
 .game-viewport > .chat { display: flex; }
 body:not(.chat-on) .game-viewport > .chat { display: none; }
@@ -428,6 +439,28 @@ body.title-screen .game-viewport > #lcd {
   body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
 }
 
+/* Online account / realm gateway shown before server-backed hero creation. */
+.gbq-account-overlay{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:16px;background:rgba(2,5,10,.92);color:#f3ead6;font:13px/1.45 Inter,Arial,sans-serif}
+.gbq-account-window{width:min(560px,100%);max-height:92dvh;overflow:auto;border:1px solid #a48650;background:linear-gradient(145deg,#17222d,#080c12);box-shadow:0 22px 80px #000e,inset 0 0 0 3px #241b12;border-radius:5px}
+.gbq-account-window header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #66502e;background:linear-gradient(90deg,#283643,#0b1119)}
+.gbq-account-window header small,.gbq-account-window footer{color:#c4a66c;font-size:9px;letter-spacing:.14em}
+.gbq-account-window h2{margin:4px 0 0;color:#ffe1a0;font:700 20px Cinzel,Georgia,serif;letter-spacing:.07em}
+.gbq-account-window header button{width:34px;height:34px;border:1px solid #806b48;background:#151b22;color:#fff0c9;font-size:23px;cursor:pointer}
+.gbq-account-step{padding:18px 20px;display:grid;gap:13px}
+.gbq-account-step[hidden]{display:none}
+.gbq-account-step label{display:grid;gap:6px;color:#e6d4ad;font-size:10px;letter-spacing:.1em}
+.gbq-account-step input,.gbq-account-step select{width:100%;min-width:0;padding:11px;border:1px solid #65563f;border-radius:2px;background:#080e15;color:#fff4dd;font:13px Inter,Arial,sans-serif}
+.gbq-account-intro,.gbq-account-note,.gbq-account-realm-detail{margin:0;color:#c3cbd1;font-size:12px}
+.gbq-account-actions{display:flex;gap:9px;flex-wrap:wrap}
+.gbq-account-actions button,.gbq-account-secondary{padding:11px 13px;border:1px solid #927448;border-radius:2px;background:linear-gradient(#34414d,#151d26);color:#fff0ce;font:700 10px Cinzel,Georgia,serif;letter-spacing:.06em;cursor:pointer}
+.gbq-account-actions button:disabled{opacity:.45;cursor:not-allowed}
+.gbq-account-secondary{justify-self:start;background:transparent;color:#d2c4a8}
+.gbq-account-message{margin:14px 20px 0;padding:10px;border:1px solid #927448;background:#302719;color:#ffe2a3;font-size:12px}
+.gbq-account-message[hidden]{display:none}
+.gbq-account-message.is-error{border-color:#a64b43;background:#351714;color:#ffc1b7}
+.gbq-account-window footer{padding:12px 20px;border-top:1px solid #51432f}
+@media(max-width:560px){.gbq-account-overlay{padding:5px}.gbq-account-window{max-height:98dvh}.gbq-account-window header,.gbq-account-step{padding:13px}.gbq-account-window h2{font-size:16px}}
+
 /* BOOT SPLASH — compiled into both the browser build and the itch.io one-file release. */
 #gbq-boot-screen{position:fixed;z-index:100000;inset:0;display:grid;place-items:center;overflow:hidden;padding:24px;color:#ead9b2;background:radial-gradient(ellipse at 50% 38%,rgba(91,47,28,.42),transparent 44%),radial-gradient(ellipse at 50% 110%,rgba(98,57,25,.2),transparent 52%),linear-gradient(145deg,#090707 0%,#160e0c 48%,#050607 100%);opacity:1;visibility:visible;transition:opacity .8s ease,visibility .8s ease;font-family:var(--san-title,Cinzel,Georgia,serif)}
 #gbq-boot-screen:before,#gbq-boot-screen:after{content:"";position:absolute;pointer-events:none;inset:18px;border:1px solid rgba(196,151,81,.28)}
@@ -451,12 +484,11 @@ body.title-screen .game-viewport > #lcd {
 @keyframes gbq-boot-glow{0%,100%{filter:drop-shadow(0 0 10px rgba(218,164,81,.18));transform:scale(1)}50%{filter:drop-shadow(0 0 24px rgba(218,164,81,.42));transform:scale(1.025)}}
 @media(prefers-reduced-motion:reduce){#gbq-boot-screen *,#gbq-boot-screen:before,#gbq-boot-screen:after{animation:none!important;transition:none!important}}
 
+
 </style>
 <link rel="stylesheet" href="theme-citadel.css">
 <link rel="stylesheet" href="client/player-hud.css">
 <link rel="stylesheet" href="client/trade-panel.css">
-
-<aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 
 <section id="gbq-boot-screen" role="status" aria-live="polite" aria-label="GB Quest startup">
 <div class="gbq-boot-inner">
@@ -470,10 +502,17 @@ body.title-screen .game-viewport > #lcd {
 <div class="gbq-boot-load"><div class="gbq-boot-load-head"><span>Initializing Aelmoor</span><span id="gbq-boot-percent">8%</span></div><div class="gbq-boot-track" role="progressbar" aria-label="Game loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8" id="gbq-boot-bar"><div id="gbq-boot-progress"></div></div><div id="gbq-boot-status">Awakening the lanterns…</div></div>
 <button id="gbq-boot-retry" type="button">RETRY STARTUP</button>
 </div></section>
-
+<aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
   <div class="game-viewport">
     <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
+      <div class="boot-title">LOST KINGDOM OF SHADOWBANE CHRONICLES</div>
+      <div class="boot-subtitle">LANTERNS OF AELMOOR</div>
+      <div class="boot-engine">ARKANSAS-IO GAME ENGINE <strong>v2.5.0</strong></div>
+      <div class="boot-progress" role="progressbar" aria-label="Loading game assets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="boot-progress-fill" id="bootProgressFill"></div></div>
+      <div class="boot-status" id="bootStatus">INITIALIZING GAME SYSTEMS…</div>
+      <div class="boot-footer">DEVELOPED BY ARKANSASIO · ENGINE BUILD 1</div>
+    </div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
     <section class="chat" aria-label="In-game chat">
       <div class="chat-titlebar"><span>REALM CHAT · C</span><button type="button" id="chatHide" aria-label="Hide chat">×</button></div>

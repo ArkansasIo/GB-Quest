@@ -10,14 +10,24 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
-const { isAllowedOrigin, corsHeaders, createAuthLimiter } = require('./mmorpg-security.cjs');
+const { isAllowedOrigin, createCorsHeaders, createAuthLimiter, createRequestLimiter } = require('./mmorpg-security.cjs');
+const { handlePartyRequest } = require('./mmorpg-party-routes.cjs');
+const { handleGuildRequest } = require('./mmorpg-guild-routes.cjs');
+const { handleInstanceRequest } = require('./mmorpg-instance-routes.cjs');
+const { handleRaidRequest } = require('./mmorpg-raid-routes.cjs');
+const { handleRaidEncounterRequest } = require('./mmorpg-raid-encounter-routes.cjs');
+const { handleFriendRequest } = require('./mmorpg-friend-routes.cjs');
+const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-routes.cjs');
+const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
+const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
+const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
-const { handleDungeonQueueRequest } = require('./dungeon-matchmaking.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
 const DATABASE_URL = process.env.DATABASE_URL;
 const TOKEN_SECRET = process.env.GBQ_TOKEN_SECRET;
+const INTERNAL_SECRET = process.env.GBQ_INTERNAL_SECRET || '';
 const ALLOWED_ORIGINS = new Set((process.env.GBQ_ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean));
 const MAX_MESSAGE = 8192;
 const MAX_SOCKET_BUFFERED_BYTES = Number(process.env.GBQ_WS_MAX_BUFFERED_BYTES || 1048576);
@@ -25,6 +35,9 @@ const AUTH_TIMEOUT_MS = Number(process.env.GBQ_WS_AUTH_TIMEOUT_MS || 10000);
 const HEARTBEAT_INTERVAL_MS = Number(process.env.GBQ_WS_HEARTBEAT_MS || 30000);
 const TOKEN_TTL = 30 * 24 * 60 * 60;
 const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
+const JOB_IDS = new Set(['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller']);
+const LEGACY_CLASSES = new Set(['warrior','mage','ranger','cleric','rogue','adventurer']);
+const CHARACTER_CLASSES = new Set([...JOB_IDS, ...LEGACY_CLASSES]);
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
 if (!TOKEN_SECRET || TOKEN_SECRET.length < 32) throw new Error('GBQ_TOKEN_SECRET must contain at least 32 characters');
 
@@ -49,7 +62,7 @@ function verifyToken(token) {
   } catch { return null; }
 }
 const scrypt = (password, salt) => new Promise((resolve, reject) => crypto.scrypt(password, salt, 64, { N: 16384, r: 8, p: 1 }, (err, key) => err ? reject(err) : resolve(key)));
-const json = (res, status, data) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }); res.end(JSON.stringify(data)); };
+const json = (res, status, data) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY' }); res.end(JSON.stringify(data)); };
 async function readBody(req, max = 16384) {
   const chunks = []; let size = 0;
   for await (const chunk of req) { size += chunk.length; if (size > max) throw Object.assign(new Error('body_too_large'), { status: 413 }); chunks.push(chunk); }
@@ -70,88 +83,80 @@ async function accountFor(req) {
 }
 const sessions = new Map(); // accountId -> Set<WebSocket>
 const socketState = new WeakMap();
-function send(ws, type, payload = {}) {
-  const state = socketState.get(ws);
-  if (!state || state.closed || ws.readyState !== WebSocket.OPEN) return false;
-  if (ws.bufferedAmount > MAX_SOCKET_BUFFERED_BYTES) {
-    state.closed = true;
-    activeSockets.delete(ws);
-    ws.terminate();
-    return false;
+const SERVER_INSTANCE_ID = process.env.GBQ_SERVER_INSTANCE_ID || crypto.randomUUID();
+const PRESENCE_TTL_SECONDS = Math.max(30, Number(process.env.GBQ_PRESENCE_TTL_SECONDS || 45));
+const WORLD_EVENT_CHANNEL = 'gbquest_world_events';
+const socketIds = new WeakMap();
+function socketId(ws) {
+  let id = socketIds.get(ws);
+  if (!id) { id = crypto.randomUUID(); socketIds.set(ws, id); }
+  return id;
+}
+function publishWorldEvent(scope, realmId, zoneId, type, payload, characterId = null) {
+  const event = JSON.stringify({ origin: SERVER_INSTANCE_ID, scope, realmId, zoneId, type, payload, characterId });
+  if (Buffer.byteLength(event) > 7800) return;
+  pool.query('SELECT pg_notify($1, $2)', [WORLD_EVENT_CHANNEL, event])
+    .catch(error => console.error('World event publish failed:', error.message));
+}
+function deliverWorldEvent(event) {
+  for (const [ws, state] of activeSockets) {
+    if (!state.authenticated || !state.character) continue;
+    if (event.scope === 'realm' && state.realmId === event.realmId) send(ws, event.type, event.payload);
+    if (event.scope === 'zone' && state.realmId === event.realmId && state.zoneId === event.zoneId) send(ws, event.type, event.payload);
+    if (event.scope === 'character' && state.realmId === event.realmId && state.character.id === event.characterId) send(ws, event.type, event.payload);
   }
-  const packet = JSON.stringify({ type, sequence: ++state.outSequence, payload, serverTimestamp: Date.now() });
+}
+async function persistPresence(ws, state) {
+  if (!state.authenticated || !state.character || !state.realmId) return;
+  await pool.query(`INSERT INTO world_presence(socket_id,server_instance_id,character_id,realm_id,zone_id,expires_at)
+    VALUES($1,$2,$3,$4,$5,now()+($6 * interval '1 second'))
+    ON CONFLICT(socket_id) DO UPDATE SET server_instance_id=EXCLUDED.server_instance_id,
+    character_id=EXCLUDED.character_id,realm_id=EXCLUDED.realm_id,zone_id=EXCLUDED.zone_id,
+    expires_at=EXCLUDED.expires_at,updated_at=now()`,
+    [socketId(ws), SERVER_INSTANCE_ID, state.character.id, state.realmId, state.zoneId || 'unknown', PRESENCE_TTL_SECONDS]);
+}
+async function removePresence(ws) {
+  const id = socketIds.get(ws);
+  if (id) await pool.query('DELETE FROM world_presence WHERE socket_id=$1', [id]).catch(error => console.error('Presence cleanup failed:', error.message));
+}
+async function claimRealmPresence(ws, state, realm) {
+  const tx = await pool.connect();
   try {
-    ws.send(packet, error => {
-      if (error && !state.closed) {
-        state.closed = true;
-        activeSockets.delete(ws);
-        ws.terminate();
-      }
-    });
-    return true;
-  } catch {
-    state.closed = true;
-    activeSockets.delete(ws);
-    ws.terminate();
-    return false;
-  }
+    await tx.query('BEGIN');
+    await tx.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['gbquest:realm-capacity:' + realm.id]);
+    const count = await tx.query('SELECT count(*)::int AS n FROM world_presence WHERE realm_id=$1 AND expires_at>now() AND socket_id<>$2', [realm.id, socketId(ws)]);
+    const population = count.rows[0].n;
+    if (population >= realm.max_players) {
+      await tx.query('ROLLBACK');
+      return { allowed: false, population };
+    }
+    await tx.query(`INSERT INTO world_presence(socket_id,server_instance_id,character_id,realm_id,zone_id,expires_at)
+      VALUES($1,$2,$3,$4,$5,now()+($6 * interval '1 second'))
+      ON CONFLICT(socket_id) DO UPDATE SET server_instance_id=EXCLUDED.server_instance_id,
+      character_id=EXCLUDED.character_id,realm_id=EXCLUDED.realm_id,zone_id=EXCLUDED.zone_id,
+      expires_at=EXCLUDED.expires_at,updated_at=now()`,
+      [socketId(ws), SERVER_INSTANCE_ID, state.character.id, realm.id, state.zoneId || 'unknown', PRESENCE_TTL_SECONDS]);
+    await tx.query('COMMIT');
+    return { allowed: true, population: population + 1 };
+  } catch (error) {
+    await tx.query('ROLLBACK').catch(() => {});
+    throw error;
+  } finally { tx.release(); }
+}
+function send(ws, type, payload = {}) {
+  if (ws.readyState !== WebSocket.OPEN) return;
+  if (ws.bufferedAmount > MAX_SOCKET_BUFFERED_BYTES) { ws.close(1013, 'slow consumer'); return; }
+  const state = socketState.get(ws);
+  if (!state || state.closed) return;
+  ws.send(JSON.stringify({ type, sequence: ++state.outSequence, payload, serverTimestamp: Date.now() }));
 }
 function broadcastZone(realmId, zoneId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && state.zoneId === zoneId && ws !== except) send(ws, type, payload);
+  publishWorldEvent('zone', realmId, zoneId, type, payload);
 }
 function broadcastRealm(realmId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && ws !== except) send(ws, type, payload);
-}
-
-
-async function guildSnapshot(guildId) {
-  if (!guildId) return null;
-  const result=await pool.query(`SELECT g.id,g.name,g.realm_id,g.leader_character_id,g.created_at,
-    COALESCE(json_agg(json_build_object('characterId',c.id,'name',c.name,'level',c.level,
-      'rank',gm.rank,'joinedAt',gm.joined_at) ORDER BY gm.joined_at)
-      FILTER (WHERE c.id IS NOT NULL),'[]'::json) AS members
-    FROM guilds g JOIN guild_members gm ON gm.guild_id=g.id
-    JOIN characters c ON c.id=gm.character_id WHERE g.id=$1 GROUP BY g.id`,[guildId]);
-  return result.rows[0]||null;
-}
-function broadcastGuild(guildId,type,payload) {
-  for(const [peer,session] of activeSockets)
-    if(session.authenticated&&session.character&&session.guildId===guildId)
-      send(peer,type,payload);
-}
-async function setGuildForCharacter(ws,characterId) {
-  const state=socketState.get(ws);
-  const result=await pool.query('SELECT guild_id FROM guild_members WHERE character_id=$1',[characterId]);
-  state.guildId=result.rows[0]?.guild_id||null;
-  if(state.guildId) send(ws,'guild.snapshot',{guild:await guildSnapshot(state.guildId)});
-}
-async function partySnapshot(partyId) {
-  if (!partyId) return null;
-  const result = await pool.query(`
-    SELECT p.id,p.leader_character_id,p.realm_id,p.created_at,
-      COALESCE(json_agg(json_build_object(
-        'characterId',c.id,'name',c.name,'level',c.level,'class',c.class,
-        'role',pm.role,'joinedAt',pm.joined_at,
-        'online',EXISTS(SELECT 1 FROM (SELECT character_id FROM party_members) x WHERE x.character_id=c.id)
-      ) ORDER BY pm.joined_at) FILTER (WHERE c.id IS NOT NULL),'[]'::json) AS members
-    FROM parties p JOIN party_members pm ON pm.party_id=p.id
-    JOIN characters c ON c.id=pm.character_id
-    WHERE p.id=$1 GROUP BY p.id
-  `, [partyId]);
-  if (!result.rowCount) return null;
-  const party=result.rows[0];
-  const onlineIds=new Set([...activeSockets.values()].filter(x=>x.authenticated&&x.character&&x.partyId===partyId).map(x=>x.character.id));
-  party.members=party.members.map(member=>({...member,online:onlineIds.has(member.characterId)}));
-  return party;
-}
-function broadcastParty(partyId,type,payload,except=null) {
-  for (const [ws,state] of activeSockets) if(state.authenticated&&state.character&&state.partyId===partyId&&ws!==except) send(ws,type,payload);
-}
-async function setPartyForCharacter(ws, characterId) {
-  const state=socketState.get(ws);
-  const result=await pool.query('SELECT party_id FROM party_members WHERE character_id=$1',[characterId]);
-  state.partyId=result.rows[0]?.party_id||null;
-  if(state.partyId) send(ws,'party.snapshot',{party:await partySnapshot(state.partyId)});
+  publishWorldEvent('realm', realmId, null, type, payload);
 }
 // ---------------------------------------------------------------- regions & realms
 let REALM_CACHE = { regions: [], realms: [], at: 0 };
@@ -166,6 +171,58 @@ async function realmData(force) {
 }
 const realmPopulation = realmId => { let n = 0; for (const [, s] of activeSockets) if (s.authenticated && s.character && s.realmId === realmId) n++; return n; };
 const realmLoad = (pop, max) => pop >= max ? 'FULL' : pop >= max * 0.75 ? 'HIGH' : pop >= max * 0.35 ? 'MEDIUM' : 'LOW';
+
+let WORLD_STATUS_CACHE = { at: 0, value: null };
+async function worldStatus(force = false) {
+  if (!force && WORLD_STATUS_CACHE.value && Date.now() - WORLD_STATUS_CACHE.at < 15000) return WORLD_STATUS_CACHE.value;
+  const rd = await realmData();
+  const [presence, totals, peak] = await Promise.all([
+    pool.query(`SELECT realm_id,zone_id,count(*)::int AS players FROM world_presence WHERE expires_at>now() GROUP BY realm_id,zone_id`),
+    pool.query('SELECT (SELECT count(*)::int FROM accounts WHERE disabled=false) AS accounts, (SELECT count(*)::int FROM characters) AS characters'),
+    pool.query('SELECT peak_concurrent, peak_at FROM world_population_peak WHERE id=true')
+  ]);
+  const liveByRealm = new Map(), liveByZone = new Map();
+  for (const row of presence.rows) {
+    liveByRealm.set(row.realm_id, (liveByRealm.get(row.realm_id) || 0) + row.players);
+    liveByZone.set(row.realm_id + ':' + row.zone_id, row.players);
+  }
+  const realms = rd.realms.map(r => ({
+    id: r.id, name: r.name, regionId: r.region_id, type: r.realm_type, status: r.status,
+    onlinePlayers: liveByRealm.get(r.id) || 0, capacity: r.max_players,
+    utilization: Math.round(((liveByRealm.get(r.id) || 0) / r.max_players) * 1000) / 10
+  }));
+  const regions = rd.regions.map(region => {
+    const list = realms.filter(r => r.regionId === region.id);
+    return { id: region.id, name: region.name, tag: region.tag, status: region.status,
+      onlinePlayers: list.reduce((n, r) => n + r.onlinePlayers, 0),
+      capacity: list.filter(r => r.status === 'online').reduce((n, r) => n + r.capacity, 0),
+      realms: list };
+  });
+  const onlinePlayers = realms.reduce((n, r) => n + r.onlinePlayers, 0);
+  const capacity = realms.filter(r => r.status === 'online').reduce((n, r) => n + r.capacity, 0);
+  const zonePopulation = [...liveByZone.entries()].map(([key, players]) => {
+    const [realmId, zoneId] = key.split(':');
+    return { realmId, zoneId, onlinePlayers: players };
+  }).sort((a, b) => b.onlinePlayers - a.onlinePlayers);
+  const currentPeak = Number(peak.rows[0]?.peak_concurrent || 0);
+  const peakConcurrent = Math.max(currentPeak, onlinePlayers);
+  if (onlinePlayers > currentPeak) {
+    await pool.query(`INSERT INTO world_population_peak(id,peak_concurrent,peak_at) VALUES(true,$1,now())
+      ON CONFLICT(id) DO UPDATE SET peak_concurrent=GREATEST(world_population_peak.peak_concurrent,EXCLUDED.peak_concurrent),
+      peak_at=CASE WHEN EXCLUDED.peak_concurrent > world_population_peak.peak_concurrent THEN EXCLUDED.peak_at ELSE world_population_peak.peak_at END`, [onlinePlayers]);
+  }
+  const value = {
+    generatedAt: new Date().toISOString(), scope: 'all_instances_shared_presence',
+    onlinePlayers, capacity, utilization: capacity ? Math.round((onlinePlayers / capacity) * 1000) / 10 : 0,
+    peakConcurrent, peakAt: peak.rows[0]?.peak_at || null,
+    registeredAccounts: totals.rows[0].accounts, characters: totals.rows[0].characters,
+    regions, zones: zonePopulation,
+    scaling: { mode: 'postgres_shared_presence', distributedPresence: true, eventBus: 'postgresql_listen_notify', instanceId: SERVER_INSTANCE_ID, note: 'Counts and zone/realm events are shared across service instances through PostgreSQL presence leases and LISTEN/NOTIFY. PostgreSQL NOTIFY is best-effort transient delivery, not a durable message queue.' }
+  };
+  WORLD_STATUS_CACHE = { at: Date.now(), value };
+  return value;
+}
+
 function realmView(r, counts = {}) {
   const population = realmPopulation(r.id);
   return { id: r.id, regionId: r.region_id, name: r.name, type: r.realm_type, pvp: r.realm_type === 'PvP', status: r.status,
@@ -185,21 +242,26 @@ async function optionalAccount(req) {
   const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
   return r.rowCount ? r.rows[0] : null;
 }
-const CHAR_COLS = 'id,name,class,species,background,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp';
+const CHAR_COLS = 'id,name,class,species,background,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes,specialization_id';
 const PER_REALM_CHARACTERS = 3, PER_ACCOUNT_CHARACTERS = 12;
 const activeSockets = new Map();
 const authLimiter = createAuthLimiter();
+const requestLimiter = createRequestLimiter({
+  limit: Number(process.env.GBQ_API_WRITE_LIMIT || 90),
+  windowMs: Number(process.env.GBQ_API_WRITE_WINDOW_MS || 60000)
+});
 const authThrottled = ip => authLimiter.blocked(ip);
 const recordAuthFailure = ip => authLimiter.fail(ip);
 setInterval(() => authLimiter.sweep(), 600000).unref();
+setInterval(() => requestLimiter.sweep(), 60000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
-  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, partyId: null, guildId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
+  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
+  ws.isAlive = true;
+  ws.on('pong', () => { state.alive = true; ws.isAlive = true; });
   socketState.set(ws, state); activeSockets.set(ws, state);
-  state.authTimer = setTimeout(() => {
-    if (!state.authenticated && !state.closed) ws.close(4408, 'authentication timeout');
-  }, AUTH_TIMEOUT_MS);
-  state.authTimer.unref();
+  state.authTimer = setTimeout(() => { if (!state.authenticated && !state.closed) ws.close(4408, 'authentication timeout'); }, AUTH_TIMEOUT_MS);
+  state.authTimer.unref?.();
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
   const messageQueue = createSocketMessageQueue(async raw => {
     if (state.closed) return;
@@ -229,19 +291,24 @@ function attachSocket(ws, req) {
         const result = await pool.query(`SELECT ${CHAR_COLS} FROM characters WHERE id=$1 AND account_id=$2`, [id, state.account.id]);
         if (!result.rowCount) return send(ws, 'error', { code: 'character_not_found' });
         const ch = result.rows[0], rd = await realmData(), realm = rd.realms.find(r => r.id === ch.realm_id);
-        const alreadyOnline = [...activeSockets.entries()].some(([other, active]) =>
-          other !== ws && !active.closed && active.authenticated && active.character && active.character.id === ch.id);
-        if (alreadyOnline) return send(ws, 'error', { code: 'character_already_online', characterId: ch.id });
         if (!realm) return send(ws, 'error', { code: 'realm_not_found', realmId: ch.realm_id });
         if (realm.status !== 'online') return send(ws, 'error', { code: 'realm_unavailable', realmId: realm.id, status: realm.status });
         const switchingWithin = state.realmId === realm.id && state.character;
-        if (!switchingWithin && realmPopulation(realm.id) >= realm.max_players) return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: realmPopulation(realm.id), maxPlayers: realm.max_players });
-        const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, id: state.character.id } : null;
+        const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, character: state.character, x: state.x, y: state.y } : null;
         state.character = ch; state.realmId = ch.realm_id; state.zoneId = ch.zone_id; state.x = ch.x; state.y = ch.y;
-        await setPartyForCharacter(ws, ch.id);
-        await setGuildForCharacter(ws, ch.id);
-        if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
-        const players = [...activeSockets.entries()].filter(([other, s]) => other !== ws && s.authenticated && s.character && s.realmId === state.realmId && s.zoneId === state.zoneId).map(([, s]) => ({ id: s.character.id, name: s.character.name, level: s.character.level, x: s.x, y: s.y }));
+        const admission = await claimRealmPresence(ws, state, realm);
+        if (!admission.allowed) {
+          state.character = previous?.character || null;
+          state.realmId = previous?.realmId || null; state.zoneId = previous?.zoneId || null;
+          state.x = previous?.x ?? 8; state.y = previous?.y ?? 8;
+          return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: admission.population, maxPlayers: realm.max_players });
+        }
+        if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.character.id }, ws);
+        const sharedPlayers = await pool.query(`SELECT DISTINCT ON (p.character_id) p.character_id AS id,c.name,c.level,c.x,c.y
+          FROM world_presence p JOIN characters c ON c.id=p.character_id
+          WHERE p.realm_id=$1 AND p.zone_id=$2 AND p.expires_at>now() AND p.socket_id<>$3
+          ORDER BY p.character_id,p.updated_at DESC`, [state.realmId, state.zoneId, socketId(ws)]);
+        const players = sharedPlayers.rows;
         const mobs = await pool.query('SELECT id,name,level,x,y,hp,max_hp FROM world_mobs WHERE realm_id=$1 AND zone_id=$2 AND alive=true ORDER BY id', [state.realmId, state.zoneId]);
         send(ws, 'zone.snapshot', { realm: realmView(realm), zoneId: state.zoneId, self: { ...state.character, x: state.x, y: state.y }, players, mobs: mobs.rows });
         broadcastZone(state.realmId, state.zoneId, 'presence.joined', { id: state.character.id, name: state.character.name, level: state.character.level, x: state.x, y: state.y }, ws);
@@ -257,8 +324,8 @@ function attachSocket(ws, req) {
         if (!dx && !dy) return;
         const nx = Math.max(0, Math.min(WORLD.width - 1, state.x + dx));
         const ny = Math.max(0, Math.min(WORLD.height - 1, state.y + dy));
-        await pool.query('UPDATE characters SET x=$1,y=$2,updated_at=now() WHERE id=$3 AND account_id=$4', [nx, ny, state.character.id, state.account.id]);
         state.x = nx; state.y = ny;
+        await pool.query('UPDATE characters SET x=$1,y=$2,updated_at=now() WHERE id=$3', [nx, ny, state.character.id]);
         const update = { characterId: state.character.id, x: nx, y: ny, zoneId: state.zoneId };
         send(ws, 'movement.accepted', update); broadcastZone(state.realmId, state.zoneId, 'presence.moved', update, ws);
         return;
@@ -276,15 +343,62 @@ function attachSocket(ws, req) {
           const mob = target.rows[0];
           const distance = Math.abs(state.x - Number(mob.x)) + Math.abs(state.y - Number(mob.y));
           if (distance > 3) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_out_of_range' }); }
-          const damage = Math.max(1, Math.min(999, 4 + state.character.level * 2 + crypto.randomInt(0, 7)));
+          const characterResult = await tx.query(`SELECT id,class,level,allocated_attributes,specialization_id,mp,max_mp
+            FROM characters WHERE id=$1 AND account_id=$2 FOR UPDATE`, [state.character.id, state.account.id]);
+          if (!characterResult.rowCount) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'character_not_found' }); }
+          const combatCharacter = characterResult.rows[0];
+          const unlockedResult = await tx.query(`SELECT n.id,n.node_type,n.effect,n.name
+            FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
+            WHERE u.character_id=$1`, [combatCharacter.id]);
+          const unlockedNodes = unlockedResult.rows;
+          const abilityId = String(msg.payload.abilityNodeId || '');
+          let ability = null, manaSpent = 0;
+          if (abilityId) {
+            ability = unlockedNodes.find(node => node.id === abilityId);
+            if (!ability || !['active','ultimate'].includes(ability.node_type)) {
+              await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'ability_not_unlocked_or_not_active' });
+            }
+            manaSpent = Math.max(0, Number(ability.effect?.manaCost || 0));
+            if (Number(combatCharacter.mp) < manaSpent) {
+              await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'insufficient_mana', required: manaSpent, current: Number(combatCharacter.mp) });
+            }
+            const cooldownSeconds = Math.max(0, Math.min(3600, Number(ability.effect?.cooldownSeconds || 0)));
+            if (cooldownSeconds > 0) {
+              const cooldown = await tx.query(`SELECT GREATEST(1,CEIL(EXTRACT(EPOCH FROM (ready_at-now())))::int) AS remaining
+                FROM character_talent_cooldowns WHERE character_id=$1 AND node_id=$2 AND ready_at>now()`,
+                [combatCharacter.id, ability.id]);
+              if (cooldown.rowCount) {
+                await tx.query('ROLLBACK');
+                return send(ws, 'error', { code: 'ability_on_cooldown', retryAfterSeconds: cooldown.rows[0].remaining });
+              }
+            }
+          }
+          const primaryAttribute = ({ warrior: 'str', mage: 'int', ranger: 'dex', cleric: 'wis', rogue: 'dex', adventurer: 'con' })[combatCharacter.class] || 'str';
+          const primaryBonus = Math.min(50, Math.max(0, Number(combatCharacter.allocated_attributes?.[primaryAttribute] || 0)) * 2);
+          const passiveBonus = Math.min(25, unlockedNodes.filter(node => node.node_type === 'passive')
+            .reduce((sum, node) => sum + Math.max(0, Number(node.effect?.damageBonus || 0)), 0));
+          const baseDamage = 4 + Math.min(20, Number(combatCharacter.level) || 1) * 2 + primaryBonus + passiveBonus + crypto.randomInt(0, 7);
+          const multiplier = ability ? Math.max(1, Math.min(4, Number(ability.effect?.damageMultiplier || 1))) : 1;
+          const damage = Math.max(1, Math.min(999, Math.floor(baseDamage * multiplier)));
+          if (manaSpent) await tx.query('UPDATE characters SET mp=mp-$1,updated_at=now() WHERE id=$2', [manaSpent, combatCharacter.id]);
+          if (ability) {
+            const cooldownSeconds = Math.max(0, Math.min(3600, Number(ability.effect?.cooldownSeconds || 0)));
+            if (cooldownSeconds > 0) {
+              await tx.query(`INSERT INTO character_talent_cooldowns(character_id,node_id,ready_at)
+                VALUES($1,$2,now()+($3 * interval '1 second'))
+                ON CONFLICT(character_id,node_id) DO UPDATE SET ready_at=EXCLUDED.ready_at,updated_at=now()`,
+                [combatCharacter.id, ability.id, cooldownSeconds]);
+            }
+          }
           const hp = Math.max(0, mob.hp - damage);
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
-          event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id };
+          event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id, ability: ability ? { id: ability.id, name: ability.name, type: ability.node_type } : null, manaSpent, passiveDamageBonus: passiveBonus };
           if (hp === 0) {
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
             const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
-              level=GREATEST(level,gbq_level_for_xp(xp+$1)),
+              level=GREATEST(level,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)),
+              talent_points=LEAST(1000,talent_points+GREATEST(0,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)-level)),
               gold=gold+$2,updated_at=now() WHERE id=$3 RETURNING xp,level,gold`, [xp, baseGold, state.character.id]);
             state.character.level = progress.rows[0].level;
             const questUpdates = await tx.query(`UPDATE character_quests cq
@@ -304,7 +418,8 @@ function attachSocket(ws, req) {
             }
             if (questXp || questGold) {
               const questPayout = await tx.query(`UPDATE characters SET xp=xp+$1,gold=gold+$2,
-                level=GREATEST(level,gbq_level_for_xp(xp+$1)),updated_at=now()
+                level=GREATEST(level,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)),
+                talent_points=LEAST(1000,talent_points+GREATEST(0,(SELECT MAX(candidate.level) FROM generate_series(1,720) AS candidate(level) WHERE gbq_xp_for_level(candidate.level)<=xp+$1)-level)),updated_at=now()
                 WHERE id=$3 RETURNING xp,level,gold`, [questXp, questGold, state.character.id]);
               progress.rows[0] = questPayout.rows[0];
               state.character.level = questPayout.rows[0].level;
@@ -334,342 +449,49 @@ function attachSocket(ws, req) {
         if (reward) send(ws, 'loot.reward', reward);
         return;
       }
-
-
-      if (msg.type === 'guild.create') {
-        if(state.guildId) return send(ws,'error',{code:'already_in_guild'});
-        const name=String(msg.payload.name||'').trim();
-        if(!/^[A-Za-z0-9][A-Za-z0-9 '-]{1,30}[A-Za-z0-9]$/.test(name))
-          return send(ws,'error',{code:'invalid_guild_name'});
-        const tx=await pool.connect(); let guildId;
-        try {
-          await tx.query('BEGIN');
-          const g=await tx.query('INSERT INTO guilds(realm_id,name,leader_character_id) VALUES($1,$2,$3) RETURNING id',
-            [state.realmId,name,state.character.id]);
-          guildId=g.rows[0].id;
-          await tx.query("INSERT INTO guild_members(guild_id,character_id,rank) VALUES($1,$2,'leader')",
-            [guildId,state.character.id]);
-          await tx.query('INSERT INTO guild_bank_balances(guild_id,gold) VALUES($1,0)',[guildId]);
-          await tx.query('COMMIT');
-        } catch(e) {
-          await tx.query('ROLLBACK').catch(()=>{});
-          if(e.code==='23505') return send(ws,'error',{code:'guild_name_or_membership_taken'});
-          throw e;
-        } finally {tx.release();}
-        state.guildId=guildId;
-        send(ws,'guild.snapshot',{guild:await guildSnapshot(guildId)});
-        return;
-      }
-
-      if(msg.type==='guild.bank.balance') {
-        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
-        const member=await pool.query('SELECT 1 FROM guild_members WHERE guild_id=$1 AND character_id=$2',
-          [state.guildId,state.character.id]);
-        if(!member.rowCount) {state.guildId=null;return send(ws,'error',{code:'not_in_guild'});}
-        const balance=await pool.query('SELECT gold FROM guild_bank_balances WHERE guild_id=$1',[state.guildId]);
-        send(ws,'guild.bank.balance',{guildId:state.guildId,gold:balance.rows[0]?.gold||'0'});
-        return;
-      }
-      if(msg.type==='guild.bank.deposit'||msg.type==='guild.bank.withdraw') {
-        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
-        const action=msg.type.endsWith('deposit')?'deposit':'withdraw';
-        const raw=String(msg.payload.amount??'');
-        if(!/^[1-9][0-9]{0,17}$/.test(raw)) return send(ws,'error',{code:'invalid_guild_bank_amount'});
-        const amount=BigInt(raw);
-        const tx=await pool.connect(); let walletGold,guildGold;
-        try {
-          await tx.query('BEGIN');
-          const member=await tx.query('SELECT rank FROM guild_members WHERE guild_id=$1 AND character_id=$2 FOR UPDATE',
-            [state.guildId,state.character.id]);
-          if(!member.rowCount) {await tx.query('ROLLBACK');state.guildId=null;return send(ws,'error',{code:'not_in_guild'});}
-          if(action==='withdraw'&&!['leader','officer'].includes(member.rows[0].rank)) {
-            await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_bank_withdraw_permission_denied'});
-          }
-          const wallet=await tx.query('SELECT gold FROM characters WHERE id=$1 FOR UPDATE',[state.character.id]);
-          const vault=await tx.query('SELECT gold FROM guild_bank_balances WHERE guild_id=$1 FOR UPDATE',[state.guildId]);
-          if(!wallet.rowCount||!vault.rowCount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_bank_unavailable'});}
-          const walletBefore=BigInt(wallet.rows[0].gold),vaultBefore=BigInt(vault.rows[0].gold);
-          if(action==='deposit'&&walletBefore<amount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'insufficient_wallet_gold'});}
-          if(action==='withdraw'&&vaultBefore<amount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'insufficient_guild_gold'});}
-          walletGold=action==='deposit'?walletBefore-amount:walletBefore+amount;
-          guildGold=action==='deposit'?vaultBefore+amount:vaultBefore-amount;
-          await tx.query('UPDATE characters SET gold=$1,updated_at=now() WHERE id=$2',[walletGold.toString(),state.character.id]);
-          await tx.query('UPDATE guild_bank_balances SET gold=$1,updated_at=now() WHERE guild_id=$2',[guildGold.toString(),state.guildId]);
-          await tx.query(`INSERT INTO guild_bank_transactions(guild_id,character_id,action,amount,wallet_gold_after,guild_gold_after)
-            VALUES($1,$2,$3,$4,$5,$6)`,
-            [state.guildId,state.character.id,action,amount.toString(),walletGold.toString(),guildGold.toString()]);
-          await tx.query('COMMIT');
-        } catch(e) {await tx.query('ROLLBACK').catch(()=>{});throw e;}
-        finally {tx.release();}
-        send(ws,'guild.bank.result',{guildId:state.guildId,action,amount:amount.toString(),
-          walletGold:walletGold.toString(),guildGold:guildGold.toString()});
-        broadcastGuild(state.guildId,'guild.bank.updated',{guildId:state.guildId,guildGold:guildGold.toString(),action});
-        return;
-      }
-      if(msg.type==='guild.invite') {
-        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
-        const member=await pool.query('SELECT rank FROM guild_members WHERE guild_id=$1 AND character_id=$2',
-          [state.guildId,state.character.id]);
-        if(!member.rowCount||!['leader','officer'].includes(member.rows[0].rank))
-          return send(ws,'error',{code:'guild_officer_required'});
-        const name=String(msg.payload.to||'').trim();
-        if(!name||name.length>16) return send(ws,'error',{code:'invalid_guild_target'});
-        const target=await pool.query('SELECT id FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)',
-          [state.realmId,name]);
-        if(!target.rowCount) return send(ws,'error',{code:'guild_target_not_found'});
-        const id=target.rows[0].id;
-        if(id===state.character.id) return send(ws,'error',{code:'cannot_invite_self'});
-        const existing=await pool.query('SELECT guild_id FROM guild_members WHERE character_id=$1',[id]);
-        if(existing.rowCount) return send(ws,'error',{code:'guild_target_already_grouped'});
-        const invite=await pool.query(`INSERT INTO guild_invites(guild_id,inviter_character_id,invitee_character_id,expires_at)
-          VALUES($1,$2,$3,now()+interval '24 hours')
-          ON CONFLICT(guild_id,invitee_character_id) WHERE status='pending'
-          DO UPDATE SET inviter_character_id=EXCLUDED.inviter_character_id,expires_at=EXCLUDED.expires_at,created_at=now()
-          RETURNING id,expires_at`,[state.guildId,state.character.id,id]);
-        const invitation={id:invite.rows[0].id,guildId:state.guildId,from:state.character.name,expiresAt:invite.rows[0].expires_at};
-        for(const [peer,session] of activeSockets) if(session.character?.id===id) send(peer,'guild.invited',invitation);
-        send(ws,'guild.invite_sent',{invitation});
-        return;
-      }
-      if(msg.type==='guild.accept') {
-        if(state.guildId) return send(ws,'error',{code:'already_in_guild'});
-        const id=String(msg.payload.invitationId||'');
-        if(!/^[0-9a-f-]{36}$/i.test(id)) return send(ws,'error',{code:'invalid_guild_invitation'});
-        const tx=await pool.connect(); let guildId;
-        try {
-          await tx.query('BEGIN');
-          const invite=await tx.query(`SELECT i.guild_id,g.realm_id FROM guild_invites i JOIN guilds g ON g.id=i.guild_id
-            WHERE i.id=$1 AND i.invitee_character_id=$2 AND i.status='pending' AND i.expires_at>now()
-            FOR UPDATE OF i,g`,[id,state.character.id]);
-          if(!invite.rowCount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_invitation_expired'});}
-          guildId=invite.rows[0].guild_id;
-          if(invite.rows[0].realm_id!==state.realmId) {await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_realm_mismatch'});}
-          await tx.query("INSERT INTO guild_members(guild_id,character_id,rank) VALUES($1,$2,'member')",
-            [guildId,state.character.id]);
-          await tx.query("UPDATE guild_invites SET status='accepted',responded_at=now() WHERE id=$1",[id]);
-          await tx.query("UPDATE guild_invites SET status='expired',responded_at=now() WHERE invitee_character_id=$1 AND status='pending' AND id<>$2",
-            [state.character.id,id]);
-          await tx.query('COMMIT');
-        } catch(e) {
-          await tx.query('ROLLBACK').catch(()=>{});
-          if(e.code==='23505') return send(ws,'error',{code:'already_in_guild'});
-          throw e;
-        } finally {tx.release();}
-        state.guildId=guildId;
-        broadcastGuild(guildId,'guild.updated',{guild:await guildSnapshot(guildId)});
-        return;
-      }
-      if(msg.type==='guild.leave') {
-        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
-        const guildId=state.guildId;
-        const tx=await pool.connect();
-        try {
-          await tx.query('BEGIN');
-          const guild=await tx.query('SELECT leader_character_id FROM guilds WHERE id=$1 FOR UPDATE',[guildId]);
-          await tx.query('DELETE FROM guild_members WHERE guild_id=$1 AND character_id=$2',[guildId,state.character.id]);
-          if(guild.rowCount&&guild.rows[0].leader_character_id===state.character.id) {
-            const next=await tx.query(`SELECT character_id FROM guild_members WHERE guild_id=$1
-              ORDER BY CASE WHEN rank='officer' THEN 0 ELSE 1 END,joined_at,character_id LIMIT 1`,[guildId]);
-            if(next.rowCount) {
-              await tx.query('UPDATE guilds SET leader_character_id=$1 WHERE id=$2',[next.rows[0].character_id,guildId]);
-              await tx.query("UPDATE guild_members SET rank='leader' WHERE guild_id=$1 AND character_id=$2",
-                [guildId,next.rows[0].character_id]);
-            } else await tx.query('DELETE FROM guilds WHERE id=$1',[guildId]);
-          }
-          await tx.query('COMMIT');
-        } catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;} finally {tx.release();}
-        state.guildId=null;
-        broadcastGuild(guildId,'guild.updated',{guild:await guildSnapshot(guildId)});
-        send(ws,'guild.left',{guildId});
-        return;
-      }
-      if(msg.type==='guild.rank') {
-        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
-        const rank=String(msg.payload.rank||'');
-        const targetId=String(msg.payload.characterId||'');
-        if(!['officer','member'].includes(rank)||!/^[0-9a-f-]{36}$/i.test(targetId)||targetId===state.character.id)
-          return send(ws,'error',{code:'invalid_guild_rank'});
-        const leader=await pool.query('SELECT leader_character_id FROM guilds WHERE id=$1',[state.guildId]);
-        if(!leader.rowCount||leader.rows[0].leader_character_id!==state.character.id)
-          return send(ws,'error',{code:'guild_leader_required'});
-        const changed=await pool.query("UPDATE guild_members SET rank=$1 WHERE guild_id=$2 AND character_id=$3 AND rank<>'leader' RETURNING character_id",
-          [rank,state.guildId,targetId]);
-        if(!changed.rowCount) return send(ws,'error',{code:'guild_member_not_found'});
-        broadcastGuild(state.guildId,'guild.updated',{guild:await guildSnapshot(state.guildId)});
-        return;
-      }
-      if(msg.type==='guild.kick') {
-        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
-        const targetId=String(msg.payload.characterId||'');
-        if(!/^[0-9a-f-]{36}$/i.test(targetId)||targetId===state.character.id)
-          return send(ws,'error',{code:'invalid_guild_target'});
-        const actor=await pool.query('SELECT rank FROM guild_members WHERE guild_id=$1 AND character_id=$2',
-          [state.guildId,state.character.id]);
-        if(!actor.rowCount||!['leader','officer'].includes(actor.rows[0].rank))
-          return send(ws,'error',{code:'guild_officer_required'});
-        const removed=await pool.query(`DELETE FROM guild_members WHERE guild_id=$1 AND character_id=$2
-          AND rank<>'leader' AND ($3='leader' OR rank='member') RETURNING character_id`,
-          [state.guildId,targetId,actor.rows[0].rank]);
-        if(!removed.rowCount) return send(ws,'error',{code:'guild_member_not_found_or_protected'});
-        for(const [peer,session] of activeSockets) if(session.character?.id===targetId&&session.guildId===state.guildId) {
-          session.guildId=null;send(peer,'guild.kicked',{guildId:state.guildId});
-        }
-        broadcastGuild(state.guildId,'guild.updated',{guild:await guildSnapshot(state.guildId)});
-        return;
-      }
-      if (msg.type === 'party.create') {
-        if (state.partyId) return send(ws,'error',{code:'already_in_party'});
-        const tx=await pool.connect();
-        let partyId;
-        try {
-          await tx.query('BEGIN');
-          const created=await tx.query('INSERT INTO parties(leader_character_id,realm_id) VALUES($1,$2) RETURNING id',
-            [state.character.id,state.realmId]);
-          partyId=created.rows[0].id;
-          await tx.query("INSERT INTO party_members(party_id,character_id,role) VALUES($1,$2,'leader')",
-            [partyId,state.character.id]);
-          await tx.query('COMMIT');
-        } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
-        finally { tx.release(); }
-        state.partyId=partyId;
-        send(ws,'party.snapshot',{party:await partySnapshot(partyId)});
-        return;
-      }
-      if (msg.type === 'party.invite') {
-        if (!state.partyId) return send(ws,'error',{code:'not_in_party'});
-        const party=await pool.query('SELECT leader_character_id,realm_id FROM parties WHERE id=$1',[state.partyId]);
-        if(!party.rowCount||party.rows[0].leader_character_id!==state.character.id)
-          return send(ws,'error',{code:'party_leader_required'});
-        const targetName=String(msg.payload.to||'').trim();
-        if(!targetName||targetName.length>16) return send(ws,'error',{code:'invalid_party_target'});
-        const target=await pool.query('SELECT id,name FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)',
-          [state.realmId,targetName]);
-        if(!target.rowCount) return send(ws,'error',{code:'party_target_not_found'});
-        if(target.rows[0].id===state.character.id) return send(ws,'error',{code:'cannot_invite_self'});
-        const count=await pool.query('SELECT count(*)::int AS n FROM party_members WHERE party_id=$1',[state.partyId]);
-        if(Number(count.rows[0].n)>=5) return send(ws,'error',{code:'party_full'});
-        const existing=await pool.query('SELECT party_id FROM party_members WHERE character_id=$1',[target.rows[0].id]);
-        if(existing.rowCount) return send(ws,'error',{code:'party_target_already_grouped'});
-        const invite=await pool.query(`
-          INSERT INTO party_invites(party_id,inviter_character_id,invitee_character_id,expires_at)
-          VALUES($1,$2,$3,now()+interval '5 minutes')
-          ON CONFLICT (party_id,invitee_character_id) WHERE status='pending'
-          DO UPDATE SET inviter_character_id=EXCLUDED.inviter_character_id,expires_at=EXCLUDED.expires_at,created_at=now()
-          RETURNING id,expires_at
-        `,[state.partyId,state.character.id,target.rows[0].id]);
-        const invitation={id:invite.rows[0].id,partyId:state.partyId,from:state.character.name,
-          toCharacterId:target.rows[0].id,expiresAt:invite.rows[0].expires_at};
-        const live=[...activeSockets.entries()].find(([,x])=>x.character?.id===target.rows[0].id&&x.realmId===state.realmId);
-        if(live) send(live[0],'party.invited',invitation);
-        send(ws,'party.invite_sent',{invitation});
-        return;
-      }
-      if (msg.type === 'party.accept') {
-        const invitationId=String(msg.payload.invitationId||'');
-        if(!/^[0-9a-f-]{36}$/i.test(invitationId)) return send(ws,'error',{code:'invalid_party_invitation'});
-        if(state.partyId) return send(ws,'error',{code:'already_in_party'});
-        const tx=await pool.connect();
-        let partyId;
-        try {
-          await tx.query('BEGIN');
-          const invite=await tx.query(`SELECT i.id,i.party_id,p.realm_id FROM party_invites i
-            JOIN parties p ON p.id=i.party_id
-            WHERE i.id=$1 AND i.invitee_character_id=$2 AND i.status='pending'
-              AND i.expires_at>now() FOR UPDATE OF i,p`,[invitationId,state.character.id]);
-          if(!invite.rowCount) { await tx.query('ROLLBACK'); return send(ws,'error',{code:'party_invitation_expired'}); }
-          partyId=invite.rows[0].party_id;
-          if(invite.rows[0].realm_id!==state.realmId) { await tx.query('ROLLBACK'); return send(ws,'error',{code:'party_realm_mismatch'}); }
-          const count=await tx.query('SELECT count(*)::int AS n FROM party_members WHERE party_id=$1',[partyId]);
-          if(Number(count.rows[0].n)>=5) { await tx.query('ROLLBACK'); return send(ws,'error',{code:'party_full'}); }
-          await tx.query("INSERT INTO party_members(party_id,character_id,role) VALUES($1,$2,'member')",[partyId,state.character.id]);
-          await tx.query("UPDATE party_invites SET status='accepted',responded_at=now() WHERE id=$1",[invitationId]);
-          await tx.query("UPDATE party_invites SET status='expired',responded_at=now() WHERE invitee_character_id=$1 AND status='pending' AND id<>$2",
-            [state.character.id,invitationId]);
-          await tx.query('COMMIT');
-        } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
-        finally { tx.release(); }
-        state.partyId=partyId;
-        const snapshot=await partySnapshot(partyId);
-        broadcastParty(partyId,'party.updated',{party:snapshot});
-        return;
-      }
-      if (msg.type === 'party.leave') {
-        if(!state.partyId) return send(ws,'error',{code:'not_in_party'});
-        const partyId=state.partyId;
-        const tx=await pool.connect();
-        try {
-          await tx.query('BEGIN');
-          const party=await tx.query('SELECT leader_character_id FROM parties WHERE id=$1 FOR UPDATE',[partyId]);
-          await tx.query('DELETE FROM party_members WHERE party_id=$1 AND character_id=$2',[partyId,state.character.id]);
-          if(party.rowCount&&party.rows[0].leader_character_id===state.character.id) {
-            const next=await tx.query('SELECT character_id FROM party_members WHERE party_id=$1 ORDER BY joined_at,character_id LIMIT 1',[partyId]);
-            if(next.rowCount) {
-              await tx.query("UPDATE parties SET leader_character_id=$1 WHERE id=$2",[next.rows[0].character_id,partyId]);
-              await tx.query("UPDATE party_members SET role=CASE WHEN character_id=$1 THEN 'leader' ELSE 'member' END WHERE party_id=$2",
-                [next.rows[0].character_id,partyId]);
-            } else await tx.query('DELETE FROM parties WHERE id=$1',[partyId]);
-          }
-          await tx.query('COMMIT');
-        } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
-        finally { tx.release(); }
-        state.partyId=null;
-        broadcastParty(partyId,'party.updated',{party:await partySnapshot(partyId)});
-        send(ws,'party.left',{partyId});
-        return;
-      }
-      if (msg.type === 'party.kick') {
-        if(!state.partyId) return send(ws,'error',{code:'not_in_party'});
-        const party=await pool.query('SELECT leader_character_id FROM parties WHERE id=$1',[state.partyId]);
-        if(!party.rowCount||party.rows[0].leader_character_id!==state.character.id)
-          return send(ws,'error',{code:'party_leader_required'});
-        const targetId=String(msg.payload.characterId||'');
-        if(!/^[0-9a-f-]{36}$/i.test(targetId)||targetId===state.character.id)
-          return send(ws,'error',{code:'invalid_party_target'});
-        const removed=await pool.query('DELETE FROM party_members WHERE party_id=$1 AND character_id=$2 RETURNING character_id',
-          [state.partyId,targetId]);
-        if(!removed.rowCount) return send(ws,'error',{code:'party_member_not_found'});
-        const live=[...activeSockets.entries()].find(([,x])=>x.character?.id===targetId&&x.partyId===state.partyId);
-        if(live) { live[1].partyId=null; send(live[0],'party.kicked',{partyId:state.partyId}); }
-        const snapshot=await partySnapshot(state.partyId);
-        broadcastParty(state.partyId,'party.updated',{party:snapshot});
-        return;
-      }
       if (msg.type === 'chat.send') {
-        const channel = String(msg.payload.channel || 'zone');
-        if (!['zone', 'realm', 'whisper', 'party', 'guild'].includes(channel)) {
-          return send(ws, 'error', { code: 'unsupported_chat_channel', channel, supported: ['zone', 'realm', 'whisper', 'party', 'guild'] });
-        }
         const t = Date.now(); if (t - state.lastChat < 1200) return send(ws, 'error', { code: 'chat_rate_limited' });
         state.lastChat = t;
         const text = String(msg.payload.text || '').trim();
         if (!text || text.length > 180 || /[\u0000-\u001f\u007f]/.test(text)) return send(ws, 'error', { code: 'invalid_chat' });
-        const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
-        if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
-        if (channel === 'party') { if (!state.partyId) return send(ws,'error',{code:'not_in_party'}); broadcastParty(state.partyId,'chat.message',message); return; }
-        if (channel === 'guild') { if(!state.guildId) return send(ws,'error',{code:'not_in_guild'}); broadcastGuild(state.guildId,'chat.message',message); return; }
+        const channel = ['zone', 'realm', 'whisper'].includes(msg.payload.channel) ? msg.payload.channel : 'zone';
+        const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, zoneId: state.zoneId, at: Date.now() };
+        if (channel === 'realm' || channel === 'zone') {
+          const saved = await pool.query(`INSERT INTO world_chat_messages(realm_id,zone_id,channel,sender_character_id,message)
+            VALUES($1,$2,$3,$4,$5) RETURNING id,created_at`,
+            [state.realmId, channel === 'zone' ? state.zoneId : null, channel, state.character.id, text]);
+          message.id = saved.rows[0].id;
+          message.at = new Date(saved.rows[0].created_at).getTime();
+          if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
+        }
         if (channel === 'whisper') {
           const to = String(msg.payload.to || '').trim();
-          if (!to || to.length > 16) return send(ws, 'error', { code: 'invalid_whisper_target' });
+          if (!/^[a-z0-9 _-]{3,24}$/i.test(to)) return send(ws, 'error', { code: 'invalid_whisper_target' });
+          // Resolve by realm, not online presence: offline recipients can read persisted history later.
           const recipient = await pool.query(
-            'SELECT id,name FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)',
+            'SELECT id,name FROM characters WHERE realm_id=$1 AND lower(name)=lower($2) LIMIT 1',
             [state.realmId, to]
           );
           if (!recipient.rowCount) return send(ws, 'error', { code: 'whisper_target_not_found', to });
           const targetCharacter = recipient.rows[0];
           if (targetCharacter.id === state.character.id) return send(ws, 'error', { code: 'cannot_whisper_self' });
-          const saved = await pool.query(`INSERT INTO player_whispers(realm_id,sender_character_id,recipient_character_id,message)
-            VALUES($1,$2,$3,$4) RETURNING id,created_at`,
-            [state.realmId, state.character.id, targetCharacter.id, text]);
-          const liveTarget = [...activeSockets.entries()].find(([, s]) =>
-            s.authenticated && s.character && s.character.id === targetCharacter.id && s.realmId === state.realmId);
-          const whisper = {
-            id: saved.rows[0].id, characterId: state.character.id, name: state.character.name,
-            fromCharacterId: state.character.id, toCharacterId: targetCharacter.id,
-            to: targetCharacter.name, text, channel: 'whisper', realmId: state.realmId,
-            at: new Date(saved.rows[0].created_at).getTime(), delivered: !!liveTarget
-          };
-          if (liveTarget) send(liveTarget[0], 'chat.message', whisper);
-          send(ws, 'chat.message', whisper);
+          const blocked = await pool.query(
+            "SELECT 1 FROM player_friends WHERE status='blocked' AND ((character_id=$1 AND friend_character_id=$2) OR (character_id=$2 AND friend_character_id=$1)) LIMIT 1",
+            [state.character.id, targetCharacter.id]
+          );
+          if (blocked.rowCount) return send(ws, 'error', { code: 'whisper_blocked' });
+          const saved = await pool.query(
+            `INSERT INTO player_whispers(realm_id,sender_character_id,recipient_character_id,message)
+             VALUES($1,$2,$3,$4) RETURNING id,created_at`,
+            [state.realmId, state.character.id, targetCharacter.id, text]
+          );
+          const w = { ...message, id: saved.rows[0].id, at: new Date(saved.rows[0].created_at).getTime(),
+            to: targetCharacter.name, recipientCharacterId: targetCharacter.id, channel: 'whisper' };
+          const local = [...activeSockets.entries()].find(([, targetState]) =>
+            targetState.authenticated && targetState.character?.id === targetCharacter.id && targetState.realmId === state.realmId);
+          if (local && local[0] !== ws) send(local[0], 'chat.message', w);
+          else if (!local) publishWorldEvent('character', state.realmId, null, 'chat.message', w, targetCharacter.id);
+          send(ws, 'chat.message', w);
           return;
         }
         broadcastZone(state.realmId, state.zoneId, 'chat.message', message);
@@ -680,40 +502,60 @@ function attachSocket(ws, req) {
       console.error('MMO socket handler error:', error.message);
       send(ws, 'error', { code: 'server_error' });
     }
-  });
-  ws.on('pong', () => { state.alive = true; });
-  ws.on('error', error => {
-    console.error('MMO WebSocket transport error:', error.message);
-  });
+  }, { onError: error => { console.error('MMO socket queue error:', error.message); if (ws.readyState === WebSocket.OPEN) send(ws, 'error', { code: 'server_error' }); } });
   ws.on('message', raw => {
-    if (state.closed) return;
-    const pending = messageQueue.enqueue(raw);
-    if (pending > 64) {
-      state.closed = true;
-      activeSockets.delete(ws);
-      ws.close(4429, 'message queue overloaded');
-    }
+    if (messageQueue.pending >= 128) { ws.close(1008, 'message queue full'); return; }
+    messageQueue.enqueue(raw);
   });
   ws.on('close', () => {
     state.closed = true;
     clearTimeout(state.authTimer);
-    state.authTimer = null;
     activeSockets.delete(ws);
+    removePresence(ws);
     if (state.zoneId && state.character) broadcastZone(state.realmId, state.zoneId, 'presence.left', { characterId: state.character.id });
   });
 }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
-  const cors = corsHeaders(req.headers.origin, ALLOWED_ORIGINS);
-  if (cors === null) return json(res, 403, { error: 'origin_not_allowed' });
+  const cors = createCorsHeaders(req.headers.origin, ALLOWED_ORIGINS);
+  if (!cors) return json(res, 403, { error: 'origin_not_allowed' });
   for (const [name, value] of Object.entries(cors)) res.setHeader(name, value);
-  if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+  if (req.method === 'OPTIONS') {
+    const requestedMethod = String(req.headers['access-control-request-method'] || '').toUpperCase();
+    const requestedHeaders = String(req.headers['access-control-request-headers'] || '')
+      .split(',').map(value => value.trim().toLowerCase()).filter(Boolean);
+    if ((requestedMethod && !['GET', 'POST', 'DELETE'].includes(requestedMethod)) ||
+        requestedHeaders.some(header => !['authorization', 'content-type'].includes(header))) {
+      return json(res, 403, { error: 'cors_preflight_not_allowed' });
+    }
+    res.writeHead(204);
+    return res.end();
+  }
+  if (url.pathname.startsWith('/api/') && ['POST', 'DELETE'].includes(req.method) &&
+      !['/api/login', '/api/register'].includes(url.pathname)) {
+    const ip = req.socket?.remoteAddress || 'unknown';
+    const rate = requestLimiter.consume(ip + ':api-write');
+    res.setHeader('x-ratelimit-limit', String(Number(process.env.GBQ_API_WRITE_LIMIT || 90)));
+    res.setHeader('x-ratelimit-remaining', String(rate.remaining));
+    if (!rate.allowed) {
+      res.setHeader('retry-after', String(rate.retryAfter));
+      return json(res, 429, { error: 'api_write_rate_limited', retryAfter: rate.retryAfter });
+    }
+  }
   if (url.pathname === '/health' && req.method === 'GET') {
     try { await pool.query('SELECT 1'); return json(res, 200, { ok: true, service: 'gbquest-mmorpg', websocket: '/ws', database: 'connected' }); }
     catch { return json(res, 503, { ok: false, service: 'gbquest-mmorpg', database: 'unavailable' }); }
   }
   try {
-    if (await handleDungeonQueueRequest({ req, res, pool, accountFor, json, readBody })) return;
+    if (await handlePartyRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleGuildRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleInstanceRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleFriendRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleMailRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleAuctionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handlePvpRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleWhisperRequest({ req, res, url, pool, accountFor, json })) return;
+    if (await handleCollectionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
@@ -745,12 +587,11 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/characters' && req.method === 'POST') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
-      const body = await readBody(req), name = String(body.name || '').trim(), cls = String(body.class || 'warden');
-      const species = String(body.species || 'hearthkin'), background = String(body.background || 'wanderer');
+      const body = await readBody(req), name = String(body.name || '').trim(), cls = String(body.class || 'adventurer');
       const rd = await realmData(), realmId = String(body.realmId || body.realm || rd.realms[0]?.id || 'ardenhold'), realm = rd.realms.find(r => r.id === realmId);
       if (!realm) return json(res, 400, { error: 'unknown_realm', realmId });
       if (realm.status !== 'online') return json(res, 409, { error: 'realm_unavailable', realmId, status: realm.status });
-      if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller'].includes(cls) || !['hearthkin','thornelf','stonekin','wispling','emberborn','burrowkin','twinblood','tuskborn','drakkin','hornfolk','felinar','pipkin','lunari','wolfkin','starkin'].includes(species) || !['soldier','scholar','wanderer','urchin','acolyte','envoy'].includes(background)) return json(res, 400, { error: 'invalid_character' });
+      if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !CHARACTER_CLASSES.has(cls.toLowerCase())) return json(res, 400, { error: 'invalid_character' });
       const tx = await pool.connect();
       try {
         await tx.query('BEGIN');
@@ -762,7 +603,7 @@ const server = http.createServer(async (req, res) => {
         const taken = await tx.query('SELECT 1 FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)', [realmId, name]);
         if (taken.rowCount) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'name_taken', realmId }); }
         const id = crypto.randomUUID();
-        const result = await tx.query(`INSERT INTO characters(id,account_id,name,class,species,background,realm_id) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING ${CHAR_COLS},xp`, [id, acct.id, name, cls, species, background, realmId]);
+        const result = await tx.query(`INSERT INTO characters(id,account_id,name,class,realm_id) VALUES($1,$2,$3,$4,$5) RETURNING ${CHAR_COLS},xp`, [id, acct.id, name, cls, realmId]);
         await tx.query(`INSERT INTO character_inventory(character_id,item_id,quantity)
           VALUES ($1,'rusty_sword',1),($1,'traveler_tunic',1),($1,'minor_potion',5)`, [id]);
         await tx.query('COMMIT');
@@ -780,6 +621,168 @@ const server = http.createServer(async (req, res) => {
         ? await pool.query(`SELECT ${CHAR_COLS},xp FROM characters WHERE account_id=$1 AND realm_id=$2 ORDER BY created_at`, [acct.id, realm])
         : await pool.query(`SELECT ${CHAR_COLS},xp FROM characters WHERE account_id=$1 ORDER BY created_at`, [acct.id]);
       return json(res, 200, { characters: result.rows });
+    }
+    const profileMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/profile$/i);
+    if (profileMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const characterId = profileMatch[1];
+      const owned = await pool.query(`SELECT c.id,c.name,c.class,c.level,c.xp,c.realm_id,c.zone_id,c.x,c.y,
+        c.hp,c.max_hp,c.mp,c.max_mp,c.gold,c.bank_gold,c.talent_points,c.allocated_attributes,c.specialization_id,
+        c.unlocked_talents,c.created_at,c.updated_at,r.name AS realm_name
+        FROM characters c JOIN realms r ON r.id=c.realm_id
+        WHERE c.id=$1 AND c.account_id=$2`, [characterId, acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const [inventory, quests, equipment, talents] = await Promise.all([
+        pool.query(`SELECT ci.id AS inventory_id,ci.item_id,ic.name,ic.description,ic.item_type,
+          ic.equip_slot,ic.level_required,ic.stats,ci.quantity,
+          (ce.inventory_id IS NOT NULL) AS equipped
+          FROM character_inventory ci JOIN item_catalog ic ON ic.id=ci.item_id
+          LEFT JOIN character_equipment ce ON ce.inventory_id=ci.id AND ce.character_id=ci.character_id
+          WHERE ci.character_id=$1 ORDER BY ic.item_type,ic.name`, [characterId]),
+        pool.query(`SELECT cq.quest_id,q.name,q.description,cq.status,cq.objective_progress,
+          q.objective_required,q.reward_xp,q.reward_gold,cq.accepted_at,cq.completed_at
+          FROM character_quests cq JOIN quest_catalog q ON q.id=cq.quest_id
+          WHERE cq.character_id=$1 ORDER BY cq.accepted_at DESC`, [characterId]),
+        pool.query('SELECT slot,inventory_id,equipped_at FROM character_equipment WHERE character_id=$1 ORDER BY slot', [characterId]),
+        pool.query(`SELECT u.node_id,n.name,n.branch,n.node_type,n.description,n.effect,n.required_level,u.unlocked_at
+          FROM character_talent_unlocks u JOIN mmorpg_talent_nodes n ON n.id=u.node_id
+          WHERE u.character_id=$1 ORDER BY n.required_level,n.node_index`, [characterId])
+      ]);
+      return json(res, 200, { character: owned.rows[0], inventory: inventory.rows, quests: quests.rows, equipment: equipment.rows, talents: talents.rows });
+    }
+    if (url.pathname === '/api/talents' && req.method === 'GET') {
+      const classId = String(url.searchParams.get('class') || '').toLowerCase();
+      if (!['warrior','mage','ranger','cleric','rogue','adventurer'].includes(classId)) {
+        return json(res, 400, { error: 'invalid_class' });
+      }
+      const trees = await pool.query(`SELECT s.id,s.class_id,s.name,s.role,s.description,
+        COALESCE(json_agg(json_build_object('id',n.id,'index',n.node_index,'branch',n.branch,
+          'type',n.node_type,'name',n.name,'description',n.description,'requiredLevel',n.required_level,
+          'pointCost',n.point_cost,'effect',n.effect,'prerequisiteId',n.prerequisite_id)
+          ORDER BY n.node_index) FILTER (WHERE n.id IS NOT NULL),'[]'::json) AS nodes
+        FROM mmorpg_talent_specializations s LEFT JOIN mmorpg_talent_nodes n ON n.specialization_id=s.id
+        WHERE s.class_id=$1 GROUP BY s.id ORDER BY s.name`, [classId]);
+      return json(res, 200, { class: classId, specializations: trees.rows });
+    }
+    const specializationMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/specialization$/i);
+    if (specializationMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), specializationId = String(body.specializationId || '');
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const chosen = await tx.query(`SELECT s.id,s.class_id,s.name FROM mmorpg_talent_specializations s
+          JOIN characters c ON c.class=s.class_id
+          WHERE s.id=$1 AND c.id=$2 AND c.account_id=$3`, [specializationId, specializationMatch[1], acct.id]);
+        if (!chosen.rowCount) {
+          const owned = await tx.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2', [specializationMatch[1], acct.id]);
+          await tx.query('ROLLBACK');
+          return json(res, owned.rowCount ? 400 : 404, { error: owned.rowCount ? 'specialization_class_mismatch' : 'character_not_found' });
+        }
+        const current = await tx.query('SELECT specialization_id FROM characters WHERE id=$1 FOR UPDATE', [specializationMatch[1]]);
+        if (current.rows[0].specialization_id && current.rows[0].specialization_id !== specializationId) {
+          const learned = await tx.query('SELECT 1 FROM character_talent_unlocks WHERE character_id=$1 LIMIT 1', [specializationMatch[1]]);
+          if (learned.rowCount) {
+            await tx.query('ROLLBACK');
+            return json(res, 409, { error: 'specialization_locked', message: 'A specialization cannot be changed after learning talents.' });
+          }
+        }
+        await tx.query('UPDATE characters SET specialization_id=$1,updated_at=now() WHERE id=$2', [specializationId, specializationMatch[1]]);
+        await tx.query('COMMIT');
+        return json(res, 200, { specialization: chosen.rows[0] });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
+    const talentUnlockMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/talents\/([a-z0-9_]{1,80})\/unlock$/i);
+    if (talentUnlockMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const [, characterId, nodeId] = talentUnlockMatch;
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const result = await tx.query(`SELECT c.level,c.talent_points,c.specialization_id,n.id,n.required_level,
+          n.point_cost,n.prerequisite_id,n.name,s.class_id
+          FROM characters c JOIN mmorpg_talent_specializations s ON s.id=c.specialization_id
+          JOIN mmorpg_talent_nodes n ON n.specialization_id=s.id
+          WHERE c.id=$1 AND c.account_id=$2 AND n.id=$3 FOR UPDATE OF c`, [characterId, acct.id, nodeId]);
+        if (!result.rowCount) {
+          const owned = await tx.query('SELECT id,specialization_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
+          await tx.query('ROLLBACK');
+          return json(res, owned.rowCount ? 409 : 404, { error: owned.rowCount ? 'specialization_not_selected_or_node_mismatch' : 'character_not_found' });
+        }
+        const node = result.rows[0];
+        const alreadyUnlocked = await tx.query('SELECT 1 FROM character_talent_unlocks WHERE character_id=$1 AND node_id=$2', [characterId, nodeId]);
+        if (alreadyUnlocked.rowCount) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'talent_already_unlocked' });
+        }
+        if (Number(node.level) < Number(node.required_level)) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'talent_level_requirement', requiredLevel: node.required_level, level: node.level });
+        }
+        if (Number(node.talent_points) < Number(node.point_cost)) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'insufficient_talent_points', talentPoints: node.talent_points, pointCost: node.point_cost });
+        }
+        if (node.prerequisite_id) {
+          const prerequisite = await tx.query('SELECT 1 FROM character_talent_unlocks WHERE character_id=$1 AND node_id=$2', [characterId, node.prerequisite_id]);
+          if (!prerequisite.rowCount) {
+            await tx.query('ROLLBACK');
+            return json(res, 409, { error: 'talent_prerequisite_locked', prerequisiteId: node.prerequisite_id });
+          }
+        }
+        const inserted = await tx.query('INSERT INTO character_talent_unlocks(character_id,node_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING node_id', [characterId, nodeId]);
+        if (!inserted.rowCount) {
+          await tx.query('ROLLBACK');
+          return json(res, 409, { error: 'talent_already_unlocked' });
+        }
+        const spent = await tx.query('UPDATE characters SET talent_points=talent_points-$1,updated_at=now() WHERE id=$2 RETURNING talent_points', [node.point_cost, characterId]);
+        await tx.query('COMMIT');
+        return json(res, 200, { unlocked: nodeId, name: node.name, talentPoints: spent.rows[0].talent_points });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
+    const attributeMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/attributes$/i);
+    if (attributeMatch && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req), attribute = String(body.attribute || '').toLowerCase();
+      const points = Number(body.points === undefined ? 1 : body.points);
+      if (!['str','dex','con','int','wis','vit'].includes(attribute) ||
+          !Number.isSafeInteger(points) || points < 1 || points > 20) {
+        return json(res, 400, { error: 'invalid_attribute_allocation' });
+      }
+      const tx = await pool.connect();
+      try {
+        await tx.query('BEGIN');
+        const result = await tx.query(`UPDATE characters
+          SET talent_points=talent_points-$1,
+              allocated_attributes=jsonb_set(allocated_attributes,ARRAY[$2],
+                to_jsonb(COALESCE((allocated_attributes->>$2)::integer,0)+$1),true),
+              updated_at=now()
+          WHERE id=$3 AND account_id=$4 AND talent_points >= $1
+            AND COALESCE((allocated_attributes->>$2)::integer,0)+$1 <= 100
+          RETURNING talent_points,allocated_attributes`, [points, attribute, attributeMatch[1], acct.id]);
+        if (!result.rowCount) {
+          const owned = await tx.query('SELECT talent_points,allocated_attributes FROM characters WHERE id=$1 AND account_id=$2', [attributeMatch[1], acct.id]);
+          await tx.query('ROLLBACK');
+          if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+          const current = Number(owned.rows[0].allocated_attributes?.[attribute] || 0);
+          return json(res, 409, { error: current + points > 100 ? 'attribute_cap_reached' : 'insufficient_talent_points',
+            talentPoints: owned.rows[0].talent_points, allocatedAttributes: owned.rows[0].allocated_attributes });
+        }
+        await tx.query('COMMIT');
+        return json(res, 200, { talentPoints: result.rows[0].talent_points, allocatedAttributes: result.rows[0].allocated_attributes });
+      } catch (error) {
+        await tx.query('ROLLBACK').catch(() => {});
+        throw error;
+      } finally { tx.release(); }
+    }
+    if (url.pathname === '/api/world/status' && req.method === 'GET') {
+      return json(res, 200, await worldStatus(url.searchParams.get('refresh') === '1'));
     }
     if (url.pathname === '/api/regions' && req.method === 'GET') {
       const rd = await realmData(), acct = await optionalAccount(req), counts = await characterCounts(acct && acct.id);
@@ -1014,51 +1017,6 @@ const server = http.createServer(async (req, res) => {
         ORDER BY t.created_at DESC LIMIT 50`, [characterId]);
       return json(res, 200, { trades: result.rows });
     }
-    const whispersMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/whispers$/i);
-    if (whispersMatch && req.method === 'GET') {
-      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
-      const characterId = whispersMatch[1], peerId = url.searchParams.get('with');
-      const requestedLimit = Number.parseInt(url.searchParams.get('limit') || '50', 10);
-      const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(100, requestedLimit)) : 50;
-      const owned = await pool.query('SELECT id,realm_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
-      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
-      if (peerId && !/^[0-9a-f-]{36}$/i.test(peerId)) return json(res, 400, { error: 'invalid_peer_id' });
-      await pool.query('UPDATE player_whispers SET read_at=now() WHERE recipient_character_id=$1 AND ($2::uuid IS NULL OR sender_character_id=$2) AND read_at IS NULL', [characterId, peerId]);
-      const result = await pool.query(`SELECT w.id,w.sender_character_id,w.recipient_character_id,w.message,w.created_at,w.read_at,
-        s.name AS sender_name,r.name AS recipient_name
-        FROM player_whispers w
-        JOIN characters s ON s.id=w.sender_character_id
-        JOIN characters r ON r.id=w.recipient_character_id
-        WHERE w.realm_id=$1 AND (w.sender_character_id=$2 OR w.recipient_character_id=$2)
-          AND ($3::uuid IS NULL OR (w.sender_character_id=$3 OR w.recipient_character_id=$3))
-        ORDER BY w.created_at DESC LIMIT $4`,
-        [owned.rows[0].realm_id, characterId, peerId, limit]);
-      return json(res, 200, { characterId, messages: result.rows.reverse() });
-    }
-    if (whispersMatch && req.method === 'POST') {
-      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
-      const characterId = whispersMatch[1], body = await readBody(req);
-      const recipientId = String(body.toCharacterId || ''), message = String(body.text || '').trim();
-      if (!/^[0-9a-f-]{36}$/i.test(recipientId) || recipientId === characterId ||
-          !message || message.length > 180 || /[\u0000-\u001f\u007f]/.test(message)) {
-        return json(res, 400, { error: 'invalid_whisper' });
-      }
-      const senderResult = await pool.query('SELECT id,name,realm_id FROM characters WHERE id=$1 AND account_id=$2', [characterId, acct.id]);
-      const recipientResult = await pool.query('SELECT id,name,realm_id FROM characters WHERE id=$1', [recipientId]);
-      if (!senderResult.rowCount || !recipientResult.rowCount) return json(res, 404, { error: 'character_or_recipient_not_found' });
-      const sender = senderResult.rows[0], recipient = recipientResult.rows[0];
-      if (sender.realm_id !== recipient.realm_id) return json(res, 409, { error: 'different_realms' });
-      const saved = await pool.query(`INSERT INTO player_whispers(realm_id,sender_character_id,recipient_character_id,message)
-        VALUES($1,$2,$3,$4) RETURNING id,created_at`,
-        [sender.realm_id, characterId, recipientId, message]);
-      const liveTarget = [...activeSockets.entries()].find(([, state]) =>
-        state.authenticated && state.character && state.character.id === recipientId && state.realmId === sender.realm_id);
-      const payload = { id: saved.rows[0].id, fromCharacterId: characterId, toCharacterId: recipientId,
-        fromName: sender.name, toName: recipient.name, text: message, channel: 'whisper',
-        at: new Date(saved.rows[0].created_at).getTime(), delivered: !!liveTarget };
-      if (liveTarget) send(liveTarget[0], 'chat.message', { ...payload, characterId, name: sender.name, to: recipient.name, realmId: sender.realm_id });
-      return json(res, 201, { message: payload });
-    }
     const tradeActionMatch = url.pathname.match(/^\/api\/trades\/([0-9a-f-]{36})\/(accept|cancel)$/i);
     if (tradeActionMatch && req.method === 'POST') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
@@ -1223,6 +1181,23 @@ const server = http.createServer(async (req, res) => {
         throw error;
       } finally { tx.release(); }
     }
+    const chatHistoryMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/chat$/i);
+    if (chatHistoryMatch && req.method === 'GET') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const owned = await pool.query('SELECT id,realm_id,zone_id FROM characters WHERE id=$1 AND account_id=$2', [chatHistoryMatch[1], acct.id]);
+      if (!owned.rowCount) return json(res, 404, { error: 'character_not_found' });
+      const channel = url.searchParams.get('channel') === 'realm' ? 'realm' : 'zone';
+      const limit = Math.max(1, Math.min(100, Number.parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+      const args = channel === 'realm' ? [owned.rows[0].realm_id, limit] : [owned.rows[0].realm_id, owned.rows[0].zone_id, limit];
+      const result = await pool.query(channel === 'realm'
+        ? `SELECT m.id,m.channel,m.realm_id,m.zone_id,m.sender_character_id AS "characterId",c.name,m.message AS text,m.created_at AS "createdAt"
+           FROM world_chat_messages m JOIN characters c ON c.id=m.sender_character_id
+           WHERE m.realm_id=$1 AND m.channel='realm' ORDER BY m.created_at DESC LIMIT $2`
+        : `SELECT m.id,m.channel,m.realm_id,m.zone_id,m.sender_character_id AS "characterId",c.name,m.message AS text,m.created_at AS "createdAt"
+           FROM world_chat_messages m JOIN characters c ON c.id=m.sender_character_id
+           WHERE m.realm_id=$1 AND m.zone_id=$2 AND m.channel='zone' ORDER BY m.created_at DESC LIMIT $3`, args);
+      return json(res, 200, { channel, messages: result.rows.reverse().map(row => ({ ...row, at: new Date(row.createdAt).getTime() })) });
+    }
     const walletMatch = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/wallet$/i);
     if (walletMatch && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
@@ -1233,11 +1208,9 @@ const server = http.createServer(async (req, res) => {
     return json(res, 404, { error: 'not_found' });
   } catch (error) { console.error('MMO HTTP error:', error.message); return json(res, error.status || 500, { error: error.status ? error.message : 'internal_server_error' }); }
 });
-const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE, perMessageDeflate: false });
+const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE });
 server.on('upgrade', (req, socket, head) => {
-  let pathname;
-  try { pathname = new URL(req.url, 'http://localhost').pathname; } catch { return socket.destroy(); }
-  if (req.method !== 'GET' || pathname !== '/ws' || !originAllowed(req)) return socket.destroy();
+  if (new URL(req.url, 'http://localhost').pathname !== '/ws' || !originAllowed(req)) return socket.destroy();
   wss.handleUpgrade(req, socket, head, ws => { wss.emit('connection', ws, req); });
 });
 wss.on('connection', (ws, req) => attachSocket(ws, req));
@@ -1245,21 +1218,36 @@ const heartbeatTimer = setInterval(() => {
   for (const ws of wss.clients) {
     const state = socketState.get(ws);
     if (!state || state.closed) continue;
-    if (!state.alive) {
-      state.closed = true;
-      activeSockets.delete(ws);
-      ws.terminate();
-      continue;
-    }
+    if (!state.alive) { state.closed = true; ws.terminate(); continue; }
     state.alive = false;
-    try { ws.ping(); } catch {
-      state.closed = true;
-      activeSockets.delete(ws);
-      ws.terminate();
-    }
+    ws.ping();
   }
 }, HEARTBEAT_INTERVAL_MS);
-heartbeatTimer.unref();
+heartbeatTimer.unref?.();
+const presenceHeartbeat = setInterval(async () => {
+  try {
+    await pool.query('DELETE FROM world_presence WHERE expires_at<=now()');
+    for (const ws of wss.clients) {
+      if (ws.isAlive === false) { ws.terminate(); continue; }
+      ws.isAlive = false;
+      if (ws.readyState === WebSocket.OPEN) ws.ping();
+    }
+    for (const [ws, state] of activeSockets) if (ws.readyState === WebSocket.OPEN && state.authenticated && state.character) await persistPresence(ws, state);
+  } catch (error) { console.error('Presence heartbeat failed:', error.message); }
+}, 15000);
+presenceHeartbeat.unref();
+const worldListenerPromise = pool.connect().then(async client => {
+  client.on('notification', message => {
+    if (message.channel !== WORLD_EVENT_CHANNEL) return;
+    try {
+      const event = JSON.parse(message.payload);
+      if (event.origin !== SERVER_INSTANCE_ID) deliverWorldEvent(event);
+    } catch (error) { console.error('Invalid world event notification:', error.message); }
+  });
+  client.on('error', error => console.error('World event listener error:', error.message));
+  await client.query('LISTEN ' + WORLD_EVENT_CHANNEL);
+  return client;
+}).catch(error => { console.error('World event listener unavailable:', error.message); return null; });
 const respawnTimer = setInterval(async () => {
   try {
     const result = await pool.query("UPDATE world_mobs SET hp=max_hp,alive=true,respawn_at=NULL,updated_at=now() WHERE alive=false AND respawn_at IS NOT NULL AND respawn_at<=now() RETURNING id,realm_id,zone_id,name,level,x,y,hp,max_hp");
@@ -1267,21 +1255,5 @@ const respawnTimer = setInterval(async () => {
   } catch (error) { console.error('Mob respawn worker failed:', error.message); }
 }, 10000);
 respawnTimer.unref();
-const whisperCleanupTimer = setInterval(async () => {
-  try {
-    await pool.query("DELETE FROM player_whispers WHERE created_at < now() - interval '30 days'");
-  } catch (error) {
-    console.error('Whisper retention cleanup failed:', error.message);
-  }
-}, 60 * 60 * 1000);
-whisperCleanupTimer.unref();
 server.listen(PORT, HOST, () => console.log('GB Quest authoritative MMO service listening on ' + HOST + ':' + PORT));
-for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => {
-  clearInterval(respawnTimer);
-  clearInterval(whisperCleanupTimer);
-  clearInterval(heartbeatTimer);
-  for (const ws of wss.clients) ws.close(1001, 'server shutting down');
-  await new Promise(resolve => server.close(resolve));
-  await pool.end();
-  process.exit(0);
-});
+for (const signal of ['SIGINT','SIGTERM']) process.on(signal, async () => { clearInterval(presenceHeartbeat); await pool.query('DELETE FROM world_presence WHERE server_instance_id=$1', [SERVER_INSTANCE_ID]).catch(() => {}); const worldListener = await worldListenerPromise; if (worldListener) { await worldListener.query('UNLISTEN *').catch(() => {}); worldListener.release(); } await new Promise(resolve => server.close(resolve)); await pool.end(); process.exit(0); });

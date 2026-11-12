@@ -132,7 +132,7 @@ function aelSlider(x, y, w, frac) {
 // screen names for the header plaque: explicit names first, else the class name split into words
 const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS', StatBreakdownScene: 'STATS', GearOverviewScene: 'GEAR', ItemDetailScene: 'ITEM', ProgressSummaryScene: 'PROGRESS', DetailHubScene: 'DETAILS', GearAwakenScene: 'AWAKENING', RiftScene: 'RIFTS', RiftBoardScene: 'LEADERBOARD', SkillRuneScene: 'SKILL RUNES', GamblerScene: 'GAMBLER', LootFilterScene: 'LOOT FILTER', SeasonPassScene: 'SEASON PASS', PatchNotesScene: 'PATCH NOTES',
   StashScene: 'STASH', MarketScene: 'VENDOR', QuestLog: 'QUEST LOG', Spellbook: 'SPELLBOOK', GrowthScene: 'GROWTH', ArtsScene: 'COMBAT ARTS',
-  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
+  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', GuildMenuScene: 'GUILD HALL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
   RepScene: 'REPUTATION', BestiaryScene: 'BESTIARY', BossJournalScene: 'BOSS JOURNAL', ActivityFinderScene: 'ACTIVITIES', SettingsScene: 'SETTINGS',
   TalentScene: 'TALENTS', PerkTreeScene: 'PERKS', CompanionScene: 'PARTY', GemSocketScene: 'GEMS', RuneForgeScene: 'RUNE FORGE', CraftScene: 'CRAFTING',
   ProfessionScene: 'PROFESSIONS', SideQuestBoard: 'QUEST BOARD', ExpansionMapsScene: 'EXPANSIONS', ArtGalleryScene: 'ART GALLERY', AbilitySkillsScene: 'SKILLS' };
@@ -147,13 +147,13 @@ function aelSceneTitle(sc) {
 const AEL_MENU_ICON = { CHARACTER: 'ka_chars_00', SPELLBOOK: 'ka_items_17', GROWTH: 'ka_status_13', 'COMBAT ARTS': 'ka_weapons_03', ARMOURY: 'ka_weapons_17',
   HEIRLOOMS: 'ka_weapons_44', WARDROBE: 'ka_weapons_13', LOADOUTS: 'ka_weapons_42', JOBS: 'ka_weapons_11', CHALLENGES: 'ka_icons_01', MOUNTS: 'ka_mounts_01',
   'QUEST LOG': 'ka_items_11', CRAFTING: 'ka_weapons_00', REST: 'ka_items_01', 'ACTIVITY FINDER': 'ka_icons_07', BESTIARY: 'ka_status_01',
-  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', TITLES: 'ka_icons_03',
+  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', GUILD: 'ka_status_03', TITLES: 'ka_icons_03',
   'WORLD MAP': 'ka_items_45', 'ART GALLERY': 'ka_items_13', 'EXPANSION MAPS': 'ka_items_45', HEARTHSTONE: 'ka_items_07', SETTINGS: 'ka_status_17',
   SAVE: 'ka_items_46', 'SAVE & QUIT': 'ka_items_42' };
 const AEL_MENU_DESC = { CHARACTER: 'STATS, GEAR AND BAG', SPELLBOOK: 'SPELLS AND SLOTS', GROWTH: 'LEVEL-UP CHOICES', 'COMBAT ARTS': 'YOUR BATTLE ARTS',
   ARMOURY: 'ARMOUR SETS', HEIRLOOMS: 'FAMILY RELICS', WARDROBE: 'CHANGE YOUR LOOK', LOADOUTS: 'SAVED GEAR SETS', JOBS: 'JOBS AND WORK', CHALLENGES: 'TRIALS AND GOALS',
   MOUNTS: 'RIDE A MOUNT', 'QUEST LOG': 'ACTIVE QUESTS', CRAFTING: 'MAKE ITEMS', REST: 'REST AND HEAL', 'ACTIVITY FINDER': 'DUNGEONS, RAIDS', BESTIARY: 'MONSTERS SEEN',
-  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', TITLES: 'EARNED TITLES',
+  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', GUILD: 'GUILD ROSTER AND MANAGEMENT', TITLES: 'EARNED TITLES',
   'WORLD MAP': 'MAP OF AELMOOR', 'ART GALLERY': 'ART YOU FOUND', 'EXPANSION MAPS': 'NEW LANDS', HEARTHSTONE: 'RETURN HOME', SETTINGS: 'GAME OPTIONS',
   SAVE: 'SAVE YOUR GAME', 'SAVE & QUIT': 'SAVE, TO TITLE' };
 function aelGameMenuDraw(menu) {
@@ -335,8 +335,9 @@ function aelScores(cls) { const v = STANDARD_ARRAY.slice().sort((a, b) => b - a)
 function aelFreeSlot() { const k = SLOT_KEYS.findIndex((_, i) => !slotInfo(i)); return k >= 0 ? k : 0; }
 
 class AelNewGame {
-  constructor(slot) {
+  constructor(slot, onlineSession = null) {
     this.opaque = true; this.i = 0; this.slot = slot == null ? aelFreeSlot() : slot;
+    this.onlineSession = onlineSession;
     this.pick = { species: 'hearthkin', cls: 'warden', bg: 'soldier', name: '', mode: 'solo', diff: 2, look: null, portrait: null };
     this.naming = false;
   }
@@ -362,8 +363,11 @@ class AelNewGame {
     if (c === 'CHARACTER') push(new AelClassSelect(this.pick));
     if (c === 'APPEARANCE') { const k = CC_LOOKS.indexOf(this.pick.look || this.pick.cls); this.pick.look = CC_LOOKS[(k + 1) % CC_LOOKS.length]; SFX.toggle(); }
     if (c === 'NAME') this.startNaming();
-    if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot)); }
-    if (c === 'ADVANCED') { SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); }); }
+    if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot, this.onlineSession)); }
+    if (c === 'ADVANCED') {
+      if (this.onlineSession) { say('ADVANCED CREATION IS OFFLINE ONLY. Use the standard creator to save a hero to your selected realm.'); return; }
+      SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); });
+    }
   }
   draw() {
     aelBackdrop(true);
@@ -374,7 +378,7 @@ class AelNewGame {
     textC(this.pick.name || '- NO NAME -', 110, 99, this.naming && (frameN >> 4) % 2 ? AEL.gold : AEL.cream);
     textC(CLASSES[this.pick.cls].name, 110, 108, 2);
     fill(68, 118, 86, 11, 'rgba(26,22,58,.9)');
-    textC(this.naming ? 'TYPE, ENTER' : this.i === 4 ? 'FULL CREATION' : 'NEW HERO', 111, 119, AEL.lav);
+    textC(this.naming ? 'TYPE, ENTER' : this.onlineSession ? this.onlineSession.realm.name.toUpperCase().slice(0, 16) : this.i === 4 ? 'FULL CREATION' : 'NEW HERO', 111, 119, AEL.lav);
     aelHints(this.items()[this.i] === 'NAME' ? [['A', 'TYPE'], ['S', 'RANDOM'], ['B', 'BACK']] : [['A', 'NEXT'], ['B', 'BACK']]);
   }
 }
@@ -410,18 +414,55 @@ class AelClassSelect {
 }
 
 class AelSummary {
-  constructor(pick, slot) { this.opaque = true; this.pick = pick; this.slot = slot; }
-  update() {
-    if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (!P('a')) return;
-    SFX.confirm();
+  constructor(pick, slot, onlineSession = null) {
+    this.opaque = true; this.pick = pick; this.slot = slot; this.onlineSession = onlineSession;
+    this.pending = false; this.error = '';
+  }
+  beginAdventure(remoteCharacter = null) {
     const p = this.pick;
     G = newGameState(Object.assign({ slot: this.slot }, p, { scores: aelScores(p.cls), look: p.look || null, portrait: p.portrait || null }));
     G.difficulty = p.diff;
+    if (remoteCharacter && this.onlineSession) {
+      G.realm = remoteCharacter.realm_id || this.onlineSession.realm.id;
+      G.accountId = this.onlineSession.account.id;
+      G.mmoCharacterId = remoteCharacter.id;
+      G.mmoCharacterClass = remoteCharacter.class;
+      G.onlineAccountName = this.onlineSession.account.username;
+    }
     const role = CLASSES[G.cls].role === 'tank' ? 'healer' : 'tank';
     G.companions.push(makeAdventurer(role === 'tank' ? 'warden' : 'chaplain', 1, role === 'tank' ? 'BRAM' : 'ESME'));
     saveGame();
-    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
+    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, G.mmoCharacterId ? `Your hero is saved on ${G.realm.toUpperCase()}.` : `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
+  }
+  async createOnlineHero() {
+    if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(this.pick.name)) {
+      this.error = 'Use 3-16 valid characters for your hero name.';
+      return;
+    }
+    this.pending = true; this.error = '';
+    try {
+      const remote = await window.GBQMMOAccount.createCharacter(this.onlineSession, this.pick.name, this.pick.cls);
+      this.pending = false;
+      window.GBQMMOAccount.adoptGameplaySession(this.onlineSession);
+      this.beginAdventure(remote);
+    } catch (error) {
+      this.pending = false;
+      const messages = {
+        name_taken: 'That name is already used on this realm.',
+        character_limit_reached: 'Character limit reached for this account or realm.',
+        realm_unavailable: 'That realm is no longer available.',
+        unknown_realm: 'The selected realm could not be found.',
+        invalid_character: 'Check your character name and class.'
+      };
+      this.error = messages[error.code] || error.message || 'Online character creation failed.';
+    }
+  }
+  update() {
+    if (P('b') && !this.pending) { SFX.back(); removeScene(this); return; }
+    if (!P('a') || this.pending) return;
+    SFX.confirm();
+    if (this.onlineSession) { this.createOnlineHero(); return; }
+    this.beginAdventure();
   }
   draw() {
     const p = this.pick, c = newCharacter(Object.assign({}, p, { name: p.name || 'HERO', scores: aelScores(p.cls) })), D = derive(c);
@@ -435,7 +476,9 @@ class AelSummary {
     const st = [['HP', D.hpMax], ['AC', D.ac], ['INIT', D.init], ['STR', D.A.STR], ['DEX', D.A.DEX], ['WIS', D.A.WIS]];
     st.forEach(([k, v], j) => { const y = 52 + j * 8; text(k, 112, y, 2); textR(String(v), 152, y, AEL.cream); });
     aelButton(24, 104, 112, 13, 'BEGIN ADVENTURE', (frameN >> 4) % 4 !== 3, true);
-    aelHints([['A', 'CONFIRM'], ['B', 'BACK']]);
+    if (this.pending) textC('SAVING HERO TO REALM…', 80, 124, AEL.gold);
+    else if (this.error) { fill(5, 121, 150, 11, 'rgba(80,12,12,.95)'); textC(this.error.slice(0, 25), 80, 123, '#ffb8a8'); }
+    aelHints([['A', this.pending ? 'SAVING' : 'CREATE'], ['B', 'BACK']]);
   }
 }
 

@@ -1,0 +1,7035 @@
+{
+  "schemaVersion": 1,
+  "license": "Original GB Quest content",
+  "designNote": "Original fantasy equipment, spells, abilities and talents informed by broad action-RPG, MMO and tactical-RPG design conventions. No Elden Ring, World of Warcraft or Final Fantasy XIV item names, text, lore or assets are reproduced.",
+  "weapons": [
+    {
+      "id": "aelmoor-ashen-longblade",
+      "name": "Ashen Longblade",
+      "itemType": "weapon",
+      "category": "sword",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "rare",
+      "itemLevel": 20,
+      "stats": {
+        "attackPower": 8,
+        "critRating": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ashen-colossus-blade-of-echoes",
+      "name": "Ashen Colossus Blade of Echoes",
+      "itemType": "weapon",
+      "category": "greatsword",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "epic",
+      "itemLevel": 28,
+      "stats": {
+        "attackPower": 10,
+        "critRating": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ashen-keenknife-of-the-first-oath",
+      "name": "Ashen Keenknife of the First Oath",
+      "itemType": "weapon",
+      "category": "dagger",
+      "type": "ranged",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 36,
+      "stats": {
+        "attackPower": 12,
+        "critRating": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-moonlit-war-axe",
+      "name": "Moonlit War Axe",
+      "itemType": "weapon",
+      "category": "axe",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "epic",
+      "itemLevel": 55,
+      "stats": {
+        "attackPower": 11,
+        "critRating": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-moonlit-executioner-axe-of-echoes",
+      "name": "Moonlit Executioner Axe of Echoes",
+      "itemType": "weapon",
+      "category": "greataxe",
+      "type": "melee",
+      "damage": "1d12",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 63,
+      "stats": {
+        "attackPower": 13,
+        "critRating": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-moonlit-warhammer-of-the-first-oath",
+      "name": "Moonlit Warhammer of the First Oath",
+      "itemType": "weapon",
+      "category": "hammer",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "rare",
+      "itemLevel": 71,
+      "stats": {
+        "attackPower": 15,
+        "critRating": 5
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormbound-siege-maul",
+      "name": "Stormbound Siege Maul",
+      "itemType": "weapon",
+      "category": "maul",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 90,
+      "stats": {
+        "attackPower": 14,
+        "critRating": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormbound-lance-spear-of-echoes",
+      "name": "Stormbound Lance Spear of Echoes",
+      "itemType": "weapon",
+      "category": "spear",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "rare",
+      "itemLevel": 98,
+      "stats": {
+        "attackPower": 16,
+        "critRating": 5
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormbound-glaive-of-the-first-oath",
+      "name": "Stormbound Glaive of the First Oath",
+      "itemType": "weapon",
+      "category": "polearm",
+      "type": "ranged",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "epic",
+      "itemLevel": 106,
+      "stats": {
+        "attackPower": 18,
+        "critRating": 6
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thorned-recurve-bow",
+      "name": "Thorned Recurve Bow",
+      "itemType": "weapon",
+      "category": "bow",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "rare",
+      "itemLevel": 125,
+      "stats": {
+        "attackPower": 17,
+        "critRating": 5
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thorned-repeater-of-echoes",
+      "name": "Thorned Repeater of Echoes",
+      "itemType": "weapon",
+      "category": "crossbow",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "epic",
+      "itemLevel": 133,
+      "stats": {
+        "attackPower": 19,
+        "critRating": 6
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thorned-spellstaff-of-the-first-oath",
+      "name": "Thorned Spellstaff of the First Oath",
+      "itemType": "weapon",
+      "category": "staff",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 141,
+      "stats": {
+        "attackPower": 21,
+        "critRating": 7
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-duskforged-focus-wand",
+      "name": "Duskforged Focus Wand",
+      "itemType": "weapon",
+      "category": "wand",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "force",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "epic",
+      "itemLevel": 160,
+      "stats": {
+        "attackPower": 20,
+        "critRating": 6
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-duskforged-runic-codex-of-echoes",
+      "name": "Duskforged Runic Codex of Echoes",
+      "itemType": "weapon",
+      "category": "tome",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "psychic",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 168,
+      "stats": {
+        "attackPower": 22,
+        "critRating": 7
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-duskforged-chain-flail-of-the-first-oath",
+      "name": "Duskforged Chain Flail of the First Oath",
+      "itemType": "weapon",
+      "category": "flail",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "rare",
+      "itemLevel": 176,
+      "stats": {
+        "attackPower": 24,
+        "critRating": 8
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunken-duelist-blade",
+      "name": "Sunken Duelist Blade",
+      "itemType": "weapon",
+      "category": "rapier",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 195,
+      "stats": {
+        "attackPower": 23,
+        "critRating": 7
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunken-harvest-scythe-of-echoes",
+      "name": "Sunken Harvest Scythe of Echoes",
+      "itemType": "weapon",
+      "category": "scythe",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "rare",
+      "itemLevel": 203,
+      "stats": {
+        "attackPower": 25,
+        "critRating": 8
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunken-beast-claws-of-the-first-oath",
+      "name": "Sunken Beast Claws of the First Oath",
+      "itemType": "weapon",
+      "category": "claws",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "slashing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "epic",
+      "itemLevel": 211,
+      "stats": {
+        "attackPower": 27,
+        "critRating": 9
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starfall-longblade",
+      "name": "Starfall Longblade",
+      "itemType": "weapon",
+      "category": "sword",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "rare",
+      "itemLevel": 230,
+      "stats": {
+        "attackPower": 26,
+        "critRating": 8
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starfall-colossus-blade-of-echoes",
+      "name": "Starfall Colossus Blade of Echoes",
+      "itemType": "weapon",
+      "category": "greatsword",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "epic",
+      "itemLevel": 238,
+      "stats": {
+        "attackPower": 28,
+        "critRating": 9
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starfall-keenknife-of-the-first-oath",
+      "name": "Starfall Keenknife of the First Oath",
+      "itemType": "weapon",
+      "category": "dagger",
+      "type": "ranged",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 246,
+      "stats": {
+        "attackPower": 30,
+        "critRating": 10
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-frostglass-war-axe",
+      "name": "Frostglass War Axe",
+      "itemType": "weapon",
+      "category": "axe",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "epic",
+      "itemLevel": 265,
+      "stats": {
+        "attackPower": 29,
+        "critRating": 9
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-frostglass-executioner-axe-of-echoes",
+      "name": "Frostglass Executioner Axe of Echoes",
+      "itemType": "weapon",
+      "category": "greataxe",
+      "type": "melee",
+      "damage": "1d12",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 273,
+      "stats": {
+        "attackPower": 31,
+        "critRating": 10
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-frostglass-warhammer-of-the-first-oath",
+      "name": "Frostglass Warhammer of the First Oath",
+      "itemType": "weapon",
+      "category": "hammer",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "rare",
+      "itemLevel": 281,
+      "stats": {
+        "attackPower": 33,
+        "critRating": 11
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-emberwrought-siege-maul",
+      "name": "Emberwrought Siege Maul",
+      "itemType": "weapon",
+      "category": "maul",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 300,
+      "stats": {
+        "attackPower": 32,
+        "critRating": 10
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-emberwrought-lance-spear-of-echoes",
+      "name": "Emberwrought Lance Spear of Echoes",
+      "itemType": "weapon",
+      "category": "spear",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "rare",
+      "itemLevel": 308,
+      "stats": {
+        "attackPower": 34,
+        "critRating": 11
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-emberwrought-glaive-of-the-first-oath",
+      "name": "Emberwrought Glaive of the First Oath",
+      "itemType": "weapon",
+      "category": "polearm",
+      "type": "ranged",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "epic",
+      "itemLevel": 316,
+      "stats": {
+        "attackPower": 36,
+        "critRating": 12
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidtouched-recurve-bow",
+      "name": "Voidtouched Recurve Bow",
+      "itemType": "weapon",
+      "category": "bow",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "rare",
+      "itemLevel": 335,
+      "stats": {
+        "attackPower": 35,
+        "critRating": 11
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidtouched-repeater-of-echoes",
+      "name": "Voidtouched Repeater of Echoes",
+      "itemType": "weapon",
+      "category": "crossbow",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "epic",
+      "itemLevel": 343,
+      "stats": {
+        "attackPower": 37,
+        "critRating": 12
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidtouched-spellstaff-of-the-first-oath",
+      "name": "Voidtouched Spellstaff of the First Oath",
+      "itemType": "weapon",
+      "category": "staff",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 351,
+      "stats": {
+        "attackPower": 39,
+        "critRating": 13
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-runebound-focus-wand",
+      "name": "Runebound Focus Wand",
+      "itemType": "weapon",
+      "category": "wand",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "force",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "epic",
+      "itemLevel": 370,
+      "stats": {
+        "attackPower": 38,
+        "critRating": 12
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-runebound-runic-codex-of-echoes",
+      "name": "Runebound Runic Codex of Echoes",
+      "itemType": "weapon",
+      "category": "tome",
+      "type": "melee",
+      "damage": "1d6",
+      "damageType": "psychic",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 378,
+      "stats": {
+        "attackPower": 40,
+        "critRating": 13
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-runebound-chain-flail-of-the-first-oath",
+      "name": "Runebound Chain Flail of the First Oath",
+      "itemType": "weapon",
+      "category": "flail",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "rare",
+      "itemLevel": 386,
+      "stats": {
+        "attackPower": 42,
+        "critRating": 14
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawncrafted-duelist-blade",
+      "name": "Dawncrafted Duelist Blade",
+      "itemType": "weapon",
+      "category": "rapier",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 405,
+      "stats": {
+        "attackPower": 41,
+        "critRating": 13
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawncrafted-harvest-scythe-of-echoes",
+      "name": "Dawncrafted Harvest Scythe of Echoes",
+      "itemType": "weapon",
+      "category": "scythe",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "rare",
+      "itemLevel": 413,
+      "stats": {
+        "attackPower": 43,
+        "critRating": 14
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawncrafted-beast-claws-of-the-first-oath",
+      "name": "Dawncrafted Beast Claws of the First Oath",
+      "itemType": "weapon",
+      "category": "claws",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "slashing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "epic",
+      "itemLevel": 421,
+      "stats": {
+        "attackPower": 45,
+        "critRating": 15
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-graveward-longblade",
+      "name": "Graveward Longblade",
+      "itemType": "weapon",
+      "category": "sword",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "rare",
+      "itemLevel": 440,
+      "stats": {
+        "attackPower": 44,
+        "critRating": 14
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-graveward-colossus-blade-of-echoes",
+      "name": "Graveward Colossus Blade of Echoes",
+      "itemType": "weapon",
+      "category": "greatsword",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "epic",
+      "itemLevel": 448,
+      "stats": {
+        "attackPower": 46,
+        "critRating": 15
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-graveward-keenknife-of-the-first-oath",
+      "name": "Graveward Keenknife of the First Oath",
+      "itemType": "weapon",
+      "category": "dagger",
+      "type": "ranged",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 456,
+      "stats": {
+        "attackPower": 48,
+        "critRating": 16
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-tempest-war-axe",
+      "name": "Tempest War Axe",
+      "itemType": "weapon",
+      "category": "axe",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "epic",
+      "itemLevel": 475,
+      "stats": {
+        "attackPower": 47,
+        "critRating": 15
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-tempest-executioner-axe-of-echoes",
+      "name": "Tempest Executioner Axe of Echoes",
+      "itemType": "weapon",
+      "category": "greataxe",
+      "type": "melee",
+      "damage": "1d12",
+      "damageType": "slashing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 483,
+      "stats": {
+        "attackPower": 49,
+        "critRating": 16
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-tempest-warhammer-of-the-first-oath",
+      "name": "Tempest Warhammer of the First Oath",
+      "itemType": "weapon",
+      "category": "hammer",
+      "type": "ranged",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "rare",
+      "itemLevel": 491,
+      "stats": {
+        "attackPower": 51,
+        "critRating": 17
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-verdant-siege-maul",
+      "name": "Verdant Siege Maul",
+      "itemType": "weapon",
+      "category": "maul",
+      "type": "melee",
+      "damage": "2d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 510,
+      "stats": {
+        "attackPower": 50,
+        "critRating": 16
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-verdant-lance-spear-of-echoes",
+      "name": "Verdant Lance Spear of Echoes",
+      "itemType": "weapon",
+      "category": "spear",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "rare",
+      "itemLevel": 518,
+      "stats": {
+        "attackPower": 52,
+        "critRating": 17
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-verdant-glaive-of-the-first-oath",
+      "name": "Verdant Glaive of the First Oath",
+      "itemType": "weapon",
+      "category": "polearm",
+      "type": "ranged",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "epic",
+      "itemLevel": 526,
+      "stats": {
+        "attackPower": 54,
+        "critRating": 18
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gloam-recurve-bow",
+      "name": "Gloam Recurve Bow",
+      "itemType": "weapon",
+      "category": "bow",
+      "type": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [
+        "versatile"
+      ],
+      "rarity": "rare",
+      "itemLevel": 545,
+      "stats": {
+        "attackPower": 53,
+        "critRating": 17
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gloam-repeater-of-echoes",
+      "name": "Gloam Repeater of Echoes",
+      "itemType": "weapon",
+      "category": "crossbow",
+      "type": "melee",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": [
+        "heavy",
+        "two-handed"
+      ],
+      "rarity": "epic",
+      "itemLevel": 553,
+      "stats": {
+        "attackPower": 55,
+        "critRating": 18
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gloam-spellstaff-of-the-first-oath",
+      "name": "Gloam Spellstaff of the First Oath",
+      "itemType": "weapon",
+      "category": "staff",
+      "type": "ranged",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": [
+        "finesse"
+      ],
+      "rarity": "legendary",
+      "itemLevel": 561,
+      "stats": {
+        "attackPower": 57,
+        "critRating": 19
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    }
+  ],
+  "armor": [
+    {
+      "id": "aelmoor-aetherweave-head",
+      "name": "Aetherweave Head",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "head",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 15,
+      "stats": {
+        "armor": 8,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-chest",
+      "name": "Aetherweave Chest",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "chest",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 19,
+      "stats": {
+        "armor": 9,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-shoulders",
+      "name": "Aetherweave Shoulders",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "shoulders",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 23,
+      "stats": {
+        "armor": 10,
+        "vitality": 2,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-hands",
+      "name": "Aetherweave Hands",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "hands",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 27,
+      "stats": {
+        "armor": 11,
+        "vitality": 2,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-legs",
+      "name": "Aetherweave Legs",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "legs",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 31,
+      "stats": {
+        "armor": 12,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-feet",
+      "name": "Aetherweave Feet",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "feet",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 35,
+      "stats": {
+        "armor": 13,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-waist",
+      "name": "Aetherweave Waist",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "waist",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 39,
+      "stats": {
+        "armor": 14,
+        "vitality": 2,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-wrists",
+      "name": "Aetherweave Wrists",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "wrists",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 43,
+      "stats": {
+        "armor": 15,
+        "vitality": 2,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-cloak",
+      "name": "Aetherweave Cloak",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "cloak",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 47,
+      "stats": {
+        "armor": 16,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-aetherweave-shield",
+      "name": "Aetherweave Shield",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "shield",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 51,
+      "stats": {
+        "armor": 17,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-head",
+      "name": "Ironroot Head",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "head",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 57,
+      "stats": {
+        "armor": 12,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-chest",
+      "name": "Ironroot Chest",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "chest",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 61,
+      "stats": {
+        "armor": 13,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-shoulders",
+      "name": "Ironroot Shoulders",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "shoulders",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 65,
+      "stats": {
+        "armor": 14,
+        "vitality": 3,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-hands",
+      "name": "Ironroot Hands",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "hands",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 69,
+      "stats": {
+        "armor": 15,
+        "vitality": 3,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-legs",
+      "name": "Ironroot Legs",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "legs",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 73,
+      "stats": {
+        "armor": 16,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-feet",
+      "name": "Ironroot Feet",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "feet",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 77,
+      "stats": {
+        "armor": 17,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-waist",
+      "name": "Ironroot Waist",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "waist",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 81,
+      "stats": {
+        "armor": 18,
+        "vitality": 3,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-wrists",
+      "name": "Ironroot Wrists",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "wrists",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 85,
+      "stats": {
+        "armor": 19,
+        "vitality": 3,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-cloak",
+      "name": "Ironroot Cloak",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "cloak",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 89,
+      "stats": {
+        "armor": 20,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-ironroot-shield",
+      "name": "Ironroot Shield",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "shield",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 93,
+      "stats": {
+        "armor": 21,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-head",
+      "name": "Nightglass Head",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "head",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 99,
+      "stats": {
+        "armor": 16,
+        "vitality": 4,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-chest",
+      "name": "Nightglass Chest",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "chest",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 103,
+      "stats": {
+        "armor": 17,
+        "vitality": 4,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-shoulders",
+      "name": "Nightglass Shoulders",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "shoulders",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 107,
+      "stats": {
+        "armor": 18,
+        "vitality": 4,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-hands",
+      "name": "Nightglass Hands",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "hands",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 111,
+      "stats": {
+        "armor": 19,
+        "vitality": 4,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-legs",
+      "name": "Nightglass Legs",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "legs",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 115,
+      "stats": {
+        "armor": 20,
+        "vitality": 4,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-feet",
+      "name": "Nightglass Feet",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "feet",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 119,
+      "stats": {
+        "armor": 21,
+        "vitality": 4,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-waist",
+      "name": "Nightglass Waist",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "waist",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 123,
+      "stats": {
+        "armor": 22,
+        "vitality": 4,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-wrists",
+      "name": "Nightglass Wrists",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "wrists",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 127,
+      "stats": {
+        "armor": 23,
+        "vitality": 4,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-cloak",
+      "name": "Nightglass Cloak",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "cloak",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 131,
+      "stats": {
+        "armor": 24,
+        "vitality": 4,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-nightglass-shield",
+      "name": "Nightglass Shield",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "shield",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 135,
+      "stats": {
+        "armor": 25,
+        "vitality": 4,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-head",
+      "name": "Sunward Head",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "head",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 141,
+      "stats": {
+        "armor": 20,
+        "vitality": 5,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-chest",
+      "name": "Sunward Chest",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "chest",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 145,
+      "stats": {
+        "armor": 21,
+        "vitality": 5,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-shoulders",
+      "name": "Sunward Shoulders",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "shoulders",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 149,
+      "stats": {
+        "armor": 22,
+        "vitality": 5,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-hands",
+      "name": "Sunward Hands",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "hands",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 153,
+      "stats": {
+        "armor": 23,
+        "vitality": 5,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-legs",
+      "name": "Sunward Legs",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "legs",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 157,
+      "stats": {
+        "armor": 24,
+        "vitality": 5,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-feet",
+      "name": "Sunward Feet",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "feet",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 161,
+      "stats": {
+        "armor": 25,
+        "vitality": 5,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-waist",
+      "name": "Sunward Waist",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "waist",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 165,
+      "stats": {
+        "armor": 26,
+        "vitality": 5,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-wrists",
+      "name": "Sunward Wrists",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "wrists",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 169,
+      "stats": {
+        "armor": 27,
+        "vitality": 5,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-cloak",
+      "name": "Sunward Cloak",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "cloak",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 173,
+      "stats": {
+        "armor": 28,
+        "vitality": 5,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-sunward-shield",
+      "name": "Sunward Shield",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "shield",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 177,
+      "stats": {
+        "armor": 29,
+        "vitality": 5,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-head",
+      "name": "Rimeguard Head",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "head",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 183,
+      "stats": {
+        "armor": 24,
+        "vitality": 6,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-chest",
+      "name": "Rimeguard Chest",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "chest",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 187,
+      "stats": {
+        "armor": 25,
+        "vitality": 6,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-shoulders",
+      "name": "Rimeguard Shoulders",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "shoulders",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 191,
+      "stats": {
+        "armor": 26,
+        "vitality": 6,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-hands",
+      "name": "Rimeguard Hands",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "hands",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 195,
+      "stats": {
+        "armor": 27,
+        "vitality": 6,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-legs",
+      "name": "Rimeguard Legs",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "legs",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 199,
+      "stats": {
+        "armor": 28,
+        "vitality": 6,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-feet",
+      "name": "Rimeguard Feet",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "feet",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 203,
+      "stats": {
+        "armor": 29,
+        "vitality": 6,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-waist",
+      "name": "Rimeguard Waist",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "waist",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 207,
+      "stats": {
+        "armor": 30,
+        "vitality": 6,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-wrists",
+      "name": "Rimeguard Wrists",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "wrists",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 211,
+      "stats": {
+        "armor": 31,
+        "vitality": 6,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-cloak",
+      "name": "Rimeguard Cloak",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "cloak",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 215,
+      "stats": {
+        "armor": 32,
+        "vitality": 6,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-rimeguard-shield",
+      "name": "Rimeguard Shield",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "shield",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 219,
+      "stats": {
+        "armor": 33,
+        "vitality": 6,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-head",
+      "name": "Stormscale Head",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "head",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 225,
+      "stats": {
+        "armor": 28,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-chest",
+      "name": "Stormscale Chest",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "chest",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 229,
+      "stats": {
+        "armor": 29,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-shoulders",
+      "name": "Stormscale Shoulders",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "shoulders",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 233,
+      "stats": {
+        "armor": 30,
+        "vitality": 2,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-hands",
+      "name": "Stormscale Hands",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "hands",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 237,
+      "stats": {
+        "armor": 31,
+        "vitality": 2,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-legs",
+      "name": "Stormscale Legs",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "legs",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 241,
+      "stats": {
+        "armor": 32,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-feet",
+      "name": "Stormscale Feet",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "feet",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 245,
+      "stats": {
+        "armor": 33,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-waist",
+      "name": "Stormscale Waist",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "waist",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 249,
+      "stats": {
+        "armor": 34,
+        "vitality": 2,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-wrists",
+      "name": "Stormscale Wrists",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "wrists",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 253,
+      "stats": {
+        "armor": 35,
+        "vitality": 2,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-cloak",
+      "name": "Stormscale Cloak",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "cloak",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 257,
+      "stats": {
+        "armor": 36,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-stormscale-shield",
+      "name": "Stormscale Shield",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "shield",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 261,
+      "stats": {
+        "armor": 37,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-head",
+      "name": "Dawnsteel Head",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "head",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 267,
+      "stats": {
+        "armor": 32,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-chest",
+      "name": "Dawnsteel Chest",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "chest",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 271,
+      "stats": {
+        "armor": 33,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-shoulders",
+      "name": "Dawnsteel Shoulders",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "shoulders",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 275,
+      "stats": {
+        "armor": 34,
+        "vitality": 3,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-hands",
+      "name": "Dawnsteel Hands",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "hands",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 279,
+      "stats": {
+        "armor": 35,
+        "vitality": 3,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-legs",
+      "name": "Dawnsteel Legs",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "legs",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 283,
+      "stats": {
+        "armor": 36,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-feet",
+      "name": "Dawnsteel Feet",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "feet",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 287,
+      "stats": {
+        "armor": 37,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-waist",
+      "name": "Dawnsteel Waist",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "waist",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 291,
+      "stats": {
+        "armor": 38,
+        "vitality": 3,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-wrists",
+      "name": "Dawnsteel Wrists",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "wrists",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 295,
+      "stats": {
+        "armor": 39,
+        "vitality": 3,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-cloak",
+      "name": "Dawnsteel Cloak",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "cloak",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 299,
+      "stats": {
+        "armor": 40,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-dawnsteel-shield",
+      "name": "Dawnsteel Shield",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "shield",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 303,
+      "stats": {
+        "armor": 41,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-head",
+      "name": "Gravebloom Head",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "head",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 309,
+      "stats": {
+        "armor": 36,
+        "vitality": 4,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-chest",
+      "name": "Gravebloom Chest",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "chest",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 313,
+      "stats": {
+        "armor": 37,
+        "vitality": 4,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-shoulders",
+      "name": "Gravebloom Shoulders",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "shoulders",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 317,
+      "stats": {
+        "armor": 38,
+        "vitality": 4,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-hands",
+      "name": "Gravebloom Hands",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "hands",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 321,
+      "stats": {
+        "armor": 39,
+        "vitality": 4,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-legs",
+      "name": "Gravebloom Legs",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "legs",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 325,
+      "stats": {
+        "armor": 40,
+        "vitality": 4,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-feet",
+      "name": "Gravebloom Feet",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "feet",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 329,
+      "stats": {
+        "armor": 41,
+        "vitality": 4,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-waist",
+      "name": "Gravebloom Waist",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "waist",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 333,
+      "stats": {
+        "armor": 42,
+        "vitality": 4,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-wrists",
+      "name": "Gravebloom Wrists",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "wrists",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 337,
+      "stats": {
+        "armor": 43,
+        "vitality": 4,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-cloak",
+      "name": "Gravebloom Cloak",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "cloak",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 341,
+      "stats": {
+        "armor": 44,
+        "vitality": 4,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-gravebloom-shield",
+      "name": "Gravebloom Shield",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "shield",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 345,
+      "stats": {
+        "armor": 45,
+        "vitality": 4,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-head",
+      "name": "Wyrmhide Head",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "head",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 351,
+      "stats": {
+        "armor": 40,
+        "vitality": 5,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-chest",
+      "name": "Wyrmhide Chest",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "chest",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 355,
+      "stats": {
+        "armor": 41,
+        "vitality": 5,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-shoulders",
+      "name": "Wyrmhide Shoulders",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "shoulders",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 359,
+      "stats": {
+        "armor": 42,
+        "vitality": 5,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-hands",
+      "name": "Wyrmhide Hands",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "hands",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 363,
+      "stats": {
+        "armor": 43,
+        "vitality": 5,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-legs",
+      "name": "Wyrmhide Legs",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "legs",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 367,
+      "stats": {
+        "armor": 44,
+        "vitality": 5,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-feet",
+      "name": "Wyrmhide Feet",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "feet",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 371,
+      "stats": {
+        "armor": 45,
+        "vitality": 5,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-waist",
+      "name": "Wyrmhide Waist",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "waist",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 375,
+      "stats": {
+        "armor": 46,
+        "vitality": 5,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-wrists",
+      "name": "Wyrmhide Wrists",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "wrists",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 379,
+      "stats": {
+        "armor": 47,
+        "vitality": 5,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-cloak",
+      "name": "Wyrmhide Cloak",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "cloak",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 383,
+      "stats": {
+        "armor": 48,
+        "vitality": 5,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-wyrmhide-shield",
+      "name": "Wyrmhide Shield",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "shield",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 387,
+      "stats": {
+        "armor": 49,
+        "vitality": 5,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-head",
+      "name": "Starforged Head",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "head",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 393,
+      "stats": {
+        "armor": 44,
+        "vitality": 6,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-chest",
+      "name": "Starforged Chest",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "chest",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 397,
+      "stats": {
+        "armor": 45,
+        "vitality": 6,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-shoulders",
+      "name": "Starforged Shoulders",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "shoulders",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 401,
+      "stats": {
+        "armor": 46,
+        "vitality": 6,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-hands",
+      "name": "Starforged Hands",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "hands",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 405,
+      "stats": {
+        "armor": 47,
+        "vitality": 6,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-legs",
+      "name": "Starforged Legs",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "legs",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 409,
+      "stats": {
+        "armor": 48,
+        "vitality": 6,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-feet",
+      "name": "Starforged Feet",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "feet",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 413,
+      "stats": {
+        "armor": 49,
+        "vitality": 6,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-waist",
+      "name": "Starforged Waist",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "waist",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 417,
+      "stats": {
+        "armor": 50,
+        "vitality": 6,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-wrists",
+      "name": "Starforged Wrists",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "wrists",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 421,
+      "stats": {
+        "armor": 51,
+        "vitality": 6,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-cloak",
+      "name": "Starforged Cloak",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "cloak",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 425,
+      "stats": {
+        "armor": 52,
+        "vitality": 6,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-starforged-shield",
+      "name": "Starforged Shield",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "shield",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 429,
+      "stats": {
+        "armor": 53,
+        "vitality": 6,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-head",
+      "name": "Thornmail Head",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "head",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 435,
+      "stats": {
+        "armor": 48,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-chest",
+      "name": "Thornmail Chest",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "chest",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 439,
+      "stats": {
+        "armor": 49,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-shoulders",
+      "name": "Thornmail Shoulders",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "shoulders",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 443,
+      "stats": {
+        "armor": 50,
+        "vitality": 2,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-hands",
+      "name": "Thornmail Hands",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "hands",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 447,
+      "stats": {
+        "armor": 51,
+        "vitality": 2,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-legs",
+      "name": "Thornmail Legs",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "legs",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 451,
+      "stats": {
+        "armor": 52,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-feet",
+      "name": "Thornmail Feet",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "feet",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 455,
+      "stats": {
+        "armor": 53,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-waist",
+      "name": "Thornmail Waist",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "waist",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 459,
+      "stats": {
+        "armor": 54,
+        "vitality": 2,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-wrists",
+      "name": "Thornmail Wrists",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "wrists",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 463,
+      "stats": {
+        "armor": 55,
+        "vitality": 2,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-cloak",
+      "name": "Thornmail Cloak",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "cloak",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 467,
+      "stats": {
+        "armor": 56,
+        "vitality": 2,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-thornmail-shield",
+      "name": "Thornmail Shield",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "shield",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 471,
+      "stats": {
+        "armor": 57,
+        "vitality": 2,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-head",
+      "name": "Voidwoven Head",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "head",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 477,
+      "stats": {
+        "armor": 52,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-chest",
+      "name": "Voidwoven Chest",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "chest",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 481,
+      "stats": {
+        "armor": 53,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-shoulders",
+      "name": "Voidwoven Shoulders",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "shoulders",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 485,
+      "stats": {
+        "armor": 54,
+        "vitality": 3,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-hands",
+      "name": "Voidwoven Hands",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "hands",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 489,
+      "stats": {
+        "armor": 55,
+        "vitality": 3,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-legs",
+      "name": "Voidwoven Legs",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "legs",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 493,
+      "stats": {
+        "armor": 56,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-feet",
+      "name": "Voidwoven Feet",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "feet",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 497,
+      "stats": {
+        "armor": 57,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-waist",
+      "name": "Voidwoven Waist",
+      "itemType": "armor",
+      "category": "leather",
+      "slot": "waist",
+      "armorType": "leather",
+      "rarity": "rare",
+      "itemLevel": 501,
+      "stats": {
+        "armor": 58,
+        "vitality": 3,
+        "resistance": 3
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-wrists",
+      "name": "Voidwoven Wrists",
+      "itemType": "armor",
+      "category": "mail",
+      "slot": "wrists",
+      "armorType": "mail",
+      "rarity": "epic",
+      "itemLevel": 505,
+      "stats": {
+        "armor": 59,
+        "vitality": 3,
+        "resistance": 4
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-cloak",
+      "name": "Voidwoven Cloak",
+      "itemType": "armor",
+      "category": "plate",
+      "slot": "cloak",
+      "armorType": "plate",
+      "rarity": "legendary",
+      "itemLevel": 509,
+      "stats": {
+        "armor": 60,
+        "vitality": 3,
+        "resistance": 1
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    },
+    {
+      "id": "aelmoor-voidwoven-shield",
+      "name": "Voidwoven Shield",
+      "itemType": "armor",
+      "category": "cloth",
+      "slot": "shield",
+      "armorType": "cloth",
+      "rarity": "uncommon",
+      "itemLevel": 513,
+      "stats": {
+        "armor": 61,
+        "vitality": 3,
+        "resistance": 2
+      },
+      "bind": "bind_on_equip",
+      "stackable": false
+    }
+  ],
+  "spells": [
+    {
+      "id": "aelmoor-cinder-lance-1",
+      "name": "Cinder Lance",
+      "level": 0,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "fire",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-nova-1",
+      "name": "Cinder Nova",
+      "level": 1,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "fire",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-ward-1",
+      "name": "Cinder Ward",
+      "level": 2,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "fire",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-torrent-1",
+      "name": "Cinder Torrent",
+      "level": 3,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "fire",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-comet-1",
+      "name": "Cinder Comet",
+      "level": 4,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "fire",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-pulse-1",
+      "name": "Cinder Pulse Surge",
+      "level": 5,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "fire",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-sigil-1",
+      "name": "Cinder Sigil Surge",
+      "level": 6,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "fire",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-mantle-1",
+      "name": "Cinder Mantle Surge",
+      "level": 7,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "fire",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-cascade-1",
+      "name": "Cinder Cascade Surge",
+      "level": 8,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "fire",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-rift-1",
+      "name": "Cinder Rift Surge",
+      "level": 9,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "fire",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-bloom-1",
+      "name": "Cinder Bloom of the Deep",
+      "level": 0,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "fire",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-vortex-1",
+      "name": "Cinder Vortex of the Deep",
+      "level": 1,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "fire",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-beacon-1",
+      "name": "Cinder Beacon of the Deep",
+      "level": 2,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "fire",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-chains-1",
+      "name": "Cinder Chains of the Deep",
+      "level": 3,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "fire",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-cinder-sanctum-1",
+      "name": "Cinder Sanctum of the Deep",
+      "level": 4,
+      "school": "evocation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "fire",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original fire technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-lance-2",
+      "name": "Rime Lance",
+      "level": 0,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "cold",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-nova-2",
+      "name": "Rime Nova",
+      "level": 1,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "cold",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-ward-2",
+      "name": "Rime Ward",
+      "level": 2,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "cold",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-torrent-2",
+      "name": "Rime Torrent",
+      "level": 3,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "cold",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-comet-2",
+      "name": "Rime Comet",
+      "level": 4,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "cold",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-pulse-2",
+      "name": "Rime Pulse Surge",
+      "level": 5,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "cold",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-sigil-2",
+      "name": "Rime Sigil Surge",
+      "level": 6,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "cold",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-mantle-2",
+      "name": "Rime Mantle Surge",
+      "level": 7,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "cold",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-cascade-2",
+      "name": "Rime Cascade Surge",
+      "level": 8,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "cold",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-rift-2",
+      "name": "Rime Rift Surge",
+      "level": 9,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "cold",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-bloom-2",
+      "name": "Rime Bloom of the Deep",
+      "level": 0,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "cold",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-vortex-2",
+      "name": "Rime Vortex of the Deep",
+      "level": 1,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "cold",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-beacon-2",
+      "name": "Rime Beacon of the Deep",
+      "level": 2,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "cold",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-chains-2",
+      "name": "Rime Chains of the Deep",
+      "level": 3,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "cold",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-rime-sanctum-2",
+      "name": "Rime Sanctum of the Deep",
+      "level": 4,
+      "school": "abjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "cold",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original cold technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-lance-3",
+      "name": "Tempest Lance",
+      "level": 0,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "lightning",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-nova-3",
+      "name": "Tempest Nova",
+      "level": 1,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "lightning",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-ward-3",
+      "name": "Tempest Ward",
+      "level": 2,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "lightning",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-torrent-3",
+      "name": "Tempest Torrent",
+      "level": 3,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "lightning",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-comet-3",
+      "name": "Tempest Comet",
+      "level": 4,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "lightning",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-pulse-3",
+      "name": "Tempest Pulse Surge",
+      "level": 5,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "lightning",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-sigil-3",
+      "name": "Tempest Sigil Surge",
+      "level": 6,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "lightning",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-mantle-3",
+      "name": "Tempest Mantle Surge",
+      "level": 7,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "lightning",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-cascade-3",
+      "name": "Tempest Cascade Surge",
+      "level": 8,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "lightning",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-rift-3",
+      "name": "Tempest Rift Surge",
+      "level": 9,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "lightning",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-bloom-3",
+      "name": "Tempest Bloom of the Deep",
+      "level": 0,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "lightning",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-vortex-3",
+      "name": "Tempest Vortex of the Deep",
+      "level": 1,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "lightning",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-beacon-3",
+      "name": "Tempest Beacon of the Deep",
+      "level": 2,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "lightning",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-chains-3",
+      "name": "Tempest Chains of the Deep",
+      "level": 3,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "lightning",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-tempest-sanctum-3",
+      "name": "Tempest Sanctum of the Deep",
+      "level": 4,
+      "school": "conjuration",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "lightning",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original lightning technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-lance-4",
+      "name": "Dawn Lance",
+      "level": 0,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "radiant",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-nova-4",
+      "name": "Dawn Nova",
+      "level": 1,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "radiant",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-ward-4",
+      "name": "Dawn Ward",
+      "level": 2,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "radiant",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-torrent-4",
+      "name": "Dawn Torrent",
+      "level": 3,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "radiant",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-comet-4",
+      "name": "Dawn Comet",
+      "level": 4,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "radiant",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-pulse-4",
+      "name": "Dawn Pulse Surge",
+      "level": 5,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "radiant",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-sigil-4",
+      "name": "Dawn Sigil Surge",
+      "level": 6,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "radiant",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-mantle-4",
+      "name": "Dawn Mantle Surge",
+      "level": 7,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "radiant",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-cascade-4",
+      "name": "Dawn Cascade Surge",
+      "level": 8,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "radiant",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-rift-4",
+      "name": "Dawn Rift Surge",
+      "level": 9,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "radiant",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-bloom-4",
+      "name": "Dawn Bloom of the Deep",
+      "level": 0,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "radiant",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-vortex-4",
+      "name": "Dawn Vortex of the Deep",
+      "level": 1,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "radiant",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-beacon-4",
+      "name": "Dawn Beacon of the Deep",
+      "level": 2,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "radiant",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-chains-4",
+      "name": "Dawn Chains of the Deep",
+      "level": 3,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "radiant",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-dawn-sanctum-4",
+      "name": "Dawn Sanctum of the Deep",
+      "level": 4,
+      "school": "divination",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "radiant",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original radiant technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-lance-5",
+      "name": "Grave Lance",
+      "level": 0,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "necrotic",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-nova-5",
+      "name": "Grave Nova",
+      "level": 1,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-ward-5",
+      "name": "Grave Ward",
+      "level": 2,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-torrent-5",
+      "name": "Grave Torrent",
+      "level": 3,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-comet-5",
+      "name": "Grave Comet",
+      "level": 4,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-pulse-5",
+      "name": "Grave Pulse Surge",
+      "level": 5,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-sigil-5",
+      "name": "Grave Sigil Surge",
+      "level": 6,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-mantle-5",
+      "name": "Grave Mantle Surge",
+      "level": 7,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-cascade-5",
+      "name": "Grave Cascade Surge",
+      "level": 8,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-rift-5",
+      "name": "Grave Rift Surge",
+      "level": 9,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-bloom-5",
+      "name": "Grave Bloom of the Deep",
+      "level": 0,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "necrotic",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-vortex-5",
+      "name": "Grave Vortex of the Deep",
+      "level": 1,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-beacon-5",
+      "name": "Grave Beacon of the Deep",
+      "level": 2,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-chains-5",
+      "name": "Grave Chains of the Deep",
+      "level": 3,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-grave-sanctum-5",
+      "name": "Grave Sanctum of the Deep",
+      "level": 4,
+      "school": "enchantment",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "necrotic",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original necrotic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-lance-6",
+      "name": "Aether Lance",
+      "level": 0,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "force",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-nova-6",
+      "name": "Aether Nova",
+      "level": 1,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "force",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-ward-6",
+      "name": "Aether Ward",
+      "level": 2,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "force",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-torrent-6",
+      "name": "Aether Torrent",
+      "level": 3,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "force",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-comet-6",
+      "name": "Aether Comet",
+      "level": 4,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "force",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-pulse-6",
+      "name": "Aether Pulse Surge",
+      "level": 5,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "force",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-sigil-6",
+      "name": "Aether Sigil Surge",
+      "level": 6,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "force",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-mantle-6",
+      "name": "Aether Mantle Surge",
+      "level": 7,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "force",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-cascade-6",
+      "name": "Aether Cascade Surge",
+      "level": 8,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "force",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-rift-6",
+      "name": "Aether Rift Surge",
+      "level": 9,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "force",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-bloom-6",
+      "name": "Aether Bloom of the Deep",
+      "level": 0,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "force",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-vortex-6",
+      "name": "Aether Vortex of the Deep",
+      "level": 1,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "force",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-beacon-6",
+      "name": "Aether Beacon of the Deep",
+      "level": 2,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "force",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-chains-6",
+      "name": "Aether Chains of the Deep",
+      "level": 3,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "force",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-aether-sanctum-6",
+      "name": "Aether Sanctum of the Deep",
+      "level": 4,
+      "school": "illusion",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "force",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original force technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-lance-7",
+      "name": "Briar Lance",
+      "level": 0,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "poison",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-nova-7",
+      "name": "Briar Nova",
+      "level": 1,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "poison",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-ward-7",
+      "name": "Briar Ward",
+      "level": 2,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "poison",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-torrent-7",
+      "name": "Briar Torrent",
+      "level": 3,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "poison",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-comet-7",
+      "name": "Briar Comet",
+      "level": 4,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "poison",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-pulse-7",
+      "name": "Briar Pulse Surge",
+      "level": 5,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "poison",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-sigil-7",
+      "name": "Briar Sigil Surge",
+      "level": 6,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "poison",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-mantle-7",
+      "name": "Briar Mantle Surge",
+      "level": 7,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "poison",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-cascade-7",
+      "name": "Briar Cascade Surge",
+      "level": 8,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "poison",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-rift-7",
+      "name": "Briar Rift Surge",
+      "level": 9,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "poison",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-bloom-7",
+      "name": "Briar Bloom of the Deep",
+      "level": 0,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "poison",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-vortex-7",
+      "name": "Briar Vortex of the Deep",
+      "level": 1,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "poison",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-beacon-7",
+      "name": "Briar Beacon of the Deep",
+      "level": 2,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "poison",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-chains-7",
+      "name": "Briar Chains of the Deep",
+      "level": 3,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "poison",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-briar-sanctum-7",
+      "name": "Briar Sanctum of the Deep",
+      "level": 4,
+      "school": "necromancy",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "poison",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original poison technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-lance-8",
+      "name": "Echo Lance",
+      "level": 0,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "psychic",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-nova-8",
+      "name": "Echo Nova",
+      "level": 1,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "psychic",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-ward-8",
+      "name": "Echo Ward",
+      "level": 2,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "psychic",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-torrent-8",
+      "name": "Echo Torrent",
+      "level": 3,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "psychic",
+      "classIds": [
+        "warlock"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-comet-8",
+      "name": "Echo Comet",
+      "level": 4,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "psychic",
+      "classIds": [
+        "wizard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-pulse-8",
+      "name": "Echo Pulse Surge",
+      "level": 5,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 90,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "psychic",
+      "classIds": [
+        "barbarian"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-sigil-8",
+      "name": "Echo Sigil Surge",
+      "level": 6,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "psychic",
+      "classIds": [
+        "bard"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-mantle-8",
+      "name": "Echo Mantle Surge",
+      "level": 7,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "5d6",
+      "damageType": "psychic",
+      "classIds": [
+        "cleric"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-cascade-8",
+      "name": "Echo Cascade Surge",
+      "level": 8,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "psychic",
+      "classIds": [
+        "druid"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-rift-8",
+      "name": "Echo Rift Surge",
+      "level": 9,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "6d6",
+      "damageType": "psychic",
+      "classIds": [
+        "fighter"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-bloom-8",
+      "name": "Echo Bloom of the Deep",
+      "level": 0,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "1d8",
+      "damageType": "psychic",
+      "classIds": [
+        "monk"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-vortex-8",
+      "name": "Echo Vortex of the Deep",
+      "level": 1,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 150,
+      "duration": "instantaneous",
+      "damage": "2d6",
+      "damageType": "psychic",
+      "classIds": [
+        "paladin"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-beacon-8",
+      "name": "Echo Beacon of the Deep",
+      "level": 2,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "bonus action",
+      "rangeFeet": 60,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "psychic",
+      "classIds": [
+        "ranger"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-chains-8",
+      "name": "Echo Chains of the Deep",
+      "level": 3,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 30,
+      "duration": "instantaneous",
+      "damage": "3d6",
+      "damageType": "psychic",
+      "classIds": [
+        "rogue"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    },
+    {
+      "id": "aelmoor-echo-sanctum-8",
+      "name": "Echo Sanctum of the Deep",
+      "level": 4,
+      "school": "transmutation",
+      "type": "spell",
+      "castingTime": "action",
+      "rangeFeet": 120,
+      "duration": "instantaneous",
+      "damage": "4d6",
+      "damageType": "psychic",
+      "classIds": [
+        "sorcerer"
+      ],
+      "source": "Aelmoor Original Expansion",
+      "detail": "An original psychic technique designed for tactical combat, positioning and class synergy."
+    }
+  ],
+  "abilities": [
+    {
+      "id": "barbarian-aelmoor-1",
+      "name": "Rending Strike",
+      "classId": "barbarian",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original barbarian technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "slashing",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "barbarian-aelmoor-2",
+      "name": "Guarding Counter",
+      "classId": "barbarian",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original barbarian technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "fire",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "barbarian-aelmoor-3",
+      "name": "Flowing Step",
+      "classId": "barbarian",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original barbarian technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "radiant",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "barbarian-aelmoor-4",
+      "name": "Piercing Burst",
+      "classId": "barbarian",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original barbarian technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "cold",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "barbarian-aelmoor-5",
+      "name": "Binding Oath",
+      "classId": "barbarian",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original barbarian technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "force",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "bard-aelmoor-1",
+      "name": "Guarding Step",
+      "classId": "bard",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original bard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "fire",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "bard-aelmoor-2",
+      "name": "Flowing Burst",
+      "classId": "bard",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original bard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "3d6",
+          "abilityModifier": "cha"
+        }
+      ]
+    },
+    {
+      "id": "bard-aelmoor-3",
+      "name": "Piercing Oath",
+      "classId": "bard",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original bard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "cold",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "bard-aelmoor-4",
+      "name": "Binding Chorus",
+      "classId": "bard",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original bard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "5d6",
+          "abilityModifier": "cha"
+        }
+      ]
+    },
+    {
+      "id": "bard-aelmoor-5",
+      "name": "Radiant Focus",
+      "classId": "bard",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original bard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "necrotic",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "cleric-aelmoor-1",
+      "name": "Flowing Oath",
+      "classId": "cleric",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original cleric technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "radiant",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "cleric-aelmoor-2",
+      "name": "Piercing Chorus",
+      "classId": "cleric",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original cleric technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "3d6",
+          "abilityModifier": "wis"
+        }
+      ]
+    },
+    {
+      "id": "cleric-aelmoor-3",
+      "name": "Binding Focus",
+      "classId": "cleric",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original cleric technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "force",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "cleric-aelmoor-4",
+      "name": "Radiant Stance",
+      "classId": "cleric",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original cleric technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "5d6",
+          "abilityModifier": "wis"
+        }
+      ]
+    },
+    {
+      "id": "cleric-aelmoor-5",
+      "name": "Umbral Surge",
+      "classId": "cleric",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original cleric technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "slashing",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "druid-aelmoor-1",
+      "name": "Piercing Focus",
+      "classId": "druid",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original druid technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "cold",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "druid-aelmoor-2",
+      "name": "Binding Stance",
+      "classId": "druid",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original druid technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "3d6",
+          "abilityModifier": "wis"
+        }
+      ]
+    },
+    {
+      "id": "druid-aelmoor-3",
+      "name": "Radiant Surge",
+      "classId": "druid",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original druid technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "necrotic",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "druid-aelmoor-4",
+      "name": "Umbral Flourish",
+      "classId": "druid",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original druid technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "5d6",
+          "abilityModifier": "wis"
+        }
+      ]
+    },
+    {
+      "id": "druid-aelmoor-5",
+      "name": "Whirling Impact",
+      "classId": "druid",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original druid technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "fire",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "fighter-aelmoor-1",
+      "name": "Binding Surge",
+      "classId": "fighter",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original fighter technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "force",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "fighter-aelmoor-2",
+      "name": "Radiant Flourish",
+      "classId": "fighter",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original fighter technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "necrotic",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "fighter-aelmoor-3",
+      "name": "Umbral Impact",
+      "classId": "fighter",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original fighter technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "slashing",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "fighter-aelmoor-4",
+      "name": "Whirling Aegis",
+      "classId": "fighter",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original fighter technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "fire",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "fighter-aelmoor-5",
+      "name": "Resonant Strike",
+      "classId": "fighter",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original fighter technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "radiant",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "monk-aelmoor-1",
+      "name": "Radiant Impact",
+      "classId": "monk",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original monk technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "necrotic",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "monk-aelmoor-2",
+      "name": "Umbral Aegis",
+      "classId": "monk",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original monk technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "slashing",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "monk-aelmoor-3",
+      "name": "Whirling Strike",
+      "classId": "monk",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original monk technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "fire",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "monk-aelmoor-4",
+      "name": "Resonant Counter",
+      "classId": "monk",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original monk technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "radiant",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "monk-aelmoor-5",
+      "name": "Vigilant Step",
+      "classId": "monk",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original monk technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "cold",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "paladin-aelmoor-1",
+      "name": "Umbral Strike",
+      "classId": "paladin",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original paladin technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "slashing",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "paladin-aelmoor-2",
+      "name": "Whirling Counter",
+      "classId": "paladin",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original paladin technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "3d6",
+          "abilityModifier": "cha"
+        }
+      ]
+    },
+    {
+      "id": "paladin-aelmoor-3",
+      "name": "Resonant Step",
+      "classId": "paladin",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original paladin technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "radiant",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "paladin-aelmoor-4",
+      "name": "Vigilant Burst",
+      "classId": "paladin",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original paladin technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "healing",
+          "dice": "5d6",
+          "abilityModifier": "cha"
+        }
+      ]
+    },
+    {
+      "id": "paladin-aelmoor-5",
+      "name": "Sundering Oath",
+      "classId": "paladin",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original paladin technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "force",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "ranger-aelmoor-1",
+      "name": "Whirling Step",
+      "classId": "ranger",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original ranger technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "fire",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "ranger-aelmoor-2",
+      "name": "Resonant Burst",
+      "classId": "ranger",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original ranger technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "radiant",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "ranger-aelmoor-3",
+      "name": "Vigilant Oath",
+      "classId": "ranger",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original ranger technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "cold",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "ranger-aelmoor-4",
+      "name": "Sundering Chorus",
+      "classId": "ranger",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original ranger technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "force",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "ranger-aelmoor-5",
+      "name": "Mending Focus",
+      "classId": "ranger",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original ranger technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "necrotic",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "rogue-aelmoor-1",
+      "name": "Resonant Oath",
+      "classId": "rogue",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original rogue technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "radiant",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "rogue-aelmoor-2",
+      "name": "Vigilant Chorus",
+      "classId": "rogue",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original rogue technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "cold",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "rogue-aelmoor-3",
+      "name": "Sundering Focus",
+      "classId": "rogue",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original rogue technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "force",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "rogue-aelmoor-4",
+      "name": "Mending Stance",
+      "classId": "rogue",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original rogue technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "necrotic",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "rogue-aelmoor-5",
+      "name": "Rending Surge",
+      "classId": "rogue",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original rogue technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "slashing",
+          "attackAbility": "dex",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-aelmoor-1",
+      "name": "Vigilant Focus",
+      "classId": "sorcerer",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original sorcerer technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "cold",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-aelmoor-2",
+      "name": "Sundering Stance",
+      "classId": "sorcerer",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original sorcerer technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "force",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-aelmoor-3",
+      "name": "Mending Surge",
+      "classId": "sorcerer",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original sorcerer technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "necrotic",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-aelmoor-4",
+      "name": "Rending Flourish",
+      "classId": "sorcerer",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original sorcerer technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "slashing",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-aelmoor-5",
+      "name": "Guarding Impact",
+      "classId": "sorcerer",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original sorcerer technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "fire",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "warlock-aelmoor-1",
+      "name": "Sundering Surge",
+      "classId": "warlock",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original warlock technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "force",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "warlock-aelmoor-2",
+      "name": "Mending Flourish",
+      "classId": "warlock",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original warlock technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "necrotic",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "warlock-aelmoor-3",
+      "name": "Rending Impact",
+      "classId": "warlock",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original warlock technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "slashing",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "warlock-aelmoor-4",
+      "name": "Guarding Aegis",
+      "classId": "warlock",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original warlock technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "fire",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "warlock-aelmoor-5",
+      "name": "Flowing Strike",
+      "classId": "warlock",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original warlock technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "radiant",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "wizard-aelmoor-1",
+      "name": "Mending Impact",
+      "classId": "wizard",
+      "level": 1,
+      "actionCost": "action",
+      "description": "An original wizard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "2d6",
+          "damageType": "necrotic",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "wizard-aelmoor-2",
+      "name": "Rending Aegis",
+      "classId": "wizard",
+      "level": 3,
+      "actionCost": "action",
+      "description": "An original wizard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "3d6",
+          "damageType": "slashing",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "wizard-aelmoor-3",
+      "name": "Guarding Strike",
+      "classId": "wizard",
+      "level": 5,
+      "actionCost": "bonusAction",
+      "description": "An original wizard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "4d6",
+          "damageType": "fire",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "wizard-aelmoor-4",
+      "name": "Flowing Counter",
+      "classId": "wizard",
+      "level": 9,
+      "actionCost": "action",
+      "description": "An original wizard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "5d6",
+          "damageType": "radiant",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    },
+    {
+      "id": "wizard-aelmoor-5",
+      "name": "Piercing Step",
+      "classId": "wizard",
+      "level": 15,
+      "actionCost": "action",
+      "description": "An original wizard technique that rewards timing, positioning and resource management.",
+      "effects": [
+        {
+          "type": "damage",
+          "dice": "6d6",
+          "damageType": "cold",
+          "attackAbility": "str",
+          "proficient": true
+        }
+      ]
+    }
+  ],
+  "talents": [
+    {
+      "id": "barbarian-offense-talent-1",
+      "name": "Keen Barbarian Discipline",
+      "classId": "barbarian",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for barbarian through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "barbarian-defense-talent-2",
+      "name": "Resolute Barbarian Instinct",
+      "classId": "barbarian",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for barbarian through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "barbarian-utility-talent-3",
+      "name": "Swift Barbarian Technique",
+      "classId": "barbarian",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for barbarian through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "barbarian-support-talent-4",
+      "name": "Harmonic Barbarian Legacy",
+      "classId": "barbarian",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for barbarian through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "barbarian-mastery-talent-5",
+      "name": "Ascendant Barbarian Mastery",
+      "classId": "barbarian",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for barbarian through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "bard-offense-talent-1",
+      "name": "Resolute Bard Discipline",
+      "classId": "bard",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for bard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "bard-defense-talent-2",
+      "name": "Swift Bard Instinct",
+      "classId": "bard",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for bard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "bard-utility-talent-3",
+      "name": "Harmonic Bard Technique",
+      "classId": "bard",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for bard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "bard-support-talent-4",
+      "name": "Ascendant Bard Legacy",
+      "classId": "bard",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for bard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "bard-mastery-talent-5",
+      "name": "Keen Bard Mastery",
+      "classId": "bard",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for bard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "cleric-offense-talent-1",
+      "name": "Swift Cleric Discipline",
+      "classId": "cleric",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for cleric through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "cleric-defense-talent-2",
+      "name": "Harmonic Cleric Instinct",
+      "classId": "cleric",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for cleric through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "cleric-utility-talent-3",
+      "name": "Ascendant Cleric Technique",
+      "classId": "cleric",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for cleric through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "cleric-support-talent-4",
+      "name": "Keen Cleric Legacy",
+      "classId": "cleric",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for cleric through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "cleric-mastery-talent-5",
+      "name": "Resolute Cleric Mastery",
+      "classId": "cleric",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for cleric through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "druid-offense-talent-1",
+      "name": "Harmonic Druid Discipline",
+      "classId": "druid",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for druid through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "druid-defense-talent-2",
+      "name": "Ascendant Druid Instinct",
+      "classId": "druid",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for druid through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "druid-utility-talent-3",
+      "name": "Keen Druid Technique",
+      "classId": "druid",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for druid through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "druid-support-talent-4",
+      "name": "Resolute Druid Legacy",
+      "classId": "druid",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for druid through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "druid-mastery-talent-5",
+      "name": "Swift Druid Mastery",
+      "classId": "druid",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for druid through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "fighter-offense-talent-1",
+      "name": "Ascendant Fighter Discipline",
+      "classId": "fighter",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for fighter through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "fighter-defense-talent-2",
+      "name": "Keen Fighter Instinct",
+      "classId": "fighter",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for fighter through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "fighter-utility-talent-3",
+      "name": "Resolute Fighter Technique",
+      "classId": "fighter",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for fighter through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "fighter-support-talent-4",
+      "name": "Swift Fighter Legacy",
+      "classId": "fighter",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for fighter through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "fighter-mastery-talent-5",
+      "name": "Harmonic Fighter Mastery",
+      "classId": "fighter",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for fighter through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "monk-offense-talent-1",
+      "name": "Keen Monk Discipline",
+      "classId": "monk",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for monk through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "monk-defense-talent-2",
+      "name": "Resolute Monk Instinct",
+      "classId": "monk",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for monk through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "monk-utility-talent-3",
+      "name": "Swift Monk Technique",
+      "classId": "monk",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for monk through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "monk-support-talent-4",
+      "name": "Harmonic Monk Legacy",
+      "classId": "monk",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for monk through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "monk-mastery-talent-5",
+      "name": "Ascendant Monk Mastery",
+      "classId": "monk",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for monk through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "paladin-offense-talent-1",
+      "name": "Resolute Paladin Discipline",
+      "classId": "paladin",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for paladin through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "paladin-defense-talent-2",
+      "name": "Swift Paladin Instinct",
+      "classId": "paladin",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for paladin through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "paladin-utility-talent-3",
+      "name": "Harmonic Paladin Technique",
+      "classId": "paladin",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for paladin through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "paladin-support-talent-4",
+      "name": "Ascendant Paladin Legacy",
+      "classId": "paladin",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for paladin through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "paladin-mastery-talent-5",
+      "name": "Keen Paladin Mastery",
+      "classId": "paladin",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for paladin through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "ranger-offense-talent-1",
+      "name": "Swift Ranger Discipline",
+      "classId": "ranger",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for ranger through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "ranger-defense-talent-2",
+      "name": "Harmonic Ranger Instinct",
+      "classId": "ranger",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for ranger through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "ranger-utility-talent-3",
+      "name": "Ascendant Ranger Technique",
+      "classId": "ranger",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for ranger through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "ranger-support-talent-4",
+      "name": "Keen Ranger Legacy",
+      "classId": "ranger",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for ranger through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "ranger-mastery-talent-5",
+      "name": "Resolute Ranger Mastery",
+      "classId": "ranger",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for ranger through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "rogue-offense-talent-1",
+      "name": "Harmonic Rogue Discipline",
+      "classId": "rogue",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for rogue through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "rogue-defense-talent-2",
+      "name": "Ascendant Rogue Instinct",
+      "classId": "rogue",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for rogue through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "rogue-utility-talent-3",
+      "name": "Keen Rogue Technique",
+      "classId": "rogue",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for rogue through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "rogue-support-talent-4",
+      "name": "Resolute Rogue Legacy",
+      "classId": "rogue",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for rogue through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "rogue-mastery-talent-5",
+      "name": "Swift Rogue Mastery",
+      "classId": "rogue",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for rogue through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-offense-talent-1",
+      "name": "Ascendant Sorcerer Discipline",
+      "classId": "sorcerer",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for sorcerer through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-defense-talent-2",
+      "name": "Keen Sorcerer Instinct",
+      "classId": "sorcerer",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for sorcerer through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-utility-talent-3",
+      "name": "Resolute Sorcerer Technique",
+      "classId": "sorcerer",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for sorcerer through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-support-talent-4",
+      "name": "Swift Sorcerer Legacy",
+      "classId": "sorcerer",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for sorcerer through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "sorcerer-mastery-talent-5",
+      "name": "Harmonic Sorcerer Mastery",
+      "classId": "sorcerer",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for sorcerer through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "warlock-offense-talent-1",
+      "name": "Keen Warlock Discipline",
+      "classId": "warlock",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for warlock through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "warlock-defense-talent-2",
+      "name": "Resolute Warlock Instinct",
+      "classId": "warlock",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for warlock through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "warlock-utility-talent-3",
+      "name": "Swift Warlock Technique",
+      "classId": "warlock",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for warlock through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "warlock-support-talent-4",
+      "name": "Harmonic Warlock Legacy",
+      "classId": "warlock",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for warlock through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "warlock-mastery-talent-5",
+      "name": "Ascendant Warlock Mastery",
+      "classId": "warlock",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for warlock through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "wizard-offense-talent-1",
+      "name": "Resolute Wizard Discipline",
+      "classId": "wizard",
+      "branch": "offense",
+      "tier": 1,
+      "requiredLevel": 1,
+      "maxRank": 3,
+      "description": "Improves offense performance for wizard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "attackPower",
+          "perRank": 1
+        }
+      ]
+    },
+    {
+      "id": "wizard-defense-talent-2",
+      "name": "Swift Wizard Instinct",
+      "classId": "wizard",
+      "branch": "defense",
+      "tier": 2,
+      "requiredLevel": 10,
+      "maxRank": 3,
+      "description": "Improves defense performance for wizard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "armor",
+          "perRank": 2
+        }
+      ]
+    },
+    {
+      "id": "wizard-utility-talent-3",
+      "name": "Harmonic Wizard Technique",
+      "classId": "wizard",
+      "branch": "utility",
+      "tier": 3,
+      "requiredLevel": 25,
+      "maxRank": 2,
+      "description": "Improves utility performance for wizard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "haste",
+          "perRank": 0.5
+        }
+      ]
+    },
+    {
+      "id": "wizard-support-talent-4",
+      "name": "Ascendant Wizard Legacy",
+      "classId": "wizard",
+      "branch": "support",
+      "tier": 4,
+      "requiredLevel": 50,
+      "maxRank": 2,
+      "description": "Improves support performance for wizard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "healingPower",
+          "perRank": 1.5
+        }
+      ]
+    },
+    {
+      "id": "wizard-mastery-talent-5",
+      "name": "Keen Wizard Mastery",
+      "classId": "wizard",
+      "branch": "mastery",
+      "tier": 5,
+      "requiredLevel": 80,
+      "maxRank": 1,
+      "description": "Improves mastery performance for wizard through an original passive specialization.",
+      "effects": [
+        {
+          "stat": "criticalChance",
+          "perRank": 1
+        }
+      ]
+    }
+  ]
+}

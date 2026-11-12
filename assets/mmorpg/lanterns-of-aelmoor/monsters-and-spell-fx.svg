@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="384" height="192" viewBox="0 0 384 192" shape-rendering="crispEdges">
+<title>Aelmoor original monster sprite sheet</title><desc>Six original 32 pixel grid fantasy monster sprites: moss wolf, ember imp, frost wisp, bog crawler, crystal golem and shadow knight.</desc>
+<rect width="384" height="192" fill="#101629"/>
+<g stroke="#101629" stroke-width="2" stroke-linejoin="miter">
+ <g transform="translate(8 8)"><path d="M4 22 2 13 9 9 16 12 23 8 29 15 27 24 21 28 9 28z" fill="#527b59"/><path d="M5 13 3 4 11 10M22 10l7-7-1 13" fill="#8aa58a"/><path d="M10 17h3v3h-3zm10 0h3v3h-3z" fill="#e6c16a"/><path d="M14 24h6" stroke="#101629"/></g>
+ <g transform="translate(72 8)"><path d="M5 28 2 16 8 7 16 3 25 9 30 19 25 29z" fill="#b45b50"/><path d="m8 9-4-8 10 5m9 2 7-7-2 13" fill="#e58a42"/><path d="M10 15h4v4h-4zm9 0h4v4h-4z" fill="#f4e9c8"/><path d="M13 25h8" stroke="#e6c16a"/></g>
+ <g transform="translate(136 8)"><path d="M16 2 28 16 16 30 4 16z" fill="#8ab9d0"/><path d="m16 2 2 14-2 14-2-14z" fill="#e4f6ff"/><circle cx="12" cy="15" r="2" fill="#7254a3"/><circle cx="21" cy="15" r="2" fill="#7254a3"/></g>
+ <g transform="translate(200 8)"><path d="M4 27 3 13 10 7 22 7 29 15 27 28z" fill="#526b73"/><path d="m9 9-4-7 10 5m9 2 6-7-2 12" fill="#8aa58a"/><path d="M9 16h5v4H9zm10 0h5v4h-5z" fill="#e6c16a"/><path d="M13 25h8" stroke="#101629"/></g>
+ <g transform="translate(264 8)"><path d="M3 29V12L10 5h13l8 8v16z" fill="#7254a3"/><path d="m10 5 6-4 7 4-7 8z" fill="#d4c9f1"/><path d="M8 15h6v5H8zm12 0h6v5h-6z" fill="#e6c16a"/><path d="M14 25h7" stroke="#f4e9c8" stroke-width="3"/></g>
+ <g transform="translate(328 8)"><path d="M5 29 3 10 12 3h11l8 9-3 17z" fill="#27334b"/><path d="M8 8 2 2l11 2m10 4 8-8-2 14" fill="#526b73"/><path d="M9 15h5v5H9zm10 0h5v5h-5z" fill="#b45b50"/><path d="M12 27h10" stroke="#e6c16a" stroke-width="3"/></g>
+</g>
+<g font-family="monospace" font-size="9" fill="#f4e9c8"><text x="8" y="57">MOSS WOLF</text><text x="72" y="57">EMBER IMP</text><text x="136" y="57">FROST WISP</text><text x="200" y="57">BOG CRAWLER</text><text x="264" y="57">CRYSTAL GOLEM</text><text x="328" y="57">SHADOW KNIGHT</text></g>
+<g transform="translate(8 72)" stroke="#e6c16a" stroke-width="2" fill="none">
+ <g><path d="M16 3v24M4 15h24M8 7l16 16M24 7 8 23"/><circle cx="16" cy="15" r="5" fill="#7254a3"/></g>
+ <g transform="translate(64)"><path d="M16 2Q4 13 16 28Q28 13 16 2z" fill="#b45b50"/><path d="M16 9v13" stroke="#f4e9c8"/></g>
+ <g transform="translate(128)"><path d="m16 2 4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#8ab9d0"/></g>
+ <g transform="translate(192)"><path d="M4 26q2-19 12-19t12 19M8 16h16M16 7v20"/></g>
+ <g transform="translate(256)"><path d="M16 2v26M3 15h26M7 6l18 18M25 6 7 24"/></g>
+ <g transform="translate(320)"><path d="M16 2v26M4 7l24 18M28 7 4 25M8 15h16"/></g>
+</g>
+<g font-family="monospace" font-size="9" fill="#f4e9c8"><text x="8" y="118">ARCANE</text><text x="72" y="118">FIRE</text><text x="136" y="118">FROST</text><text x="200" y="118">NATURE</text><text x="264" y="118">CRYSTAL</text><text x="328" y="118">SHADOW</text></g>
+<g transform="translate(8 132)" fill="#27334b" stroke="#8aa58a" stroke-width="2">
+ <path d="M0 40 10 20 20 40zM32 40 42 12 52 40zM64 40 74 24 84 40zM96 40 106 9 116 40zM128 40 138 18 148 40zM160 40 170 5 180 40zM192 40 202 20 212 40zM224 40 234 10 244 40zM256 40 266 22 276 40zM288 40 298 8 308 40zM320 40 330 19 340 40zM352 40 362 12 372 40z"/>
+</g>
+</svg>

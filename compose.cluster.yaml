@@ -1,0 +1,94 @@
+# Three authoritative MMO nodes behind one WebSocket-aware gateway.
+# Start: docker compose --env-file .env.cluster -f compose.cluster.yaml up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gbquest}
+      POSTGRES_USER: ${POSTGRES_USER:-gbquest}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - gbquest-cluster-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gbquest} -d ${POSTGRES_DB:-gbquest}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [gbquest]
+
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["node", "backend/migrate.cjs"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-gbquest}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-gbquest}
+      DATABASE_SSL: "disable"
+    networks: [gbquest]
+
+  mmorpg-1: &mmorpg
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment: &mmorpg-env
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8788
+      DATABASE_URL: postgres://${POSTGRES_USER:-gbquest}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-gbquest}
+      DATABASE_SSL: "disable"
+      GBQ_TOKEN_SECRET: ${GBQ_TOKEN_SECRET:?Set GBQ_TOKEN_SECRET}
+      GBQ_ALLOWED_ORIGINS: ${GBQ_ALLOWED_ORIGINS:?Set exact HTTPS origins}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-20}
+      GBQ_PRESENCE_TTL_SECONDS: ${GBQ_PRESENCE_TTL_SECONDS:-45}
+    expose: ["8788"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8788/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks: [gbquest]
+
+  mmorpg-2:
+    <<: *mmorpg
+    environment:
+      <<: *mmorpg-env
+      GBQ_SERVER_INSTANCE_ID: mmorpg-2
+
+  mmorpg-3:
+    <<: *mmorpg
+    environment:
+      <<: *mmorpg-env
+      GBQ_SERVER_INSTANCE_ID: mmorpg-3
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      mmorpg-1:
+        condition: service_healthy
+      mmorpg-2:
+        condition: service_healthy
+      mmorpg-3:
+        condition: service_healthy
+    ports:
+      - "${GBQ_BIND_ADDRESS:-0.0.0.0}:${GBQ_PUBLIC_PORT:-8788}:8788"
+    volumes:
+      - ./ops/nginx/gbquest-cluster.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [gbquest]
+
+volumes:
+  gbquest-cluster-postgres:
+
+networks:
+  gbquest:
+    driver: bridge
