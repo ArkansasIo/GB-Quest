@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 const { handleCollectionRequest } = require('../backend/mmorpg-collection-routes.cjs');
 
 const characterId = '11111111-1111-4111-8111-111111111111';
-function harness({ state = null, body = {}, method = 'GET', path = '/collections' } = {}) {
+function harness({ state = null, body = {}, method = 'GET', path = '' } = {}) {
   const calls = [];
   const response = { status: 200, body: null };
   const res = { writeHead(status) { response.status = status; }, end(value) { response.body = JSON.parse(value); } };

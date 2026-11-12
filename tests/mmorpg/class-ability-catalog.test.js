@@ -26,19 +26,24 @@ test("class ability catalog covers all twelve classes, each with base + every SR
 
 test("character ability list respects class, subclass and level", () => {
   const wizard = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 2 });
-  assert.ok(wizard.some(ability => ability.id === "wizard-arcane-burst"));\n  assert.ok(wizard.every(ability => ability.level <= 2));
+  assert.ok(wizard.some(ability => ability.id === "wizard-arcane-burst"));
+  assert.ok(wizard.every(ability => ability.level <= 2));
 
   const evoker = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "evoker" });
-  assert.ok(evoker.some(ability => ability.id === "wizard-arcane-burst"));\n  assert.ok(evoker.some(ability => ability.id === "wizard-evoker-prismatic-surge"));
+  assert.ok(evoker.some(ability => ability.id === "wizard-arcane-burst"));
+  assert.ok(evoker.some(ability => ability.id === "wizard-evoker-prismatic-surge"));
 
   const abjurer = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "abjurer" });
-  assert.ok(abjurer.some(ability => ability.id === "wizard-arcane-burst"));\n  assert.ok(abjurer.some(ability => ability.id === "wizard-abjurer-arcane-ward"));
+  assert.ok(abjurer.some(ability => ability.id === "wizard-arcane-burst"));
+  assert.ok(abjurer.some(ability => ability.id === "wizard-abjurer-arcane-ward"));
 
   const diviner = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "diviner" });
-  assert.ok(diviner.some(ability => ability.id === "wizard-arcane-burst"));\n  assert.ok(diviner.some(ability => ability.id === "wizard-diviner-portent"));
+  assert.ok(diviner.some(ability => ability.id === "wizard-arcane-burst"));
+  assert.ok(diviner.some(ability => ability.id === "wizard-diviner-portent"));
 
   const otherSubclass = CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 3, subclassId: "unknown" });
-  assert.ok(otherSubclass.every(ability => !ability.subclassId));\n  assert.ok(otherSubclass.some(ability => ability.id === "wizard-arcane-burst"));
+  assert.ok(otherSubclass.every(ability => !ability.subclassId));
+  assert.ok(otherSubclass.some(ability => ability.id === "wizard-arcane-burst"));
   assert.throws(() => CLASS_ABILITY_CATALOG.forCharacter({ classId: "wizard", level: 21 }), /class level/);
 });
 
