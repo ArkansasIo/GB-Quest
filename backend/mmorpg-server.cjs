@@ -107,7 +107,7 @@ async function optionalAccount(req) {
   const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
   return r.rowCount ? r.rows[0] : null;
 }
-const CHAR_COLS = 'id,name,class,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp';
+const CHAR_COLS = 'id,name,class,species,background,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp';
 const PER_REALM_CHARACTERS = 3, PER_ACCOUNT_CHARACTERS = 12;
 const activeSockets = new Map();
 const authLimiter = createAuthLimiter();
@@ -346,10 +346,11 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/characters' && req.method === 'POST') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
       const body = await readBody(req), name = String(body.name || '').trim(), cls = String(body.class || 'warden');
+      const species = String(body.species || 'hearthkin'), background = String(body.background || 'wanderer');
       const rd = await realmData(), realmId = String(body.realmId || body.realm || rd.realms[0]?.id || 'ardenhold'), realm = rd.realms.find(r => r.id === realmId);
       if (!realm) return json(res, 400, { error: 'unknown_realm', realmId });
       if (realm.status !== 'online') return json(res, 409, { error: 'realm_unavailable', realmId, status: realm.status });
-      if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller'].includes(cls)) return json(res, 400, { error: 'invalid_character' });
+      if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(name) || !['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller'].includes(cls) || !['hearthkin','thornelf','stonekin','wispling','emberborn','burrowkin','twinblood','tuskborn','drakkin','hornfolk','felinar','pipkin','lunari','wolfkin','starkin'].includes(species) || !['soldier','scholar','wanderer','urchin','acolyte','envoy'].includes(background)) return json(res, 400, { error: 'invalid_character' });
       const tx = await pool.connect();
       try {
         await tx.query('BEGIN');
@@ -361,7 +362,7 @@ const server = http.createServer(async (req, res) => {
         const taken = await tx.query('SELECT 1 FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)', [realmId, name]);
         if (taken.rowCount) { await tx.query('ROLLBACK'); return json(res, 409, { error: 'name_taken', realmId }); }
         const id = crypto.randomUUID();
-        const result = await tx.query(`INSERT INTO characters(id,account_id,name,class,realm_id) VALUES($1,$2,$3,$4,$5) RETURNING ${CHAR_COLS},xp`, [id, acct.id, name, cls, realmId]);
+        const result = await tx.query(`INSERT INTO characters(id,account_id,name,class,species,background,realm_id) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING ${CHAR_COLS},xp`, [id, acct.id, name, cls, species, background, realmId]);
         await tx.query(`INSERT INTO character_inventory(character_id,item_id,quantity)
           VALUES ($1,'rusty_sword',1),($1,'traveler_tunic',1),($1,'minor_potion',5)`, [id]);
         await tx.query('COMMIT');
