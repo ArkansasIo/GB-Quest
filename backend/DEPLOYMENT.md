@@ -115,7 +115,7 @@ The Trading panel's Bank tab uses the authenticated `GET /api/characters/:id/ban
 
 ## Character jobs and progression
 
-- The authoritative server accepts the browser game's 27 jobs and level 1–720 progression.
+- The authoritative server accepts the browser game's 27 jobs and level 1–720 progression, plus all 15 playable species and six character backgrounds.
 - Migration `009_jobs_level_720.sql` maps legacy class IDs to current jobs and installs `gbq_level_for_xp(bigint)`, matching the browser XP thresholds through level 20 and the cubic ascension curve thereafter.
 - The database keeps class feature progression and post-20 ascension as distinct game concepts; the current server's combat rewards update the overall level from total XP.
 
