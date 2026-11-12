@@ -5,6 +5,7 @@ const TYPES=['dungeon','trial','raid'], PLAN_LENGTH=3, SEAL_MAX_TIER=100, SEAL_C
 const ACTIVITIES=RAW.flatMap(([type,rows])=>rows.map(([name,biome,boss,mechanic,element],i)=>({id:type+'_'+String(i+1).padStart(2,'0'),type,name,biome,boss,mechanic,element,stages:type==='dungeon'?3:type==='trial'?4:5,rewardScale:type==='dungeon'?1:type==='trial'?1.7:3.2})));
 const BY_ID=Object.fromEntries(ACTIVITIES.map(a=>[a.id,a]));
 const SEAL_AFFIXES=[['emberbound',1.10,1.08,'fire'],['frostbitten',1.08,1.12,'cold'],['stormcharged',1.12,1.10,'lightning'],['venomous',1.10,1.10,'poison'],['soulhungry',1.15,1.08,'necrotic'],['armoured',1.20,1.04,'physical'],['relentless',1.08,1.20,'physical'],['swift',1.05,1.16,'lightning'],['overgrown',1.18,1.12,'poison'],['hollow',1.14,1.14,'shadow'],['volatile',1.12,1.18,'fire'],['unyielding',1.25,1.08,'arcane']].map(([id,hp,dmg,element])=>({id,label:id.toUpperCase(),hp,dmg,element}));
+function footer(l,r){fill(0,135,W,9,0);text(l,3,136,'gold');if(r)textR(r,157,136,2);}
 function hashSeed(v){let h=2166136261;for(const c of String(v)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
 function rng(seed){let x=(Number(seed)>>>0)||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967296;};}
 function activityCounts(){return Object.fromEntries(TYPES.map(t=>[t,ACTIVITIES.filter(a=>a.type===t).length]));}

@@ -193,9 +193,20 @@ body.full-window-mode .game-client, body.fullscreen-mode .game-client { position
 body.full-window-mode .game-viewport, body.fullscreen-mode .game-viewport { position: absolute; inset: 0; width: 100vw; height: 100dvh; min-height: 0; margin: 0; padding: 0; display: grid; place-items: center; }
 body.full-window-mode #lcd, body.fullscreen-mode #lcd { display: block; width: min(100vw, calc(100dvh * 160 / 144)); height: auto; max-width: 100vw; max-height: 100dvh; aspect-ratio: 160 / 144; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
 .game-viewport { position: relative; }
-.game-start-fallback { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 8px; padding: 20px; text-align: center; box-sizing: border-box; background: radial-gradient(ellipse at center, #253047, #080a08 74%); color: #fff1bd; font: 700 clamp(14px, 3vw, 24px)/1.4 Arial, sans-serif; letter-spacing: .08em; }
-.game-start-fallback span { color: #b9c4ce; font: 12px/1.5 Arial, sans-serif; letter-spacing: .04em; }
-body.game-rendered .game-start-fallback { display: none; }
+.game-start-fallback { position:absolute; z-index:20; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:22px; text-align:center; box-sizing:border-box; overflow:hidden; background:radial-gradient(ellipse at 50% 42%,#263b50 0%,#111c2b 42%,#05080e 100%); color:#f3e7ce; font:700 clamp(13px,2.4vw,22px)/1.35 Cinzel,Georgia,serif; letter-spacing:.11em; transition:opacity .65s ease,visibility .65s ease; }
+.game-start-fallback::before,.game-start-fallback::after { content:""; position:absolute; width:75%; height:1px; background:linear-gradient(90deg,transparent,#d9b66e,transparent); opacity:.7; }
+.game-start-fallback::before { top:12%; } .game-start-fallback::after { bottom:12%; }
+.boot-crest { width:clamp(62px,13vw,112px); aspect-ratio:1; display:grid; place-items:center; border:1px solid #d9b66e; border-radius:50%; box-shadow:0 0 0 6px #d9b66e18,0 0 34px #d9b66e33,inset 0 0 24px #d9b66e22; background:radial-gradient(circle,#273d53,#0b1421 70%); }
+.boot-crest svg { width:72%; height:72%; filter:drop-shadow(0 0 8px #d9b66e88); }
+.boot-title { max-width:760px; text-shadow:0 2px 20px #000; }
+.boot-subtitle { color:#d9b66e; font:600 clamp(11px,1.7vw,15px)/1.4 Cinzel,Georgia,serif; letter-spacing:.3em; }
+.boot-engine { margin-top:6px; color:#b8c8d9; font:700 10px/1.5 Inter,Arial,sans-serif; letter-spacing:.2em; }
+.boot-engine strong { color:#e9c77e; }
+.boot-progress { width:min(340px,78%); height:6px; border:1px solid #8d754c; border-radius:99px; padding:1px; background:#050a12; overflow:hidden; }
+.boot-progress-fill { height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#5b91c8,#e9c77e); box-shadow:0 0 12px #d9b66e99; transition:width .2s ease; }
+.boot-status { color:#d5dce4; font:10px/1.5 Inter,Arial,sans-serif; letter-spacing:.08em; }
+.boot-footer { color:#8fa1b7; font:8px/1.5 Inter,Arial,sans-serif; letter-spacing:.2em; }
+body.game-rendered .game-start-fallback { display:none; }
 .game-viewport > .chat { position: absolute; z-index: 16; top: auto; right: 12px; bottom: 12px; left: auto; width: min(360px, 38%); max-width: calc(100% - 24px); max-height: min(42%, 360px); box-sizing: border-box; padding: 8px; border: 1px solid #52606b; border-radius: 5px; background: #0b1016e8; box-shadow: 0 8px 24px #0008; }
 .game-viewport > .chat { display: flex; }
 body:not(.chat-on) .game-viewport > .chat { display: none; }
@@ -429,6 +440,53 @@ body.title-screen .game-viewport > #lcd {
   body.title-screen .game-client { padding:0 !important; }
   body.title-screen .game-viewport { width:min(100vw, calc(100dvh * 160 / 144)) !important; max-height:100dvh !important; }
 }
+
+/* Online account / realm gateway shown before server-backed hero creation. */
+.gbq-account-overlay{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:16px;background:rgba(2,5,10,.92);color:#f3ead6;font:13px/1.45 Inter,Arial,sans-serif}
+.gbq-account-window{width:min(560px,100%);max-height:92dvh;overflow:auto;border:1px solid #a48650;background:linear-gradient(145deg,#17222d,#080c12);box-shadow:0 22px 80px #000e,inset 0 0 0 3px #241b12;border-radius:5px}
+.gbq-account-window header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #66502e;background:linear-gradient(90deg,#283643,#0b1119)}
+.gbq-account-window header small,.gbq-account-window footer{color:#c4a66c;font-size:9px;letter-spacing:.14em}
+.gbq-account-window h2{margin:4px 0 0;color:#ffe1a0;font:700 20px Cinzel,Georgia,serif;letter-spacing:.07em}
+.gbq-account-window header button{width:34px;height:34px;border:1px solid #806b48;background:#151b22;color:#fff0c9;font-size:23px;cursor:pointer}
+.gbq-account-step{padding:18px 20px;display:grid;gap:13px}
+.gbq-account-step[hidden]{display:none}
+.gbq-account-step label{display:grid;gap:6px;color:#e6d4ad;font-size:10px;letter-spacing:.1em}
+.gbq-account-step input,.gbq-account-step select{width:100%;min-width:0;padding:11px;border:1px solid #65563f;border-radius:2px;background:#080e15;color:#fff4dd;font:13px Inter,Arial,sans-serif}
+.gbq-account-intro,.gbq-account-note,.gbq-account-realm-detail{margin:0;color:#c3cbd1;font-size:12px}
+.gbq-account-actions{display:flex;gap:9px;flex-wrap:wrap}
+.gbq-account-actions button,.gbq-account-secondary{padding:11px 13px;border:1px solid #927448;border-radius:2px;background:linear-gradient(#34414d,#151d26);color:#fff0ce;font:700 10px Cinzel,Georgia,serif;letter-spacing:.06em;cursor:pointer}
+.gbq-account-actions button:disabled{opacity:.45;cursor:not-allowed}
+.gbq-account-secondary{justify-self:start;background:transparent;color:#d2c4a8}
+.gbq-account-message{margin:14px 20px 0;padding:10px;border:1px solid #927448;background:#302719;color:#ffe2a3;font-size:12px}
+.gbq-account-message[hidden]{display:none}
+.gbq-account-message.is-error{border-color:#a64b43;background:#351714;color:#ffc1b7}
+.gbq-account-window footer{padding:12px 20px;border-top:1px solid #51432f}
+@media(max-width:560px){.gbq-account-overlay{padding:5px}.gbq-account-window{max-height:98dvh}.gbq-account-window header,.gbq-account-step{padding:13px}.gbq-account-window h2{font-size:16px}}
+
+/* BOOT SPLASH — compiled into both the browser build and the itch.io one-file release. */
+#gbq-boot-screen{position:fixed;z-index:100000;inset:0;display:grid;place-items:center;overflow:hidden;padding:24px;color:#ead9b2;background:radial-gradient(ellipse at 50% 38%,rgba(91,47,28,.42),transparent 44%),radial-gradient(ellipse at 50% 110%,rgba(98,57,25,.2),transparent 52%),linear-gradient(145deg,#090707 0%,#160e0c 48%,#050607 100%);opacity:1;visibility:visible;transition:opacity .8s ease,visibility .8s ease;font-family:var(--san-title,Cinzel,Georgia,serif)}
+#gbq-boot-screen:before,#gbq-boot-screen:after{content:"";position:absolute;pointer-events:none;inset:18px;border:1px solid rgba(196,151,81,.28)}
+#gbq-boot-screen:after{inset:25px;border-color:rgba(196,151,81,.1)}
+#gbq-boot-screen.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
+.gbq-boot-inner{position:relative;z-index:1;width:min(620px,100%);display:grid;justify-items:center;text-align:center;gap:clamp(12px,2.4vh,24px)}
+.gbq-boot-mark{width:clamp(88px,16vw,142px);aspect-ratio:1;filter:drop-shadow(0 0 18px rgba(218,164,81,.28));animation:gbq-boot-glow 3.2s ease-in-out infinite}
+.gbq-boot-kicker{color:#bd9458;font:700 10px/1.5 Arial,sans-serif;letter-spacing:.42em}
+.gbq-boot-title{margin:0;color:#f4dfb4;font:700 clamp(26px,5.4vw,48px)/1.08 var(--san-title,Georgia,serif);letter-spacing:.13em;text-shadow:0 3px 0 #27150e,0 0 28px rgba(205,151,76,.22)}
+.gbq-boot-subtitle{max-width:520px;color:#d0b98f;font:600 clamp(10px,1.7vw,13px)/1.7 var(--san-title,Georgia,serif);letter-spacing:.16em;text-transform:uppercase}
+.gbq-boot-divider{width:min(330px,70%);height:1px;background:linear-gradient(90deg,transparent,#a77a42,transparent)}
+.gbq-boot-credit{color:#8f8068;font:10px/1.6 Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase}
+.gbq-boot-credit strong{display:block;margin-top:4px;color:#d4b77e;font:700 12px/1.6 var(--san-title,Georgia,serif);letter-spacing:.24em}
+.gbq-boot-load{width:min(360px,82vw);display:grid;gap:9px;margin-top:clamp(4px,1vh,12px)}
+.gbq-boot-load-head{display:flex;justify-content:space-between;gap:12px;color:#b49b75;font:10px/1.4 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.gbq-boot-track{height:7px;padding:1px;border:1px solid #785936;background:#090706;box-shadow:inset 0 1px 3px #000}
+#gbq-boot-progress{width:8%;height:100%;background:linear-gradient(90deg,#8c542c,#f0cf8b);box-shadow:0 0 12px rgba(224,174,95,.4);transition:width .35s ease}
+#gbq-boot-status{min-height:16px;color:#98866b;font:10px/1.5 Arial,sans-serif;letter-spacing:.08em}
+#gbq-boot-retry{display:none;padding:9px 18px;border:1px solid #987344;background:#21140f;color:#e8c98e;font:700 10px var(--san-title,Georgia,serif);letter-spacing:.16em;cursor:pointer}
+#gbq-boot-retry:focus-visible{outline:2px solid #f0cf8b;outline-offset:3px}
+@keyframes gbq-boot-glow{0%,100%{filter:drop-shadow(0 0 10px rgba(218,164,81,.18));transform:scale(1)}50%{filter:drop-shadow(0 0 24px rgba(218,164,81,.42));transform:scale(1.025)}}
+@media(prefers-reduced-motion:reduce){#gbq-boot-screen *,#gbq-boot-screen:before,#gbq-boot-screen:after{animation:none!important;transition:none!important}}
+
+
 </style>
 <style>
 /* Full-screen window build: the LCD fills the window (aspect-locked, pixel-crisp);
@@ -1047,11 +1105,30 @@ body.chat-on .gbq-player-hud { right:300px; }
 
 </style>
 
+<section id="gbq-boot-screen" role="status" aria-live="polite" aria-label="GB Quest startup">
+<div class="gbq-boot-inner">
+<svg class="gbq-boot-mark" viewBox="0 0 160 160" role="img" aria-labelledby="gbq-boot-logo-title"><title id="gbq-boot-logo-title">GB Quest crest — lantern and crown</title><defs><linearGradient id="gbqGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0c3"/><stop offset=".48" stop-color="#d7aa62"/><stop offset="1" stop-color="#80502c"/></linearGradient><radialGradient id="gbqFlame"><stop stop-color="#fff5bd"/><stop offset=".45" stop-color="#eab45d"/><stop offset="1" stop-color="#a94422" stop-opacity=".1"/></radialGradient></defs><path d="M80 7 139 30v47c0 35-24 59-59 76C45 136 21 112 21 77V30Z" fill="#100b09" stroke="url(#gbqGold)" stroke-width="3"/><path d="M80 16 130 36v41c0 29-20 50-50 65C50 127 30 106 30 77V36Z" fill="none" stroke="#6f4b2a" stroke-width="1.5"/><path d="m49 55 7-19 17 13 7-24 8 24 17-13 7 19-12 12H61Z" fill="url(#gbqGold)" stroke="#5f3d24" stroke-width="2"/><path d="M57 71h46l-5 13H62Z" fill="#c08b49"/><path d="M80 68c-15 17-16 27-7 37 3 4 10 7 14 2 10-10 6-23-7-39Z" fill="url(#gbqFlame)"/><path d="M80 81c-7 9-7 15-2 20 2 2 5 2 7-1 4-6 1-12-5-19Z" fill="#fff2bc"/><path d="M55 111h50M62 119h36" stroke="url(#gbqGold)" stroke-width="2" stroke-linecap="round"/><circle cx="80" cy="144" r="3" fill="#e4bd79"/></svg>
+<div class="gbq-boot-kicker">A WORLD OF LEGENDS AWAITS</div>
+<h1 class="gbq-boot-title">GB QUEST</h1>
+<div class="gbq-boot-subtitle">Lost Kingdom of ShadowBane Chronicles<br>Lanterns of Aelmoor</div>
+<div class="gbq-boot-divider"></div>
+<div class="gbq-boot-credit">Game Engine<strong>ARKANSAS - IO ENGINE · v2.5.0</strong></div>
+<div class="gbq-boot-credit">Developed by<strong>ARKANSASIO</strong></div>
+<div class="gbq-boot-load"><div class="gbq-boot-load-head"><span>Initializing Aelmoor</span><span id="gbq-boot-percent">8%</span></div><div class="gbq-boot-track" role="progressbar" aria-label="Game loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8" id="gbq-boot-bar"><div id="gbq-boot-progress"></div></div><div id="gbq-boot-status">Awakening the lanterns…</div></div>
+<button id="gbq-boot-retry" type="button">RETRY STARTUP</button>
+</div></section>
 </head><body class="theme-shadows">
 <aside class="build-info" aria-label="Build information"><span><strong>LOST KINGDOM OF SHADOWBANE CHRONICLES</strong> v2.1.1</span><span>ENGINE: ARKANSAS - IO v2.5.0</span><span>ENGINE BUILD 1 - ARKIO-20261101-001</span><button type="button" data-atlas class="atlas-btn">WORLD ATLAS</button><button type="button" data-fullscreen class="atlas-btn" aria-label="Toggle browser full screen">FULL SCREEN</button></aside>
 <main class="game-client" aria-label="Lost Kingdom of Shadowbane Chronicles game window">
   <div class="game-viewport">
     <div class="game-start-fallback" role="status" aria-live="polite">LOST KINGDOM OF SHADOWBANE CHRONICLES<span>Starting game…</span></div>
+      <div class="boot-title">LOST KINGDOM OF SHADOWBANE CHRONICLES</div>
+      <div class="boot-subtitle">LANTERNS OF AELMOOR</div>
+      <div class="boot-engine">ARKANSAS-IO GAME ENGINE <strong>v2.5.0</strong></div>
+      <div class="boot-progress" role="progressbar" aria-label="Loading game assets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="boot-progress-fill" id="bootProgressFill"></div></div>
+      <div class="boot-status" id="bootStatus">INITIALIZING GAME SYSTEMS…</div>
+      <div class="boot-footer">DEVELOPED BY ARKANSASIO · ENGINE BUILD 1</div>
+    </div>
     <canvas id="lcd" width="160" height="144" aria-label="Game screen"></canvas>
     <div class="fsbar" role="toolbar" aria-label="Window">
   <button id="fsPad" title="On-screen pad">PAD</button>
@@ -7125,10 +7202,80 @@ class ListScene { // reusable scrolling list base
   scrollbar(x, y, h) { const n = this.items().length; if (n <= this.rows) return; fill(x, y, 3, h, 1); const bh = Math.max(6, h * this.rows / n); fill(x, y + (h - bh) * this.top / Math.max(1, n - this.rows), 3, bh, 3); }
 }
 
+// ================================================================ ONLINE COLLECTIONS
+class CollectionMenuScene extends ListScene {
+  constructor() {
+    super(8);
+    this.categoryIndex = 0;
+    this.collection = null;
+    this.busy = false;
+    this.msg = 'CONNECTING TO REALM COLLECTIONS…';
+    this.refresh();
+  }
+  categories() { return ['mounts', 'pets', 'titles', 'appearances', 'achievements']; }
+  category() { return this.categories()[this.categoryIndex]; }
+  api() { return window.GBQ_MMO_API || window.gbgMmoApi || null; }
+  characterId() { return String(window.GBQ_MMO_CHARACTER_ID || (G && (G.mmoCharacterId || G.characterId)) || ''); }
+  async refresh() {
+    const api = this.api(), id = this.characterId();
+    if (!api || !id) { this.collection = null; this.msg = 'ONLINE CHARACTER REQUIRED'; return; }
+    this.busy = true;
+    try {
+      const result = await api.collections(id);
+      this.collection = result.collections || null;
+      this.msg = this.collection ? 'COLLECTIONS SYNCHRONIZED' : 'NO COLLECTION DATA';
+    } catch (error) {
+      this.msg = String(error.message || error).toUpperCase().slice(0, 42);
+    } finally { this.busy = false; }
+  }
+  items() {
+    const entries = this.collection?.[this.category()] || [];
+    return entries.map(entry => typeof entry === 'string' ? entry : String(entry.name || entry.title || entry.id || 'UNKNOWN'));
+  }
+  update() {
+    if (nav('left')) { this.categoryIndex = (this.categoryIndex + 4) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
+    if (nav('right')) { this.categoryIndex = (this.categoryIndex + 1) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
+    const count = this.items().length;
+    if (count && nav('up')) { this.i = (this.i + count - 1) % count; SFX.cursor(); }
+    if (count && nav('down')) { this.i = (this.i + 1) % count; SFX.cursor(); }
+    if (this.i < this.top) this.top = this.i;
+    if (this.i >= this.top + this.rows) this.top = this.i - this.rows + 1;
+    if (P('b') || P('start')) { removeScene(this); SFX.back(); return; }
+    if (P('select')) return this.refresh();
+    if (!P('a') || this.busy) return;
+    const category = this.category(), entries = this.collection?.[category] || [], entry = entries[this.i];
+    if (!entry) { SFX.error(); this.msg = 'NO ENTRY SELECTED'; return; }
+    if (!['mounts', 'pets', 'titles'].includes(category)) { SFX.error(); this.msg = 'UNLOCKED BY GAMEPLAY REWARDS'; return; }
+    const entryId = typeof entry === 'string' ? entry : String(entry.id || '');
+    const api = this.api(), characterId = this.characterId();
+    if (!api || !characterId || !entryId) { SFX.error(); this.msg = 'ONLINE COLLECTION SERVICE REQUIRED'; return; }
+    this.busy = true; this.msg = 'UPDATING REALM COLLECTION…';
+    Promise.resolve(api.activateCollectionEntry(characterId, category, entryId))
+      .then(() => { SFX.confirm(); this.msg = 'COLLECTION UPDATED'; return this.refresh(); })
+      .catch(error => { SFX.error(); this.msg = String(error.message || error).toUpperCase().slice(0, 42); })
+      .finally(() => { this.busy = false; });
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC('COLLECTIONS', W / 2, 15, 'gold');
+    textC('< ' + this.category().toUpperCase() + ' >', W / 2, 28, 3);
+    const entries = this.items();
+    if (!entries.length) textC(this.collection ? 'NO UNLOCKED ENTRIES' : 'ONLINE SERVICE REQUIRED', W / 2, 72, 2);
+    entries.slice(this.top, this.top + this.rows).forEach((name, j) => {
+      const index = this.top + j, y = 44 + j * 12;
+      if (index === this.i) { fill(18, y - 2, W - 36, 11, 3); text(name.slice(0, 22), 23, y, 0); }
+      else text(name.slice(0, 22), 23, y);
+    });
+    this.scrollbar(W - 10, 43, 94);
+    textC(this.msg.slice(0, 34), W / 2, H - 13, 'blue');
+    text('L/R CATEGORY · A EQUIP · B BACK', 3, H - 3, 1);
+  }
+}
+
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'COLLECTIONS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'GUILD', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
@@ -7137,7 +7284,7 @@ class MainMenu extends ListScene {
     const o = this.items()[this.i].replace(' (!)', '');
     const map = { CHARACTER: () => new CharacterMenu(), SPELLBOOK: () => new Spellbook(), GROWTH: () => new GrowthScene(),
       'COMBAT ARTS': () => new ArtsScene(), ARMOURY: () => new ArmoryScene(), HEIRLOOMS: () => new HeirloomScene(), MOUNTS: () => new MountScene(), 'QUEST LOG': () => new QuestLog(), CRAFTING: () => new CraftScene(), 'ACTIVITY FINDER': () => new ActivityFinderScene(), BESTIARY: () => new BestiaryScene(), 'BOSS JOURNAL': () => new BossJournalScene(), 'SECRET ARCHIVE': () => new EasterEggArchiveScene(), 'HIDDEN WORLD': () => new SecretWorldJournalScene(), ACHIEVEMENTS: () => new AchievementScene(), REPUTATION: () => new RepScene(),
-      SOCIAL: () => new SocialScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
+      SOCIAL: () => new SocialScene(), GUILD: () => new GuildMenuScene(), TITLES: () => new TitleScene(), 'WORLD MAP': () => new WorldMap(), 'ART GALLERY': () => new ArtGalleryScene(), 'EXPANSION MAPS': () => new ExpansionMapsScene(), SETTINGS: () => new SettingsScene() };
     if (map[o]) return push(map[o]());
     if (o === 'REST') return restMenu();
     if (o === 'CHALLENGES' && typeof challengesMenu === 'function') return challengesMenu();
@@ -7162,6 +7309,102 @@ class MainMenu extends ListScene {
     this.scrollbar(156, 14, 128);
   }
 }
+
+/* ---------------------------------------------------------------- GUILD MENU
+ * Persistent guild management UI. The dedicated MMORPG client is injected as
+ * window.GBQ_MMO_API by the online bootstrap; offline saves never pretend to
+ * create server-side guild state.
+ */
+class GuildMenuScene {
+  constructor() { this.opaque = true; this.i = 0; this.page = 'home'; this.guild = null; this.busy = false; this.msg = ''; this.refresh(); }
+  api() { return window.GBQ_MMO_API || window.gbgMmoApi || null; }
+  characterId() { return String(window.GBQ_MMO_CHARACTER_ID || (G && (G.mmoCharacterId || G.characterId)) || ''); }
+  async refresh() {
+    const api = this.api(), id = this.characterId();
+    if (!api || !id) { this.guild = null; this.msg = !api ? 'ONLINE GUILD SERVICE NOT CONNECTED' : 'SELECT AN ONLINE CHARACTER'; return; }
+    this.busy = true;
+    try { const result = await api.guild(id); this.guild = result.guild || null; this.msg = this.guild ? 'GUILD DATA LOADED' : 'NO GUILD - CREATE OR ACCEPT AN INVITE'; }
+    catch (e) { this.msg = String(e.message || e).toUpperCase().slice(0, 44); }
+    finally { this.busy = false; }
+  }
+  rows() {
+    if (this.page === 'home') return this.guild
+      ? ['OVERVIEW', 'MEMBERS', 'INVITE PLAYER', 'GUILD MESSAGE', 'TRANSFER LEADERSHIP', 'LEAVE GUILD', 'DISBAND GUILD', 'REFRESH', 'BACK']
+      : ['CREATE GUILD', 'ACCEPT INVITE', 'REFRESH', 'BACK'];
+    if (this.page === 'members') return ['BACK'];
+    return ['BACK'];
+  }
+  update() {
+    const rows = this.rows();
+    if (nav('up')) { this.i = (this.i + rows.length - 1) % rows.length; SFX.cursor(); }
+    if (nav('down')) { this.i = (this.i + 1) % rows.length; SFX.cursor(); }
+    if (P('b') || P('start')) { if (this.page !== 'home') { this.page = 'home'; this.i = 0; SFX.back(); } else { removeScene(this); SFX.back(); } return; }
+    if (!P('a') || this.busy) return;
+    const choice = rows[this.i], api = this.api(), id = this.characterId();
+    if (choice === 'BACK') { this.page = 'home'; this.i = 0; return; }
+    if (choice === 'REFRESH') return this.refresh();
+    if (!api || !id) { this.msg = 'ONLINE GUILD SERVICE NOT CONNECTED'; SFX.error(); return; }
+    if (choice === 'OVERVIEW') { this.page = 'overview'; this.i = 0; return; }
+    if (choice === 'MEMBERS') { this.page = 'members'; this.i = 0; return; }
+    const ask = (label, max = 64) => { const value = window.prompt(label); return value == null ? null : String(value).trim().slice(0, max); };
+    const run = async (fn, success) => {
+      this.busy = true; this.msg = 'CONTACTING REALM...';
+      try { await fn(); SFX.confirm(); this.msg = success; await this.refresh(); }
+      catch (e) { SFX.error(); this.msg = String(e.message || e).toUpperCase().slice(0, 44); }
+      finally { this.busy = false; }
+    };
+    if (choice === 'CREATE GUILD') {
+      const name = ask('Guild name (3-32 characters)', 32); if (name) return run(() => api.createGuild(id, name), 'GUILD CREATED');
+    } else if (choice === 'INVITE PLAYER') {
+      const target = ask('Invitee character ID (same realm)', 36); if (target) return run(() => api.inviteToGuild(this.guild.id, id, target), 'GUILD INVITATION SENT');
+    } else if (choice === 'ACCEPT INVITE') {
+      const invite = ask('Guild invitation ID', 36); if (invite) return run(() => api.acceptGuildInvite(invite, id), 'GUILD INVITATION ACCEPTED');
+    } else if (choice === 'GUILD MESSAGE') {
+      const motd = ask('Guild message of the day (max 180 characters)', 180); if (motd !== null) return run(() => api.updateGuildMotd(this.guild.id, id, motd), 'GUILD MESSAGE UPDATED');
+    } else if (choice === 'TRANSFER LEADERSHIP') {
+      const target = ask('New leader character ID (must be a member)', 36); if (target) return choose(['TRANSFER LEADERSHIP', 'CANCEL'], k => { if (k === 0) run(() => api.transferGuildLeadership(this.guild.id, id, target), 'LEADERSHIP TRANSFERRED'); }, 'Transfer guild leadership?');
+    } else if (choice === 'LEAVE GUILD') {
+      return choose(['LEAVE GUILD', 'CANCEL'], k => { if (k === 0) run(() => api.leaveGuild(id), 'LEFT GUILD'); }, 'Leave this guild? Guild leaders must transfer or disband first.');
+    } else if (choice === 'DISBAND GUILD') {
+      return choose(['DISBAND GUILD', 'CANCEL'], k => { if (k === 0) run(() => api.disbandGuild(this.guild.id, id), 'GUILD DISBANDED'); }, 'Permanently disband this guild?');
+    }
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    text('GUILD HALL', 5, 14, 'gold');
+    if (this.guild) {
+      frame(3, 24, 154, 27);
+      text(String(this.guild.name || 'GUILD').slice(0, 23), 8, 28, 'gold');
+      text('MEMBERS ' + ((this.guild.members || []).length), 8, 39, 2);
+      if (this.page === 'overview') {
+        frame(3, 55, 154, 68);
+        text('GUILD: ' + String(this.guild.name).slice(0, 18), 8, 61, 'gold');
+        text('MOTD', 8, 75, 2);
+        wrap(String(this.guild.motd || 'No message set.'), 23).slice(0, 3).forEach((line, n) => text(line, 8, 85 + n * 9, 3));
+        text('LEADER ID ' + String(this.guild.leaderCharacterId || '').slice(0, 12), 8, 113, 2);
+      } else if (this.page === 'members') {
+        frame(3, 55, 154, 75);
+        (this.guild.members || []).slice(0, 7).forEach((m, n) => {
+          const y = 60 + n * 9;
+          text(String(m.name || m.characterId || '').slice(0, 17), 8, y, m.rank === 'leader' ? 'gold' : 3);
+          textR(String(m.rank || 'member').toUpperCase().slice(0, 8), 151, y, 2);
+        });
+        if (!(this.guild.members || []).length) text('NO MEMBERS RETURNED', 8, 66, 2);
+      } else {
+        this.rows().forEach((label, n) => { const y = 57 + n * 9; if (n === this.i) fill(4, y - 1, 152, 9, 1); text(label, 8, y, n === this.i ? 0 : 3); });
+      }
+    } else {
+      frame(3, 25, 154, 26);
+      text(this.busy ? 'LOADING GUILD...' : 'NO ACTIVE GUILD', 8, 31, 'gold');
+      text('CREATE ONE OR ACCEPT AN INVITE', 8, 41, 2);
+      this.rows().forEach((label, n) => { const y = 60 + n * 12; if (n === this.i) fill(4, y - 1, 152, 11, 1); text(label, 9, y + 1, n === this.i ? 0 : 3); });
+    }
+    if (this.page === 'home' && this.guild) this.rows().forEach((label, n) => { const y = 57 + n * 9; if (n === this.i) fill(4, y - 1, 152, 9, 1); text(label, 8, y, n === this.i ? 0 : 3); });
+    if (this.msg) text(this.msg.slice(0, 25), 4, 134, this.msg.includes('NOT CONNECTED') || this.msg.includes('ERROR') ? 'red' : 'gold');
+    aelHints([['A', 'SELECT'], ['B', 'BACK']]);
+  }
+}
+
 function restMenu() {
   choose(['SHORT REST (1 HOUR)', `LONG REST (CAMP KIT x${G.inv.campkit || 0})`, 'BACK'], k => {
     if (k === 0) { if (G.ghost) return say('Spirits cannot rest.'); const songs = G.companions.some(c => hasFeature(c, 'restsong')) || hasFeature(G, 'restsong'); const log = shortRest(G, songs); G.companions.forEach(c => shortRest(c, songs)); SFX.heal(); say(['You take a short rest.'].concat(log.length ? log : ['Nothing to recover (no hit dice?).'])); }
@@ -7777,66 +8020,159 @@ class AbilitySkillsScene extends ListScene {
 }
 
 class TalentScene extends ListScene {
-  constructor() { super(4); this.tree = 0; }
+  constructor() {
+    super(4); this.tree = 0; this.branch = 0; this.remoteTrees = []; this.profile = null;
+    this.online = !!(G && G.mmoCharacterId && window.GBQMMOAccount?.hasGameplaySession);
+    this.busy = false; this.error = ''; if (this.online) this.loadRemote();
+  }
   path() { return TALENT_TREES[this.tree]; }
-  items() { return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]); }
+  characterId() { return String(G.mmoCharacterId); }
+  request(path, options) { return window.GBQMMOAccount.gameplayRequest(path, options); }
+  async loadRemote() {
+    this.busy = true; this.error = '';
+    try {
+      const cls = encodeURIComponent(G.mmoCharacterClass || 'adventurer');
+      const [catalog, profile] = await Promise.all([
+        this.request('/api/talents?class=' + cls),
+        this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/profile')
+      ]);
+      this.remoteTrees = catalog.specializations || []; this.profile = profile;
+      const selected = this.remoteTrees.findIndex(tree => tree.id === profile.character?.specialization_id);
+      this.tree = Math.max(0, selected); this.i = this.top = 0;
+    } catch (error) { this.error = String(error.message || error); }
+    finally { this.busy = false; }
+  }
+  unlocked() { return new Set((this.profile?.talents || []).map(talent => talent.node_id)); }
+  remoteItems() { const tree = this.remoteTrees[this.tree]; return tree ? (tree.nodes || []).filter(node => node.branch === ['assault','utility','mastery'][this.branch]) : []; }
+  async chooseSpecialization() {
+    const tree = this.remoteTrees[this.tree]; if (!tree || this.busy) return;
+    this.busy = true;
+    try {
+      await this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/specialization', { method: 'POST', body: { specializationId: tree.id } });
+      await this.loadRemote();
+    } catch (error) { this.error = String(error.message || error); }
+    finally { this.busy = false; }
+  }
+  async unlockRemote(node) {
+    if (!node || this.busy) return;
+    this.busy = true; this.error = '';
+    try {
+      await this.request('/api/characters/' + encodeURIComponent(this.characterId()) + '/talents/' + encodeURIComponent(node.id) + '/unlock', { method: 'POST', body: {} });
+      await this.loadRemote(); SFX.levelup();
+    } catch (error) { this.error = String(error.message || error); SFX.error(); }
+    finally { this.busy = false; }
+  }
+  items() {
+    if (this.online) return this.remoteItems();
+    return this.path().nodes.concat([{ id: 'respec', name: 'RESET TALENTS', level: 0, desc: 'Refund all talent points and clear selected talents.', respec: true }]);
+  }
   update() {
+    if (this.online) {
+      if (P('b')) { SFX.back(); removeScene(this); return; }
+      if (this.busy) return;
+      if (this.error) { if (P('a')) this.loadRemote(); return; }
+      if (!this.remoteTrees.length) return;
+      if (!this.profile?.character?.specialization_id) {
+        if (nav('left')) { this.tree = (this.tree + this.remoteTrees.length - 1) % this.remoteTrees.length; SFX.cursor(); }
+        if (nav('right')) { this.tree = (this.tree + 1) % this.remoteTrees.length; SFX.cursor(); }
+        if (P('a')) this.chooseSpecialization();
+        return;
+      }
+      if (P('select')) { this.branch = (this.branch + 1) % 3; this.i = this.top = 0; SFX.page(); }
+      this.navList();
+      if (P('a')) {
+        const node = this.items()[this.i], known = this.unlocked();
+        if (!node) return;
+        if (known.has(node.id)) return say('Already unlocked.');
+        if (this.profile.character.level < node.requiredLevel) return say('Unlocks at level ' + node.requiredLevel + '.');
+        if (node.prerequisiteId && !known.has(node.prerequisiteId)) return say('Unlock the previous node in this branch first.');
+        if (Number(this.profile.character.talent_points || 0) < Number(node.pointCost || 1)) return say('Not enough talent points.');
+        this.unlockRemote(node);
+      }
+      return;
+    }
     if (P('select')) { this.tree = (this.tree + 1) % TALENT_TREES.length; this.i = this.top = 0; SFX.page(); }
     this.navList();
     if (P('b')) { SFX.back(); removeScene(this); return; }
     if (!P('a')) return;
-    const node = this.items()[this.i];
-    if (!node) return;
+    const node = this.items()[this.i]; if (!node) return;
     if (node.respec) {
       if (!G.talents.length) return say('No talents to reset.');
       choose(['RESET ALL TALENTS', 'CANCEL'], index => {
         if (index !== 0) return;
-        G.talentPts = (G.talentPts || 0) + G.talents.length;
-        G.talents = [];
-        G.hp = Math.min(G.hp, derive(G).hpMax);
-        SFX.levelup();
+        G.talentPts = (G.talentPts || 0) + G.talents.length; G.talents = [];
+        G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
       }, 'Refund all spent talent points?');
       return;
     }
-    if (G.talents.includes(node.id)) return say(`${node.name} is already learned.`);
-    if (G.lvl < node.level) return say(`Unlocks at level ${node.level}.`);
+    if (G.talents.includes(node.id)) return say(node.name + ' is already learned.');
+    if (G.lvl < node.level) return say('Unlocks at level ' + node.level + '.');
     if (node.requires && !G.talents.includes(node.requires)) {
       const prerequisite = this.path().nodes.find(candidate => candidate.id === node.requires);
-      return say(`Learn ${prerequisite ? prerequisite.name : 'the previous talent'} first.`);
+      return say('Learn ' + (prerequisite ? prerequisite.name : 'the previous talent') + ' first.');
     }
-    if ((G.talentPts || 0) < 1) return say('No talent points available. Earn one at levels 5, 10, 15 and 20.');
-    G.talents.push(node.id);
-    G.talentPts--;
-    G.hp = Math.min(G.hp, derive(G).hpMax);
-    SFX.levelup();
+    if ((G.talentPts || 0) < 1) return say('No talent points available.');
+    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
   }
   draw() {
-    fill(0, 0, W, H, 0); hdr();
-    textC('TALENT SYSTEM', 80, 13, 'gold');
+    fill(0, 0, W, H, 0); hdr(); textC(this.online ? 'ONLINE TALENTS' : 'TALENT SYSTEM', 80, 13, 'gold');
+    if (this.online) {
+      if (this.busy) { textC('LOADING SERVER DATA…', 80, 65, 3); return; }
+      if (this.error) { textC(('SERVER: ' + this.error).slice(0, 25), 80, 55, 'red'); textC('A: RETRY   B: BACK', 80, 75, 2); return; }
+      if (!this.remoteTrees.length) { textC('NO SERVER TALENT TREES', 80, 65, 2); return; }
+      if (!this.profile?.character?.specialization_id) {
+        textC('CHOOSE SPECIALIZATION', 80, 27, 2);
+        this.remoteTrees.forEach((tree, index) => {
+          const y = 48 + index * 20; if (index === this.tree) fill(5, y - 1, 150, 16, 1);
+          text(tree.name.slice(0, 22), 10, y, index === this.tree ? 'gold' : 3);
+          text(String(tree.role || '').slice(0, 18), 10, y + 8, 2);
+        });
+        textC('LEFT/RIGHT: CHOOSE  A: CONFIRM', 80, 119, 2); return;
+      }
+      const tree = this.remoteTrees[this.tree], branches = ['ASSAULT','UTILITY','MASTERY'];
+      textC((tree?.name || 'SPECIALIZATION').slice(0, 20), 80, 24, 'gold');
+      branches.forEach((branch, index) => {
+        const x = 3 + index * 52; fill(x, 34, 49, 10, index === this.branch ? 3 : 1);
+        textC(branch.slice(0, 7), x + 24, 35, index === this.branch ? 0 : 3);
+      });
+      text('POINTS ' + (this.profile.character.talent_points || 0) + '  LV ' + (this.profile.character.level || G.lvl), 5, 47, 2);
+      const list = this.items(), known = this.unlocked();
+      list.slice(this.top, this.top + this.rows).forEach((node, offset) => {
+        const index = this.top + offset, y = 60 + offset * 9, learned = known.has(node.id);
+        const eligible = this.profile.character.level >= node.requiredLevel &&
+          (!node.prerequisiteId || known.has(node.prerequisiteId)) &&
+          Number(this.profile.character.talent_points || 0) >= Number(node.pointCost || 1);
+        if (index === this.i) fill(3, y - 1, 153, 9, 1);
+        text(learned ? '*' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
+        text(node.name.slice(0, 19), 14, y, eligible ? 3 : 1);
+        textR('L' + node.requiredLevel, 153, y, learned ? 'gold' : 2);
+      });
+      const node = list[this.i]; frame(2, 98, 156, 37);
+      if (node) {
+        text(node.name.slice(0, 24), 6, 101, 'gold');
+        text(wrap(node.description || '', 24).slice(0, 2).join('\n'), 6, 111, 3);
+        text('COST ' + node.pointCost + '  ' + String(node.type || '').toUpperCase(), 6, 126, 2);
+      }
+      fill(0, 135, W, 9, 0); text('A: UNLOCK  SEL: BRANCH', 4, 136, 2); return;
+    }
     TALENT_TREES.forEach((tree, index) => {
-      const x = 3 + index * 52;
-      fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
+      const x = 3 + index * 52; fill(x, 24, 49, 11, index === this.tree ? 3 : 1);
       textC(tree.name.slice(0, 8), x + 24, 25, index === this.tree ? 0 : 3);
     });
-    text(`POINTS ${G.talentPts || 0}   LEVEL ${G.lvl}`, 5, 38, 2);
+    text('POINTS ' + (G.talentPts || 0) + '   LEVEL ' + G.lvl, 5, 38, 2);
     const L = this.items();
     L.slice(this.top, this.top + this.rows).forEach((node, offset) => {
-      const index = this.top + offset, y = 50 + offset * 11;
-      const learned = !node.respec && G.talents.includes(node.id);
+      const index = this.top + offset, y = 50 + offset * 11, learned = !node.respec && G.talents.includes(node.id);
       const eligible = node.respec || (G.lvl >= node.level && (!node.requires || G.talents.includes(node.requires)));
       if (index === this.i) fill(3, y - 1, 153, 10, 1);
-      if (node.icon && IMG[node.icon]) blit(spr(node.icon, 8, 8, { ghost: !eligible }), 4, y); else text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
-      if (learned) text('*', 134, y, 'gold');
+      text(learned ? '*' : node.respec ? '!' : eligible ? '+' : '-', 5, y, learned ? 'gold' : eligible ? 3 : 1);
       text(node.name.slice(0, 21), 14, y, eligible ? 3 : 1);
-      if (!node.respec) textR(`L${node.level}`, 152, y, learned ? 'gold' : 2);
+      if (!node.respec) textR('L' + node.level, 152, y, learned ? 'gold' : 2);
     });
-    const node = L[this.i];
-    frame(2, 98, 156, 37);
+    const node = L[this.i]; frame(2, 98, 156, 37);
     if (node) {
-      const needReq = node.requires && !G.talents.includes(node.id);
-      text(node.name + (G.talents.includes(node.id) ? ' LEARNED' : ''), 6, 101, 'gold');
-      text(wrap(node.desc, 24).slice(0, needReq ? 1 : 2).join('\n'), 6, 111, 3);
-      if (needReq) text(`REQ: ${this.path().nodes.find(n => n.id === node.requires)?.name || 'PREVIOUS'}`.slice(0, 24), 6, 122, 2);
+      const known = G.talents.includes(node.id); text(node.name + (known ? ' LEARNED' : ''), 6, 101, 'gold');
+      text(wrap(node.desc, 24).slice(0, 2).join('\n'), 6, 111, 3);
     }
     fill(0, 135, W, 9, 0); text('SELECT: PATH', 4, 136, 2);
   }
@@ -8173,30 +8509,48 @@ class SocialScene extends ListScene {
   }
   async openFriends() {
     if (!LocalRealm.available || !LocalRealm.account) return say('FRIEND LIST REQUIRES A REALM ACCOUNT. LOG IN AT TITLE > ACCOUNT.');
-    if (typeof FriendsScene === 'function') return push(new FriendsScene());
     try {
       const data = await LocalRealm.friends();
-      const entries = data.friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${f.name}`).concat(data.requests.map(f => `REQUEST  ${f.name}`));
-      choose(['ADD FRIEND', ...entries, ...(data.friends.length ? ['REMOVE FRIEND'] : [])], i => {
+      // Treat API collections as untrusted input: older servers or partial responses
+      // may omit either collection. Normalize IDs because actions require account IDs,
+      // not display names or request-row positions.
+      const friends = Array.isArray(data && data.friends) ? data.friends.filter(f => f && (f.id || f.accountId)) : [];
+      const requests = Array.isArray(data && data.requests) ? data.requests.filter(f => f && (f.id || f.accountId)) : [];
+      const accountId = f => String(f.id || f.accountId || '');
+      const displayName = f => clean(String(f.name || f.username || 'UNKNOWN PLAYER')).slice(0, 16);
+      const entries = friends.map(f => `${f.online ? 'ONLINE' : 'OFFLINE'}  ${displayName(f)}`).concat(requests.map(f => `REQUEST  ${displayName(f)}`));
+      choose(['ADD FRIEND', ...entries, ...(friends.length ? ['REMOVE FRIEND'] : [])], i => {
         if (i === 0) {
-          const name = window.prompt('Realm account name to add:');
-          if (name) LocalRealm.requestFriend(name.trim()).then(r => say(r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.')).catch(e => say(e.message));
+          const raw = window.prompt('Realm account name to add (3-16 letters, numbers or _):');
+          if (raw == null) return;
+          const username = String(raw).trim();
+          if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return say('INVALID ACCOUNT NAME. USE 3-16 LETTERS, NUMBERS OR _.');
+          LocalRealm.requestFriend(username)
+            .then(r => say(r && r.accepted ? 'FRIEND REQUEST ACCEPTED.' : 'FRIEND REQUEST SENT.'))
+            .catch(e => say(`FRIEND REQUEST FAILED: ${e.message || e}`));
           return;
         }
         const idx = i - 1;
-        if (idx >= data.friends.length && idx < data.friends.length + data.requests.length) {
-          const f = data.requests[idx - data.friends.length];
+        if (idx >= friends.length && idx < friends.length + requests.length) {
+          const f = requests[idx - friends.length], id = accountId(f), name = displayName(f);
           choose(['ACCEPT', 'DECLINE'], answer => {
-            if (answer === 0) LocalRealm.acceptFriend(f.id).then(() => say(`${f.name} ADDED TO FRIENDS.`)).catch(e => say(e.message));
-            else LocalRealm.removeFriend(f.id).catch(() => {});
-          }, `FRIEND REQUEST FROM ${f.name}`);
-        } else if (idx >= 0 && idx < data.friends.length) {
-          const f = data.friends[idx]; say(`${f.name} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
-        } else if (i === 1 + entries.length && data.friends.length) {
-          choose(data.friends.map(f => f.name), j => { if (j >= 0) LocalRealm.removeFriend(data.friends[j].id).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message)); }, 'REMOVE WHICH FRIEND?');
+            // Choice calls back with -1 when B is pressed. Cancellation must not
+            // be interpreted as DECLINE (which permanently removes the request).
+            if (answer !== 0 && answer !== 1) return;
+            const action = answer === 0 ? LocalRealm.acceptFriend(id) : LocalRealm.removeFriend(id);
+            action.then(() => say(answer === 0 ? `${name} ADDED TO FRIENDS.` : `REQUEST FROM ${name} DECLINED.`))
+              .catch(e => say(`FRIEND REQUEST UPDATE FAILED: ${e.message || e}`));
+          }, `FRIEND REQUEST FROM ${name}`);
+        } else if (idx >= 0 && idx < friends.length) {
+          const f = friends[idx]; say(`${displayName(f)} IS ${f.online ? 'ONLINE' : 'OFFLINE'}.`);
+        } else if (i === 1 + entries.length && friends.length) {
+          choose(friends.map(displayName), j => {
+            if (j < 0 || !friends[j]) return;
+            LocalRealm.removeFriend(accountId(friends[j])).then(() => say('FRIEND REMOVED.')).catch(e => say(e.message));
+          }, 'REMOVE WHICH FRIEND?');
         }
       }, 'FRIENDS / REQUESTS');
-    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message}`); }
+    } catch (e) { say(`FRIENDS UNAVAILABLE: ${e.message || e}`); }
   }
   async createInvite() {
     try { const invite = await LocalRealm.createInvite(); say([`INVITE CODE: ${invite.code}`, 'Share this code with a friend.', 'It expires in 15 minutes.']); }
@@ -8894,7 +9248,11 @@ class Title {
     if (c === 'CONTINUE') { loadSlot(lastSlot()); fadeTo(() => enterWorld()); }
     // the Aelmoor menu suite (src/menus_aelmoor.js); the older screens remain as fallbacks
     const AM = window.GBQAelmoorMenus;
-    if (c === 'NEW GAME') push(AM ? new AM.AelNewGame() : new RealmSelect());
+    if (c === 'NEW GAME') {
+      const beginCreation = session => push(AM ? new AM.AelNewGame(undefined, session) : new RealmSelect());
+      if (window.GBQMMOAccount) window.GBQMMOAccount.open({ onReady: beginCreation });
+      else beginCreation(null);
+    }
     if (c === 'LOAD GAME') push(AM ? new AM.AelLoad() : new RealmSelect());
     if (c === 'OPTIONS') push(AM ? new AM.AelOptions() : new SettingsScene());
     if (c === 'CREDITS') push(AM ? new AM.AelCredits() : new Credits());
@@ -14879,6 +15237,119 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
 </script>
 <script>
 'use strict';
+(() => {
+const SEASONS=[
+{id:'emberfall',name:'EMBERFALL',theme:'Ash and Flame',element:'fire',currency:'Ember Sigils',lore:'The old forges awaken beneath Valendria.'},
+{id:'frostwake',name:'FROSTWAKE',theme:'Winter and Ice',element:'cold',currency:'Frost Marks',lore:'An ancient winter has crossed the northern passes.'},
+{id:'greentide',name:'GREENTIDE',theme:'Wild Growth',element:'poison',currency:'Bloom Seals',lore:'The Worldroot spreads into forgotten lands.'},
+{id:'suncrown',name:'SUNCROWN',theme:'Sun and Storm',element:'lightning',currency:'Solar Crests',lore:'A broken sun casts a shadow across the realm.'}
+];
+const STAT_KEYS=['kills','elites','dungeons','raids','trials','quests','worldBosses','crafted','fish','steps','keystones'];
+const JOURNEY=[
+['A Spark in the Dark','kills',60,'Find the first signs of the seasonal disturbance.'],
+['The Threat Revealed','elites',8,'Defeat elite forces gathering around the seasonal frontier.'],
+['Into the Fracture','dungeons',2,'Clear dungeons corrupted by the season.'],
+['Voices of the Realm','quests',5,'Complete quests for the people of Valendria.'],
+['A Greater Enemy','worldBosses',1,'Defeat a seasonal world boss.'],
+['The First Expedition','raids',1,'Complete a raid expedition.'],
+['Trial by Fire','trials',2,'Complete two trials against the season’s champions.'],
+['Supply the Vanguard','crafted',12,'Craft supplies for the seasonal war effort.'],
+['Keys to the Front','keystones',2,'Complete keystone expeditions.'],
+['A Realm United','kills',250,'Push back the seasonal invasion across the realm.'],
+['Break Their Stronghold','dungeons',6,'Clear six more dungeons and weaken the enemy stronghold.'],
+['The Season’s End','worldBosses',3,'Defeat three world bosses and end the seasonal threat.']
+].map((x,i)=>({id:'chapter_'+(i+1),chapter:i+1,name:x[0],stat:x[1],target:x[2],description:x[3],reward:{tokens:30+i*5,seasonXp:250+i*25,gold:200+i*50}}));
+const WEEKLY_POOL=[
+{id:'weekly_hunt',name:'FRONTIER HUNTER',stat:'kills',target:180,description:'Defeat enemies across the frontier.'},
+{id:'weekly_elites',name:'ELITE BREAKER',stat:'elites',target:15,description:'Defeat elite enemies.'},
+{id:'weekly_dungeons',name:'DUNGEON DELVER',stat:'dungeons',target:4,description:'Clear dungeons.'},
+{id:'weekly_raids',name:'RAID VANGUARD',stat:'raids',target:1,description:'Complete a raid.'},
+{id:'weekly_trials',name:'TRIAL SEEKER',stat:'trials',target:3,description:'Complete trials.'},
+{id:'weekly_quests',name:'REALM HELPER',stat:'quests',target:10,description:'Complete quests.'},
+{id:'weekly_bosses',name:'GIANT SLAYER',stat:'worldBosses',target:2,description:'Defeat world bosses.'},
+{id:'weekly_craft',name:'WAR QUARTERMASTER',stat:'crafted',target:20,description:'Craft items.'},
+{id:'weekly_keys',name:'KEYSTONE RUNNER',stat:'keystones',target:3,description:'Finish keystone runs.'}
+];
+const MONTHLY_EVENTS=[
+[
+{id:'cinderfall',name:'CINDERFALL INVASION',activity:'Defend the Ashen March',bonus:'Fire-themed rewards',boss:'The Cinder Sovereign'},
+{id:'forgeweek',name:'FORGE OF THE FIRST KING',activity:'Gather rare ore and craft war gear',bonus:'Crafting and upgrade materials',boss:'The Ironbound Regent'},
+{id:'ashmoon',name:'ASHEN MOON HUNT',activity:'Hunt elite beasts beneath the red moon',bonus:'Elite hunt and legendary caches',boss:'The Red Moon Stalker'}
+],
+[
+{id:'frostbound',name:'FROSTBOUND HUNT',activity:'Track the Pale Huntress through the north',bonus:'Cold-themed rewards',boss:'The Pale Huntress'},
+{id:'icefall',name:'SHATTERING ICE',activity:'Break icebound fortresses and rescue scouts',bonus:'Dungeon and rescue rewards',boss:'The Glacier Warden'},
+{id:'longnight',name:'THE LONG NIGHT',activity:'Survive waves in the frozen dark',bonus:'Survival caches and titles',boss:'The Night-Ice Colossus'}
+],
+[
+{id:'wildbloom',name:'WILDBLOOM SURGE',activity:'Cleanse corrupted Worldroot growth',bonus:'Nature and poison rewards',boss:'The Verdant Devourer'},
+{id:'rootwake',name:'ROOTWAKE EXPEDITION',activity:'Explore newly opened Worldroot passages',bonus:'Gathering and exploration rewards',boss:'The Rootbound Ancient'},
+{id:'beasttide',name:'BEASTTIDE',activity:'Hunt beasts empowered by wild growth',bonus:'Companion and beast trophies',boss:'The Thornhide Alpha'}
+],
+[
+{id:'eclipse',name:'ECLIPSE OF THE SUN',activity:'Recover the fallen solar standards',bonus:'Solar relics and titles',boss:'The Eclipse Herald'},
+{id:'stormcrown',name:'STORMCROWN SIEGE',activity:'Defend the sky citadel from storm legions',bonus:'Lightning relics and siege caches',boss:'The Tempest Marshal'},
+{id:'lastlight',name:'THE LAST LIGHT',activity:'Enter the final eclipse and defeat its champions',bonus:'End-of-season prestige rewards',boss:'The Sunless King'}
+]
+];
+function pad(n){return String(n).padStart(2,'0');}
+function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function getSeason(d=new Date()){
+const q=Math.floor(d.getMonth()/3),s=SEASONS[q],start=new Date(d.getFullYear(),q*3,1),end=new Date(d.getFullYear(),q*3+3,1);
+return{id:'Y'+d.getFullYear()+'_'+s.id,year:d.getFullYear(),quarter:q+1,name:s.name,theme:s.theme,element:s.element,currency:s.currency,lore:s.lore,start:dateKey(start),end:dateKey(end),daysLeft:Math.max(0,Math.ceil((end-d)/86400000)),monthInSeason:d.getMonth()%3+1,eventData:MONTHLY_EVENTS[q][d.getMonth()%3]};
+}
+function weekKey(d=new Date()){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return dateKey(x);}
+function statSnapshot(stats={}){return Object.fromEntries(STAT_KEYS.map(k=>[k,Math.max(0,Number(stats[k])||0)]));}
+function progressFor(q,stats={},base={}){return Math.max(0,Math.min(q.target,(Number(stats[q.stat])||0)-(Number(base[q.stat])||0)));}
+function questComplete(q,stats={},base={}){return progressFor(q,stats,base)>=q.target;}
+function weeklyQuests(seed,week,stats={}){
+let n=2166136261;for(const c of String(seed)+'|'+week){n^=c.charCodeAt(0);n=Math.imul(n,16777619);}let x=n>>>0;const rand=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967296;};
+const pool=WEEKLY_POOL.slice(),out=[];while(out.length<3&&pool.length){const i=Math.floor(rand()*pool.length),q=pool.splice(i,1)[0];out.push({...q,base:statSnapshot(stats),claimed:false,reward:{tokens:50,seasonXp:350,gold:500}});}return out;
+}
+function journeyState(state,stats={}){const s=state&&typeof state==='object'?state:{};const chapter=Math.max(1,Math.min(13,Math.floor(Number(s.chapter)||1)));return{chapter,base:s.base&&typeof s.base==='object'?statSnapshot(s.base):statSnapshot(stats),completed:Array.isArray(s.completed)?s.completed.filter(x=>JOURNEY.some(q=>q.id===x)):[],claimed:Array.isArray(s.claimed)?s.claimed.filter(x=>JOURNEY.some(q=>q.id===x)):[]};}
+function renownLevel(points){let level=0;while(level<20&&points>=(level+1)*100)level++;return level;}
+function renownReward(level){const l=Math.max(1,Math.min(20,Math.floor(level)));return l%5===0?{tokens:100,renown:0,gold:1500,title:l===20?'season_renowned':null,cache:true}:{tokens:25,renown:0,gold:250,cache:l%2===0};}
+function seasonRank(score){const s=Math.max(0,Number(score)||0);return s>=10000?'PARAGON':s>=5000?'VETERAN':s>=2000?'CHAMPION':s>=500?'ADVENTURER':'INITIATE';}
+function seasonalScore(stats={},base={}){const weights={kills:1,elites:8,dungeons:80,raids:250,trials:100,quests:25,worldBosses:150,crafted:5,keystones:120};return Object.entries(weights).reduce((n,[k,w])=>n+Math.max(0,(Number(stats[k])||0)-(Number(base[k])||0))*w,0);}
+function validate(){return SEASONS.length===4&&MONTHLY_EVENTS.length===4&&MONTHLY_EVENTS.every(x=>x.length===3)&&JOURNEY.length===12&&new Set(JOURNEY.map(q=>q.id)).size===12&&WEEKLY_POOL.length>=3;}
+if(typeof globalThis!=='undefined')globalThis.GBQSeasonal={SEASONS,JOURNEY,WEEKLY_POOL,MONTHLY_EVENTS,getSeason,weekKey,statSnapshot,progressFor,questComplete,weeklyQuests,journeyState,renownLevel,renownReward,seasonRank,seasonalScore,validate};
+if(typeof window==='undefined'||typeof G==='undefined'||typeof makeItem!=='function')return;
+const current=()=>getSeason(new Date()),playerKey=()=>String(G.slot)+'|'+String(G.name||'hero')+'|'+String(G.created||0);
+function ensureSeasonal(){
+const s=current(),stats=G.stats||{},state=G.seasonal;
+if(!state||state.seasonId!==s.id)G.seasonal={seasonId:s.id,currency:0,renown:0,claimedRenown:[],journey:{chapter:1,base:statSnapshot(stats),completed:[],claimed:[]},weekly:{week:weekKey(),quests:weeklyQuests(playerKey(),weekKey(),stats)},eventClaims:[],eventMonth:current().id+'_'+current().monthInSeason,eventBase:statSnapshot(stats),scoreBase:statSnapshot(stats),bestBosses:[]};
+const z=G.seasonal;z.currency=Math.max(0,Math.floor(Number(z.currency)||0));z.renown=Math.max(0,Math.floor(Number(z.renown)||0));z.claimedRenown=Array.isArray(z.claimedRenown)?z.claimedRenown:[];z.eventClaims=Array.isArray(z.eventClaims)?z.eventClaims:[];z.bestBosses=Array.isArray(z.bestBosses)?z.bestBosses:[];
+z.journey=journeyState(z.journey,stats);const wk=weekKey();if(!z.weekly||z.weekly.week!==wk)z.weekly={week:wk,quests:weeklyQuests(playerKey(),wk,stats)};const eventMonth=s.id+'_'+s.monthInSeason;if(z.eventMonth!==eventMonth){z.eventMonth=eventMonth;z.eventBase=statSnapshot(stats);}z.eventBase=z.eventBase||statSnapshot(stats);return z;
+}
+function addSeasonTokens(n){const z=ensureSeasonal(),amount=Math.max(0,Math.floor(Number(n)||0));z.currency=Math.min(999999,z.currency+amount);}
+function awardSeasonReward(r){const z=ensureSeasonal();addSeasonTokens(r.tokens||0);z.renown=Math.min(999999,z.renown+Math.max(0,Math.floor(Number(r.renown===undefined?(r.tokens||0):r.renown)||0)));G.gold+=r.gold||0;if(typeof addSeasonXp==='function')addSeasonXp(r.seasonXp||0);else if(G.season)G.season.bonus=(Number(G.season.bonus)||0)+(r.seasonXp||0);if(r.items&&typeof addItem==='function')for(const[k,n]of Object.entries(r.items))if(typeof ITEMS!=='undefined'&&ITEMS[k])addItem(k,n);if(r.gear&&typeof addGear==='function')addGear(makeItem({lvl:G.lvl,...r.gear}));if(r.title){G.titlesWon||={};G.titlesWon[r.title]=true;}}
+function claimJourney(){const z=ensureSeasonal(),q=JOURNEY[z.journey.chapter-1];if(!q)return'The seasonal story is complete.';if(z.journey.claimed.includes(q.id))return'Already claimed.';if(!questComplete(q,G.stats,z.journey.base))return'Quest objective not complete.';awardSeasonReward(q.reward);z.journey.claimed.push(q.id);z.journey.completed.push(q.id);z.journey.chapter=Math.min(13,z.journey.chapter+1);z.journey.base=statSnapshot(G.stats);saveGame();return null;}
+function claimWeekly(i){const z=ensureSeasonal(),q=z.weekly.quests[i];if(!q)return'No such seasonal quest.';if(q.claimed)return'Already claimed.';if(!questComplete(q,G.stats,q.base))return'Objective not complete.';q.claimed=true;awardSeasonReward(q.reward);saveGame();return null;}
+function claimRenownRewards(){const z=ensureSeasonal(),level=renownLevel(z.renown),out=[];for(let i=1;i<=level;i++)if(!z.claimedRenown.includes(i)){const r=renownReward(i);awardSeasonReward(r);z.claimedRenown.push(i);out.push(i);}saveGame();return out;}
+const VENDOR=[
+{id:'vendor_shards',name:'ASCENDANT SHARDS',cost:80,reward:{items:{star_shard:1,shard:5}},label:'1 STAR SHARD + 5 SHARDS'},
+{id:'vendor_ember',name:'FORGE EMBERS',cost:50,reward:{items:{ember:5}},label:'5 EMBERS'},
+{id:'vendor_awake',name:'AWAKENING CACHE',cost:120,reward:{items:{awk_stone:10}},label:'10 AWAKENING STONES'},
+{id:'vendor_key',name:'RIFT KEY CACHE',cost:100,reward:{riftKeys:2},label:'2 RIFT KEYS'},
+{id:'vendor_gear',name:'SEASONAL RELIC',cost:250,reward:{gear:{rarity:5}},label:'LEGENDARY RELIC'},
+{id:'vendor_title',name:'SEASONAL TITLE',cost:400,reward:{title:'season_renowned'},label:'SEASON RENOWNED TITLE'}
+];
+function buyVendor(i){const z=ensureSeasonal(),v=VENDOR[i];if(!v)return'Unknown seasonal reward.';if(z.currency<v.cost)return'Not enough seasonal currency.';z.currency-=v.cost;awardSeasonReward({...v.reward,gold:0,seasonXp:0,tokens:0});if(v.reward.riftKeys){G.rift||={};G.rift.keys=(Number(G.rift.keys)||0)+v.reward.riftKeys;}saveGame();return'PURCHASED '+v.name+'.';}
+function seasonQuestMenu(){const z=ensureSeasonal(),q=JOURNEY[z.journey.chapter-1];if(!q)return say('THE SEASON STORY IS COMPLETE.',seasonMainMenu);const p=progressFor(q,G.stats,z.journey.base),ready=p>=q.target;choose([ready?'CLAIM STORY CHAPTER':'VIEW STORY CHAPTER','SEASONAL WEEKLIES','BACK'],k=>{if(k===0){if(!ready)return say([q.name,q.description,p+'/'+q.target+' '+q.stat.toUpperCase()],seasonQuestMenu);const err=claimJourney();return say(err||[q.name+' COMPLETE','SEASON TOKENS AND SEASON XP AWARDED.'],seasonQuestMenu);}if(k===1)return weeklySeasonMenu();if(k===2)return seasonMainMenu();},'CHAPTER '+q.chapter+'/12: '+q.name);}
+function weeklySeasonMenu(){const z=ensureSeasonal(),rows=z.weekly.quests;choose(rows.map(q=>(q.claimed?'#':questComplete(q,G.stats,q.base)?'!':' ')+q.name.slice(0,17)+' '+progressFor(q,G.stats,q.base)+'/'+q.target),i=>{if(i<0)return seasonMainMenu();const q=rows[i];if(!q)return seasonMainMenu();if(q.claimed)return say('ALREADY CLAIMED.',weeklySeasonMenu);if(!questComplete(q,G.stats,q.base))return say([q.name,q.description,progressFor(q,G.stats,q.base)+'/'+q.target],weeklySeasonMenu);const err=claimWeekly(i);return say(err||'WEEKLY SEASON QUEST COMPLETE. +50 TOKENS +350 SEASON XP.',weeklySeasonMenu);},'WEEKLY SEASON QUESTS');}
+function seasonalVendorMenu(){const z=ensureSeasonal();choose(VENDOR.map(v=>v.name+' '+v.cost+' TOKENS'),i=>{if(i<0)return seasonMainMenu();const v=VENDOR[i];choose(['BUY','BACK'],k=>{if(k!==0)return seasonalVendorMenu();return say(buyVendor(i),seasonalVendorMenu);},v.label+' · '+v.cost+' TOKENS');},'SEASON VENDOR: '+z.currency+' '+current().currency.toUpperCase());}
+function seasonEventMenu(){const s=current(),e=s.eventData,z=ensureSeasonal(),key=s.id+'_'+e.id,claimed=z.eventClaims.includes(key);choose(['EVENT STORY','CLAIM EVENT CACHE','BACK'],k=>{if(k===0)return say([e.name,e.activity,e.bonus,'BOSS: '+e.boss,'Defeat at least one world boss this season to earn the event cache.'],seasonEventMenu);if(k===1){if(claimed)return say('EVENT CACHE ALREADY CLAIMED THIS MONTH.',seasonEventMenu);const kills=Math.max(0,(Number(G.stats.worldBosses)||0)-(Number((z.eventBase||z.scoreBase).worldBosses)||0));if(kills<1)return say('DEFEAT AT LEAST ONE WORLD BOSS THIS SEASON TO CLAIM THE EVENT CACHE.',seasonEventMenu);z.eventClaims.push(key);awardSeasonReward({tokens:75,seasonXp:500,gold:1000,items:{star_shard:1}});saveGame();return say('EVENT CACHE CLAIMED: 75 TOKENS, 500 SEASON XP, 1,000 GOLD.',seasonEventMenu);}if(k===2)return seasonMainMenu();},e.name);}
+function seasonMainMenu(){const s=current(),z=ensureSeasonal(),q=JOURNEY[z.journey.chapter-1],level=renownLevel(z.renown);choose(['SEASON STORY '+(q?'CHAPTER '+q.chapter+'/12':'COMPLETE'),'WEEKLY SEASON QUESTS','SEASONAL EVENT: '+s.monthInSeason+'/3','SEASON VENDOR','CLAIM RENOWN REWARDS','SEASON PASS','BACK'],k=>{if(k===0)return seasonQuestMenu();if(k===1)return weeklySeasonMenu();if(k===2)return seasonEventMenu();if(k===3)return seasonalVendorMenu();if(k===4){const got=claimRenownRewards();return say(got.length?'RENOWN REWARDS CLAIMED: '+got.join(', '):'NO NEW RENOWN REWARDS.',seasonMainMenu);}if(k===5&&typeof window.SeasonPassScene==='function')return push(new window.SeasonPassScene());},s.name+' · '+s.daysLeft+' DAYS · RENOWN '+level+'/20 · '+seasonRank(seasonalScore(G.stats,z.scoreBase)));}
+if(typeof TITLES!=='undefined'&&!TITLES.some(x=>x.id==='t_season_renowned'))TITLES.push({id:'t_season_renowned',name:'SEASON RENOWNED',how:'Reach renown 20 or purchase the seasonal title.',ok:g=>!!(g.titlesWon&&g.titlesWon.season_renowned)});
+window.seasonMainMenu=seasonMainMenu;window.ensureSeasonal=ensureSeasonal;window.claimSeasonJourney=claimJourney;window.claimSeasonWeekly=claimWeekly;window.buySeasonalReward=buyVendor;
+const oldItems=MainMenu.prototype.items;
+MainMenu.prototype.items=function(){const items=oldItems.apply(this,arguments),at=items.indexOf('CHALLENGES');items.splice(at>=0?at+1:items.length,0,'SEASON JOURNEY');return items;};
+const oldUpdate=MainMenu.prototype.update;
+MainMenu.prototype.update=function(){if(P('a')&&this.items()[this.i]==='SEASON JOURNEY'){SFX.select();return seasonMainMenu();}return oldUpdate.apply(this,arguments);};
+})();
+</script>
+<script>
+'use strict';
 // ================================================================ KEYSTONES: timed, scaling dungeon runs (Mythic+ style)
 // MAIN MENU > CHALLENGES > KEYSTONES. A keystone names a dungeon and a level (+2 and up).
 //   * Foes get +8% HP and damage per level above +1, plus the week's affixes:
@@ -14902,6 +15373,14 @@ const KEY_AFFIXES = {
   bolstered: { name: 'BOLSTERED', desc: 'All foes +10% HP.', all: { hp: 1.1 } },
 };
 const ROTATING = ['raging', 'brambled', 'warded', 'swift', 'bolstered'];
+const SEASONAL_AFFIXES = ['cinderbound', 'permafrost', 'overgrown', 'eclipsed'];
+const seasonalAffixForWeek = weekKey => { const month = Math.max(1, Math.min(12, Number(String(weekKey).split('-')[1]) || 1)); return SEASONAL_AFFIXES[Math.floor((month - 1) / 3)]; };
+Object.assign(KEY_AFFIXES, {
+  cinderbound: { name: 'CINDERBOUND', desc: 'Season of Emberfall: all foes +12% HP and +8% damage; foes begin MIGHTY.', all: { hp: 1.12, dmg: 1.08 }, start: { buff: 'might', rounds: 2 } },
+  permafrost: { name: 'PERMAFROST', desc: 'Season of Frostwake: all foes +12% HP and begin FORTIFIED.', all: { hp: 1.12, dmg: 1.04 }, start: { buff: 'fortify', rounds: 2 } },
+  overgrown: { name: 'OVERGROWN', desc: 'Season of Greentide: all foes +10% HP and begin with THORNSKIN.', all: { hp: 1.10, dmg: 1.06 }, start: { buff: 'thornskin', rounds: 3 } },
+  eclipsed: { name: 'ECLIPSED', desc: 'Season of Suncrown: all foes +8% HP and +12% damage; foes begin HASTED.', all: { hp: 1.08, dmg: 1.12 }, start: { buff: 'haste', rounds: 2 } },
+});
 // a week number from a 'YYYY-MM-DD' Monday key (days since 2026-01-05, a Monday, / 7)
 const weekIndex = weekKey => Math.floor((Date.UTC(...String(weekKey).split('-').map((v, i) => i === 1 ? Number(v) - 1 : Number(v))) - Date.UTC(2026, 0, 5)) / 6048e5);
 function weeklyAffixes(weekKey, level) {
@@ -14909,6 +15388,7 @@ function weeklyAffixes(weekKey, level) {
   if (level >= 2) out.push(((w % 2) + 2) % 2 === 0 ? 'fortified' : 'tyrannical');
   if (level >= 4) out.push(ROTATING[n]);
   if (level >= 7) out.push(ROTATING[(n + 2) % ROTATING.length]);
+  if (level >= 10) out.push(seasonalAffixForWeek(weekKey));
   return out;
 }
 const keyScale = level => Math.round(Math.pow(1.08, Math.max(0, Math.min(KEY_MAX, level) - 1)) * 1000) / 1000;
@@ -14943,7 +15423,7 @@ function pickKeyDungeon(dungeons, heroLvl, rnd, avoid) {
 }
 const fmtClock = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
-if (typeof globalThis !== 'undefined') globalThis.GBQKeystones = { KEY_MIN, KEY_MAX, KEY_AFFIXES, weekIndex, weeklyAffixes, keyScale, foeMultipliers, startEffects, timeLimit, runResult, failResult, keyLoot, pickKeyDungeon, fmtClock };
+if (typeof globalThis !== 'undefined') globalThis.GBQKeystones = { KEY_MIN, KEY_MAX, KEY_AFFIXES, SEASONAL_AFFIXES, seasonalAffixForWeek, weekIndex, weeklyAffixes, keyScale, foeMultipliers, startEffects, timeLimit, runResult, failResult, keyLoot, pickKeyDungeon, fmtClock };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof enterInstance === 'function' && typeof DUNGEONS !== 'undefined') {
@@ -17444,7 +17924,7 @@ function aelSlider(x, y, w, frac) {
 // screen names for the header plaque: explicit names first, else the class name split into words
 const AEL_SCENE_TITLES = { MainMenu: 'GAME MENU', CharacterMenu: 'CHARACTER', CharSheet: 'CHARACTER', InventoryScene: 'INVENTORY', PaperDoll: 'EQUIPMENT', RelicCodexScene: 'RELICS & ARTIFACTS', StatBreakdownScene: 'STATS', GearOverviewScene: 'GEAR', ItemDetailScene: 'ITEM', ProgressSummaryScene: 'PROGRESS', DetailHubScene: 'DETAILS', GearAwakenScene: 'AWAKENING', RiftScene: 'RIFTS', RiftBoardScene: 'LEADERBOARD', SkillRuneScene: 'SKILL RUNES', GamblerScene: 'GAMBLER', LootFilterScene: 'LOOT FILTER', SeasonPassScene: 'SEASON PASS', PatchNotesScene: 'PATCH NOTES',
   StashScene: 'STASH', MarketScene: 'VENDOR', QuestLog: 'QUEST LOG', Spellbook: 'SPELLBOOK', GrowthScene: 'GROWTH', ArtsScene: 'COMBAT ARTS',
-  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
+  ArmoryScene: 'ARMOURY', HeirloomScene: 'HEIRLOOMS', MountScene: 'MOUNTS', SocialScene: 'SOCIAL', GuildMenuScene: 'GUILD HALL', TitleScene: 'TITLES', AchievementScene: 'ACHIEVEMENTS',
   RepScene: 'REPUTATION', BestiaryScene: 'BESTIARY', BossJournalScene: 'BOSS JOURNAL', ActivityFinderScene: 'ACTIVITIES', SettingsScene: 'SETTINGS',
   TalentScene: 'TALENTS', PerkTreeScene: 'PERKS', CompanionScene: 'PARTY', GemSocketScene: 'GEMS', RuneForgeScene: 'RUNE FORGE', CraftScene: 'CRAFTING',
   ProfessionScene: 'PROFESSIONS', SideQuestBoard: 'QUEST BOARD', ExpansionMapsScene: 'EXPANSIONS', ArtGalleryScene: 'ART GALLERY', AbilitySkillsScene: 'SKILLS' };
@@ -17459,13 +17939,13 @@ function aelSceneTitle(sc) {
 const AEL_MENU_ICON = { CHARACTER: 'ka_chars_00', SPELLBOOK: 'ka_items_17', GROWTH: 'ka_status_13', 'COMBAT ARTS': 'ka_weapons_03', ARMOURY: 'ka_weapons_17',
   HEIRLOOMS: 'ka_weapons_44', WARDROBE: 'ka_weapons_13', LOADOUTS: 'ka_weapons_42', JOBS: 'ka_weapons_11', CHALLENGES: 'ka_icons_01', MOUNTS: 'ka_mounts_01',
   'QUEST LOG': 'ka_items_11', CRAFTING: 'ka_weapons_00', REST: 'ka_items_01', 'ACTIVITY FINDER': 'ka_icons_07', BESTIARY: 'ka_status_01',
-  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', TITLES: 'ka_icons_03',
+  'BOSS JOURNAL': 'ka_status_07', ACHIEVEMENTS: 'ka_icons_00', REPUTATION: 'ka_status_11', SOCIAL: 'ka_status_03', GUILD: 'ka_status_03', TITLES: 'ka_icons_03',
   'WORLD MAP': 'ka_items_45', 'ART GALLERY': 'ka_items_13', 'EXPANSION MAPS': 'ka_items_45', HEARTHSTONE: 'ka_items_07', SETTINGS: 'ka_status_17',
   SAVE: 'ka_items_46', 'SAVE & QUIT': 'ka_items_42' };
 const AEL_MENU_DESC = { CHARACTER: 'STATS, GEAR AND BAG', SPELLBOOK: 'SPELLS AND SLOTS', GROWTH: 'LEVEL-UP CHOICES', 'COMBAT ARTS': 'YOUR BATTLE ARTS',
   ARMOURY: 'ARMOUR SETS', HEIRLOOMS: 'FAMILY RELICS', WARDROBE: 'CHANGE YOUR LOOK', LOADOUTS: 'SAVED GEAR SETS', JOBS: 'JOBS AND WORK', CHALLENGES: 'TRIALS AND GOALS',
   MOUNTS: 'RIDE A MOUNT', 'QUEST LOG': 'ACTIVE QUESTS', CRAFTING: 'MAKE ITEMS', REST: 'REST AND HEAL', 'ACTIVITY FINDER': 'DUNGEONS, RAIDS', BESTIARY: 'MONSTERS SEEN',
-  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', TITLES: 'EARNED TITLES',
+  'BOSS JOURNAL': 'BOSSES MET', ACHIEVEMENTS: 'YOUR FEATS', REPUTATION: 'FACTION STANDING', SOCIAL: 'FRIENDS, GUILD', GUILD: 'GUILD ROSTER AND MANAGEMENT', TITLES: 'EARNED TITLES',
   'WORLD MAP': 'MAP OF AELMOOR', 'ART GALLERY': 'ART YOU FOUND', 'EXPANSION MAPS': 'NEW LANDS', HEARTHSTONE: 'RETURN HOME', SETTINGS: 'GAME OPTIONS',
   SAVE: 'SAVE YOUR GAME', 'SAVE & QUIT': 'SAVE, TO TITLE' };
 function aelGameMenuDraw(menu) {
@@ -17647,8 +18127,9 @@ function aelScores(cls) { const v = STANDARD_ARRAY.slice().sort((a, b) => b - a)
 function aelFreeSlot() { const k = SLOT_KEYS.findIndex((_, i) => !slotInfo(i)); return k >= 0 ? k : 0; }
 
 class AelNewGame {
-  constructor(slot) {
+  constructor(slot, onlineSession = null) {
     this.opaque = true; this.i = 0; this.slot = slot == null ? aelFreeSlot() : slot;
+    this.onlineSession = onlineSession;
     this.pick = { species: 'hearthkin', cls: 'warden', bg: 'soldier', name: '', mode: 'solo', diff: 2, look: null, portrait: null };
     this.naming = false;
   }
@@ -17674,8 +18155,11 @@ class AelNewGame {
     if (c === 'CHARACTER') push(new AelClassSelect(this.pick));
     if (c === 'APPEARANCE') { const k = CC_LOOKS.indexOf(this.pick.look || this.pick.cls); this.pick.look = CC_LOOKS[(k + 1) % CC_LOOKS.length]; SFX.toggle(); }
     if (c === 'NAME') this.startNaming();
-    if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot)); }
-    if (c === 'ADVANCED') { SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); }); }
+    if (c === 'CONFIRM') { if (!this.pick.name) { const pool = NAME_POOLS[this.pick.species] || NAME_POOLS.hearthkin; this.pick.name = pool[Math.floor(Math.random() * pool.length)]; } push(new AelSummary(this.pick, this.slot, this.onlineSession)); }
+    if (c === 'ADVANCED') {
+      if (this.onlineSession) { say('ADVANCED CREATION IS OFFLINE ONLY. Use the standard creator to save a hero to your selected realm.'); return; }
+      SFX.select(); fadeTo(() => { scenes.length = 0; push(new CharCreate(this.slot)); });
+    }
   }
   draw() {
     aelBackdrop(true);
@@ -17686,7 +18170,7 @@ class AelNewGame {
     textC(this.pick.name || '- NO NAME -', 110, 99, this.naming && (frameN >> 4) % 2 ? AEL.gold : AEL.cream);
     textC(CLASSES[this.pick.cls].name, 110, 108, 2);
     fill(68, 118, 86, 11, 'rgba(26,22,58,.9)');
-    textC(this.naming ? 'TYPE, ENTER' : this.i === 4 ? 'FULL CREATION' : 'NEW HERO', 111, 119, AEL.lav);
+    textC(this.naming ? 'TYPE, ENTER' : this.onlineSession ? this.onlineSession.realm.name.toUpperCase().slice(0, 16) : this.i === 4 ? 'FULL CREATION' : 'NEW HERO', 111, 119, AEL.lav);
     aelHints(this.items()[this.i] === 'NAME' ? [['A', 'TYPE'], ['S', 'RANDOM'], ['B', 'BACK']] : [['A', 'NEXT'], ['B', 'BACK']]);
   }
 }
@@ -17722,18 +18206,55 @@ class AelClassSelect {
 }
 
 class AelSummary {
-  constructor(pick, slot) { this.opaque = true; this.pick = pick; this.slot = slot; }
-  update() {
-    if (P('b')) { SFX.back(); removeScene(this); return; }
-    if (!P('a')) return;
-    SFX.confirm();
+  constructor(pick, slot, onlineSession = null) {
+    this.opaque = true; this.pick = pick; this.slot = slot; this.onlineSession = onlineSession;
+    this.pending = false; this.error = '';
+  }
+  beginAdventure(remoteCharacter = null) {
     const p = this.pick;
     G = newGameState(Object.assign({ slot: this.slot }, p, { scores: aelScores(p.cls), look: p.look || null, portrait: p.portrait || null }));
     G.difficulty = p.diff;
+    if (remoteCharacter && this.onlineSession) {
+      G.realm = remoteCharacter.realm_id || this.onlineSession.realm.id;
+      G.accountId = this.onlineSession.account.id;
+      G.mmoCharacterId = remoteCharacter.id;
+      G.mmoCharacterClass = remoteCharacter.class;
+      G.onlineAccountName = this.onlineSession.account.username;
+    }
     const role = CLASSES[G.cls].role === 'tank' ? 'healer' : 'tank';
     G.companions.push(makeAdventurer(role === 'tank' ? 'warden' : 'chaplain', 1, role === 'tank' ? 'BRAM' : 'ESME'));
     saveGame();
-    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
+    fadeTo(() => { scenes.length = 0; enterWorld(); const ch = chapterDef(); say([`Welcome to AELMOOR, ${G.name}.`, G.mmoCharacterId ? `Your hero is saved on ${G.realm.toUpperCase()}.` : `${G.companions[0].name} the ${CLASSES[G.companions[0].cls].name} will travel with you.`, `CHAPTER 1: ${ch.title}`]); });
+  }
+  async createOnlineHero() {
+    if (!/^[A-Za-z][A-Za-z0-9 _-]{2,15}$/.test(this.pick.name)) {
+      this.error = 'Use 3-16 valid characters for your hero name.';
+      return;
+    }
+    this.pending = true; this.error = '';
+    try {
+      const remote = await window.GBQMMOAccount.createCharacter(this.onlineSession, this.pick.name, this.pick.cls);
+      this.pending = false;
+      window.GBQMMOAccount.adoptGameplaySession(this.onlineSession);
+      this.beginAdventure(remote);
+    } catch (error) {
+      this.pending = false;
+      const messages = {
+        name_taken: 'That name is already used on this realm.',
+        character_limit_reached: 'Character limit reached for this account or realm.',
+        realm_unavailable: 'That realm is no longer available.',
+        unknown_realm: 'The selected realm could not be found.',
+        invalid_character: 'Check your character name and class.'
+      };
+      this.error = messages[error.code] || error.message || 'Online character creation failed.';
+    }
+  }
+  update() {
+    if (P('b') && !this.pending) { SFX.back(); removeScene(this); return; }
+    if (!P('a') || this.pending) return;
+    SFX.confirm();
+    if (this.onlineSession) { this.createOnlineHero(); return; }
+    this.beginAdventure();
   }
   draw() {
     const p = this.pick, c = newCharacter(Object.assign({}, p, { name: p.name || 'HERO', scores: aelScores(p.cls) })), D = derive(c);
@@ -17747,7 +18268,9 @@ class AelSummary {
     const st = [['HP', D.hpMax], ['AC', D.ac], ['INIT', D.init], ['STR', D.A.STR], ['DEX', D.A.DEX], ['WIS', D.A.WIS]];
     st.forEach(([k, v], j) => { const y = 52 + j * 8; text(k, 112, y, 2); textR(String(v), 152, y, AEL.cream); });
     aelButton(24, 104, 112, 13, 'BEGIN ADVENTURE', (frameN >> 4) % 4 !== 3, true);
-    aelHints([['A', 'CONFIRM'], ['B', 'BACK']]);
+    if (this.pending) textC('SAVING HERO TO REALM…', 80, 124, AEL.gold);
+    else if (this.error) { fill(5, 121, 150, 11, 'rgba(80,12,12,.95)'); textC(this.error.slice(0, 25), 80, 123, '#ffb8a8'); }
+    aelHints([['A', this.pending ? 'SAVING' : 'CREATE'], ['B', 'BACK']]);
   }
 }
 
@@ -18515,22 +19038,64 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof der
       if (G && G.morph === 'swim' && !G.inst && WATER.includes(this.chAt(x, y)) && !this.entities().some(e => e.x === x && e.y === y && !e.walk)) return false;
       return b0.apply(this, arguments);
     }; }
-  function endMorph(silent) { if (!G.morph) return; if (G.morph === 'wolf') { G.mounted = false; G.mount = G.morphPrevMount || (G.mounts && G.mounts[0]) || null; } G.morph = null; if (!silent) SFX.cursor(); }
+  // Keep the player's original mount state while moving between forms. Morphs are temporary
+  // movement modes, not entries in the player's collectible mount inventory.
+  function endMorph(silent, restoreRide = true) {
+    if (!G || !G.morph) return false;
+    const previousMount = Object.prototype.hasOwnProperty.call(G, 'morphPrevMount') ? G.morphPrevMount : ((G.mounts && G.mounts[0]) || null);
+    const previousMounted = Object.prototype.hasOwnProperty.call(G, 'morphPrevMounted') ? !!G.morphPrevMounted : false;
+    G.morph = null;
+    G.mount = previousMount;
+    G.mounted = restoreRide ? previousMounted : false;
+    delete G.morphPrevMount;
+    delete G.morphPrevMounted;
+    if (!silent) SFX.cursor();
+    return true;
+  }
+  function setMorphForm(form) {
+    if (!G || G.inst || !['wolf', 'swim'].includes(form)) return false;
+    const requiredLevel = form === 'wolf' ? 5 : 10;
+    if (G.lvl < requiredLevel) return false;
+    if (!G.morph) {
+      G.morphPrevMount = G.mount || null;
+      G.morphPrevMounted = !!G.mounted;
+    }
+    G.morph = form;
+    if (form === 'wolf') { G.mount = 'morph_wolf'; G.mounted = true; }
+    else { G.mount = G.morphPrevMount; G.mounted = false; }
+    return true;
+  }
   window.endMorph = endMorph;
+  window.setMorphForm = setMorphForm;
   function morphMenu() {
     if (G.inst) return say('You cannot morph inside an instance.');
     const opts = [`WOLF FORM${G.lvl < 5 ? ' (LV5)' : ''}`, `SWIM FORM${G.lvl < 10 ? ' (LV10)' : ''}`, ...(G.morph ? ['HUMAN FORM'] : []), 'BACK'];
     choose(opts, k => {
       const o = opts[k]; if (!o || o === 'BACK') return;
-      if (o === 'HUMAN FORM') { const f = scenes.find(s => s instanceof Field); if (G.morph === 'swim' && f && WATER.includes(f.chAt(G.x, G.y))) return say('Reach the shore first.'); endMorph(); return; }
-      if (o.startsWith('WOLF')) { if (G.lvl < 5) return say('WOLF FORM opens at level 5.'); endMorph(true); G.morphPrevMount = G.mount; G.mount = 'morph_wolf'; G.mounted = true; G.morph = 'wolf'; SFX.howl ? SFX.howl() : SFX.buff(); toast('WOLF FORM', 'Run fast. B: back to human.', 'pp_xp', 'buff'); return; }
-      if (o.startsWith('SWIM')) { if (G.lvl < 10) return say('SWIM FORM opens at level 10.'); endMorph(true); G.morph = 'swim'; SFX.buff(); toast('SWIM FORM', 'You can cross water.', 'pp_xp', 'buff'); }
+      if (o === 'HUMAN FORM') {
+        const f = scenes.find(s => s instanceof Field);
+        if (G.morph === 'swim' && f && WATER.includes(f.chAt(G.x, G.y))) return say('Reach the shore first.');
+        endMorph(); return;
+      }
+      if (o.startsWith('WOLF')) {
+        if (!setMorphForm('wolf')) return say('WOLF FORM opens at level 5.');
+        SFX.howl ? SFX.howl() : SFX.buff();
+        toast('WOLF FORM', 'Run fast. B: back to human.', 'pp_xp', 'buff'); return;
+      }
+      if (o.startsWith('SWIM')) {
+        if (!setMorphForm('swim')) return say('SWIM FORM opens at level 10.');
+        SFX.buff(); toast('SWIM FORM', 'You can cross water. B: back to human.', 'pp_xp', 'buff');
+      }
     }, `MORPH${G.morph ? ` (now: ${G.morph.toUpperCase()})` : ''}. Wolf runs, swim crosses water.`);
   }
-  // wolf art and pressing B to dismount ends the wolf form
+  // B returns from a morph directly instead of relying on G.hasMount (morphs are not owned mounts).
   { const u0 = Field.prototype.update; Field.prototype.update = function () {
+      if (G && G.morph && G.inst) endMorph(true, false);
       if (G && G.morph === 'wolf' && !G.mounted) endMorph(true);
-      if (G && G.morph && G.inst) endMorph(true);
+      if (G && G.morph && P('b') && !G.inst && !G.ghost) {
+        if (G.morph === 'swim' && WATER.includes(this.chAt(G.x, G.y))) return say('Reach the shore before leaving SWIM FORM.');
+        endMorph(); return;
+      }
       return u0.apply(this, arguments);
     }; }
   { const wolfArt = () => { const b = typeof BEAST_BY_ID !== 'undefined' && BEAST_BY_ID.beast_wolf_base; const n = b && (b.nspr && IMG[b.nspr] ? b.nspr : b.spr); if (n && IMG[n] && !IMG.mt_morph_wolf) IMG.mt_morph_wolf = IMG[n]; };
@@ -20822,6 +21387,43 @@ if (typeof MainMenu !== 'undefined') {
   MainMenu.prototype.update = function () { if (P('a') && this.items()[this.i] === 'RIFTS') { SFX.select(); return push(new RiftScene()); } return u0.apply(this, arguments); };
 }
 window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { RIFTS: 'Normal and greater rifts: progress bar, guardian, timer, leaderboard.' });
+})();
+
+</script>
+<script>
+'use strict';
+(() => {
+const RAW = [["dungeon",[["Ashen Reliquary","ashlands","Reliquary Warden","Cinderfall","fire"],["Moonkennel Depths","moonwood","Lunar Houndmaster","Moon Snare","cold"],["Thornwake Catacombs","wildwood","Thornwake Matriarch","Briar Grasp","poison"],["Glassfang Warrens","crystal","Glassfang Devourer","Shatterstorm","arcane"],["Sunken Crown Vault","coast","Drowned Regent","Rising Tide","cold"],["Blackroot Sepulchre","swamp","Rootbound Lich","Wither Rot","necrotic"],["Stormglass Gallery","highlands","Tempest Curator","Chain Lightning","lightning"],["Embervein Foundry","volcanic","Forge Tyrant","Molten Floor","fire"],["Hollow Star Chapel","ruins","Starless Confessor","Void Pulse","arcane"],["Frostmere Ossuary","tundra","Pale Bone King","Whiteout","cold"],["Gloomtide Cistern","swamp","Gloomtide Hydra","Toxic Flood","poison"],["Kingsfall Archive","ruins","The Unwritten King","Rune Collapse","arcane"],["Red Quarry of Vows","badlands","Oathbreaker Colossus","Blood Price","physical"],["Wyrmglass Labyrinth","mountain","Wyrmglass Drake","Wing Buffet","fire"],["Sable Orchard","darkwood","Sable Dryad","Entangling Roots","poison"],["Iron Choir Bastion","fortress","Choir Executioner","War Drums","physical"],["Duskbell Monastery","highlands","Duskbell Abbot","Silence Field","necrotic"],["The Saltbound Maw","coast","Saltbound Leviathan","Undertow","cold"],["Vermilion Reliquary","desert","Vermilion Judge","Scorch Sigils","fire"],["Crown of Crows","moor","Carrion Duchess","Carrion Swarm","necrotic"],["Obsidian Tithehouse","volcanic","Tithe Collector","Searing Tribute","fire"],["The Pale Aqueduct","tundra","Pale Aqueduct Keeper","Frozen Channels","cold"],["Gravetide Menagerie","graveyard","Gravetide Beastmaster","Soul Leash","necrotic"],["The Last Lantern","nightlands","Lantern-Eater","Lights Out","shadow"]]],["trial",[["Trial of the Nine Blades","arena","Blade Arbiter","Rotating Weapon Forms","physical"],["Trial of Shattered Oaths","ruins","Oathsplitter","Broken Vow Marks","arcane"],["Trial of the Living Flame","volcanic","Pyre Champion","Heat Threshold","fire"],["Trial of Silent Steps","darkwood","The Unseen","Detection Waves","shadow"],["Trial of Frozen Resolve","tundra","Glacier Knight","Freeze Stacks","cold"],["Trial of Stormcallers","highlands","Stormcaller Prime","Lightning Lanes","lightning"],["Trial of the Blood Moon","moonwood","Moonfang Duelist","Blood Moon Enrage","physical"],["Trial of Verdant Rot","swamp","Rotbloom Saint","Poison Bloom","poison"],["Trial of Broken Mirrors","crystal","Mirror Sovereign","Reflected Doubles","arcane"],["Trial of the Iron Pact","fortress","Pact Marshal","Armour Break","physical"],["Trial of Ash and Bone","graveyard","Ashbone Reaver","Gravefire Bursts","fire"],["Trial of the Deep Current","coast","Abyssal Duelist","Tidal Push","cold"],["Trial of Falling Stars","nightlands","Starfall Herald","Meteor Markers","arcane"],["Trial of the Last Stand","badlands","Last Bastion","Escalating Waves","physical"],["Trial of Twin Serpents","desert","Twin Serpent Alpha","Alternating Venom","poison"],["Trial of the Hollow Crown","moor","Crownless Heir","Royal Decree","necrotic"],["Trial of Runes and Ruin","ruins","Rune-Breaker","Rune Sequence","arcane"],["Trial of the Unbroken Wall","mountain","Wallbreaker","Siege Pressure","physical"],["Trial of the Drowned Choir","coast","Choir Below","Sonic Undertow","cold"],["Trial of the Sunless Hunt","nightlands","Sunless Stalker","Predator Pursuit","shadow"],["Trial of the Ember Dance","ashlands","Ember Dancer","Moving Flame Rings","fire"],["Trial of the Wild Hunt","wildwood","Horned Huntmaster","Marked Prey","poison"],["Trial of the Clockwork Heart","crystal","Clockwork Heart","Overload Cycle","lightning"],["Trial of the Nameless Gate","void","Gatebound Nameless","Portal Rotation","arcane"]]],["raid",[["Citadel of the First Flame","volcanic","Primordial Pyrelord","Three Furnace Phases","fire"],["The Dreadnought Below","coast","Abyssal Dreadnought","Hull Breach","cold"],["Throne of the Hollow Star","nightlands","Hollow Star Emperor","Eclipse Phase","shadow"],["Siege of Ironroot Keep","fortress","Ironroot War-Chief","Gate and Courtyard","physical"],["The Worldcoil Sanctum","wildwood","Worldcoil Serpent","Coiling Arena","poison"],["Vault of the Storm Titan","highlands","Storm Titan","Charged Platforms","lightning"],["Necropolis of Ten Thousand","graveyard","The Ossuary Monarch","Soul Harvest","necrotic"],["The Shattered Sun Engine","desert","Solar Engine","Solar Flare Cycle","fire"],["Crownfall: Queen of Thorns","darkwood","Thorn Queen","Briar Crown","poison"],["The Glacierheart Throne","tundra","Glacierheart Colossus","Glacial Collapse","cold"],["The Astral Crucible","crystal","Astral Architect","Reality Fractures","arcane"],["Black Banner Warcamp","badlands","Black Banner Overlord","Siege Engines","physical"],["The Leviathan's Maw","coast","Abyssal Leviathan","Devouring Tide","cold"],["Cathedral of the Red Choir","ruins","Cardinal of Ruin","Blood Canticle","necrotic"],["The Obsidian Dragon's Roost","mountain","Obsidian Elder Drake","Wing and Breath","fire"],["The Last King's Armada","moor","Dread Admiral","Broadside Barrage","physical"],["The Waking World Tree","moonwood","Rootheart Avatar","Root Network","poison"],["The Clockwork Apocalypse","crystal","Grand Chronarch","Time-Split Phase","lightning"],["The Pale God's Reliquary","tundra","Pale Godling","Whiteout Judgment","cold"],["The Sunken Empire","swamp","Empress of the Deep","Flooded Chambers","necrotic"],["The Voidglass Paradox","void","Paradox Sovereign","Rift Reversal","arcane"],["The Emberfall Behemoth","ashlands","Emberfall Behemoth","Magma Surge","fire"],["The War of Seven Standards","arena","Sevenfold Commander","Standard Captures","physical"],["Aelmoor: The Final Eclipse","nightlands","Aethernox Echo","Eclipse and Shatter","shadow"]]]];
+const TYPES=['dungeon','trial','raid'], PLAN_LENGTH=3, SEAL_MAX_TIER=100, SEAL_CRAFT_GOLD=500, SEAL_CRAFT_SHARDS=10;
+const ACTIVITIES=RAW.flatMap(([type,rows])=>rows.map(([name,biome,boss,mechanic,element],i)=>({id:type+'_'+String(i+1).padStart(2,'0'),type,name,biome,boss,mechanic,element,stages:type==='dungeon'?3:type==='trial'?4:5,rewardScale:type==='dungeon'?1:type==='trial'?1.7:3.2})));
+const BY_ID=Object.fromEntries(ACTIVITIES.map(a=>[a.id,a]));
+const SEAL_AFFIXES=[['emberbound',1.10,1.08,'fire'],['frostbitten',1.08,1.12,'cold'],['stormcharged',1.12,1.10,'lightning'],['venomous',1.10,1.10,'poison'],['soulhungry',1.15,1.08,'necrotic'],['armoured',1.20,1.04,'physical'],['relentless',1.08,1.20,'physical'],['swift',1.05,1.16,'lightning'],['overgrown',1.18,1.12,'poison'],['hollow',1.14,1.14,'shadow'],['volatile',1.12,1.18,'fire'],['unyielding',1.25,1.08,'arcane']].map(([id,hp,dmg,element])=>({id,label:id.toUpperCase(),hp,dmg,element}));
+function footer(l,r){fill(0,135,W,9,0);text(l,3,136,'gold');if(r)textR(r,157,136,2);}
+function hashSeed(v){let h=2166136261;for(const c of String(v)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function rng(seed){let x=(Number(seed)>>>0)||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967296;};}
+function activityCounts(){return Object.fromEntries(TYPES.map(t=>[t,ACTIVITIES.filter(a=>a.type===t).length]));}
+function createWarPlan(seed,rotation=0){const roll=rng(hashSeed(String(seed)+':'+rotation));const nodes=TYPES.map((type,i)=>{const pool=ACTIVITIES.filter(a=>a.type===type),a=pool[Math.floor(roll()*pool.length)];return{id:'node_'+(i+1),activityId:a.id,order:i+1,completed:false};});return{seed:String(seed),rotation:Math.max(0,Math.floor(rotation)),nodes,completed:[],claimed:false};}
+function normalizeWarPlans(v){const p=v&&typeof v==='object'?v:{};const validPlan=p.plan&&Array.isArray(p.plan.nodes)&&p.plan.nodes.length===3&&p.plan.nodes.every((n,i)=>n&&n.id==='node_'+(i+1)&&BY_ID[n.activityId]&&BY_ID[n.activityId].type===TYPES[i]);const plan=validPlan?p.plan:createWarPlan(p.seed||'aelmoor-season-one',p.rotation||0);const seals=Array.isArray(p.seals)?p.seals.filter(s=>s&&Number.isInteger(s.tier)&&s.tier>=1&&s.tier<=100).slice(0,100):[];return{plan,seals,equippedSeal:p.equippedSeal&&seals.some(s=>s.id===p.equippedSeal)?p.equippedSeal:null,bestTier:Math.max(1,Math.min(100,Math.floor(Number(p.bestTier)||1))),clears:Math.max(0,Math.floor(Number(p.clears)||0)),completedIds:Array.isArray(p.completedIds)?p.completedIds.filter(id=>BY_ID[id]).slice(-200):[]};}
+function nextPlanNode(plan){return(plan&&plan.nodes||[]).find(n=>!n.completed)||null;}
+function completePlanNode(plan,id){const n=(plan&&plan.nodes||[]).find(x=>x.id===id);if(!n||n.completed||!nextPlanNode(plan)||nextPlanNode(plan).id!==id)return{ok:false,plan};return{ok:true,plan:{...plan,nodes:plan.nodes.map(x=>x.id===id?{...x,completed:true}:x),completed:[...(plan.completed||[]),id]}};}
+function sealPower(tier){const t=Math.max(1,Math.min(100,Math.floor(Number(tier)||1)));return{tier:t,hp:Math.pow(1.035,t-1),dmg:Math.pow(1.025,t-1),levelBonus:Math.floor(t/5)};}
+function rollSeal(tier,seed){const t=Math.max(1,Math.min(100,Math.floor(Number(tier)||1))),r=rng(seed),a=SEAL_AFFIXES[Math.floor(r()*SEAL_AFFIXES.length)];return{id:'seal_'+hashSeed(String(seed)).toString(16),tier:t,affix:a.id,createdAt:0};}
+function sealDescription(s){const a=SEAL_AFFIXES.find(x=>x.id===s.affix)||SEAL_AFFIXES[0];return'T'+s.tier+' '+a.label+' SEAL';}
+function sealReward(a,tier,seed){const base=a.type==='raid'?3:a.type==='trial'?2:1;return{gold:Math.round((100+tier*25)*a.rewardScale),xp:Math.round((250+tier*40)*a.rewardScale),shards:base+Math.floor(tier/15),sealTier:Math.min(100,Math.max(1,tier+1+(a.type==='raid'?2:0))),roll:hashSeed(String(seed)+a.id)};}
+function buildPlanRewards(plan){return{gold:1500,shards:25,bonusSeals:1,completedNodes:plan.completed.length};}
+function validateActivityCatalogue(){const c=activityCounts();return ACTIVITIES.length===72&&TYPES.every(t=>c[t]===24)&&new Set(ACTIVITIES.map(a=>a.id)).size===72&&new Set(ACTIVITIES.map(a=>a.name)).size===72&&ACTIVITIES.every(a=>a.stages>=3&&a.stages<=5);}
+if(typeof globalThis!=='undefined')globalThis.GBQWarPlans={ACTIVITIES,TYPES,BY_ID,SEAL_AFFIXES,PLAN_LENGTH,SEAL_MAX_TIER,SEAL_CRAFT_GOLD,SEAL_CRAFT_SHARDS,hashSeed,rng,activityCounts,createWarPlan,normalizeWarPlans,nextPlanNode,completePlanNode,sealPower,rollSeal,sealDescription,sealReward,buildPlanRewards,validateActivityCatalogue};
+if(typeof window==='undefined'||typeof MainMenu==='undefined'||typeof startBattle!=='function'||typeof makeMonster!=='function')return;
+const WP=()=>{G.warPlans=normalizeWarPlans(G.warPlans);return G.warPlans;};
+function makeWave(def,stage,level,seal){const pool=Array.isArray(BESTIARY)?BESTIARY:[];const bosses=pool.filter(m=>m.boss||m.rank==='boss'||m.rank==='elite');const normals=pool.filter(m=>m.rank!=='boss'&&m.rank!=='elite');const list=stage===def.stages-1&&bosses.length?bosses:(normals.length?normals:pool);if(!list.length)throw new Error('Bestiary is empty.');const foes=[];const power=seal?sealPower(seal.tier):{hp:1,dmg:1,levelBonus:0};const affix=seal&&SEAL_AFFIXES.find(x=>x.id===seal.affix);for(let i=0;i<(def.type==='raid'?4:def.type==='trial'?3:2);i++){const ix=hashSeed(def.id+':'+stage+':'+i+':'+level)%list.length,f=makeMonster(list[ix],Math.min(720,level+power.levelBonus),G.difficulty);f.maxhp=Math.max(1,Math.round(f.maxhp*power.hp*(affix?affix.hp:1)*def.rewardScale));f.hp=f.maxhp;for(const at of f.attacks||[])if(at.dice&&typeof dmgDice==='function'){const avg=typeof diceAvg==='function'?diceAvg(at.dice):4;at.dice=dmgDice(Math.max(1,Math.round(avg*power.dmg*(affix?affix.dmg:1))));}if(stage===def.stages-1){f.boss=true;f.elite=true;f.maxhp=Math.round(f.maxhp*(def.type==='raid'?2.5:1.7));f.hp=f.maxhp;}f.name=(stage===def.stages-1?def.boss:def.name).slice(0,16);foes.push(f);}return foes;}
+function runActivity(def,seal,done){let stage=0;const tier=seal?seal.tier:Math.max(1,Math.ceil(G.lvl/12)),level=Math.min(720,G.lvl+Math.floor((tier-1)/5));const next=()=>{if(stage>=def.stages)return done(true,tier);const s=stage++;startBattle(makeWave(def,s,level,seal),{noFlee:true,title:def.name,onEnd:result=>{if(result==='win')next();else done(false,tier);}});};next();}
+function rewardActivity(def,tier){const p=WP(),rw=sealReward(def,tier,Date.now());G.gold+=rw.gold;if(typeof addItem==='function'){addItem('shard',rw.shards);addItem('awk_stone',def.type==='raid'?3:1);}if(typeof gainXP==='function')gainXP(G,rw.xp);if(def.type==='raid'&&typeof addSeasonXp==='function')addSeasonXp(300);p.clears++;p.bestTier=Math.max(p.bestTier,tier);p.completedIds.push(def.id);p.completedIds=p.completedIds.slice(-200);let drop=null;const chance=def.type==='raid'?1:def.type==='trial'?0.7:0.45;if(Math.random()<chance&&p.seals.length<100){drop=rollSeal(rw.sealTier,Date.now()+def.id);drop.createdAt=Date.now();p.seals.push(drop);}saveGame();return[def.name+' CLEARED','+'+rw.gold+' GOLD  +'+rw.xp+' XP','+'+rw.shards+' SHARDS',drop?'SEAL DROP: '+sealDescription(drop):'NO SEAL DROP'];}
+function deploy(node){const p=WP(),def=BY_ID[node.activityId];if(!def)return say('INVALID WAR PLAN NODE.');let seal=p.equippedSeal?p.seals.find(s=>s.id===p.equippedSeal):null;if(seal){p.seals=p.seals.filter(s=>s.id!==seal.id);p.equippedSeal=null;}saveGame();runActivity(def,seal,(won,tier)=>{if(!won){saveGame();return say('OPERATION FAILED. The plan node remains available.');}const result=completePlanNode(p.plan,node.id);if(result.ok)p.plan=result.plan;const lines=rewardActivity(def,tier);if(!nextPlanNode(p.plan)&&!p.plan.claimed){const bonus=buildPlanRewards(p.plan);G.gold+=bonus.gold;addItem('shard',bonus.shards);const s=rollSeal(Math.min(100,p.bestTier+3),Date.now()+'plan');p.seals.push(s);p.plan.claimed=true;lines.push('WAR PLAN COMPLETE: BONUS GOLD, SHARDS AND SEAL.');}saveGame();say(lines);});}
+function vault(){const p=WP(),list=p.seals.map(s=>sealDescription(s)+(p.equippedSeal===s.id?' [READY]':''));list.push('CRAFT T'+p.bestTier+' SEAL','BACK');choose(list,k=>{if(k<0||k>=p.seals.length){if(k===p.seals.length){if(G.gold<SEAL_CRAFT_GOLD||((G.inv&&G.inv.shard)||0)<SEAL_CRAFT_SHARDS)return say('NEEDS 500 GOLD AND 10 SHARDS.',warPlanMenu);G.gold-=SEAL_CRAFT_GOLD;addItem('shard',-SEAL_CRAFT_SHARDS);const s=rollSeal(p.bestTier,Date.now()+'crafted');p.seals.push(s);saveGame();return say('CRAFTED '+sealDescription(s),warPlanMenu);}return warPlanMenu();}const s=p.seals[k];choose(['EQUIP FOR NEXT OPERATION','SALVAGE FOR 3 SHARDS','BACK'],a=>{if(a===0)p.equippedSeal=s.id;if(a===1){p.seals.splice(k,1);addItem('shard',3);}saveGame();warPlanMenu();},sealDescription(s));});}
+function codex(){choose(TYPES.map(t=>t.toUpperCase()).concat(['BACK']),k=>{if(k<0||k>=TYPES.length)return warPlanMenu();const type=TYPES[k],list=ACTIVITIES.filter(a=>a.type===type);choose(list.map(a=>a.name).concat(['BACK']),j=>{if(j<0||j>=list.length)return codex();const a=list[j];say([a.name,a.type.toUpperCase()+' · '+a.stages+' STAGES','BOSS: '+a.boss,'MECHANIC: '+a.mechanic,'BIOME: '+a.biome],codex);},type.toUpperCase()+' CODEX');},'72 ENDGAME ACTIVITIES');}
+function warPlanMenu(){const p=WP(),node=nextPlanNode(p.plan);choose([node?'CONTINUE PLAN':'PLAN COMPLETE','SEAL VAULT','ACTIVITY CODEX','RESET PLAN','BACK'],k=>{if(k===0&&node){const a=BY_ID[node.activityId];choose(['DEPLOY','BACK'],v=>{if(v===0)deploy(node);else warPlanMenu();},'OPERATION '+node.order+'/3: '+a.name+' · '+a.boss+' · '+a.mechanic);}else if(k===1)vault();else if(k===2)codex();else if(k===3)choose(['RESET PLAN','KEEP PLAN'],v=>{if(v===0){p.plan=createWarPlan('manual-'+Date.now(),p.plan.rotation+1);saveGame();}warPlanMenu();},'RESETTING LOSES PLAN PROGRESS.');});}
+class WarPlanScene{constructor(){this.opaque=true;this.i=0;}update(){if(P('b')){SFX.back();removeScene(this);return;}if(nav('up')){this.i=(this.i+3)%4;SFX.cursor();}if(nav('down')){this.i=(this.i+1)%4;SFX.cursor();}if(!P('a'))return;SFX.select();if(this.i===0)return warPlanMenu();if(this.i===1)return vault();if(this.i===2)return codex();if(this.i===3)return choose(['RESET PLAN','KEEP PLAN'],v=>{if(v===0){const p=WP();p.plan=createWarPlan('manual-'+Date.now(),p.plan.rotation+1);saveGame();}return this.draw();},'RESETTING LOSES PLAN PROGRESS.');SFX.back();removeScene(this);}draw(){const p=WP(),node=nextPlanNode(p.plan),opts=['CURRENT WAR PLAN','SEAL VAULT','ACTIVITY CODEX','RESET PLAN'];fill(0,0,W,H,0);hdr();text('WAR PLANS',4,13,'gold');frame(2,23,156,87);text('3-OPERATION ENDGAME ROUTE',6,28,2);p.plan.nodes.forEach((n,i)=>{const a=BY_ID[n.activityId],y=43+i*17;text(n.completed?'✓':node&&node.id===n.id?'▶':'·',7,y,n.completed?'green':'gold');text(a.name.slice(0,21),19,y,3,1,135);text(a.type.toUpperCase(),19,y+8,2);});text('SEALS '+p.seals.length+'  BEST TIER '+p.bestTier,6,100,'gold');text('CLEARS '+p.clears+'  72 ACTIVITIES',6,110,2);opts.forEach((v,i)=>{const y=114+i*6;if(i===this.i)fill(3,y-1,154,6,1);text(v,8,y,i===this.i?'gold':3);});footer('A:SELECT UP/DOWN','B:BACK');}}
+window.WarPlanScene=WarPlanScene;const oldItems=MainMenu.prototype.items;MainMenu.prototype.items=function(){const a=oldItems.apply(this,arguments),i=a.indexOf('ACTIVITY FINDER');a.splice(i>=0?i+1:a.length,0,'WAR PLANS');return a;};const oldUpdate=MainMenu.prototype.update;MainMenu.prototype.update=function(){if(P('a')&&this.items()[this.i]==='WAR PLANS'){SFX.select();return push(new WarPlanScene());}return oldUpdate.apply(this,arguments);};window.MENU_HELP_EXTRA=Object.assign(window.MENU_HELP_EXTRA||{},{'WAR PLANS':'Three-operation endgame route, 72 dungeons/trials/raids and Tier 1-100 seals.'});
 })();
 
 </script>
@@ -23377,16 +23979,13 @@ if (typeof CB_COMMANDS !== 'undefined') CB_COMMANDS.push('id', 'whoami');
     try { localStorage.setItem('gbq.fs.chatpanel', visible ? '1' : '0'); } catch (e) {}
   };
   const loading = loadAssets(p => { progress = p; }).then(() => {
-    // Pack art can be selected before its images finish loading. Reapply every
-    // alias after the complete asset batch so world tiles and objects are ready
-    // before the first playable frame.
     if (typeof window.applyPackArt === 'function') window.applyPackArt();
     else if (typeof applyArt === 'function') applyArt();
     if (typeof window.applyAssetPackArt === 'function') window.applyAssetPackArt();
     progress = 1;
     document.body.classList.add('ready');
   });
-  // In-game chat overlay inside the game viewport.
+    // In-game chat overlay inside the game viewport.
   const input = document.getElementById('chatinput');
   const form = document.getElementById('chatform');
   const chatHide = document.getElementById('chatHide'), chatShow = document.getElementById('chatShow');
@@ -23852,6 +24451,250 @@ document.querySelectorAll('[data-fullscreen]').forEach(b => b.addEventListener('
 
 </script>
 <script>
+// Account and realm gateway used before online character creation.
+(function () {
+  'use strict';
+  if (typeof window === 'undefined' || window.GBQMMOAccount) return;
+
+  let activeSession = null;
+  let gameplaySession = null;
+  let overlay = null;
+  let onReady = null;
+  let directory = { regions: [], realms: [] };
+  let selectedRegion = '';
+  let selectedRealm = '';
+
+  const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[ch]);
+
+  async function request(base, path, token, options = {}) {
+    const headers = { accept: 'application/json' };
+    if (options.body !== undefined) headers['content-type'] = 'application/json';
+    if (token) headers.authorization = 'Bearer ' + token;
+    const response = await fetch(base.replace(/\/+$/, '') + path, {
+      method: options.method || 'GET', headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      credentials: 'omit', cache: 'no-store'
+    });
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+    if (!response.ok) throw Object.assign(new Error(data.error || 'request_failed'), { status: response.status, code: data.error });
+    return data;
+  }
+
+  function setMessage(message, isError = false) {
+    const node = overlay && overlay.querySelector('[data-account-message]');
+    if (!node) return;
+    node.textContent = message || '';
+    node.classList.toggle('is-error', !!isError);
+    node.hidden = !message;
+  }
+
+  function apiBase() {
+    const input = overlay && overlay.querySelector('[data-server-url]');
+    const raw = (input && input.value.trim()) || window.GBQ_MMO_REALM_URL || location.origin;
+    let parsed;
+    try { parsed = new URL(raw); } catch (_) { throw new Error('Enter a valid MMO server URL.'); }
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname.toLowerCase());
+    if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && local)) {
+      throw new Error('Remote MMO servers must use HTTPS. HTTP is allowed only on localhost.');
+    }
+    return parsed.origin;
+  }
+
+  function showStep(step) {
+    overlay.querySelectorAll('[data-account-step]').forEach(node => { node.hidden = node.dataset.accountStep !== step; });
+    setMessage('');
+  }
+
+  async function loadDirectory(base, token) {
+    const [regionResult, realmResult] = await Promise.all([
+      request(base, '/api/regions', token),
+      request(base, '/api/realms', token)
+    ]);
+    directory.regions = regionResult.regions || [];
+    directory.realms = realmResult.realms || [];
+    if (!directory.regions.length || !directory.realms.length) throw new Error('No realms are currently configured.');
+    selectedRegion = directory.regions[0].id;
+    selectedRealm = (directory.realms.find(realm => realm.recommended && realm.status === 'online') ||
+      directory.realms.find(realm => realm.status === 'online') || directory.realms[0]).id;
+    renderRegions();
+    renderRealms();
+  }
+
+  function renderRegions() {
+    const select = overlay.querySelector('[data-region]');
+    select.innerHTML = directory.regions.map(region =>
+      '<option value="' + esc(region.id) + '">' + esc(region.name) + ' (' + esc(region.tag) + ')</option>'
+    ).join('');
+    select.value = selectedRegion;
+  }
+
+  function renderRealms() {
+    const select = overlay.querySelector('[data-realm]');
+    const realms = directory.realms.filter(realm => realm.regionId === selectedRegion);
+    if (!realms.some(realm => realm.id === selectedRealm)) selectedRealm = (realms.find(realm => realm.status === 'online') || realms[0] || {}).id || '';
+    select.innerHTML = realms.map(realm => {
+      const load = realm.population + '/' + realm.maxPlayers;
+      const status = String(realm.status || 'unknown').toUpperCase();
+      const characters = Number(realm.characters || 0);
+      return '<option value="' + esc(realm.id) + '"' + (realm.status !== 'online' ? ' disabled' : '') + '>' +
+        esc(realm.name) + ' · ' + esc(realm.type) + ' · ' + status + ' · ' + esc(load) +
+        ' · ' + characters + ' hero(s)' + (realm.recommended ? ' · RECOMMENDED' : '') + '</option>';
+    }).join('');
+    select.value = selectedRealm;
+    const current = realms.find(realm => realm.id === selectedRealm);
+    const detail = overlay.querySelector('[data-realm-detail]');
+    detail.textContent = current
+      ? current.name + ' — ' + current.type + ' — ' + current.population + ' online / ' +
+        current.maxPlayers + ' capacity — ' + (current.characters || 0) + ' character(s) on this realm'
+      : 'No available realm in this region.';
+    overlay.querySelector('[data-enter-creation]').disabled = !current || current.status !== 'online';
+  }
+
+  async function authenticate(mode) {
+    let base;
+    try { base = apiBase(); } catch (error) { return setMessage(error.message, true); }
+    const username = overlay.querySelector('[data-username]').value.trim();
+    const password = overlay.querySelector('[data-password]').value;
+    if (!base || !username || !password) return setMessage('Enter the MMO server URL, account name and password.', true);
+    if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return setMessage('Account names must be 3–16 letters, numbers or underscores.', true);
+    if (mode === 'register' && (password.length < 10 || password.length > 72)) return setMessage('New passwords must be 10–72 characters.', true);
+    if (mode === 'login' && password.length > 72) return setMessage('Password is too long.', true);
+    const buttons = overlay.querySelectorAll('[data-login], [data-register]');
+    buttons.forEach(button => { button.disabled = true; });
+    setMessage(mode === 'register' ? 'Creating account…' : 'Signing in…');
+    try {
+      const result = await request(base, '/api/' + (mode === 'register' ? 'register' : 'login'), null, {
+        method: 'POST', body: { username, password }
+      });
+      activeSession = { baseUrl: base.replace(/\/+$/, ''), token: result.token, account: result.account };
+      const me = await request(activeSession.baseUrl, '/api/me', activeSession.token);
+      activeSession.characters = me.characters || [];
+      await loadDirectory(activeSession.baseUrl, activeSession.token);
+      overlay.querySelector('[data-account-identity]').textContent = 'SIGNED IN AS ' + activeSession.account.username;
+      overlay.querySelector('[data-password]').value = '';
+      showStep('realm');
+    } catch (error) {
+      activeSession = null;
+      setMessage(error.code === 'username_taken' ? 'That account name is already in use.' :
+        error.code === 'invalid_credentials' ? 'The account name or password is incorrect.' :
+        error.code === 'too_many_auth_attempts' ? 'Too many attempts. Wait before trying again.' :
+        error.message || 'Account sign-in failed.', true);
+    } finally {
+      buttons.forEach(button => { button.disabled = false; });
+    }
+  }
+
+  function close() {
+    if (overlay) overlay.remove();
+    overlay = null;
+    activeSession = null;
+    onReady = null;
+  }
+
+  function open(options = {}) {
+    if (overlay) return;
+    onReady = typeof options.onReady === 'function' ? options.onReady : null;
+    overlay = document.createElement('section');
+    overlay.className = 'gbq-account-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Account and realm selection');
+    overlay.innerHTML =
+      '<div class="gbq-account-window">' +
+        '<header><div><small>LOST KINGDOM · ONLINE SERVICES</small><h2>ACCOUNT & REALM GATEWAY</h2></div>' +
+          '<button type="button" data-close aria-label="Close">×</button></header>' +
+        '<div class="gbq-account-message" data-account-message hidden role="status"></div>' +
+        '<section class="gbq-account-step" data-account-step="auth">' +
+          '<p class="gbq-account-intro">Create an online account or sign in to choose a realm and save your hero to the server.</p>' +
+          '<label>MMO SERVER URL<input data-server-url type="url" spellcheck="false" value="' + esc(window.GBQ_MMO_REALM_URL || location.origin) + '" placeholder="https://your-realm-server.example"></label>' +
+          '<label>ACCOUNT NAME<input data-username autocomplete="username" minlength="3" maxlength="16" required></label>' +
+          '<label>PASSWORD<input data-password type="password" autocomplete="current-password" minlength="10" maxlength="72" required></label>' +
+          '<div class="gbq-account-actions"><button type="button" data-login>SIGN IN</button><button type="button" data-register>CREATE ACCOUNT</button></div>' +
+          '<p class="gbq-account-note">Accounts are stored by the MMO server. Passwords are never saved in this browser. Use HTTPS for remote servers.</p>' +
+          '<button type="button" class="gbq-account-secondary" data-offline>PLAY OFFLINE INSTEAD</button>' +
+        '</section>' +
+        '<section class="gbq-account-step" data-account-step="realm" hidden>' +
+          '<p class="gbq-account-intro" data-account-identity></p>' +
+          '<label>REGION / DATA CENTER<select data-region></select></label>' +
+          '<label>REALM / WORLD<select data-realm></select></label>' +
+          '<p class="gbq-account-realm-detail" data-realm-detail></p>' +
+          '<div class="gbq-account-actions"><button type="button" data-enter-creation>CONTINUE TO CHARACTER CREATION</button>' +
+          '<button type="button" data-back-account>BACK</button></div>' +
+          '<p class="gbq-account-note">Each hero belongs to one realm. Character names are unique per realm. Limits: 3 heroes per realm and 12 per account.</p>' +
+          '<button type="button" class="gbq-account-secondary" data-logout>USE A DIFFERENT ACCOUNT</button>' +
+        '</section>' +
+        '<footer>SERVER-AUTHENTICATED · REALM-SCOPED CHARACTERS · PERSISTENT ACCOUNT</footer>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('[data-close]').addEventListener('click', close);
+    overlay.querySelector('[data-login]').addEventListener('click', () => authenticate('login'));
+    overlay.querySelector('[data-register]').addEventListener('click', () => authenticate('register'));
+    overlay.querySelector('[data-password]').addEventListener('keydown', event => { if (event.key === 'Enter') authenticate('login'); });
+    overlay.querySelector('[data-offline]').addEventListener('click', () => { close(); options.onReady && options.onReady(null); });
+    overlay.querySelector('[data-region]').addEventListener('change', event => { selectedRegion = event.target.value; renderRealms(); });
+    overlay.querySelector('[data-realm]').addEventListener('change', event => { selectedRealm = event.target.value; renderRealms(); });
+    overlay.querySelector('[data-back-account]').addEventListener('click', () => showStep('auth'));
+    overlay.querySelector('[data-logout]').addEventListener('click', () => { activeSession = null; showStep('auth'); });
+    overlay.querySelector('[data-enter-creation]').addEventListener('click', () => {
+      const realm = directory.realms.find(item => item.id === selectedRealm && item.status === 'online');
+      if (!activeSession || !realm) return setMessage('Choose an online realm before continuing.', true);
+      const session = Object.assign({}, activeSession, { realm });
+      close();
+      if (options.onReady) options.onReady(session);
+    });
+    overlay.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+    });
+    overlay.querySelector('[data-username]').focus();
+  }
+
+  async function createCharacter(session, name, localClass) {
+    if (!session || !session.token || !session.realm) throw new Error('Sign in and select a realm before creating an online character.');
+    const classData = typeof CLASSES !== 'undefined' ? CLASSES[localClass] : (window.CLASSES && window.CLASSES[localClass]);
+    const role = (classData && classData.role) || '';
+    const classMap = {
+      warden: 'warrior', berserker: 'warrior', vanguard: 'warrior', sunwarden: 'warrior',
+      chaplain: 'cleric', cantor: 'cleric', ascetic: 'cleric', arcanist: 'mage',
+      runeblade: 'mage', stormcaller: 'mage', shade: 'rogue', shinobi: 'rogue',
+      ronin: 'rogue', bladedancer: 'rogue', strider: 'ranger', voidhunter: 'ranger',
+      corsair: 'ranger', beastcaller: 'ranger', wildblood: 'ranger', verdant: 'cleric',
+      pactbound: 'mage', necromancer: 'mage', summoner: 'mage', dreadknight: 'warrior',
+      wyrmlancer: 'warrior', scalesage: 'mage', puppeteer: 'mage'
+    };
+    const serverClass = classMap[localClass] || ({ tank: 'warrior', healer: 'cleric', caster: 'mage', striker: 'ranger', support: 'adventurer', dps: 'rogue' })[role] || 'adventurer';
+    const result = await request(session.baseUrl, '/api/characters', session.token, {
+      method: 'POST', body: { name, class: serverClass, realmId: session.realm.id }
+    });
+    return result.character;
+  }
+
+  async function gameplayRequest(path, options = {}) {
+    if (!gameplaySession || !gameplaySession.token) throw new Error('Online session expired. Sign in again to use server progression.');
+    return request(gameplaySession.baseUrl, path, gameplaySession.token, options);
+  }
+
+  window.GBQMMOAccount = {
+    open,
+    close,
+    createCharacter,
+    adoptGameplaySession(session) {
+      if (!session || !session.token || !session.baseUrl) throw new Error('A valid online session is required.');
+      gameplaySession = { baseUrl: session.baseUrl, token: session.token, account: session.account, realm: session.realm };
+      return true;
+    },
+    gameplayRequest,
+    get hasGameplaySession() { return !!(gameplaySession && gameplaySession.token); },
+    get session() { return activeSession; },
+    logout() { activeSession = null; gameplaySession = null; }
+  };
+})();
+</script>
+<script>
 class GBQuestMMOApi {
   constructor({baseUrl,onStatus=()=>{},onMessage=()=>{}}={}) {
     if(!baseUrl) throw new TypeError('baseUrl is required');
@@ -23872,9 +24715,29 @@ class GBQuestMMOApi {
   async register(username,password) { const result=await this.request('/api/register',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   async login(username,password) { const result=await this.request('/api/login',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   me() { return this.request('/api/me'); }
-  characters() { return this.request('/api/characters'); }
-  createCharacter(name,characterClass) { return this.request('/api/characters',{method:'POST',body:{name,class:characterClass}}); }
+  regions() { return this.request('/api/regions',{auth:false}); }
+  realms(regionId) { return this.request('/api/realms'+(regionId?'?region='+encodeURIComponent(regionId):''),{auth:false}); }
+  characters(realmId) { return this.request('/api/characters'+(realmId?'?realm='+encodeURIComponent(realmId):'')); }
+  createCharacter(name,characterClass,realmId,species,background) {
+    return this.request('/api/characters',{method:'POST',body:{name,class:characterClass,...(realmId?{realmId}:{}),...(species?{species}:{}),...(background?{background}:{})}});
+  }
+  whispers(characterId,peerId,limit=50) {
+    const query=new URLSearchParams(); if(peerId)query.set('with',peerId);query.set('limit',String(limit));
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers?'+query.toString());
+  }
+  sendWhisper(characterId,toCharacterId,text) {
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers',{method:'POST',body:{toCharacterId,text}});
+  }
   inventory(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/inventory'); }
+  dungeonCatalog() { return this.request('/api/dungeons/catalog',{auth:false}); }
+  joinDungeonQueue(characterId,dungeonId,role) {
+    return this.request('/api/dungeons/queue',{method:'POST',body:{characterId,dungeonId,role}});
+  }
+  dungeonQueueStatus(characterId) { return this.request('/api/dungeons/queue/'+encodeURIComponent(characterId)); }
+  leaveDungeonQueue(characterId) { return this.request('/api/dungeons/queue/'+encodeURIComponent(characterId),{method:'DELETE'}); }
+  dungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)); }
+  startDungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)+'/start',{method:'POST',body:{}}); }
+  completeDungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)+'/complete',{method:'POST',body:{}}); }
   trades(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades'); }
   createTrade(id,toCharacterId,offer={}) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades',{method:'POST',body:{...offer,toCharacterId}}); }
   acceptTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/accept',{method:'POST',body:{}}); }
@@ -24294,6 +25157,91 @@ addEventListener('keydown', e => { if (e.key === 'F9') { e.preventDefault(); DBG
 if (location.hash === '#debug') setTimeout(() => DBG.show(), 500);
 
 }
+
+</script>
+<script>
+/* GB Quest branded startup overlay.
+ * The splash stays visible until the browser has finished loading and the
+ * game engine has presented its first frame (body.game-rendered).
+ */
+(() => {
+  'use strict';
+  const root = document.getElementById('gbq-boot-screen');
+  if (!root) return;
+
+  const progress = document.getElementById('gbq-boot-progress');
+  const bar = document.getElementById('gbq-boot-bar');
+  const percent = document.getElementById('gbq-boot-percent');
+  const status = document.getElementById('gbq-boot-status');
+  const retry = document.getElementById('gbq-boot-retry');
+  const startedAt = performance.now();
+  let value = 8;
+  let pageLoaded = document.readyState === 'complete';
+  let firstFrame = document.body.classList.contains('game-rendered');
+  let finished = false;
+
+  const phases = [
+    [20, 'Preparing the world of Aelmoor…'],
+    [38, 'Loading heroes and ancient bloodlines…'],
+    [56, 'Awakening the realm systems…'],
+    [72, 'Preparing dungeons and forgotten kingdoms…'],
+    [86, 'Waiting for the first frame…'],
+    [94, 'Finalizing the adventure…']
+  ];
+
+  function setProgress(next, message) {
+    value = Math.max(value, Math.min(100, Math.round(next)));
+    progress.style.width = value + '%';
+    percent.textContent = value + '%';
+    bar.setAttribute('aria-valuenow', String(value));
+    if (message) status.textContent = message;
+  }
+
+  const progressTimer = window.setInterval(() => {
+    if (finished) return;
+    const nextPhase = phases.find(([threshold]) => value < threshold);
+    if (nextPhase) setProgress(Math.min(nextPhase[0], value + 2), nextPhase[1]);
+  }, 190);
+
+  function completeWhenReady() {
+    if (finished || !pageLoaded || !firstFrame) return;
+    const remaining = Math.max(0, 1100 - (performance.now() - startedAt));
+    window.setTimeout(() => {
+      if (finished || !pageLoaded || !firstFrame) return;
+      finished = true;
+      window.clearInterval(progressTimer);
+      setProgress(100, 'The lanterns are lit. Welcome to Aelmoor.');
+      window.setTimeout(() => {
+        root.classList.add('is-hidden');
+        window.setTimeout(() => root.remove(), 900);
+      }, 260);
+    }, remaining);
+  }
+
+  window.addEventListener('load', () => {
+    pageLoaded = true;
+    setProgress(Math.max(value, 92), 'Game resources loaded. Starting the world…');
+    completeWhenReady();
+  }, { once: true });
+
+  const observer = new MutationObserver(() => {
+    if (!firstFrame && document.body.classList.contains('game-rendered')) {
+      firstFrame = true;
+      setProgress(Math.max(value, 88), 'Game engine online. Preparing your adventure…');
+      completeWhenReady();
+    }
+  });
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  if (firstFrame) completeWhenReady();
+
+  retry.addEventListener('click', () => window.location.reload());
+  window.setTimeout(() => {
+    if (finished || (pageLoaded && firstFrame)) return;
+    status.textContent = 'Startup is taking longer than expected. Check your connection and retry.';
+    retry.style.display = 'inline-block';
+    observer.disconnect();
+  }, 25000);
+})();
 
 </script>
 
