@@ -10,7 +10,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const { WebSocketServer, WebSocket } = require('ws');
-const { isAllowedOrigin, createAuthLimiter } = require('./mmorpg-security.cjs');
+const { isAllowedOrigin, corsHeaders, createAuthLimiter } = require('./mmorpg-security.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -276,8 +276,10 @@ function attachSocket(ws, req) {
 }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
-  if (req.method === 'OPTIONS') { res.writeHead(204, { 'access-control-allow-methods': 'GET,POST,OPTIONS', 'access-control-allow-headers': 'content-type,authorization' }); return res.end(); }
-  if (!originAllowed(req)) return json(res, 403, { error: 'origin_not_allowed' });
+  const cors = corsHeaders(req.headers.origin, ALLOWED_ORIGINS);
+  if (cors === null) return json(res, 403, { error: 'origin_not_allowed' });
+  for (const [name, value] of Object.entries(cors)) res.setHeader(name, value);
+  if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
   if (url.pathname === '/health' && req.method === 'GET') {
     try { await pool.query('SELECT 1'); return json(res, 200, { ok: true, service: 'gbquest-mmorpg', websocket: '/ws', database: 'connected' }); }
     catch { return json(res, 503, { ok: false, service: 'gbquest-mmorpg', database: 'unavailable' }); }
