@@ -126,7 +126,7 @@ Authenticated HTTP endpoints:
 - `GET /api/dungeons/groups/:groupId` returns the group only to one of its members.
 - `POST /api/dungeons/groups/:groupId/start` and `/complete` transition the group lifecycle. The tank is the group lead and is the only role permitted to start or complete the run.
 
-Matchmaking is realm-scoped and validates character ownership, dungeon level range, role, and one active queue/group per character. A PostgreSQL advisory transaction lock serializes formation for each realm/dungeon pair; candidate rows are locked with `SKIP LOCKED`. The five-player composition is one tank, one healer, and three damage roles. Group formation, queue status changes, and member assignment commit atomically. Completion releases all five characters to queue again. Instance IDs are generated per formed group; dungeon map loading and encounter progression remain the game-world runtime's responsibility.
+Queue entries expire after 15 minutes if no match forms; stale entries are marked expired when queue state is queried or another match attempt runs. Matchmaking is realm-scoped and validates character ownership, dungeon level range, role, and one active queue/group per character. A PostgreSQL advisory transaction lock serializes formation for each realm/dungeon pair; candidate rows are locked with `SKIP LOCKED`. The five-player composition is one tank, one healer, and three damage roles. Group formation, queue status changes, and member assignment commit atomically. Completion releases all five characters to queue again. Instance IDs are generated per formed group; dungeon map loading and encounter progression remain the game-world runtime's responsibility.
 
 ## Running the realm server (the multiplayer world)
 
