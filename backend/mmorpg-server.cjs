@@ -21,6 +21,7 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
+const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -29,6 +30,9 @@ const TOKEN_SECRET = process.env.GBQ_TOKEN_SECRET;
 const INTERNAL_SECRET = process.env.GBQ_INTERNAL_SECRET || '';
 const ALLOWED_ORIGINS = new Set((process.env.GBQ_ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean));
 const MAX_MESSAGE = 8192;
+const MAX_SOCKET_BUFFERED_BYTES = Number(process.env.GBQ_WS_MAX_BUFFERED_BYTES || 1048576);
+const AUTH_TIMEOUT_MS = Number(process.env.GBQ_WS_AUTH_TIMEOUT_MS || 10000);
+const HEARTBEAT_INTERVAL_MS = Number(process.env.GBQ_WS_HEARTBEAT_MS || 30000);
 const TOKEN_TTL = 30 * 24 * 60 * 60;
 const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
@@ -137,7 +141,11 @@ async function claimRealmPresence(ws, state, realm) {
   } finally { tx.release(); }
 }
 function send(ws, type, payload = {}) {
-  if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type, sequence: ++socketState.get(ws).outSequence, payload, serverTimestamp: Date.now() }));
+  if (ws.readyState !== WebSocket.OPEN) return;
+  if (ws.bufferedAmount > MAX_SOCKET_BUFFERED_BYTES) { ws.close(1013, 'slow consumer'); return; }
+  const state = socketState.get(ws);
+  if (!state || state.closed) return;
+  ws.send(JSON.stringify({ type, sequence: ++state.outSequence, payload, serverTimestamp: Date.now() }));
 }
 function broadcastZone(realmId, zoneId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && state.zoneId === zoneId && ws !== except) send(ws, type, payload);
@@ -245,12 +253,15 @@ setInterval(() => authLimiter.sweep(), 600000).unref();
 setInterval(() => requestLimiter.sweep(), 60000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
-  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip };
+  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
   ws.isAlive = true;
-  ws.on('pong', () => { ws.isAlive = true; });
+  ws.on('pong', () => { state.alive = true; ws.isAlive = true; });
   socketState.set(ws, state); activeSockets.set(ws, state);
+  state.authTimer = setTimeout(() => { if (!state.authenticated && !state.closed) ws.close(4408, 'authentication timeout'); }, AUTH_TIMEOUT_MS);
+  state.authTimer.unref?.();
   send(ws, 'hello', { protocol: 'gbquest-mmorpg-v1', authRequired: true, world: WORLD });
-  ws.on('message', async raw => {
+  const messageQueue = createSocketMessageQueue(async raw => {
+    if (state.closed) return;
     try {
       if (raw.length > MAX_MESSAGE) return ws.close(1009, 'message too large');
       const msg = JSON.parse(raw.toString());
@@ -265,6 +276,7 @@ function attachSocket(ws, req) {
         const acct = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
         if (!acct.rowCount) { recordAuthFailure(state.ip); return ws.close(4401, 'account unavailable'); }
         authLimiter.clear(state.ip);
+        clearTimeout(state.authTimer); state.authTimer = null;
         state.account = acct.rows[0]; state.authenticated = true;
         const chars = await pool.query(`SELECT ${CHAR_COLS} FROM characters WHERE account_id=$1 ORDER BY created_at`, [state.account.id]);
         const rd = await realmData(), counts = await characterCounts(state.account.id);
@@ -487,8 +499,14 @@ function attachSocket(ws, req) {
       console.error('MMO socket handler error:', error.message);
       send(ws, 'error', { code: 'server_error' });
     }
+  }, { onError: error => { console.error('MMO socket queue error:', error.message); if (ws.readyState === WebSocket.OPEN) send(ws, 'error', { code: 'server_error' }); } });
+  ws.on('message', raw => {
+    if (messageQueue.pending >= 128) { ws.close(1008, 'message queue full'); return; }
+    messageQueue.enqueue(raw);
   });
   ws.on('close', () => {
+    state.closed = true;
+    clearTimeout(state.authTimer);
     activeSockets.delete(ws);
     removePresence(ws);
     if (state.zoneId && state.character) broadcastZone(state.realmId, state.zoneId, 'presence.left', { characterId: state.character.id });
@@ -1193,6 +1211,16 @@ server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => { wss.emit('connection', ws, req); });
 });
 wss.on('connection', (ws, req) => attachSocket(ws, req));
+const heartbeatTimer = setInterval(() => {
+  for (const ws of wss.clients) {
+    const state = socketState.get(ws);
+    if (!state || state.closed) continue;
+    if (!state.alive) { state.closed = true; ws.terminate(); continue; }
+    state.alive = false;
+    ws.ping();
+  }
+}, HEARTBEAT_INTERVAL_MS);
+heartbeatTimer.unref?.();
 const presenceHeartbeat = setInterval(async () => {
   try {
     await pool.query('DELETE FROM world_presence WHERE expires_at<=now()');
