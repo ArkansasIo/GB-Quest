@@ -243,6 +243,30 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     sendSecond(5, 'chat.send', { channel: 'guild', text: 'must not leak into zone chat' });
     assert.equal((await waitForSecond('error')).payload.code, 'unsupported_chat_channel');
 
+    // Persistent party lifecycle: leader creates, invites a same-realm player,
+    // invitee accepts, and party chat is delivered only to party members.
+    send(6, 'party.create', {});
+    const partyCreated = await waitFor('party.snapshot');
+    const partyId = partyCreated.payload.party.id;
+    assert.equal(partyCreated.payload.party.members.length, 1);
+    send(7, 'party.invite', { to: secondCharacter.name });
+    assert.equal((await waitFor('party.invite_sent')).payload.invitation.toCharacterId, secondCharacter.id);
+    const invitation = await waitForSecond('party.invited');
+    sendSecond(6, 'party.accept', { invitationId: invitation.payload.id });
+    const partyUpdateForLeader = await waitFor('party.updated');
+    assert.equal(partyUpdateForLeader.payload.party.members.length, 2);
+    const partyUpdateForMember = await waitForSecond('party.updated');
+    assert.equal(partyUpdateForMember.payload.party.id, partyId);
+    sendSecond(7, 'chat.send', { channel: 'party', text: 'Party channel online' });
+    const partyChat = await waitFor('chat.message');
+    assert.equal(partyChat.payload.channel, 'party');
+    assert.equal(partyChat.payload.text, 'Party channel online');
+
+    send(8, 'party.kick', { characterId: secondCharacter.id });
+    assert.equal((await waitForSecond('party.kicked')).payload.partyId, partyId);
+    const partyAfterKick = await waitFor('party.updated');
+    assert.equal(partyAfterKick.payload.party.members.length, 1);
+
     // The same character cannot be controlled by two live sockets at once.
     duplicateSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
     const duplicateMessages = [];
