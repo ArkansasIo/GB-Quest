@@ -179,8 +179,15 @@ export class GBQuestMMOApi {
   mail(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail');
   }
-  sendMail(characterId, recipientCharacterId, { subject = '', body = '', gold = 0, attachments = [] } = {}) {
-    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/mail/send', { method: 'POST', body: { recipientCharacterId, subject, body, gold, attachments } });
+  sendMail(characterId, recipientCharacterId, options = {}, bodyText = '') {
+    const { subject = '', body = '', gold = 0, attachments = [] } = typeof options === 'string' ? {} : options;
+    const payload = typeof options === 'string'
+      ? { subject: options, body: String(bodyText || ''), gold: 0, attachments: [] }
+      : { subject, body, gold, attachments };
+    const hasAttachments = Number(payload.gold || 0) > 0 || (payload.attachments || []).length > 0;
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + (hasAttachments ? '/mail/send' : '/mail'), {
+      method: 'POST', body: { recipientCharacterId, ...payload }
+    });
   }
   claimMail(mailId, characterId) {
     return this.request('/api/mail/' + encodeURIComponent(mailId) + '/claim', { method: 'POST', body: { characterId } });
@@ -202,7 +209,7 @@ export class GBQuestMMOApi {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends');
   }
   requestFriend(characterId, targetCharacterId) {
-    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends', { method: 'POST', body: { targetCharacterId } });
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/request', { method: 'POST', body: { targetCharacterId } });
   }
   acceptFriend(characterId, friendCharacterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/' + encodeURIComponent(friendCharacterId) + '/accept', { method: 'POST', body: {} });
@@ -210,6 +217,24 @@ export class GBQuestMMOApi {
   removeFriend(characterId, friendCharacterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/friends/' + encodeURIComponent(friendCharacterId), { method: 'DELETE' });
   }
+  respondFriendRequest(requestId, action = 'accept') {
+    if (!['accept', 'decline'].includes(action)) throw new TypeError('action must be accept or decline');
+    return this.request('/api/friend-requests/' + encodeURIComponent(requestId) + '/' + action, { method: 'POST', body: {} });
+  }
+  blocks(characterId) { return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks'); }
+  blockCharacter(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks', { method: 'POST', body: { targetCharacterId } });
+  }
+  unblockCharacter(characterId, targetCharacterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks/' + encodeURIComponent(targetCharacterId), { method: 'DELETE' });
+  }
+  markMailRead(mailId) { return this.request('/api/mail/' + encodeURIComponent(mailId) + '/read', { method: 'POST', body: {} }); }
+  joinPvpQueue(characterId) { return this.request('/api/pvp/queue', { method: 'POST', body: { characterId } }); }
+  forfeitPvpMatch(matchId) { return this.request('/api/pvp/matches/' + encodeURIComponent(matchId) + '/forfeit', { method: 'POST', body: {} }); }
+  pvpQueueStatus(characterId) { return this.request('/api/pvp/queue/' + encodeURIComponent(characterId)); }
+  leavePvpQueue(characterId) { return this.request('/api/pvp/queue/' + encodeURIComponent(characterId), { method: 'DELETE' }); }
+  pvpMatch(matchId) { return this.request('/api/pvp/matches/' + encodeURIComponent(matchId)); }
+
   blockPlayer(characterId, targetCharacterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/blocks', { method: 'POST', body: { targetCharacterId } });
   }
