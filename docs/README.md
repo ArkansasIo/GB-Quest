@@ -15,6 +15,7 @@
 | [BUILD.md](BUILD.md) | Build, run, full-screen build, tests, release checklist |
 | [SERVER.md](SERVER.md) | Realm server, accounts (register/login/logout), cloud saves, offline/online modes, API |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Code map and separation of client, MMORPG backend, store, and admin control plane |
+| [COMBAT_EFFECTS.md](COMBAT_EFFECTS.md) | Every attribute, substat, buff, debuff and condition, with what it does in combat |
 | [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md) | Nine-realm directory, friends, invite codes, and in-game store frame |
 | [DEBUGGING.md](DEBUGGING.md) | Debug panel, automated sweep, debug hooks, bugs fixed |
 | **Generated reference** (`node tools/gen_docs.cjs`) | |

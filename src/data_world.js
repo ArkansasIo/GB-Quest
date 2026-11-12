@@ -80,35 +80,41 @@ const MYTHIC_BOONS = [
 ];
 
 // ================================================================ buffs & debuffs
-// mods: substat/attr deltas while active. tick: per-turn dmg/heal (as % max HP or dice). stack: max stacks
+// What each field does in combat is defined in src/effect_engine.js:
+//   mods  numeric deltas x stacks: hit, saves, acb (AC), crit %, dodge %, haste % (extra-action chance), dmg % dealt,
+//         resist % less taken, takenPct % more taken, thorns, extraAttack, hpPct (saved buffs only)
+//   dice  dice added to every roll of a kind ({ hit, saves }); once: a bonus spent by the next roll of that kind
+//   flags attackAdv / attackedDis / saveAdv; tick: per-turn heal (healPct of max HP) or damage (dice + type)
+//   stack max stacks. Effects with special mechanics in combat.js (shields, images, auras) say so in desc.
+// Entries without desc get one generated from their numbers (GBQEffects.describe), so text and effect match.
 const BUFFS = {
   // buffs
-  bless: { name: 'BLESSED', good: true, mods: { hit: 2, saves: 2 }, desc: '+1d4 attacks and saves.' },
+  bless: { name: 'BLESSED', good: true, dice: { hit: '1d4', saves: '1d4' } },
   haste: { name: 'HASTED', good: true, mods: { acb: 2, extraAttack: 1, haste: 25 } },
   regen: { name: 'REGENERATING', good: true, tick: { healPct: 6 } },
   fortify: { name: 'FORTIFIED', good: true, mods: { resist: 25 } },
   might: { name: 'MIGHTY', good: true, mods: { dmg: 15 } },
-  fed: { name: 'WELL FED', good: true, mods: { hp: 0, hpPct: 10, saves: 1 } },
-  inspired: { name: 'INSPIRED', good: true, mods: { hit: 3, saves: 3 }, oneShot: true },
-  rage: { name: 'RAGING', good: true, mods: { dmgFlat: 2, resistPhys: 50 } },
-  barrier: { name: 'BARRIER', good: true, shield: true },
-  ac: { name: 'WARDED', good: true, mods: { acb: 0 } },
-  mirror: { name: 'MIRRORED', good: true, mirror: true },
-  host: { name: 'SPIRIT HOST', good: true, aura: true },
-  trueveil: { name: 'VEILED', good: true, mods: { attackAdv: 1, attackedDis: 1 } },
-  foresight: { name: 'FORESIGHT', good: true, mods: { attackAdv: 1, attackedDis: 1, saveAdv: 1 } },
-  frenzy: { name: 'FRENZIED', good: true, mods: { haste: 30, dmg: 10 }, stack: 3 },
+  fed: { name: 'WELL FED', good: true, mods: { hpPct: 10, saves: 1 } },
+  inspired: { name: 'INSPIRED', good: true, once: { hit: 3, saves: 3 } },
+  rage: { name: 'RAGING', good: true, desc: 'Weapon hits deal +2 damage (+3 at class level 9, +4 at 16); physical damage taken is halved.' },
+  barrier: { name: 'BARRIER', good: true, shield: true, desc: 'A shield absorbs damage until its pool is used up.' },
+  ac: { name: 'WARDED', good: true, desc: 'Raises AC by the ward\'s strength.' },
+  mirror: { name: 'MIRRORED', good: true, mirror: true, desc: 'Illusory images: each one may take a hit in your place.' },
+  host: { name: 'SPIRIT HOST', good: true, aura: true, desc: 'Guardian spirits sear every enemy for 3d8 radiant each turn (WIS save for half).' },
+  trueveil: { name: 'VEILED', good: true, flags: { attackAdv: true, attackedDis: true } },
+  foresight: { name: 'FORESIGHT', good: true, flags: { attackAdv: true, attackedDis: true, saveAdv: true } },
+  frenzy: { name: 'FRENZIED', good: true, mods: { haste: 10, dmg: 10 }, stack: 3 },
   focus: { name: 'FOCUSED', good: true, mods: { crit: 15 } },
   thornskin: { name: 'THORNSKIN', good: true, mods: { thorns: 6 } },
-  wildshape: { name: 'BEASTSHAPE', good: true, shield: true },
+  wildshape: { name: 'BEASTSHAPE', good: true, shield: true, desc: 'A beast body soaks damage until its hit points run out.' },
   // debuffs
   burning: { name: 'BURNING', tick: { dice: '1d6', type: 'fire' }, stack: 5 },
   bleeding: { name: 'BLEEDING', tick: { dice: '1d4', type: 'slashing' }, stack: 5 },
   venom: { name: 'ENVENOMED', tick: { dice: '1d6', type: 'poison' }, stack: 5 },
   frostbite: { name: 'FROSTBITTEN', mods: { haste: -25, acb: -1 }, stack: 3 },
-  shocked: { name: 'SHOCKED', mods: { dodge: -10 }, takenPct: 10 },
+  shocked: { name: 'SHOCKED', mods: { dodge: -10, takenPct: 10 } },
   weakened: { name: 'WEAKENED', mods: { dmg: -25 } },
-  vulnerable: { name: 'VULNERABLE', takenPct: 25 },
+  vulnerable: { name: 'VULNERABLE', mods: { takenPct: 25 } },
   sundered: { name: 'SUNDERED', mods: { acb: -2 }, stack: 3 },
   slowed: { name: 'SLOWED', mods: { haste: -50, acb: -2 } },
   doomed: { name: 'DOOMED', mods: { saves: -2, hit: -2 } },
