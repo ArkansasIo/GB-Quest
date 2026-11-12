@@ -25,10 +25,76 @@ class ListScene { // reusable scrolling list base
   scrollbar(x, y, h) { const n = this.items().length; if (n <= this.rows) return; fill(x, y, 3, h, 1); const bh = Math.max(6, h * this.rows / n); fill(x, y + (h - bh) * this.top / Math.max(1, n - this.rows), 3, bh, 3); }
 }
 
+// ================================================================ ONLINE COLLECTIONS
+class CollectionMenuScene extends ListScene {
+  constructor() {
+    super(8);
+    this.categoryIndex = 0;
+    this.collection = null;
+    this.busy = false;
+    this.msg = 'CONNECTING TO REALM COLLECTIONS…';
+    this.refresh();
+  }
+  categories() { return ['mounts', 'pets', 'titles', 'appearances', 'achievements']; }
+  category() { return this.categories()[this.categoryIndex]; }
+  api() { return window.GBQ_MMO_API || window.gbgMmoApi || null; }
+  characterId() { return String(window.GBQ_MMO_CHARACTER_ID || (G && (G.mmoCharacterId || G.characterId)) || ''); }
+  async refresh() {
+    const api = this.api(), id = this.characterId();
+    if (!api || !id) { this.collection = null; this.msg = 'ONLINE CHARACTER REQUIRED'; return; }
+    this.busy = true;
+    try {
+      const result = await api.collections(id);
+      this.collection = result.collections || null;
+      this.msg = this.collection ? 'COLLECTIONS SYNCHRONIZED' : 'NO COLLECTION DATA';
+    } catch (error) {
+      this.msg = String(error.message || error).toUpperCase().slice(0, 42);
+    } finally { this.busy = false; }
+  }
+  items() {
+    const entries = this.collection?.[this.category()] || [];
+    return entries.map(entry => typeof entry === 'string' ? entry : String(entry.name || entry.title || entry.id || 'UNKNOWN'));
+  }
+  update() {
+    if (nav('left')) { this.categoryIndex = (this.categoryIndex + 4) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
+    if (nav('right')) { this.categoryIndex = (this.categoryIndex + 1) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
+    this.navList();
+    if (P('b') || P('start')) { removeScene(this); SFX.back(); return; }
+    if (P('select')) return this.refresh();
+    if (!P('a') || this.busy) return;
+    const category = this.category(), entries = this.collection?.[category] || [], entry = entries[this.i];
+    if (!entry) { SFX.error(); this.msg = 'NO ENTRY SELECTED'; return; }
+    if (!['mounts', 'pets', 'titles'].includes(category)) { SFX.error(); this.msg = 'UNLOCKED BY GAMEPLAY REWARDS'; return; }
+    const entryId = typeof entry === 'string' ? entry : String(entry.id || '');
+    const api = this.api(), characterId = this.characterId();
+    if (!api || !characterId || !entryId) { SFX.error(); this.msg = 'ONLINE COLLECTION SERVICE REQUIRED'; return; }
+    this.busy = true; this.msg = 'UPDATING REALM COLLECTION…';
+    Promise.resolve(api.activateCollectionEntry(characterId, category, entryId))
+      .then(() => { SFX.confirm(); this.msg = 'COLLECTION UPDATED'; return this.refresh(); })
+      .catch(error => { SFX.error(); this.msg = String(error.message || error).toUpperCase().slice(0, 42); })
+      .finally(() => { this.busy = false; });
+  }
+  draw() {
+    fill(0, 0, W, H, 0); hdr();
+    textC('COLLECTIONS', W / 2, 15, 'gold');
+    textC('< ' + this.category().toUpperCase() + ' >', W / 2, 28, 3);
+    const entries = this.items();
+    if (!entries.length) textC(this.collection ? 'NO UNLOCKED ENTRIES' : 'ONLINE SERVICE REQUIRED', W / 2, 72, 2);
+    entries.slice(this.top, this.top + this.rows).forEach((name, j) => {
+      const index = this.top + j, y = 44 + j * 12;
+      if (index === this.i) { fill(18, y - 2, W - 36, 11, 3); text(name.slice(0, 22), 23, y, 0); }
+      else text(name.slice(0, 22), 23, y);
+    });
+    this.scrollbar(W - 10, 43, 94);
+    textC(this.msg.slice(0, 34), W / 2, H - 13, 'blue');
+    text('L/R CATEGORY · A EQUIP · B BACK', 3, H - 3, 1);
+  }
+}
+
 // ================================================================ MAIN MENU
 class MainMenu extends ListScene {
   constructor() { super(11); }
-  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'GUILD', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
+  items() { const base = ['CHARACTER', 'SPELLBOOK', 'GROWTH' + (G.pending.asi || G.pending.sub || G.pending.boon || G.ascPts || G.subPts || G.talentPts ? ' (!)' : ''), 'COMBAT ARTS', 'ARMOURY', 'HEIRLOOMS', 'COLLECTIONS', 'WARDROBE', 'LOADOUTS', 'JOBS', 'CHALLENGES', 'MOUNTS', 'QUEST LOG', 'CRAFTING', 'REST', 'ACTIVITY FINDER', 'BESTIARY', 'BOSS JOURNAL', 'ACHIEVEMENTS', 'REPUTATION', 'SOCIAL', 'GUILD', 'TITLES', 'WORLD MAP', 'ART GALLERY', 'EXPANSION MAPS', 'HEARTHSTONE', 'SETTINGS', 'SAVE', 'SAVE & QUIT']; if (globalThis.GBQEasterEggs && globalThis.GBQEasterEggs.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'SECRET ARCHIVE'); if (globalThis.GBQSecretWorld && globalThis.GBQSecretWorld.summary(G).discovered > 0) base.splice(base.indexOf('ACHIEVEMENTS'), 0, 'HIDDEN WORLD'); return base; }
   update() {
     this.navList();
     if (P('b') || P('start')) { SFX.close(); removeScene(this); return; }
