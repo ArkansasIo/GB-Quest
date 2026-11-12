@@ -102,6 +102,28 @@ function broadcastRealm(realmId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && ws !== except) send(ws, type, payload);
 }
 
+
+async function guildSnapshot(guildId) {
+  if (!guildId) return null;
+  const result=await pool.query(`SELECT g.id,g.name,g.realm_id,g.leader_character_id,g.created_at,
+    COALESCE(json_agg(json_build_object('characterId',c.id,'name',c.name,'level',c.level,
+      'rank',gm.rank,'joinedAt',gm.joined_at) ORDER BY gm.joined_at)
+      FILTER (WHERE c.id IS NOT NULL),'[]'::json) AS members
+    FROM guilds g JOIN guild_members gm ON gm.guild_id=g.id
+    JOIN characters c ON c.id=gm.character_id WHERE g.id=$1 GROUP BY g.id`,[guildId]);
+  return result.rows[0]||null;
+}
+function broadcastGuild(guildId,type,payload) {
+  for(const [peer,session] of activeSockets)
+    if(session.authenticated&&session.character&&session.guildId===guildId)
+      send(peer,type,payload);
+}
+async function setGuildForCharacter(ws,characterId) {
+  const state=socketState.get(ws);
+  const result=await pool.query('SELECT guild_id FROM guild_members WHERE character_id=$1',[characterId]);
+  state.guildId=result.rows[0]?.guild_id||null;
+  if(state.guildId) send(ws,'guild.snapshot',{guild:await guildSnapshot(state.guildId)});
+}
 async function partySnapshot(partyId) {
   if (!partyId) return null;
   const result = await pool.query(`
@@ -171,7 +193,7 @@ const recordAuthFailure = ip => authLimiter.fail(ip);
 setInterval(() => authLimiter.sweep(), 600000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
-  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, partyId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
+  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, partyId: null, guildId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
   socketState.set(ws, state); activeSockets.set(ws, state);
   state.authTimer = setTimeout(() => {
     if (!state.authenticated && !state.closed) ws.close(4408, 'authentication timeout');
@@ -216,6 +238,7 @@ function attachSocket(ws, req) {
         const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, id: state.character.id } : null;
         state.character = ch; state.realmId = ch.realm_id; state.zoneId = ch.zone_id; state.x = ch.x; state.y = ch.y;
         await setPartyForCharacter(ws, ch.id);
+        await setGuildForCharacter(ws, ch.id);
         if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
         const players = [...activeSockets.entries()].filter(([other, s]) => other !== ws && s.authenticated && s.character && s.realmId === state.realmId && s.zoneId === state.zoneId).map(([, s]) => ({ id: s.character.id, name: s.character.name, level: s.character.level, x: s.x, y: s.y }));
         const mobs = await pool.query('SELECT id,name,level,x,y,hp,max_hp FROM world_mobs WHERE realm_id=$1 AND zone_id=$2 AND alive=true ORDER BY id', [state.realmId, state.zoneId]);
@@ -311,6 +334,141 @@ function attachSocket(ws, req) {
         return;
       }
 
+
+      if (msg.type === 'guild.create') {
+        if(state.guildId) return send(ws,'error',{code:'already_in_guild'});
+        const name=String(msg.payload.name||'').trim();
+        if(!/^[\\p{L}\\p{N}][\\p{L}\\p{N} '\\-]{1,30}[\\p{L}\\p{N}]$/u.test(name))
+          return send(ws,'error',{code:'invalid_guild_name'});
+        const tx=await pool.connect(); let guildId;
+        try {
+          await tx.query('BEGIN');
+          const g=await tx.query('INSERT INTO guilds(realm_id,name,leader_character_id) VALUES($1,$2,$3) RETURNING id',
+            [state.realmId,name,state.character.id]);
+          guildId=g.rows[0].id;
+          await tx.query("INSERT INTO guild_members(guild_id,character_id,rank) VALUES($1,$2,'leader')",
+            [guildId,state.character.id]);
+          await tx.query('COMMIT');
+        } catch(e) {
+          await tx.query('ROLLBACK').catch(()=>{});
+          if(e.code==='23505') return send(ws,'error',{code:'guild_name_or_membership_taken'});
+          throw e;
+        } finally {tx.release();}
+        state.guildId=guildId;
+        send(ws,'guild.snapshot',{guild:await guildSnapshot(guildId)});
+        return;
+      }
+      if(msg.type==='guild.invite') {
+        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
+        const member=await pool.query('SELECT rank FROM guild_members WHERE guild_id=$1 AND character_id=$2',
+          [state.guildId,state.character.id]);
+        if(!member.rowCount||!['leader','officer'].includes(member.rows[0].rank))
+          return send(ws,'error',{code:'guild_officer_required'});
+        const name=String(msg.payload.to||'').trim();
+        if(!name||name.length>16) return send(ws,'error',{code:'invalid_guild_target'});
+        const target=await pool.query('SELECT id FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)',
+          [state.realmId,name]);
+        if(!target.rowCount) return send(ws,'error',{code:'guild_target_not_found'});
+        const id=target.rows[0].id;
+        if(id===state.character.id) return send(ws,'error',{code:'cannot_invite_self'});
+        const existing=await pool.query('SELECT guild_id FROM guild_members WHERE character_id=$1',[id]);
+        if(existing.rowCount) return send(ws,'error',{code:'guild_target_already_grouped'});
+        const invite=await pool.query(`INSERT INTO guild_invites(guild_id,inviter_character_id,invitee_character_id,expires_at)
+          VALUES($1,$2,$3,now()+interval '24 hours')
+          ON CONFLICT(guild_id,invitee_character_id) WHERE status='pending'
+          DO UPDATE SET inviter_character_id=EXCLUDED.inviter_character_id,expires_at=EXCLUDED.expires_at,created_at=now()
+          RETURNING id,expires_at`,[state.guildId,state.character.id,id]);
+        const invitation={id:invite.rows[0].id,guildId:state.guildId,from:state.character.name,expiresAt:invite.rows[0].expires_at};
+        for(const [peer,session] of activeSockets) if(session.character?.id===id) send(peer,'guild.invited',invitation);
+        send(ws,'guild.invite_sent',{invitation});
+        return;
+      }
+      if(msg.type==='guild.accept') {
+        if(state.guildId) return send(ws,'error',{code:'already_in_guild'});
+        const id=String(msg.payload.invitationId||'');
+        if(!/^[0-9a-f-]{36}$/i.test(id)) return send(ws,'error',{code:'invalid_guild_invitation'});
+        const tx=await pool.connect(); let guildId;
+        try {
+          await tx.query('BEGIN');
+          const invite=await tx.query(`SELECT i.guild_id,g.realm_id FROM guild_invites i JOIN guilds g ON g.id=i.guild_id
+            WHERE i.id=$1 AND i.invitee_character_id=$2 AND i.status='pending' AND i.expires_at>now()
+            FOR UPDATE OF i,g`,[id,state.character.id]);
+          if(!invite.rowCount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_invitation_expired'});}
+          guildId=invite.rows[0].guild_id;
+          if(invite.rows[0].realm_id!==state.realmId) {await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_realm_mismatch'});}
+          await tx.query("INSERT INTO guild_members(guild_id,character_id,rank) VALUES($1,$2,'member')",
+            [guildId,state.character.id]);
+          await tx.query("UPDATE guild_invites SET status='accepted',responded_at=now() WHERE id=$1",[id]);
+          await tx.query("UPDATE guild_invites SET status='expired',responded_at=now() WHERE invitee_character_id=$1 AND status='pending' AND id<>$2",
+            [state.character.id,id]);
+          await tx.query('COMMIT');
+        } catch(e) {
+          await tx.query('ROLLBACK').catch(()=>{});
+          if(e.code==='23505') return send(ws,'error',{code:'already_in_guild'});
+          throw e;
+        } finally {tx.release();}
+        state.guildId=guildId;
+        broadcastGuild(guildId,'guild.updated',{guild:await guildSnapshot(guildId)});
+        return;
+      }
+      if(msg.type==='guild.leave') {
+        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
+        const guildId=state.guildId;
+        const tx=await pool.connect();
+        try {
+          await tx.query('BEGIN');
+          const guild=await tx.query('SELECT leader_character_id FROM guilds WHERE id=$1 FOR UPDATE',[guildId]);
+          await tx.query('DELETE FROM guild_members WHERE guild_id=$1 AND character_id=$2',[guildId,state.character.id]);
+          if(guild.rowCount&&guild.rows[0].leader_character_id===state.character.id) {
+            const next=await tx.query(`SELECT character_id FROM guild_members WHERE guild_id=$1
+              ORDER BY CASE WHEN rank='officer' THEN 0 ELSE 1 END,joined_at,character_id LIMIT 1`,[guildId]);
+            if(next.rowCount) {
+              await tx.query('UPDATE guilds SET leader_character_id=$1 WHERE id=$2',[next.rows[0].character_id,guildId]);
+              await tx.query("UPDATE guild_members SET rank='leader' WHERE guild_id=$1 AND character_id=$2",
+                [guildId,next.rows[0].character_id]);
+            } else await tx.query('DELETE FROM guilds WHERE id=$1',[guildId]);
+          }
+          await tx.query('COMMIT');
+        } catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;} finally {tx.release();}
+        state.guildId=null;
+        broadcastGuild(guildId,'guild.updated',{guild:await guildSnapshot(guildId)});
+        send(ws,'guild.left',{guildId});
+        return;
+      }
+      if(msg.type==='guild.rank') {
+        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
+        const rank=String(msg.payload.rank||'');
+        const targetId=String(msg.payload.characterId||'');
+        if(!['officer','member'].includes(rank)||!/^[0-9a-f-]{36}$/i.test(targetId)||targetId===state.character.id)
+          return send(ws,'error',{code:'invalid_guild_rank'});
+        const leader=await pool.query('SELECT leader_character_id FROM guilds WHERE id=$1',[state.guildId]);
+        if(!leader.rowCount||leader.rows[0].leader_character_id!==state.character.id)
+          return send(ws,'error',{code:'guild_leader_required'});
+        const changed=await pool.query("UPDATE guild_members SET rank=$1 WHERE guild_id=$2 AND character_id=$3 AND rank<>'leader' RETURNING character_id",
+          [rank,state.guildId,targetId]);
+        if(!changed.rowCount) return send(ws,'error',{code:'guild_member_not_found'});
+        broadcastGuild(state.guildId,'guild.updated',{guild:await guildSnapshot(state.guildId)});
+        return;
+      }
+      if(msg.type==='guild.kick') {
+        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
+        const targetId=String(msg.payload.characterId||'');
+        if(!/^[0-9a-f-]{36}$/i.test(targetId)||targetId===state.character.id)
+          return send(ws,'error',{code:'invalid_guild_target'});
+        const actor=await pool.query('SELECT rank FROM guild_members WHERE guild_id=$1 AND character_id=$2',
+          [state.guildId,state.character.id]);
+        if(!actor.rowCount||!['leader','officer'].includes(actor.rows[0].rank))
+          return send(ws,'error',{code:'guild_officer_required'});
+        const removed=await pool.query(`DELETE FROM guild_members WHERE guild_id=$1 AND character_id=$2
+          AND rank<>'leader' AND ($3='leader' OR rank='member') RETURNING character_id`,
+          [state.guildId,targetId,actor.rows[0].rank]);
+        if(!removed.rowCount) return send(ws,'error',{code:'guild_member_not_found_or_protected'});
+        for(const [peer,session] of activeSockets) if(session.character?.id===targetId&&session.guildId===state.guildId) {
+          session.guildId=null;send(peer,'guild.kicked',{guildId:state.guildId});
+        }
+        broadcastGuild(state.guildId,'guild.updated',{guild:await guildSnapshot(state.guildId)});
+        return;
+      }
       if (msg.type === 'party.create') {
         if (state.partyId) return send(ws,'error',{code:'already_in_party'});
         const tx=await pool.connect();
@@ -430,8 +588,8 @@ function attachSocket(ws, req) {
       }
       if (msg.type === 'chat.send') {
         const channel = String(msg.payload.channel || 'zone');
-        if (!['zone', 'realm', 'whisper', 'party'].includes(channel)) {
-          return send(ws, 'error', { code: 'unsupported_chat_channel', channel, supported: ['zone', 'realm', 'whisper', 'party'] });
+        if (!['zone', 'realm', 'whisper', 'party', 'guild'].includes(channel)) {
+          return send(ws, 'error', { code: 'unsupported_chat_channel', channel, supported: ['zone', 'realm', 'whisper', 'party', 'guild'] });
         }
         const t = Date.now(); if (t - state.lastChat < 1200) return send(ws, 'error', { code: 'chat_rate_limited' });
         state.lastChat = t;
@@ -440,6 +598,7 @@ function attachSocket(ws, req) {
         const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
         if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
         if (channel === 'party') { if (!state.partyId) return send(ws,'error',{code:'not_in_party'}); broadcastParty(state.partyId,'chat.message',message); return; }
+        if (channel === 'guild') { if(!state.guildId) return send(ws,'error',{code:'not_in_guild'}); broadcastGuild(state.guildId,'chat.message',message); return; }
         if (channel === 'whisper') {
           const to = String(msg.payload.to || '').trim();
           if (!to || to.length > 16) return send(ws, 'error', { code: 'invalid_whisper_target' });
