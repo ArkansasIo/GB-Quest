@@ -50,6 +50,7 @@ export class GBQuestMMOApi {
     if (typeof characterId !== 'string' || !characterId.trim()) throw new TypeError('characterId is required');
     const resources = {
       profile: () => this.characterProfile(characterId),
+      collections: () => this.collections(characterId),
       inventory: () => this.inventory(characterId),
       quests: () => this.quests(characterId),
       party: () => this.party(characterId),
@@ -94,6 +95,14 @@ export class GBQuestMMOApi {
   unlockTalent(characterId, nodeId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/talents/' + encodeURIComponent(nodeId) + '/unlock', {
       method: 'POST', body: {}
+    });
+  }
+  collections(characterId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/collections');
+  }
+  activateCollectionEntry(characterId, category, entryId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/collections/activate', {
+      method: 'POST', body: { category, entryId }
     });
   }
   characterProfile(characterId) {
