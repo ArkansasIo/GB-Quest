@@ -191,6 +191,26 @@ export class GBQuestMMOApi {
   pvpMatch(matchId) {
     return this.request('/api/pvp/matches/' + encodeURIComponent(matchId));
   }
+  notifications(limit = 50) {
+    const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
+    return this.request('/api/notifications?limit=' + safeLimit);
+  }
+  markNotificationRead(notificationId) {
+    return this.request('/api/notifications/' + encodeURIComponent(notificationId) + '/read', { method: 'POST', body: {} });
+  }
+  joinCompetitiveQueue(characterId, mode = 'arena_2v2') {
+    if (!['arena_2v2', 'arena_3v3', 'battleground_10v10'].includes(mode)) throw new TypeError('Unsupported competitive mode');
+    return this.request('/api/competitive/queue', { method: 'POST', body: { characterId, mode } });
+  }
+  competitiveQueueStatus(characterId) {
+    return this.request('/api/competitive/queue/' + encodeURIComponent(characterId));
+  }
+  leaveCompetitiveQueue(characterId) {
+    return this.request('/api/competitive/queue/' + encodeURIComponent(characterId), { method: 'DELETE' });
+  }
+  competitiveMatch(matchId) {
+    return this.request('/api/competitive/matches/' + encodeURIComponent(matchId));
+  }
   connect() {
     if (!this.token) throw new Error('Log in before connecting to the realm');
     const wsUrl = new URL('/ws', this.baseUrl);
