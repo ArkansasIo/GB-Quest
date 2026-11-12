@@ -353,6 +353,21 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(walletResponse.status, 200);
     let wallet = await walletResponse.json();
     assert.ok(wallet.gold >= 25);
+
+    send(sequence++, 'guild.bank.balance', {});
+    assert.equal((await waitFor('guild.bank.balance')).payload.gold, '0');
+    send(sequence++, 'guild.bank.deposit', { amount: '10' });
+    const guildDeposit=await waitFor('guild.bank.result');
+    assert.equal(guildDeposit.payload.guildGold,'10');
+    assert.equal(guildDeposit.payload.walletGold,String(BigInt(wallet.gold)-10n));
+    assert.equal((await waitFor('guild.bank.updated')).payload.guildGold,'10');
+    send(sequence++, 'guild.bank.withdraw', { amount: '4' });
+    const guildWithdraw=await waitFor('guild.bank.result');
+    assert.equal(guildWithdraw.payload.guildGold,'6');
+    assert.equal(guildWithdraw.payload.walletGold,String(BigInt(wallet.gold)-6n));
+    assert.equal((await waitFor('guild.bank.updated')).payload.guildGold,'6');
+    send(sequence++, 'guild.bank.withdraw', { amount: '99' });
+    assert.equal((await waitFor('error')).payload.code,'insufficient_guild_gold');
     const bankBefore = await fetch(base + `/api/characters/${character.id}/bank`, {
       headers: { authorization: 'Bearer ' + token }
     });
@@ -399,6 +414,11 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
         [character.id]
       );
       assert.deepEqual(audit.rows.map(row => [row.action, String(row.amount)]), [['withdraw', '4'], ['deposit', '10']]);
+      const guildAudit=await bankAuditPool.query(
+        'SELECT action,amount FROM guild_bank_transactions WHERE guild_id=$1 ORDER BY id DESC LIMIT 2',
+        [guildId]
+      );
+      assert.deepEqual(guildAudit.rows.map(row=>[row.action,String(row.amount)]),[['withdraw','4'],['deposit','10']]);
     } finally { await bankAuditPool.end(); }
     const vendorListResponse = await fetch(base + '/api/vendors', {
       headers: { authorization: 'Bearer ' + token }
