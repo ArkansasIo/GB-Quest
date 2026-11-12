@@ -81,7 +81,8 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
   const joinPath = url.pathname === '/api/dungeons/queue' && req.method === 'POST';
   const queuePath = url.pathname.match(/^\/api\/dungeons\/queue\/([0-9a-f-]{36})$/i);
   const groupPath = url.pathname.match(/^\/api\/dungeons\/groups\/([0-9a-f-]{36})$/i);
-  if (!joinPath && !queuePath && !groupPath) return false;
+  const groupActionPath = url.pathname.match(/^\/api\/dungeons\/groups\/([0-9a-f-]{36})\/(start|complete)$/i);
+  if (!joinPath && !queuePath && !groupPath && !groupActionPath) return false;
 
   const account = await accountFor(req);
   if (!account) { json(res, 401, { error: 'unauthorized' }); return true; }
@@ -191,6 +192,45 @@ async function handleDungeonQueueRequest({ req, res, pool, accountFor, json, rea
     }
     json(res, 200, { status: 'cancelled', queueEntryId: result.rows[0].id });
     return true;
+  }
+
+  if (groupActionPath && req.method === 'POST') {
+    const groupId = groupActionPath[1], action = groupActionPath[2].toLowerCase();
+    const tx = await pool.connect();
+    try {
+      await tx.query('BEGIN');
+      const membership = await tx.query(
+        `SELECT m.role,g.status FROM dungeon_match_members m
+          JOIN characters c ON c.id=m.character_id
+          JOIN dungeon_match_groups g ON g.id=m.group_id
+         WHERE m.group_id=$1 AND c.account_id=$2 FOR UPDATE OF g,m`,
+        [groupId, account.id]
+      );
+      if (!membership.rowCount) {
+        await tx.query('ROLLBACK'); json(res, 404, { error: 'dungeon_group_not_found' }); return true;
+      }
+      if (membership.rows[0].role !== 'tank') {
+        await tx.query('ROLLBACK'); json(res, 403, { error: 'dungeon_group_leader_required' }); return true;
+      }
+      const expected = action === 'start' ? 'formed' : 'started';
+      if (membership.rows[0].status !== expected) {
+        await tx.query('ROLLBACK');
+        json(res, 409, { error: 'invalid_dungeon_group_state', status: membership.rows[0].status, expected });
+        return true;
+      }
+      if (action === 'start') {
+        await tx.query("UPDATE dungeon_match_groups SET status='started',started_at=now() WHERE id=$1", [groupId]);
+      } else {
+        await tx.query("UPDATE dungeon_match_groups SET status='completed',completed_at=now() WHERE id=$1", [groupId]);
+        await tx.query("UPDATE dungeon_queue_entries SET status='completed' WHERE group_id=$1 AND status='matched'", [groupId]);
+      }
+      await tx.query('COMMIT');
+      json(res, 200, { group: await readGroup(pool, groupId) });
+      return true;
+    } catch (error) {
+      await tx.query('ROLLBACK').catch(() => {});
+      throw error;
+    } finally { tx.release(); }
   }
 
   if (groupPath && req.method === 'GET') {
