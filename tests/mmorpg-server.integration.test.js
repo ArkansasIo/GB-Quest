@@ -466,6 +466,52 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ vendorId: 'unknown_vendor', itemId: 'minor_potion', quantity: 1 })
     });
     assert.equal(invalidZone.status, 404);
+    const dungeonCatalogResponse = await fetch(base + '/api/dungeons/catalog');
+    assert.equal(dungeonCatalogResponse.status, 200);
+    assert.equal((await dungeonCatalogResponse.json()).dungeons.length, 20);
+    const queueJoin = await fetch(base + '/api/dungeons/queue', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ characterId: character.id, dungeonId: 'map-instance-01', role: 'tank' })
+    });
+    assert.equal(queueJoin.status, 201);
+    assert.equal((await queueJoin.json()).status, 'queued');
+    const queueStatus = await fetch(base + `/api/dungeons/queue/${character.id}`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal((await queueStatus.json()).status, 'queued');
+    const duplicateQueue = await fetch(base + '/api/dungeons/queue', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ characterId: character.id, dungeonId: 'map-instance-01', role: 'damage' })
+    });
+    assert.equal(duplicateQueue.status, 409);
+    const ineligibleQueue = await fetch(base + '/api/dungeons/queue', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ characterId: character.id, dungeonId: 'map-instance-20', role: 'tank' })
+    });
+    assert.equal(ineligibleQueue.status, 409);
+    const queueLeave = await fetch(base + `/api/dungeons/queue/${character.id}`, {
+      method: 'DELETE', headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(queueLeave.status, 200);
+    assert.equal((await queueLeave.json()).status, 'cancelled');
+    const noLongerQueued = await fetch(base + `/api/dungeons/queue/${character.id}`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal((await noLongerQueued.json()).status, 'not_queued');
+
+    // The quest can move the test hero to another zone; keep both trade participants
+    // together in the current zone so this section tests the trade lifecycle, not zone gating.
+    const alignTradeZonePool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try {
+      await alignTradeZonePool.query(
+        'UPDATE characters SET zone_id=(SELECT zone_id FROM characters WHERE id=$1) WHERE id=$2',
+        [character.id, recipientCharacter.id]
+      );
+    } finally { await alignTradeZonePool.end(); }
+
     const senderWalletBeforeTrade = await (await fetch(base + `/api/characters/${character.id}/wallet`, {
       headers: { authorization: 'Bearer ' + token }
     })).json();
