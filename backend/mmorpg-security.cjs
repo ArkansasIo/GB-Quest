@@ -11,6 +11,18 @@ function isAllowedOrigin(origin, allowlist = new Set()) {
   }
 }
 
+function corsHeaders(origin, allowlist = new Set()) {
+  if (!origin) return {};
+  if (!isAllowedOrigin(origin, allowlist)) return null;
+  return {
+    'access-control-allow-origin': origin,
+    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-headers': 'content-type,authorization',
+    'access-control-max-age': '600',
+    vary: 'Origin'
+  };
+}
+
 function createAuthLimiter({ limit = 10, windowMs = 600000, clock = Date.now } = {}) {
   const failures = new Map();
   function current(ip) {
