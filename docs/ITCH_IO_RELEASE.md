@@ -55,3 +55,21 @@ The repository includes a manual/release-triggered GitHub Actions workflow at
 4. Open **Actions → Publish itch.io HTML5**, choose **Run workflow**, and keep the channel set to `html5`.
 
 The workflow rebuilds and validates the single-file HTML5 ZIP, installs the official Butler CLI, and pushes the generated build to the configured project/channel. Publishing on a GitHub Release also triggers the workflow and uses the `html5` channel. Never commit the API key or place it in repository variables; keep it in the encrypted Actions secret.
+
+## Connecting the itch.io build to a realm server
+
+The itch.io page is static, so the game does not look for a realm server on itch.io itself. Players connect from **START → ONLINE → SERVER ADDRESS** by typing the server address (for example `https://realm.example.com`, or `localhost:8787` for a server on the same PC). The address and sign-in are remembered in the browser.
+
+On the realm server (`backend/server.cjs`), allow the itch.io page to call it:
+
+```sh
+GBQ_ALLOWED_ORIGINS=https://html-classic.itch.zone node backend/server.cjs
+```
+
+Internet-facing servers must use HTTPS, because itch.io pages are HTTPS. `http://localhost` pages are always allowed for local testing. The admin API is never available to other sites.
+
+To ship a build with a default server address already filled in:
+
+```sh
+GBQ_REALM_URL=https://realm.example.com npm run build:itch
+```
