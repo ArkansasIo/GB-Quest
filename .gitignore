@@ -2,6 +2,9 @@ __pycache__/
 .DS_Store
 build/
 server/data/
+# local secrets (copy from .env.example); never commit
+.env
+.env.local
 node_modules/
 release/
 .vscode/

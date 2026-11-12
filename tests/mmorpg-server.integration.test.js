@@ -135,6 +135,50 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(duplicateTalent.status, 409);
     assert.equal((await duplicateTalent.json()).error, 'talent_already_unlocked');
 
+    // Job characters (the browser game's 27 jobs) get trees named after their subclasses (migration 016).
+    const jobCatalogResponse = await fetch(base + '/api/talents?class=ronin');
+    assert.equal(jobCatalogResponse.status, 200);
+    const jobCatalog = await jobCatalogResponse.json();
+    assert.deepEqual(jobCatalog.specializations.map(s => s.id).sort(), ['ronin_iaido', 'ronin_kensai']);
+    assert.ok(jobCatalog.specializations.every(s => s.role === 'Damage' && s.nodes.length === 73));
+    const capstone = jobCatalog.specializations[0].nodes[72];
+    assert.equal(capstone.type, 'ultimate');
+    assert.equal(capstone.requiredLevel, 720);
+    assert.equal(capstone.effect.cooldownSeconds, 90);
+    assert.equal(capstone.effect.damageMultiplier, 3);
+    const jobCreate = await fetch(base + '/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ name: 'Ronin' + crypto.randomBytes(4).toString('hex'), class: 'ronin' })
+    });
+    assert.equal(jobCreate.status, 201);
+    const { character: roninCharacter } = await jobCreate.json();
+    const roninWrongSpec = await fetch(base + `/api/characters/${roninCharacter.id}/specialization`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ specializationId: 'ranger_hunter' })
+    });
+    assert.equal(roninWrongSpec.status, 400);
+    const roninSpec = await fetch(base + `/api/characters/${roninCharacter.id}/specialization`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ specializationId: 'ronin_kensai' })
+    });
+    assert.equal(roninSpec.status, 200);
+    assert.equal((await roninSpec.json()).specialization.name, 'Kensai');
+    const roninPointPool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try { await roninPointPool.query('UPDATE characters SET talent_points=1 WHERE id=$1', [roninCharacter.id]); }
+    finally { await roninPointPool.end(); }
+    const roninUnlock = await fetch(base + `/api/characters/${roninCharacter.id}/talents/ronin_kensai_node_00/unlock`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({})
+    });
+    assert.equal(roninUnlock.status, 200, JSON.stringify(await roninUnlock.clone().json()));
+    assert.equal((await roninUnlock.json()).talentPoints, 0);
+    const unknownClass = await fetch(base + '/api/talents?class=notajob');
+    assert.equal(unknownClass.status, 400);
+
     const inventoryResponse = await fetch(base + `/api/characters/${character.id}/inventory`, {
       headers: { authorization: 'Bearer ' + token }
     });

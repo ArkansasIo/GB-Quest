@@ -4,7 +4,45 @@ Migration `012_class_talent_trees.sql` creates the server-owned talent catalogue
 
 ## Specializations
 
-Each class has three specializations:
+### The 27 jobs (migration 016)
+
+Every character plays one of the browser game's 27 jobs (migration 009 moved existing characters onto them). Migration `016_job_talent_trees.sql` gives each job two specializations, named after the job's subclasses in the game data (`CLASSES[job].subs` in `src/data_rules.js` and `src/jobs_data.js`), with the job's role. Specialization IDs are `<job>_<subclass>`, for example `ronin_kensai`.
+
+| Job | Role | Specialization 1 | Specialization 2 |
+|---|---|---|---|
+| Warden (`warden`) | Tank | Champion | Tactician |
+| Berserker (`berserker`) | Tank | Frenzy | Totem |
+| Vanguard (`vanguard`) | Tank | Devotion | Vengeance |
+| Strider (`strider`) | Damage | Hunter | Beastmaster |
+| Shade (`shade`) | Damage | Thief | Assassin |
+| Ascetic (`ascetic`) | Damage | Open Hand | Shadow |
+| Arcanist (`arcanist`) | Damage | Evoker | Abjurer |
+| Wildblood (`wildblood`) | Damage | Draconic | Wild Surge |
+| Pactbound (`pactbound`) | Damage | Fiend Pact | Archfey |
+| Cantor (`cantor`) | Healer | Lore | Valor |
+| Chaplain (`chaplain`) | Healer | Life | Tempest |
+| Verdant (`verdant`) | Healer | Moon | Land |
+| Necromancer (`necromancer`) | Damage | Gravecaller | Boneweaver |
+| Summoner (`summoner`) | Damage | Spiritcaller | Wardbinder |
+| Sunwarden (`sunwarden`) | Healer | Dawnkeeper | Sunstriker |
+| Runeblade (`runeblade`) | Tank | Blood Rune | Frost Brand |
+| Ronin (`ronin`) | Damage | Kensai | Iaido |
+| Shinobi (`shinobi`) | Damage | Kage | Yamikiri |
+| Bladedancer (`bladedancer`) | Healer | Veil Dancer | Edge Dancer |
+| Wyrmlancer (`wyrmlancer`) | Damage | Skyleap | Wyrmbond |
+| Corsair (`corsair`) | Damage | Fortune | Quickdraw |
+| Beastcaller (`beastcaller`) | Tank | Packlord | Feral |
+| Puppeteer (`puppeteer`) | Tank | Valoredge | Sharpshot Frame |
+| Dreadknight (`dreadknight`) | Tank | Blood Oath | Frostgrave |
+| Voidhunter (`voidhunter`) | Damage | Havoc | Vengeance |
+| Scalesage (`scalesage`) | Healer | Devastation | Preservation |
+| Stormcaller (`stormcaller`) | Healer | Thunder | Tides |
+
+Each job specialization has the same 73-node tree as the legacy classes below, including the migration 013 combat tuning and migration 014 cooldowns (54 specializations, 3,942 nodes).
+
+### Legacy classes (migration 012)
+
+The six original classes keep three specializations each, for any character still on a legacy class:
 
 | Class | Specialization 1 | Specialization 2 | Specialization 3 |
 |---|---|---|---|
@@ -19,7 +57,7 @@ Every specialization has three branches: Assault, Utility and Mastery. The catal
 
 ## Server API
 
-- `GET /api/talents?class=ranger` returns the three specialization trees and their node definitions.
+- `GET /api/talents?class=ronin` returns the class's specialization trees and their node definitions. Every job and legacy class is accepted; anything else returns `400 invalid_class`.
 - `POST /api/characters/:characterId/specialization` with `{ "specializationId": "ranger_hunter" }` selects the character's class-compatible specialization.
 - `POST /api/characters/:characterId/talents/:nodeId/unlock` spends talent points and unlocks one node.
 
@@ -37,4 +75,4 @@ The authenticated character profile now includes `specialization_id` and the unl
 
 ## Deployment
 
-Run the normal ordered migration command (`npm run mmorpg:migrate`) before deploying the server. Migration 012 depends on migrations 001 and 011. Back up PostgreSQL before applying schema changes. The database-backed integration suite exercises tree discovery, specialization class checks, talent spending, duplicate rejection and level progression.
+Run the normal ordered migration command (`npm run mmorpg:migrate`) before deploying the server. Migration 012 depends on migrations 001 and 011; migration 016 depends on 012, 013 and 014. Back up PostgreSQL before applying schema changes. The database-backed integration suite exercises tree discovery, specialization class checks, talent spending, duplicate rejection and level progression.

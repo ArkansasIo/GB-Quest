@@ -143,8 +143,8 @@ jobs:
       - name: Apply database schema
         env:
           DATABASE_URL: postgres://gbquest:${{ format('ci-{0}-{1}', github.run_id, github.run_attempt) }}@localhost:5432/gbquest_test
-        run: npm run mmorpg:migrate
+        run: npm run mmorpg:migrate && npm run mmorpg:migrate   # twice: migrations must be idempotent
       - name: Exercise HTTP, PostgreSQL and WebSocket gameplay
         env:
           GBQ_TEST_DATABASE_URL: postgres://gbquest:${{ format('ci-{0}-{1}', github.run_id, github.run_attempt) }}@localhost:5432/gbquest_test
-        run: node --test tests/mmorpg-server.integration.test.js
+        run: node --test tests/mmorpg-server.integration.test.js tests/mmorpg-realms.integration.test.js tests/mmorpg-session-revocation.integration.test.js

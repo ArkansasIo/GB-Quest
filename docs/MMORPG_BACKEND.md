@@ -5,7 +5,7 @@ This service is separate from itch.io. itch.io serves the HTML5 game ZIP; this N
 ## Included
 
 - Node.js 22 service using WebSockets (ws) and PostgreSQL (pg).
-- Scrypt password hashes and signed, expiring bearer tokens.
+- Scrypt password hashes and signed, expiring bearer tokens that the server can revoke (migration 017: signing out or changing the password invalidates every earlier token).
 - Account registration/login and authenticated character listing/creation (up to three characters).
 - Authenticated WSS sessions, character selection, zone snapshots and player presence.
 - Server-validated tile movement with world bounds and a movement rate limit.
@@ -40,6 +40,8 @@ All request/response bodies are JSON.
 | POST | /api/register | No | { username, password }; username 3–16 chars, password 10–72 |
 | POST | /api/login | No | { username, password }; returns bearer token |
 | GET | /api/me | Bearer | Account and characters |
+| POST | /api/logout | Bearer | Sign out everywhere: revokes every token issued to the account so far and closes its sockets on this instance |
+| POST | /api/password | Bearer | { oldPassword, newPassword }; revokes all other sessions and returns a fresh token |
 | GET | /api/characters | Bearer | Character list; optional `?realm=<id>` filter |
 | POST | /api/characters | Bearer | `{ name, class, realmId }`; up to three characters per realm |
 | GET | /api/dungeons/catalog | No | Enabled five-player dungeons and level ranges |
@@ -104,7 +106,7 @@ This is the first deployable authoritative foundation, not yet a complete MMO. I
 
 ## Security and operations
 
-- Set a unique GBQ_TOKEN_SECRET and rotate it deliberately (rotation invalidates all current tokens).
+- Set a unique GBQ_TOKEN_SECRET and rotate it deliberately (rotation invalidates all current tokens). To end one account's sessions without rotating, use POST /api/logout, or increment `accounts.token_version` for that account.
 - Use TLS/WSS, exact origin allowlists, firewall rules and database backups.
 - Keep rate limits and payload limits enabled; monitor connection counts and database pool saturation.
 - The current HTTP login endpoint is a foundation; before an open public launch add distributed IP/account login throttling, account recovery, abuse controls, structured metrics, alerting and a formal privacy/retention policy.

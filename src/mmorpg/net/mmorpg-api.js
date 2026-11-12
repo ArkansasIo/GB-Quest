@@ -349,5 +349,16 @@ export class GBQuestMMOApi {
   }
   send(type, payload) { return this.multiplayer.send(type, payload); }
   disconnect() { this.multiplayer.disconnect(); }
+  /** Forget this session locally (the token stays valid on the server until it expires or is revoked). */
   logout() { this.disconnect(); this.token = null; }
+  /** Sign out everywhere: the server revokes every token issued to this account, then this session is forgotten. */
+  async signOut() {
+    try { if (this.token) await this.request('/api/logout', { method: 'POST', body: {} }); }
+    finally { this.logout(); }
+  }
+  /** Change the password; the server revokes all other sessions and returns a fresh token for this one. */
+  async changePassword(oldPassword, newPassword) {
+    const result = await this.request('/api/password', { method: 'POST', body: { oldPassword, newPassword } });
+    this.token = result.token; return result;
+  }
 }
