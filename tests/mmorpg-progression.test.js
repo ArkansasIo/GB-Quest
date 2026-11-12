@@ -34,3 +34,13 @@ test('legacy class IDs are mapped before the new database constraint is applied'
     assert.match(migration, new RegExp(`WHEN '${legacy}' THEN '${current}'`));
   }
 });
+
+test('character migration stores all 15 species and six backgrounds', () => {
+  const migration = fs.readFileSync(new URL('../backend/migrations/010_character_species_background.sql', import.meta.url), 'utf8');
+  const species = ['hearthkin','thornelf','stonekin','wispling','emberborn','burrowkin','twinblood','tuskborn','drakkin','hornfolk','felinar','pipkin','lunari','wolfkin','starkin'];
+  const backgrounds = ['soldier','scholar','wanderer','urchin','acolyte','envoy'];
+  for (const id of species) assert.ok(migration.includes(`'${id}'`), id);
+  for (const id of backgrounds) assert.ok(migration.includes(`'${id}'`), id);
+  assert.match(migration, /ADD COLUMN IF NOT EXISTS species/);
+  assert.match(migration, /ADD COLUMN IF NOT EXISTS background/);
+});
