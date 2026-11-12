@@ -86,7 +86,7 @@ test('MMORPG API supports region selection, realm-scoped characters and persiste
   api.token = 'realm-token';
   await api.regions();
   await api.realms('lordeon');
-  await api.createCharacter('Aelwyn', 'ranger', 'moonfall');
+  await api.createCharacter('Aelwyn', 'strider', 'moonfall');
   await api.characters('moonfall');
   await api.whispers('character-1', { withCharacterId: 'character-2', limit: 25 });
   await api.sendWhisper('character-1', 'character-2', 'Meet at the gate');
