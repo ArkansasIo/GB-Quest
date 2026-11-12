@@ -86,7 +86,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(character.class, 'strider');
     assert.equal(character.species, 'thornelf');
     assert.equal(character.background, 'scholar');
-    const multiplayerCreate = await fetch(base + '/api/characters', {
+    const secondCreate = await fetch(base + '/api/characters', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
       body: JSON.stringify({ name: 'Recip' + crypto.randomBytes(4).toString('hex'), class: 'chaplain' })
@@ -195,7 +195,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal(secondRegister.status, 201);
     const secondAccount = await secondRegister.json();
-    const secondCreate = await fetch(base + '/api/characters', {
+    const multiplayerCreate = await fetch(base + '/api/characters', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + secondAccount.token },
       body: JSON.stringify({ name: 'Multi' + crypto.randomBytes(4).toString('hex'), class: 'warden', realmId: character.realm_id })
