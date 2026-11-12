@@ -348,6 +348,7 @@ function attachSocket(ws, req) {
           guildId=g.rows[0].id;
           await tx.query("INSERT INTO guild_members(guild_id,character_id,rank) VALUES($1,$2,'leader')",
             [guildId,state.character.id]);
+          await tx.query('INSERT INTO guild_bank_balances(guild_id,gold) VALUES($1,0)',[guildId]);
           await tx.query('COMMIT');
         } catch(e) {
           await tx.query('ROLLBACK').catch(()=>{});
@@ -356,6 +357,52 @@ function attachSocket(ws, req) {
         } finally {tx.release();}
         state.guildId=guildId;
         send(ws,'guild.snapshot',{guild:await guildSnapshot(guildId)});
+        return;
+      }
+
+      if(msg.type==='guild.bank.balance') {
+        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
+        const member=await pool.query('SELECT 1 FROM guild_members WHERE guild_id=$1 AND character_id=$2',
+          [state.guildId,state.character.id]);
+        if(!member.rowCount) {state.guildId=null;return send(ws,'error',{code:'not_in_guild'});}
+        const balance=await pool.query('SELECT gold FROM guild_bank_balances WHERE guild_id=$1',[state.guildId]);
+        send(ws,'guild.bank.balance',{guildId:state.guildId,gold:balance.rows[0]?.gold||'0'});
+        return;
+      }
+      if(msg.type==='guild.bank.deposit'||msg.type==='guild.bank.withdraw') {
+        if(!state.guildId) return send(ws,'error',{code:'not_in_guild'});
+        const action=msg.type.endsWith('deposit')?'deposit':'withdraw';
+        const raw=String(msg.payload.amount??'');
+        if(!/^[1-9][0-9]{0,17}$/.test(raw)) return send(ws,'error',{code:'invalid_guild_bank_amount'});
+        const amount=BigInt(raw);
+        const tx=await pool.connect(); let walletGold,guildGold;
+        try {
+          await tx.query('BEGIN');
+          const member=await tx.query('SELECT rank FROM guild_members WHERE guild_id=$1 AND character_id=$2 FOR UPDATE',
+            [state.guildId,state.character.id]);
+          if(!member.rowCount) {await tx.query('ROLLBACK');state.guildId=null;return send(ws,'error',{code:'not_in_guild'});}
+          if(action==='withdraw'&&!['leader','officer'].includes(member.rows[0].rank)) {
+            await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_bank_withdraw_permission_denied'});
+          }
+          const wallet=await tx.query('SELECT gold FROM characters WHERE id=$1 FOR UPDATE',[state.character.id]);
+          const vault=await tx.query('SELECT gold FROM guild_bank_balances WHERE guild_id=$1 FOR UPDATE',[state.guildId]);
+          if(!wallet.rowCount||!vault.rowCount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'guild_bank_unavailable'});}
+          const walletBefore=BigInt(wallet.rows[0].gold),vaultBefore=BigInt(vault.rows[0].gold);
+          if(action==='deposit'&&walletBefore<amount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'insufficient_wallet_gold'});}
+          if(action==='withdraw'&&vaultBefore<amount) {await tx.query('ROLLBACK');return send(ws,'error',{code:'insufficient_guild_gold'});}
+          walletGold=action==='deposit'?walletBefore-amount:walletBefore+amount;
+          guildGold=action==='deposit'?vaultBefore+amount:vaultBefore-amount;
+          await tx.query('UPDATE characters SET gold=$1,updated_at=now() WHERE id=$2',[walletGold.toString(),state.character.id]);
+          await tx.query('UPDATE guild_bank_balances SET gold=$1,updated_at=now() WHERE guild_id=$2',[guildGold.toString(),state.guildId]);
+          await tx.query(`INSERT INTO guild_bank_transactions(guild_id,character_id,action,amount,wallet_gold_after,guild_gold_after)
+            VALUES($1,$2,$3,$4,$5,$6)`,
+            [state.guildId,state.character.id,action,amount.toString(),walletGold.toString(),guildGold.toString()]);
+          await tx.query('COMMIT');
+        } catch(e) {await tx.query('ROLLBACK').catch(()=>{});throw e;}
+        finally {tx.release();}
+        send(ws,'guild.bank.result',{guildId:state.guildId,action,amount:amount.toString(),
+          walletGold:walletGold.toString(),guildGold:guildGold.toString()});
+        broadcastGuild(state.guildId,'guild.bank.updated',{guildId:state.guildId,guildGold:guildGold.toString(),action});
         return;
       }
       if(msg.type==='guild.invite') {
