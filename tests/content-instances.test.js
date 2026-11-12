@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-// The instance catalogue: 76 dungeons, 28 raids, 16 trials and 18 towers (src/data_world.js, content wave 3).
+// The instance catalogue: 76 dungeons, 28 raids, 16 trials and 18 towers (src/data_world.js, content wave 3),
+// plus 28 dungeons and 7 raids in expansions 14-20 (expansion wave 4).
 const ctx = { console, window: {} };
 ctx.globalThis = ctx; ctx.window = ctx; vm.createContext(ctx);
 for (const f of ['data_rules.js', 'jobs_data.js', 'data_world.js']) vm.runInContext(fs.readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8'), ctx, { filename: f });
@@ -11,9 +12,11 @@ const get = n => vm.runInContext(n, ctx);
 const DUNGEONS = get('DUNGEONS'), RAIDS = get('RAIDS'), TRIALS = get('TRIALS'), TOWERS = get('TOWERS'), REGIONS = get('REGIONS'), BUFFS = get('BUFFS'), CONDITIONS = get('CONDITIONS');
 const THEMES = new Set(['dungeon', 'temple', 'ice', 'crypt', 'lava', 'void']);
 
-test('76 dungeons, 28 raids, 16 trials and 18 towers, each with a unique id', () => {
-  assert.equal(DUNGEONS.length, 76);
-  assert.equal(RAIDS.length, 28);
+test('76 dungeons, 28 raids, 16 trials and 18 towers (plus expansions 14-20), each with a unique id', () => {
+  assert.equal(DUNGEONS.filter(d => d.v !== 4).length, 76);
+  assert.equal(RAIDS.filter(d => d.v !== 4).length, 28);
+  assert.equal(DUNGEONS.length, 76 + 7 * 4, 'expansions 14-20 add four dungeons each');
+  assert.equal(RAIDS.length, 28 + 7, 'and a raid each');
   assert.equal(TRIALS.length, 16);
   assert.equal(TOWERS.length, 18);
   for (const list of [DUNGEONS, RAIDS, TRIALS, TOWERS]) assert.equal(new Set(list.map(x => x.id)).size, list.length);
@@ -63,5 +66,5 @@ test('gen.js builds bosses for new content after the original 350, from its own 
   const worldFill = gen.indexOf('BOSSES.length < 350'), wave3 = gen.indexOf("RNG('bosses-v3')");
   assert.ok(worldFill > 0 && wave3 > worldFill, 'content wave 3 bosses come after the world-boss fill');
   assert.match(gen, /DUNGEONS\.filter\(d => !d\.v\)/);
-  assert.match(gen, /for \(const tw of TOWERS\) if \(tw\.v\)/);
+  assert.match(gen, /for \(const tw of TOWERS\) if \(tw\.v === 3\)/);
 });

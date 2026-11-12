@@ -1,11 +1,11 @@
 'use strict';
-// ================================================================ AUDIO LIBRARY: 80 more tracks and 16 more sound effects
-// Adds 80 original tracks to the 24 core ones (TRACKS in engine.js, ARR64 in audio64.js), so both sound engines play
+// ================================================================ AUDIO LIBRARY: 101 more tracks and 16 more sound effects
+// Adds 101 original tracks to the 24 core ones (TRACKS in engine.js, ARR64 in audio64.js), so both sound engines play
 // them: the chip engine composes each from its recipe, the 64-bit engine arranges it with the instruments below.
 // Every track has a place in the game (see the selectors at the end):
-//   26 region themes      exploring each of the 13 base regions (Ardenhold: its towns) and 13 expansions   ow_<region>, ow_x1..x13
-//   26 battle themes      ordinary fights in each of those areas                          bt_<region>, bt_x1..x13
-//   13 expansion bosses   boss fights in each expansion                                    boss_x1..x13
+//   33 region themes      exploring each of the 13 base regions (Ardenhold: its towns) and 20 expansions   ow_<region>, ow_x1..x20
+//   33 battle themes      ordinary fights in each of those areas                          bt_<region>, bt_x1..x20
+//   20 expansion bosses   boss fights in each expansion                                    boss_x1..x20
 //    5 dungeon themes     crypt / ice / lava / temple / void dungeons                      dg_<theme>
 //    4 raid themes        each raid                                                        raid_<id>
 //    6 special battles    elite, arena, trial, tower boss, dungeon boss, raid boss
@@ -118,6 +118,28 @@
     ['tower_boss', 'TOWER: GUARDIAN OF THE FLOOR', 180, 55, 'minor', [0, 5, 6, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
     ['dungeon_boss', 'DUNGEON BOSS', 178, 52, 'harmonic', [0, 1, 0, 4], 'kkhhs.hhkkhhs.ss', 'dread'],
     ['raid_boss', 'RAID BOSS', 186, 50, 'phrygian', [0, 1, 5, 6], 'kkskkskskkskksss', 'epic'],
+    // ---- expansions 14-20: a theme, a battle and a boss each (21)
+    ['ow_x14', 'CLOCKWORK EMPIRE', 124, 57, 'dorian', [0, 6, 3, 4, 0, 6, 4, 4], 'k.hhs.hhk.hhs.hh', 'fire'],
+    ['ow_x15', 'TIDES OF THE LEVIATHAN', 100, 60, 'mixo', [0, 3, 6, 4, 0, 3, 4, 0], 'k..hs.h.k..hs.h.', 'harbor'],
+    ['ow_x16', 'SANDS OF ETERNITY', 104, 56, 'harmonic', [0, 1, 5, 0, 0, 1, 4, 0], 'k..k..s.k..k..s.', 'desert'],
+    ['ow_x17', 'THE HOLLOW STARS', 84, 64, 'lydian', [0, 1, 4, 5, 0, 1, 3, 4], '....h.......h...', 'mystic'],
+    ['ow_x18', 'COURTS OF THE FEY', 116, 62, 'dorian', [0, 3, 1, 4, 0, 3, 6, 4], 'k.h.s.h.k.h.s.h.', 'pastoral'],
+    ['ow_x19', 'IRON LEGION', 96, 53, 'minor', [0, 5, 6, 4, 0, 5, 3, 4], 'k.k.s...k.k.s.s.', 'heroic'],
+    ['ow_x20', 'TWILIGHT OF THE GODS', 76, 50, 'harmonic', [0, 5, 1, 4, 0, 3, 1, 4], 'k.......s.......', 'sacred'],
+    ['bt_x14', 'BATTLE: BRASS AND STEAM', 168, 55, 'dorian', [0, 6, 3, 4], 'kkhhs.hhk.hhs.hs', 'battle'],
+    ['bt_x15', 'BATTLE: STORM SURGE', 164, 58, 'mixo', [0, 6, 4, 3], 'k.hhs.hhk.hhs.hh', 'battle'],
+    ['bt_x16', 'BATTLE: SANDSTORM', 166, 54, 'harmonic', [0, 1, 5, 4], 'k.k.s.hhk.k.s.hs', 'desert'],
+    ['bt_x17', 'BATTLE: FALLING STARS', 162, 60, 'lydian', [0, 1, 4, 3], 'k.hhs.hhk.hhs.hh', 'eerie'],
+    ['bt_x18', 'BATTLE: WILD HUNT', 172, 59, 'dorian', [0, 3, 6, 4], 'k.hhs.hhk.hks.hh', 'tribal'],
+    ['bt_x19', 'BATTLE: SHIELD AND SPEAR', 168, 52, 'minor', [0, 5, 6, 4], 'kkhhs.hhkkhhs.hs', 'epic'],
+    ['bt_x20', 'BATTLE: GODS AT WAR', 176, 50, 'phrygian', [0, 1, 6, 5], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x14', 'BOSS: THE ENGINE KING', 184, 52, 'dorian', [0, 1, 6, 4], 'kkskkskskkskksss', 'fire'],
+    ['boss_x15', 'BOSS: THE LEVIATHAN', 178, 48, 'phrygian', [0, 1, 5, 6], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x16', 'BOSS: THE TIMELESS PHARAOH', 182, 53, 'harmonic', [0, 1, 0, 5], 'kkskkskskkskksss', 'desert'],
+    ['boss_x17', 'BOSS: THE STAR DEVOURER', 180, 55, 'lydian', [0, 1, 5, 4], 'kkhhs.hhkkhhs.ss', 'dread'],
+    ['boss_x18', 'BOSS: THE ERLKING', 186, 57, 'dorian', [0, 6, 1, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x19', 'BOSS: THE DEATHLESS GENERAL', 182, 50, 'minor', [0, 5, 6, 0], 'kkskkskskkskksss', 'epic'],
+    ['boss_x20', 'BOSS: THE GOD-KING', 190, 48, 'harmonic', [0, 1, 5, 4], 'kkskkskskkskksss', 'sacred'],
   ];
   const NAMES = {};
   for (const [id, name, bpm, root, scale, prog, drums, arr] of L) {

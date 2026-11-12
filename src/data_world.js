@@ -303,6 +303,13 @@ const BUILD = {
     'Whispers of Valhalla',
     'Nightshade Chronicles',
     'Mythical Meadowlands',
+    'Clockwork Empire',
+    'Tides of the Leviathan',
+    'Sands of Eternity',
+    'The Hollow Stars',
+    'Courts of the Fey',
+    'Iron Legion',
+    'Twilight of the Gods',
   ],
   version: '2.8.0',
   build: 'B2026.11.10',
@@ -329,6 +336,13 @@ const EXPANSION_STORIES = BUILD.expansions.map((name, index) => {
     { subtitle: 'THE OLD GODS ARE LISTENING', art: 'px_waypoint', threat: 'A forgotten song travels north, waking heroes from another age.', hook: 'Answer the call and choose what the legends leave behind.' },
     { subtitle: 'DARKNESS LEARNS YOUR NAME', art: 'enemy_wraith', threat: 'The shadows begin to move before their owners do.', hook: 'Hunt the first shade before night takes root in every heart.' },
     { subtitle: 'A WORLD LEFT TO GROW WILD', art: 'px_tower', threat: 'Beyond the old roads, a green horizon hides a new beginning.', hook: 'Discover the meadowlands and decide what kind of world can grow.' },
+    { subtitle: 'THE GEARS NEVER STOP', art: 'px_rune', threat: 'A mechanical empire wakes, and its brass armies begin to march.', hook: 'Infiltrate the Clockwork Empire and stop the Grand Engine before it winds the world down.' },
+    { subtitle: 'THE DEEP REMEMBERS', art: 'nm_dragon_0', threat: 'A leviathan older than the moon surfaces, and the tides obey only it.', hook: 'Sail the storm, gather the drowned clans, and descend into the leviathan itself.' },
+    { subtitle: 'TIME IS A DESERT', art: 'px_skull', threat: 'A pharaoh who stole time rewinds the desert, unmaking everything that came after.', hook: 'Cross the endless dunes and break the hourglass before your own past is undone.' },
+    { subtitle: 'THE SKY IS EMPTYING', art: 'px_gem', threat: 'Something beyond the sky is eating the stars, and the falling husks bring horrors with them.', hook: 'Follow the fallen stars to the vault where the light is being stolen.' },
+    { subtitle: 'EVERY BARGAIN HAS A PRICE', art: 'px_symbol', threat: 'The Summer and Winter courts break their ancient truce and spill into the mortal world.', hook: 'Bargain with tricksters and queens, and end the fey war before it ends you.' },
+    { subtitle: 'THE DRUMS OF WAR', art: 'px_skull', threat: 'The Iron Legion, an army that cannot die, marches south under a general who has never lost.', hook: 'Rally the free kingdoms, break the siege lines and storm the Iron Citadel.' },
+    { subtitle: 'THE LAST DAWN', art: 'nm_dragon_2', threat: 'The old gods return, not to save the world, but to end it and begin again.', hook: 'Stand at the end of all things and decide whether the world deserves a new dawn.' },
   ];
   return Object.freeze({ name, n: index + 1, ...stories[index] });
 });
@@ -618,6 +632,41 @@ const TOWER_BY_ID = Object.fromEntries(TOWERS.map(t => [t.id, t]));
 const towerSpec = def => TOWER_BY_ID[def && (def.towerId || def.id)] || TOWER;
 const towerTheme = (tw, floor) => tw.themes[Math.floor(floor / 20) % tw.themes.length];
 
+// ================================================================ expansion wave 4: expansions 14-20 (v: 4)
+// Seven more worlds, each with its own painted map (assets/gm_x<N>.png), three regions (8 zones), four dungeons
+// (two DEPTHS, a sanctum and an undercroft) and a raid. Everything carries v: 4: gen.js builds their bosses in a
+// pass of their own (RNG 'bosses-v4') after content wave 3, and keeps the new zones out of the world-boss fill, so
+// no existing boss id, name or location changes.
+const EXPANSIONS_V4 = [
+  { n: 14, id: 'x14', name: 'CLOCKWORK EMPIRE', lvl: [80, 200], biomes: ['badlands', 'volcanic', 'crystal'], raid: 'THE GRAND ENGINE', theme: 'lava', desc: 'A city of gears marches on the world.',
+    zones: ['BRASSGATE', 'COGWORK CANYON', 'FOUNDRY SPIRES'], sanctum: ['GEARHEART ARCHIVE', 'void'] },
+  { n: 15, id: 'x15', name: 'TIDES OF THE LEVIATHAN', lvl: [140, 280], biomes: ['coast', 'marsh', 'jungle'], raid: "THE LEVIATHAN'S GULLET", theme: 'temple', desc: 'A sea-god rises and drowns the coasts.',
+    zones: ['STORMWRACK SHORE', 'KELPDROWN FEN', 'CORALWOOD'], sanctum: ['TIDECALLER SHRINE', 'temple'] },
+  { n: 16, id: 'x16', name: 'SANDS OF ETERNITY', lvl: [200, 360], biomes: ['badlands', 'coast', 'volcanic'], raid: 'THE HOURGLASS TOMB', theme: 'crypt', desc: 'Time runs backwards in a buried kingdom.',
+    zones: ['DUNESEA', 'MIRAGE COAST', 'SUNFORGE WASTES'], sanctum: ["ORACLE'S SANDCOURT", 'temple'] },
+  { n: 17, id: 'x17', name: 'THE HOLLOW STARS', lvl: [280, 440], biomes: ['crystal', 'dusk', 'snow'], raid: 'THE STARLESS VAULT', theme: 'void', desc: 'The stars fall dark, one by one.',
+    zones: ['STARFALL CRATER', 'UMBRAL STEPPE', 'HOARFROST REACH'], sanctum: ['ASTRAL ORRERY', 'void'] },
+  { n: 18, id: 'x18', name: 'COURTS OF THE FEY', lvl: [360, 520], biomes: ['jungle', 'crystal', 'meadow'], raid: 'THE THORNED THRONE', theme: 'temple', desc: 'The fey courts go to war on mortal ground.',
+    zones: ['MOONPETAL WILDS', 'GLAMOUR GLADE', 'EVERSPRING'], sanctum: ['HALL OF MASKS', 'void'] },
+  { n: 19, id: 'x19', name: 'IRON LEGION', lvl: [460, 640], biomes: ['snow', 'badlands', 'volcanic'], raid: 'THE IRON CITADEL', theme: 'ice', desc: 'An undying army marches out of the north.',
+    zones: ['WARFROST PLAINS', 'LEGION SCAR', 'ANVIL MOUNTAINS'], sanctum: ['LEGION WAR FORGE', 'lava'] },
+  { n: 20, id: 'x20', name: 'TWILIGHT OF THE GODS', lvl: [620, 720], biomes: ['dusk', 'volcanic', 'crystal'], raid: 'THE FALL OF HEAVEN', theme: 'void', desc: 'The gods themselves come to end the world.',
+    zones: ['ASHEN OLYMPUS', 'GODFALL RIFT', 'LAST DAWN'], sanctum: ['PANTHEON RUINS', 'temple'] },
+];
+EXPANSIONS_V4.forEach(({ zones, sanctum, ...x }) => {
+  const xi = EXPANSIONS.push(Object.assign(x, { world: true, v: 4 })) - 1;
+  EXP_ZONE_NAMES.push(zones);
+  x.biomes.forEach((b, i) => {
+    const span = (x.lvl[1] - x.lvl[0]) / 3;
+    REGIONS.push({ id: `${x.id}_${i}`, name: zones[i], biome: b, lvl: [Math.round(x.lvl[0] + span * i), Math.round(x.lvl[0] + span * (i + 1))],
+      act: 0, exp: x.n, gx: 5 + xi, gy: i, ex: i, desc: x.desc, v: 4 });
+  });
+  [0, 1].forEach(i => DUNGEONS.push({ id: `dg_${x.id}_${i}`, zone: `${x.id}_${i}`, name: `${zones[i]} DEPTHS`, theme: x.theme, lvl: x.lvl[0] + (i + 1) * 30, size: 4, exp: x.n, v: 4 }));
+  DUNGEONS.push({ id: `dg_${x.id}_s`, zone: `${x.id}_1`, name: sanctum[0], theme: sanctum[1], lvl: x.lvl[0] + 75, size: 4, exp: x.n, v: 4 });
+  DUNGEONS.push({ id: `dg_${x.id}_2`, zone: `${x.id}_2`, name: `${zones[2]} UNDERCROFT`, theme: x.theme, lvl: x.lvl[0] + 90, size: 4, exp: x.n, v: 4 });
+  RAIDS.push({ id: 'rd_' + x.id, name: x.raid, theme: x.theme, lvl: x.lvl[1] - 10, bosses: 5, zone: `${x.id}_2`, exp: x.n, v: 4 });
+});
+
 // Persistent campaign objectives per expansion, driven by normal travel, combat, and instance events.
 const EXPANSION_CAMPAIGNS = EXPANSIONS.map((x, i) => Object.freeze({
   exp: x.n, title: x.name, icon: `exp_icon_${x.n}`, intro: EXPANSION_STORIES[i].hook,
@@ -679,14 +728,14 @@ const ZONES = [];
   REGIONS.forEach(rg => {
     let cells;
     if (rg.town) cells = [[rg.gx * 2, rg.gy * 2], [rg.gx * 2 + 1, rg.gy * 2]];
-    else if (rg.exp) { const bx = 10 + (rg.exp - 1) * 3, w = rg.ex === 2 ? 2 : 3; cells = Array.from({ length: w }, (_, i) => [bx + i, rg.ex]); }
+    else if (rg.exp) { const bx = 10 + (rg.exp - 1) * 3 + (rg.exp > 13 ? 1 : 0), w = rg.ex === 2 ? 2 : 3; cells = Array.from({ length: w }, (_, i) => [bx + i, rg.ex]); }
     else cells = [[rg.gx * 2, rg.gy * 2], [rg.gx * 2 + 1, rg.gy * 2], [rg.gx * 2, rg.gy * 2 + 1], [rg.gx * 2 + 1, rg.gy * 2 + 1]];
     const span = (rg.lvl[1] - rg.lvl[0]) / cells.length;
     cells.forEach(([fx, fy], i) => {
       const subs = SUB_BIOMES[rg.biome] || SUB_BIOMES.meadow;
       ZONES.push({ id: i === 0 ? rg.id : `${rg.id}_s${i}`, region: rg.id, name: rg.town ? (i ? 'HARBOR WARD' : rg.name) : (rg.name + (SUB_SUFFIX[i] ? ' ' + SUB_SUFFIX[i] : '')).slice(0, 22),
         sub: rg.town ? (i ? 'DOCKS' : 'CITY') : subs[i % subs.length], biome: rg.biome, lvl: rg.town ? rg.lvl : [Math.round(rg.lvl[0] + span * i), Math.round(rg.lvl[0] + span * (i + 1))],
-        fx, fy, town: rg.town, hand: rg.hand && i === 0, exitPos: i === 0 ? rg.exitPos : null, act: rg.act, exp: rg.exp, last: i === cells.length - 1, desc: rg.desc });
+        fx, fy, town: rg.town, hand: rg.hand && i === 0, exitPos: i === 0 ? rg.exitPos : null, act: rg.act, exp: rg.exp, last: i === cells.length - 1, desc: rg.desc, v: rg.v });
     });
   });
 })();
@@ -714,6 +763,13 @@ const REGION_PINS = {
   x11_0: [0.32, 0.3, 'FJORDHOLM'], x11_1: [0.7, 0.48, 'SHIELD COAST'], x11_2: [0.48, 0.72, 'MEAD HALLS'],
   x12_0: [0.42, 0.34, 'GLOOMHAVEN'], x12_1: [0.7, 0.62, 'NIGHTVINE'], x12_2: [0.36, 0.62, 'SHADE MARSH'],
   x13_0: [0.4, 0.38, 'GREENHEART'], x13_1: [0.64, 0.58, 'WILDROOT'], x13_2: [0.3, 0.66, 'SUNSHORE'],
+  x14_0: [0.34, 0.36, 'BRASSGATE'], x14_1: [0.66, 0.52, 'COGWORK'], x14_2: [0.32, 0.72, 'FOUNDRY'],
+  x15_0: [0.26, 0.36, 'STORMWRACK'], x15_1: [0.5, 0.62, 'KELPDROWN'], x15_2: [0.76, 0.4, 'CORALWOOD'],
+  x16_0: [0.44, 0.36, 'DUNESEA'], x16_1: [0.3, 0.7, 'MIRAGE'], x16_2: [0.72, 0.56, 'SUNFORGE'],
+  x17_0: [0.3, 0.48, 'STARFALL'], x17_1: [0.6, 0.38, 'UMBRAL'], x17_2: [0.78, 0.66, 'HOARFROST'],
+  x18_0: [0.32, 0.4, 'MOONPETAL'], x18_1: [0.74, 0.4, 'GLAMOUR'], x18_2: [0.52, 0.66, 'EVERSPRING'],
+  x19_0: [0.5, 0.28, 'WARFROST'], x19_1: [0.34, 0.64, 'LEGION SCAR'], x19_2: [0.7, 0.68, 'ANVIL'],
+  x20_0: [0.24, 0.44, 'OLYMPUS'], x20_1: [0.52, 0.56, 'GODFALL'], x20_2: [0.8, 0.44, 'LAST DAWN'],
 };
 function zonePin(z) {
   const p = REGION_PINS[z.region] || [0.5, 0.5, ''];
@@ -721,7 +777,7 @@ function zonePin(z) {
   const off = sibs.length > 3 && !REGIONS.find(r => r.id === z.region).exp ? [[0, 0], [0.028, 0], [0, 0.04], [0.028, 0.04]][i] : [i * 0.026, 0];
   return [p[0] + off[0] - 0.012, p[1] + off[1] - 0.016];
 }
-// which painted map a zone lives on: 0 = VALENDRIA (base game + expansions 1-5), else the expansion number
+// which painted map a zone lives on: 0 = VALENDRIA (base game + expansions 1-5), else the expansion number (6-20)
 const worldOf = z => { const x = z && z.exp ? EXPANSIONS.find(e => e.n === z.exp) : null; return x && x.world ? x.n : 0; };
 const worldName = n => n ? EXPANSIONS.find(e => e.n === n).name : 'VALENDRIA';
 const worldImg = (n, small) => n ? `gm_x${n}${small ? '_s' : ''}` : (small ? 'gm_dunia_s' : 'gm_dunia');

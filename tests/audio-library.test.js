@@ -18,11 +18,11 @@ const TRACKS = vm.runInContext('TRACKS', ctx), SCALES = vm.runInContext('SCALES'
 const SFX_BANK = vm.runInContext('SFX_BANK', ctx), SFX_NAMES = vm.runInContext('SFX_NAMES', ctx), M = ctx.GBQMusic;
 const INSTRUMENTS = new Set(['strings', 'pad', 'brass', 'flute', 'harp', 'piano', 'bell', 'choir', 'organ', 'synth', 'bass', 'slap']);
 
-test('the library adds 80 named tracks to the 24 core ones, without replacing any', () => {
+test('the library adds 101 named tracks to the 24 core ones, without replacing any', () => {
   assert.equal(coreTracks, 24);
-  assert.equal(M.count, 80);
-  assert.equal(Object.keys(TRACKS).length, 104);
-  assert.equal(new Set(Object.values(M.NAMES)).size, 80, 'track names are unique');
+  assert.equal(M.count, 101);
+  assert.equal(Object.keys(TRACKS).length, 125);
+  assert.equal(new Set(Object.values(M.NAMES)).size, 101, 'track names are unique');
 });
 
 test('every new track has a valid recipe and a 64-bit arrangement', () => {
@@ -42,7 +42,7 @@ test('every region, expansion, dungeon theme and raid has music where it plays',
   for (const r of regions) {
     assert.equal(M.zoneMusic({ region: r }, 'field'), 'ow_' + r);
   }
-  for (let x = 1; x <= 13; x++) assert.equal(M.zoneMusic({ exp: x, region: 'x' }, 'field'), 'ow_x' + x);
+  for (let x = 1; x <= 20; x++) assert.equal(M.zoneMusic({ exp: x, region: 'x' }, 'field'), 'ow_x' + x);
   assert.equal(M.zoneMusic({ town: true, region: 'ardenhold' }, 'town'), 'ow_ardenhold', "the capital's towns play its theme");
   assert.equal(M.zoneMusic({ town: true, region: 'elsewhere' }, 'town'), 'town');
   for (const th of ['crypt', 'ice', 'lava', 'temple', 'void']) assert.equal(M.roomMusic('dungeon', { theme: th }, 'dungeon'), 'dg_' + th);

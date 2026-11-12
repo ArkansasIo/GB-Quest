@@ -1,6 +1,6 @@
 # Dungeons, raids, trials and towers
 
-76 dungeons, 28 raids, 16 trials and 18 towers, from `src/data_world.js`. Entries marked **new** were added in content wave 3; their bosses are generated after the original 350, so existing boss ids and saves are unchanged. Every dungeon and raid is listed in the **Activity Finder** and **Looking for Group** once you are within 6 levels; a region entrance on the map opens all of that region's dungeons (or raids).
+104 dungeons, 35 raids, 16 trials and 18 towers, from `src/data_world.js`: the 76 dungeons and 28 raids below, plus 28 dungeons and 7 raids in expansions 14-20 (listed at the end). Entries marked **new** were added in content wave 3; their bosses are generated after the original 350, so existing boss ids and saves are unchanged. Every dungeon and raid is listed in the **Activity Finder** and **Looking for Group** once you are within 6 levels; a region entrance on the map opens all of that region's dungeons (or raids).
 
 ## Dungeons (76)
 
@@ -161,3 +161,43 @@ Bosses every 10 floors, mini-bosses every 5. Progress is saved per tower; the Sp
 | 16 | NIGHTSHADE SPIRE | 80 | 580-660 | void, crypt | new |
 | 17 | WORLDTREE ASCENT | 90 | 610-700 | temple, dungeon | new |
 | 18 | THE ENDLESS STAIR | 100 | 620-720 | void, crypt, lava, ice, temple | new |
+
+## Expansions 14-20
+
+| Dungeon or raid | Expansion | Region | Theme | Level | Bosses |
+|---|---|---|---|---|---|
+| BRASSGATE DEPTHS | CLOCKWORK EMPIRE | BRASSGATE | lava | 110 | 3 |
+| COGWORK CANYON DEPTHS | CLOCKWORK EMPIRE | COGWORK CANYON | lava | 140 | 3 |
+| GEARHEART ARCHIVE | CLOCKWORK EMPIRE | COGWORK CANYON | void | 155 | 3 |
+| FOUNDRY SPIRES UNDERCROFT | CLOCKWORK EMPIRE | FOUNDRY SPIRES | lava | 170 | 3 |
+| **THE GRAND ENGINE** (raid) | CLOCKWORK EMPIRE | FOUNDRY SPIRES | lava | 190 | 5 |
+| STORMWRACK SHORE DEPTHS | TIDES OF THE LEVIATHAN | STORMWRACK SHORE | temple | 170 | 3 |
+| KELPDROWN FEN DEPTHS | TIDES OF THE LEVIATHAN | KELPDROWN FEN | temple | 200 | 3 |
+| TIDECALLER SHRINE | TIDES OF THE LEVIATHAN | KELPDROWN FEN | temple | 215 | 3 |
+| CORALWOOD UNDERCROFT | TIDES OF THE LEVIATHAN | CORALWOOD | temple | 230 | 3 |
+| **THE LEVIATHAN'S GULLET** (raid) | TIDES OF THE LEVIATHAN | CORALWOOD | temple | 270 | 5 |
+| DUNESEA DEPTHS | SANDS OF ETERNITY | DUNESEA | crypt | 230 | 3 |
+| MIRAGE COAST DEPTHS | SANDS OF ETERNITY | MIRAGE COAST | crypt | 260 | 3 |
+| ORACLE'S SANDCOURT | SANDS OF ETERNITY | MIRAGE COAST | temple | 275 | 3 |
+| SUNFORGE WASTES UNDERCROFT | SANDS OF ETERNITY | SUNFORGE WASTES | crypt | 290 | 3 |
+| **THE HOURGLASS TOMB** (raid) | SANDS OF ETERNITY | SUNFORGE WASTES | crypt | 350 | 5 |
+| STARFALL CRATER DEPTHS | THE HOLLOW STARS | STARFALL CRATER | void | 310 | 3 |
+| UMBRAL STEPPE DEPTHS | THE HOLLOW STARS | UMBRAL STEPPE | void | 340 | 3 |
+| ASTRAL ORRERY | THE HOLLOW STARS | UMBRAL STEPPE | void | 355 | 3 |
+| HOARFROST REACH UNDERCROFT | THE HOLLOW STARS | HOARFROST REACH | void | 370 | 3 |
+| **THE STARLESS VAULT** (raid) | THE HOLLOW STARS | HOARFROST REACH | void | 430 | 5 |
+| MOONPETAL WILDS DEPTHS | COURTS OF THE FEY | MOONPETAL WILDS | temple | 390 | 3 |
+| GLAMOUR GLADE DEPTHS | COURTS OF THE FEY | GLAMOUR GLADE | temple | 420 | 3 |
+| HALL OF MASKS | COURTS OF THE FEY | GLAMOUR GLADE | void | 435 | 3 |
+| EVERSPRING UNDERCROFT | COURTS OF THE FEY | EVERSPRING | temple | 450 | 3 |
+| **THE THORNED THRONE** (raid) | COURTS OF THE FEY | EVERSPRING | temple | 510 | 5 |
+| WARFROST PLAINS DEPTHS | IRON LEGION | WARFROST PLAINS | ice | 490 | 3 |
+| LEGION SCAR DEPTHS | IRON LEGION | LEGION SCAR | ice | 520 | 3 |
+| LEGION WAR FORGE | IRON LEGION | LEGION SCAR | lava | 535 | 3 |
+| ANVIL MOUNTAINS UNDERCROFT | IRON LEGION | ANVIL MOUNTAINS | ice | 550 | 3 |
+| **THE IRON CITADEL** (raid) | IRON LEGION | ANVIL MOUNTAINS | ice | 630 | 5 |
+| ASHEN OLYMPUS DEPTHS | TWILIGHT OF THE GODS | ASHEN OLYMPUS | void | 650 | 3 |
+| GODFALL RIFT DEPTHS | TWILIGHT OF THE GODS | GODFALL RIFT | void | 680 | 3 |
+| PANTHEON RUINS | TWILIGHT OF THE GODS | GODFALL RIFT | temple | 695 | 3 |
+| LAST DAWN UNDERCROFT | TWILIGHT OF THE GODS | LAST DAWN | void | 710 | 3 |
+| **THE FALL OF HEAVEN** (raid) | TWILIGHT OF THE GODS | LAST DAWN | void | 710 | 5 |

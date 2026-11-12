@@ -94,14 +94,20 @@ const BOSSES = [];
   RAIDS.filter(d => !d.v).forEach(raidBosses);
   TRIALS.filter(t => !t.v).forEach(trialBosses);
   for (let f = 5; f <= TOWER.floors; f += 5) add('tower', 'tower', TOWER.baseLvl + f * TOWER.perFloor, r.pick(BESTIARY).id, { floor: f });
-  const wild = ZONES.filter(z => !z.town);
+  const wild = ZONES.filter(z => !z.town && !z.v); // expansions 14-20 get theirs in the v4 pass
   for (let i = 0; BOSSES.length < 350; i++) { const z = wild[i % wild.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild.length) }); }
   // content wave 3 (v: 3): new dungeons, raids, trials and towers, from their own seed, after the original 350
   r = RNG('bosses-v3');
-  DUNGEONS.filter(d => d.v).forEach(dungeonBosses);
-  RAIDS.filter(d => d.v).forEach(raidBosses);
-  TRIALS.filter(t => t.v).forEach(trialBosses);
-  for (const tw of TOWERS) if (tw.v) for (let f = 5; f <= tw.floors; f += 5) add('tower', tw.id, tw.baseLvl + f * tw.perFloor, r.pick(BESTIARY).id, { floor: f });
+  DUNGEONS.filter(d => d.v === 3).forEach(dungeonBosses);
+  RAIDS.filter(d => d.v === 3).forEach(raidBosses);
+  TRIALS.filter(t => t.v === 3).forEach(trialBosses);
+  for (const tw of TOWERS) if (tw.v === 3) for (let f = 5; f <= tw.floors; f += 5) add('tower', tw.id, tw.baseLvl + f * tw.perFloor, r.pick(BESTIARY).id, { floor: f });
+  // expansion wave 4 (v: 4): expansions 14-20, from their own seed: their dungeons and raids, and two world bosses per zone
+  r = RNG('bosses-v4');
+  DUNGEONS.filter(d => d.v === 4).forEach(dungeonBosses);
+  RAIDS.filter(d => d.v === 4).forEach(raidBosses);
+  const wild4 = ZONES.filter(z => !z.town && z.v === 4);
+  for (let i = 0; i < wild4.length * 2; i++) { const z = wild4[i % wild4.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild4.length) }); }
 })();
 const BOSS_BY_ID = Object.fromEntries(BOSSES.map(b => [b.id, b]));
 

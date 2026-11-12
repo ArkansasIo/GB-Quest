@@ -14,15 +14,15 @@ const WALK = new Set(JSON.parse(vm.runInContext('JSON.stringify([...WALKABLE])',
 const NEED = { VILLAGE: ['inn', 'vendor', 'shrine'], TOWN: ['inn', 'vendor', 'blacksmith', 'stable', 'mail', 'bank', 'shrine'] };
 
 test('every wild region hub has its village or town buildings', () => {
-  assert.equal(hubs.length, 50);
-  assert.ok(hubs.filter(h => h.kind === 'TOWN').length >= 15);
+  assert.equal(hubs.length, 50 + 21, '50 original hubs and 21 in expansions 14-20');
+  assert.ok(hubs.filter(h => h.kind === 'TOWN').length >= 22);
   let total = 0;
   for (const h of hubs) {
     const svcs = h.buildings.map(b => b.svc);
     for (const s of NEED[h.kind]) assert.ok(svcs.includes(s), `${h.id} (${h.kind}) has no ${s}`);
     total += h.buildings.length;
   }
-  assert.ok(total >= 350, `only ${total} buildings`);
+  assert.ok(total >= 500, `only ${total} buildings`);
 });
 
 test('each building is a solid 2x2 footprint with a reachable door and a known sprite', () => {
