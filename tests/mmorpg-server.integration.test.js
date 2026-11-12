@@ -492,6 +492,23 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ characterId: character.id, dungeonId: 'map-instance-20', role: 'tank' })
     });
     assert.equal(ineligibleQueue.status, 409);
+    const expireQueuePool = new Pool({ connectionString: process.env.GBQ_TEST_DATABASE_URL });
+    try {
+      await expireQueuePool.query(
+        "UPDATE dungeon_queue_entries SET expires_at=now()-interval '1 second' WHERE character_id=$1 AND status='queued'",
+        [character.id]
+      );
+    } finally { await expireQueuePool.end(); }
+    const expiredQueueStatus = await fetch(base + `/api/dungeons/queue/${character.id}`, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal((await expiredQueueStatus.json()).status, 'not_queued');
+    const queueRejoin = await fetch(base + '/api/dungeons/queue', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ characterId: character.id, dungeonId: 'map-instance-01', role: 'tank' })
+    });
+    assert.equal(queueRejoin.status, 201);
     const queueLeave = await fetch(base + `/api/dungeons/queue/${character.id}`, {
       method: 'DELETE', headers: { authorization: 'Bearer ' + token }
     });
