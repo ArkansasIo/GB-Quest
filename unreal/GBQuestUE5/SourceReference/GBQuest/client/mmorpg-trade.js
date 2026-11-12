@@ -21,6 +21,15 @@ class GBQuestMMOApi {
   characters() { return this.request('/api/characters'); }
   createCharacter(name,characterClass) { return this.request('/api/characters',{method:'POST',body:{name,class:characterClass}}); }
   inventory(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/inventory'); }
+  dungeonCatalog() { return this.request('/api/dungeons/catalog',{auth:false}); }
+  joinDungeonQueue(characterId,dungeonId,role) {
+    return this.request('/api/dungeons/queue',{method:'POST',body:{characterId,dungeonId,role}});
+  }
+  dungeonQueueStatus(characterId) { return this.request('/api/dungeons/queue/'+encodeURIComponent(characterId)); }
+  leaveDungeonQueue(characterId) { return this.request('/api/dungeons/queue/'+encodeURIComponent(characterId),{method:'DELETE'}); }
+  dungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)); }
+  startDungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)+'/start',{method:'POST',body:{}}); }
+  completeDungeonGroup(groupId) { return this.request('/api/dungeons/groups/'+encodeURIComponent(groupId)+'/complete',{method:'POST',body:{}}); }
   trades(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades'); }
   createTrade(id,toCharacterId,offer={}) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades',{method:'POST',body:{...offer,toCharacterId}}); }
   acceptTrade(id) { return this.request('/api/trades/'+encodeURIComponent(id)+'/accept',{method:'POST',body:{}}); }
