@@ -94,6 +94,12 @@ export class GBQuestMMOApi {
   dungeonGroup(groupId) {
     return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId));
   }
+  startDungeonGroup(groupId) {
+    return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId) + '/start', { method: 'POST', body: {} });
+  }
+  completeDungeonGroup(groupId) {
+    return this.request('/api/dungeons/groups/' + encodeURIComponent(groupId) + '/complete', { method: 'POST', body: {} });
+  }
   trades(characterId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/trades');
   }
