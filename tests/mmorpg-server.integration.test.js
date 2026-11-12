@@ -304,7 +304,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       body: JSON.stringify({ questId: 'first_slime' })
     });
     assert.equal(acceptQuest.status, 201);
-    let sequence = 5, defeated = false;
+    let sequence = 9, defeated = false;
     for (let attempt = 0; attempt < 8 && !defeated; attempt++) {
       send(sequence++, 'combat.intent', { targetId: '00000000-0000-4000-8000-000000000001' });
       const combat = await waitFor('combat.resolved');
