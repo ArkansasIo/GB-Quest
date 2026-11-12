@@ -72,3 +72,30 @@ test('multiplayer transport permits ws only on loopback development hosts', () =
   client.disconnect();
   assert.throws(() => client.connect('ws://realm.example.test/ws', 'token'), /wss/);
 });
+
+test('MMORPG API supports region selection, realm-scoped characters and persistent whispers', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ ok: true }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'realm-token';
+  await api.regions();
+  await api.realms('lordeon');
+  await api.createCharacter('Aelwyn', 'ranger', 'moonfall');
+  await api.characters('moonfall');
+  await api.whispers('character-1', { withCharacterId: 'character-2', limit: 25 });
+  await api.sendWhisper('character-1', 'character-2', 'Meet at the gate');
+  assert.equal(calls[0].url, 'https://realm.example.test/api/regions');
+  assert.equal(calls[0].options.headers.authorization, undefined);
+  assert.equal(calls[1].url, 'https://realm.example.test/api/realms?region=lordeon');
+  assert.deepEqual(JSON.parse(calls[2].options.body), { name: 'Aelwyn', class: 'ranger', realmId: 'moonfall' });
+  assert.equal(calls[3].url, 'https://realm.example.test/api/characters?realm=moonfall');
+  assert.equal(calls[4].url, 'https://realm.example.test/api/characters/character-1/whispers?with=character-2&limit=25');
+  assert.deepEqual(JSON.parse(calls[5].options.body), { toCharacterId: 'character-2', text: 'Meet at the gate' });
+  assert.equal(calls[5].options.headers.authorization, 'Bearer realm-token');
+});
