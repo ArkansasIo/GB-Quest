@@ -58,7 +58,11 @@ class CollectionMenuScene extends ListScene {
   update() {
     if (nav('left')) { this.categoryIndex = (this.categoryIndex + 4) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
     if (nav('right')) { this.categoryIndex = (this.categoryIndex + 1) % 5; this.i = 0; this.top = 0; SFX.cursor(); }
-    this.navList();
+    const count = this.items().length;
+    if (count && nav('up')) { this.i = (this.i + count - 1) % count; SFX.cursor(); }
+    if (count && nav('down')) { this.i = (this.i + 1) % count; SFX.cursor(); }
+    if (this.i < this.top) this.top = this.i;
+    if (this.i >= this.top + this.rows) this.top = this.i - this.rows + 1;
     if (P('b') || P('start')) { removeScene(this); SFX.back(); return; }
     if (P('select')) return this.refresh();
     if (!P('a') || this.busy) return;
