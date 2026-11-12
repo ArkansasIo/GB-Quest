@@ -17,14 +17,16 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       PORT: String(port),
       DATABASE_URL: process.env.GBQ_TEST_DATABASE_URL,
       GBQ_TOKEN_SECRET: 'integration-test-secret-'.padEnd(48, 'x'),
-      GBQ_ALLOWED_ORIGINS: 'https://game.example.test'
+      GBQ_ALLOWED_ORIGINS: 'https://game.example.test',
+      GBQ_WS_AUTH_TIMEOUT_MS: '500',
+      GBQ_WS_HEARTBEAT_MS: '500'
     },
     stdio: ['ignore', 'pipe', 'pipe']
   });
   let logs = '';
   child.stdout.on('data', chunk => { logs += chunk.toString(); });
   child.stderr.on('data', chunk => { logs += chunk.toString(); });
-  let socket;
+  let socket, secondSocket, duplicateSocket, unauthenticatedSocket;
   try {
     let ready = false;
     for (let i = 0; i < 60; i++) {
@@ -140,6 +142,14 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal(unequip.status, 200);
 
+    // Unauthenticated sockets are closed quickly instead of consuming server resources indefinitely.
+    unauthenticatedSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
+    const unauthenticatedClose = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Unauthenticated socket was not timed out')), 3000);
+      unauthenticatedSocket.once('close', (code, reason) => { clearTimeout(timer); resolve({ code, reason: reason.toString() }); });
+    });
+    assert.equal(unauthenticatedClose.code, 4408);
+
     socket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
     const messages = [];
     socket.addEventListener('message', event => {
@@ -174,6 +184,83 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     send(4, 'chat.send', { text: 'Integration test online' });
     const chat = await waitFor('chat.message');
     assert.equal(chat.payload.text, 'Integration test online');
+
+    // A second account enters the same realm and zone. Both clients must receive
+    // the same authoritative presence, movement and chat events.
+    const secondUsername = 'mp' + crypto.randomBytes(5).toString('hex');
+    const secondRegister = await fetch(base + '/api/register', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: secondUsername, password: 'integration-password-456' })
+    });
+    assert.equal(secondRegister.status, 201);
+    const secondAccount = await secondRegister.json();
+    const secondCreate = await fetch(base + '/api/characters', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + secondAccount.token },
+      body: JSON.stringify({ name: 'Multi' + crypto.randomBytes(4).toString('hex'), class: 'warden', realmId: character.realm_id })
+    });
+    assert.equal(secondCreate.status, 201);
+    const secondCharacter = (await secondCreate.json()).character;
+
+    secondSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
+    const secondMessages = [];
+    secondSocket.on('message', data => { try { secondMessages.push(JSON.parse(data.toString())); } catch {} });
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Second WebSocket open timed out')), 5000);
+      secondSocket.once('open', () => { clearTimeout(timer); resolve(); });
+      secondSocket.once('error', error => { clearTimeout(timer); reject(error); });
+    });
+    const waitForSecond = async type => {
+      for (let i = 0; i < 100; i++) {
+        const index = secondMessages.findIndex(message => message.type === type);
+        if (index >= 0) return secondMessages.splice(index, 1)[0];
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      throw new Error(`Second client timed out waiting for ${type}; received: ${secondMessages.map(m => m.type).join(', ')}`);
+    };
+    const sendSecond = (sequence, type, payload) => secondSocket.send(JSON.stringify({ sequence, type, payload }));
+    sendSecond(1, 'authenticate', { token: secondAccount.token });
+    assert.equal((await waitForSecond('authenticated')).payload.account.id, secondAccount.account.id);
+    sendSecond(2, 'character.select', { characterId: secondCharacter.id });
+    const secondSnapshot = await waitForSecond('zone.snapshot');
+    assert.ok(secondSnapshot.payload.players.some(player => player.id === character.id), 'second player snapshot includes first player');
+    const joined = await waitFor('presence.joined');
+    assert.equal(joined.payload.id, secondCharacter.id);
+
+    sendSecond(3, 'movement.input', { dx: 1, dy: 0 });
+    const secondMoved = await waitForSecond('movement.accepted');
+    assert.equal(secondMoved.payload.characterId, secondCharacter.id);
+    const remoteMove = await waitFor('presence.moved');
+    assert.equal(remoteMove.payload.characterId, secondCharacter.id);
+    assert.equal(remoteMove.payload.x, secondMoved.payload.x);
+
+    sendSecond(4, 'chat.send', { text: 'Hello from player two' });
+    const remoteChat = await waitFor('chat.message');
+    assert.equal(remoteChat.payload.text, 'Hello from player two');
+    assert.equal(remoteChat.payload.characterId, secondCharacter.id);
+
+    // The same character cannot be controlled by two live sockets at once.
+    duplicateSocket = new WebSocket(`ws://127.0.0.1:${port}/ws`);
+    const duplicateMessages = [];
+    duplicateSocket.on('message', data => { try { duplicateMessages.push(JSON.parse(data.toString())); } catch {} });
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Duplicate WebSocket open timed out')), 5000);
+      duplicateSocket.once('open', () => { clearTimeout(timer); resolve(); });
+      duplicateSocket.once('error', error => { clearTimeout(timer); reject(error); });
+    });
+    const waitForDuplicate = async type => {
+      for (let i = 0; i < 100; i++) {
+        const index = duplicateMessages.findIndex(message => message.type === type);
+        if (index >= 0) return duplicateMessages.splice(index, 1)[0];
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      throw new Error(`Duplicate client timed out waiting for ${type}`);
+    };
+    duplicateSocket.send(JSON.stringify({ sequence: 1, type: 'authenticate', payload: { token } }));
+    await waitForDuplicate('authenticated');
+    duplicateSocket.send(JSON.stringify({ sequence: 2, type: 'character.select', payload: { characterId: character.id } }));
+    assert.equal((await waitForDuplicate('error')).payload.code, 'character_already_online');
 
     const questListResponse = await fetch(base + `/api/characters/${character.id}/quests`, {
       headers: { authorization: 'Bearer ' + token }
@@ -393,7 +480,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     } finally { await tradeAuditPool.end(); }
 
   } finally {
-    if (socket) socket.close();
+    for (const liveSocket of [socket, secondSocket, duplicateSocket, unauthenticatedSocket]) if (liveSocket && liveSocket.readyState < 2) liveSocket.close();
     child.kill('SIGTERM');
     await new Promise(resolve => {
       if (child.exitCode !== null) return resolve();
