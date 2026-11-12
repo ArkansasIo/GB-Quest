@@ -6,15 +6,15 @@ const shell = readFileSync(new URL('../client/shell.html', import.meta.url), 'ut
 const main = readFileSync(new URL('../client/main.js', import.meta.url), 'utf8');
 
 test('boot screen identifies the game, expansion, engine and developer', () => {
-  assert.match(shell, /id="bootloader"/);
-  assert.match(shell, /LOST KINGDOM OF SHADOWBANE CHRONICLES/);
-  assert.match(shell, /LANTERNS OF AELMOOR/);
-  assert.match(shell, /ARKANSAS-IO GAME ENGINE/);
-  assert.match(shell, /DEVELOPED BY ARKANSASIO/);
+  assert.match(shell, /id="gbq-boot-screen"/);
+  assert.match(shell, /Lost Kingdom of ShadowBane Chronicles/);
+  assert.match(shell, /Lanterns of Aelmoor/);
+  assert.match(shell, /ARKANSAS - IO ENGINE · v2\.5\.0/);
+  assert.match(shell, /Developed by/);\n  assert.match(shell, /ARKANSASIO/);
 });
 
 test('boot screen exposes accessible loading progress and completes after asset loading', () => {
-  assert.match(shell, /role="progressbar"/);
+  assert.match(shell, /role="progressbar"/);\n  assert.match(shell, /id="gbq-boot-retry"/);
   assert.match(shell, /id="bootProgressFill"/);
   assert.match(main, /updateBoot\(p\)/);
   assert.match(main, /finishBoot\(\)/);
