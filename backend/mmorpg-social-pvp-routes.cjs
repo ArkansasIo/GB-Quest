@@ -13,16 +13,16 @@ async function ownedCharacter(pool, characterId, accountId, lock = false) {
 
 async function handleSocialPvpRequest({ req, res, pool, accountFor, json, readBody }) {
   const url = new URL(req.url, 'http://localhost');
-  const friendList = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/friends$/i);
-  const friendRequest = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/friends\\/request$/i);
-  const friendAction = url.pathname.match(/^\\/api\\/friend-requests\\/([0-9a-f-]{36})\\/(accept|decline)$/i);
-  const blockList = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/blocks$/i);
-  const blockDelete = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/blocks\\/([0-9a-f-]{36})$/i);
-  const mailList = url.pathname.match(/^\\/api\\/characters\\/([0-9a-f-]{36})\\/mail$/i);
-  const mailRead = url.pathname.match(/^\\/api\\/mail\\/([0-9a-f-]{36})\\/read$/i);
+  const friendList = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/friends$/i);
+  const friendRequest = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/friends\/request$/i);
+  const friendAction = url.pathname.match(/^\/api\/friend-requests\/([0-9a-f-]{36})\/(accept|decline)$/i);
+  const blockList = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/blocks$/i);
+  const blockDelete = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/blocks\/([0-9a-f-]{36})$/i);
+  const mailList = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/mail$/i);
+  const mailRead = url.pathname.match(/^\/api\/mail\/([0-9a-f-]{36})\/read$/i);
   const pvpQueue = url.pathname === '/api/pvp/queue' && req.method === 'POST';
-  const pvpStatus = url.pathname.match(/^\\/api\\/pvp\\/queue\\/([0-9a-f-]{36})$/i);
-  const pvpMatch = url.pathname.match(/^\\/api\\/pvp\\/matches\\/([0-9a-f-]{36})$/i);
+  const pvpStatus = url.pathname.match(/^\/api\/pvp\/queue\/([0-9a-f-]{36})$/i);
+  const pvpMatch = url.pathname.match(/^\/api\/pvp\/matches\/([0-9a-f-]{36})$/i);
   const recognized = friendList || friendRequest || friendAction || blockList || blockDelete ||
     mailList || mailRead || pvpQueue || pvpStatus || pvpMatch;
   if (!recognized) return false;
