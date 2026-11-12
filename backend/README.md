@@ -68,6 +68,17 @@ WebSocket:
 - The authoritative socket currently supports `zone`, `realm` and `whisper` chat. Other channel names return `unsupported_chat_channel`; they are never silently delivered to the zone.
 - Server tuning: `GBQ_WS_AUTH_TIMEOUT_MS`, `GBQ_WS_HEARTBEAT_MS` and `GBQ_WS_MAX_BUFFERED_BYTES` override the respective defaults.
 
+Party WebSocket messages:
+
+- `party.create` creates a persistent party with the current character as leader.
+- `party.invite` takes `{ to: "CharacterName" }`. Only the leader can invite; the target must be on the same realm, not already grouped, and the party must have fewer than five members. Invitations expire after five minutes.
+- `party.accept` takes `{ invitationId }` and joins the invited character after server-side realm, expiry, membership and capacity checks.
+- `party.leave` removes the current character. If the leader leaves, the longest-standing remaining member becomes leader; an empty party is deleted.
+- `party.kick` takes `{ characterId }` and is leader-only.
+- Party changes are broadcast as `party.snapshot` / `party.updated`; invitees receive `party.invited`, and kicked members receive `party.kicked`.
+- `chat.send` with `channel: "party"` delivers chat only to current members. Party membership persists across disconnects and reconnects.
+- Migration `011_party_system.sql` creates party, membership and invitation tables. The five-member limit is enforced transactionally when invitations are accepted. This is single-service-instance party presence; multi-replica coordination still requires shared presence/pub/sub.
+
 Direct-message HTTP endpoints:
 
 - `GET /api/characters/:id/whispers?with=<peerCharacterId>&limit=50` returns recent inbox/conversation messages and marks incoming messages read.
