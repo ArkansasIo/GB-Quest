@@ -285,7 +285,10 @@ function attachSocket(ws, req) {
         state.lastChat = t;
         const text = String(msg.payload.text || '').trim();
         if (!text || text.length > 180 || /[\u0000-\u001f\u007f]/.test(text)) return send(ws, 'error', { code: 'invalid_chat' });
-        const channel = ['zone', 'realm', 'whisper'].includes(msg.payload.channel) ? msg.payload.channel : 'zone';
+        const channel = String(msg.payload.channel || 'zone');
+        if (!['zone', 'realm', 'whisper'].includes(channel)) {
+          return send(ws, 'error', { code: 'unsupported_chat_channel', channel, supported: ['zone', 'realm', 'whisper'] });
+        }
         const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
         if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
         if (channel === 'whisper') {
