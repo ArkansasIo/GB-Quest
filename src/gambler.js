@@ -71,7 +71,7 @@ function gamble(slot) {
   else { const pool = WONDROUS.filter(w => w.slot === slot); it = makeItem({ kind: 'wondrous', base: pick(pool).id, lvl: G.lvl, rarity }); }
   G.inv.shard -= cost; g.count++; g.best = Math.max(g.best, it.rarity); g.since = it.rarity >= LEGENDARY ? 0 : g.since + 1;
   G.bag.push(it); if (it.rarity >= 4) G.stats.epics = (G.stats.epics || 0) + 1;
-  saveGame(); (it.rarity >= LEGENDARY ? (SFX.levelup || SFX.confirm) : it.rarity >= 4 ? (SFX.chest || SFX.confirm) : SFX.buy)();
+  saveGame(); (it.rarity >= LEGENDARY ? SFX.jackpot : it.rarity >= 4 ? SFX.chest : SFX.gamble)();
   const R0 = RARITY[it.rarity] || RARITY[2];
   toast(R0.name, it.name, itemIcon(it), 'confirm');
   if (typeof chatLog === 'function') chatLog('loot', 'GAMBLER', `You gamble [${it.name}] (${R0.name}) for ${cost} shards.`);

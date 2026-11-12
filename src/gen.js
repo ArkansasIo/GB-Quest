@@ -248,7 +248,7 @@ function buildZone(z) {
   // areas = quadrants
   const ar = RNG('areas-' + z.id), names = ar.shuffle(ZONE_AREAS);
   const areas = [[1, 1, 15, 11], [16, 1, 15, 11], [1, 12, 15, 11], [16, 12, 15, 11]].map((rc, i) => ({ id: `${z.id}_a${i}`, r: rc, name: `${z.name.split(' ')[0]} ${names[i]}` }));
-  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field'), lvl: z.lvl, biome: z.biome };
+  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: typeof GBQMusic !== 'undefined' ? GBQMusic.zoneMusic(z, z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field')) : (z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field')), lvl: z.lvl, biome: z.biome };
 }
 const MUSIC_BY_BIOME = { meadow: 'field', coast: 'coast', marsh: 'marsh', jungle: 'jungle', snow: 'snow', badlands: 'desert', desert: 'desert', oasis: 'coast', savanna: 'field', steppe: 'field', forest: 'field', deepforest: 'jungle', hills: 'field', mountains: 'snow', volcanic: 'volcano', dusk: 'dusk', ruins: 'dungeon', corruption: 'dusk', aether: 'crystal', crystal: 'crystal', mushroom: 'jungle', ocean: 'coast', river: 'coast', frozen: 'snow', sky: 'crystal' };
 function buildHarbor(r) {

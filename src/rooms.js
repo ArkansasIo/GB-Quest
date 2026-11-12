@@ -207,7 +207,7 @@ function buildInstance(kind, def, floor = 0) {
   return {
     id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, theme), tiles: dungeonTiles(theme), entry: M.entry, pulls, chest, traps, lvl,
     rooms: rooms.map(({ x, y, w, h, type, name, desc, number }) => ({ x, y, w, h, type, name, desc, number, difficulty: tier })), roomCount: rooms.length, difficulty: tier, vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)) + tier, spikeDmg: `${1 + Math.floor(lvl / 8) + Math.floor(tier / 3)}d4`,
-    name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind,
+    name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: typeof GBQMusic !== 'undefined' ? GBQMusic.roomMusic(kind, def, kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon') : (kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon'), instance: kind,
   };
 }
 const neighbours = t => [[t.x + 1, t.y], [t.x - 1, t.y], [t.x, t.y + 1], [t.x, t.y - 1]];

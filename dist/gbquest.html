@@ -2710,7 +2710,7 @@ function buildZone(z) {
   // areas = quadrants
   const ar = RNG('areas-' + z.id), names = ar.shuffle(ZONE_AREAS);
   const areas = [[1, 1, 15, 11], [16, 1, 15, 11], [1, 12, 15, 11], [16, 12, 15, 11]].map((rc, i) => ({ id: `${z.id}_a${i}`, r: rc, name: `${z.name.split(' ')[0]} ${names[i]}` }));
-  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field'), lvl: z.lvl, biome: z.biome };
+  return { id: z.id, zone: z, rows, tiles, gfx: zoneGfx(rows, z.biome, z.town), exits, poi, nodes, bosses, hub, areas, name: z.name, music: typeof GBQMusic !== 'undefined' ? GBQMusic.zoneMusic(z, z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field')) : (z.town ? 'town' : (MUSIC_BY_BIOME[z.biome] || 'field')), lvl: z.lvl, biome: z.biome };
 }
 const MUSIC_BY_BIOME = { meadow: 'field', coast: 'coast', marsh: 'marsh', jungle: 'jungle', snow: 'snow', badlands: 'desert', desert: 'desert', oasis: 'coast', savanna: 'field', steppe: 'field', forest: 'field', deepforest: 'jungle', hills: 'field', mountains: 'snow', volcanic: 'volcano', dusk: 'dusk', ruins: 'dungeon', corruption: 'dusk', aether: 'crystal', crystal: 'crystal', mushroom: 'jungle', ocean: 'coast', river: 'coast', frozen: 'snow', sky: 'crystal' };
 function buildHarbor(r) {
@@ -3049,7 +3049,7 @@ function buildInstance(kind, def, floor = 0) {
   return {
     id: `${kind}:${def.id}:${floor}`, kind, def, floor, rows: rowsOut, gfx: dungeonGfx(rowsOut, theme), tiles: dungeonTiles(theme), entry: M.entry, pulls, chest, traps, lvl,
     rooms: rooms.map(({ x, y, w, h, type, name, desc, number }) => ({ x, y, w, h, type, name, desc, number, difficulty: tier })), roomCount: rooms.length, difficulty: tier, vaults, shrines, seals, mod, trapDC: 10 + Math.min(10, Math.floor(lvl / 6)) + tier, spikeDmg: `${1 + Math.floor(lvl / 8) + Math.floor(tier / 3)}d4`,
-    name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon', instance: kind,
+    name: kind === 'tower' ? `${TOWER.name} ${floor}F` : def.name, music: typeof GBQMusic !== 'undefined' ? GBQMusic.roomMusic(kind, def, kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon') : (kind === 'raid' ? 'raid' : kind === 'tower' ? 'tower' : 'dungeon'), instance: kind,
   };
 }
 const neighbours = t => [[t.x + 1, t.y], [t.x - 1, t.y], [t.x, t.y + 1], [t.x, t.y - 1]];
@@ -4575,6 +4575,201 @@ function sfx64(k) { if (SFX64[k]) SFX64[k](); else play64(SFX_BANK[k] || SFX_BAN
 </script>
 <script>
 'use strict';
+// ================================================================ AUDIO LIBRARY: 80 more tracks and 16 more sound effects
+// Adds 80 original tracks to the 24 core ones (TRACKS in engine.js, ARR64 in audio64.js), so both sound engines play
+// them: the chip engine composes each from its recipe, the 64-bit engine arranges it with the instruments below.
+// Every track has a place in the game (see the selectors at the end):
+//   26 region themes      exploring each of the 13 base regions (Ardenhold: its towns) and 13 expansions   ow_<region>, ow_x1..x13
+//   26 battle themes      ordinary fights in each of those areas                          bt_<region>, bt_x1..x13
+//   13 expansion bosses   boss fights in each expansion                                    boss_x1..x13
+//    5 dungeon themes     crypt / ice / lava / temple / void dungeons                      dg_<theme>
+//    4 raid themes        each raid                                                        raid_<id>
+//    6 special battles    elite, arena, trial, tower boss, dungeon boss, raid boss
+// Recipe fields: bpm, root (MIDI note), scale (SCALES), prog (chord degrees), drums (16 steps: k kick, s snare, h hat).
+(() => {
+  if (typeof TRACKS === 'undefined') return;
+  // 64-bit arrangements by mood: lead / counter-melody / pad / bass instruments plus percussion options
+  const A = {
+    heroic: { lead: 'brass', counter: 'harp', pad: 'strings', bass: 'bass', cstyle: 'arp', crash: true },
+    pastoral: { lead: 'flute', counter: 'harp', pad: 'pad', bass: 'bass', cstyle: 'arp', shaker: true },
+    harbor: { lead: 'flute', counter: 'piano', pad: 'pad', bass: 'slap', cstyle: 'arp', shaker: true },
+    mystic: { lead: 'bell', counter: 'harp', pad: 'choir', bass: 'bass', cstyle: 'echo' },
+    eerie: { lead: 'synth', counter: 'bell', pad: 'choir', bass: 'bass', cstyle: 'echo' },
+    tribal: { lead: 'flute', counter: 'piano', pad: 'pad', bass: 'slap', cstyle: 'arp', shaker: true, toms: true },
+    frost: { lead: 'bell', counter: 'harp', pad: 'strings', bass: 'bass', cstyle: 'echo' },
+    desert: { lead: 'synth', counter: 'harp', pad: 'pad', bass: 'bass', cstyle: 'arp', toms: true },
+    fire: { lead: 'synth', counter: 'organ', pad: 'strings', bass: 'bass', cstyle: 'arp', toms: true, timp: true },
+    sacred: { lead: 'choir', counter: 'organ', pad: 'strings', bass: 'bass', cstyle: 'echo', timp: true },
+    battle: { lead: 'synth', counter: 'brass', pad: 'strings', bass: 'slap', cstyle: 'arp', crash: true, toms: true },
+    epic: { lead: 'brass', counter: 'choir', pad: 'strings', bass: 'bass', cstyle: 'arp', crash: true, timp: true, toms: true },
+    dread: { lead: 'organ', counter: 'choir', pad: 'strings', bass: 'bass', cstyle: 'echo', timp: true, crash: true },
+  };
+  // [id, display name, bpm, root, scale, prog, drums, arrangement]
+  const L = [
+    // ---- base region themes (13)
+    ['ow_ardenhold', 'ARDENHOLD: HARBOUR OF KINGS', 112, 62, 'major', [0, 3, 4, 5, 3, 0, 4, 4], 'k..hs.h.k..hs.h.', 'harbor'],
+    ['ow_elderwood', 'ELDERWOOD MEADOWS', 120, 60, 'major', [0, 4, 5, 3], 'k.h.s.h.k.h.s.h.', 'pastoral'],
+    ['ow_hollowmere', 'HOLLOWMERE MIST', 88, 57, 'dorian', [0, 3, 0, 6], 'k.......s...h...', 'eerie'],
+    ['ow_thornwood', 'THORNWOOD CANOPY', 126, 59, 'penta', [0, 3, 2, 4], 'k.hhs.hhk.hks.hh', 'tribal'],
+    ['ow_greypeak', 'GREYPEAK PASS', 96, 62, 'mixo', [0, 6, 3, 4], 'k...h...s...h.h.', 'heroic'],
+    ['ow_sandspire', 'SANDSPIRE DUNES', 108, 57, 'harmonic', [0, 1, 0, 5], 'k..k..s.k..k..s.', 'desert'],
+    ['ow_saltreach', 'SALTREACH TIDES', 114, 64, 'mixo', [0, 3, 6, 0], 'k..hs.h.k.hhs.h.', 'harbor'],
+    ['ow_emberwaste', 'EMBERWASTE ASHFALL', 132, 52, 'phrygian', [0, 1, 6, 0], 'kkh.s.h.kkh.s.hs', 'fire'],
+    ['ow_frostmarch', 'FROSTMARCH VIGIL', 86, 64, 'minor', [0, 5, 2, 6], 'k.......h...s...', 'frost'],
+    ['ow_verdantdeep', 'VERDANT DEEP', 118, 60, 'dorian', [0, 4, 3, 6], 'k.hhs.h.k.hhs.hh', 'tribal'],
+    ['ow_ashenbarrows', 'ASHEN BARROWS', 78, 50, 'harmonic', [0, 5, 4, 0], 'k.......s.......', 'dread'],
+    ['ow_silverhaven', 'SILVERHAVEN LIGHTS', 102, 67, 'lydian', [0, 1, 4, 3], '....h.......h...', 'mystic'],
+    ['ow_duskmoor', 'DUSKMOOR LONG NIGHT', 82, 49, 'phrygian', [0, 5, 1, 4], 'k.......s...h...', 'eerie'],
+    // ---- expansion themes (13)
+    ['ow_x1', 'ETERNAL ODYSSEY', 116, 62, 'mixo', [0, 4, 6, 3, 0, 4, 3, 4], 'k..hs.h.k.hhs.h.', 'heroic'],
+    ['ow_x2', 'DRAGONFIRE REALM', 124, 55, 'harmonic', [0, 5, 4, 0], 'k.h.s.hkk.h.s.hs', 'fire'],
+    ['ow_x3', 'EMBERFELL SAGA', 104, 60, 'dorian', [0, 6, 3, 4], 'k...h.h.s...h.h.', 'frost'],
+    ['ow_x4', "WIZARD'S DOMINION", 98, 57, 'lydian', [0, 1, 5, 4], 'k...h...s...h...', 'mystic'],
+    ['ow_x5', 'PLAGUEBORN LEGACY', 84, 53, 'phrygian', [0, 1, 5, 0], 'k.......s..h....', 'eerie'],
+    ['ow_x6', 'CRYSTALIZED REALMS', 110, 68, 'lydian', [0, 4, 1, 5], '..h...h...h...h.', 'mystic'],
+    ['ow_x7', 'FROSTSONG DYNASTY', 92, 63, 'minor', [0, 3, 5, 6], 'k...h...s...h...', 'frost'],
+    ['ow_x8', 'ARCANE ASCENSION', 120, 64, 'lydian', [0, 1, 3, 4, 0, 1, 5, 4], 'k.h.s.h.k.h.s.h.', 'sacred'],
+    ['ow_x9', 'BLOODMOON CONSPIRACY', 90, 51, 'harmonic', [0, 5, 1, 4], 'k..k....s...h...', 'dread'],
+    ['ow_x10', 'DRAGONSPIRE ODYSSEY', 128, 55, 'mixo', [0, 6, 5, 4], 'kkh.s.h.k.h.s.hh', 'epic'],
+    ['ow_x11', 'WHISPERS OF VALHALLA', 100, 57, 'dorian', [0, 3, 6, 4], 'k...k...s...h...', 'epic'],
+    ['ow_x12', 'NIGHTSHADE CHRONICLES', 86, 52, 'minor', [0, 5, 6, 4], 'k.......s.h.....', 'eerie'],
+    ['ow_x13', 'MYTHICAL MEADOWLANDS', 124, 65, 'major', [0, 3, 4, 0, 5, 3, 4, 4], 'k.h.s.h.k.h.s.h.', 'pastoral'],
+    // ---- base region battles (13)
+    ['bt_ardenhold', 'BATTLE: HARBOUR SKIRMISH', 160, 57, 'minor', [0, 5, 6, 4], 'k.hhs.hhk.hhs.hs', 'battle'],
+    ['bt_elderwood', 'BATTLE: BRIGANDS OF ELDERWOOD', 164, 59, 'dorian', [0, 3, 6, 4], 'k.hhs.hhk.hks.hh', 'battle'],
+    ['bt_hollowmere', 'BATTLE: SOMETHING IN THE MERE', 152, 55, 'phrygian', [0, 1, 0, 5], 'k..hs.hhk..hs.hs', 'battle'],
+    ['bt_thornwood', 'BATTLE: THORNS AND FANGS', 170, 57, 'penta', [0, 2, 3, 4], 'kkhhs.hhk.hhs.hh', 'tribal'],
+    ['bt_greypeak', 'BATTLE: AVALANCHE', 166, 60, 'minor', [0, 6, 5, 4], 'k.hhs.hhkkhhs.hs', 'battle'],
+    ['bt_sandspire', 'BATTLE: SCORPION SANDS', 168, 55, 'harmonic', [0, 1, 6, 5], 'k.hks.hhk.hks.hs', 'desert'],
+    ['bt_saltreach', 'BATTLE: WRECKERS', 162, 62, 'dorian', [0, 6, 3, 4], 'k.hhs.hhk.hhs.hs', 'battle'],
+    ['bt_emberwaste', 'BATTLE: MAGMA STRIDE', 176, 52, 'phrygian', [0, 1, 0, 6], 'kkhhs.hhkkhhs.ss', 'fire'],
+    ['bt_frostmarch', 'BATTLE: WHITEOUT', 158, 64, 'harmonic', [0, 5, 4, 0], 'k.hhs.h.k.hhs.hs', 'frost'],
+    ['bt_verdantdeep', 'BATTLE: DEEP ROOTS', 168, 58, 'dorian', [0, 4, 6, 3], 'k.hhs.hhkkhhs.hh', 'tribal'],
+    ['bt_ashenbarrows', 'BATTLE: RESTLESS DEAD', 156, 50, 'harmonic', [0, 1, 5, 4], 'k.h.s.hhk.h.s.ss', 'dread'],
+    ['bt_silverhaven', 'BATTLE: SHARDSTORM', 172, 64, 'lydian', [0, 1, 4, 5], 'k.hhs.hhk.hhs.hs', 'battle'],
+    ['bt_duskmoor', 'BATTLE: MOONLESS HUNT', 164, 49, 'phrygian', [0, 5, 1, 6], 'k.hhs.hhkkhhs.hs', 'dread'],
+    // ---- expansion battles (13)
+    ['bt_x1', 'BATTLE: ODYSSEY CLASH', 168, 57, 'mixo', [0, 6, 5, 4], 'k.hhs.hhk.hhs.hs', 'battle'],
+    ['bt_x2', 'BATTLE: DRAGONFIRE', 178, 55, 'harmonic', [0, 1, 5, 4], 'kkhhs.hhkkhhs.ss', 'fire'],
+    ['bt_x3', 'BATTLE: EMBERFELL', 164, 57, 'dorian', [0, 3, 6, 4], 'k.hhs.hhk.hks.hh', 'battle'],
+    ['bt_x4', 'BATTLE: SPELLWRIGHT DUEL', 172, 60, 'lydian', [0, 1, 4, 3], 'k.hhs.hhk.hhs.hs', 'mystic'],
+    ['bt_x5', 'BATTLE: PLAGUE HORDE', 160, 50, 'phrygian', [0, 1, 6, 5], 'k.hks.hhk.hks.ss', 'dread'],
+    ['bt_x6', 'BATTLE: PRISM BREAK', 174, 64, 'lydian', [0, 4, 1, 5], 'k.hhs.hhkkhhs.hs', 'battle'],
+    ['bt_x7', 'BATTLE: FROSTSONG', 162, 59, 'minor', [0, 5, 6, 4], 'k.hhs.h.k.hhs.hs', 'frost'],
+    ['bt_x8', 'BATTLE: ASCENDANT', 176, 62, 'dorian', [0, 6, 3, 4], 'kkhhs.hhk.hhs.hs', 'epic'],
+    ['bt_x9', 'BATTLE: BLOODMOON', 166, 51, 'harmonic', [0, 5, 1, 4], 'k.hhs.hhkkhhs.ss', 'dread'],
+    ['bt_x10', 'BATTLE: SPIRE ASSAULT', 180, 55, 'minor', [0, 6, 5, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['bt_x11', 'BATTLE: SHIELDWALL', 164, 57, 'dorian', [0, 3, 4, 0], 'k.k.s.hhk.k.s.hs', 'epic'],
+    ['bt_x12', 'BATTLE: NIGHTSHADE', 160, 52, 'phrygian', [0, 1, 5, 6], 'k.hhs.hhk.hhs.hs', 'eerie'],
+    ['bt_x13', 'BATTLE: WILD MEADOW', 170, 60, 'mixo', [0, 4, 6, 3], 'k.hhs.hhk.hhs.hh', 'battle'],
+    // ---- expansion bosses (13)
+    ['boss_x1', 'BOSS: TIDE-SWORN TITAN', 182, 52, 'harmonic', [0, 1, 0, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x2', 'BOSS: THE FIRST FLAME', 186, 50, 'phrygian', [0, 1, 6, 0], 'kkskkskskkskksss', 'fire'],
+    ['boss_x3', 'BOSS: EMBERFELL MONARCH', 178, 53, 'harmonic', [0, 5, 1, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x4', 'BOSS: ARCHMAGE ETERNAL', 176, 55, 'lydian', [0, 1, 5, 1], 'kkhhs.hhkkhhs.ss', 'sacred'],
+    ['boss_x5', 'BOSS: PLAGUE HERALD', 172, 48, 'phrygian', [0, 1, 5, 6], 'kkskkskskkskksss', 'dread'],
+    ['boss_x6', 'BOSS: CRYSTAL SOVEREIGN', 184, 57, 'lydian', [0, 4, 1, 5], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x7', 'BOSS: THE FROST EMPEROR', 176, 52, 'harmonic', [0, 5, 4, 0], 'kkhhs.hhkkhhs.ss', 'frost'],
+    ['boss_x8', 'BOSS: THE ASCENDED ONE', 188, 55, 'harmonic', [0, 1, 4, 5], 'kkskkskskkskksss', 'sacred'],
+    ['boss_x9', 'BOSS: CRIMSON REGENT', 180, 49, 'harmonic', [0, 1, 0, 6], 'kkskkskskkskksss', 'dread'],
+    ['boss_x10', 'BOSS: SPIREWYRM', 190, 52, 'phrygian', [0, 1, 6, 5], 'kkskkskskkskksss', 'epic'],
+    ['boss_x11', 'BOSS: JARL OF THE LAST HALL', 178, 50, 'dorian', [0, 6, 3, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['boss_x12', 'BOSS: QUEEN OF NIGHTSHADE', 174, 49, 'phrygian', [0, 1, 5, 4], 'kkhhs.hhkkhhs.ss', 'dread'],
+    ['boss_x13', 'BOSS: THE ELDER STAG', 182, 55, 'mixo', [0, 6, 5, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    // ---- dungeon themes (5; plain dungeons keep the core "dungeon" track)
+    ['dg_crypt', 'DUNGEON: BONE HALLS', 92, 50, 'harmonic', [0, 5, 1, 4], 'k...h...s...h...', 'dread'],
+    ['dg_ice', 'DUNGEON: FROZEN VAULTS', 88, 62, 'minor', [0, 6, 5, 2], 'k.......h.......', 'frost'],
+    ['dg_lava', 'DUNGEON: MOLTEN DEPTHS', 112, 52, 'phrygian', [0, 1, 0, 6], 'k..k..s.k..k..s.', 'fire'],
+    ['dg_temple', 'DUNGEON: SUNKEN TEMPLE', 96, 57, 'dorian', [0, 3, 6, 4], 'k...h.h.s...h.h.', 'sacred'],
+    ['dg_void', 'DUNGEON: BETWEEN STARS', 84, 55, 'lydian', [0, 1, 5, 4], '....h.......h...', 'eerie'],
+    // ---- raids (4)
+    ['raid_crypt', 'RAID: THE BONE CRYPT', 96, 48, 'harmonic', [0, 1, 5, 4], 'k.k.s...k.k.s.s.', 'dread'],
+    ['raid_forge', 'RAID: HEART OF EMBERS', 104, 50, 'phrygian', [0, 1, 6, 0], 'k.k.s...k.k.s.s.', 'fire'],
+    ['raid_palace', 'RAID: THE RIME THRONE', 90, 55, 'harmonic', [0, 5, 4, 0], 'k.k.s...k.k.s.s.', 'frost'],
+    ['raid_dusk', 'RAID: THE LONG NIGHT', 88, 46, 'phrygian', [0, 1, 5, 6], 'k.k.s...k.k.s.s.', 'dread'],
+    // ---- special battles (6)
+    ['elite', 'BATTLE: ELITE FOE', 174, 55, 'harmonic', [0, 1, 5, 4], 'kkhhs.hhk.hhs.ss', 'battle'],
+    ['arena', 'ARENA: CROWD ROARS', 170, 60, 'mixo', [0, 6, 3, 4], 'k.k.s.hhk.k.s.hs', 'epic'],
+    ['trial', 'TRIAL OF CHAMPIONS', 176, 57, 'dorian', [0, 3, 6, 4], 'kkhhs.hhkkhhs.hs', 'epic'],
+    ['tower_boss', 'TOWER: GUARDIAN OF THE FLOOR', 180, 55, 'minor', [0, 5, 6, 4], 'kkhhs.hhkkhhs.ss', 'epic'],
+    ['dungeon_boss', 'DUNGEON BOSS', 178, 52, 'harmonic', [0, 1, 0, 4], 'kkhhs.hhkkhhs.ss', 'dread'],
+    ['raid_boss', 'RAID BOSS', 186, 50, 'phrygian', [0, 1, 5, 6], 'kkskkskskkskksss', 'epic'],
+  ];
+  const NAMES = {};
+  for (const [id, name, bpm, root, scale, prog, drums, arr] of L) {
+    if (TRACKS[id]) continue; // never replace a core track
+    TRACKS[id] = { bpm, root, scale, prog, drums };
+    if (typeof ARR64 !== 'undefined') ARR64[id] = Object.assign({}, A[arr]);
+    NAMES[id] = name;
+  }
+
+  // ---------------------------------------------------------------- which track plays where
+  const has = id => !!TRACKS[id];
+  // overworld map of a zone: its region's or expansion's theme (towns keep the town track)
+  function zoneMusic(z, fallback) {
+    if (!z) return fallback;
+    if (z.town) return z.region === 'ardenhold' && has('ow_ardenhold') ? 'ow_ardenhold' : fallback; // the capital's own theme
+    const id = z.exp ? 'ow_x' + z.exp : 'ow_' + z.region;
+    return has(id) ? id : fallback;
+  }
+  // dungeon / raid / tower map
+  function roomMusic(kind, def, fallback) {
+    if (kind === 'raid' && def && has('raid_' + String(def.id).replace(/^rd_/, ''))) return 'raid_' + String(def.id).replace(/^rd_/, '');
+    if (kind === 'dungeon' && def && def.theme && def.theme !== 'dungeon' && has('dg_' + def.theme)) return 'dg_' + def.theme;
+    return fallback;
+  }
+  // a battle asked for a generic track ('battle', 'boss'): pick the one for where and what it is
+  function battleMusic(requested, battle) {
+    const kind = battle && battle.kind, foes = (battle && battle.foes) || [];
+    if (requested === 'arcboss' || (requested !== 'battle' && requested !== 'boss')) return requested; // story finales and custom tracks stay
+    if (kind === 'arena' && has('arena')) return 'arena';
+    if (kind === 'trial' && has('trial')) return 'trial';
+    const g = typeof G !== 'undefined' ? G : null, inst = g && g.inst;
+    const boss = requested === 'boss' || foes.some(f => f.boss);
+    if (inst) {
+      if (!boss) return requested;
+      if (inst.kind === 'tower') return 'tower_boss';
+      if (inst.kind === 'raid') return 'raid_boss';
+      return 'dungeon_boss';
+    }
+    const z = g && typeof ZONE_BY_ID !== 'undefined' ? ZONE_BY_ID[g.map] : null;
+    if (boss) return z && z.exp && has('boss_x' + z.exp) ? 'boss_x' + z.exp : requested;
+    if (foes.some(f => f.elite)) return 'elite';
+    const area = z ? (z.exp ? 'bt_x' + z.exp : 'bt_' + z.region) : null;
+    return area && has(area) ? area : requested;
+  }
+  // ---------------------------------------------------------------- 16 more sound effects
+  // Chip notes [wave, startHz, endHz, seconds, volume, delay] (p/q pulse, s square, t triangle, w saw, n noise); the
+  // 64-bit engine upgrades them automatically (audio64.js play64). Each replaces a generic UI sound at a big moment.
+  const later = (notes, d) => notes.map(n => { const c = n.slice(); c[5] = (c[5] || 0) + d; return c; });
+  const NEW_SFX = {
+    quest_new: arp('p', [76, 81, 88], 0.06),                                                       // a quest is accepted (towns)
+    awaken: [['t', 220, 880, 0.5, 0.06]].concat(later(arp('s', [72, 79, 84, 91, 96], 0.07, 0.06), 0.35)), // gear awakens
+    reforge: [['n', 3000, 800, 0.08, 0.07], ['s', 300, 300, 0.06, 0.05, 0.09], ['n', 3000, 800, 0.08, 0.06, 0.18], ['p', 1200, 1600, 0.1, 0.04, 0.27]],
+    mount: [['q', 1800, 2400, 0.18, 0.04], ['q', 2400, 1800, 0.15, 0.04, 0.2]].concat([0.45, 0.6, 0.75, 0.9].map(d => ['n', 800, 600, 0.04, 0.06, d])), // whistle, hooves
+    gamble: arp('q', [84, 86, 88, 89, 91], 0.03, 0.04).concat(later(arp('p', [88, 95], 0.05), 0.18)),
+    jackpot: arp('s', [72, 76, 79, 84, 88, 91, 96, 100], 0.06, 0.06).concat([['n', 9000, 6000, 0.6, 0.03, 0.1]]),
+    rift_open: [['w', 80, 600, 0.6, 0.06], ['t', 1200, 300, 0.5, 0.05, 0.1], ['n', 9000, 2000, 0.4, 0.03, 0.05]],
+    rift_close: [['w', 600, 80, 0.5, 0.06], ['t', 300, 1200, 0.4, 0.05, 0.1]].concat(later(arp('t', [72, 79, 84], 0.08, 0.06), 0.5)),
+    extract: [['t', 1500, 300, 0.3, 0.06], ['n', 5000, 1500, 0.2, 0.04, 0.05]],                    // aspect pulled into the codex
+    imprint: [['t', 300, 1500, 0.3, 0.06]].concat(later(arp('p', [84, 91], 0.06, 0.05), 0.3)),      // aspect set into gear
+    temper: [['s', 1800, 1700, 0.03, 0.07], ['n', 6000, 3000, 0.08, 0.05], ['s', 1800, 1700, 0.03, 0.06, 0.22], ['n', 6000, 3000, 0.08, 0.04, 0.22], ['t', 600, 600, 0.3, 0.05, 0.4]], // anvil
+    perk_learn: arp('t', [67, 72, 76, 79], 0.06, 0.06),
+    talent_learn: arp('s', [72, 79, 84], 0.06, 0.06).concat([['t', 1600, 1600, 0.3, 0.04, 0.2]]),
+    heirloom_unlock: arp('t', [60, 67, 72, 76, 79, 84], 0.08, 0.06).concat([['t', 2093, 2093, 0.6, 0.04, 0.5]]),
+    rune_fuse: [['q', 400, 1600, 0.25, 0.05], ['n', 7000, 4000, 0.2, 0.03, 0.1]].concat(later(arp('t', [84, 88], 0.06, 0.05), 0.3)),
+  };
+  const sfxAdded = [];
+  if (typeof SFX_BANK !== 'undefined') for (const k in NEW_SFX) if (!SFX_BANK[k]) { SFX_BANK[k] = NEW_SFX[k]; sfxAdded.push(k); if (typeof SFX_NAMES !== 'undefined') SFX_NAMES.push(k); }
+
+  const api = { NAMES, count: Object.keys(NAMES).length, sfx: sfxAdded, zoneMusic, roomMusic, battleMusic, trackName: id => NAMES[id] || String(id).toUpperCase() };
+  if (typeof window !== 'undefined') window.GBQMusic = api;
+  if (typeof globalThis !== 'undefined') globalThis.GBQMusic = api;
+})();
+
+</script>
+<script>
+'use strict';
 // ================================================================ 64-BIT VIDEO + ENGINE SYSTEMS
 // SETTINGS > VIDEO: 64-BIT turns the 160x144 framebuffer into a 640x576 presentation:
 //   1. Scale4x (two EPX/Scale2x passes): edge-aware upscaling that rounds diagonals of every sprite and tile
@@ -5248,6 +5443,7 @@ class Battle {
     this.round = 0; this.order = []; this.turnIdx = -1; this.q = []; this.state = 'idle'; this.cur = null; this.log = [];
     this.menu = 0; this.sub = 0; this.subTop = 0; this.targets = []; this.ti = 0; this.pending = null; this.skillUses = new Set(); this.anim = { lunge: null, flash: {}, fx: null };
     this.surprise = opt.surprise || null; this.music = opt.music || (this.foes.some(f => f.boss) ? (this.kind === 'arc' || this.foes.some(f => f.cat === 'arc') ? 'arcboss' : 'boss') : 'battle');
+    if (typeof GBQMusic !== 'undefined') this.music = GBQMusic.battleMusic(this.music, this); // area, boss, elite, arena and trial tracks
     this.title = opt.title || null; this.combatMode = opt.combatMode || S.combatMode || 'turn-based';
     combatHotkeyHandler = index => this.useHotbar(index);
     window.GBQCombatHotbar = { entries: () => ['menu', 'list', 'realtime'].includes(this.state) && this.actor?.ch === G ? this.hotbarEntries(this.actor).map(entry => { const cooldown = Number(this.rt?.cooldowns?.[entry.id] || 0), gcd = this.combatMode === 'realtime' ? Number(this.rt?.gcd || 0) : 0; return { id: entry.id, name: entry.name, ok: !!entry.ok, sub: entry.sub || '', remaining: Math.max(cooldown, gcd), cooldown, gcd, paused: !!this.rt?.paused }; }) : [], use: index => this.useHotbar(index) };
@@ -8243,7 +8439,7 @@ class TalentScene extends ListScene {
       return say('Learn ' + (prerequisite ? prerequisite.name : 'the previous talent') + ' first.');
     }
     if ((G.talentPts || 0) < 1) return say('No talent points available.');
-    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.levelup();
+    G.talents.push(node.id); G.talentPts--; G.hp = Math.min(G.hp, derive(G).hpMax); SFX.talent_learn();
   }
   draw() {
     fill(0, 0, W, H, 0); hdr(); textC(this.online ? 'ONLINE TALENTS' : 'TALENT SYSTEM', 80, 13, 'gold');
@@ -13054,7 +13250,7 @@ class RuneForgeScene {
       const r = recipes[index]; G.runes[r.id] -= 3;
       if (!G.runes[r.id]) delete G.runes[r.id];
       api.addRuneToInventory(G, r.next, 1);
-      this.flash('FUSED ' + r.next); SFX.craft();
+      this.flash('FUSED ' + r.next); SFX.rune_fuse();
     }, 'RUNE FUSION');
   }
   draw() {
@@ -13552,7 +13748,7 @@ class PerkTreeScene {
       if (hasPerk(k, p.id)) { this.msg = 'ALREADY LEARNED.'; SFX.error(); return; }
       const e = learnPerk(k, p.id);
       if (e) { this.msg = e.toUpperCase(); SFX.error(); }
-      else { this.msg = `LEARNED ${p.name}!`; SFX.levelup(); checkAchievements(); saveGame(); }
+      else { this.msg = `LEARNED ${p.name}!`; SFX.perk_learn(); checkAchievements(); saveGame(); }
     }
   }
   draw() {
@@ -15075,7 +15271,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof AR
             if (k !== 0) return;
             if (G.gold < total) { SFX.error(); return say(`That costs ${fmt(total)} G. You have ${fmt(G.gold)} G.`); }
             for (const p of miss) buyHeirloomForAccount(p.id);
-            SFX.buy(); say([`Unlocked ${miss.length} heirlooms for your account.`, 'Summon them from MENU > HEIRLOOMS.']);
+            SFX.heirloom_unlock(); say([`Unlocked ${miss.length} heirlooms for your account.`, 'Summon them from MENU > HEIRLOOMS.']);
           }, 'Unlock every missing piece for the whole account.');
         }
         const r = summonHeirloomSet();
@@ -18995,7 +19191,7 @@ function stableMenu() {
       if (G.lvl < 15) return say(['Come back at level 15.', 'Then I will teach you to ride and give you your first mount.']);
       if (G.gold < 100) return say('Your first mount costs 100 G, saddle included.');
       choose(STARTER_MOUNTS.map(id => MOUNT_BY_ID[id].name), j => {
-        if (j < 0) return; G.gold -= 100; grantMount(STARTER_MOUNTS[j]); G.mount = STARTER_MOUNTS[j]; SFX.howl(); saveGame();
+        if (j < 0) return; G.gold -= 100; grantMount(STARTER_MOUNTS[j]); G.mount = STARTER_MOUNTS[j]; SFX.mount(); saveGame();
         say(['You learn to ride!', `${MOUNT_BY_ID[STARTER_MOUNTS[j]].name} is yours.`, 'Press B in the field to mount up.']);
       }, 'Pick your first mount: a steady steed, a loyal warwolf or a quick raptor.');
     }
@@ -19049,7 +19245,7 @@ class MountScene {
     if (nav('left')) { this.i = Math.max(0, this.i - 10); SFX.cursor(); }
     if (nav('right')) { this.i = Math.min(n - 1, this.i + 10); SFX.cursor(); }
     if (this.i < this.top) this.top = this.i; if (this.i > this.top + 6) this.top = this.i - 6;
-    if (P('a')) { const m = MOUNTS[this.i]; if (mountsOwned().includes(m.id)) { G.mount = m.id; SFX.howl(); saveGame(); } else SFX.error(); }
+    if (P('a')) { const m = MOUNTS[this.i]; if (mountsOwned().includes(m.id)) { G.mount = m.id; SFX.mount(); saveGame(); } else SFX.error(); }
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);
@@ -20177,7 +20373,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
     const codex = (G.codex ||= {});
     choose(['EXTRACT ASPECT', 'IMPRINT ASPECT', 'TEMPER', 'MASTERWORK', `CODEX (${Object.keys(codex).length}/${ASPECT_IDS.length})`, 'LEAVE'], k => {
       if (k === 0) return pickItem('EXTRACT: the item is destroyed.', o => o.it.aspect && o.where === 'bag', o => {
-        const a = o.it.aspect, had = codex[a.id] || 0; codex[a.id] = Math.max(had, a.val); G.bag.splice(G.bag.indexOf(o.it), 1); SFX.craft(); saveGame();
+        const a = o.it.aspect, had = codex[a.id] || 0; codex[a.id] = Math.max(had, a.val); G.bag.splice(G.bag.indexOf(o.it), 1); SFX.extract(); saveGame();
         say([`ASPECT OF ${ASPECTS[a.id].name} saved to your codex.`, had >= a.val ? `You already had a better one (${had}).` : `Value ${a.val}.`], occultistMenu);
       });
       if (k === 1) {
@@ -20186,7 +20382,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
           if (j < 0) return occultistMenu(); const id = ids[j];
           pickItem(`IMPRINT ${ASPECTS[id].name}`, o => (o.it.rarity || 0) >= 3 && fitsKind(id, o.it.kind), o => {
             const cost = imprintCost(o.it.ilvl); if (!pay(cost)) { SFX.error(); return say(`Imprinting costs ${fmt(cost)} G.`, occultistMenu); }
-            o.it.aspect = { id, val: codex[id] }; SFX.craft(); saveGame(); say(`${o.it.name.slice(0, 18)} now carries ASPECT OF ${ASPECTS[id].name}.`, occultistMenu);
+            o.it.aspect = { id, val: codex[id] }; SFX.imprint(); saveGame(); say(`${o.it.name.slice(0, 18)} now carries ASPECT OF ${ASPECTS[id].name}.`, occultistMenu);
           });
         }, 'Which aspect?');
       }
@@ -20195,7 +20391,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
         choose(cats, j => {
           if (j < 0) return occultistMenu(); const c = temperCost(o.it.ilvl); if (!pay(c.gold, c.scrap)) { SFX.error(); return say(`Tempering costs ${fmt(c.gold)} G and ${c.scrap} SCRAP.`, occultistMenu); }
           const stat = pick(TEMPER_POOLS[cats[j]]), v = temperValue(stat, o.it.ilvl); o.it.affixes = (o.it.affixes || []).concat([[stat, v]]); if (o.it.mwBase) o.it.mwBase.push([stat, v]); o.it.tempers = (o.it.tempers || 0) + 1;
-          if (typeof derive === 'function') derive(G); SFX.craft(); saveGame(); say(`Tempered: +${v} ${(SUBSTATS[stat] || { name: stat }).name}. (${o.it.tempers}/${TEMPER_MAX})`, occultistMenu);
+          if (typeof derive === 'function') derive(G); SFX.temper(); saveGame(); say(`Tempered: +${v} ${(SUBSTATS[stat] || { name: stat }).name}. (${o.it.tempers}/${TEMPER_MAX})`, occultistMenu);
         }, `TEMPER ${o.it.name.slice(0, 14)}: pick a recipe. Cost ${fmt(temperCost(o.it.ilvl).gold)} G + ${temperCost(o.it.ilvl).scrap} SCRAP.`);
       });
       if (k === 3) return pickItem('MASTERWORK which item?', o => (o.it.mw || 0) < MW_MAX && (o.it.affixes || []).length, o => {
@@ -20939,7 +21135,7 @@ function payStar(it, pathId) {
   G.gold -= c.gold; G.inv.awk_stone -= c.stone; if (c.shard) G.inv.shard -= c.shard; if (c.ember) G.inv.ember -= c.ember;
   it.awk = gaNext(it, pathId);
   const D = derive(G); G.hp = Math.min(G.hp, D.hpMax);
-  saveGame(); SFX.act_complete ? SFX.act_complete() : SFX.confirm();
+  saveGame(); SFX.awaken();
   const p = gaPath(it), n = it.awk.stars;
   toast(`AWAKENED ${GA_STAR_NAME[n - 1]}`, `${it.name}`, itemIcon(it), 'buff');
   if (n === 3 || n === 5) say([`${p.name} ${n === 3 ? 'AWAKENED TRAIT' : 'TRANSCENDENT TRAIT'}:`, `${(n === 3 ? p.t3 : p.t5).name}`, (n === 3 ? p.t3 : p.t5).desc]);
@@ -20963,7 +21159,7 @@ class GearAwakenScene extends ListScene {
       return choose([...ids.map(k => GA_PATHS[fam][k].name), 'CANCEL'], k => {
         if (k < 0 || k >= ids.length) return;
         if (G.gold < cost) { SFX.error(); return say(`Reforging costs ${cost} G.`); }
-        G.gold -= cost; it.awk = { stars: st.stars, path: ids[k] }; saveGame(); SFX.confirm(); toast('REFORGED', GA_PATHS[fam][ids[k]].name + ' PATH', itemIcon(it), 'confirm');
+        G.gold -= cost; it.awk = { stars: st.stars, path: ids[k] }; saveGame(); SFX.reforge(); toast('REFORGED', GA_PATHS[fam][ids[k]].name + ' PATH', itemIcon(it), 'confirm');
       }, `REFORGE PATH: ${cost} G (stars kept)`);
     }
     if (!P('a')) return;
@@ -21486,7 +21682,7 @@ function closeRift() {
     }
     if (typeof addSeasonXp === 'function') addSeasonXp(res.timed ? 120 + 10 * a.level : 60);
   }
-  saveGame(); SFX.act_complete ? SFX.act_complete() : SFX.confirm();
+  saveGame(); SFX.rift_close();
   say(lines);
 }
 
@@ -21508,10 +21704,10 @@ class RiftScene {
     const o = opts[this.i];
     if (o === 'FIGHT') { SFX.select(); return fightPack(this); }
     if (o === 'ABANDON') return choose(['ABANDON RIFT', 'KEEP GOING'], k => { if (k === 0) { r.active = null; saveGame(); SFX.back(); } }, a.kind === 'greater' ? 'The key is lost.' : 'Progress is lost.');
-    if (o === 'NORMAL RIFT') { SFX.select(); r.active = { kind: 'normal', level: 0, progress: 0, packs: 0 }; saveGame(); this.i = 0; return; }
+    if (o === 'NORMAL RIFT') { SFX.rift_open(); r.active = { kind: 'normal', level: 0, progress: 0, packs: 0 }; saveGame(); this.i = 0; return; }
     if (o === 'GREATER RIFT') {
       if (r.keys < 1) { SFX.error(); return say(['A GREATER RIFT needs a key.', 'Close a NORMAL RIFT to earn one.']); }
-      r.keys--; SFX.select(); r.active = { kind: 'greater', level: Math.min(r.pick, maxUnlocked(r.best)), progress: 0, packs: 0, startedAt: 0, penalty: 0, bonus: 0 }; saveGame(); this.i = 0; return;
+      r.keys--; SFX.rift_open(); r.active = { kind: 'greater', level: Math.min(r.pick, maxUnlocked(r.best)), progress: 0, packs: 0, startedAt: 0, penalty: 0, bonus: 0 }; saveGame(); this.i = 0; return;
     }
     if (o === 'LEADERBOARD') { SFX.select(); return push(new RiftBoardScene()); }
   }
@@ -21683,7 +21879,7 @@ function gamble(slot) {
   else { const pool = WONDROUS.filter(w => w.slot === slot); it = makeItem({ kind: 'wondrous', base: pick(pool).id, lvl: G.lvl, rarity }); }
   G.inv.shard -= cost; g.count++; g.best = Math.max(g.best, it.rarity); g.since = it.rarity >= LEGENDARY ? 0 : g.since + 1;
   G.bag.push(it); if (it.rarity >= 4) G.stats.epics = (G.stats.epics || 0) + 1;
-  saveGame(); (it.rarity >= LEGENDARY ? (SFX.levelup || SFX.confirm) : it.rarity >= 4 ? (SFX.chest || SFX.confirm) : SFX.buy)();
+  saveGame(); (it.rarity >= LEGENDARY ? SFX.jackpot : it.rarity >= 4 ? SFX.chest : SFX.gamble)();
   const R0 = RARITY[it.rarity] || RARITY[2];
   toast(R0.name, it.name, itemIcon(it), 'confirm');
   if (typeof chatLog === 'function') chatLog('loot', 'GAMBLER', `You gamble [${it.name}] (${R0.name}) for ${cost} shards.`);

@@ -156,7 +156,7 @@ function payStar(it, pathId) {
   G.gold -= c.gold; G.inv.awk_stone -= c.stone; if (c.shard) G.inv.shard -= c.shard; if (c.ember) G.inv.ember -= c.ember;
   it.awk = gaNext(it, pathId);
   const D = derive(G); G.hp = Math.min(G.hp, D.hpMax);
-  saveGame(); SFX.act_complete ? SFX.act_complete() : SFX.confirm();
+  saveGame(); SFX.awaken();
   const p = gaPath(it), n = it.awk.stars;
   toast(`AWAKENED ${GA_STAR_NAME[n - 1]}`, `${it.name}`, itemIcon(it), 'buff');
   if (n === 3 || n === 5) say([`${p.name} ${n === 3 ? 'AWAKENED TRAIT' : 'TRANSCENDENT TRAIT'}:`, `${(n === 3 ? p.t3 : p.t5).name}`, (n === 3 ? p.t3 : p.t5).desc]);
@@ -180,7 +180,7 @@ class GearAwakenScene extends ListScene {
       return choose([...ids.map(k => GA_PATHS[fam][k].name), 'CANCEL'], k => {
         if (k < 0 || k >= ids.length) return;
         if (G.gold < cost) { SFX.error(); return say(`Reforging costs ${cost} G.`); }
-        G.gold -= cost; it.awk = { stars: st.stars, path: ids[k] }; saveGame(); SFX.confirm(); toast('REFORGED', GA_PATHS[fam][ids[k]].name + ' PATH', itemIcon(it), 'confirm');
+        G.gold -= cost; it.awk = { stars: st.stars, path: ids[k] }; saveGame(); SFX.reforge(); toast('REFORGED', GA_PATHS[fam][ids[k]].name + ' PATH', itemIcon(it), 'confirm');
       }, `REFORGE PATH: ${cost} G (stars kept)`);
     }
     if (!P('a')) return;
