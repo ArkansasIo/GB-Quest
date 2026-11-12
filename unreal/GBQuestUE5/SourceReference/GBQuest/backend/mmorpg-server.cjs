@@ -226,6 +226,7 @@ const server = http.createServer(async (req, res) => {
     catch { return json(res, 503, { ok: false, service: 'gbquest-mmorpg', database: 'unavailable' }); }
   }
   try {
+    if (await handleDungeonQueueRequest({ req, res, pool, accountFor, json, readBody })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
