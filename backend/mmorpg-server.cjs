@@ -101,6 +101,35 @@ function broadcastZone(realmId, zoneId, type, payload, except = null) {
 function broadcastRealm(realmId, type, payload, except = null) {
   for (const [ws, state] of activeSockets) if (state.authenticated && state.character && state.realmId === realmId && ws !== except) send(ws, type, payload);
 }
+
+async function partySnapshot(partyId) {
+  if (!partyId) return null;
+  const result = await pool.query(`
+    SELECT p.id,p.leader_character_id,p.realm_id,p.created_at,
+      COALESCE(json_agg(json_build_object(
+        'characterId',c.id,'name',c.name,'level',c.level,'class',c.class,
+        'role',pm.role,'joinedAt',pm.joined_at,
+        'online',EXISTS(SELECT 1 FROM (SELECT character_id FROM party_members) x WHERE x.character_id=c.id)
+      ) ORDER BY pm.joined_at) FILTER (WHERE c.id IS NOT NULL),'[]'::json) AS members
+    FROM parties p JOIN party_members pm ON pm.party_id=p.id
+    JOIN characters c ON c.id=pm.character_id
+    WHERE p.id=$1 GROUP BY p.id
+  `, [partyId]);
+  if (!result.rowCount) return null;
+  const party=result.rows[0];
+  const onlineIds=new Set([...activeSockets.values()].filter(x=>x.authenticated&&x.character&&x.partyId===partyId).map(x=>x.character.id));
+  party.members=party.members.map(member=>({...member,online:onlineIds.has(member.characterId)}));
+  return party;
+}
+function broadcastParty(partyId,type,payload,except=null) {
+  for (const [ws,state] of activeSockets) if(state.authenticated&&state.character&&state.partyId===partyId&&ws!==except) send(ws,type,payload);
+}
+async function setPartyForCharacter(ws, characterId) {
+  const state=socketState.get(ws);
+  const result=await pool.query('SELECT party_id FROM party_members WHERE character_id=$1',[characterId]);
+  state.partyId=result.rows[0]?.party_id||null;
+  if(state.partyId) send(ws,'party.snapshot',{party:await partySnapshot(state.partyId)});
+}
 // ---------------------------------------------------------------- regions & realms
 let REALM_CACHE = { regions: [], realms: [], at: 0 };
 async function realmData(force) {
@@ -142,7 +171,7 @@ const recordAuthFailure = ip => authLimiter.fail(ip);
 setInterval(() => authLimiter.sweep(), 600000).unref();
 function attachSocket(ws, req) {
   const ip = req?.socket?.remoteAddress || 'unknown';
-  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
+  const state = { authenticated: false, account: null, character: null, realmId: null, zoneId: null, partyId: null, x: 8, y: 8, inSequence: 0, outSequence: 0, lastMove: 0, lastChat: 0, lastAttack: 0, ip, closed: false, alive: true, authTimer: null };
   socketState.set(ws, state); activeSockets.set(ws, state);
   state.authTimer = setTimeout(() => {
     if (!state.authenticated && !state.closed) ws.close(4408, 'authentication timeout');
@@ -186,6 +215,7 @@ function attachSocket(ws, req) {
         if (!switchingWithin && realmPopulation(realm.id) >= realm.max_players) return send(ws, 'error', { code: 'realm_full', realmId: realm.id, population: realmPopulation(realm.id), maxPlayers: realm.max_players });
         const previous = state.character ? { realmId: state.realmId, zoneId: state.zoneId, id: state.character.id } : null;
         state.character = ch; state.realmId = ch.realm_id; state.zoneId = ch.zone_id; state.x = ch.x; state.y = ch.y;
+        await setPartyForCharacter(ws, ch.id);
         if (previous) broadcastZone(previous.realmId, previous.zoneId, 'presence.left', { characterId: previous.id }, ws);
         const players = [...activeSockets.entries()].filter(([other, s]) => other !== ws && s.authenticated && s.character && s.realmId === state.realmId && s.zoneId === state.zoneId).map(([, s]) => ({ id: s.character.id, name: s.character.name, level: s.character.level, x: s.x, y: s.y }));
         const mobs = await pool.query('SELECT id,name,level,x,y,hp,max_hp FROM world_mobs WHERE realm_id=$1 AND zone_id=$2 AND alive=true ORDER BY id', [state.realmId, state.zoneId]);
@@ -280,10 +310,128 @@ function attachSocket(ws, req) {
         if (reward) send(ws, 'loot.reward', reward);
         return;
       }
+
+      if (msg.type === 'party.create') {
+        if (state.partyId) return send(ws,'error',{code:'already_in_party'});
+        const tx=await pool.connect();
+        let partyId;
+        try {
+          await tx.query('BEGIN');
+          const created=await tx.query('INSERT INTO parties(leader_character_id,realm_id) VALUES($1,$2) RETURNING id',
+            [state.character.id,state.realmId]);
+          partyId=created.rows[0].id;
+          await tx.query("INSERT INTO party_members(party_id,character_id,role) VALUES($1,$2,'leader')",
+            [partyId,state.character.id]);
+          await tx.query('COMMIT');
+        } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
+        finally { tx.release(); }
+        state.partyId=partyId;
+        send(ws,'party.snapshot',{party:await partySnapshot(partyId)});
+        return;
+      }
+      if (msg.type === 'party.invite') {
+        if (!state.partyId) return send(ws,'error',{code:'not_in_party'});
+        const party=await pool.query('SELECT leader_character_id,realm_id FROM parties WHERE id=$1',[state.partyId]);
+        if(!party.rowCount||party.rows[0].leader_character_id!==state.character.id)
+          return send(ws,'error',{code:'party_leader_required'});
+        const targetName=String(msg.payload.to||'').trim();
+        if(!targetName||targetName.length>16) return send(ws,'error',{code:'invalid_party_target'});
+        const target=await pool.query('SELECT id,name FROM characters WHERE realm_id=$1 AND lower(name)=lower($2)',
+          [state.realmId,targetName]);
+        if(!target.rowCount) return send(ws,'error',{code:'party_target_not_found'});
+        if(target.rows[0].id===state.character.id) return send(ws,'error',{code:'cannot_invite_self'});
+        const count=await pool.query('SELECT count(*)::int AS n FROM party_members WHERE party_id=$1',[state.partyId]);
+        if(Number(count.rows[0].n)>=5) return send(ws,'error',{code:'party_full'});
+        const existing=await pool.query('SELECT party_id FROM party_members WHERE character_id=$1',[target.rows[0].id]);
+        if(existing.rowCount) return send(ws,'error',{code:'party_target_already_grouped'});
+        const invite=await pool.query(`
+          INSERT INTO party_invites(party_id,inviter_character_id,invitee_character_id,expires_at)
+          VALUES($1,$2,$3,now()+interval '5 minutes')
+          ON CONFLICT (party_id,invitee_character_id) WHERE status='pending'
+          DO UPDATE SET inviter_character_id=EXCLUDED.inviter_character_id,expires_at=EXCLUDED.expires_at,created_at=now()
+          RETURNING id,expires_at
+        `,[state.partyId,state.character.id,target.rows[0].id]);
+        const invitation={id:invite.rows[0].id,partyId:state.partyId,from:state.character.name,
+          toCharacterId:target.rows[0].id,expiresAt:invite.rows[0].expires_at};
+        const live=[...activeSockets.entries()].find(([,x])=>x.character?.id===target.rows[0].id&&x.realmId===state.realmId);
+        if(live) send(live[0],'party.invited',invitation);
+        send(ws,'party.invite_sent',{invitation});
+        return;
+      }
+      if (msg.type === 'party.accept') {
+        const invitationId=String(msg.payload.invitationId||'');
+        if(!/^[0-9a-f-]{36}$/i.test(invitationId)) return send(ws,'error',{code:'invalid_party_invitation'});
+        if(state.partyId) return send(ws,'error',{code:'already_in_party'});
+        const tx=await pool.connect();
+        let partyId;
+        try {
+          await tx.query('BEGIN');
+          const invite=await tx.query(`SELECT i.id,i.party_id,p.realm_id FROM party_invites i
+            JOIN parties p ON p.id=i.party_id
+            WHERE i.id=$1 AND i.invitee_character_id=$2 AND i.status='pending'
+              AND i.expires_at>now() FOR UPDATE OF i,p`,[invitationId,state.character.id]);
+          if(!invite.rowCount) { await tx.query('ROLLBACK'); return send(ws,'error',{code:'party_invitation_expired'}); }
+          partyId=invite.rows[0].party_id;
+          if(invite.rows[0].realm_id!==state.realmId) { await tx.query('ROLLBACK'); return send(ws,'error',{code:'party_realm_mismatch'}); }
+          const count=await tx.query('SELECT count(*)::int AS n FROM party_members WHERE party_id=$1',[partyId]);
+          if(Number(count.rows[0].n)>=5) { await tx.query('ROLLBACK'); return send(ws,'error',{code:'party_full'}); }
+          await tx.query("INSERT INTO party_members(party_id,character_id,role) VALUES($1,$2,'member')",[partyId,state.character.id]);
+          await tx.query("UPDATE party_invites SET status='accepted',responded_at=now() WHERE id=$1",[invitationId]);
+          await tx.query("UPDATE party_invites SET status='expired',responded_at=now() WHERE invitee_character_id=$1 AND status='pending' AND id<>$2",
+            [state.character.id,invitationId]);
+          await tx.query('COMMIT');
+        } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
+        finally { tx.release(); }
+        state.partyId=partyId;
+        const snapshot=await partySnapshot(partyId);
+        broadcastParty(partyId,'party.updated',{party:snapshot});
+        return;
+      }
+      if (msg.type === 'party.leave') {
+        if(!state.partyId) return send(ws,'error',{code:'not_in_party'});
+        const partyId=state.partyId;
+        const tx=await pool.connect();
+        try {
+          await tx.query('BEGIN');
+          const party=await tx.query('SELECT leader_character_id FROM parties WHERE id=$1 FOR UPDATE',[partyId]);
+          await tx.query('DELETE FROM party_members WHERE party_id=$1 AND character_id=$2',[partyId,state.character.id]);
+          if(party.rowCount&&party.rows[0].leader_character_id===state.character.id) {
+            const next=await tx.query('SELECT character_id FROM party_members WHERE party_id=$1 ORDER BY joined_at,character_id LIMIT 1',[partyId]);
+            if(next.rowCount) {
+              await tx.query("UPDATE parties SET leader_character_id=$1 WHERE id=$2",[next.rows[0].character_id,partyId]);
+              await tx.query("UPDATE party_members SET role=CASE WHEN character_id=$1 THEN 'leader' ELSE 'member' END WHERE party_id=$2",
+                [next.rows[0].character_id,partyId]);
+            } else await tx.query('DELETE FROM parties WHERE id=$1',[partyId]);
+          }
+          await tx.query('COMMIT');
+        } catch(error) { await tx.query('ROLLBACK').catch(()=>{}); throw error; }
+        finally { tx.release(); }
+        state.partyId=null;
+        broadcastParty(partyId,'party.updated',{party:await partySnapshot(partyId)});
+        send(ws,'party.left',{partyId});
+        return;
+      }
+      if (msg.type === 'party.kick') {
+        if(!state.partyId) return send(ws,'error',{code:'not_in_party'});
+        const party=await pool.query('SELECT leader_character_id FROM parties WHERE id=$1',[state.partyId]);
+        if(!party.rowCount||party.rows[0].leader_character_id!==state.character.id)
+          return send(ws,'error',{code:'party_leader_required'});
+        const targetId=String(msg.payload.characterId||'');
+        if(!/^[0-9a-f-]{36}$/i.test(targetId)||targetId===state.character.id)
+          return send(ws,'error',{code:'invalid_party_target'});
+        const removed=await pool.query('DELETE FROM party_members WHERE party_id=$1 AND character_id=$2 RETURNING character_id',
+          [state.partyId,targetId]);
+        if(!removed.rowCount) return send(ws,'error',{code:'party_member_not_found'});
+        const live=[...activeSockets.entries()].find(([,x])=>x.character?.id===targetId&&x.partyId===state.partyId);
+        if(live) { live[1].partyId=null; send(live[0],'party.kicked',{partyId:state.partyId}); }
+        const snapshot=await partySnapshot(state.partyId);
+        broadcastParty(state.partyId,'party.updated',{party:snapshot});
+        return;
+      }
       if (msg.type === 'chat.send') {
         const channel = String(msg.payload.channel || 'zone');
-        if (!['zone', 'realm', 'whisper'].includes(channel)) {
-          return send(ws, 'error', { code: 'unsupported_chat_channel', channel, supported: ['zone', 'realm', 'whisper'] });
+        if (!['zone', 'realm', 'whisper', 'party'].includes(channel)) {
+          return send(ws, 'error', { code: 'unsupported_chat_channel', channel, supported: ['zone', 'realm', 'whisper', 'party'] });
         }
         const t = Date.now(); if (t - state.lastChat < 1200) return send(ws, 'error', { code: 'chat_rate_limited' });
         state.lastChat = t;
@@ -291,6 +439,7 @@ function attachSocket(ws, req) {
         if (!text || text.length > 180 || /[\u0000-\u001f\u007f]/.test(text)) return send(ws, 'error', { code: 'invalid_chat' });
         const message = { characterId: state.character.id, name: state.character.name, text, channel, realmId: state.realmId, at: Date.now() };
         if (channel === 'realm') { broadcastRealm(state.realmId, 'chat.message', message); return; }
+        if (channel === 'party') { if (!state.partyId) return send(ws,'error',{code:'not_in_party'}); broadcastParty(state.partyId,'chat.message',message); return; }
         if (channel === 'whisper') {
           const to = String(msg.payload.to || '').trim();
           if (!to || to.length > 16) return send(ws, 'error', { code: 'invalid_whisper_target' });
