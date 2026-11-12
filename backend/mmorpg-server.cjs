@@ -45,8 +45,9 @@ const pool = new Pool({ connectionString: DATABASE_URL, max: Number(process.env.
 const now = () => Math.floor(Date.now() / 1000);
 const b64 = value => Buffer.from(value).toString('base64url');
 const sign = value => crypto.createHmac('sha256', TOKEN_SECRET).update(value).digest('base64url');
-function issueToken(accountId) {
-  const payload = b64(JSON.stringify({ sub: accountId, exp: now() + TOKEN_TTL, iss: 'gbquest-mmorpg' }));
+// tv = the account's token_version when issued (migration 017); bumping it revokes every earlier token.
+function issueToken(accountId, tokenVersion = 0) {
+  const payload = b64(JSON.stringify({ sub: accountId, tv: tokenVersion, exp: now() + TOKEN_TTL, iss: 'gbquest-mmorpg' }));
   return payload + '.' + sign(payload);
 }
 function verifyToken(token) {
@@ -58,9 +59,16 @@ function verifyToken(token) {
   if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) return null;
   try {
     const p = JSON.parse(Buffer.from(parts[0], 'base64url').toString());
-    return p.iss === 'gbquest-mmorpg' && p.exp > now() && typeof p.sub === 'string' ? p : null;
+    if (p.iss !== 'gbquest-mmorpg' || !(p.exp > now()) || typeof p.sub !== 'string') return null;
+    return { ...p, tv: Number.isInteger(p.tv) && p.tv >= 0 ? p.tv : 0 }; // pre-017 tokens have no tv: version 0
   } catch { return null; }
 }
+// Close this instance's live sockets for an account (sign-out / password change); other instances reject the
+// revoked token at their next authentication check.
+function closeAccountSockets(accountId, except = null) {
+  for (const [ws, state] of activeSockets) if (ws !== except && state.account?.id === accountId) { try { ws.close(4401, 'session revoked'); } catch {} }
+}
+
 const scrypt = (password, salt) => new Promise((resolve, reject) => crypto.scrypt(password, salt, 64, { N: 16384, r: 8, p: 1 }, (err, key) => err ? reject(err) : resolve(key)));
 const json = (res, status, data) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY' }); res.end(JSON.stringify(data)); };
 async function readBody(req, max = 16384) {
@@ -76,7 +84,7 @@ async function accountFor(req) {
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   const claims = verifyToken(token);
   if (!claims) { recordAuthFailure(ip); return null; }
-  const result = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
+  const result = await pool.query('SELECT id, username, token_version FROM accounts WHERE id=$1 AND disabled=false AND token_version=$2', [claims.sub, claims.tv]);
   if (!result.rowCount) { recordAuthFailure(ip); return null; }
   authLimiter.clear(ip);
   return { ...result.rows[0], token };
@@ -239,7 +247,7 @@ async function optionalAccount(req) {
   const header = String(req.headers.authorization || '');
   if (!header.startsWith('Bearer ')) return null;
   const claims = verifyToken(header.slice(7)); if (!claims) return null;
-  const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
+  const r = await pool.query('SELECT id FROM accounts WHERE id=$1 AND disabled=false AND token_version=$2', [claims.sub, claims.tv]);
   return r.rowCount ? r.rows[0] : null;
 }
 const CHAR_COLS = 'id,name,class,species,background,level,realm_id,zone_id,x,y,hp,max_hp,mp,max_mp,talent_points,allocated_attributes,specialization_id';
@@ -276,7 +284,7 @@ function attachSocket(ws, req) {
         if (msg.type !== 'authenticate') return ws.close(4401, 'authenticate first');
         const claims = verifyToken(msg.payload.token);
         if (!claims) { recordAuthFailure(state.ip); return ws.close(4401, 'invalid token'); }
-        const acct = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false', [claims.sub]);
+        const acct = await pool.query('SELECT id, username FROM accounts WHERE id=$1 AND disabled=false AND token_version=$2', [claims.sub, claims.tv]);
         if (!acct.rowCount) { recordAuthFailure(state.ip); return ws.close(4401, 'account unavailable'); }
         authLimiter.clear(state.ip);
         clearTimeout(state.authTimer); state.authTimer = null;
@@ -573,12 +581,38 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       const username = String(body.username || '').trim();
       const password = String(body.password || '');
-      const result = await pool.query('SELECT id,username,password_salt,password_hash,disabled FROM accounts WHERE lower(username)=lower($1)', [username]);
+      const result = await pool.query('SELECT id,username,password_salt,password_hash,disabled,token_version FROM accounts WHERE lower(username)=lower($1)', [username]);
       if (!result.rowCount || result.rows[0].disabled) { await scrypt(password.slice(0, 72), crypto.randomBytes(16)); recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' }); }
       const acct = result.rows[0], candidate = await scrypt(password, acct.password_salt);
       if (candidate.length !== acct.password_hash.length || !crypto.timingSafeEqual(candidate, acct.password_hash)) { recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' }); }
       authLimiter.clear(ip);
-      return json(res, 200, { token: issueToken(acct.id), account: { id: acct.id, username: acct.username } });
+      return json(res, 200, { token: issueToken(acct.id, acct.token_version), account: { id: acct.id, username: acct.username } });
+    }
+    // Sign out everywhere: revokes every token issued to this account so far (migration 017).
+    if (url.pathname === '/api/logout' && req.method === 'POST') {
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      await pool.query('UPDATE accounts SET token_version=token_version+1 WHERE id=$1', [acct.id]);
+      closeAccountSockets(acct.id);
+      return json(res, 200, { ok: true });
+    }
+    // Change password: requires the current one, revokes every other session and returns a fresh token.
+    if (url.pathname === '/api/password' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
+      const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
+      const body = await readBody(req);
+      const oldPassword = String(body.oldPassword || ''), newPassword = String(body.newPassword || '');
+      if (newPassword.length < 10 || newPassword.length > 72) return json(res, 400, { error: 'password_10_72_required' });
+      const current = await pool.query('SELECT password_salt,password_hash FROM accounts WHERE id=$1', [acct.id]);
+      const candidate = await scrypt(oldPassword.slice(0, 72), current.rows[0].password_salt);
+      if (candidate.length !== current.rows[0].password_hash.length || !crypto.timingSafeEqual(candidate, current.rows[0].password_hash)) {
+        recordAuthFailure(ip); return json(res, 401, { error: 'invalid_credentials' });
+      }
+      authLimiter.clear(ip);
+      const salt = crypto.randomBytes(16), hash = await scrypt(newPassword, salt);
+      const updated = await pool.query('UPDATE accounts SET password_salt=$2,password_hash=$3,token_version=token_version+1 WHERE id=$1 RETURNING token_version',
+        [acct.id, salt, hash]);
+      closeAccountSockets(acct.id);
+      return json(res, 200, { token: issueToken(acct.id, updated.rows[0].token_version), account: { id: acct.id, username: acct.username } });
     }
     if (url.pathname === '/api/me' && req.method === 'GET') {
       const acct = await accountFor(req); if (!acct) return json(res, 401, { error: 'unauthorized' });
@@ -652,7 +686,8 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/talents' && req.method === 'GET') {
       const classId = String(url.searchParams.get('class') || '').toLowerCase();
-      if (!['warrior','mage','ranger','cleric','rogue','adventurer'].includes(classId)) {
+      // Every class a character can have (the 27 jobs and the legacy classes) has talent trees (migrations 012, 016).
+      if (!CHARACTER_CLASSES.has(classId)) {
         return json(res, 400, { error: 'invalid_class' });
       }
       const trees = await pool.query(`SELECT s.id,s.class_id,s.name,s.role,s.description,

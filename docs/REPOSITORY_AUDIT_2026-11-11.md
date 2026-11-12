@@ -72,3 +72,11 @@ The PostgreSQL service issues signed 30-day bearer tokens. The inspected impleme
 ## Validation limitations
 
 No production database, deployed MMO host, or local checkout was available in this GitHub-only audit session. The changes in this branch are limited to deployment safety defaults, a regression test, and this audit report. The regression test is intended to run in the repository's normal Node test suite; CI must confirm it on the branch.
+
+## Follow-up (2026-11-12)
+
+- **P1 backend modes:** decided and documented in [adr/0001-backend-modes.md](adr/0001-backend-modes.md), with an API ownership map. The Windows launchers are labelled: `tools/windows/start-realm-server.bat` (realm server) and the new `tools/windows/start-mmo-server.bat` (PostgreSQL MMO service). `.env` is now in `.gitignore`.
+- **P1 progression contract:** characters were already on the 27 jobs and levels 1–720 (migration 009), but talent trees existed only for the six legacy classes, so job characters could not choose a specialization. Migration 016 adds trees for every job, and `GET /api/talents` accepts every character class.
+- **P2 syntax coverage:** `npm run check:syntax` now runs `tools/check-syntax.cjs`, which checks every tracked JavaScript and Python file outside generated and synced folders.
+- **P3 token lifecycle:** migration 017 adds `accounts.token_version`. `POST /api/logout` and `POST /api/password` revoke every earlier token; tokens issued before the migration stay valid until then.
+- Still open: shared pub/sub beyond PostgreSQL presence (P2), authoritative seasonal data (P2), and the operational controls in step 7.
