@@ -208,6 +208,30 @@ test('action-RPG gear: aspects, greater affixes, tempering and masterwork', () =
   for (const id of A.ASPECT_IDS) { const t = A.ASPECTS[id].desc(A.ASPECTS[id].hi); assert.ok(t && !/undefined|NaN/.test(t), id); }
   for (const id of ['executioner', 'stormshard', 'corpseburst', 'bulwark', 'fortune']) assert.ok(A.ASPECTS[id], `old aspect ${id} still exists`);
   for (const kind of ['weapon', 'armor', 'wondrous']) { const a = A.rollAspect(kind, 5, 0.5, 0); assert.ok(A.fitsKind(a.id, kind)); assert.equal(a.val, A.ASPECTS[a.id].lo + Math.round(0) || a.val); }
+  const families = {
+    weapon: ['riftcleaver', 'stormglass_fang', 'soul_harvest', 'duelist_echo'],
+    armor: ['bastion_plate', 'thorn_return', 'second_breath', 'winterward'],
+    relic: ['relic_ashen_heart', 'relic_gravesong', 'relic_sable_compass', 'relic_wolf_king'],
+    artifact: ['artifact_first_dawn', 'artifact_chronicle_echo', 'artifact_gatekeeper', 'artifact_worldroot']
+  };
+  for (const [kind, ids] of Object.entries(families)) {
+    const gear = kind === 'relic' || kind === 'artifact' ? { kind: 'wondrous', slot: kind, base: `${kind}_01` } : kind;
+    for (const id of ids) { assert.equal(A.ASPECTS[id].kind, kind); assert.ok(A.fitsKind(id, gear), `${id} fits ${kind}`); }
+    const roll = kind === 'relic' || kind === 'artifact' ? 0.2 : 0.999;
+    const rolled = A.rollAspect(gear, 8, roll, 1);
+    assert.ok(rolled && ids.includes(rolled.id), `${kind} receives its dedicated top-pool aspect`);
+    assert.ok(A.fitsKind(rolled.id, gear));
+  }
+  for (const kind of ['relic', 'artifact']) {
+    const gear = { kind: 'wondrous', slot: kind, base: `${kind}_01` };
+    const shared = A.rollAspect(gear, 8, 0.8, 1);
+    assert.ok(shared && A.fitsKind(shared.id, gear));
+    assert.ok(!families[kind].includes(shared.id), 'the shared pool remains available outside the signature roll');
+  }
+  assert.ok(A.fitsKind('fortune', { kind: 'wondrous', slot: 'relic', base: 'relic_01' }), 'generic wondrous aspects remain usable on relics');
+  assert.ok(A.fitsKind('fortune', { kind: 'wondrous', slot: 'artifact', base: 'artifact_01' }), 'generic wondrous aspects remain usable on artifacts');
+  assert.equal(A.fitsKind('relic_ashen_heart', 'weapon'), false, 'relic powers cannot be imprinted on weapons');
+  assert.equal(A.fitsKind('artifact_first_dawn', { kind: 'wondrous', slot: 'relic', base: 'relic_01' }), false, 'artifact powers cannot be imprinted on relics');
   const lo = A.rollAspect('weapon', 5, 0, 0), hi = A.rollAspect('weapon', 8, 0, 1); assert.equal(lo.id, hi.id); assert.ok(hi.val > lo.val, 'better rarity and roll, better aspect');
   assert.deepEqual(plain(A.rollGreater(3, 5, [0.9, 0.01, 0.9, 0])), [1]);
   assert.deepEqual(plain(A.rollGreater(3, 7, [0.9, 0.9, 0.9, 0.5])), [1], 'ancestral items always get one');

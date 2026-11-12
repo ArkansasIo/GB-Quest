@@ -34,16 +34,10 @@ function aspectText(e, v) {
 const ASPECTS = Object.fromEntries(Object.entries(typeof ASPECT_SPECS !== 'undefined' ? ASPECT_SPECS : {}).map(([id, A]) => [id, Object.assign({}, A, { desc: v => aspectText(A.e, v) })]));
 const ASPECT_IDS = Object.keys(ASPECTS);
 const GREATER_CHANCE = 0.06, GREATER_MULT = 1.5, TEMPER_MAX = 2, MW_MAX = 12, MW_STEP = 0.05, MW_CRIT = 1.25;
+const ASPECT_SIGNATURE_CHANCE = 0.4;
 const TEMPER_POOLS = { OFFENSIVE: ['dmg', 'crit', 'critdmg', 'hit', 'haste', 'fire', 'lightning', 'necrotic'], DEFENSIVE: ['hp', 'acb', 'resist', 'block', 'dodge'], UTILITY: ['mf', 'gf', 'xp', 'leech', 'heal'] };
 const TEMPER_BASE = { dmg: 4, crit: 2, critdmg: 8, hit: 1, haste: 3, fire: 6, lightning: 6, necrotic: 6, hp: 15, acb: 1, resist: 3, block: 2, dodge: 2, mf: 6, gf: 6, xp: 4, leech: 1, heal: 4 };
 function aspectHash(s) { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-const fitsKind = (id, kind) => ASPECTS[id].kind === 'any' || ASPECTS[id].kind === kind;
-// roll an aspect for an item: value grows with rarity (5..8) and a 0..1 roll
-function rollAspect(kind, rarity, r1, r2) {
-  const pool = ASPECT_IDS.filter(id => fitsKind(id, kind)), id = pool[Math.floor(r1 * pool.length) % pool.length], A = ASPECTS[id];
-  const q = Math.min(1, Math.max(0, (Math.max(5, rarity) - 5) / 4 * 0.5 + r2 * 0.5));
-  return { id, val: Math.round(A.lo + (A.hi - A.lo) * q) };
-}
 // greater affixes: which affix indices roll 1.5x (ancestral+ get at least one)
 function rollGreater(n, rarity, rolls) {
   const out = []; for (let i = 0; i < n; i++) if ((rolls[i] || 1) < GREATER_CHANCE) out.push(i);
@@ -59,7 +53,41 @@ const masterworkCost = (rank, ilvl) => ({ gold: Math.round((80 + (ilvl || 1) * 4
 const imprintCost = ilvl => 150 + (ilvl || 1) * 8;
 const temperCost = ilvl => ({ gold: 100 + (ilvl || 1) * 5, scrap: 4 });
 
-if (typeof globalThis !== 'undefined') globalThis.GBQAspects = { ASPECTS, ASPECT_IDS, rollAspect, rollGreater, temperValue, masterworkAffixes, masterworkCost, imprintCost, temperCost, TEMPER_POOLS, TEMPER_MAX, MW_MAX, GREATER_MULT, fitsKind };
+function aspectKind(itemOrKind) {
+  if (typeof itemOrKind === 'string') return itemOrKind;
+  if (!itemOrKind || typeof itemOrKind !== 'object') return '';
+  const base = String(itemOrKind.base || '');
+  if (itemOrKind.category === 'relic' || itemOrKind.slot === 'relic' || /^relic_\d+$/.test(base)) return 'relic';
+  if (itemOrKind.category === 'artifact' || itemOrKind.slot === 'artifact' || /^artifact_\d+$/.test(base)) return 'artifact';
+  return itemOrKind.kind || '';
+}
+const fitsKind = (id, itemOrKind) => {
+  const spec = ASPECTS[id], kind = aspectKind(itemOrKind);
+  return !!spec && (spec.kind === 'any' || spec.kind === kind || (spec.kind === 'wondrous' && (kind === 'relic' || kind === 'artifact')));
+};
+function pickAspectId(itemOrKind, roll) {
+  const kind = aspectKind(itemOrKind), pool = ASPECT_IDS.filter(id => fitsKind(id, itemOrKind));
+  if (!pool.length) return null;
+  const r = ((Number.isFinite(roll) ? roll : 0) % 1 + 1) % 1;
+  if (kind === 'relic' || kind === 'artifact') {
+    const signature = pool.filter(id => ASPECTS[id].kind === kind);
+    if (signature.length) {
+      if (r < ASPECT_SIGNATURE_CHANCE) return signature[Math.floor(r / ASPECT_SIGNATURE_CHANCE * signature.length)];
+      const shared = pool.filter(id => ASPECTS[id].kind !== kind);
+      if (shared.length) return shared[Math.floor((r - ASPECT_SIGNATURE_CHANCE) / (1 - ASPECT_SIGNATURE_CHANCE) * shared.length)];
+    }
+  }
+  return pool[Math.floor(r * pool.length)];
+}
+// Roll from the precise gear-family pool; relics and artifacts favor their own signature set.
+function rollAspect(itemOrKind, rarity, r1, r2) {
+  const id = pickAspectId(itemOrKind, r1), A = ASPECTS[id];
+  if (!A) return null;
+  const q = Math.min(1, Math.max(0, (Math.max(5, rarity) - 5) / 4 * 0.5 + r2 * 0.5));
+  return { id, val: Math.round(A.lo + (A.hi - A.lo) * q) };
+}
+
+if (typeof globalThis !== 'undefined') globalThis.GBQAspects = { ASPECTS, ASPECT_IDS, rollAspect, rollGreater, temperValue, masterworkAffixes, masterworkCost, imprintCost, temperCost, TEMPER_POOLS, TEMPER_MAX, MW_MAX, GREATER_MULT, fitsKind, aspectKind, ASPECT_SIGNATURE_CHANCE };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Battle !== 'undefined') {
@@ -73,7 +101,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
           const n = (it.affixes || []).length, rolls = Array.from({ length: n + 1 }, () => R());
           const gr = rollGreater(n, it.rarity || 0, rolls);
           if (gr.length) { it.greater = gr; it.affixes = it.affixes.map(([k, v], i) => gr.includes(i) ? [k, Math.max(v + 1, Math.round(v * GREATER_MULT))] : [k, v]); }
-          if ((it.rarity || 0) >= 5) it.aspect = it.named ? (() => { const h = aspectHash(it.named || it.name), pool = ASPECT_IDS.filter(id => fitsKind(id, it.kind)), id = pool[h % pool.length]; return { id, val: ASPECTS[id].hi }; })() : rollAspect(it.kind, it.rarity, R(), R());
+          if ((it.rarity || 0) >= 5) it.aspect = it.named ? (() => { const h = aspectHash(it.named || it.name), id = pickAspectId(it, (h % 10000) / 10000); return { id, val: ASPECTS[id].hi }; })() : rollAspect(it, it.rarity, R(), R());
         }
       } catch (e) { /* the item is still fine */ }
       return it;
@@ -167,7 +195,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof Ba
         const ids = Object.keys(codex); if (!ids.length) return say('Your codex is empty. EXTRACT aspects from legendary items first.', occultistMenu);
         return choose(ids.map(id => `${ASPECTS[id].name} ${codex[id]}`), j => {
           if (j < 0) return occultistMenu(); const id = ids[j];
-          pickItem(`IMPRINT ${ASPECTS[id].name}`, o => (o.it.rarity || 0) >= 3 && fitsKind(id, o.it.kind), o => {
+          pickItem(`IMPRINT ${ASPECTS[id].name}`, o => (o.it.rarity || 0) >= 3 && fitsKind(id, o.it), o => {
             const cost = imprintCost(o.it.ilvl); if (!pay(cost)) { SFX.error(); return say(`Imprinting costs ${fmt(cost)} G.`, occultistMenu); }
             o.it.aspect = { id, val: codex[id] }; SFX.craft(); saveGame(); say(`${o.it.name.slice(0, 18)} now carries ASPECT OF ${ASPECTS[id].name}.`, occultistMenu);
           });

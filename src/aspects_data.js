@@ -9,7 +9,7 @@
 //   t: 'start' at battle start: buff for v rounds, or a barrier of v% max HP
 //   t: 'hit'   when struck: reduce damage (when: lowhp, elite, barrier, el:<type>), reflect, or afflict the attacker
 //   t: 'stat'  passive substats scaled by v
-// kind: which gear can hold it (weapon, armor, wondrous, any). cat: OFFENSIVE, DEFENSIVE, UTILITY, MOBILITY, RESOURCE.
+  // kind: which gear can hold it (weapon, armor, wondrous, relic, artifact, any). cat: OFFENSIVE, DEFENSIVE, UTILITY, MOBILITY, RESOURCE.
 
 const ASPECT_SPECS = (() => {
   const S = {};
@@ -80,5 +80,22 @@ const ASPECT_SPECS = (() => {
     ['quick', 'QUICKSILVER', [['haste', 0.5]], 10, 30], ['guard', 'GUARDIAN', [['block', 0.3]], 10, 30], ['evasion', 'SHADOWSTEP', [['dodge', 0.3]], 10, 30], ['titan', 'TITAN', [['hp', 4]], 10, 40],
     ['plate', 'PLATEBOUND', [['acb', 0.1]], 10, 30], ['warded', 'WARDED', [['resist', 0.3]], 10, 30], ['thorned', 'THORNED', [['thorns', 1]], 5, 25], ['power', 'OVERPOWER', [['dmg', 0.5]], 10, 40]];
   for (const [id, name, stats, lo, hi] of ST) add(id, name, ['hp', 'acb', 'resist', 'block', 'thorns'].includes(stats[0][0]) ? 'armor' : ['mf', 'gf', 'xp', 'heal', 'haste', 'dodge'].includes(stats[0][0]) ? 'wondrous' : 'any', ['mf', 'gf', 'xp'].includes(stats[0][0]) ? 'UTILITY' : 'RESOURCE', lo, hi, { t: 'stat', stats });
+  // ---- item-slot identities: strong, readable powers reserved for the named gear families
+  add('riftcleaver', 'RIFTCLEAVER', 'weapon', 'OFFENSIVE', 18, 42, { t: 'dmg', when: 'phys' });
+  add('stormglass_fang', 'STORMGLASS FANG', 'weapon', 'OFFENSIVE', 20, 45, { t: 'proc', p: 22, act: { bonus: 'lightning' } });
+  add('soul_harvest', 'SOUL HARVEST', 'weapon', 'RESOURCE', 5, 14, { t: 'kill', act: { heal: true } });
+  add('duelist_echo', 'DUELIST’S ECHO', 'weapon', 'OFFENSIVE', 25, 60, { t: 'dmg', when: 'first' });
+  add('bastion_plate', 'BASTION PLATE', 'armor', 'DEFENSIVE', 4, 10, { t: 'hit', act: { reduce: true, when: 'always' } });
+  add('thorn_return', 'THORN RETURN', 'armor', 'DEFENSIVE', 15, 35, { t: 'hit', act: { reflect: true } });
+  add('second_breath', 'SECOND BREATH', 'armor', 'RESOURCE', 1, 3, { t: 'start', act: { buff: 'regen' } });
+  add('winterward', 'WINTERWARD', 'armor', 'DEFENSIVE', 18, 45, { t: 'hit', act: { reduce: true, when: 'el:cold' } });
+  add('relic_ashen_heart', 'ASHEN HEART', 'relic', 'RESOURCE', 12, 35, { t: 'stat', stats: [['hp', 4], ['heal', 1]] });
+  add('relic_gravesong', 'GRAVESONG TOKEN', 'relic', 'RESOURCE', 2, 4, { t: 'kill', act: { buff: 'regen' } });
+  add('relic_sable_compass', 'SABLE COMPASS', 'relic', 'UTILITY', 12, 36, { t: 'stat', stats: [['mf', 1], ['xp', 0.5]] });
+  add('relic_wolf_king', 'WOLF-KING PACT', 'relic', 'MOBILITY', 1, 3, { t: 'start', act: { buff: 'haste' } });
+  add('artifact_first_dawn', 'FIRST DAWN', 'artifact', 'DEFENSIVE', 14, 32, { t: 'start', act: { barrier: true } });
+  add('artifact_chronicle_echo', 'CHRONICLE OF ECHOES', 'artifact', 'OFFENSIVE', 35, 80, { t: 'dmg', when: 'first' });
+  add('artifact_gatekeeper', 'GATEKEEPER’S RESONANCE', 'artifact', 'OFFENSIVE', 22, 48, { t: 'proc', p: 20, act: { chain: 'force' } });
+  add('artifact_worldroot', 'WORLDROOT ANCHOR', 'artifact', 'DEFENSIVE', 18, 42, { t: 'hit', act: { reduce: true, when: 'lowhp' } });
   return S;
 })();
