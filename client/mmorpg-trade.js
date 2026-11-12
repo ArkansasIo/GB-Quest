@@ -18,8 +18,19 @@ class GBQuestMMOApi {
   async register(username,password) { const result=await this.request('/api/register',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   async login(username,password) { const result=await this.request('/api/login',{method:'POST',body:{username,password},auth:false});this.token=result.token;return result; }
   me() { return this.request('/api/me'); }
-  characters() { return this.request('/api/characters'); }
-  createCharacter(name,characterClass) { return this.request('/api/characters',{method:'POST',body:{name,class:characterClass}}); }
+  regions() { return this.request('/api/regions',{auth:false}); }
+  realms(regionId) { return this.request('/api/realms'+(regionId?'?region='+encodeURIComponent(regionId):''),{auth:false}); }
+  characters(realmId) { return this.request('/api/characters'+(realmId?'?realm='+encodeURIComponent(realmId):'')); }
+  createCharacter(name,characterClass,realmId) {
+    return this.request('/api/characters',{method:'POST',body:{name,class:characterClass,...(realmId?{realmId}:{})}});
+  }
+  whispers(characterId,peerId,limit=50) {
+    const query=new URLSearchParams(); if(peerId)query.set('with',peerId);query.set('limit',String(limit));
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers?'+query.toString());
+  }
+  sendWhisper(characterId,toCharacterId,text) {
+    return this.request('/api/characters/'+encodeURIComponent(characterId)+'/whispers',{method:'POST',body:{toCharacterId,text}});
+  }
   inventory(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/inventory'); }
   trades(id) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades'); }
   createTrade(id,toCharacterId,offer={}) { return this.request('/api/characters/'+encodeURIComponent(id)+'/trades',{method:'POST',body:{...offer,toCharacterId}}); }
