@@ -589,6 +589,11 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
         'UPDATE characters SET zone_id=(SELECT zone_id FROM characters WHERE id=$1) WHERE id=$2',
         [character.id, recipientCharacter.id]
       );
+      // Isolate trade lifecycle assertions from earlier vendor, bank and guild-vault spending.
+      await alignTradeZonePool.query(
+        'UPDATE characters SET gold=GREATEST(gold,100) WHERE id=$1',
+        [character.id]
+      );
     } finally { await alignTradeZonePool.end(); }
 
     const senderWalletBeforeTrade = await (await fetch(base + `/api/characters/${character.id}/wallet`, {
