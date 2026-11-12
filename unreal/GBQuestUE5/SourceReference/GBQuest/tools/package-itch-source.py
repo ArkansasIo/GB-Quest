@@ -3,8 +3,7 @@
 
 The archive contains the playable single-file HTML5 build plus the complete
 project source, tests, build tooling, documentation, and runtime assets.
-Generated caches, dependencies, private server state, and excluded licensed
-third-party source packs are intentionally omitted.
+Generated caches, dependencies, private server state, generated browser build outputs in dist/ (the playable build is packaged separately), generated HD64 frame/equipment PNGs (already embedded in the playable HTML), and excluded licensed third-party source packs are intentionally omitted.
 """
 from __future__ import annotations
 import hashlib
@@ -19,9 +18,9 @@ OUTPUT = BUILD / "gbquest-itch-full-source.zip"
 EXCLUDED_DIRS = {
     ".git", ".github-cache", "node_modules", "__pycache__", ".pytest_cache",
     ".mypy_cache", ".ruff_cache", ".venv", "venv", "build", "release",
-    "coverage", ".next", ".turbo",
+    "coverage", "dist", ".next", ".turbo",
 }
-EXCLUDED_PREFIXES = ("server/data/", "assets_hd64/gbq_6000/", "assets_hd64/gbq_6000_hd/")
+EXCLUDED_PREFIXES = ("server/data/", "assets_hd64/gbq_6000/", "assets_hd64/gbq_6000_hd/", "assets_hd64/animations/frames/", "assets_hd64/equipment/")
 EXCLUDED_NAMES = {".DS_Store", "Thumbs.db"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".log", ".tmp", ".bak"}
 

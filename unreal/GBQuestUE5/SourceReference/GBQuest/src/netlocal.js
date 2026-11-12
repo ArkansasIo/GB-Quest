@@ -6,6 +6,15 @@
 // When there is no realm server (e.g. a shared claude.ai page), the game falls back to the page's
 // own room/db capabilities, or plays offline.
 
+// the realm server says this account's friends list changed: screens refetch; requests and acceptances toast
+function friendsChanged(d) {
+  d = d || {};
+  try { window.dispatchEvent(new CustomEvent('gbq-friends', { detail: d })); } catch (e) {}
+  try {
+    if (d.reason === 'request' && typeof toast === 'function') toast('FRIEND REQUEST', String(d.name || '').toUpperCase().slice(0, 16), 'item_scroll', 'confirm');
+    if (d.reason === 'accepted' && typeof toast === 'function') toast('NEW FRIEND', String(d.name || '').toUpperCase().slice(0, 16), 'item_scroll', 'confirm');
+  } catch (e) {}
+}
 const LocalRealm = {
   base: '', available: false, token: null, account: null, peer: null, es: null, info: null, desktop: false, desktopSlot: null,
   load() { try { this.token = localStorage.getItem('gbq_token'); this.account = JSON.parse(localStorage.getItem('gbq_account') || 'null'); } catch (e) {} },
@@ -17,7 +26,40 @@ const LocalRealm = {
     if (!r.ok) { const err = new Error((j && j.error) || `HTTP ${r.status}`); err.status = r.status; throw err; }
     return j;
   },
-  async detect() {
+  // ---------------------------------------------------------------- realm server address
+  // Empty = the server that serves this page. A game hosted elsewhere (itch.io, a static web host, a local
+  // file) reaches a realm server through the address the player saves in ONLINE > SERVER ADDRESS, or one a
+  // build bakes in as window.GBQ_REALM_URL. The server must list the page's origin in GBQ_ALLOWED_ORIGINS.
+  serverUrl() { let v = ''; try { v = localStorage.getItem('gbq_realm_url') || ''; } catch (e) {} return v || String(window.GBQ_REALM_URL || '').replace(/\/+$/, ''); },
+  savedServerUrl() { try { return localStorage.getItem('gbq_realm_url') || ''; } catch (e) { return ''; } },
+  // Returns the server origin for a typed address ('' = this page's server), or throws with a short reason.
+  normalizeServerUrl(raw) {
+    let v = String(raw || '').trim();
+    if (!v) return '';
+    const local = h => /^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|[a-z0-9-]+\.local)$/i.test(h);
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) v = (local(v.split(/[:/]/)[0]) ? 'http://' : 'https://') + v;
+    let u; try { u = new URL(v); } catch (e) { throw new Error('THAT IS NOT A VALID ADDRESS'); }
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') throw new Error('USE AN HTTPS:// ADDRESS');
+    if (u.protocol === 'http:' && !local(u.hostname)) throw new Error('USE HTTPS FOR INTERNET SERVERS');
+    if (u.protocol === 'http:' && location.protocol === 'https:' && !/^(localhost|127\.|\[::1\])/i.test(u.hostname)) throw new Error('THIS PAGE NEEDS AN HTTPS SERVER');
+    return u.origin;
+  },
+  // Save a new address ('' = back to this page's server) and look for a realm server there.
+  async setServerUrl(raw) {
+    const url = this.normalizeServerUrl(raw);
+    if (url !== this.serverUrl()) {
+      // a session token belongs to the server that issued it: never send it to a different one
+      this.disconnect(); this.token = null; this.account = null; this.store(); this.info = null;
+    }
+    try { if (url) localStorage.setItem('gbq_realm_url', url); else localStorage.removeItem('gbq_realm_url'); } catch (e) {}
+    const ok = await this.detect(true);
+    if (typeof NET !== 'undefined') {
+      if (ok && NET.init) { try { await NET.init(); } catch (e) {} }
+      else if (!ok && NET.transport === 'server') { NET.transport = null; NET.room = null; NET.peers = []; NET.status = 'OFFLINE'; }
+    }
+    return ok;
+  },
+  async detect(force) {
     if (location.protocol === 'file:' && window.gbqLauncher?.getGameSession) {
       try {
         const context = await window.gbqLauncher.getGameSession();
@@ -29,8 +71,26 @@ const LocalRealm = {
         this.info = { ok: true }; this.available = true; return true;
       } catch (e) { this.desktop = true; this.available = false; return false; }
     }
-    if (!/^https?:$/.test(location.protocol)) return false;
-    try { const c = new AbortController(); setTimeout(() => c.abort(), 1500); const r = await fetch('/api/health', { signal: c.signal }); if (!r.ok) return false; this.info = await r.json(); this.available = !!(this.info && this.info.ok); } catch (e) { this.available = false; }
+    const remote = this.serverUrl();
+    if (!remote) {
+      // No address set: the realm server must be the one serving this page.
+      if (!/^https?:$/.test(location.protocol)) { this.base = ''; this.lastError = 'NO SERVER ADDRESS SET'; return false; }
+      // Static hosts (the itch.io release sets GBQ_STATIC_HOST) have no same-origin realm server: don't probe.
+      if (window.GBQ_STATIC_HOST) { this.base = ''; this.noServer = true; this.lastError = 'NO SERVER ADDRESS SET'; return false; }
+    }
+    if (this.noServer && !force && this.base === remote) return false;   // already answered: no realm server there
+    this.base = remote; this.noServer = false; this.available = false; this.lastError = '';
+    const c = new AbortController(), timer = setTimeout(() => c.abort(), remote ? 5000 : 1500);
+    try {
+      const r = await fetch(this.base + '/api/health', { signal: c.signal });
+      if (r.status === 403) { this.lastError = 'SERVER REFUSED THIS PAGE'; return false; }   // origin not in GBQ_ALLOWED_ORIGINS
+      if (!r.ok) { this.noServer = r.status === 404 || r.status === 405; this.lastError = this.noServer ? 'NO REALM SERVER AT THAT ADDRESS' : 'SERVER ERROR ' + r.status; return false; }
+      this.info = await r.json(); this.available = !!(this.info && this.info.ok);
+      if (!this.available) { this.noServer = true; this.lastError = 'NOT A REALM SERVER'; }
+    } catch (e) {
+      this.available = false;
+      this.lastError = e && e.name === 'AbortError' ? 'SERVER DID NOT ANSWER' : remote ? 'CANNOT REACH SERVER' : 'NO REALM SERVER FOUND';
+    } finally { clearTimeout(timer); }
     return this.available;
   },
   async register(username, password) { const r = await this.api('/api/register', { method: 'POST', body: { username, password } }); this.token = r.token; this.account = r.account; this.store(); return r.account; },
@@ -54,14 +114,21 @@ const LocalRealm = {
         if (message.event === 'hello') L.peer = d.peer;
         else if (message.event === 'peers') { peers = d.peers || []; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); }
         else if (message.event === 'msg') (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data }));
+        else if (message.event === 'friends') friendsChanged(d);
       }, error => peerSubs.forEach(([, err]) => err && err(error)));
       L.es = { close };
     } else {
-      L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
-      L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; });
-      L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
-      L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
-      L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+      const open = () => {
+        L.es = new EventSource(`${L.base}/api/stream?token=${encodeURIComponent(L.token)}`);
+        L.es.addEventListener('hello', e => { const d = JSON.parse(e.data); L.peer = d.peer; L.realm = d.realm || null; });
+        L.es.addEventListener('peers', e => { const d = JSON.parse(e.data); peers = d.peers; peerSubs.forEach(([cb]) => cb({ peers, left: d.left || [] })); });
+        L.es.addEventListener('msg', e => { const d = JSON.parse(e.data); (handlers[d.topic] || []).forEach(cb => cb({ peer: d.peer, data: d.data })); });
+        L.es.addEventListener('friends', e => friendsChanged(JSON.parse(e.data)));
+        L.es.onerror = () => { if (L.es && L.es.readyState === 2) peerSubs.forEach(([, err]) => err && err()); };
+      };
+      // enter the realm this hero belongs to before joining live play (each realm is its own world)
+      const want = typeof G !== 'undefined' && G && G.realm;
+      if (want && L.account) { L.es = { close() {} }; L.selectRealm(want).catch(() => {}).finally(open); } else open();
     }
     const post = (path, body) => L.peer ? L.api(path, { method: 'POST', body: { peer: L.peer, ...body } }) : Promise.reject(new Error('connecting'));
     return {
@@ -74,6 +141,8 @@ const LocalRealm = {
     };
   },
   disconnect() { if (this.es) { this.es.close(); this.es = null; } this.peer = null; },
+  // choose the world this account plays on (POST /api/realm/select); open live connections move with it
+  async selectRealm(realm) { const r = await this.api('/api/realm/select', { method: 'POST', body: { realm } }); this.realm = r.realm; return r; },
   // ---------------------------------------------------------------- cloud saves
   async listSaves() { return (await this.api('/api/saves')).slots; },
   async upload(slot) { const st = store.get(SLOT_KEYS[slot]); if (!st) throw new Error('That slot is empty on this device.'); await this.api(`/api/saves/${slot}`, { method: 'PUT', body: { state: st } }); },
@@ -88,7 +157,7 @@ LocalRealm.load();
     const desktop = location.protocol === 'file:' && !!window.gbqLauncher?.getGameSession;
     if (S.netMode === 'offline' && !desktop) return init0();
     const ok = await LocalRealm.detect();
-    if (!ok) return init0();                                  // shared page / file: use the page's room or go offline
+    if (!ok) { if (this.transport === 'server') { this.transport = null; this.room = null; this.peers = []; } return init0(); } // shared page / file: use the page's room or go offline
     this.transport = 'server';
     if (!LocalRealm.token || !(await LocalRealm.me())) { this.status = 'SERVER: LOG IN'; this.room = null; return; }
     this.offline = false; this.status = 'ONLINE';

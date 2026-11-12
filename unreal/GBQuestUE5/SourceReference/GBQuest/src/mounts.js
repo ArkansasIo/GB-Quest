@@ -60,7 +60,7 @@ function stableMenu() {
       if (G.lvl < 15) return say(['Come back at level 15.', 'Then I will teach you to ride and give you your first mount.']);
       if (G.gold < 100) return say('Your first mount costs 100 G, saddle included.');
       choose(STARTER_MOUNTS.map(id => MOUNT_BY_ID[id].name), j => {
-        if (j < 0) return; G.gold -= 100; grantMount(STARTER_MOUNTS[j]); G.mount = STARTER_MOUNTS[j]; SFX.howl(); saveGame();
+        if (j < 0) return; G.gold -= 100; grantMount(STARTER_MOUNTS[j]); G.mount = STARTER_MOUNTS[j]; SFX.mount(); saveGame();
         say(['You learn to ride!', `${MOUNT_BY_ID[STARTER_MOUNTS[j]].name} is yours.`, 'Press B in the field to mount up.']);
       }, 'Pick your first mount: a steady steed, a loyal warwolf or a quick raptor.');
     }
@@ -114,7 +114,7 @@ class MountScene {
     if (nav('left')) { this.i = Math.max(0, this.i - 10); SFX.cursor(); }
     if (nav('right')) { this.i = Math.min(n - 1, this.i + 10); SFX.cursor(); }
     if (this.i < this.top) this.top = this.i; if (this.i > this.top + 6) this.top = this.i - 6;
-    if (P('a')) { const m = MOUNTS[this.i]; if (mountsOwned().includes(m.id)) { G.mount = m.id; SFX.howl(); saveGame(); } else SFX.error(); }
+    if (P('a')) { const m = MOUNTS[this.i]; if (mountsOwned().includes(m.id)) { G.mount = m.id; SFX.mount(); saveGame(); } else SFX.error(); }
   }
   draw() {
     fill(0, 0, W, H, 0); fill(0, 0, W, 11, 3);

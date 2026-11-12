@@ -5,7 +5,7 @@ This service is separate from itch.io. itch.io serves the HTML5 game ZIP; this N
 ## Included
 
 - Node.js 22 service using WebSockets (ws) and PostgreSQL (pg).
-- Scrypt password hashes and signed, expiring bearer tokens.
+- Scrypt password hashes and signed, expiring bearer tokens that the server can revoke (migration 017: signing out or changing the password invalidates every earlier token).
 - Account registration/login and authenticated character listing/creation (up to three characters).
 - Authenticated WSS sessions, character selection, zone snapshots and player presence.
 - Server-validated tile movement with world bounds and a movement rate limit.
@@ -17,15 +17,16 @@ This service is separate from itch.io. itch.io serves the HTML5 game ZIP; this N
 
 1. Install Docker Engine / Docker Desktop and Docker Compose.
 2. Copy .env.mmorpg.example to .env. Set unique random values for POSTGRES_PASSWORD and GBQ_TOKEN_SECRET (at least 32 characters).
-3. Start the service with:
+3. Set `GBQ_ALLOWED_ORIGINS` to the exact HTTPS origin serving the game (for example `https://YOURNAME.itch.io`). Multiple origins are comma-separated. An empty value intentionally denies remote browser origins; localhost remains allowed for development. HTTP preflight responses and WebSocket upgrades use the same allowlist.
+4. Start the service with:
 
     docker compose -f docker-compose.mmorpg.yml up --build -d
 
-4. Verify:
+5. Verify:
 
     curl http://localhost:8788/health
 
-The service listens on port 8788. PostgreSQL data is kept in the named gbquest_pg volume. Back up that volume before upgrades or destructive operations.
+The container listens on port 8788; the host publishes it on `127.0.0.1:8788` by default. Put a TLS reverse proxy on the host and keep the database private. Override `GBQ_BIND_ADDRESS` only when you intentionally need a different host interface. PostgreSQL data is kept in the named gbquest_pg volume. Back up that volume before upgrades or destructive operations.
 
 For a public deployment, put the service behind a TLS reverse proxy or a platform that supports persistent WebSocket connections. Publish HTTPS and WSS only. Set GBQ_ALLOWED_ORIGINS to the exact HTTPS origin(s) that host the game. Use a managed PostgreSQL database with backups for production. Do not expose PostgreSQL to the public internet.
 
@@ -39,10 +40,33 @@ All request/response bodies are JSON.
 | POST | /api/register | No | { username, password }; username 3–16 chars, password 10–72 |
 | POST | /api/login | No | { username, password }; returns bearer token |
 | GET | /api/me | Bearer | Account and characters |
-| GET | /api/characters | Bearer | Character list |
-| POST | /api/characters | Bearer | { name, class }; up to three characters |
+| POST | /api/logout | Bearer | Sign out everywhere: revokes every token issued to the account so far and closes its sockets on this instance |
+| POST | /api/password | Bearer | { oldPassword, newPassword }; revokes all other sessions and returns a fresh token |
+| GET | /api/characters | Bearer | Character list; optional `?realm=<id>` filter |
+| POST | /api/characters | Bearer | `{ name, class, realmId }`; up to three characters per realm |
+| GET | /api/dungeons/catalog | No | Enabled five-player dungeons and level ranges |
+| POST | /api/dungeons/queue | Bearer | `{ characterId, dungeonId, role }`; queue as tank, healer or damage |
+| GET | /api/dungeons/queue/:characterId | Bearer | Queue state, role counts or matched group |
+| DELETE | /api/dungeons/queue/:characterId | Bearer | Leave an unmatched queue |
+| GET | /api/dungeons/groups/:groupId | Bearer | Read group details as a member |
+| POST | /api/dungeons/groups/:groupId/start | Bearer | Tank-led transition from formed to started |
+| POST | /api/dungeons/groups/:groupId/complete | Bearer | Tank-led completion; releases characters for future queues |
 
-Allowed classes: warrior, mage, ranger, cleric, rogue, adventurer.
+Allowed jobs: warden, berserker, vanguard, strider, shade, ascetic, arcanist, wildblood, pactbound, cantor, chaplain, verdant, necromancer, summoner, sunwarden, runeblade, ronin, shinobi, bladedancer, wyrmlancer, corsair, beastcaller, puppeteer, dreadknight, voidhunter, scalesage and stormcaller. Character progression is level 1–720 using the browser game's XP thresholds; class feature progression remains distinct from the MMO's post-20 ascension levels.
+
+## Realm and direct-message APIs
+
+- `GET /api/regions` lists regions and their realms; `GET /api/realms?region=<id>` filters realms by region.
+- `POST /api/characters` accepts `{ name, class, realmId }`. The `class` field uses one of the 27 game jobs; optional `species` and `background` fields use the 15 playable species and six backgrounds. Existing legacy classes are mapped during migration 009; migration 010 adds species/background persistence.
+- `GET /api/characters/:id/whispers?with=<peerCharacterId>&limit=50` reads recent same-realm direct messages and marks incoming messages as read.
+- `POST /api/characters/:id/whispers` accepts `{ toCharacterId, text }`. Messages are stored in PostgreSQL before live delivery, so offline recipients can read them later. Messages are limited to 180 characters and must stay within the same realm.
+- WebSocket `chat.send` with `channel: "whisper"` accepts a recipient character name. An unknown name returns `whisper_target_not_found`; offline characters are valid recipients.
+- WebSocket messages are processed sequentially per connection to prevent overlapping asynchronous database operations from reordering commands. More than 64 queued messages closes the connection.
+- Migration `009_jobs_level_720.sql` aligns PostgreSQL class validation and XP progression with the browser game. The server exposes `gbq_level_for_xp(bigint)` for the shared 1–720 XP curve.
+
+## Dungeon matchmaking
+
+Migration `014_dungeon_matchmaking.sql` seeds the 20 world-map dungeons and stores queue entries, role assignments, formed groups and instance IDs in PostgreSQL. Queue entries expire after 15 minutes if no match forms. Queue formation is scoped to a realm and dungeon and atomically builds one tank, one healer and three damage roles. Character ownership and level ranges are validated by the service; the tank is group lead for starting and completing the run. Completing the group marks all five queue records complete so the characters may queue again. Instance IDs are allocated by the backend; loading the dungeon map and running encounters remain game-runtime operations.
 
 ## WebSocket protocol
 
@@ -82,7 +106,7 @@ This is the first deployable authoritative foundation, not yet a complete MMO. I
 
 ## Security and operations
 
-- Set a unique GBQ_TOKEN_SECRET and rotate it deliberately (rotation invalidates all current tokens).
+- Set a unique GBQ_TOKEN_SECRET and rotate it deliberately (rotation invalidates all current tokens). To end one account's sessions without rotating, use POST /api/logout, or increment `accounts.token_version` for that account.
 - Use TLS/WSS, exact origin allowlists, firewall rules and database backups.
 - Keep rate limits and payload limits enabled; monitor connection counts and database pool saturation.
 - The current HTTP login endpoint is a foundation; before an open public launch add distributed IP/account login throttling, account recovery, abuse controls, structured metrics, alerting and a formal privacy/retention policy.

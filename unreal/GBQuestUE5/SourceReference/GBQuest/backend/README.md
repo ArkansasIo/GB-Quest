@@ -36,3 +36,106 @@ On first start after upgrading, older admin entries in `realm.json` are imported
 Set the level with `GBQ_LOG_LEVEL` (default `info`), or change it live from the control plane. Every response carries an `X-Request-Id` header, and server errors also return `reqId` in the body. When a player reports an error, search the debug log for that ID.
 
 Set `GBQ_TRUST_PROXY=1` only when the server runs behind your own reverse proxy. The first `X-Forwarded-For` address is then logged as the client IP; otherwise the socket address is used.
+
+## Regions and realms
+
+The authoritative MMO service (`backend/mmorpg-server.cjs`) groups the world WoW-style: **regions** (NA *Hydaelyn*, EU *Lordeon*, AP *Aether*) each hold three **realms**. Every character lives on one realm, and each realm is its own copy of the world. Players see, fight beside and chat with only the players on their own realm.
+
+Apply the schema with `npm run mmorpg:migrate`. It runs every file in `backend/migrations/` in order, and each file is safe to run again. `002_regions_realms.sql` adds the `regions` and `realms` tables, puts characters and monsters on a realm, and gives every realm its own monsters.
+
+| Realm type | Realms |
+|---|---|
+| PvE | Ironreach (NA), Moonfall (EU), Emberwild (AP) |
+| PvP | Stormwake, Frostmarch (EU) |
+| Roleplay | Ardenhold (NA), Dawnspire, Shadowfen (AP) |
+| Seasonal | Starhaven (NA) |
+
+HTTP endpoints:
+
+- `GET /api/regions` returns every region with its realms: type, `pvp`, status, `maxPlayers`, live `population`, `load` (LOW / MEDIUM / HIGH / FULL) and `recommended`. Send a bearer token to also get `characters`, the number of your characters on each realm.
+- `GET /api/realms?region=<id>` returns the realms of one region, or of all regions when `region` is left out.
+- `POST /api/characters` takes `{ name, class, realmId }`. Names are unique per realm, in any letter case. The limit is 3 characters per realm and 12 per account. Errors: `unknown_realm`, `realm_unavailable`, `name_taken` and `character_limit_reached`.
+- `GET /api/characters?realm=<id>` lists your characters on one realm.
+
+WebSocket:
+
+- `authenticated` also returns `regions` and `realms`.
+- `character.select` enters that character's realm. It fails with `realm_full` when the realm is at `maxPlayers`, or with `realm_unavailable` when the realm is not online.
+- `zone.snapshot` includes `realm`.
+- `chat.send` takes `channel`: `zone` (the default), `realm` (everyone on the realm) or `whisper` (with `to`, a character name on the same realm). Whispers are persisted before delivery, so an offline recipient can read them later. An unknown name returns `whisper_target_not_found`.
+- A character can be controlled by only one live WebSocket at a time; a second connection receives `character_already_online`. Disconnects remove presence and release the slot.
+- Unauthenticated sockets are closed after 10 seconds. The server sends WebSocket ping frames every 30 seconds and terminates connections that stop answering. A client whose outbound buffer exceeds 1 MiB is disconnected rather than allowing unbounded memory growth.
+- The authoritative socket currently supports `zone`, `realm` and `whisper` chat. Other channel names return `unsupported_chat_channel`; they are never silently delivered to the zone.
+- Server tuning: `GBQ_WS_AUTH_TIMEOUT_MS`, `GBQ_WS_HEARTBEAT_MS` and `GBQ_WS_MAX_BUFFERED_BYTES` override the respective defaults.
+
+Party WebSocket messages:
+
+- `party.create` creates a persistent party with the current character as leader.
+- `party.invite` takes `{ to: "CharacterName" }`. Only the leader can invite; the target must be on the same realm, not already grouped, and the party must have fewer than five members. Invitations expire after five minutes.
+- `party.accept` takes `{ invitationId }` and joins the invited character after server-side realm, expiry, membership and capacity checks.
+- `party.leave` removes the current character. If the leader leaves, the longest-standing remaining member becomes leader; an empty party is deleted.
+- `party.kick` takes `{ characterId }` and is leader-only.
+- Party changes are broadcast as `party.snapshot` / `party.updated`; invitees receive `party.invited`, and kicked members receive `party.kicked`.
+- `chat.send` with `channel: "party"` delivers chat only to current members. Party membership persists across disconnects and reconnects.
+- Migration `011_party_system.sql` creates party, membership and invitation tables. The five-member limit is enforced transactionally when invitations are accepted. This is single-service-instance party presence; multi-replica coordination still requires shared presence/pub/sub.
+
+Direct-message HTTP endpoints:
+
+- `GET /api/characters/:id/whispers?with=<peerCharacterId>&limit=50` returns recent inbox/conversation messages and marks incoming messages read.
+- `POST /api/characters/:id/whispers` accepts `{ toCharacterId, text }` and requires both characters to share a realm. Offline recipients are supported.
+- Messages are stored in `player_whispers` and automatically purged after 30 days. WebSocket commands are serialized per connection to preserve state order.
+
+Character progression:
+
+- Migration `009_jobs_level_720.sql` adds the full 27-job list and the browser game's level 1–720 XP curve. Migration `010_character_species_background.sql` persists all 15 playable species and six backgrounds. Legacy warrior/mage/ranger/cleric/rogue/adventurer values are mapped to warden/arcanist/strider/chaplain/shade/warden respectively.
+- `gbq_level_for_xp(bigint)` is the authoritative database progression function. Class-feature levels and post-20 ascension levels remain separate game concepts.
+
+Realm status lives in the `realms` table. Set a realm's `status` to `maintenance`, `offline` or `locked` to close it, or raise its `max_players`. The server rereads the table every 30 seconds.
+
+## Authoritative guilds
+
+Migration `012_guild_system.sql` adds persistent realm-scoped guilds, unique names per realm, one guild per character, ranks and expiring invitations. Guild membership survives reconnects.
+
+WebSocket commands after character selection:
+- `guild.create` with `{name}` creates a guild and grants the creator the leader rank.
+- `guild.invite` with `{to: "CharacterName"}` allows leaders and officers to invite ungrouped characters on the same realm. Invites expire after 24 hours.
+- `guild.accept` with `{invitationId}` joins the invited character; the server verifies invitation, realm and uniqueness transactionally.
+- `guild.rank` with `{characterId,rank:"officer"|"member"}` is leader-only.
+- `guild.kick` with `{characterId}` lets leaders remove nonleaders, and officers remove members.
+- `guild.leave` removes the character; leadership transfers to the longest-standing officer (otherwise oldest member), or deletes an empty guild.
+- `guild.bank.balance` returns the current vault balance to a guild member.
+- `guild.bank.deposit` with `{amount}` transfers wallet gold into the guild vault; any member may deposit.
+- `guild.bank.withdraw` with `{amount}` transfers vault gold to the caller; only leaders and officers may withdraw. Both operations lock and update wallet/vault balances in one PostgreSQL transaction and write an immutable audit row.
+- Bank replies are `guild.bank.result` to the actor and `guild.bank.updated` to connected guild members. Insufficient balances and invalid amounts are rejected without partial transfers.
+- Migration `013_guild_bank.sql` creates the persistent vault balance and transaction history. There is no item storage in the guild vault yet.
+- `chat.send` with `{channel:"guild",text}` broadcasts only to connected guild members.
+- Guild membership is delivered via `guild.snapshot` on character selection and `guild.updated` on membership/rank changes.
+
+Guild operations currently coordinate inside a single authoritative server process; distributed presence and cross-replica events are not yet implemented. Guild banks, audit logs, applications and shared storage are not part of this migration.
+
+## Persistent dungeon matchmaking
+
+Migration `014_dungeon_matchmaking.sql` seeds the 20 five-player dungeons from the world-map catalog and creates the persistent queue, formed groups, and group-member records.
+
+Authenticated HTTP endpoints:
+
+- `GET /api/dungeons/catalog` returns enabled dungeons and their level ranges.
+- `POST /api/dungeons/queue` accepts `{ characterId, dungeonId, role }`, where role is `tank`, `healer`, or `damage`.
+- `GET /api/dungeons/queue/:characterId` returns the character's current queue or matched group.
+- `DELETE /api/dungeons/queue/:characterId` leaves a queue before a group is formed.
+- `GET /api/dungeons/groups/:groupId` returns the group only to one of its members.
+- `POST /api/dungeons/groups/:groupId/start` and `/complete` transition the group lifecycle. The tank is the group lead and is the only role permitted to start or complete the run.
+
+Queue entries expire after 15 minutes if no match forms; stale entries are marked expired when queue state is queried or another match attempt runs. Matchmaking is realm-scoped and validates character ownership, dungeon level range, role, and one active queue/group per character. A PostgreSQL advisory transaction lock serializes formation for each realm/dungeon pair; candidate rows are locked with `SKIP LOCKED`. The five-player composition is one tank, one healer, and three damage roles. Group formation, queue status changes, and member assignment commit atomically. Completion releases all five characters to queue again. Instance IDs are generated per formed group; dungeon map loading and encounter progression remain the game-world runtime's responsibility.
+
+## Running the realm server (the multiplayer world)
+
+`backend/server.cjs` is the realm server players connect to. It needs no database. On Windows, copy `tools/windows/start-realm-server.bat` next to `package.json` and double-click it. Anywhere else, run `HOST=0.0.0.0 PORT=8787 node backend/server.cjs`. The server serves the game itself at `http://<this computer>:8787`, so players open that address in a browser.
+
+Each realm is its own world:
+
+- An account plays on one realm at a time. `POST /api/realm/select` with `{ realm }` sets it, and the game sends it when a player enters a world from REALM SELECT and when a hero from a save loads. The server refuses a full or offline realm.
+- The live player list, every chat channel (say, yell, party, guild, whisper, world, trade, LFG) and party-battle messages reach only the players on the same realm. Whispers to someone on another realm fail.
+- `GET /api/realms` and `GET /api/regions` report live population: the distinct accounts connected to each realm. They also report a load label: LOW, MEDIUM, HIGH or FULL (`maxPlayers` is 1000).
+
+Accounts, saves and realm settings live in `server/data/realm.json`.

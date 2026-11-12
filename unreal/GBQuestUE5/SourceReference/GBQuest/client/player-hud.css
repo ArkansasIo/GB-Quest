@@ -2,6 +2,9 @@
 .game-viewport { position:relative; }
 .gbq-player-hud { position:absolute; z-index:12; inset:0; pointer-events:none; color:#f0e6d2; font:500 clamp(9px,.72vw,13px)/1.25 Inter,Arial,sans-serif; text-shadow:0 1px 2px #000; }
 .gbq-player-hud * { box-sizing:border-box; }
+/* Hidden whenever a full-screen menu, battle or map covers the overworld (player_hud.js sets .is-live). */
+.gbq-player-hud:not(.is-live) { visibility:hidden; }
+.gbq-player-hud:not(.is-live) * { pointer-events:none !important; }
 .gbq-hud-top { position:absolute; inset:8px 12px auto; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:42px; }
 .gbq-hud-brand { display:flex; align-items:center; gap:9px; color:#f3dfad; font:700 clamp(13px,1.15vw,21px) Cinzel,Georgia,serif; letter-spacing:.12em; }
 .gbq-hud-brand small { display:block; margin-top:3px; color:#b8b4aa; font:600 8px Inter,Arial,sans-serif; letter-spacing:.2em; }

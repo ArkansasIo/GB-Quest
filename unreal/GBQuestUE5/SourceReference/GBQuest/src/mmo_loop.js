@@ -96,8 +96,11 @@ function seasonReward(tier, lvl) {
   const L = Math.max(1, Math.min(720, Math.floor(Number(lvl) || 1))), t = Math.max(1, Math.min(SEASON_TIERS, Math.floor(tier)));
   if (t === 50) return { gold: 200 * (10 + L), gear: { rarity: 5, kind: 'wondrous', base: 'saints_token' }, title: 'season_champion', label: 'LEGENDARY TRINKET + TITLE' };
   if (t === 25) return { gold: 80 * (10 + L), items: { star_shard: 1 }, title: 'season_veteran', label: 'TITLE + STAR SHARD' };
+  if (t === 40) return { gold: 60 * (10 + L), items: { awk_stone: 10 }, riftKeys: 2, label: 'AWAKENING CACHE + 2 KEYS' };
   if (t % 10 === 0) return { gold: 40 * (10 + L), gear: { rarity: 4 }, label: 'EPIC ITEM' };
   if (t % 5 === 0) return { gold: 25 * (10 + L), items: { ember: 1, shard: 2 }, label: 'EMBER + SHARDS' };
+  if (t % 7 === 0) return { gold: 20 * (10 + L), riftKeys: 1, label: 'GREATER RIFT KEY' };
+  if (t % 3 === 0) return { gold: 15 * (10 + L), items: { awk_stone: 2 }, label: '2 AWAKENING STONES' };
   if (t % 2 === 0) return { gold: 15 * (10 + L), items: { scrap: 6 }, label: 'GOLD + SCRAP' };
   return { gold: 12 * (10 + L), items: { potion: 2 }, label: 'GOLD + POTIONS' };
 }
@@ -163,6 +166,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
     const r = seasonReward(t, G.lvl); G.season.claimed.push(t); G.gold += r.gold; giveItems(r.items);
     if (r.gear) addGear(makeItem({ lvl: G.lvl, ...r.gear }));
     if (r.title) G.titlesWon[r.title] = true;
+    if (r.riftKeys) { G.rift = G.rift || {}; G.rift.keys = (Number(G.rift.keys) || 0) + r.riftKeys; }
     return null;
   }
   Object.assign(window, { ensureLoop, claimBounty, claimSeasonTier, addSeasonXp, seasonXp });
@@ -198,7 +202,55 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
     ensureLoop(); const l = G.loop.login || { streak: 0 };
     say([`LOGIN STREAK: DAY ${l.streak}`, ...LOGIN_REWARDS.map(r => `${(l.streak - 1) % 7 + 1 === r.day ? '> ' : '  '}DAY ${r.day}: ${fmt(loginGold(r, G.lvl))} G, ${itemsText(r.items)}`), 'Come back tomorrow to keep the streak.']);
   }
-  function seasonPass() {
+  // SEASON PASS page: the reward track (L/R move, A claim the tier, START claim all), XP bar and days left
+  class SeasonPassScene {
+    constructor() { this.opaque = true; ensureLoop(); const t = seasonTier(seasonXp()); this.sel = Math.max(1, Math.min(SEASON_TIERS, (G.season.claimed.length < t ? (Array.from({ length: t }, (_, i) => i + 1).find(x => !G.season.claimed.includes(x)) || t) : t + 1))); }
+    update() {
+      if (P('b')) { SFX.back(); removeScene(this); return; }
+      if (nav('left')) { this.sel = Math.max(1, this.sel - 1); SFX.cursor(); }
+      if (nav('right')) { this.sel = Math.min(SEASON_TIERS, this.sel + 1); SFX.cursor(); }
+      if (nav('up')) { this.sel = Math.max(1, this.sel - 5); SFX.cursor(); }
+      if (nav('down')) { this.sel = Math.min(SEASON_TIERS, this.sel + 5); SFX.cursor(); }
+      if (P('start')) {
+        const tier = seasonTier(seasonXp()), open = []; for (let t = 1; t <= tier; t++) if (!G.season.claimed.includes(t)) open.push(t);
+        if (!open.length) { SFX.error(); return; }
+        open.forEach(claimSeasonTier); SFX.levelup(); saveGame(); toast('SEASON PASS', `CLAIMED ${open.length} TIER${open.length > 1 ? 'S' : ''}`, 'item_chest', 'confirm'); return;
+      }
+      if (!P('a')) return;
+      const why = claimSeasonTier(this.sel);
+      if (why) { SFX.error(); return say([`TIER ${this.sel}: ${seasonReward(this.sel, G.lvl).label}`, why]); }
+      SFX.confirm(); saveGame(); toast(`TIER ${this.sel} CLAIMED`, seasonReward(this.sel, G.lvl).label, 'item_chest', 'confirm');
+    }
+    draw() {
+      const s = seasonFor(), xp = seasonXp(), tier = seasonTier(xp);
+      fill(0, 0, W, H, 0); hdr();
+      text(s.name, 4, 13, 'gold', 1, 156);
+      text(`TIER ${tier}/${SEASON_TIERS}`, 4, 24, 3); textR(`${s.daysLeft} DAYS LEFT`, 156, 24, 2);
+      const into = tier >= SEASON_TIERS ? SEASON_XP_PER_TIER : xp % SEASON_XP_PER_TIER;
+      fill(4, 34, 152, 5, 2); fill(4, 34, Math.round(152 * into / SEASON_XP_PER_TIER), 5, 'gold');
+      textR(tier >= SEASON_TIERS ? 'MAX' : `${fmt(into)}/${fmt(SEASON_XP_PER_TIER)} XP`, 156, 41, 2);
+      // track: 7 tier boxes around the selection
+      const first = Math.max(1, Math.min(SEASON_TIERS - 6, this.sel - 3));
+      for (let k = 0; k < 7; k++) {
+        const t = first + k, x = 8 + k * 21, y = 53, got = G.season.claimed.includes(t), ready = t <= tier && !got, sel = t === this.sel, big = t % 5 === 0;
+        fill(x, y, 19, 20, sel ? 'gold' : big ? '#8a5a1c' : 2); fill(x + 1, y + 1, 17, 18, got ? '#1d3a22' : ready ? '#4a3410' : 0);
+        textC(String(t), x + 9, y + 6, got ? 'green' : ready ? 'gold' : t <= tier ? 3 : 2);
+        if (ready) fill(x + 14, y + 2, 3, 3, 'gold');
+      }
+      if (first > 1) text('<', 0, 59, 'gold'); if (first + 6 < SEASON_TIERS) text('>', 154, 59, 'gold');
+      const r = seasonReward(this.sel, G.lvl), got = G.season.claimed.includes(this.sel), ready = this.sel <= tier && !got;
+      frame(2, 78, 156, 56);
+      text(`TIER ${this.sel}`, 6, 82, 'gold'); textR(got ? 'CLAIMED' : ready ? 'READY - A: CLAIM' : `LOCKED`, 154, 82, got ? 'green' : ready ? 'gold' : 2);
+      text(r.label, 6, 93, 3, 1, 154);
+      text(`+${fmt(r.gold)} G${r.riftKeys ? `  +${r.riftKeys} RIFT KEY` : ''}`, 6, 103, 2, 1, 154);
+      if (r.title && SEASON_TITLES[r.title]) text(`TITLE: ${SEASON_TITLES[r.title].name}`, 6, 113, 'gold', 1, 154);
+      else if (!got && !ready) text(`${fmt(Math.max(0, this.sel * SEASON_XP_PER_TIER - xp))} XP TO GO`, 6, 113, 2, 1, 154);
+      text('XP FROM KILLS, RIFTS, KEYS', 6, 123, 2, 1, 154);
+      fill(0, 135, W, 9, 0); text('A:CLAIM ST:ALL', 3, 136, 'gold'); textR('L/R:TIER', 157, 136, 2);
+    }
+  }
+  window.SeasonPassScene = SeasonPassScene;
+  function seasonPassList() {
     ensureLoop(); const s = seasonFor(), xp = seasonXp(), tier = seasonTier(xp), open = [];
     for (let t = 1; t <= tier; t++) if (!G.season.claimed.includes(t)) open.push(t);
     const rows = Array.from({ length: SEASON_TIERS }, (_, i) => i + 1);
@@ -209,6 +261,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof G 
       say(why ? [`TIER ${t}: ${seasonReward(t, G.lvl).label}`, why] : `Claimed tier ${t}.`, seasonPass);
     }, `${s.name.slice(0, 22)} T${tier} ${fmt(xp)}XP ${s.daysLeft}D`);
   }
+  function seasonPass() { push(new SeasonPassScene()); }
   window.challengesMenu = function () {
     ensureLoop();
     const ready = [...G.loop.daily.list, ...G.loop.weekly.list].filter(b => !b.claimed && bountyDone(b, G.stats)).length, vault = G.loop.vault && !G.loop.vault.claimed;

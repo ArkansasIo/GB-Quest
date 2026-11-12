@@ -14,6 +14,7 @@
 'use strict';
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto'), { URL } = require('url');
 const { createDebugLog, createAuditLog } = require('./logs.cjs');
+const { isAllowedOrigin } = require('./mmorpg-security.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const PORT = +process.env.PORT || 8787, HOST = process.env.HOST || '127.0.0.1';
@@ -113,7 +114,28 @@ setInterval(() => {
   let n = 0; for (const t in db.sessions) if (db.sessions[t].exp < now) { delete db.sessions[t]; n++; }
   if (n) { save(); log.debug('expired sessions removed', { count: n }); }
 }, 600e3).unref();
-const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created });
+const publicAcct = a => ({ id: a.id, uid: a.uid, name: a.name, created: a.created, realm: accountRealm(a) });
+// ---------------------------------------------------------------- realms as separate worlds
+// Every account plays on one realm at a time (POST /api/realm/select). Live play is realm-scoped: the player
+// list, chat (all channels) and party-battle topics only reach players on the same realm. Population is the
+// live count of distinct accounts connected to a realm.
+const DEFAULT_REALM = 'ardenhold';
+const accountRealm = a => (a && REALMS.some(r => r.id === a.realm)) ? a.realm : DEFAULT_REALM;
+function livePopulation(realmId) { const seen = new Set(); for (const c of clients.values()) if (c.realm === realmId) seen.add(c.uid); return seen.size; }
+const realmLoad = (pop, max) => pop >= max ? 'FULL' : pop >= max * 0.75 ? 'HIGH' : pop >= max * 0.35 ? 'MEDIUM' : 'LOW';
+// characters an account has on each realm (its cloud saves, by the realm stored with each hero)
+function charactersByRealm(uid) {
+  const out = {}, acct = Object.values(db.accounts).find(a => a.id === uid);
+  for (const sv of Object.values((uid && db.saves[uid]) || {})) { const r = REALMS.some(x => x.id === (sv.meta && sv.meta.realm)) ? sv.meta.realm : accountRealm(acct); out[r] = (out[r] || 0) + 1; }
+  return out;
+}
+function realmsView(uid) {
+  const chars = uid ? charactersByRealm(uid) : {};
+  return REALMS.map((realm, index) => { const population = livePopulation(realm.id);
+    return { ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population, online: realm.status === 'online', load: realm.status === 'online' ? realmLoad(population, realm.maxPlayers) : 'OFFLINE', ...(uid ? { characters: chars[realm.id] || 0 } : {}) }; });
+}
+// the signed-in account for public routes (realm lists show "your characters" when a token is sent)
+const optionalUid = (req, url) => { try { const s = sessionFor(req, url); return s && s.acct ? s.acct.id : null; } catch (e) { return null; } };
 const isAdmin = acct => !!ADMIN_ACCOUNT_ID && acct.id.toLowerCase() === ADMIN_ACCOUNT_ID;
 const isRoot = acct => !!ROOT_ACCOUNT_ID && acct.id.toLowerCase() === ROOT_ACCOUNT_ID;
 // staffRoles may hold 'root' only when set by a localhost claim or the admin CLI (backend/admin-cli.cjs)
@@ -139,20 +161,32 @@ function addAdminAudit(ctx, action, target, details) {
 }
 function friendIds(uid) { return db.friendships[uid] || (db.friendships[uid] = []); }
 function accountById(id) { return Object.values(db.accounts).find(a => a.id === id); }
+const FRIEND_LIMIT = 100, PENDING_LIMIT = 50;
+// a friend as the friends list shows it: online status, the realm they are on (live connection, else the
+// account's realm), the hero they are playing (from live presence) and when they were last seen
 function publicFriend(uid) {
   const acct = accountById(uid); if (!acct) return null;
-  const online = [...clients.values()].some(c => c.uid === uid);
-  return { id: acct.id, name: acct.name, online };
+  const live = [...clients.values()].find(c => c.uid === uid), pr = (live && live.presence) || {};
+  const hero = live && pr.n ? { name: String(pr.n).slice(0, 16), lvl: +pr.l || null, cls: pr.c ? String(pr.c).slice(0, 16) : null } : null;
+  return { id: acct.id, name: acct.name, online: !!live, realm: live ? live.realm : accountRealm(acct), hero, lastSeen: live ? Date.now() : (acct.lastSeen || acct.lastLogin || null) };
 }
+const sentRequests = uid => Object.entries(db.friendRequests).filter(([, from]) => (from || []).includes(uid)).map(([to]) => to);
+// tell an account's open game tabs that its friends list changed (they refetch it)
+function notifyFriendsChanged(uid, data = {}) { for (const c of clients.values()) if (c.uid === uid) send(c.res, 'friends', data); }
+// tell everyone who has this account as a friend (online/offline, realm changes)
+function notifyFriendsOf(uid, reason) { for (const f of friendIds(uid)) notifyFriendsChanged(f, { reason, id: uid }); }
 
 // ---------------------------------------------------------------- live realm (SSE)
 const clients = new Map(); // peer -> { res, uid, name, presence }
 const chatWindows = new Map();
-const peerList = () => [...clients.entries()].map(([peer, c]) => ({ peer, presence: c.presence || {}, kind: 'viewer', name: c.name }));
+const peerList = realm => [...clients.entries()].filter(([, c]) => realm == null || c.realm === realm).map(([peer, c]) => ({ peer, presence: c.presence || {}, kind: 'viewer', name: c.name, realm: c.realm }));
 function send(res, event, data) { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); }
 function broadcastPeers(left = []) {
-  const list = peerList();
-  for (const [peer, c] of clients) send(c.res, 'peers', { peers: list.map(p => ({ ...p, sameTab: p.peer === peer })), left: left.map(p => ({ peer: p })) });
+  const byRealm = new Map();
+  for (const [peer, c] of clients) {
+    if (!byRealm.has(c.realm)) byRealm.set(c.realm, peerList(c.realm));
+    send(c.res, 'peers', { peers: byRealm.get(c.realm).map(p => ({ ...p, sameTab: p.peer === peer })), left: left.map(p => ({ peer: p })) });
+  }
 }
 setInterval(() => { for (const c of clients.values()) c.res.write(': ping\n\n'); }, 25000).unref();
 
@@ -185,6 +219,13 @@ const STATIC = { '/': 'dist/gbquest.html', '/fullscreen': 'dist/gbquest-fullscre
 const TRUST_PROXY = process.env.GBQ_TRUST_PROXY === '1';
 const clientIp = req => (TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress || '?';
 const SLOW_MS = +process.env.GBQ_SLOW_MS || 1000;
+// Cross-origin game pages (e.g. the itch.io build) may use the realm API when their https origin is listed in
+// GBQ_ALLOWED_ORIGINS (comma-separated, e.g. https://html-classic.itch.zone). http://localhost pages are always
+// allowed for development. Pages served by this server are same-origin and need no entry.
+const ALLOWED_ORIGINS = new Set((process.env.GBQ_ALLOWED_ORIGINS || '').split(',').map(x => x.trim().replace(/\/+$/, '')).filter(Boolean));
+function sameOrigin(origin, req) {
+  try { const host = new URL(origin).host; return host === req.headers.host || host === String(req.headers['x-forwarded-host'] || '').split(',')[0].trim(); } catch (e) { return false; }
+}
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`), p = url.pathname, ip = clientIp(req);
@@ -202,14 +243,27 @@ const server = http.createServer(async (req, res) => {
   });
   const A = event => audit.record({ ip, reqId, ...event }); // audit with request context
   try {
+    // CORS for cross-origin game pages; the admin API is never exposed cross-origin.
+    const origin = req.headers.origin;
+    if (origin && p.startsWith('/api/') && !sameOrigin(origin, req)) {
+      if (p.startsWith('/api/admin/') || !isAllowedOrigin(origin, ALLOWED_ORIGINS)) return json(res, 403, { error: 'This game page is not allowed to use this realm server (set GBQ_ALLOWED_ORIGINS).' });
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Request-Id');
+      if (req.method === 'OPTIONS') {
+        const pna = req.headers['access-control-request-private-network'] === 'true' ? { 'Access-Control-Allow-Private-Network': 'true' } : {}; // Chrome: public page -> server on this PC/LAN
+        res.writeHead(204, { 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Access-Control-Max-Age': '600', ...pna, ...SEC });
+        return res.end();
+      }
+    }
     // Hide the control plane and deny every admin API route unless explicitly enabled.
     if (!ADMIN_ENABLED && (p === '/admin' || p.startsWith('/admin/') || p.startsWith('/api/admin/'))) return json(res, 404, { error: 'Not found.' });
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
-    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: REALMS, regions: REGIONS, maxPlayersPerWorld: 1000 });
-    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length })) });
-    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: REALMS.map((realm, index) => ({ ...realm, name: index === 0 ? db.realmSettings.realmName : realm.name, population: realm.population, online: realm.status === 'online' })) });
+    if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: realmsView(), regions: REGIONS, maxPlayersPerWorld: 1000 });
+    if (p === '/api/regions' && req.method === 'GET') return json(res, 200, { regions: REGIONS.map(r => ({ id: r.id, name: r.name, tag: r.tag, status: r.status, worlds: REALMS.filter(w => w.regionId === r.id).length, realms: realmsView(optionalUid(req, url)).filter(w => w.regionId === r.id) })) });
+    if (p === '/api/realms' && req.method === 'GET') return json(res, 200, { realms: realmsView(optionalUid(req, url)) });
     if (p === '/api/store/catalog' && req.method === 'GET') return json(res, 200, require('../store/catalog.cjs').getCatalog());
 
     if (p === '/api/register' && req.method === 'POST') {
@@ -420,7 +474,8 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/friends' && req.method === 'GET') {
       const friends = friendIds(uid).map(publicFriend).filter(Boolean);
       const requests = (db.friendRequests[uid] || []).map(id => publicFriend(id)).filter(Boolean);
-      return json(res, 200, { friends, requests });
+      const sent = sentRequests(uid).map(id => { const a = accountById(id); return a && { id: a.id, name: a.name }; }).filter(Boolean);
+      return json(res, 200, { friends, requests, sent, limit: FRIEND_LIMIT });
     }
     if (p === '/api/friends/request' && req.method === 'POST') {
       const { username } = await body(req), key = String(username || '').toLowerCase(), target = own(db.accounts, key);
@@ -428,18 +483,28 @@ const server = http.createServer(async (req, res) => {
       if (target.id === uid) return json(res, 400, { error: 'You cannot add yourself.' });
       const friends = friendIds(uid), targetFriends = friendIds(target.id);
       if (friends.includes(target.id)) return json(res, 409, { error: 'Already friends.' });
+      if (friends.length >= FRIEND_LIMIT) return json(res, 409, { error: `Your friends list is full (${FRIEND_LIMIT}).` });
       const incoming = db.friendRequests[uid] || [];
-      if (incoming.includes(target.id)) { db.friendRequests[uid] = incoming.filter(id => id !== target.id); if (!friends.includes(target.id)) friends.push(target.id); if (!targetFriends.includes(uid)) targetFriends.push(uid); save(); return json(res, 200, { ok: true, accepted: true }); }
+      if (incoming.includes(target.id)) {
+        if (targetFriends.length >= FRIEND_LIMIT) return json(res, 409, { error: `${target.name}'s friends list is full.` });
+        db.friendRequests[uid] = incoming.filter(id => id !== target.id); friends.push(target.id); if (!targetFriends.includes(uid)) targetFriends.push(uid);
+        save(); notifyFriendsChanged(target.id, { reason: 'accepted', name: sess.acct.name }); return json(res, 200, { ok: true, accepted: true });
+      }
       const outgoing = db.friendRequests[target.id] || (db.friendRequests[target.id] = []);
-      if (!outgoing.includes(uid)) outgoing.push(uid);
-      save(); return json(res, 200, { ok: true, pending: true });
+      if (outgoing.includes(uid)) return json(res, 200, { ok: true, pending: true });
+      if (outgoing.length >= PENDING_LIMIT || sentRequests(uid).length >= PENDING_LIMIT) return json(res, 429, { error: 'Too many pending friend requests.' });
+      outgoing.push(uid);
+      save(); notifyFriendsChanged(target.id, { reason: 'request', name: sess.acct.name }); return json(res, 200, { ok: true, pending: true });
     }
     if (p === '/api/friends/accept' && req.method === 'POST') {
       const { accountId } = await body(req), fromId = String(accountId || ''), incoming = db.friendRequests[uid] || [];
       if (!incoming.includes(fromId) || !accountById(fromId)) return json(res, 404, { error: 'Friend request not found.' });
+      const mine = friendIds(uid), theirs = friendIds(fromId);
+      if (!mine.includes(fromId) && mine.length >= FRIEND_LIMIT) return json(res, 409, { error: `Your friends list is full (${FRIEND_LIMIT}).` });
+      if (!theirs.includes(uid) && theirs.length >= FRIEND_LIMIT) return json(res, 409, { error: 'Their friends list is full.' });
       db.friendRequests[uid] = incoming.filter(id => id !== fromId);
-      const mine = friendIds(uid), theirs = friendIds(fromId); if (!mine.includes(fromId)) mine.push(fromId); if (!theirs.includes(uid)) theirs.push(uid);
-      save(); return json(res, 200, { ok: true });
+      if (!mine.includes(fromId)) mine.push(fromId); if (!theirs.includes(uid)) theirs.push(uid);
+      save(); notifyFriendsChanged(fromId, { reason: 'accepted', name: sess.acct.name }); return json(res, 200, { ok: true });
     }
     if (p === '/api/friends/remove' && req.method === 'POST') {
       const { accountId } = await body(req), other = String(accountId || '');
@@ -449,7 +514,7 @@ const server = http.createServer(async (req, res) => {
       if (db.friendships[other]) db.friendships[other] = db.friendships[other].filter(id => id !== uid);
       db.friendRequests[uid] = (db.friendRequests[uid] || []).filter(id => id !== other);
       db.friendRequests[other] = (db.friendRequests[other] || []).filter(id => id !== uid);
-      save(); return json(res, 200, { ok: true });
+      save(); notifyFriendsChanged(other, { reason: 'removed' }); return json(res, 200, { ok: true });
     }
     if (p === '/api/invites' && req.method === 'POST') {
       if (!db.realmSettings.invitesEnabled) return json(res, 503, { error: 'Realm invites are disabled.' });
@@ -487,7 +552,7 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/api/saves') && !db.realmSettings.cloudSavesEnabled) return json(res, 503, { error: 'Cloud saves are disabled.' });
     if (p === '/api/saves' && req.method === 'GET') {
       const s = db.saves[uid] || {};
-      return json(res, 200, { slots: Array.from({ length: SLOTS }, (_, i) => s[i] ? { slot: i, name: s[i].meta.name, lvl: s[i].meta.lvl, cls: s[i].meta.cls, saved: s[i].saved } : null) });
+      return json(res, 200, { slots: Array.from({ length: SLOTS }, (_, i) => s[i] ? { slot: i, name: s[i].meta.name, lvl: s[i].meta.lvl, cls: s[i].meta.cls, realm: s[i].meta.realm || accountRealm(sess.acct), saved: s[i].saved } : null) });
     }
     const m = p.match(/^\/api\/saves\/([0-4])$/);
     if (m) {
@@ -497,7 +562,7 @@ const server = http.createServer(async (req, res) => {
         const { state } = await body(req, db.realmSettings.maxSaveBytes);
         if (!state || typeof state !== 'object' || typeof state.name !== 'string' || !state.cls) return json(res, 400, { error: 'Not a Lost Kingdom of Shadowbane Chronicles save.' });
         const prevLvl = mine[slot] ? mine[slot].meta.lvl : null;
-        mine[slot] = { state, saved: Date.now(), meta: { name: String(state.name).slice(0, 12), lvl: +state.lvl || 1, cls: String(state.cls).slice(0, 16) } }; save();
+        mine[slot] = { state, saved: Date.now(), meta: { name: String(state.name).slice(0, 12), lvl: +state.lvl || 1, cls: String(state.cls).slice(0, 16), realm: REALMS.some(r => r.id === state.realm) ? state.realm : accountRealm(sess.acct) } }; save();
         // saves are frequent: audit only new slots and level changes; every write goes to the debug log
         if (prevLvl !== mine[slot].meta.lvl) A({ ...actx, action: 'save.write', target: `slot ${slot}`, details: { hero: mine[slot].meta.name, cls: mine[slot].meta.cls, lvl: mine[slot].meta.lvl, prevLvl } });
         log.debug('cloud save written', { reqId, account: sess.acct.name, slot, bytes: +req.headers['content-length'] || undefined });
@@ -562,27 +627,40 @@ const server = http.createServer(async (req, res) => {
     // live realm: one event stream per tab, plus presence and topic posts
     if (p === '/api/stream' && req.method === 'GET') {
       if (!db.realmSettings.livePlayEnabled) return json(res, 503, { error: 'Live realm features are disabled.' });
+      const realmId = accountRealm(sess.acct), realm = REALMS.find(r => r.id === realmId);
+      const alreadyIn = [...clients.values()].some(c => c.uid === uid && c.realm === realmId);
+      if (realm && realm.status !== 'online') return json(res, 503, { error: `The world ${realm.name} is offline.` });
+      if (realm && !alreadyIn && livePopulation(realmId) >= realm.maxPlayers) return json(res, 503, { error: `The world ${realm.name} is full (${realm.maxPlayers}/${realm.maxPlayers}). Try another realm.` });
       const peer = crypto.randomBytes(6).toString('hex');
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no', ...SEC });
       res.write('retry: 3000\n\n');
-      clients.set(peer, { res, uid, name: sess.acct.name, presence: {} });
-      const realm = REALMS.find(r => r.id === (sess.acct.realm || 'ardenhold'));
-      if (realm && realm.maxPlayers && (realm.population || 0) >= realm.maxPlayers) {
-        res.writeHead(503, { ...SEC, 'Content-Type': 'text/plain' });
-        return res.end(`The world ${realm.name} is full (${realm.population}/${realm.maxPlayers}). Try another realm.`);
-      }
-      if (realm) realm.population = (realm.population || 0) + 1;
-      send(res, 'hello', { peer, account: publicAcct(sess.acct) });
+      const wasOnline = [...clients.values()].some(c => c.uid === uid);
+      clients.set(peer, { res, uid, name: sess.acct.name, presence: {}, realm: realmId });
+      send(res, 'hello', { peer, account: publicAcct(sess.acct), realm: realmId });
       broadcastPeers();
+      if (!wasOnline) notifyFriendsOf(uid, 'online');
       log.debug('live stream opened', { reqId, peer, account: sess.acct.name, ip, online: clients.size });
       req.on('close', () => {
         clients.delete(peer);
-        const realm = REALMS.find(r => r.id === (sess.acct.realm || 'ardenhold'));
-        if (realm && realm.population > 0) realm.population--;
         broadcastPeers([peer]);
+        if (![...clients.values()].some(c => c.uid === uid)) { sess.acct.lastSeen = Date.now(); save(); notifyFriendsOf(uid, 'offline'); }
         log.debug('live stream closed', { peer, account: sess.acct.name, online: clients.size });
       });
       return;
+    }
+    // choose the realm (world) this account plays on; open live connections move with it
+    if (p === '/api/realm/select' && req.method === 'POST') {
+      const { realm: want } = await body(req), realm = REALMS.find(r => r.id === String(want || ''));
+      if (!realm) return json(res, 400, { error: 'No such realm.' });
+      if (realm.status !== 'online') return json(res, 503, { error: `The world ${realm.name} is offline.` });
+      const already = [...clients.values()].some(c => c.uid === uid && c.realm === realm.id);
+      if (!already && livePopulation(realm.id) >= realm.maxPlayers) return json(res, 503, { error: `The world ${realm.name} is full. Try another realm.` });
+      const moved = [];
+      sess.acct.realm = realm.id; save();
+      for (const [pid, c] of clients) if (c.uid === uid && c.realm !== realm.id) { c.realm = realm.id; moved.push(pid); }
+      if (moved.length) broadcastPeers(moved);
+      log.info('realm selected', { reqId, account: sess.acct.name, realm: realm.id });
+      return json(res, 200, { realm: realm.id, name: realm.name, type: realm.type, population: livePopulation(realm.id) });
     }
     if (p === '/api/presence' && req.method === 'POST') {
       if (!db.realmSettings.livePlayEnabled) return json(res, 503, { error: 'Live realm features are disabled.' });
@@ -617,8 +695,9 @@ const server = http.createServer(async (req, res) => {
           if (!target || target === c) return json(res, 404, { error: 'Whisper target is not online.' });
         }
         const safeData = { channel, text: message, name: String(c.presence.n || c.name).slice(0, 24), to: channel === 'whisper' ? String(data.to) : '', from: peer };
+        if (target && target.realm !== c.realm) return json(res, 404, { error: 'Whisper target is not online.' });
         for (const [pid, dest] of clients) {
-          if (pid === peer) continue;
+          if (pid === peer || dest.realm !== c.realm) continue; // every channel stays on its own realm
           const presence = dest.presence || {}, source = c.presence || {};
           if (channel === 'whisper' && pid !== data.to) continue;
           if ((channel === 'say' || channel === 'yell') && (String(presence.z || '') !== String(source.z || ''))) continue;
@@ -629,7 +708,7 @@ const server = http.createServer(async (req, res) => {
         }
         return json(res, 200, { ok: true });
       }
-      for (const [pid, o] of clients) if (pid !== peer) send(o.res, 'msg', { topic, peer, data });
+      for (const [pid, o] of clients) if (pid !== peer && o.realm === c.realm) send(o.res, 'msg', { topic, peer, data });
       return json(res, 200, { ok: true });
     }
     return json(res, 404, { error: 'No such endpoint.' });

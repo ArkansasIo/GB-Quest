@@ -269,7 +269,7 @@ function expansionQuestEvent(kind, arg, zone) {
   }
 }
 const SQ_CACHE = {};
-function sideQuestsFor(zid) { return SQ_CACHE[zid] || (SQ_CACHE[zid] = sideQuests(ZONE_BY_ID[zid])); }
+function sideQuestsFor(zid) { if (!ZONE_BY_ID[zid]) return []; return SQ_CACHE[zid] || (SQ_CACHE[zid] = sideQuests(ZONE_BY_ID[zid])); }
 function sideQuestDef(id) { const zid = id.replace(/^sq_/, '').replace(/_\d+$/, ''); return sideQuestsFor(zid).find(q => q.id === id); }
 function turnInSide(id) {
   const d = sideQuestDef(id), sq = G.sideq[id];

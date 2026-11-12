@@ -47,7 +47,7 @@ class RuneForgeScene {
       const r = recipes[index]; G.runes[r.id] -= 3;
       if (!G.runes[r.id]) delete G.runes[r.id];
       api.addRuneToInventory(G, r.next, 1);
-      this.flash('FUSED ' + r.next); SFX.craft();
+      this.flash('FUSED ' + r.next); SFX.rune_fuse();
     }, 'RUNE FUSION');
   }
   draw() {

@@ -2,6 +2,130 @@
 
 All notable changes to Lost Kingdom of Shadowbane Chronicles. Versions follow `MAJOR.MINOR.PATCH`; builds are dated `BYYYY.MM.DD`.
 
+## v2.8.0 — Friends
+
+Released 2026-11-10
+
+### New
+
+- FRIENDS screen (ONLINE / ACCOUNT menu, or SOCIAL in the main menu): your account friends across every realm. Online friends come first with the hero and level they are playing; select one to see their realm, or when an offline friend was last seen.
+- WHISPER a friend who is online on your realm straight from the list, or REMOVE them.
+- REQUESTS tab: accept or decline friend requests, and see or cancel the ones you sent.
+- ADD FRIEND: type their account name on the game screen.
+- Live updates: a FRIEND REQUEST or NEW FRIEND notice pops up as soon as it happens, and the list updates when friends come online or go offline.
+
+### Realm server
+
+- Friends lists hold up to 100 friends, with up to 50 pending requests.
+- The server remembers when each account was last online.
+
+## v2.7.0 — Character Select
+
+Released 2026-11-10
+
+### New
+
+- CHARACTER SELECT: after you pick a realm, see every hero you have there, from this device and from your cloud saves, with class, level, zone and last save.
+- ENTER WORLD with A. A hero that is newer in the cloud downloads first; a hero only on this device is uploaded to your account.
+- CREATE NEW HERO uses a slot that is free on both this device and the cloud, so a new hero never overwrites a cloud save.
+- DELETE a hero with SELECT (asks first). The list also shows how many heroes you have on other realms.
+- CHARACTERS in the ONLINE / ACCOUNT menu opens the list for your current realm.
+
+## v2.6.0 — Accounts & Realm Select
+
+Released 2026-11-10
+
+### New
+
+- ACCOUNTS: new sign-in and CREATE ACCOUNT screens. Type your name and password right on the game screen (Tab or arrows move between fields, Enter confirms, Esc goes back). A password strength meter, confirm field and your last name remembered.
+- REALM SELECT: realms grouped by region (NA, EU, AP; switch with left/right). Each realm shows its type (PvE, PvP, RP), live load, and how many of your heroes live there. The details panel lists the realm rules and population. START jumps to the suggested realm (★).
+- NEW GAME with the realm server running: sign in, pick a realm, then create your hero. Without a server, NEW GAME plays offline as before.
+- ONLINE on the title screen and ACCOUNT in the main menu: choose or switch realm, cloud saves, change password, log out.
+- Cloud saves remember each hero's realm.
+
+### Fixes
+
+- The game now finds a realm server that starts after the page has loaded (it keeps checking for a minute).
+
+## v2.5.0 — Realm Worlds
+
+Released 2026-11-10
+
+### Multiplayer
+
+- Every realm is now its own world on the realm server: you only see, chat with and battle beside players on your realm.
+- Picking a realm in REALM SELECT moves your account there; a full or offline realm is refused with a message. Loading a hero re-enters that hero's realm.
+- Realm select shows live population and status from the server.
+- All chat channels (say, yell, party, guild, whisper, world, trade, LFG) and party battles stay on your realm.
+- New one-click Windows launcher tools/windows/start-realm-server.bat runs the realm server for your network and shows the addresses friends can join.
+
+### Fixes
+
+- The realm server no longer crashes a connection when a realm is full; population is counted live instead of with counters that could drift.
+
+## v2.4.1 — Debug pass
+
+Released 2026-11-10
+
+### Fixes
+
+- Button hints that were drawn below the bottom of the screen are visible again on Skills, Activity Finder, Talents, the profession screens, Boss Journal, Art Gallery and the Auction House.
+- Account & Heroes shows all 5 save slots; the list scrolls (it showed 3 and hid slots 4 and 5).
+- Empty earring, trinket, relic and artifact slots on the equipment screens have their own icons instead of a blank cell.
+- Full debug sweep of every screen: no script errors, warnings, failed file requests or missing sprites.
+
+## v2.4.0 — Character Details
+
+Released 2026-11-10
+
+### New
+
+- DETAILS (in the main menu, under CHARACTER): a hub of in-depth character and gear pages.
+- STAT BREAKDOWN: every substat with each source it comes from: item affixes, gems, runes, tier implicits, awakening, armour sets, ascension, companion bond, talents, boons and buffs, plus the final value after attributes and caps. SELECT shows CORE STATS: HP, AC, accuracy, initiative, proficiency, attributes and saves.
+- GEAR OVERVIEW: every equipment slot with rarity, item level, durability, gems, runes and awakening stars. A opens ITEM DETAIL with OVERVIEW, STATS, SOCKETS and VALUE pages.
+- PROGRESS SUMMARY: character, gear, collections and endgame on one page each.
+
+### UI
+
+- Short header titles for the new pages and for rifts, gambler, skill runes, season pass, patch notes and gear awakening, so none are cut off.
+
+## v2.3.0 — Rifts, Gambler & Runes
+
+Released 2026-11-10
+
+### New
+
+- RIFTS: normal rifts are chains of battles from random biomes. Foes fill the progress bar; at 100% the RIFT GUARDIAN appears. Closing a rift pays gold, XP, an item, awakening stones, glimmer shards and a GREATER RIFT KEY.
+- GREATER RIFTS: pick any level up to your best + 1 (foes x1.12 HP and x1.07 damage per level). Beat the 15:00 timer to unlock up to 3 more levels. Pylons (healing, power, speed), a death penalty and a top-10 leaderboard.
+- GAMBLER: spend glimmer shards on gear of a chosen slot, from weapons to relics and artifacts. Rare 30%, epic 11%, legendary 3.5%, mythic 0.5%; 20 gambles without a legendary guarantee one.
+- LOOT FILTER: drops below COMMON, UNCOMMON or RARE are auto-salvaged or auto-sold. Favourites, heirlooms, relics, artifacts, awakened, set and epic+ items are never filtered.
+- SKILL RUNES: 24 runes, three for each active skill (Cleave, Sunder, War Cry, Smoke Bomb, Echo, Pack Leader...), unlocked at the skill's level +5, +15 and +30. Runed skills show * in battle.
+
+### Season Pass
+
+- New SEASON PASS page: the reward track, XP bar, days left; claim one tier with A or all with START.
+- New rewards: awakening stones every third tier, greater rift keys every seventh, and an awakening cache with 2 keys at tier 40.
+- Rifts give season XP.
+
+## Unreleased — FULL DETAIL sprite redesign
+
+- New generator `tools/gen_fulldetail.py` draws a redesigned set for the default FULL DETAIL mode (2,590 images, stored as exact indexed PNGs, about 1.3 MB):
+  - heroes `fdw_*`: 16x24 walkers for every class in all nine species (elf ears, stonekin beards, shorter wisplings and burrowkin, emberborn horns, tuskborn tusks, drakkin scales), down/up/side with two walk frames; proportions follow the user's 8-bit hero reference sheet (smaller heads, pauldrons, crested shields, muted tones)
+  - townsfolk `fdn_*`: every role, with blink frames
+  - monsters `fdm_*` / `fdb_*`: a new 48x48 design for each of the 55 bestiary subtypes, seven element variants and three crowned boss forms with an aura
+  - field props `gt_fd<biome>_*`: trees, pines, rocks, peaks, shops, inns, temples, shrines, statues, arena, keep, walls and gates on each of the 25 biomes' own ground
+- Townsfolk that wander now walk with FULL DETAIL frames (`fdn_<role>_<dir><frame>`) instead of switching back to the old sprites; the character creator's LOOKS preview and the HUD use the new hero for your class and species.
+- Battles in FULL DETAIL draw your party with the same hero sprite as the field (side view at 2x, facing the foe, ghosted when down) instead of the HD portrait, so a hero looks the same everywhere.
+- `src/art.js` adds `fdWalker`, `fdWalkerName`, `fdNpcArt`, `fdMonsterArt` and `fdWorldTile`; the field, townsfolk, battles and bestiary use them in FULL DETAIL.
+
+## Unreleased — 8-bit item icons at true resolution
+
+- The RETRO 8-BIT item-sheet icons (`ki_*`) are now real 16x16 pixel icons (area-average fit, hard alpha, 16 colours, 1px outline) instead of soft, uneven ~24-34px crops, matching the generated `r8i_*` icons. A stray caption fragment is no longer sliced as an icon.
+
+## Unreleased — field sprites in colour
+
+- FULL DETAIL no longer shrinks the asset pack's painted people, houses and props to 16px field sprites (they turned into gray, muddy blobs). The field now uses the game's own coloured walkers, townsfolk and buildings; pack art stays on portraits, item icons, monsters and battle scenes. `S.packField = true` restores the old swap.
+
 ## Unreleased
 
 ### Changed

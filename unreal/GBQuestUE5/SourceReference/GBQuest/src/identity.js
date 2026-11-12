@@ -101,7 +101,7 @@ class IdentityScene {
   constructor() { this.opaque = true; this.i = 0; }
   update() {
     if (P('b') || P('a')) { SFX.back(); removeScene(this); return; }
-    if (nav('up')) { this.i = (this.i + 2) % 3; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % 3; SFX.cursor(); }
+    const n = slotHeroes().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); }
   }
   draw() {
     const a = currentAccount();
@@ -110,8 +110,12 @@ class IdentityScene {
     text(`ACCOUNT ${a.name}`.slice(0, 25), 6, 16, 'gold');
     text(`ACCOUNT ID ${fmtUid(a.uid)}`, 6, 26, 3);
     text(a.kind === 'REALM' ? 'REALM SERVER ACCOUNT' : a.kind === 'CLAUDE' ? 'SIGNED IN WITH CLAUDE' : 'DEVICE ACCOUNT (OFFLINE)', 6, 35, 2);
-    slotHeroes().forEach((s0, j) => {
-      const s = G && G.slot === j ? G : s0, y = 48 + j * 31; frame(2, y, 156, 30); if (j === this.i) fill(4, y + 2, 2, 26, 'gold');
+    // three slot cards fit on screen; the list scrolls with the cursor (5 save slots)
+    const all = slotHeroes(), off = Math.max(0, Math.min(all.length - 3, this.i - 1));
+    if (off > 0) textR('^', 156, 38, 'gold'); if (off + 3 < all.length) textR('v', 156, 135, 'gold');
+    all.forEach((s0, j) => {
+      if (j < off || j >= off + 3) return;
+      const s = G && G.slot === j ? G : s0, y = 48 + (j - off) * 31; frame(2, y, 156, 30); if (j === this.i) fill(4, y + 2, 2, 26, 'gold');
       if (!s) { text(`SLOT ${j + 1}  EMPTY`, 9, y + 11, 1); return; }
       const h = s; // stored slots are only read here
       text(`SLOT ${j + 1} ${String(h.name).slice(0, 10)} L${h.lvl}`, 9, y + 3, 'gold');

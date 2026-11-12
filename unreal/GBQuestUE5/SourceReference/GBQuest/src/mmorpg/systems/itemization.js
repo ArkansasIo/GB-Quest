@@ -1,9 +1,10 @@
 import catalog from "../data/equipment.json" with { type: "json" };
+import expansion from "../data/aelmoor-expansion.json" with { type: "json" };
 
 const QUALITY = Object.freeze(["poor","common","uncommon","rare","epic","legendary","artifact"]);
 const BIND_MODES = Object.freeze(["unbound","bind_on_equip","bind_on_pickup","soulbound"]);
 const allCatalogItems = [
-  ...catalog.weapons, ...catalog.armor, ...(catalog.adventuringGear ?? []),
+  ...catalog.weapons, ...catalog.armor, ...expansion.weapons, ...expansion.armor, ...(catalog.adventuringGear ?? []),
   ...(catalog.tools ?? []), ...(catalog.equipmentPacks ?? []),
   ...(catalog.mountsAndVehicles ?? []), ...(catalog.magicItems ?? [])
 ];
@@ -113,7 +114,7 @@ export function getItemQualityMultiplier(quality) {
 
 export function getEquipmentCatalogSummary() {
   return {
-    weapons: catalog.weapons.length, armor: catalog.armor.length,
+    weapons: catalog.weapons.length + expansion.weapons.length, armor: catalog.armor.length + expansion.armor.length,
     adventuringGear: catalog.adventuringGear?.length ?? 0,
     tools: catalog.tools?.length ?? 0, equipmentPacks: catalog.equipmentPacks?.length ?? 0,
     mountsAndVehicles: catalog.mountsAndVehicles?.length ?? 0,

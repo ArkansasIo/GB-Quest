@@ -1,6 +1,6 @@
 /* CITADEL HD theme — cinematic fantasy command interface.
    This skins the browser/desktop shell; in-game rendering still uses the selected HD64 video mode. */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+/* Cinzel and Inter are bundled in client/fonts/fonts.css (no external requests). */
 :root {
   --room:#07090e; --shell:#111722; --shell-hi:#273447; --shell-lo:#080d15;
   --bezel:#070b12; --ring:#c5a15a; --ink:#e9e1d0; --ink-dim:#a9a18f;

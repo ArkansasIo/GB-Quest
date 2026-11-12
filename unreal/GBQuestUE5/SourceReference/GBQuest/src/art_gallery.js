@@ -30,7 +30,7 @@ class ArtGalleryScene {
       ctx.drawImage(img, Math.floor((W - dw) / 2), 27 + Math.floor((96 - dh) / 2) + pan, dw, dh);
       ctx.restore(); ctx.imageSmoothingEnabled = old;
     } else textC('MASTER ART NOT INSTALLED', W / 2, 70, 'gold');
-    textC(entry.title, W / 2, 138, 2);
-    textC(this.zoom === 1 ? 'A: ZOOM  |  LEFT / RIGHT: SHEET' : 'A: FIT  |  UP / DOWN: PAN', W / 2, 143, 1);
+    textC(entry.title, W / 2, 125, 2);
+    fill(0, 135, W, 9, 0); textC(this.zoom === 1 ? 'A: ZOOM  L/R: SHEET' : 'A: FIT  U/D: PAN', W / 2, 136, 2);
   }
 }

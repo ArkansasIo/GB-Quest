@@ -119,7 +119,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof c
 body.chat-disabled .game-viewport > .chat, body.chat-disabled .chat, body.chat-disabled #chatShow { display: none !important; }
 /* WoW: bottom-left, just above the action bar / HUD strip */
 .game-viewport > .chat.cbx.wowchat:not(.cb-moved) { left: 12px !important; right: auto !important; bottom: calc(15% + 12px) !important; top: auto !important; width: min(420px, 48%) !important; }
-body #chatShow { left: 12px; right: auto; }
+body #chatShow, body .game-viewport > #chatShow { left: 12px; right: auto; width: auto; } /* a compact button, not a bar across the screen */
 .chat.cbx.wowchat { background: rgba(8,6,5,.62) !important; border-color: rgba(118,90,54,.55) !important; backdrop-filter: blur(1px); }
 .chat.wowchat .chat-tabs { gap: 2px !important; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid rgba(212,172,96,.45); padding: 0 2px; min-height: 20px !important; }
 .chat.wowchat .chat-tabs::-webkit-scrollbar { display: none; }

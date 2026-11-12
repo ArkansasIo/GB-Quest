@@ -124,8 +124,10 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   // Replace map tiles, people, and mounts by the semantically matching pack family.
   // Each mapper is deterministic and uses the original renderer as a fallback.
   // only FULL DETAIL (packs) swaps sprites: NES, RETRO 8-BIT and AELMOOR HD keep their own art
+  // field people, buildings and props stay the game's own coloured sprites unless S.packField is set (see npc_art.js)
+  const fieldOn = () => typeof packFieldOn === 'function' ? packFieldOn() : false;
   const packSpriteName = name => {
-    if (S.art !== 'packs') return null;
+    if (S.art !== 'packs' || !fieldOn()) return null;
     const candidate = apFieldArtFor(name);
     return candidate && IMG[candidate] ? candidate : null;
   };
@@ -146,7 +148,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   if (typeof worldPortrait === 'function') {
     const worldPortraitBase = worldPortrait;
     worldPortrait = function (character, dir, ghost) {
-      if (S.art === 'packs' && !ghost) {
+      if (fieldOn() && !ghost) {
         const packed = apCharacterFor(character);
         if (packed && IMG[packed]) return sprFit(packed, 24, { flip: dir === 'left' });
       }
@@ -156,7 +158,7 @@ if (typeof window !== 'undefined' && typeof IMG !== 'undefined') {
   if (typeof npcSprite === 'function') {
     const npcSpriteBase = npcSprite;
     npcSprite = function (entity) {
-      if (S.art === 'packs' && entity) {
+      if (fieldOn() && entity) {
         const packed = apNpcFor(entity);
         if (packed && IMG[packed]) return spr(packed, 16, 16);
       }

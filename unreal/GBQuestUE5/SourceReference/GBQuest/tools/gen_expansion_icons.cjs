@@ -12,6 +12,10 @@ const SET = [
   ['#fa637d', '#a82956', 'moon'], ['#ffb254', '#b74732', 'spire'],
   ['#c3d3e6', '#667b9d', 'shield'], ['#b293e5', '#604681', 'eye'],
   ['#b2df72', '#538b55', 'flower'],
+  ['#e8c060', '#8a6a2c', 'gear'], ['#5fe0c8', '#1f6f8a', 'fin'],
+  ['#f2cc78', '#a0602c', 'hourglass'], ['#c8d8ff', '#5060b0', 'star'],
+  ['#ff9fd8', '#8c3c8c', 'mask'], ['#d8e0e8', '#5c6878', 'sword'],
+  ['#ffd860', '#c06020', 'sun'],
 ];
 
 const crcTable = Array.from({ length: 256 }, (_, n) => {
@@ -88,6 +92,26 @@ function render(index, light, shade, motif) {
   } else if (motif === 'flower') {
     box(14, 9, 4, 4, white); box(10, 12, 4, 4, white); box(18, 12, 4, 4, white); box(12, 16, 8, 4, hi); box(14, 19, 4, 3, gold);
     box(15, 22, 2, 3, low); box(11, 21, 5, 2, hi); box(16, 23, 5, 2, hi); box(15, 13, 3, 3, gold);
+  } else if (motif === 'gear') {
+    box(13, 8, 6, 3, hi); box(13, 21, 6, 3, hi); box(8, 13, 3, 6, hi); box(21, 13, 3, 6, hi);
+    box(10, 10, 12, 12, hi); box(13, 13, 6, 6, low); box(14, 14, 4, 4, gold); box(15, 15, 2, 2, ink); box(11, 11, 2, 2, white);
+  } else if (motif === 'fin') {
+    box(16, 7, 2, 3, white); box(14, 10, 5, 3, hi); box(12, 13, 8, 4, hi); box(10, 17, 12, 2, low);
+    for (let x = 8; x < 24; x += 5) { box(x, 20, 4, 2, hi); box(x + 2, 22, 3, 1, white); } box(15, 11, 2, 5, white);
+  } else if (motif === 'hourglass') {
+    box(9, 8, 14, 2, gold); box(9, 22, 14, 2, gold); box(11, 10, 10, 3, white); box(13, 13, 6, 2, hi); box(15, 15, 2, 2, gold);
+    box(13, 17, 6, 2, low); box(11, 19, 10, 3, hi); box(14, 20, 4, 2, gold);
+  } else if (motif === 'star') {
+    box(15, 7, 2, 5, white); box(15, 20, 2, 5, white); box(8, 15, 5, 2, white); box(19, 15, 5, 2, white);
+    box(12, 12, 8, 8, hi); box(14, 14, 4, 4, white); box(10, 10, 2, 2, gold); box(20, 10, 2, 2, gold); box(10, 20, 2, 2, gold); box(20, 20, 2, 2, gold);
+  } else if (motif === 'mask') {
+    box(9, 11, 14, 8, hi); box(11, 19, 10, 3, hi); box(13, 22, 6, 2, low); box(11, 13, 4, 3, ink); box(17, 13, 4, 3, ink);
+    box(12, 14, 2, 1, white); box(18, 14, 2, 1, white); box(8, 9, 3, 3, gold); box(21, 9, 3, 3, gold); box(14, 18, 4, 1, low);
+  } else if (motif === 'sword') {
+    box(15, 6, 2, 13, white); box(14, 7, 1, 11, hi); box(10, 18, 12, 2, gold); box(15, 20, 2, 4, low); box(14, 24, 4, 2, gold);
+  } else if (motif === 'sun') {
+    box(12, 12, 8, 8, gold); box(13, 13, 6, 6, white); box(15, 7, 2, 4, hi); box(15, 21, 2, 4, hi); box(7, 15, 4, 2, hi); box(21, 15, 4, 2, hi);
+    box(9, 9, 2, 2, hi); box(21, 9, 2, 2, hi); box(9, 21, 2, 2, hi); box(21, 21, 2, 2, hi);
   }
   // Shared glint and numbered pip make the series readable as expansion marks.
   box(8, 6, 2, 2, white); box(22, 6, 2, 2, gold);
@@ -95,7 +119,9 @@ function render(index, light, shade, motif) {
   return png(px);
 }
 
+const FROM = Number(process.argv[2] || 1); // `node gen_expansion_icons.cjs 14` writes only emblems 14 and up
 SET.forEach(([light, shade, motif], index) => {
+  if (index + 1 < FROM) return;
   fs.writeFileSync(path.join(OUT, `exp_icon_${index + 1}.png`), render(index, light, shade, motif));
 });
 console.log(`Generated ${SET.length} 32x32 expansion emblems.`);

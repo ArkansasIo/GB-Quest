@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['data_rules', 'jobs_data', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'video64', 'rules', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'art_gallery', 'scenes_menu', 'hd_character_art', 'scenes_world', 'npc_art', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'keystones', 'dread', 'polish', 'durability', 'guild_prog', 'world_quests', 'loadouts', 'jobs', 'necro_army', 'towns', 'npc_ai', 'ui_dark', 'ui_mmo', 'ui_quest', 'menus_aelmoor', 'battlebg', 'asset_pack', 'pack_index', 'keyart_index', 'itemsheet_index', 'pack_art', 'retro_art', 'mount_data', 'mounts', 'tnl_systems', 'tnl_extras', 'guild_war', 'extras', 'aspects_data', 'd4_gear', 'totems', 'awakening', 'guide', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'main', 'player_hud', 'mmorpg-trade', 'debug'];
+const ORDER = ['data_rules', 'jobs_data', 'data_world', 'gen', 'creatures', 'rooms', 'engine', 'audio64', 'audio_library', 'video64', 'rules', 'effect_engine', 'combat', 'mmorpg/systems/pvp', 'systems', 'rank-system', 'art', 'art_gallery', 'scenes_menu', 'hd_character_art', 'scenes_world', 'npc_art', 'inventory', 'items', 'gems', 'runes', 'boss_rewards', 'boss_progression', 'easter_eggs', 'secret_world', 'gem_ui', 'rune_ui', 'armory', 'trinkets', 'profperks', 'materials', 'companions', 'arts', 'netlocal', 'market', 'heirlooms', 'mmo_loop', 'season_systems', 'keystones', 'dread', 'polish', 'durability', 'guild_prog', 'world_quests', 'loadouts', 'jobs', 'necro_army', 'towns', 'buildings', 'npc_ai', 'ui_dark', 'ui_mmo', 'ui_quest', 'menus_aelmoor', 'battlebg', 'asset_pack', 'pack_index', 'keyart_index', 'itemsheet_index', 'pack_art', 'retro_art', 'mount_data', 'mounts', 'tnl_systems', 'tnl_extras', 'guild_war', 'extras', 'aspects_data', 'd4_gear', 'totems', 'awakening', 'gear_awaken', 'patch_notes', 'update_center', 'rifts', 'war_plans', 'gambler', 'skill_runes', 'detail_pages', 'front_end', 'guide', 'chatwow', 'admin', 'chatbox', 'chatframe', 'identity', 'main', 'player_hud', 'mmorpg-account', 'mmorpg-trade', 'debug', 'boot_screen'];
 
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
-const clientFile = (name) => name === 'main' ? 'client/main.js' : name === 'mmorpg-trade' ? 'client/mmorpg-trade.js' : `src/${name}.js`;
+const clientFile = (name) => name === 'main' ? 'client/main.js' : name === 'mmorpg-account' ? 'client/mmorpg-account.js' : name === 'mmorpg-trade' ? 'client/mmorpg-trade.js' : `src/${name}.js`;
 
 const nes = '<script>window.NES_INDEX=' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'nes_index.json'), 'utf8'))) + ';</script>\n';
 const hd64Files = fs.readdirSync(path.join(ROOT, 'assets_hd64')).filter(f => f.endsWith('.png')).sort();
@@ -29,7 +29,11 @@ const citadel = '<script>window.GBQ_CITADEL_ASSETS=' + JSON.stringify(Object.fro
 const themeShadows = rd('client/theme-shadows.css')
   .replaceAll('url("GBQ_MASTER_CATALOG")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_master_catalog.png')).toString('base64') + '")')
   .replaceAll('url("GBQ_UI_MOCKUP")', 'url("data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'assets', 'gbq_ui_mockup_catalog.png')).toString('base64') + '")');
+// Bundled fonts: inline each woff2 as a data URI so no build requests fonts from the network.
+const fontsCss = rd('client/fonts/fonts.css').replace(/url\("([a-z0-9-]+\.woff2)"\)/g, (m, f) =>
+  'url("data:font/woff2;base64,' + fs.readFileSync(path.join(ROOT, 'client', 'fonts', f)).toString('base64') + '")');
 const shell = rd('client/shell.html')
+  .replace('<link rel="stylesheet" href="client/fonts/fonts.css">', '<style>\n' + fontsCss + '\n</style>')
   .replace('<link rel="stylesheet" href="theme-citadel.css">', '<style>\n' + rd('client/theme-citadel.css') + '\n' + themeShadows + '\n</style>')
   .replace('<link rel="stylesheet" href="client/player-hud.css">', '<style>\n' + rd('client/player-hud.css') + '\n</style>')
   .replace('<link rel="stylesheet" href="client/trade-panel.css">', '<style>\n' + rd('client/trade-panel.css') + '\n</style>')
