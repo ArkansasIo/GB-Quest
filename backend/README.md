@@ -63,6 +63,10 @@ WebSocket:
 - `character.select` enters that character's realm. It fails with `realm_full` when the realm is at `maxPlayers`, or with `realm_unavailable` when the realm is not online.
 - `zone.snapshot` includes `realm`.
 - `chat.send` takes `channel`: `zone` (the default), `realm` (everyone on the realm) or `whisper` (with `to`, a character name on the same realm). Whispers are persisted before delivery, so an offline recipient can read them later. An unknown name returns `whisper_target_not_found`.
+- A character can be controlled by only one live WebSocket at a time; a second connection receives `character_already_online`. Disconnects remove presence and release the slot.
+- Unauthenticated sockets are closed after 10 seconds. The server sends WebSocket ping frames every 30 seconds and terminates connections that stop answering. A client whose outbound buffer exceeds 1 MiB is disconnected rather than allowing unbounded memory growth.
+- The authoritative socket currently supports `zone`, `realm` and `whisper` chat. Other channel names return `unsupported_chat_channel`; they are never silently delivered to the zone.
+- Server tuning: `GBQ_WS_AUTH_TIMEOUT_MS`, `GBQ_WS_HEARTBEAT_MS` and `GBQ_WS_MAX_BUFFERED_BYTES` override the respective defaults.
 
 Direct-message HTTP endpoints:
 
