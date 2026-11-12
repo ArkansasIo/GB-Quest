@@ -1,0 +1,41 @@
+name: MMORPG server container
+on:
+  pull_request:
+    paths:
+      - "Dockerfile.mmorpg"
+      - "docker-compose.mmorpg.yml"
+      - ".dockerignore"
+      - "backend/**"
+      - "package.json"
+      - ".github/workflows/mmorpg-container.yml"
+  push:
+    branches:
+      - main
+      - "feature/mmorpg-*"
+    paths:
+      - "Dockerfile.mmorpg"
+      - "docker-compose.mmorpg.yml"
+      - ".dockerignore"
+      - "backend/**"
+      - "package.json"
+      - ".github/workflows/mmorpg-container.yml"
+
+jobs:
+  container-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate server JavaScript
+        run: |
+          node --check backend/mmorpg-server.cjs
+          node --check backend/mmorpg-social-pvp-routes.cjs
+          node --check backend/mmorpg-competitive-routes.cjs
+          node --check backend/dungeon-matchmaking.cjs
+          node --check backend/migrate.cjs
+      - name: Validate Compose configuration
+        run: |
+          printf '%s\n' 'POSTGRES_PASSWORD=0123456789abcdef0123456789abcdef' 'GBQ_TOKEN_SECRET=abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789' > .env.ci
+          docker compose --env-file .env.ci -f docker-compose.mmorpg.yml config --quiet
+          rm .env.ci
+      - name: Build dedicated MMO server image
+        run: docker build --file Dockerfile.mmorpg --tag gbquest-mmorpg:ci .
