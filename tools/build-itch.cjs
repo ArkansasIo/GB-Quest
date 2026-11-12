@@ -67,7 +67,8 @@ if (!hasHd64Pack) {
 let html = fs.readFileSync(index, 'utf8');
 const injectionPoint = '<script>window.NES_INDEX=';
 if (!html.includes(injectionPoint)) throw new Error('Could not locate safe HD64 pack injection point.');
-html = html.replace(injectionPoint, '<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\n' + injectionPoint);
+// itch.io serves static files only, so the game must not probe the page's own origin for a realm server.
+html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;</script>\n<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\n' + injectionPoint);
 fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');

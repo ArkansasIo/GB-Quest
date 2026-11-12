@@ -26,7 +26,7 @@ const LocalRealm = {
     if (!r.ok) { const err = new Error((j && j.error) || `HTTP ${r.status}`); err.status = r.status; throw err; }
     return j;
   },
-  async detect() {
+  async detect(force) {
     if (location.protocol === 'file:' && window.gbqLauncher?.getGameSession) {
       try {
         const context = await window.gbqLauncher.getGameSession();
@@ -39,7 +39,11 @@ const LocalRealm = {
       } catch (e) { this.desktop = true; this.available = false; return false; }
     }
     if (!/^https?:$/.test(location.protocol)) return false;
-    try { const c = new AbortController(); setTimeout(() => c.abort(), 1500); const r = await fetch('/api/health', { signal: c.signal }); if (!r.ok) return false; this.info = await r.json(); this.available = !!(this.info && this.info.ok); } catch (e) { this.available = false; }
+    // Static hosts (the itch.io release sets GBQ_STATIC_HOST) have no same-origin realm server: don't probe.
+    if (window.GBQ_STATIC_HOST) { this.noServer = true; return false; }
+    if (this.noServer && !force) return false;             // already answered 404: no server on this origin
+    this.noServer = false;
+    try { const c = new AbortController(); setTimeout(() => c.abort(), 1500); const r = await fetch('/api/health', { signal: c.signal }); if (r.status === 404 || r.status === 405) this.noServer = true; if (!r.ok) return false; this.info = await r.json(); this.available = !!(this.info && this.info.ok); } catch (e) { this.available = false; }
     return this.available;
   },
   async register(username, password) { const r = await this.api('/api/register', { method: 'POST', body: { username, password } }); this.token = r.token; this.account = r.account; this.store(); return r.account; },

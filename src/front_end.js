@@ -547,7 +547,7 @@ class OnlineHubScene {
     if (!P('a')) return;
     const c = o[this.i]; SFX.select();
     if (c === 'BACK') return removeScene(this);
-    if (c === 'RETRY') { if (LocalRealm.detect) LocalRealm.detect().then(() => this.refresh()); return; }
+    if (c === 'RETRY') { if (LocalRealm.detect) LocalRealm.detect(true).then(() => this.refresh()); return; }
     if (c === 'LOG IN' || c === 'CREATE ACCOUNT') return push(new LoginScene(c === 'LOG IN' ? 'login' : 'register', () => this.refresh()));
     if (c === 'CHARACTERS') return push(new CharacterSelectScene((typeof G !== 'undefined' && G && G.realm) || LocalRealm.realm || (REALMS[0] && REALMS[0].id)));
     if (c === 'FRIENDS') return push(new FriendsScene());
@@ -577,10 +577,11 @@ Object.assign(window, { LoginScene, ChangePasswordScene, RealmListScene, Charact
 
 // the start-up check for a realm server can time out while the page is still loading; keep looking every few
 // seconds until one answers, then switch the game to it (also covers starting the server after the page)
-if (typeof LocalRealm !== 'undefined' && /^https?:$/.test(location.protocol)) {
+// A 404/405 from /api/health means this host has no realm server at all (e.g. a static web host), so stop.
+if (typeof LocalRealm !== 'undefined' && /^https?:$/.test(location.protocol) && !window.GBQ_STATIC_HOST) {
   let tries = 0;
   const poll = setInterval(() => {
-    if (LocalRealm.available || ++tries > 60) return clearInterval(poll);
+    if (LocalRealm.available || LocalRealm.noServer || ++tries > 60) return clearInterval(poll);
     LocalRealm.detect().then(ok => { if (ok) { clearInterval(poll); if (typeof NET !== 'undefined' && NET.init && NET.transport !== 'server') NET.init().catch(() => {}); } }).catch(() => {});
   }, 4000);
 }
