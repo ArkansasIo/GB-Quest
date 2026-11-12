@@ -69,9 +69,18 @@ function useBuilding(b, field) {
   return npcService({ svc: b.svc, name: b.name });
 }
 
+// RETRO 8-BIT buildings (tools/gen_retro8_heroes.py), 32x32, by what the building is
+const RETRO_BUILDING = { inn: 'inn', vendor: 'store', blacksmith: 'smithy', stable: 'stable', mail: 'post', bank: 'bank', shrine: 'shrine', mill: 'mill' };
+function buildingSprite(b) {
+  if (typeof S !== 'undefined' && S.art === 'retro') {
+    const kind = RETRO_BUILDING[b.svc] || `house${(b.x * 7 + b.y * 3) % 4}`, name = `r8bld_${kind}`;
+    if (IMG[name]) return name;
+  }
+  return b.spr;
+}
 function drawBuilding(e, ex, ey) {
-  const img = IMG[e.b.spr];
-  if (img) { ctx.drawImage(img, Math.round(ex - 1), Math.round(ey + T - img.height), img.width, img.height); return; }
+  const img = IMG[buildingSprite(e.b)];
+  if (img) { ctx.drawImage(img, Math.round(ex + T - img.width / 2), Math.round(ey + T - img.height), img.width, img.height); return; }
   // no sprite (art not loaded): a plain roofed block so the footprint is never invisible
   fill(ex, ey - T + 4, 2 * T, 2 * T - 4, 2); fill(ex + 2, ey - T + 6, 2 * T - 4, 6, 3); fill(ex + 12, ey + 6, 8, 10, 3);
 }

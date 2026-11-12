@@ -17,8 +17,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MIRROR = ROOT / 'unreal' / 'GBQuestUE5' / 'SourceReference' / 'GBQuest'
-SOURCE_EXTENSIONS = {'.c', '.cc', '.cjs', '.cpp', '.cs', '.css', '.gd', '.h', '.hpp', '.html', '.ini', '.js', '.json', '.md', '.mjs',
-                     '.py', '.ps1', '.sh', '.toml', '.ts', '.tsx', '.txt', '.xml', '.yaml', '.yml'}
+SOURCE_EXTENSIONS = {'.asm', '.bat', '.c', '.cc', '.cjs', '.conf', '.cpp', '.cs', '.css', '.csv', '.example', '.gd', '.h', '.hpp', '.html', '.inc', '.ini', '.js', '.json', '.md', '.mjs',
+                     '.py', '.ps1', '.s', '.sh', '.sql', '.toml', '.ts', '.tsx', '.txt', '.xml', '.yaml', '.yml'}
 EXCLUDED_DIRS = {'.agents', '.aws', '.codex', '.git', '.github', '.vscode', 'build', 'dist', 'node_modules', 'unreal'}
 
 
