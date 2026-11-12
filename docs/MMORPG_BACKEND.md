@@ -42,6 +42,13 @@ All request/response bodies are JSON.
 | GET | /api/me | Bearer | Account and characters |
 | GET | /api/characters | Bearer | Character list; optional `?realm=<id>` filter |
 | POST | /api/characters | Bearer | `{ name, class, realmId }`; up to three characters per realm |
+| GET | /api/dungeons/catalog | No | Enabled five-player dungeons and level ranges |
+| POST | /api/dungeons/queue | Bearer | `{ characterId, dungeonId, role }`; queue as tank, healer or damage |
+| GET | /api/dungeons/queue/:characterId | Bearer | Queue state, role counts or matched group |
+| DELETE | /api/dungeons/queue/:characterId | Bearer | Leave an unmatched queue |
+| GET | /api/dungeons/groups/:groupId | Bearer | Read group details as a member |
+| POST | /api/dungeons/groups/:groupId/start | Bearer | Tank-led transition from formed to started |
+| POST | /api/dungeons/groups/:groupId/complete | Bearer | Tank-led completion; releases characters for future queues |
 
 Allowed jobs: warden, berserker, vanguard, strider, shade, ascetic, arcanist, wildblood, pactbound, cantor, chaplain, verdant, necromancer, summoner, sunwarden, runeblade, ronin, shinobi, bladedancer, wyrmlancer, corsair, beastcaller, puppeteer, dreadknight, voidhunter, scalesage and stormcaller. Character progression is level 1–720 using the browser game's XP thresholds; class feature progression remains distinct from the MMO's post-20 ascension levels.
 
@@ -54,6 +61,10 @@ Allowed jobs: warden, berserker, vanguard, strider, shade, ascetic, arcanist, wi
 - WebSocket `chat.send` with `channel: "whisper"` accepts a recipient character name. An unknown name returns `whisper_target_not_found`; offline characters are valid recipients.
 - WebSocket messages are processed sequentially per connection to prevent overlapping asynchronous database operations from reordering commands. More than 64 queued messages closes the connection.
 - Migration `009_jobs_level_720.sql` aligns PostgreSQL class validation and XP progression with the browser game. The server exposes `gbq_level_for_xp(bigint)` for the shared 1–720 XP curve.
+
+## Dungeon matchmaking
+
+Migration `014_dungeon_matchmaking.sql` seeds the 20 world-map dungeons and stores queue entries, role assignments, formed groups and instance IDs in PostgreSQL. Queue formation is scoped to a realm and dungeon and atomically builds one tank, one healer and three damage roles. Character ownership and level ranges are validated by the service; the tank is group lead for starting and completing the run. Completing the group marks all five queue records complete so the characters may queue again. Instance IDs are allocated by the backend; loading the dungeon map and running encounters remain game-runtime operations.
 
 ## WebSocket protocol
 
