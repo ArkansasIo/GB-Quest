@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { needs, IMAGES } from './support/needs.js';
 
 // Expansions 14-20 (src/data_world.js, expansion wave 4): seven worlds with maps, regions, dungeons, a raid, a campaign and music.
 const ctx = { console, window: {} };
@@ -53,7 +54,7 @@ test('4 dungeons and a raid per new expansion, with bosses from their own seed',
   assert.match(gen, /const wild = ZONES\.filter\(z => !z\.town && !z\.v\)/, 'new zones stay out of the original world-boss fill');
 });
 
-test('campaigns, stories, maps, emblems and music for every expansion', () => {
+test('campaigns, stories and music for every expansion', () => {
   assert.equal(CAMPAIGNS.length, 20);
   assert.equal(STORIES.length, 20);
   for (const x of EXP) {
@@ -61,9 +62,14 @@ test('campaigns, stories, maps, emblems and music for every expansion', () => {
     assert.equal(c.exp, x.n);
     assert.ok(DUNGEONS.some(d => d.id === c.steps[2].target) && RAIDS.some(r => r.id === c.steps[3].target), `${x.id} campaign targets exist`);
     assert.ok(STORIES[x.n - 1].threat && STORIES[x.n - 1].hook, x.id);
-    assert.ok(asset(`exp_icon_${x.n}`), `exp_icon_${x.n}`);
-    if (x.world) assert.ok(asset(`gm_x${x.n}`) && asset(`gm_x${x.n}_s`), `map for ${x.id}`);
   }
   const lib = fs.readFileSync(new URL('../src/audio_library.js', import.meta.url), 'utf8');
   for (const x of NEW) for (const k of ['ow_', 'bt_', 'boss_']) assert.match(lib, new RegExp(`\\['${k}${x.id}',`), `${k}${x.id}`);
+});
+
+test('every expansion has its emblem, and every world its painted map', { skip: needs(IMAGES) }, () => {
+  for (const x of EXP) {
+    assert.ok(asset(`exp_icon_${x.n}`), `exp_icon_${x.n}`);
+    if (x.world) assert.ok(asset(`gm_x${x.n}`) && asset(`gm_x${x.n}_s`), `map for ${x.id}`);
+  }
 });

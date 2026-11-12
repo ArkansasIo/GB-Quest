@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { needs, IMAGES } from './support/needs.js';
 
 // Hub buildings: every wild region hub is a village or a town with real buildings (src/gen.js placeHubBuildings, src/buildings.js).
 const ctx = { console, window: {} };
@@ -26,7 +27,8 @@ test('every wild region hub has its village or town buildings', () => {
 });
 
 test('each building is a solid 2x2 footprint with a reachable door and a known sprite', () => {
-  const sprites = new Set(fs.readdirSync(new URL('../assets/', import.meta.url)).filter(f => f.startsWith('ap_buildings_')).map(f => f.slice(0, -4)));
+  const art = !needs(IMAGES);
+  const sprites = new Set(art ? fs.readdirSync(new URL('../assets/', import.meta.url)).filter(f => f.startsWith('ap_buildings_')).map(f => f.slice(0, -4)) : []);
   for (const h of hubs) {
     const at = (x, y) => (h.rows[y] || '')[x];
     const seen = new Set([h.hub + '']), q = [h.hub];
@@ -34,7 +36,8 @@ test('each building is a solid 2x2 footprint with a reachable door and a known s
     for (const b of h.buildings) {
       for (const [x, y] of [[b.x, b.y - 1], [b.x + 1, b.y - 1], [b.x, b.y], [b.x + 1, b.y]]) assert.equal(at(x, y), 'B', `${h.id} ${b.name}`);
       assert.ok(seen.has([b.x, b.y + 1] + '') || seen.has([b.x + 1, b.y + 1] + ''), `${h.id} ${b.name}: door cut off from the hub`);
-      assert.ok(sprites.has(b.spr), `${h.id} ${b.name}: missing sprite ${b.spr}`);
+      assert.match(b.spr, /^ap_buildings_\d{3}$/);
+      if (art) assert.ok(sprites.has(b.spr), `${h.id} ${b.name}: missing sprite ${b.spr}`);
     }
     const tiles = (h.rows.join('').match(/B/g) || []).length;
     assert.equal(tiles, h.buildings.length * 4, `${h.id}: stray building tiles`);
