@@ -113,6 +113,21 @@ WebSocket commands after character selection:
 
 Guild operations currently coordinate inside a single authoritative server process; distributed presence and cross-replica events are not yet implemented. Guild banks, audit logs, applications and shared storage are not part of this migration.
 
+## Persistent dungeon matchmaking
+
+Migration `014_dungeon_matchmaking.sql` seeds the 20 five-player dungeons from the world-map catalog and creates the persistent queue, formed groups, and group-member records.
+
+Authenticated HTTP endpoints:
+
+- `GET /api/dungeons/catalog` returns enabled dungeons and their level ranges.
+- `POST /api/dungeons/queue` accepts `{ characterId, dungeonId, role }`, where role is `tank`, `healer`, or `damage`.
+- `GET /api/dungeons/queue/:characterId` returns the character's current queue or matched group.
+- `DELETE /api/dungeons/queue/:characterId` leaves a queue before a group is formed.
+- `GET /api/dungeons/groups/:groupId` returns the group only to one of its members.
+- `POST /api/dungeons/groups/:groupId/start` and `/complete` transition the group lifecycle. The tank is the group lead and is the only role permitted to start or complete the run.
+
+Matchmaking is realm-scoped and validates character ownership, dungeon level range, role, and one active queue/group per character. A PostgreSQL advisory transaction lock serializes formation for each realm/dungeon pair; candidate rows are locked with `SKIP LOCKED`. The five-player composition is one tank, one healer, and three damage roles. Group formation, queue status changes, and member assignment commit atomically. Completion releases all five characters to queue again. Instance IDs are generated per formed group; dungeon map loading and encounter progression remain the game-world runtime's responsibility.
+
 ## Running the realm server (the multiplayer world)
 
 `backend/server.cjs` is the realm server players connect to. It needs no database. On Windows, copy `tools/windows/start-realm-server.bat` next to `package.json` and double-click it. Anywhere else, run `HOST=0.0.0.0 PORT=8787 node backend/server.cjs`. The server serves the game itself at `http://<this computer>:8787`, so players open that address in a browser.
