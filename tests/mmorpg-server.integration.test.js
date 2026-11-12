@@ -257,6 +257,8 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     assert.equal(partyUpdateForLeader.payload.party.members.length, 2);
     const partyUpdateForMember = await waitForSecond('party.updated');
     assert.equal(partyUpdateForMember.payload.party.id, partyId);
+    // Respect the server's 1.2-second per-character chat throttle after the zone-chat case above.
+    await new Promise(resolve => setTimeout(resolve, 1250));
     sendSecond(7, 'chat.send', { channel: 'party', text: 'Party channel online' });
     const partyChat = await waitFor('chat.message');
     assert.equal(partyChat.payload.channel, 'party');
