@@ -7,7 +7,8 @@ async function handleGuildRequest({req,res,url,pool,accountFor,readBody,json}){
  const motd=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/motd$/i);
  const transfer=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/transfer$/i);
  const disband=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})$/i);
- if(!member&&!invite&&!accept&&!motd&&!transfer&&!disband)return false;
+ const rankRoute=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/rank$/i);
+ if(!member&&!invite&&!accept&&!motd&&!transfer&&!disband&&!rankRoute)return false;
  const acct=await accountFor(req);if(!acct){json(res,401,{error:'unauthorized'});return true;}
  if(member&&req.method==='GET'){
   const id=member[1],owned=await pool.query('SELECT id FROM characters WHERE id=$1 AND account_id=$2',[id,acct.id]);
@@ -132,7 +133,6 @@ async function handleGuildRequest({req,res,url,pool,accountFor,readBody,json}){
    await tx.query('COMMIT');json(res,200,{disbanded:true,guildId});return true;
   }catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;}finally{tx.release();}
  }
- const rankRoute=url.pathname.match(/^\/api\/guilds\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/rank$/i);
  if(rankRoute&&req.method==='POST'){
   const guildId=rankRoute[1],targetId=rankRoute[2],body=await readBody(req),actor=String(body.actorCharacterId||''),rank=String(body.rank||'');
   if(!/^[0-9a-f-]{36}$/i.test(actor)||!['officer','veteran','member','recruit'].includes(rank)){json(res,400,{error:'invalid_guild_rank_request'});return true;}

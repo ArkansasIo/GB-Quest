@@ -5,7 +5,8 @@ async function handlePartyRequest({ req, res, url, pool, accountFor, readBody, j
   const memberRoute = url.pathname.match(/^\/api\/characters\/([0-9a-f-]{36})\/party$/i);
   const inviteRoute = url.pathname.match(/^\/api\/parties\/([0-9a-f-]{36})\/invites$/i);
   const acceptRoute = url.pathname.match(/^\/api\/party-invites\/([0-9a-f-]{36})\/accept$/i);
-  if (!memberRoute && !inviteRoute && !acceptRoute) return false;
+  const roleRoute = url.pathname.match(/^\/api\/parties\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/role$/i);
+  if (!memberRoute && !inviteRoute && !acceptRoute && !roleRoute) return false;
 
   const acct = await accountFor(req);
   if (!acct) { json(res,401,{error:'unauthorized'}); return true; }
@@ -113,7 +114,6 @@ async function handlePartyRequest({ req, res, url, pool, accountFor, readBody, j
       await tx.query('COMMIT');json(res,200,{left:true,partyDisbanded:!remaining.rowCount,newLeader:remaining.rows[0]?.character_id||null});return true;
     } catch(e){await tx.query('ROLLBACK').catch(()=>{});throw e;} finally{tx.release();}
   }
-  const roleRoute=url.pathname.match(/^\/api\/parties\/([0-9a-f-]{36})\/members\/([0-9a-f-]{36})\/role$/i);
   if(roleRoute && req.method==='POST'){
     const partyId=roleRoute[1],targetId=roleRoute[2],body=await readBody(req),actorId=String(body.actorCharacterId||''),role=String(body.role||'');
     if(!/^[0-9a-f-]{36}$/i.test(actorId)||!['tank','healer','damage','support'].includes(role)){json(res,400,{error:'invalid_party_role_request'});return true;}
