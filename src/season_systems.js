@@ -55,12 +55,12 @@ const MONTHLY_EVENTS=[
 ]
 ];
 function pad(n){return String(n).padStart(2,'0');}
-function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function dateKey(d){return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
 function getSeason(d=new Date()){
-const q=Math.floor(d.getMonth()/3),s=SEASONS[q],start=new Date(d.getFullYear(),q*3,1),end=new Date(d.getFullYear(),q*3+3,1);
-return{id:'Y'+d.getFullYear()+'_'+s.id,year:d.getFullYear(),quarter:q+1,name:s.name,theme:s.theme,element:s.element,currency:s.currency,lore:s.lore,start:dateKey(start),end:dateKey(end),daysLeft:Math.max(0,Math.ceil((end-d)/86400000)),monthInSeason:d.getMonth()%3+1,eventData:MONTHLY_EVENTS[q][d.getMonth()%3]};
+const q=Math.floor(d.getUTCMonth()/3),s=SEASONS[q],start=new Date(Date.UTC(d.getUTCFullYear(),q*3,1)),end=new Date(Date.UTC(d.getUTCFullYear(),q*3+3,1));
+return{id:'Y'+d.getFullYear()+'_'+s.id,year:d.getUTCFullYear(),quarter:q+1,name:s.name,theme:s.theme,element:s.element,currency:s.currency,lore:s.lore,start:dateKey(start),end:dateKey(end),daysLeft:Math.max(0,Math.ceil((end-d)/86400000)),monthInSeason:d.getUTCMonth()%3+1,eventData:MONTHLY_EVENTS[q][d.getMonth()%3]};
 }
-function weekKey(d=new Date()){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return dateKey(x);}
+function weekKey(d=new Date()){const x=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));x.setUTCDate(x.getUTCDate()-((x.getUTCDay()+6)%7));return dateKey(x);}
 function statSnapshot(stats={}){return Object.fromEntries(STAT_KEYS.map(k=>[k,Math.max(0,Number(stats[k])||0)]));}
 function progressFor(q,stats={},base={}){return Math.max(0,Math.min(q.target,(Number(stats[q.stat])||0)-(Number(base[q.stat])||0)));}
 function questComplete(q,stats={},base={}){return progressFor(q,stats,base)>=q.target;}
