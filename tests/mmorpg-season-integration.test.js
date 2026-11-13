@@ -23,3 +23,9 @@ test('mob rank mapping awards elite and world-boss objectives only for explicit 
   assert.match(seasonRoutes,/if \(rank === 'elite'\) return \['chapter_2'\]/);
   assert.match(seasonRoutes,/if \(rank === 'world_boss'\) return \['chapter_5', 'chapter_12'\]/);
 });
+
+test('mob-rank migration defaults legacy spawns to normal and restricts rank values',()=>{
+  const migration = fs.readFileSync(new URL('../backend/migrations/019_world_mob_rank.sql',import.meta.url),'utf8');
+  assert.match(migration,/ADD COLUMN IF NOT EXISTS mob_rank varchar\(16\) NOT NULL DEFAULT 'normal'/);
+  assert.match(migration,/CHECK \(mob_rank IN \('normal','elite','world_boss'\)\)/);
+});
