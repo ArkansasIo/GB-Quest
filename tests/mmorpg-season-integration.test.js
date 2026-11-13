@@ -6,7 +6,7 @@ const server = fs.readFileSync(new URL('../backend/mmorpg-server.cjs', import.me
 
 test('authoritative mob defeat writes seasonal kill progress in the combat transaction', () => {
   assert.match(server, /function currentSeasonId\(date = new Date\(\)\)/);
-  assert.match(server, /if \(hp === 0\) \{[\s\S]{0,1000}INSERT INTO character_season_objectives/);
+  assert.match(server, /if \(hp === 0\) \{[\s\S]{0,1000}recordSeasonProgress\(tx, state\.character\.id, seasonId, 'chapter_1', 1\)/);
   assert.match(server, /recordSeasonProgress\(tx, state\.character\.id, seasonId, 'chapter_1', 1\)/);
   assert.match(server, /recordSeasonProgress\(tx, state\.character\.id, seasonId, 'chapter_10', 1\)/);
   assert.match(server, /seasonalObjectivesForMobRank\(mob\.mob_rank\)/);
