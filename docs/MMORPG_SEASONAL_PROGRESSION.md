@@ -1,38 +1,17 @@
-# Authoritative seasonal progression
+# Persistent seasonal progression
 
-The browser seasonal calendar remains a presentation layer. Seasonal counters, currency, renown, reward eligibility and claims are persisted and validated by the PostgreSQL MMO service.
+The seasonal server implementation is being developed in the existing pull request [#44 — Add persistent server-authoritative seasonal progression](https://github.com/ArkansasIo/GB-Quest/pull/44). That pull request is the source of truth for the server API and schema; do not merge a second implementation of the same routes or tables.
 
-## Calendar
+## Server contract
 
-The server uses UTC quarter boundaries and stable season IDs:
+- `GET /api/characters/:characterId/season?seasonId=Y2027_emberfall` returns the character's seasonal wallet and all 12 objective records.
+- `POST /api/characters/:characterId/season/claim` accepts `seasonId` and `objectiveId`. The server defines the reward, checks completion, locks the objective and character, and credits the seasonal wallet and character gold in one transaction.
+- `POST /api/characters/:characterId/season/progress` is reserved for trusted gameplay services. It requires the `X-GBQ-Internal-Secret` header matching `GBQ_INTERNAL_SECRET`; never put this secret in browser code or public client configuration.
 
-| Quarter | Season ID suffix | Display name |
-|---|---|---|
-| Jan–Mar | `emberfall` | Emberfall |
-| Apr–Jun | `frostwake` | Frostwake |
-| Jul–Sep | `greentide` | Greentide |
-| Oct–Dec | `suncrown` | Suncrown |
+The seasonal calendar uses UTC quarter IDs: `emberfall`, `frostwake`, `greentide`, and `suncrown`. Combat automatically advances the configured kill objectives in the same transaction as the mob defeat and combat reward. Other gameplay systems should report progress only after their authoritative action has succeeded.
 
-Weekly objectives reset on Monday UTC. The first request in a new week snapshots the current counters as the weekly baseline.
+## Validation and release status
 
-## Persistence and authority
+As of 13 November 2026, the pull request's JavaScript/MMORPG test workflow and itch.io HTML5 build workflow both completed successfully. See the live [pull request checks](https://github.com/ArkansasIo/GB-Quest/pull/44) before merging; CI status can change as new commits are pushed.
 
-Migration `018_seasonal_progression.sql` creates `character_season_progress`, keyed by character and season. It stores activity counters, the current story chapter and baseline, weekly baseline and claims, renown claims, seasonal currency and seasonal XP.
-
-The MMO combat service records enemy defeats and completed quest counts in the same PostgreSQL transaction as the combat reward. The browser cannot submit arbitrary activity totals. The first server implementation tracks kills and completed quests; other activity categories should be wired to their authoritative dungeon, raid, crafting and world-boss completion transactions before those objectives are advertised.
-
-## HTTP API
-
-All routes require the normal bearer token and character ownership check.
-
-- `GET /api/characters/:characterId/season` returns the active season, server counters, current story objective, weekly objectives, currency, season XP, renown and claimed renown tiers.
-- `POST /api/characters/:characterId/season/claim` accepts one of:
-  - `{ "type": "journey", "id": "chapter_1" }`
-  - `{ "type": "weekly", "id": "weekly_hunt" }`
-  - `{ "type": "renown", "id": "1" }`
-
-Claims are checked and written inside a transaction with the character row locked. An incomplete objective, stale chapter, unknown weekly ID or already-claimed renown tier is rejected. Reward currency, seasonal XP, renown and character gold are applied server-side.
-
-## Deployment
-
-Back up PostgreSQL and run `npm run mmorpg:migrate` before deploying the updated MMO service. The migration runner applies numbered SQL migrations in order. Do not call client-side save data authoritative for seasonal currency or reward claims.
+Apply the pull request's migration with `npm run mmorpg:migrate` as part of the database deployment procedure. Back up PostgreSQL first. Keep the existing browser seasonal UI as presentation only; never trust client-submitted progress, currency, renown, or reward values.
