@@ -21,6 +21,7 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
+const { handleSeasonRequest } = require('./mmorpg-season-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
@@ -564,6 +565,7 @@ const server = http.createServer(async (req, res) => {
     if (await handlePvpRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleWhisperRequest({ req, res, url, pool, accountFor, json })) return;
     if (await handleCollectionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleSeasonRequest({ req, res, url, pool, accountFor, readBody, json, internalSecret: INTERNAL_SECRET })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);

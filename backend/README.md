@@ -139,3 +139,13 @@ Each realm is its own world:
 - `GET /api/realms` and `GET /api/regions` report live population: the distinct accounts connected to each realm. They also report a load label: LOW, MEDIUM, HIGH or FULL (`maxPlayers` is 1000).
 
 Accounts, saves and realm settings live in `server/data/realm.json`.
+
+## Persistent seasonal progression
+
+The authoritative MMO realm exposes per-character seasonal state through `backend/mmorpg-season-routes.cjs`. Apply the schema with `npm run mmorpg:migrate`; the migration is `018_seasonal_progression.sql`.
+
+- `GET /api/characters/:characterId/season?seasonId=Y2027_emberfall` returns the season wallet and the 12 server-defined campaign objectives. A bearer token is required and the character must belong to the account.
+- `POST /api/characters/:characterId/season/claim` accepts only `seasonId` and `objectiveId`. The server supplies reward values; clients cannot set tokens, renown, or gold. Character locking, objective locking, wallet credit, gold credit, and the claim marker are committed in one database transaction.
+- `POST /api/characters/:characterId/season/progress` is an internal gameplay-service endpoint. It requires the `X-GBQ-Internal-Secret` header matching `GBQ_INTERNAL_SECRET` and accepts `seasonId`, `objectiveId`, and a positive `amount`. The server clamps progress to the objective target. Never place this secret in browser code or public client configuration.
+
+The route uses the four quarterly season IDs and a fixed 12-chapter objective/reward catalogue. The client-side seasonal presentation remains in `src/season_systems.js`; this API adds durable realm persistence and server-side reward settlement. Gameplay event handlers should call the internal progress endpoint only after the corresponding action has been validated and committed by the authoritative server.
