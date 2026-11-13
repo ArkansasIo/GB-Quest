@@ -23,7 +23,7 @@ The server-side objective catalogue currently defines:
 |---|---|---:|---|
 | 1 | Defeat enemies | 60 | Mob defeat |
 | 2 | Defeat elites | 8 | Pending elite classification |
-| 3 | Complete dungeons | 2 | Dungeon completion |
+| 3 | Complete dungeons | 2 | Pending trusted dungeon-clear hook |
 | 4 | Complete quests | 5 | Quest completion |
 | 5 | Defeat world bosses | 1 | Pending world-boss classification |
 | 6 | Complete a raid encounter | 1 | Raid encounter completion |
@@ -31,10 +31,10 @@ The server-side objective catalogue currently defines:
 | 8 | Craft items | 12 | Pending crafting completion hook |
 | 9 | Complete keystone runs | 2 | Pending keystone completion hook |
 | 10 | Defeat enemies | 250 | Mob defeat |
-| 11 | Complete dungeons | 6 | Dungeon completion |
+| 11 | Complete dungeons | 6 | Pending trusted dungeon-clear hook |
 | 12 | Defeat world bosses | 3 | Pending world-boss classification |
 
-Progress is recorded by trusted server code, not client-submitted counters. Dungeon completion credits each instance member in the same transaction as the completion status update. Raid encounter completion credits every current raid member in the same transaction as the completion record and lockouts. Mob defeats and quest completions are recorded in the authoritative combat transaction.
+Progress is recorded by trusted server code, not client-submitted counters. Raid encounter completion credits every current raid member in the same transaction as the completion record and lockouts. Mob defeats and quest completions are recorded in the authoritative combat transaction. The existing public dungeon completion endpoint accepts a client-requested status and does not yet verify a server-recorded boss clear, so it deliberately does not grant seasonal dungeon progress. Add that hook only after dungeon completion is server-verified.
 
 ## Weekly seasonal quests
 
