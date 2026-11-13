@@ -149,3 +149,7 @@ The authoritative MMO realm exposes per-character seasonal state through `backen
 - `POST /api/characters/:characterId/season/progress` is an internal gameplay-service endpoint. It requires the `X-GBQ-Internal-Secret` header matching `GBQ_INTERNAL_SECRET` and accepts `seasonId`, `objectiveId`, and a positive `amount`. The server clamps progress to the objective target. Never place this secret in browser code or public client configuration.
 
 The route uses the four quarterly season IDs and a fixed 12-chapter objective/reward catalogue. The client-side seasonal presentation remains in `src/season_systems.js`; this API adds durable realm persistence and server-side reward settlement. Defeated mobs automatically increment the chapter 1 (60 kills) and chapter 10 (250 kills) objectives inside the same PostgreSQL transaction as combat rewards. Other gameplay systems should call the internal progress endpoint only after the corresponding action has been validated and committed by the authoritative server. The season key is selected by UTC quarter on the realm server.
+
+## Enemy rank classification and seasonal objectives
+
+Migration `019_world_mob_rank.sql` adds `world_mobs.mob_rank` with the allowed values `normal`, `elite`, and `world_boss`. Existing rows default to `normal`; mark elite and world-boss spawn templates explicitly in the content/spawn data. The authoritative combat transaction awards the elite and world-boss seasonal objectives only after the corresponding mob is defeated. Do not infer rank from a display name or level.
