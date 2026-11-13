@@ -7,6 +7,25 @@ const OBJECTIVES = Object.freeze(Array.from({ length: 12 }, (_, i) => Object.fre
   reward: Object.freeze({ tokens: 30 + i * 5, renown: 100 + i * 25, gold: 200 + i * 50 })
 })));
 const BY_ID = new Map(OBJECTIVES.map(item => [item.id, item]));
+function currentSeasonId(date = new Date()) {
+  const suffix = ['emberfall', 'frostwake', 'greentide', 'suncrown'][Math.floor(date.getUTCMonth() / 3)];
+  return 'Y' + date.getUTCFullYear() + '_' + suffix;
+}
+async function recordSeasonProgress(db, characterId, seasonId, objectiveId, amount = 1) {
+  const objective = BY_ID.get(objectiveId);
+  if (!objective || !validSeasonId(seasonId) || !Number.isSafeInteger(amount) || amount < 1 || amount > 10000) {
+    throw new TypeError('invalid_authoritative_season_progress');
+  }
+  const result = await db.query(
+    'INSERT INTO character_season_objectives(character_id,season_id,objective_id,progress,target) ' +
+    'VALUES($1,$2,$3,LEAST($4::integer,$5::integer),$5::integer) ' +
+    'ON CONFLICT(character_id,season_id,objective_id) DO UPDATE ' +
+    'SET progress=LEAST(character_season_objectives.target,character_season_objectives.progress+EXCLUDED.progress),updated_at=now() ' +
+    'RETURNING progress,target',
+    [characterId, seasonId, objectiveId, amount, objective.target]
+  );
+  return { progress: Number(result.rows[0].progress), target: Number(result.rows[0].target) };
+}
 function validSeasonId(value) {
   const match = typeof value === 'string' && /^Y(\d{4})_([a-z]+)$/.exec(value);
   return Boolean(match && Number(match[1]) >= 2020 && Number(match[1]) <= 2200 && SEASONS.has(match[2]));
@@ -33,15 +52,8 @@ async function handleSeasonRequest({ req, res, url, pool, accountFor, readBody, 
     }
     const owned = await pool.query('SELECT id FROM characters WHERE id=$1', [characterId]);
     if (!owned.rowCount) { json(res, 404, { error: 'character_not_found' }); return true; }
-    const result = await pool.query(
-      'INSERT INTO character_season_objectives(character_id,season_id,objective_id,progress,target) ' +
-      'VALUES($1,$2,$3,LEAST($4::integer,$5::integer),$5::integer) ' +
-      'ON CONFLICT(character_id,season_id,objective_id) DO UPDATE ' +
-      'SET progress=LEAST(character_season_objectives.target,character_season_objectives.progress+EXCLUDED.progress),updated_at=now() ' +
-      'RETURNING progress,target',
-      [characterId, seasonId, objectiveId, amount, objective.target]
-    );
-    json(res, 200, { characterId, seasonId, objectiveId, progress: Number(result.rows[0].progress), target: Number(result.rows[0].target) });
+    const result = await recordSeasonProgress(pool, characterId, seasonId, objectiveId, amount);
+    json(res, 200, { characterId, seasonId, objectiveId, progress: result.progress, target: result.target });
     return true;
   }
 
@@ -108,4 +120,4 @@ async function handleSeasonRequest({ req, res, url, pool, accountFor, readBody, 
   json(res, 405, { error: 'method_not_allowed' });
   return true;
 }
-module.exports = { handleSeasonRequest, OBJECTIVES, validSeasonId };
+module.exports = { handleSeasonRequest, OBJECTIVES, validSeasonId, currentSeasonId, recordSeasonProgress };
