@@ -205,9 +205,10 @@ test('recoverSession restores durable panels in parallel and preserves partial s
   });
   api.token = 'recovery-token';
   const result = await api.recoverSession('char-1', { chatLimit: 20 });
-  assert.equal(calls.length, 14);
+  assert.equal(calls.length, 15);
   assert.equal(result.characterId, 'char-1');
   assert.equal(result.resources.profile.endpoint, 'https://realm.example.test/api/characters/char-1/profile');
+  assert.ok(result.resources.season.endpoint.includes('https://realm.example.test/api/characters/char-1/season?seasonId=Y'));
   assert.equal(result.resources.inventory, undefined);
   assert.equal(result.resources.party.endpoint, 'https://realm.example.test/api/characters/char-1/party');
   assert.equal(result.resources.raidGroup.endpoint, 'https://realm.example.test/api/characters/char-1/raid-group');
