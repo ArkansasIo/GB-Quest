@@ -120,12 +120,12 @@ async function handleSeasonRequest({req,res,url,pool,accountFor,json}) {
       } else {
         const tier=Number(id),claimed=normalizeArray(row.claimed_renown);
         if(!Number.isInteger(tier)||tier<1||tier>20||tier>renownLevel(row.renown)||claimed.includes(tier)){await tx.query('ROLLBACK');json(res,409,{error:'renown_reward_unavailable'});return true;}
-        reward={tokens:tier%5===0?100:25,xp:tier%5===0?500:150,gold:tier%5===0?1500:250};
+        reward={tokens:tier%5===0?100:25,xp:tier%5===0?500:150,gold:tier%5===0?1500:250,renown:0};
         await tx.query(`UPDATE character_season_progress SET claimed_renown=claimed_renown||to_jsonb($3::integer) WHERE character_id=$1 AND season_id=$2`,[characterId,season.id,tier]);
       }
       await tx.query('UPDATE characters SET gold=gold+$1,updated_at=now() WHERE id=$2',[reward.gold,characterId]);
-      const updated=await tx.query(`UPDATE character_season_progress SET currency=LEAST(999999,currency+$1),season_xp=season_xp+$2,renown=renown+$1,updated_at=now()
-        WHERE character_id=$3 AND season_id=$4 RETURNING *`,[reward.tokens,reward.xp,characterId,season.id]);
+      const updated=await tx.query(`UPDATE character_season_progress SET currency=LEAST(999999,currency+$1),season_xp=season_xp+$2,renown=renown+$3,updated_at=now()
+        WHERE character_id=$4 AND season_id=$5 RETURNING *`,[reward.tokens,reward.xp,reward.renown===undefined?reward.tokens:reward.renown,characterId,season.id]);
       await tx.query('COMMIT');
       json(res,200,{claimed:{type,id,reward},...toPublic(updated.rows[0],season)});
       return true;
