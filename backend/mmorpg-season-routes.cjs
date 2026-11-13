@@ -35,7 +35,7 @@ async function handleSeasonRequest({ req, res, url, pool, accountFor, readBody, 
     if (!owned.rowCount) { json(res, 404, { error: 'character_not_found' }); return true; }
     const result = await pool.query(
       'INSERT INTO character_season_objectives(character_id,season_id,objective_id,progress,target) ' +
-      'VALUES($1,$2,$3,LEAST($4,$5),$5) ' +
+      'VALUES($1,$2,$3,LEAST($4::integer,$5::integer),$5::integer) ' +
       'ON CONFLICT(character_id,season_id,objective_id) DO UPDATE ' +
       'SET progress=LEAST(character_season_objectives.target,character_season_objectives.progress+EXCLUDED.progress),updated_at=now() ' +
       'RETURNING progress,target',
