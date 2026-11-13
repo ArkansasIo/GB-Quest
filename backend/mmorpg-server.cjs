@@ -21,7 +21,7 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
-const { handleSeasonRequest, recordSeasonProgress } = require('./mmorpg-season-routes.cjs');
+const { handleSeasonRequest, recordSeasonProgress, seasonalObjectivesForMobRank } = require('./mmorpg-season-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
@@ -351,7 +351,7 @@ function attachSocket(ws, req) {
         let event, reward = null;
         try {
           await tx.query('BEGIN');
-          const target = await tx.query('SELECT id,spawn_id,name,hp,max_hp,level,zone_id,x,y FROM world_mobs WHERE id=$1 AND realm_id=$2 AND zone_id=$3 AND alive=true FOR UPDATE', [targetId, state.realmId, state.zoneId]);
+          const target = await tx.query('SELECT id,spawn_id,name,hp,max_hp,level,mob_rank,zone_id,x,y FROM world_mobs WHERE id=$1 AND realm_id=$2 AND zone_id=$3 AND alive=true FOR UPDATE', [targetId, state.realmId, state.zoneId]);
           if (!target.rowCount) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_unavailable' }); }
           const mob = target.rows[0];
           const distance = Math.abs(state.x - Number(mob.x)) + Math.abs(state.y - Number(mob.y));
@@ -407,14 +407,12 @@ function attachSocket(ws, req) {
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id, ability: ability ? { id: ability.id, name: ability.name, type: ability.node_type } : null, manaSpent, passiveDamageBonus: passiveBonus };
           if (hp === 0) {
-            // Count kills in the same transaction as mob defeat and its rewards; clients cannot forge this progress.
+            // Count only server-confirmed defeats. Rank-specific objectives use the database's explicit mob_rank.
             const seasonId = currentSeasonId();
-            for (const [objectiveId, target] of [['chapter_1', 60], ['chapter_10', 250]]) {
-              await tx.query(`INSERT INTO character_season_objectives(character_id,season_id,objective_id,progress,target)
-                VALUES($1,$2,$3,1,$4)
-                ON CONFLICT(character_id,season_id,objective_id) DO UPDATE
-                SET progress=LEAST(character_season_objectives.target,character_season_objectives.progress+1),updated_at=now()`,
-                [state.character.id, seasonId, objectiveId, target]);
+            await recordSeasonProgress(tx, state.character.id, seasonId, 'chapter_1', 1);
+            await recordSeasonProgress(tx, state.character.id, seasonId, 'chapter_10', 1);
+            for (const objectiveId of seasonalObjectivesForMobRank(mob.mob_rank)) {
+              await recordSeasonProgress(tx, state.character.id, seasonId, objectiveId, 1);
             }
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
