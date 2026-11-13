@@ -21,7 +21,6 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
-const { handleSeasonRequest, recordSeasonActivity } = require('./mmorpg-season-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
@@ -421,7 +420,6 @@ function attachSocket(ws, req) {
               [state.character.id, mob.spawn_id || mob.id]);
             let questXp = 0, questGold = 0;
             const completedQuests = questUpdates.rows.filter(row => row.status === 'completed');
-            await recordSeasonActivity(tx, state.character.id, { kills: 1, quests: completedQuests.length });
             for (const quest of completedQuests) {
               questXp += Number(quest.reward_xp);
               questGold += Number(quest.reward_gold);
@@ -566,7 +564,6 @@ const server = http.createServer(async (req, res) => {
     if (await handlePvpRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleWhisperRequest({ req, res, url, pool, accountFor, json })) return;
     if (await handleCollectionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
-    if (await handleSeasonRequest({ req, res, url, pool, accountFor, json })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
