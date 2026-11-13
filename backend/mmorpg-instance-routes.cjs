@@ -1,5 +1,6 @@
 'use strict';
 const crypto = require('node:crypto');
+const { currentSeasonId, recordSeasonProgress } = require('./mmorpg-season-routes.cjs');
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const SLUG = /^[a-z0-9_-]{2,48}$/i;
@@ -95,15 +96,29 @@ async function handleInstanceRequest({ req, res, url, pool, accountFor, readBody
     const instanceId = instanceComplete[1], body = await readBody(req);
     const characterId = String(body.characterId || ''), status = String(body.status || 'completed');
     if (!UUID.test(characterId) || !['completed', 'failed', 'closed'].includes(status)) { json(res, 400, { error: 'invalid_completion_request' }); return true; }
-    const result = await pool.query(`UPDATE dungeon_instances i SET status=$1
-      WHERE i.id=$2 AND i.status='active' AND EXISTS (
-        SELECT 1 FROM dungeon_instance_members im JOIN characters c ON c.id=im.character_id
-        WHERE im.instance_id=i.id AND im.character_id=$3 AND c.account_id=$4
-      ) AND (i.party_id IS NULL OR EXISTS (
-        SELECT 1 FROM parties p WHERE p.id=i.party_id AND p.leader_character_id=$3
-      )) RETURNING i.id,i.status,i.expires_at`, [status, instanceId, characterId, account.id]);
-    if (!result.rowCount) { json(res, 403, { error: 'instance_leader_required_or_not_active' }); return true; }
-    json(res, 200, { instance: result.rows[0] }); return true;
+    const tx = await pool.connect();
+    try {
+      await tx.query('BEGIN');
+      const result = await tx.query(`UPDATE dungeon_instances i SET status=$1
+        WHERE i.id=$2 AND i.status='active' AND EXISTS (
+          SELECT 1 FROM dungeon_instance_members im JOIN characters c ON c.id=im.character_id
+          WHERE im.instance_id=i.id AND im.character_id=$3 AND c.account_id=$4
+        ) AND (i.party_id IS NULL OR EXISTS (
+          SELECT 1 FROM parties p WHERE p.id=i.party_id AND p.leader_character_id=$3
+        )) RETURNING i.id,i.status,i.expires_at`, [status, instanceId, characterId, account.id]);
+      if (!result.rowCount) { await tx.query('ROLLBACK'); json(res, 403, { error: 'instance_leader_required_or_not_active' }); return true; }
+      if (status === 'completed') {
+        const members = await tx.query('SELECT character_id FROM dungeon_instance_members WHERE instance_id=$1 ORDER BY character_id', [instanceId]);
+        const seasonId = currentSeasonId();
+        for (const member of members.rows) {
+          await recordSeasonProgress(tx, member.character_id, seasonId, 'chapter_3', 1);
+          await recordSeasonProgress(tx, member.character_id, seasonId, 'chapter_11', 1);
+        }
+      }
+      await tx.query('COMMIT');
+      json(res, 200, { instance: result.rows[0] }); return true;
+    } catch (error) { await tx.query('ROLLBACK').catch(() => {}); throw error; }
+    finally { tx.release(); }
   }
 
   if (readyStart && req.method === 'POST') {
