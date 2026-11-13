@@ -22,19 +22,19 @@ The server-side objective catalogue currently defines:
 | Chapter | Objective | Target | Authoritative event wired |
 |---|---|---:|---|
 | 1 | Defeat enemies | 60 | Mob defeat |
-| 2 | Defeat elites | 8 | Pending elite classification |
+| 2 | Defeat elites | 8 | Explicit `world_mobs.mob_rank = 'elite'` defeat |
 | 3 | Complete dungeons | 2 | Pending trusted dungeon-clear hook |
 | 4 | Complete quests | 5 | Quest completion |
-| 5 | Defeat world bosses | 1 | Pending world-boss classification |
+| 5 | Defeat world bosses | 1 | Explicit `world_mobs.mob_rank = 'world_boss'` defeat |
 | 6 | Complete a raid encounter | 1 | Raid encounter completion |
 | 7 | Complete trials | 2 | Pending trial completion hook |
 | 8 | Craft items | 12 | Pending crafting completion hook |
 | 9 | Complete keystone runs | 2 | Pending keystone completion hook |
 | 10 | Defeat enemies | 250 | Mob defeat |
 | 11 | Complete dungeons | 6 | Pending trusted dungeon-clear hook |
-| 12 | Defeat world bosses | 3 | Pending world-boss classification |
+| 12 | Defeat world bosses | 3 | Explicit `world_mobs.mob_rank = 'world_boss'` defeat |
 
-Progress is recorded by trusted server code, not client-submitted counters. Raid encounter completion credits every current raid member in the same transaction as the completion record and lockouts. Mob defeats and quest completions are recorded in the authoritative combat transaction. The existing public dungeon completion endpoint accepts a client-requested status and does not yet verify a server-recorded boss clear, so it deliberately does not grant seasonal dungeon progress. Add that hook only after dungeon completion is server-verified.
+Migration `019_world_mob_rank.sql` adds `world_mobs.mob_rank` with `normal`, `elite`, and `world_boss` values. Existing mobs default to `normal`; content/spawn data must explicitly mark elite and world-boss spawns. The combat transaction reads this field from the locked mob row and awards the corresponding objectives only after the mob reaches zero HP. No name- or level-based guessing is used. Progress is recorded by trusted server code, not client-submitted counters. Raid encounter completion credits every current raid member in the same transaction as the completion record and lockouts. Mob defeats and quest completions are recorded in the authoritative combat transaction. The existing public dungeon completion endpoint accepts a client-requested status and does not yet verify a server-recorded boss clear, so it deliberately does not grant seasonal dungeon progress. Add that hook only after dungeon completion is server-verified.
 
 ## Weekly seasonal quests
 
