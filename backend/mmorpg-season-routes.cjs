@@ -7,6 +7,11 @@ const OBJECTIVES = Object.freeze(Array.from({ length: 12 }, (_, i) => Object.fre
   reward: Object.freeze({ tokens: 30 + i * 5, renown: 100 + i * 25, gold: 200 + i * 50 })
 })));
 const BY_ID = new Map(OBJECTIVES.map(item => [item.id, item]));
+function seasonalObjectivesForMobRank(rank) {
+  if (rank === 'elite') return ['chapter_2'];
+  if (rank === 'world_boss') return ['chapter_5', 'chapter_12'];
+  return [];
+}
 function currentSeasonId(date = new Date()) {
   const suffix = ['emberfall', 'frostwake', 'greentide', 'suncrown'][Math.floor(date.getUTCMonth() / 3)];
   return 'Y' + date.getUTCFullYear() + '_' + suffix;
@@ -120,4 +125,4 @@ async function handleSeasonRequest({ req, res, url, pool, accountFor, readBody, 
   json(res, 405, { error: 'method_not_allowed' });
   return true;
 }
-module.exports = { handleSeasonRequest, OBJECTIVES, validSeasonId, currentSeasonId, recordSeasonProgress };
+module.exports = { handleSeasonRequest, OBJECTIVES, validSeasonId, currentSeasonId, recordSeasonProgress, seasonalObjectivesForMobRank };
