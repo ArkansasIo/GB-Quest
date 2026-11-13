@@ -21,7 +21,7 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
-const { handleSeasonRequest } = require('./mmorpg-season-routes.cjs');
+const { handleSeasonRequest, recordSeasonProgress } = require('./mmorpg-season-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
@@ -434,6 +434,7 @@ function attachSocket(ws, req) {
               [state.character.id, mob.spawn_id || mob.id]);
             let questXp = 0, questGold = 0;
             const completedQuests = questUpdates.rows.filter(row => row.status === 'completed');
+            if (completedQuests.length) await recordSeasonProgress(tx, state.character.id, currentSeasonId(), 'chapter_4', completedQuests.length);
             for (const quest of completedQuests) {
               questXp += Number(quest.reward_xp);
               questGold += Number(quest.reward_gold);
