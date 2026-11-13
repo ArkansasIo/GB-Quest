@@ -17,6 +17,7 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
       PORT: String(port),
       DATABASE_URL: process.env.GBQ_TEST_DATABASE_URL,
       GBQ_TOKEN_SECRET: 'integration-test-secret-'.padEnd(48, 'x'),
+      GBQ_INTERNAL_SECRET: 'integration-internal-secret'.padEnd(48, 'x'),
       GBQ_ALLOWED_ORIGINS: 'https://game.example.test'
     },
     stdio: ['ignore', 'pipe', 'pipe']
@@ -68,6 +69,36 @@ test('PostgreSQL MMO service supports accounts, characters, authenticated zones 
     });
     assert.equal(secondCreate.status, 201);
     const { character: recipientCharacter } = await secondCreate.json();
+
+    // Seasonal progress and reward settlement are persisted by the authoritative PostgreSQL service.
+    const seasonId = 'Y2027_emberfall';
+    const internalProgress = await fetch(base + '/api/characters/' + character.id + '/season/progress', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-gbq-internal-secret': 'integration-internal-secret'.padEnd(48, 'x') },
+      body: JSON.stringify({ seasonId, objectiveId: 'chapter_1', amount: 60 })
+    });
+    assert.equal(internalProgress.status, 200);
+    assert.equal((await internalProgress.json()).progress, 60);
+    const seasonState = await fetch(base + '/api/characters/' + character.id + '/season?seasonId=' + seasonId, {
+      headers: { authorization: 'Bearer ' + token }
+    });
+    assert.equal(seasonState.status, 200);
+    const seasonSnapshot = await seasonState.json();
+    assert.equal(seasonSnapshot.objectives.find(item => item.id === 'chapter_1').progress, 60);
+    const seasonClaim = await fetch(base + '/api/characters/' + character.id + '/season/claim', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ seasonId, objectiveId: 'chapter_1' })
+    });
+    assert.equal(seasonClaim.status, 200);
+    assert.deepEqual((await seasonClaim.json()).reward, { tokens: 30, renown: 100, gold: 200 });
+    const duplicateSeasonClaim = await fetch(base + '/api/characters/' + character.id + '/season/claim', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ seasonId, objectiveId: 'chapter_1' })
+    });
+    assert.equal(duplicateSeasonClaim.status, 409);
+    assert.equal((await duplicateSeasonClaim.json()).error, 'season_reward_already_claimed');
 
 
     const profileResponse = await fetch(base + `/api/characters/${character.id}/profile`, {
