@@ -316,3 +316,27 @@ test('MMORPG API exposes class talent trees, specialization choice and node unlo
   assert.deepEqual(JSON.parse(calls[2].options.body), {});
   assert.ok(calls.every(call => call.options.headers.authorization === 'Bearer talent-session-token'));
 });
+
+
+test('MMORPG API recovers seasonal state and claims server-defined objectives', async () => {
+  const calls = [];
+  const api = new GBQuestMMOApi({
+    baseUrl: 'https://realm.example.test',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ seasonId: 'Y2027_emberfall', wallet: { tokens: 30, renown: 100 } }) };
+    },
+    WebSocketImpl: class {}
+  });
+  api.token = 'season-token';
+  assert.equal(api.currentSeasonId(new Date('2027-04-01T00:00:00.000Z')), 'Y2027_frostwake');
+  const state = await api.season('character-1', 'Y2027_emberfall');
+  await api.claimSeasonObjective('character-1', 'Y2027_emberfall', 'chapter_1');
+  assert.equal(state.wallet.tokens, 30);
+  assert.deepEqual(calls.map(call => call.url), [
+    'https://realm.example.test/api/characters/character-1/season?seasonId=Y2027_emberfall',
+    'https://realm.example.test/api/characters/character-1/season/claim'
+  ]);
+  assert.equal(calls[0].options.headers.authorization, 'Bearer season-token');
+  assert.deepEqual(JSON.parse(calls[1].options.body), { seasonId: 'Y2027_emberfall', objectiveId: 'chapter_1' });
+});

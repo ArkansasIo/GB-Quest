@@ -58,7 +58,7 @@ function pad(n){return String(n).padStart(2,'0');}
 function dateKey(d){return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
 function getSeason(d=new Date()){
 const q=Math.floor(d.getUTCMonth()/3),s=SEASONS[q],start=new Date(Date.UTC(d.getUTCFullYear(),q*3,1)),end=new Date(Date.UTC(d.getUTCFullYear(),q*3+3,1));
-return{id:'Y'+d.getFullYear()+'_'+s.id,year:d.getUTCFullYear(),quarter:q+1,name:s.name,theme:s.theme,element:s.element,currency:s.currency,lore:s.lore,start:dateKey(start),end:dateKey(end),daysLeft:Math.max(0,Math.ceil((end-d)/86400000)),monthInSeason:d.getUTCMonth()%3+1,eventData:MONTHLY_EVENTS[q][d.getMonth()%3]};
+return{id:'Y'+d.getUTCFullYear()+'_'+s.id,year:d.getUTCFullYear(),quarter:q+1,name:s.name,theme:s.theme,element:s.element,currency:s.currency,lore:s.lore,start:dateKey(start),end:dateKey(end),daysLeft:Math.max(0,Math.ceil((end-d)/86400000)),monthInSeason:d.getUTCMonth()%3+1,eventData:MONTHLY_EVENTS[q][d.getUTCMonth()%3]};
 }
 function weekKey(d=new Date()){const x=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));x.setUTCDate(x.getUTCDate()-((x.getUTCDay()+6)%7));return dateKey(x);}
 function statSnapshot(stats={}){return Object.fromEntries(STAT_KEYS.map(k=>[k,Math.max(0,Number(stats[k])||0)]));}

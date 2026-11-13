@@ -12,6 +12,7 @@ test('the calendar defines four consecutive three-month seasons',()=>{
  assert.equal(S.getSeason(new Date(Date.UTC(2027,2,31))).quarter,1);
  assert.equal(S.getSeason(new Date(Date.UTC(2027,3,1))).quarter,2);
  assert.equal(S.getSeason(new Date('2027-04-01T00:00:00.000Z')).id,'Y2027_frostwake');
+ assert.equal(S.getSeason(new Date('2027-01-01T00:00:00.000Z')).id,'Y2027_emberfall');
 });
 
 test('each season has three monthly events with a boss and event objective',()=>{
