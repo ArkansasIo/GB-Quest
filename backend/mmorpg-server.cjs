@@ -36,6 +36,10 @@ const AUTH_TIMEOUT_MS = Number(process.env.GBQ_WS_AUTH_TIMEOUT_MS || 10000);
 const HEARTBEAT_INTERVAL_MS = Number(process.env.GBQ_WS_HEARTBEAT_MS || 30000);
 const TOKEN_TTL = 30 * 24 * 60 * 60;
 const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
+function currentSeasonId(date = new Date()) {
+  const season = ['emberfall', 'frostwake', 'greentide', 'suncrown'][Math.floor(date.getUTCMonth() / 3)];
+  return 'Y' + date.getUTCFullYear() + '_' + season;
+}
 const JOB_IDS = new Set(['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller']);
 const LEGACY_CLASSES = new Set(['warrior','mage','ranger','cleric','rogue','adventurer']);
 const CHARACTER_CLASSES = new Set([...JOB_IDS, ...LEGACY_CLASSES]);
@@ -403,6 +407,15 @@ function attachSocket(ws, req) {
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id, ability: ability ? { id: ability.id, name: ability.name, type: ability.node_type } : null, manaSpent, passiveDamageBonus: passiveBonus };
           if (hp === 0) {
+            // Count kills in the same transaction as mob defeat and its rewards; clients cannot forge this progress.
+            const seasonId = currentSeasonId();
+            for (const [objectiveId, target] of [['chapter_1', 60], ['chapter_10', 250]]) {
+              await tx.query(`INSERT INTO character_season_objectives(character_id,season_id,objective_id,progress,target)
+                VALUES($1,$2,$3,1,$4)
+                ON CONFLICT(character_id,season_id,objective_id) DO UPDATE
+                SET progress=LEAST(character_season_objectives.target,character_season_objectives.progress+1),updated_at=now()`,
+                [state.character.id, seasonId, objectiveId, target]);
+            }
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
             const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
