@@ -27,7 +27,7 @@ function harness({ method = 'GET', action = '', body = {}, progress = null, clai
     connect: async () => tx
   };
   return {
-    calls, response, pool, req: { method, headers: { 'x-gbq-internal-secret': secret } },
+    calls, response, res: response, pool, req: { method, headers: { 'x-gbq-internal-secret': secret } },
     url: new URL('https://realm.test/api/characters/' + characterId + '/season' + (action ? '/' + action : '')),
     accountFor: async () => ({ id: 'account-1' }), readBody: async () => body,
     json(res, status, data) { res.status = status; res.body = data; },
