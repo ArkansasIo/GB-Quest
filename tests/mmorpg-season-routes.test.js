@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { handleSeasonRequest, validSeasonId } = require('../backend/mmorpg-season-routes.cjs');
+const { handleSeasonRequest, validSeasonId, seasonalObjectivesForMobRank } = require('../backend/mmorpg-season-routes.cjs');
 const characterId = '11111111-1111-4111-8111-111111111111';
 
 function harness({ method = 'GET', action = '', body = {}, progress = null, claimedAt = null, secret = 'internal-test-secret' } = {}) {
@@ -91,4 +91,11 @@ test('claimed objectives cannot be claimed twice', async () => {
   assert.equal(await handleSeasonRequest(h), true);
   assert.equal(h.response.status, 409);
   assert.equal(h.response.body.error, 'season_reward_already_claimed');
+});
+
+test('seasonal mob rank mapping does not infer elites or bosses from names or levels', () => {
+  assert.deepEqual(seasonalObjectivesForMobRank('normal'), []);
+  assert.deepEqual(seasonalObjectivesForMobRank('elite'), ['chapter_2']);
+  assert.deepEqual(seasonalObjectivesForMobRank('world_boss'), ['chapter_5','chapter_12']);
+  assert.deepEqual(seasonalObjectivesForMobRank('unknown'), []);
 });
