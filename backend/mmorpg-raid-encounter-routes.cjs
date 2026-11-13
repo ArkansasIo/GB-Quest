@@ -1,5 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
+const {currentSeasonId,recordSeasonProgress}=require('./mmorpg-season-routes.cjs');
 const UUID=/^[0-9a-f-]{36}$/i;
 const ENCOUNTER=/^[a-z0-9_-]{2,48}$/i;
 const DIFFICULTIES=new Set(['story','normal','heroic','mythic']);
@@ -38,6 +39,8 @@ async function handleRaidEncounterRequest({req,res,url,pool,readBody,json,intern
       SET reset_at=GREATEST(raid_lockouts.reset_at,EXCLUDED.reset_at),
           completed_at=GREATEST(raid_lockouts.completed_at,EXCLUDED.completed_at)`,
     [memberIds,encounterId,difficulty,completion.rows[0].reset_at,completion.rows[0].completed_at]);
+  const seasonId=currentSeasonId();
+  for(const characterId of memberIds) await recordSeasonProgress(tx,characterId,seasonId,'chapter_6',1);
   await tx.query('COMMIT');
   json(res,200,{completion:{id:completion.rows[0].id,raidGroupId,encounterId,difficulty,completedAt:completion.rows[0].completed_at,resetAt:completion.rows[0].reset_at,memberCount:memberIds.length}});
   return true;
