@@ -8,9 +8,11 @@ function load(){const context={Math,Number,String,Object,Array,Date,Set,Map,JSON
 
 test('the calendar defines four consecutive three-month seasons',()=>{
  const S=load(),months=[0,3,6,9],ids=['emberfall','frostwake','greentide','suncrown'];
- for(let i=0;i<4;i++){const s=S.getSeason(new Date(2027,months[i],15));assert.equal(s.quarter,i+1);assert.equal(s.id,'Y2027_'+ids[i]);assert.equal(s.monthInSeason,1);assert.ok(s.end>s.start);assert.ok(s.daysLeft>0);}
- assert.equal(S.getSeason(new Date(2027,2,31)).quarter,1);
- assert.equal(S.getSeason(new Date(2027,3,1)).quarter,2);
+ for(let i=0;i<4;i++){const s=S.getSeason(new Date(Date.UTC(2027,months[i],15)));assert.equal(s.quarter,i+1);assert.equal(s.id,'Y2027_'+ids[i]);assert.equal(s.monthInSeason,1);assert.ok(s.end>s.start);assert.ok(s.daysLeft>0);}
+ assert.equal(S.getSeason(new Date(Date.UTC(2027,2,31))).quarter,1);
+ assert.equal(S.getSeason(new Date(Date.UTC(2027,3,1))).quarter,2);
+ assert.equal(S.getSeason(new Date('2027-04-01T00:00:00.000Z')).id,'Y2027_frostwake');
+ assert.equal(S.getSeason(new Date('2027-01-01T00:00:00.000Z')).id,'Y2027_emberfall');
 });
 
 test('each season has three monthly events with a boss and event objective',()=>{

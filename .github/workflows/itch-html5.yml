@@ -2,7 +2,7 @@ name: itch.io HTML5 Build
 
 on:
   push:
-    branches: [main, feature/mmorpg-server-systems]
+    branches: [main, feature/mmorpg-server-systems, "feature/**"]
     paths:
       - 'client/**'
       - 'src/**'
@@ -34,6 +34,8 @@ on:
       - 'data/visuals/**'
       - 'tools/build.cjs'
       - 'tools/build-itch.cjs'
+      - 'backend/**'
+      - 'tests/**'
       - 'tools/build_animation_manifest.py'
       - 'tools/generate_character_sprite_pack.py'
       - 'tools/generate_warrior_f_sprite.py'

@@ -21,6 +21,7 @@ const { handleMailRequest, handleAuctionRequest } = require('./mmorpg-economy-ro
 const { handlePvpRequest } = require('./mmorpg-pvp-routes.cjs');
 const { handleWhisperRequest } = require('./mmorpg-whisper-routes.cjs');
 const { handleCollectionRequest } = require('./mmorpg-collection-routes.cjs');
+const { handleSeasonRequest, recordSeasonProgress, seasonalObjectivesForMobRank } = require('./mmorpg-season-routes.cjs');
 const { createSocketMessageQueue } = require('./socket-message-queue.cjs');
 
 const PORT = Number(process.env.PORT || 8788);
@@ -35,6 +36,10 @@ const AUTH_TIMEOUT_MS = Number(process.env.GBQ_WS_AUTH_TIMEOUT_MS || 10000);
 const HEARTBEAT_INTERVAL_MS = Number(process.env.GBQ_WS_HEARTBEAT_MS || 30000);
 const TOKEN_TTL = 30 * 24 * 60 * 60;
 const WORLD = Object.freeze({ width: 256, height: 256, tileSize: 16 });
+function currentSeasonId(date = new Date()) {
+  const season = ['emberfall', 'frostwake', 'greentide', 'suncrown'][Math.floor(date.getUTCMonth() / 3)];
+  return 'Y' + date.getUTCFullYear() + '_' + season;
+}
 const JOB_IDS = new Set(['warden','berserker','vanguard','strider','shade','ascetic','arcanist','wildblood','pactbound','cantor','chaplain','verdant','necromancer','summoner','sunwarden','runeblade','ronin','shinobi','bladedancer','wyrmlancer','corsair','beastcaller','puppeteer','dreadknight','voidhunter','scalesage','stormcaller']);
 const LEGACY_CLASSES = new Set(['warrior','mage','ranger','cleric','rogue','adventurer']);
 const CHARACTER_CLASSES = new Set([...JOB_IDS, ...LEGACY_CLASSES]);
@@ -346,7 +351,7 @@ function attachSocket(ws, req) {
         let event, reward = null;
         try {
           await tx.query('BEGIN');
-          const target = await tx.query('SELECT id,spawn_id,name,hp,max_hp,level,zone_id,x,y FROM world_mobs WHERE id=$1 AND realm_id=$2 AND zone_id=$3 AND alive=true FOR UPDATE', [targetId, state.realmId, state.zoneId]);
+          const target = await tx.query('SELECT id,spawn_id,name,hp,max_hp,level,mob_rank,zone_id,x,y FROM world_mobs WHERE id=$1 AND realm_id=$2 AND zone_id=$3 AND alive=true FOR UPDATE', [targetId, state.realmId, state.zoneId]);
           if (!target.rowCount) { await tx.query('ROLLBACK'); return send(ws, 'error', { code: 'target_unavailable' }); }
           const mob = target.rows[0];
           const distance = Math.abs(state.x - Number(mob.x)) + Math.abs(state.y - Number(mob.y));
@@ -402,6 +407,13 @@ function attachSocket(ws, req) {
           await tx.query('UPDATE world_mobs SET hp=$1,alive=$2,respawn_at=CASE WHEN $2 THEN NULL ELSE now()+interval \'60 seconds\' END,updated_at=now() WHERE id=$3', [hp, hp > 0, mob.id]);
           event = { targetId: mob.id, targetName: mob.name, damage, hp, maxHp: mob.max_hp, defeated: hp === 0, by: state.character.id, ability: ability ? { id: ability.id, name: ability.name, type: ability.node_type } : null, manaSpent, passiveDamageBonus: passiveBonus };
           if (hp === 0) {
+            // Count only server-confirmed defeats. Rank-specific objectives use the database's explicit mob_rank.
+            const seasonId = currentSeasonId();
+            await recordSeasonProgress(tx, state.character.id, seasonId, 'chapter_1', 1);
+            await recordSeasonProgress(tx, state.character.id, seasonId, 'chapter_10', 1);
+            for (const objectiveId of seasonalObjectivesForMobRank(mob.mob_rank)) {
+              await recordSeasonProgress(tx, state.character.id, seasonId, objectiveId, 1);
+            }
             const xp = Math.max(1, Number(mob.level) * 12);
             const baseGold = Number(mob.level) * 5 + crypto.randomInt(0, Number(mob.level) * 3 + 1);
             const progress = await tx.query(`UPDATE characters SET xp=xp+$1,
@@ -420,6 +432,7 @@ function attachSocket(ws, req) {
               [state.character.id, mob.spawn_id || mob.id]);
             let questXp = 0, questGold = 0;
             const completedQuests = questUpdates.rows.filter(row => row.status === 'completed');
+            if (completedQuests.length) await recordSeasonProgress(tx, state.character.id, currentSeasonId(), 'chapter_4', completedQuests.length);
             for (const quest of completedQuests) {
               questXp += Number(quest.reward_xp);
               questGold += Number(quest.reward_gold);
@@ -564,6 +577,7 @@ const server = http.createServer(async (req, res) => {
     if (await handlePvpRequest({ req, res, url, pool, accountFor, readBody, json })) return;
     if (await handleWhisperRequest({ req, res, url, pool, accountFor, json })) return;
     if (await handleCollectionRequest({ req, res, url, pool, accountFor, readBody, json })) return;
+    if (await handleSeasonRequest({ req, res, url, pool, accountFor, readBody, json, internalSecret: INTERNAL_SECRET })) return;
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const ip = req.socket.remoteAddress || 'unknown'; if (authThrottled(ip)) return json(res, 429, { error: 'too_many_auth_attempts' });
       const body = await readBody(req);
