@@ -23,7 +23,7 @@ test('itch.io HD64 JSON is escaped before insertion into an inline script', () =
   assert.ok(build.includes('.replace(/</g'));
   assert.ok(build.includes('.replace(/>/g'));
   assert.ok(build.includes('.replace(/&/g'));
-  assert.ok(build.includes(String.raw`.replace(/\\u2028/g`));
-  assert.ok(build.includes(String.raw`.replace(/\\u2029/g`));
+  assert.ok(build.includes('.replace(/' + '\\' + 'u2028/g'));
+  assert.ok(build.includes('.replace(/' + '\\' + 'u2029/g'));
   assert.ok(build.includes("packedJson + ';</script>"));
 });
