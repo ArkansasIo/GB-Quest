@@ -8,7 +8,7 @@ test('development HTML uses the shell as the single source of head metadata', ()
   const build = read('tools/build.cjs');
   const shell = read('client/shell.html');
   const devStart = build.indexOf('const dev = ');
-  const devEnd = build.indexOf("\\nfs.writeFileSync(path.join(ROOT, 'index.html')", devStart);
+  const devEnd = build.indexOf("\nfs.writeFileSync(path.join(ROOT, 'index.html')", devStart);
   assert.ok(devStart >= 0 && devEnd > devStart, 'development HTML template must exist');
   const devTemplate = build.slice(devStart, devEnd);
   assert.doesNotMatch(devTemplate, /<meta charset=/i);
@@ -19,11 +19,11 @@ test('development HTML uses the shell as the single source of head metadata', ()
 
 test('itch.io HD64 JSON is escaped before insertion into an inline script', () => {
   const build = read('tools/build-itch.cjs');
-  assert.match(build, /const packedJson = JSON\\.stringify\\(hd64Pack\\)/);
+  assert.match(build, /const packedJson = JSON\.stringify\(hd64Pack\)/);
   assert.ok(build.includes('.replace(/</g'));
   assert.ok(build.includes('.replace(/>/g'));
   assert.ok(build.includes('.replace(/&/g'));
-  assert.ok(build.includes('.replace(/\\u2028/g'));
-  assert.ok(build.includes('.replace(/\\u2029/g'));
+  assert.ok(build.includes(String.raw`.replace(/\\u2028/g`));
+  assert.ok(build.includes(String.raw`.replace(/\\u2029/g`));
   assert.ok(build.includes("packedJson + ';</script>"));
 });
