@@ -8,6 +8,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 /** Native Swing/AWT renderer; logical world remains tile-based and pixel crisp. */
+@SuppressWarnings("serial") // a Swing panel; it is never serialized
 public final class GamePanel extends JPanel implements ActionListener {
     private static final int SCALE=2, W=320, H=240;
     private final GameState game;

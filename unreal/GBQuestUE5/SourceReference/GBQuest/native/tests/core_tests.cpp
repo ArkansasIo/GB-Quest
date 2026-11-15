@@ -187,7 +187,7 @@ void test_inventory_transactions() {
   const gbquest::ItemDefinition potion{
       .id = "potion", .weight_grams = 100, .max_stack = 5};
   gbquest::InventoryState inventory{
-      .slot_capacity = 4, .weight_capacity_grams = 2000};
+      .items = {}, .slot_capacity = 4, .weight_capacity_grams = 2000};
 
   const auto added = gbquest::add_item(inventory, potion, 7);
   check(added.success && added.quantity_changed == 7
@@ -217,14 +217,14 @@ void test_inventory_transactions() {
   check(weight == 300, "calculate inventory weight from definitions");
 
   gbquest::InventoryState no_slots{
-      .slot_capacity = 1, .weight_capacity_grams = 10000};
+      .items = {}, .slot_capacity = 1, .weight_capacity_grams = 10000};
   const auto rejected_slots = gbquest::add_item(no_slots, potion, 6);
   check(!rejected_slots.success && rejected_slots.reason == "slot_capacity_exceeded"
             && no_slots.items.empty() && no_slots.current_weight_grams == 0,
         "slot-capacity rejection is transactional");
 
   gbquest::InventoryState no_weight{
-      .slot_capacity = 10, .weight_capacity_grams = 100};
+      .items = {}, .slot_capacity = 10, .weight_capacity_grams = 100};
   const auto rejected_weight = gbquest::add_item(no_weight, potion, 2);
   check(!rejected_weight.success && rejected_weight.reason == "weight_capacity_exceeded"
             && no_weight.items.empty(),

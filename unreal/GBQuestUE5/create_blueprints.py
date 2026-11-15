@@ -28,8 +28,8 @@ ART_CONTENT_ROOT = CONTENT_ROOT + "/Art"
 BLUEPRINT_CONTENT_ROOT = CONTENT_ROOT + "/Blueprints"
 
 SOURCE_EXTENSIONS = {
-    ".c", ".cc", ".cjs", ".cpp", ".cs", ".css", ".gd", ".h", ".hpp", ".html",
-    ".ini", ".js", ".json", ".md", ".mjs", ".py", ".ps1", ".sh",
+    ".asm", ".bat", ".c", ".cc", ".cjs", ".conf", ".cpp", ".cs", ".css", ".csv", ".example", ".gd", ".h", ".hpp", ".html",
+    ".inc", ".ini", ".js", ".json", ".md", ".mjs", ".py", ".ps1", ".s", ".sh", ".sql",
     ".toml", ".ts", ".tsx", ".txt", ".xml", ".yaml", ".yml",
 }
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tga", ".bmp"}
