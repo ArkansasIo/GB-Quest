@@ -25538,11 +25538,17 @@ document.querySelectorAll('[data-fullscreen]').forEach(b => b.addEventListener('
       pactbound: 'mage', necromancer: 'mage', summoner: 'mage', dreadknight: 'warrior',
       wyrmlancer: 'warrior', scalesage: 'mage', puppeteer: 'mage'
     };
-    const serverClass = classMap[localClass] || ({ tank: 'warrior', healer: 'cleric', caster: 'mage', striker: 'ranger', support: 'adventurer', dps: 'rogue' })[role] || 'adventurer';
-    const result = await request(session.baseUrl, '/api/characters', session.token, {
-      method: 'POST', body: { name, class: serverClass, realmId: session.realm.id }
-    });
-    return result.character;
+    const legacyClass = classMap[localClass] || ({ tank: 'warrior', healer: 'cleric', caster: 'mage', striker: 'ranger', support: 'adventurer', dps: 'rogue' })[role] || 'adventurer';
+    // Realm servers store the hero's real job (all 27 are valid server classes). Older servers only know the six
+    // legacy classes and answer invalid_character, so retry once with the closest legacy class for them.
+    const job = String(localClass || '').toLowerCase();
+    const post = cls => request(session.baseUrl, '/api/characters', session.token, { method: 'POST', body: { name, class: cls, realmId: session.realm.id } });
+    if (!Object.prototype.hasOwnProperty.call(classMap, job)) return (await post(legacyClass)).character;
+    try { return (await post(job)).character; }
+    catch (error) {
+      if (error && error.status === 400 && error.code === 'invalid_character') return (await post(legacyClass)).character;
+      throw error;
+    }
   }
 
   async function gameplayRequest(path, options = {}) {
@@ -25722,7 +25728,7 @@ class GBQuestMMOApi {
     if(panel()) return;
     const root=document.createElement('section');
     root.id='gbq-trade-panel'; root.className='gbq-trade-overlay'; root.setAttribute('role','dialog'); root.setAttribute('aria-modal','true'); root.setAttribute('aria-label','Realm trading');
-    root.innerHTML='<div class="gbq-trade-window"><header class="gbq-trade-header"><div><small>GB-QUEST · REALM ECONOMY</small><h2>PLAYER EXCHANGE</h2><span data-mmo-status>DISCONNECTED</span></div><button type="button" data-close aria-label="Close trading">×</button></header><div class="gbq-trade-message" data-mmo-message hidden></div><div class="gbq-trade-content"><section class="gbq-trade-auth" data-auth><label>MMO SERVER URL<input data-realm-url type="url" value="'+esc(apiBase())+'" placeholder="https://realm.example.com"></label><label>Account name<input data-username autocomplete="username" minlength="3" maxlength="24"></label><label>Password<input data-password type="password" autocomplete="current-password" minlength="10" maxlength="128"></label><div class="gbq-trade-actions"><button type="button" data-login>LOG IN</button><button type="button" data-register>CREATE MMO ACCOUNT</button></div><p>This is the dedicated PostgreSQL MMO realm account. It is separate from offline/local game saves.</p></section><section class="gbq-trade-characters" data-characters hidden><div class="gbq-trade-row"><label>Active character<select data-character></select></label><button type="button" data-connect>CONNECT</button></div><div class="gbq-trade-row"><label>New character name<input data-new-name maxlength="24" placeholder="Character name"></label><label>Class<select data-new-class><option value="ranger">Ranger</option><option value="warrior">Warrior</option><option value="mage">Mage</option><option value="cleric">Cleric</option></select></label><button type="button" data-create-character>CREATE</button></div><nav><button type="button" data-tab="trade">TRADE</button><button type="button" data-tab="offers">OFFERS</button><button type="button" data-tab="bank">BANK</button></nav><div data-mmo-main></div></section></div><footer><span>Same-zone trading · 15-minute offer expiry</span><button type="button" data-logout>LOG OUT</button></footer></div>';
+    root.innerHTML='<div class="gbq-trade-window"><header class="gbq-trade-header"><div><small>GB-QUEST · REALM ECONOMY</small><h2>PLAYER EXCHANGE</h2><span data-mmo-status>DISCONNECTED</span></div><button type="button" data-close aria-label="Close trading">×</button></header><div class="gbq-trade-message" data-mmo-message hidden></div><div class="gbq-trade-content"><section class="gbq-trade-auth" data-auth><label>MMO SERVER URL<input data-realm-url type="url" value="'+esc(apiBase())+'" placeholder="https://realm.example.com"></label><label>Account name<input data-username autocomplete="username" minlength="3" maxlength="24"></label><label>Password<input data-password type="password" autocomplete="current-password" minlength="10" maxlength="128"></label><div class="gbq-trade-actions"><button type="button" data-login>LOG IN</button><button type="button" data-register>CREATE MMO ACCOUNT</button></div><p>This is the dedicated PostgreSQL MMO realm account. It is separate from offline/local game saves.</p></section><section class="gbq-trade-characters" data-characters hidden><div class="gbq-trade-row"><label>Active character<select data-character></select></label><button type="button" data-connect>CONNECT</button></div><div class="gbq-trade-row"><label>New character name<input data-new-name maxlength="24" placeholder="Character name"></label><label>Class<select data-new-class>'+classOptions()+'</select></label><button type="button" data-create-character>CREATE</button></div><nav><button type="button" data-tab="trade">TRADE</button><button type="button" data-tab="offers">OFFERS</button><button type="button" data-tab="bank">BANK</button></nav><div data-mmo-main></div></section></div><footer><span>Same-zone trading · 15-minute offer expiry</span><button type="button" data-logout>LOG OUT</button></footer></div>';
     document.body.appendChild(root);
     root.addEventListener('click',onClick);
     root.addEventListener('submit',onSubmit);
@@ -25818,6 +25824,12 @@ class GBQuestMMOApi {
       toast((action==='deposit'?'Deposited ':'Withdrew ')+Number(result.amount).toLocaleString()+' gold.');
       await refresh();
     } catch(error) { toast(error.message||'Bank transfer failed'); }
+  }
+  // the 27 jobs from the game (CLASSES), or the four legacy classes when the panel runs on its own
+  function classOptions() {
+    const C = typeof CLASSES !== 'undefined' ? CLASSES : window.CLASSES;
+    if (C && Object.keys(C).length) return Object.keys(C).map(id => '<option value="'+esc(id)+'">'+esc((C[id].name||id).toString())+'</option>').join('');
+    return '<option value="ranger">Ranger</option><option value="warrior">Warrior</option><option value="mage">Mage</option><option value="cleric">Cleric</option>';
   }
   async function onClick(event) {
     const b=event.target.closest('button'); if(!b) return;
