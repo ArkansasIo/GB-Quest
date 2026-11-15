@@ -82,6 +82,15 @@ function retroMonsterArt(b) {
   const p = retroPrefix(), name = isBoss ? `${p}b_${slug}_${hashStr(String(b.id || b.name || slug)) % 3}` : `${p}m_${slug}_${src.variant || 'base'}`;
   return IMG[name] ? name : null;
 }
+// RETRO 8-BIT heroes (tools/gen_retro8_heroes.py): a 16x16 walker per job, two steps facing down, up and to the
+// side (left mirrors it). Used for the hero, party followers and other players while RETRO 8-BIT is on.
+function retroWalker(character, dir = 'down', frame = 0, ghost = false) {
+  if (S.art !== 'retro' || !character) return null;
+  const d = dir === 'up' ? 'up' : dir === 'down' ? 'down' : 'side';
+  const job = character.look && IMG[`r8h_${character.look}_down0`] ? character.look : character.cls;
+  const name = `r8h_${job}_${d}${frame ? 1 : 0}`;
+  return IMG[name] ? spr(name, 16, 16, { flip: dir === 'left', ghost }) : null;
+}
 // FULL DETAIL (the default mode, tools/gen_fulldetail.py): redesigned heroes for every class and species, townsfolk,
 // one monster per bestiary subtype (seven element variants, three boss forms) and field props for every biome.
 const FD_PROPS = new Set(['tree', 'pine', 'dense', 'single', 'rock', 'peak', 'shop', 'inn', 'shrine', 'statue', 'temple', 'arena', 'keep', 'keepdoor', 'wall', 'gate']);

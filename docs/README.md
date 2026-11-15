@@ -19,6 +19,7 @@
 | [COMBAT_EFFECTS.md](COMBAT_EFFECTS.md) | Every attribute, substat, buff, debuff and condition, with what it does in combat |
 | [EXPANSIONS.md](EXPANSIONS.md) | All 20 expansions: levels, regions, dungeons, raids and campaigns |
 | [INSTANCES.md](INSTANCES.md) | All 104 dungeons, 35 raids, 16 trials and 18 towers |
+| [RETRO8_HEROES.md](RETRO8_HEROES.md) | RETRO 8-BIT hero walkers for all 27 jobs, and 8-bit town buildings |
 | [BUILDINGS.md](BUILDINGS.md) | Inns, shops, shrines and houses in every town and village |
 | [ONLINE_REALMS_SOCIAL_STORE.md](ONLINE_REALMS_SOCIAL_STORE.md) | Nine-realm directory, friends, invite codes, and in-game store frame |
 | [DEBUGGING.md](DEBUGGING.md) | Debug panel, automated sweep, debug hooks, bugs fixed |

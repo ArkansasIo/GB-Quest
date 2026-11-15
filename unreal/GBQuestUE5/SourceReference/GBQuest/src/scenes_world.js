@@ -934,7 +934,7 @@ class Field {
         if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
         const walkFrame = (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0;
-        const hdFrame = (typeof fdWalker === 'function' && fdWalker(G, G.dir, walkFrame, ghost)) || hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
+        const hdFrame = (typeof retroWalker === 'function' && retroWalker(G, G.dir, walkFrame, ghost)) || (typeof fdWalker === 'function' && fdWalker(G, G.dir, walkFrame, ghost)) || hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
         const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(G, G.dir, ghost) : null;
         const gearWalker = worldGearWalker(G, G.dir, walkFrame, ghost);
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(G, G.dir, ghost);
@@ -943,7 +943,7 @@ class Field {
         else { const c = sprH(`c_${G.cls}_${f}`, 23, { ghost }); if (c) blit(c, px - cx + (T - c.width) / 2, py - cy + T - 23 - (G.mounted ? 6 : 1)); }
       } else if (e.kind === 'follower') {
         const bob = (this.walk >> 3) % 2;
-        const hdFrame = (typeof fdWalker === 'function' && fdWalker(e.c, e.dir, bob)) || hdWorldFrame(e.c, e.dir, bob, true, false);
+        const hdFrame = (typeof retroWalker === 'function' && retroWalker(e.c, e.dir, bob)) || (typeof fdWalker === 'function' && fdWalker(e.c, e.dir, bob)) || hdWorldFrame(e.c, e.dir, bob, true, false);
         const packFrame = typeof assetPackCharacter === 'function' ? assetPackCharacter(e.c, e.dir) : null;
         const gearWalker = worldGearWalker(e.c, e.dir, bob);
         const portrait = hdFrame || packFrame || gearWalker || worldPortrait(e.c, e.dir);
@@ -972,7 +972,7 @@ class Field {
       else if (e.kind === 'sim' || e.kind === 'peer') {
         const p = e.kind === 'sim' ? e.p : { name: clean(e.p.presence.n), cls: e.p.presence.c, dir: e.p.presence.d || 'down' };
         const avatar = { cls: CLASSES[p.cls] ? p.cls : 'warden' };
-        const portrait = (typeof fdWalker === 'function' && fdWalker(avatar, p.dir || 'down')) || (typeof assetPackCharacter === 'function' ? assetPackCharacter(avatar, p.dir || 'down') : null) || worldPortrait(avatar, p.dir || 'down');
+        const portrait = (typeof retroWalker === 'function' && retroWalker(avatar, p.dir || 'down')) || (typeof fdWalker === 'function' && fdWalker(avatar, p.dir || 'down')) || (typeof assetPackCharacter === 'function' ? assetPackCharacter(avatar, p.dir || 'down') : null) || worldPortrait(avatar, p.dir || 'down');
         if (portrait) blit(portrait, ex + (T - portrait.width) / 2, ey + T - portrait.height - 1);
         else if (PIX) blit(walker(CLASSES[p.cls] ? p.cls : 'warden', p.dir || 'down', 0), ex, ey - 3);
         else { const c = sprH(`c_${CLASSES[p.cls] ? p.cls : 'warden'}_${LOOK_F[p.dir || 'down'][0]}`, 21); if (c) blit(c, ex + (T - c.width) / 2, ey + T - 22); }
