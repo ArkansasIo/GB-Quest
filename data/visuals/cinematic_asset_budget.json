@@ -1,0 +1,123 @@
+{
+  "project": "GB-Quest",
+  "target_engine": "Unreal Engine 5.7",
+  "total_assets": 6000,
+  "quality_profile": {
+    "visual_target": "original cinematic dark-fantasy realism; AAA open-world quality ambition without copying protected Elden Ring designs",
+    "environment_textures": "4096x4096 preferred; 2048x2048 minimum",
+    "hero_and_boss_textures": "4096x4096 preferred; 2048x2048 minimum",
+    "ui_textures": "1024x1024 or vector source",
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "ORM (Occlusion/Roughness/Metallic)",
+      "Emissive where required",
+      "Opacity where required"
+    ],
+    "model_formats": [
+      "FBX",
+      "glTF 2.0"
+    ],
+    "animation_formats": [
+      "FBX animation",
+      "glTF animation"
+    ],
+    "unreal_import": "Nanite for suitable static meshes; Lumen-ready materials; virtual textures where beneficial; retargetable humanoid rigs",
+    "animation": "in-place and root-motion variants; named clips and metadata"
+  },
+  "categories": [
+    {
+      "id": "player_characters_races",
+      "count": 300
+    },
+    {
+      "id": "classes_subclasses_outfits",
+      "count": 250
+    },
+    {
+      "id": "weapons",
+      "count": 550
+    },
+    {
+      "id": "armor_sets_and_pieces",
+      "count": 550
+    },
+    {
+      "id": "shields_and_offhand",
+      "count": 150
+    },
+    {
+      "id": "jewelry_accessories",
+      "count": 200
+    },
+    {
+      "id": "creatures_and_enemies",
+      "count": 600
+    },
+    {
+      "id": "bosses_and_raid_creatures",
+      "count": 250
+    },
+    {
+      "id": "open_world_biomes_and_landscapes",
+      "count": 350
+    },
+    {
+      "id": "environment_modular_kit",
+      "count": 300
+    },
+    {
+      "id": "vegetation_and_foliage",
+      "count": 300
+    },
+    {
+      "id": "towns_cities_and_buildings",
+      "count": 300
+    },
+    {
+      "id": "dungeons_ruins_and_interiors",
+      "count": 300
+    },
+    {
+      "id": "world_maps_and_landmarks",
+      "count": 100
+    },
+    {
+      "id": "props_and_interactables",
+      "count": 300
+    },
+    {
+      "id": "mounts_and_pets",
+      "count": 150
+    },
+    {
+      "id": "npcs_and_civilians",
+      "count": 200
+    },
+    {
+      "id": "magic_vfx_and_particles",
+      "count": 250
+    },
+    {
+      "id": "items_consumables_and_crafting",
+      "count": 250
+    },
+    {
+      "id": "ui_icons_and_inventory_art",
+      "count": 200
+    },
+    {
+      "id": "portraits_and_dialogue_art",
+      "count": 100
+    },
+    {
+      "id": "cinematic_loading_and_key_art",
+      "count": 50
+    }
+  ],
+  "replacement_policy": {
+    "legacy_8bit": "Keep in Legacy/PixelArt and preserve all existing IDs/references.",
+    "rollout": "Add high-fidelity assets in parallel, map stable IDs, validate in Unreal, then switch default presentation only after acceptance.",
+    "destructive_delete": false
+  }
+}
