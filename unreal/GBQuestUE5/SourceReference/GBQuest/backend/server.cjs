@@ -212,6 +212,18 @@ function serveFile(res, file, type) {
     res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-cache', ...SEC }); res.end(buf);
   });
 }
+// HD64 character art the game loads at runtime (src/hd_character_art.js): animation frames, equipment layers and
+// their manifests. Only these folders, only PNG and JSON, and never anything outside them.
+const HD_ART_DIRS = ['assets_hd64/animations/frames/', 'assets_hd64/equipment/'];
+const HD_ART_FILES = new Set(['data/visuals/equipment-catalog-visual-map.json']);
+function hdArtFile(p) {
+  let rel;
+  try { rel = decodeURIComponent(p).replace(/^\/+/, ''); } catch { return null; }
+  if (rel.includes('\0') || rel.includes('\\') || path.posix.normalize(rel) !== rel || rel.split('/').includes('..')) return null;
+  if (HD_ART_FILES.has(rel)) return rel;
+  if (!/\.(png|json)$/i.test(rel) || !HD_ART_DIRS.some(d => rel.startsWith(d))) return null;
+  return rel;
+}
 const STATIC = { '/': 'dist/gbquest.html', '/fullscreen': 'dist/gbquest-fullscreen.html', '/atlas': 'dist/atlas.html', '/dist/atlas.html': 'dist/atlas.html', '/admin': 'admin/controlplane.html', '/admin/': 'admin/controlplane.html', '/admin/controlplane.js': 'admin/controlplane.js' };
 
 // ---------------------------------------------------------------- routes
@@ -259,6 +271,7 @@ const server = http.createServer(async (req, res) => {
     // Hide the control plane and deny every admin API route unless explicitly enabled.
     if (!ADMIN_ENABLED && (p === '/admin' || p.startsWith('/admin/') || p.startsWith('/api/admin/'))) return json(res, 404, { error: 'Not found.' });
     if (req.method === 'GET' && STATIC[p]) return serveFile(res, STATIC[p], p.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
+    if (req.method === 'GET' && hdArtFile(p)) { const f = hdArtFile(p); return serveFile(res, f, f.endsWith('.json') ? 'application/json; charset=utf-8' : 'image/png'); }
     if (!p.startsWith('/api/')) { res.writeHead(404, SEC); return res.end('Not found'); }
 
     if (p === '/api/health') return json(res, 200, { ok: true, game: 'LOST KINGDOM OF SHADOWBANE CHRONICLES', realm: db.realmSettings.realmName, maintenance: db.realmSettings.maintenance, players: clients.size, accounts: Object.keys(db.accounts).length, realms: realmsView(), regions: REGIONS, maxPlayersPerWorld: 1000 });

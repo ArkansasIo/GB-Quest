@@ -175,7 +175,7 @@
           ? fetch(visualMapUrl).then(r => { if (!r.ok) throw new Error(`Equipment visual map HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
         visualMapPromise = pending;
-        pending.catch(() => { if (visualMapPromise === pending) visualMapPromise = null; });
+        pending.catch(() => setTimeout(() => { if (visualMapPromise === pending) visualMapPromise = null; }, 60000)); // retry a missing file after a minute, not every frame
       }
       return visualMapPromise;
     };
@@ -186,7 +186,7 @@
           ? fetch(manifestUrl).then(r => { if (!r.ok) throw new Error(`Equipment manifest HTTP ${r.status}`); return r.json(); })
           : Promise.reject(new Error('Fetch API unavailable'));
         manifestPromise = pending;
-        pending.catch(() => { if (manifestPromise === pending) manifestPromise = null; });
+        pending.catch(() => setTimeout(() => { if (manifestPromise === pending) manifestPromise = null; }, 60000)); // retry a missing file after a minute, not every frame
       }
       return manifestPromise;
     };

@@ -23,8 +23,6 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 fs.copyFileSync(source, index);
 
-// Embed generated HD64 PNGs as data URIs inside the one-file HTML release.
-// This preserves runtime URL semantics while keeping the ZIP entry count at one.
 function collectPngs(directory, archiveRoot) {
   const result = {};
   if (!fs.existsSync(directory)) return result;
@@ -67,13 +65,18 @@ if (!hasHd64Pack) {
 let html = fs.readFileSync(index, 'utf8');
 const injectionPoint = '<script>window.NES_INDEX=';
 if (!html.includes(injectionPoint)) throw new Error('Could not locate safe HD64 pack injection point.');
-// itch.io serves static files only, so the game must not probe the page's own origin for a realm server.
-// Optional default realm server: GBQ_REALM_URL=https://realm.example.com npm run build:itch
-// (players can still change it in ONLINE > SERVER ADDRESS; the server must allow the itch.io origin).
-const realmUrl = String(process.env.GBQ_REALM_URL || '').trim().replace(/\/+$/, '');
-if (realmUrl && !/^https:\/\/[^/\s]+$/.test(realmUrl)) throw new Error('GBQ_REALM_URL must be an https:// origin, e.g. https://realm.example.com');
+const realmUrl = String(process.env.GBQ_REALM_URL || '').trim().replace(/\\/+$/, '');
+if (realmUrl && !/^https:\\/\\/[^\\/\\s]+$/.test(realmUrl)) throw new Error('GBQ_REALM_URL must be an https:// origin, e.g. https://realm.example.com');
 const realmScript = realmUrl ? 'window.GBQ_REALM_URL=' + JSON.stringify(realmUrl) + ';' : '';
-html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;' + realmScript + '</script>\n<script>window.GBQ_HD64_PACK=' + JSON.stringify(hd64Pack) + ';</script>\n' + injectionPoint);
+// JSON is inserted into an HTML script element: escape HTML-sensitive characters
+// so data containing </script>, &, or HTML line separators cannot break the document.
+const packedJson = JSON.stringify(hd64Pack)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
+html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;' + realmScript + '</script>\\n<script>window.GBQ_HD64_PACK=' + packedJson + ';</script>\\n' + injectionPoint);
 fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');
@@ -93,16 +96,10 @@ if (html.includes('GBQ_MASTER_CATALOG') || html.includes('GBQ_UI_MOCKUP')) {
   throw new Error('Unresolved artwork placeholder remains in the release HTML.');
 }
 const embeddedPngs = html.split('data:image/png;base64,').length - 1;
-if (embeddedPngs < 3) {
-  throw new Error('Expected embedded game and UI artwork data URIs; found only ' + embeddedPngs);
-}
-if (/src=["'](?:\.\.\/|\.\/)?(?:src|assets)\//i.test(html)) {
+if (embeddedPngs < 3) throw new Error('Expected embedded game and UI artwork data URIs; found only ' + embeddedPngs);
+if (/src=["'](?:..\\/|.\\/)?(?:src|assets)\\//i.test(html)) {
   throw new Error('The itch.io HTML still references loose source or asset files.');
 }
-
-// All generated F-rank HD64 animation frames, equipment layers, manifests and
-// visual mappings are embedded in GBQ_HD64_PACK above. The runtime resolves its
-// normal asset paths against that map, so the ZIP remains a single HTML file.
 fs.mkdirSync(path.dirname(zip), { recursive: true });
 fs.rmSync(zip, { force: true });
 const archiveBuild = spawnSync(process.execPath, [path.join(__dirname, 'zip-single-html.cjs'), out, zip, String(MAX_FILES)], {

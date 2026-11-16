@@ -62,6 +62,7 @@ test('itch.io workflow generates all six F-rank animation sets before packaging'
   }
   assert.match(workflow, /report\["total_frames"\] == 2448/);
   assert.match(workflow, /pip install Pillow/);
+  assert.match(workflow, /python tools\/build_atlas\.py/);
   assert.match(workflow, /npm run build:itch/);
 });
 
