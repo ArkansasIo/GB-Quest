@@ -65,8 +65,8 @@ if (!hasHd64Pack) {
 let html = fs.readFileSync(index, 'utf8');
 const injectionPoint = '<script>window.NES_INDEX=';
 if (!html.includes(injectionPoint)) throw new Error('Could not locate safe HD64 pack injection point.');
-const realmUrl = String(process.env.GBQ_REALM_URL || '').trim().replace(/\\/+$/, '');
-if (realmUrl && !/^https:\\/\\/[^\\/\\s]+$/.test(realmUrl)) throw new Error('GBQ_REALM_URL must be an https:// origin, e.g. https://realm.example.com');
+const realmUrl = String(process.env.GBQ_REALM_URL || '').trim().replace(/\/+$/, '');
+if (realmUrl && !/^https:\/\/[^/\s]+$/.test(realmUrl)) throw new Error('GBQ_REALM_URL must be an https:// origin, e.g. https://realm.example.com');
 const realmScript = realmUrl ? 'window.GBQ_REALM_URL=' + JSON.stringify(realmUrl) + ';' : '';
 // JSON is inserted into an HTML script element: escape HTML-sensitive characters
 // so data containing </script>, &, or HTML line separators cannot break the document.
@@ -76,7 +76,7 @@ const packedJson = JSON.stringify(hd64Pack)
   .replace(/&/g, '\\u0026')
   .replace(/\u2028/g, '\\u2028')
   .replace(/\u2029/g, '\\u2029');
-html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;' + realmScript + '</script>\\n<script>window.GBQ_HD64_PACK=' + packedJson + ';</script>\\n' + injectionPoint);
+html = html.replace(injectionPoint, '<script>window.GBQ_STATIC_HOST=true;' + realmScript + '</script>\n<script>window.GBQ_HD64_PACK=' + packedJson + ';</script>\n' + injectionPoint);
 fs.writeFileSync(index, html);
 if (!html.includes('id="lcd"') || !html.includes('GB_ASSETS')) {
   throw new Error('The itch.io page is missing the game canvas or embedded asset catalog.');
@@ -97,7 +97,7 @@ if (html.includes('GBQ_MASTER_CATALOG') || html.includes('GBQ_UI_MOCKUP')) {
 }
 const embeddedPngs = html.split('data:image/png;base64,').length - 1;
 if (embeddedPngs < 3) throw new Error('Expected embedded game and UI artwork data URIs; found only ' + embeddedPngs);
-if (/src=["'](?:..\\/|.\\/)?(?:src|assets)\\//i.test(html)) {
+if (/src=["'](?:\.\.\/|\.\/)?(?:src|assets)\//i.test(html)) {
   throw new Error('The itch.io HTML still references loose source or asset files.');
 }
 fs.mkdirSync(path.dirname(zip), { recursive: true });
