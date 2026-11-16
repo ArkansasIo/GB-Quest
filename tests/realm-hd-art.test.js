@@ -27,7 +27,7 @@ const frame = (() => { const root = "assets_hd64/animations/frames"; if (!fs.exi
   return walk(root); })();
 
 test("the realm server serves the HD art the game asks for, and nothing else", { skip: frame ? false : "HD64 frames not generated" }, async () => {
-  const data = fs.mkdtempSync(path.join(os.tmpdir(), "gbq-hd-")), port = String(20000 + Math.floor(Math.random() * 20000));
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), "gbq-hd-")), port = String(41000 + Math.floor(Math.random() * 8000)); // its own range: other server tests use 20000-40000
   const server = await startServer({ PORT: port, GBQ_DATA: data });
   try {
     const get = async p => { const r = await fetch(`http://127.0.0.1:${port}${p}`); return { status: r.status, type: r.headers.get("content-type") || "" }; };
