@@ -43,7 +43,9 @@ const RETRO_TILE_GROUP = { desert: 'sand', badlands: 'sand', savanna: 'sand', oa
   marsh: 'swamp', corruption: 'swamp', dusk: 'swamp', ruins: 'swamp', mushroom: 'swamp', volcanic: 'lava', crystal: 'mystic', aether: 'mystic', sky: 'mystic' };
 // AELMOOR HD (tools/gen_aelmoor.py) shares the retro shapes and tiles but renders monsters and townsfolk with
 // smooth height-field lighting (r9* sprites), and adds a moonlit title backdrop.
-const retroMode = () => S.art === 'retro' || S.art === 'aelmoor';
+const retroMode = () => S.art === 'retro' || S.art === 'aelmoor' || S.art === 'nes';
+// RETRO 8-BIT and NES CLASSIC share the 8-bit sprites (heroes, monsters, townsfolk, items); NES CLASSIC has its own tiles
+const retroSprites = () => S.art === 'retro' || S.art === 'nes';
 const retroPrefix = () => (S.art === 'aelmoor' ? 'r9' : 'r8');
 // Lanterns of Aelmoor key art (src/keyart_index.js, tools/slice_keyart.py): in AELMOOR HD mode the sliced sprites
 // replace the generated ones wherever the index has a match.
@@ -60,9 +62,18 @@ function retroNpcArt(role, blink, key) {
 }
 const retroSlug = sub => String(sub || '').toLowerCase().replace(/[^a-z]/g, '');
 const RETRO_DUNGEON_THEMES = new Set(['dungeon', 'crypt', 'ice', 'lava', 'temple', 'void']);
+// NES CLASSIC (tools/gen_nes8.py): flat four-colour NES-palette tiles, gt_n8<group>_<key> and gd_n8<theme>_<key>.
+// Eight overworld palettes; mirrors BIOME_GROUP in the generator.
+const NES_TILE_GROUP = { desert: 'sand', badlands: 'sand', savanna: 'sand', oasis: 'sand', snow: 'snow', frozen: 'snow',
+  marsh: 'swamp', mushroom: 'swamp', volcanic: 'lava', crystal: 'mystic', aether: 'mystic', sky: 'mystic',
+  dusk: 'dark', corruption: 'dark', ruins: 'dark', jungle: 'jungle', deepforest: 'jungle' };
 function retroWorldTile(tile) {
   const m = /^g([td])_([a-z]+)_(.+)$/.exec(tile || '');
-  if (!m || m[2].startsWith('r8')) return null;
+  if (!m || m[2].startsWith('r8') || m[2].startsWith('n8')) return null;
+  if (S.art === 'nes') {
+    const nes = m[1] === 'd' ? `gd_n8${RETRO_DUNGEON_THEMES.has(m[2]) ? m[2] : 'dungeon'}_${m[3]}` : `gt_n8${NES_TILE_GROUP[m[2]] || 'green'}_${m[3]}`;
+    if (IMG[nes]) return nes;
+  }
   if (m[1] === 't' && keyArtOn() && KEYART.town.includes(m[3])) { const k = keyArtImg(`gt_ka${RETRO_TILE_GROUP[m[2]] || 'green'}_${m[3]}`); if (k) return k; }
   const name = m[1] === 'd' ? `gd_r8${RETRO_DUNGEON_THEMES.has(m[2]) ? m[2] : 'dungeon'}_${m[3]}` : `gt_r8${RETRO_TILE_GROUP[m[2]] || 'green'}_${m[3]}`;
   return IMG[name] ? name : null;
@@ -85,7 +96,7 @@ function retroMonsterArt(b) {
 // RETRO 8-BIT heroes (tools/gen_retro8_heroes.py): a 16x16 walker per job, two steps facing down, up and to the
 // side (left mirrors it). Used for the hero, party followers and other players while RETRO 8-BIT is on.
 function retroWalker(character, dir = 'down', frame = 0, ghost = false) {
-  if (S.art !== 'retro' || !character) return null;
+  if (!retroSprites() || !character) return null;
   const d = dir === 'up' ? 'up' : dir === 'down' ? 'down' : 'side';
   const job = character.look && IMG[`r8h_${character.look}_down0`] ? character.look : character.cls;
   const name = `r8h_${job}_${d}${frame ? 1 : 0}`;
@@ -199,13 +210,13 @@ function retroItemIcon(it) {
   const slot = Math.min(10, Math.max(0, tier * 2 - 1 + (hashStr(String(it.base)) % 2)));
   if (keyArtOn() && KEYART.equip[cat]) { const L = KEYART.equip[cat], k = keyArtImg(L[Math.min(L.length - 1, Math.floor(slot * L.length / 11))]); if (k) return k; }
   // RETRO 8-BIT: the 8-bit item sheet (src/itemsheet_index.js), one icon per tier left to right
-  if (S.art === 'retro' && typeof ITEMSHEET !== 'undefined' && ITEMSHEET.equip[cat]) { const L = ITEMSHEET.equip[cat], k = keyArtImg(L[Math.min(L.length - 1, Math.floor(slot * L.length / 11))]); if (k) return k; }
+  if (retroSprites() && typeof ITEMSHEET !== 'undefined' && ITEMSHEET.equip[cat]) { const L = ITEMSHEET.equip[cat], k = keyArtImg(L[Math.min(L.length - 1, Math.floor(slot * L.length / 11))]); if (k) return k; }
   const name = `${retroPrefix()}i_${cat}_${slot}`;
   return IMG[name] ? name : null;
 }
 if (typeof window !== 'undefined') window.retroItemIcon = retroItemIcon;
 function applyArt() {
-  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = (keyArtOn() && keyArtImg(KEYART.consumables[k])) || (S.art === 'retro' && typeof ITEMSHEET !== 'undefined' && keyArtImg(ITEMSHEET.consumables[k])) || (retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null); ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
+  for (const k in ITEMS) { const a = ITEM_ART[k]; const L = a && NES[a[0]]; const r = (keyArtOn() && keyArtImg(KEYART.consumables[k])) || (retroSprites() && typeof ITEMSHEET !== 'undefined' && keyArtImg(ITEMSHEET.consumables[k])) || (retroMode() && IMG[`${retroPrefix()}c_${k}`] ? `${retroPrefix()}c_${k}` : null); ITEMS[k].icon = r || (artOn() && L && L.length ? L[Math.min(L.length - 1, a[1])] : ITEMS[k].icon0); }
 }
 applyArt();
 

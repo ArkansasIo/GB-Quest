@@ -72,7 +72,7 @@ function useBuilding(b, field) {
 // RETRO 8-BIT buildings (tools/gen_retro8_heroes.py), 32x32, by what the building is
 const RETRO_BUILDING = { inn: 'inn', vendor: 'store', blacksmith: 'smithy', stable: 'stable', mail: 'post', bank: 'bank', shrine: 'shrine', mill: 'mill' };
 function buildingSprite(b) {
-  if (typeof S !== 'undefined' && S.art === 'retro') {
+  if (typeof S !== 'undefined' && (S.art === 'retro' || S.art === 'nes')) {
     const kind = RETRO_BUILDING[b.svc] || `house${(b.x * 7 + b.y * 3) % 4}`, name = `r8bld_${kind}`;
     if (IMG[name]) return name;
   }

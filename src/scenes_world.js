@@ -918,11 +918,11 @@ class Field {
     for (let ty = Math.floor(cy / T); ty <= Math.floor((cy + H) / T); ty++)
       for (let tx = Math.floor(cx / T); tx <= Math.floor((cx + W) / T); tx++) {
         const d = this.tileAt(tx, ty); if (!d) continue;
-        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.fdWorldTile === 'function' && window.fdWorldTile(tile) ? window.fdWorldTile(tile) : S.art === 'packs' && typeof window.packFieldOn === 'function' && window.packFieldOn() && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
+        if (PIX && m.gfx) { const tile = m.gfx[ty][tx].replace('%f', anim); const packTile = S.art === 'packs' && typeof window.fdWorldTile === 'function' && window.fdWorldTile(tile) ? window.fdWorldTile(tile) : S.art === 'packs' && typeof window.packFieldOn === 'function' && window.packFieldOn() && typeof window.assetPackWorldTile === 'function' ? window.assetPackWorldTile(tile) : (S.art === 'retro' || S.art === 'nes' || S.art === 'aelmoor') && typeof window.retroWorldTile === 'function' ? window.retroWorldTile(tile) : null; blit(spr(packTile || tile, T, T, { ghost }), tx * T - cx, ty * T - cy); }
         else blit(spr(d[0], T, T, { rot: d[3], ghost }), tx * T - cx, ty * T - cy);
       }
     const list = this.entities().map(e => Object.assign(e, { sy: e.y * T }));
-    if (S.art !== 'classic' && IMG.woods_pixels) list.push(...this.woods);
+    if (S.art !== 'classic' && S.art !== 'nes' && IMG.woods_pixels) list.push(...this.woods); // NES CLASSIC keeps its flat tree tiles
     list.push({ kind: 'player', sy: py });
     G.companions.slice(0, 3).forEach((c, i) => { const tr = this.trail[(i + 1) * 2 - 1]; if (tr) list.push({ kind: 'follower', c, x: tr[0], y: tr[1], dir: tr[2], sy: tr[1] * T - 1 }); });
     if (G.pet) { const tr = this.trail[G.companions.length ? 7 : 1]; if (tr) list.push({ kind: 'pet', x: tr[0], y: tr[1], sy: tr[1] * T - 2 }); }
