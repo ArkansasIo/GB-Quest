@@ -22,9 +22,7 @@ if (typeof window !== 'undefined' && typeof PACK_INDEX !== 'undefined' && typeof
   const packOn = () => S.art === PACK_MODE;
   // the packs are the default look for players who have not picked CLASSIC
   if (!S.packsDefaulted) { S.packsDefaulted = true; if (S.art !== 'classic') S.art = PACK_MODE; try { if (typeof saveSettings === 'function') saveSettings(); } catch (e) {} }
-  // Older saves used "nes" for the generated pixel pack art. That mode no longer
-  // exists; normalize it so saved players actually see the current asset packs.
-  if (S.art === 'nes') { S.art = PACK_MODE; try { if (typeof saveSettings === 'function') saveSettings(); } catch (e) {} }
+  // "nes" is NES CLASSIC (tools/gen_nes8.py tiles with the 8-bit sprites); it is kept across reloads.
 
   // item art lists (NES categories); helmets get their own list
   const NES0 = {}; for (const k of Object.keys(PACK_INDEX.items)) NES0[k] = (NES[k] || []).slice();

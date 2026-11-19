@@ -6,7 +6,7 @@ const {handleRaidEncounterRequest}=require('../backend/mmorpg-raid-encounter-rou
 const raidId='11111111-1111-4111-8111-111111111111';
 const secret='0123456789abcdef0123456789abcdef';
 function harness(){const state={status:200,body:null};const res={writeHead(s){state.status=s;},end(b){state.body=JSON.parse(b);}};return {state,res,json:(r,s,d)=>{r.writeHead(s);r.end(JSON.stringify(d));}};}
-function poolFor(handler){const calls=[];const tx={query:async(sql,args=[])=>{calls.push({sql,args});return handler(sql,args);},release(){}};return {calls,connect:async()=>tx};}
+function poolFor(handler){const calls=[];const tx={query:async(sql,args=[])=>{calls.push({sql,args});if(sql.startsWith('INSERT INTO character_season_objectives'))return{rowCount:1,rows:[{progress:1,target:1}]};return handler(sql,args);},release(){}};return {calls,connect:async()=>tx};}
 const base={method:'POST',headers:{'x-gbq-internal-secret':secret},body:{difficulty:'heroic'}};
 const readBody=async req=>req.body;
 
@@ -44,4 +44,19 @@ test('duplicate encounter completion cannot issue another reward or lockout even
  await handleRaidEncounterRequest({req:base,res:h.res,url:new URL('https://game.test/api/internal/raids/'+raidId+'/encounters/ash_titan/complete'),pool,readBody,json:h.json,internalSecret:secret});
  assert.equal(h.state.status,409);assert.equal(h.state.body.error,'encounter_already_completed');
  assert.equal(pool.calls.some(x=>x.sql.includes('INSERT INTO raid_lockouts')),false);
+});
+
+test('successful raid completion advances the seasonal raid objective for every member',async()=>{
+ const ids=['22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'];
+ const pool=poolFor(sql=>{
+  if(sql.startsWith('SELECT id,realm_id,raid_size'))return {rowCount:1,rows:[{id:raidId,realm_id:'ardenhold',raid_size:10}]};
+  if(sql.startsWith('SELECT character_id FROM raid_group_members'))return {rowCount:2,rows:ids.map(character_id=>({character_id}))};
+  if(sql.startsWith('INSERT INTO raid_encounter_completions'))return {rowCount:1,rows:[{id:'completion-2',completed_at:'2026-11-09T12:00:00Z',reset_at:'2026-11-16T12:00:00Z'}]};
+  return {rowCount:2,rows:[]};
+ });
+ const h=harness();
+ await handleRaidEncounterRequest({req:base,res:h.res,url:new URL('https://game.test/api/internal/raids/'+raidId+'/encounters/ash_titan/complete'),pool,readBody,json:h.json,internalSecret:secret});
+ const progress=pool.calls.filter(x=>x.sql.startsWith('INSERT INTO character_season_objectives'));
+ assert.equal(progress.length,2);assert.deepEqual(progress.map(x=>x.args[0]),ids);
+ assert.ok(progress.every(x=>x.args[2]==='chapter_6'));
 });

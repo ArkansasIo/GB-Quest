@@ -50,6 +50,7 @@ export class GBQuestMMOApi {
     if (typeof characterId !== 'string' || !characterId.trim()) throw new TypeError('characterId is required');
     const resources = {
       profile: () => this.characterProfile(characterId),
+      season: () => this.season(characterId),
       collections: () => this.collections(characterId),
       inventory: () => this.inventory(characterId),
       quests: () => this.quests(characterId),
@@ -95,6 +96,19 @@ export class GBQuestMMOApi {
   unlockTalent(characterId, nodeId) {
     return this.request('/api/characters/' + encodeURIComponent(characterId) + '/talents/' + encodeURIComponent(nodeId) + '/unlock', {
       method: 'POST', body: {}
+    });
+  }
+  currentSeasonId(date = new Date()) {
+    const key = ['emberfall', 'frostwake', 'greentide', 'suncrown'][Math.floor(date.getUTCMonth() / 3)];
+    return 'Y' + date.getUTCFullYear() + '_' + key;
+  }
+  season(characterId, seasonId = this.currentSeasonId()) {
+    const query = '?seasonId=' + encodeURIComponent(seasonId);
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/season' + query);
+  }
+  claimSeasonObjective(characterId, seasonId, objectiveId) {
+    return this.request('/api/characters/' + encodeURIComponent(characterId) + '/season/claim', {
+      method: 'POST', body: { seasonId, objectiveId }
     });
   }
   collections(characterId) {
