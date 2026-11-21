@@ -4,13 +4,13 @@
 // guide never drifts from the rules:
 //   BASICS, CLASSES AND JOBS (all 27, with role, hit die, primary and job abilities), RACES (all 15, with bonuses and traits),
 //   SPELLS (school list and the spell-level curve 1-720), COMBAT (initiative, conditions, buffs), GEAR (rarities, affixes,
-//   aspects, greater affixes, tempering, masterwork, gems, durability), the ASPECT CODEX (all aspects by category, with the
+//   aspects, greater affixes, tempering, masterwork, gems, durability), the AFFIX CODEX (every affix by family and slot), the ASPECT CODEX (all aspects by category, with the
 //   ones you have saved marked), WORLD (regions, biomes, day and night, weather, morphs, mounts), CONTENT (dungeons,
 //   raids, trials, tower, world quests, rares, invasions, keystones), GUILD AND CONQUEST, PROGRESSION (levels, mastery,
 //   season, heirlooms, amitoi), NPCS (the NPC AI), and SETTINGS (themes, art modes, chat and accessibility).
 // The topic list is exported as GBQGuide for tests.
 
-const GUIDE_TOPICS = ['BASICS', 'CLASSES & JOBS', 'RACES', 'SPELLS', 'COMBAT', 'GEAR', 'ASPECT CODEX', 'WORLD', 'CONTENT', 'GUILD & CONQUEST', 'PROGRESSION', 'NPCS', 'SETTINGS'];
+const GUIDE_TOPICS = ['BASICS', 'CLASSES & JOBS', 'RACES', 'SPELLS', 'COMBAT', 'GEAR', 'AFFIX CODEX', 'ASPECT CODEX', 'WORLD', 'CONTENT', 'GUILD & CONQUEST', 'PROGRESSION', 'NPCS', 'SETTINGS'];
 // split long text into dialogue pages of at most n lines of the wrapped text
 function guidePages(lines, width = 25, perPage = 3) {
   const flat = []; for (const l of lines) { const words = String(l).split(' '); let cur = ''; for (const w of words) { if ((cur + ' ' + w).trim().length > width) { flat.push(cur.trim()); cur = w; } else cur += ' ' + w; } if (cur.trim()) flat.push(cur.trim()); }
@@ -51,12 +51,20 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
     'GEAR': () => [
       ['RARITY', [RARITY.map(r => r.name).join(' > ') + '. Higher rarities roll more affixes and stronger bonuses.']],
       ['ASPECTS', ['Legendary and better items carry an ASPECT, a combat power. The OCCULTIST can EXTRACT it into your codex and IMPRINT it onto other gear.']],
+      ['AFFIXES BY SLOT', ['Every piece rolls affixes from its own slot: weapons lean offensive, armour defensive, gloves roll crit and lucky hits, boots roll movement speed, jewelry rolls a bit of everything. See AFFIX CODEX for the full list.']],
       ['GREATER AFFIXES', ['Each affix has a 6% chance to roll 1.5x (ancestral and divine items always get one).']],
       ['TEMPER AND MASTERWORK', ['TEMPER adds up to two affix lines (offensive, defensive or utility). MASTERWORK raises an item through 12 ranks: +5% affixes per rank, and ranks 4, 8 and 12 boost one affix by 25%.']],
       ['GEMS AND RUNES', ['Weapons and armour get 1-4 gem sockets by item level. Gems drop in battle and are sold or cut by the GEM CUTTER. Runes slot into their own sockets at the RUNE FORGE.']],
       ['DURABILITY', ['Battles wear gear down; at 0 an item gives no stats. Repair at a merchant or with a REPAIR KIT. Crafted gear rolls FINE, SUPERIOR or MASTERWORK quality.']],
       ['MASTERY', ['Each weapon family levels 1-30 from battles won with it. Ranks ADEPT (10), EXPERT (20) and MASTER (30) give bigger steps.']],
     ],
+    'AFFIX CODEX': () => {
+      if (typeof GBQAffixes === 'undefined') return [['AFFIXES', ['Affixes are bonuses rolled onto gear.']]];
+      const X = GBQAffixes, slotsOf = k => Object.values(X.SLOT_GROUPS).filter(g => g.pool.includes(k)).map(g => g.name);
+      const cats = X.AFFIX_CATS.map(cat => [cat, X.AFFIX_IDS.filter(k => X.AFFIXES[k].cat === cat).map(k => `${X.AFFIXES[k].name}: ${X.AFFIXES[k].desc} (${slotsOf(k).join(', ')})`)]);
+      const slots = Object.values(X.SLOT_GROUPS).map(g => [`${g.name} POOL`, [g.pool.map(k => X.AFFIXES[k].name).join(', ') + '.']]);
+      return [['HOW AFFIXES ROLL', [`${X.AFFIX_IDS.length} affixes in ${X.AFFIX_CATS.length} families. Each piece rolls from the pool of its slot: weapon, off-hand, the 7 armour categories (helm, cloak, chest, gloves, belt, leggings, boots) and jewelry. Rarity sets how many lines (up to 7) and how strong.`, `Totals are capped: damage reduction ${X.TOTAL_CAPS.dr}%, each resistance ${X.TOTAL_CAPS.res}%, cooldown reduction ${X.TOTAL_CAPS.cdr}%, +${X.TOTAL_CAPS.core} per ability score. ${X.OVERPOWER_CHANCE}% of hits OVERPOWER for 1.5x plus your overpower damage.`]], ...cats, ...slots];
+    },
     'ASPECT CODEX': () => null, // its own browser
     'WORLD': () => [
       ['REGIONS', [REGIONS.map(r => r.name).join(', ') + '.']],

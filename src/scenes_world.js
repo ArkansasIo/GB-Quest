@@ -931,7 +931,7 @@ class Field {
       const ex = e.x * T - cx, ey = e.y * T - cy;
       if (e.kind === 'player') {
         const f = LOOK_F[G.dir][(this.ox || this.oy) ? (this.walk >> 3) % 2 : 0];
-        if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16); blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); }
+        if (G.mounted) { const mnt = sprH(mountArt() || 'enemy_lizard', 16) || sprH('enemy_lizard', 16); if (mnt) blit(mnt, px - cx + (T - mnt.width) / 2, py - cy + 3); } // art may still be loading or missing
         const moveBob = (this.ox || this.oy) && (this.walk >> 3) % 2 ? 1 : 0;
         const walkFrame = (this.ox || this.oy) ? (this.walk >> 3) % 2 : 0;
         const hdFrame = (typeof retroWalker === 'function' && retroWalker(G, G.dir, walkFrame, ghost)) || (typeof fdWalker === 'function' && fdWalker(G, G.dir, walkFrame, ghost)) || hdWorldFrame(G, G.dir, walkFrame, !!(this.ox || this.oy), ghost);
@@ -1935,15 +1935,18 @@ class WorldMap {
     // AELMOOR HD shows the base world on the Lanterns of Aelmoor key-art map (pins keep their relative positions)
     const keyMap = S.art === 'aelmoor' && !worldOf(z) && IMG.ka_worldmap_01 ? 'ka_worldmap_01' : null;
     if (this.zoom === 0) {
-      const wi = keyMap || (IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s'), img = keyMap ? { width: W, height: 99 } : IMG[wi]; const m = spr(wi, img.width, img.height, keyMap ? { clean: false } : undefined);
-      blit(m, 0, 12); this.pinMarks(img, 0, 12, 1);
+      const wi = keyMap || (IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s'), img = keyMap ? { width: W, height: 99 } : IMG[wi];
+      if (!img) textC('LOADING MAP...', 80, 56, 3); // still streaming in after the title screen
+      else { const m = spr(wi, img.width, img.height, keyMap ? { clean: false } : undefined); blit(m, 0, 12); this.pinMarks(img, 0, 12, 1); }
     } else if (this.zoom === 1) {
-      const wi = keyMap || (IMG[worldImg(worldOf(z))] ? worldImg(worldOf(z)) : 'gm_dunia'), img = keyMap ? { width: 320, height: 199 } : IMG[wi], m = spr(wi, img.width, img.height);
+      const wi = keyMap || (IMG[worldImg(worldOf(z))] ? worldImg(worldOf(z)) : 'gm_dunia'), img = keyMap ? { width: 320, height: 199 } : IMG[wi];
+      if (!img) textC('LOADING MAP...', 80, 56, 3); // still streaming in after the title screen
+      else { const m = spr(wi, img.width, img.height);
       const [nx, ny] = zonePin(z), tx = nx * img.width, ty = ny * img.height, vh = 97;
       const cx = Math.max(0, Math.min(img.width - W, tx - W / 2)), cy = Math.max(0, Math.min(img.height - vh, ty - vh / 2));
       this.camx = this.camx == null ? cx : this.camx + (cx - this.camx) * 0.25; this.camy = this.camy == null ? cy : this.camy + (cy - this.camy) * 0.25;
       ctx.drawImage(m, Math.round(this.camx), Math.round(this.camy), W, vh, 0, 12, W, vh);
-      this.pinMarks(img, -Math.round(this.camx), 12 - Math.round(this.camy), 1);
+      this.pinMarks(img, -Math.round(this.camx), 12 - Math.round(this.camy), 1); }
     } else {
       const m = buildZoneCached(z.id), s = 4, ox = Math.floor((W - ZW * s) / 2), oy = 13;
       const seen = G.visited[z.id] || G.waypoints[z.id];
