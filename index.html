@@ -522,7 +522,7 @@ body { background:radial-gradient(ellipse at 50% 0%,#26344a 0%,#0b111c 48%,#0507
 }
 .bezel { background:linear-gradient(145deg,#050a12,#101a29); border:1px solid rgba(218,184,116,.5);
   box-shadow:inset 0 0 0 1px #02050a,0 0 28px rgba(0,0,0,.55); }
-#lcd { image-rendering:auto; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
+#lcd { image-rendering:pixelated; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
 .brand { color:#f3e7ce; font:700 19px/1.2 Cinzel,Georgia,serif; letter-spacing:.16em; text-shadow:0 2px 18px #000; }
 .brand em { color:var(--citadel-gold); }
 .brand small { display:block; margin-top:4px; color:#aebbd0; font:600 9px Inter,sans-serif; letter-spacing:.34em; }
@@ -570,7 +570,7 @@ body.theme-shadows {
 .theme-shadows .bezel { background:linear-gradient(160deg,#090c0c,#1b211e 65%,#090b0c); border:1px solid rgba(200,173,118,.6); border-radius:8px; box-shadow:inset 0 0 0 1px #030405,0 0 22px rgba(0,0,0,.65); }
 .theme-shadows .bezel-top { color:var(--abyss-muted); }
 .theme-shadows .bezel-top span { background:linear-gradient(90deg,var(--abyss-gold),transparent); }
-.theme-shadows #lcd { image-rendering:auto; border:1px solid rgba(200,173,118,.55); box-shadow:0 0 0 2px #080a0b,0 0 22px rgba(113,134,106,.15); }
+.theme-shadows #lcd { image-rendering:pixelated; border:1px solid rgba(200,173,118,.55); box-shadow:0 0 0 2px #080a0b,0 0 22px rgba(113,134,106,.15); }
 .theme-shadows .brand { color:var(--abyss-gold-bright); font-family:Cinzel,Georgia,serif; letter-spacing:.13em; text-shadow:0 2px 16px #000,0 0 18px rgba(200,173,118,.18); }
 .theme-shadows .brand em { color:var(--abyss-gold); }
 .theme-shadows .brand small { color:var(--abyss-muted); }
@@ -1148,6 +1148,7 @@ body.chat-on .gbq-player-hud { right:300px; }
 <script src="src/extras.js"></script>
 <script src="src/aspects_data.js"></script>
 <script src="src/d4_affixes.js"></script>
+<script src="src/fallen_legends.js"></script>
 <script src="src/d4_gear.js"></script>
 <script src="src/totems.js"></script>
 <script src="src/awakening.js"></script>
