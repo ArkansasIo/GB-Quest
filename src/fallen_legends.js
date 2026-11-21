@@ -9,6 +9,7 @@
 //   src.cat  shared pool (world, dungeon, trial)                            src.minLvl  minimum foe level
 // Affix values are the item-level-20 baseline; makeNamed scales them with item level and clamps to each cap.
 
+(() => { // own scope: the game loads every module as a classic script sharing one global scope
 const FALLEN_LEGENDS = [
   // ---- legendary set: THE LAST VIGIL (The Drowned Cathedral)
   { id: 'n_fl_vigilbell', name: 'TOLLING VIGIL', kind: 'weapon', base: 'flail', rarity: 6, setId: 'last_vigil', affixes: [['radiant', 14], ['lhStun', 3], ['heal', 4]], lore: 'Each toll is a name the sea took.', src: { raid: 'rd_cathedral' } },
@@ -78,3 +79,4 @@ if (typeof NAMED_ITEMS !== 'undefined' && typeof NAMED_BY_ID !== 'undefined') {
 if (typeof LEGENDARY_SET_DEFS !== 'undefined') {
   for (const [id, set] of Object.entries(FALLEN_LEGEND_SETS)) if (!LEGENDARY_SET_DEFS[id]) LEGENDARY_SET_DEFS[id] = set;
 }
+})();

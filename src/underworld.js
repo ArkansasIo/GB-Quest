@@ -16,6 +16,7 @@
 
 // ---------------------------------------------------------------- underground themes
 // surface biome -> cave theme (each theme is an existing biome with tile art and monster families)
+(() => { // own scope: the game loads every module as a classic script sharing one global scope
 const UNDER_THEME = { meadow: 'mushroom', coast: 'ruins', marsh: 'mushroom', jungle: 'mushroom', snow: 'frozen', badlands: 'ruins', volcanic: 'volcanic', dusk: 'corruption', crystal: 'crystal' };
 const UNDER_SUBS = {
   mushroom: ['SPORE HOLLOW', 'GLOWCAP GROTTO', 'MYCEL DEEP', 'ROOT CHASM'],
@@ -110,9 +111,9 @@ const NAME_ENDS = { CITY: ['HOLD', 'GATE', 'SPIRE', 'CROWN', 'KEEP', 'HAVEN'], T
 const FOLK = { coast: 'fisherfolk and net-menders', jungle: 'hunters and herb-gatherers', marsh: 'reed-cutters and eel-trappers', crystal: 'gem-cutters and glassblowers', dusk: 'lantern-keepers and grave-wardens',
   snow: 'trappers and ice-fishers', meadow: 'farmers and beekeepers', volcanic: 'smiths and obsidian-cutters', badlands: 'caravaners and relic-diggers' };
 const KIND_DESC = { CITY: 'The capital, walled and crowded', TOWN: 'A market town', VILLAGE: 'A small village' };
-const hashStr = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const uwHash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 function makeSettlementName(zoneId, biome, kind, used) {
-  const parts = NAME_PARTS[biome] || NAME_PARTS.meadow, ends = NAME_ENDS[kind], h = hashStr(zoneId);
+  const parts = NAME_PARTS[biome] || NAME_PARTS.meadow, ends = NAME_ENDS[kind], h = uwHash(zoneId);
   for (let k = 0; k < parts.length * ends.length; k++) {
     const n = parts[(h + k) % parts.length] + ends[(Math.floor(h / 7) + k * 3) % ends.length];
     if (!used.has(n)) { used.add(n); return n; }
@@ -239,7 +240,7 @@ function placeCaveMouth(g, hub, WALKABLE, carve, seed, avoid = []) {
     if (d >= 5 && d <= 14) cand.push([x, y]);
   }
   if (!cand.length) return null;
-  const [x, y] = cand[hashStr(seed) % cand.length];
+  const [x, y] = cand[uwHash(seed) % cand.length];
   g[y][x] = 'C';
   carve(g, x, y + 1, hub[0], hub[1] + 1, false);
   return { x, y };
@@ -322,3 +323,4 @@ if (typeof window !== 'undefined' && typeof ZONES !== 'undefined' && typeof buil
     };
   }
 }
+})();
