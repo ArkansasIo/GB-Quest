@@ -363,12 +363,86 @@ class StashScene {
   }
 }
 // ---------------------------------------------------------------- EQUIPMENT (paper doll)
+// ---------------------------------------------------------------- pointer over the game screen (in 160x144 game pixels)
+// The screen is drawn centred at a whole-number scale (engine.js presentSharp), or stretched in 2K/4K output.
+const POINTER = { x: -1, y: -1, moved: 0, click: 0 };
+if (typeof window !== 'undefined' && typeof LCD !== 'undefined' && LCD && LCD.addEventListener) {
+  const toGame = e => {
+    const r = LCD.getBoundingClientRect(); if (!r.width || !r.height) return false;
+    const px = (e.clientX - r.left) * LCD.width / r.width, py = (e.clientY - r.top) * LCD.height / r.height;
+    let s = Math.min(LCD.width / W, LCD.height / H);
+    if ((S.hdRes === 'native' || !S.hdRes) && s >= 1) s = Math.floor(s);
+    POINTER.x = (px - (LCD.width - W * s) / 2) / s; POINTER.y = (py - (LCD.height - H * s) / 2) / s;
+    return true;
+  };
+  LCD.addEventListener('pointermove', e => { if (toGame(e)) POINTER.moved = frameN + 1; });
+  LCD.addEventListener('pointerdown', e => { if (toGame(e)) { POINTER.moved = POINTER.click = frameN + 1; } });
+  LCD.addEventListener('pointerleave', () => { POINTER.x = POINTER.y = -1; });
+}
+// the screen box of a paper-doll slot
+const dollSlotRect = (c, r) => [c === 2 ? 110 : c ? 140 : 2, 13 + r * 17, 18, 16];
+// tooltip lines for an equipped item: [text, colour]
+function gearTooltipLines(it) {
+  const L = [], add = (s, col = 3) => { for (const line of wrap(String(s), 19)) L.push([line, col]); };
+  add(it.name, rarityCol(it.rarity));
+  L.push([`${RARITY[it.rarity].name} IL${it.ilvl || 1}`.slice(0, 19), 2]);
+  if (it.kind === 'weapon' && WEAPONS[it.base]) {
+    const w = WEAPONS[it.base];
+    add(`DMG ${w.dmg}${w.vdmg ? '/' + w.vdmg : ''}${it.plus > 0 ? ' +' + it.plus : ''} ${String(w.type).toUpperCase()}`);
+    if (it.legend) add(`+${it.legend.extra} ${String(it.legend.etype).toUpperCase()}`, 'gold');
+  } else if (it.kind === 'armor' && ARMORS[it.base]) {
+    const a = ARMORS[it.base];
+    add(a.type === 'shield' ? `SHIELD AC +${2 + Math.max(0, it.plus || 0)}` : `AC ${a.ac + Math.max(0, it.plus || 0)}${a.dexMax == null ? '+DEX' : a.dexMax ? '+DEX(2)' : ''} ${String(a.type).toUpperCase()}`);
+  } else if (it.kind === 'wondrous') {
+    const w = WONDROUS.find(x => x.id === it.base); if (w && w.bonus) add(`${String(w.bonus).toUpperCase()} +${it.plus || 0}`);
+  }
+  for (const [k, v] of it.affixes || []) if (SUBSTATS[k]) add(`+${v}${SUBSTATS[k].unit} ${SUBSTATS[k].name}`, 'gold');
+  const setId = it.setId || it.set;
+  if (setId) {
+    const def = typeof LEGENDARY_SET_DEFS !== 'undefined' && LEGENDARY_SET_DEFS[setId];
+    const have = Object.values(G.eq).filter(x => x && (x.setId || x.set) === setId).length;
+    add(`SET ${def ? def.name : String(setId).replace(/_/g, ' ').toUpperCase()} ${have}/${def ? def.pieces.length : 3}`, 'green');
+  }
+  const maxDur = Number(it.maxDur ?? it.maxDurability), dur = Number(it.dur ?? it.durability);
+  if (Number.isFinite(dur) && Number.isFinite(maxDur) && maxDur > 0) L.push([`DURABILITY ${Math.max(0, Math.min(100, Math.round(dur / maxDur * 100)))}%`, dur <= 0 ? 'red' : 2]);
+  const gems = typeof gemSocketCapacity === 'function' ? gemSocketCapacity(it) : 0;
+  if (gems) L.push([`SOCKETS ${(it.sockets || []).filter(Boolean).length}/${gems}`, 2]);
+  if (it.attune) L.push(['REQUIRES ATTUNEMENT', 'purple']);
+  if (it.lore) add(it.lore, 1);
+  return L;
+}
+function drawGearTooltip(it, col) {
+  const lines = gearTooltipLines(it), maxRows = 10, rows = lines.slice(0, maxRows);
+  if (lines.length > maxRows) rows[maxRows - 1] = ['...', 1];
+  const w = 122, h = rows.length * 9 + 9, x = col === 2 ? 2 : col === 1 ? 16 : 22, y = 13;
+  fill(x, y, w, h, '#0a0b1c'); // solid, so the stats underneath don't show through
+  if (typeof drawOrnatePanel === 'function') drawOrnatePanel(x, y, w, h); else frame(x, y, w, h);
+  rows.forEach(([s, c], i) => text(s, x + 6, y + 5 + i * 9, c));
+}
+
 class PaperDoll {
-  constructor() { this.opaque = true; this.col = 0; this.row = 0; }
+  constructor() { this.opaque = true; this.col = 0; this.row = 0; this.tip = true; this.ptr = POINTER.moved; this.clk = POINTER.click; }
   slot() { return SLOT_COLS[this.col][Math.min(this.row, this.rows() - 1)]; }
   rows() { return Math.min(6, SLOT_COLS[this.col].length); }
+  // the slot under the mouse, if any: [col, row]
+  slotAtPointer() {
+    for (let c = 0; c < SLOT_COLS.length; c++) for (let r = 0; r < Math.min(6, SLOT_COLS[c].length); r++) {
+      const [x, y, w, h] = dollSlotRect(c, r);
+      if (POINTER.x >= x && POINTER.x < x + w && POINTER.y >= y && POINTER.y < y + h) return [c, r];
+    }
+    return null;
+  }
   update() {
     if (P('b')) { SFX.back(); removeScene(this); return; }
+    if (P('start')) { this.tip = !this.tip; SFX.page(); }
+    // hovering a slot moves the cursor there; clicking it opens the equip list like A
+    let clicked = false;
+    if (POINTER.moved !== this.ptr) {
+      this.ptr = POINTER.moved;
+      const at = this.slotAtPointer();
+      if (at && (at[0] !== this.col || at[1] !== Math.min(this.row, this.rows() - 1))) { [this.col, this.row] = at; SFX.cursor(); }
+      if (POINTER.click !== this.clk) { this.clk = POINTER.click; clicked = !!at; }
+    }
     const n = this.rows();
     if (nav('up')) { this.row = (Math.min(this.row, n - 1) + n - 1) % n; SFX.cursor(); }
     if (nav('down')) { this.row = (Math.min(this.row, n - 1) + 1) % n; SFX.cursor(); }
@@ -377,7 +451,7 @@ class PaperDoll {
     if (nav('right')) { this.col = order[(at + 1) % 3]; SFX.cursor(); }
     if (nav('left')) { this.col = order[(at + 2) % 3]; SFX.cursor(); }
     if (P('select')) { removeScene(this); push(new InventoryScene('field')); return; }
-    if (!P('a')) return;
+    if (!P('a') && !clicked) return;
     const slot = this.slot(), opts = G.bag.filter(it => fitsSlot(it, slot)).sort((a, b) => itemPower(G, b) - itemPower(G, a));
     const labels = opts.map(it => `${RARITY[it.rarity].tag}${it.name.slice(0, 15)} ${itemKeyStat(it)}`.slice(0, 24)).concat(G.eq[slot] ? ['- UNEQUIP -'] : []);
     if (!labels.length) { SFX.error(); return say(`Nothing in your bag fits ${SLOT_NAME[slot]}.`); }
@@ -433,7 +507,9 @@ class PaperDoll {
     } else frame(1, 115, 158, 28);
     const s = this.slot(), it = G.eq[s];
     text(SLOT_NAME[s], 5, 117, 'gold');
-    if (it) { textR(itemKeyStat(it), 156, 117, 2); text(it.name.slice(0, 25), 5, 126, rarityCol(it.rarity)); text(((it.affixes || []).map(([k, v]) => `+${v}${SUBSTATS[k].unit}${SUBSTATS[k].name.slice(0, 6)}`).join(' ') || RARITY[it.rarity].name).slice(0, 25), 5, 135, 2); }
+    if (it) { textR(itemKeyStat(it), 156, 117, 2); text(it.name.slice(0, 25), 5, 126, rarityCol(it.rarity)); text(`A:SWAP  START:TIP ${this.tip ? 'OFF' : 'ON'}`, 5, 135, 1); }
     else { text('EMPTY SLOT', 5, 126, 1); text('A:EQUIP  SEL:INVENTORY', 5, 135, 1); }
+    // tooltip with the full details of the highlighted item, beside its slot
+    if (it && this.tip) drawGearTooltip(it, this.col);
   }
 }

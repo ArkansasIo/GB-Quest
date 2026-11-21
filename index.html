@@ -456,26 +456,45 @@ body.title-screen .game-viewport > #lcd {
 }
 
 /* Online account / realm gateway shown before server-backed hero creation. */
-.gbq-account-overlay{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:16px;background:rgba(2,5,10,.92);color:#f3ead6;font:13px/1.45 Inter,Arial,sans-serif}
-.gbq-account-window{width:min(560px,100%);max-height:92dvh;overflow:auto;border:1px solid #a48650;background:linear-gradient(145deg,#17222d,#080c12);box-shadow:0 22px 80px #000e,inset 0 0 0 3px #241b12;border-radius:5px}
-.gbq-account-window header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #66502e;background:linear-gradient(90deg,#283643,#0b1119)}
-.gbq-account-window header small,.gbq-account-window footer{color:#c4a66c;font-size:9px;letter-spacing:.14em}
-.gbq-account-window h2{margin:4px 0 0;color:#ffe1a0;font:700 20px Cinzel,Georgia,serif;letter-spacing:.07em}
-.gbq-account-window header button{width:34px;height:34px;border:1px solid #806b48;background:#151b22;color:#fff0c9;font-size:23px;cursor:pointer}
-.gbq-account-step{padding:18px 20px;display:grid;gap:13px}
+/* account & realm gateway: drawn like the in-game menus (drawOrnatePanel: navy panel, dark edge, gold frame, highlight line, gold corners; ">" cursor rows) */
+.gbq-account-overlay{position:fixed;inset:0;z-index:260;display:grid;place-items:center;padding:16px;background:rgba(4,4,12,.86);color:#e3deeb;font:700 12px/1.5 "Lucida Console",Consolas,"Courier New",monospace;letter-spacing:.04em;text-transform:uppercase}
+.gbq-account-overlay *,.gbq-account-overlay *::before{box-sizing:border-box}
+.gbq-account-window{position:relative;width:min(520px,100%);max-height:92dvh;overflow:auto;border:2px solid #08060f;border-radius:0;background:linear-gradient(rgba(255,220,140,.06),rgba(0,0,0,0) 45%),rgba(10,11,28,.97);box-shadow:inset 0 0 0 1px #c9952e,inset 0 0 0 2px #0a0b1c,inset 0 0 0 3px rgba(255,222,139,.45),0 0 0 1px #000,0 14px 40px #000c}
+.gbq-account-window::before{content:"";position:absolute;inset:1px;pointer-events:none;background:linear-gradient(#e8b84a,#e8b84a) left top/7px 2px no-repeat,linear-gradient(#e8b84a,#e8b84a) left top/2px 7px no-repeat,linear-gradient(#e8b84a,#e8b84a) right top/7px 2px no-repeat,linear-gradient(#e8b84a,#e8b84a) right top/2px 7px no-repeat,linear-gradient(#e8b84a,#e8b84a) left bottom/7px 2px no-repeat,linear-gradient(#e8b84a,#e8b84a) left bottom/2px 7px no-repeat,linear-gradient(#e8b84a,#e8b84a) right bottom/7px 2px no-repeat,linear-gradient(#e8b84a,#e8b84a) right bottom/2px 7px no-repeat}
+.gbq-account-window header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 6px 0;padding:10px 12px;border-bottom:1px solid rgba(201,149,46,.45)}
+.gbq-account-window header small,.gbq-account-window footer{color:#c9952e;font-size:9px;letter-spacing:.14em}
+.gbq-account-window h2{margin:3px 0 0;color:#ffe3a0;font:700 15px/1.2 "Lucida Console",Consolas,"Courier New",monospace;letter-spacing:.1em;text-shadow:1px 1px 0 #08060f}
+.gbq-account-window header button{flex:none;width:26px;height:26px;padding:0;border:1px solid #8a5a1c;border-radius:0;background:rgba(10,8,30,.9);color:#ffe3a0;font:700 16px/1 "Lucida Console",Consolas,monospace;cursor:pointer}
+.gbq-account-window header button:hover,.gbq-account-window header button:focus-visible{border-color:#ffd875;background:#4a3410;outline:none}
+.gbq-account-step{padding:12px 18px;display:grid;gap:10px}
 .gbq-account-step[hidden]{display:none}
-.gbq-account-step label{display:grid;gap:6px;color:#e6d4ad;font-size:10px;letter-spacing:.1em}
-.gbq-account-step input,.gbq-account-step select{width:100%;min-width:0;padding:11px;border:1px solid #65563f;border-radius:2px;background:#080e15;color:#fff4dd;font:13px Inter,Arial,sans-serif}
-.gbq-account-intro,.gbq-account-note,.gbq-account-realm-detail{margin:0;color:#c3cbd1;font-size:12px}
-.gbq-account-actions{display:flex;gap:9px;flex-wrap:wrap}
-.gbq-account-actions button,.gbq-account-secondary{padding:11px 13px;border:1px solid #927448;border-radius:2px;background:linear-gradient(#34414d,#151d26);color:#fff0ce;font:700 10px Cinzel,Georgia,serif;letter-spacing:.06em;cursor:pointer}
-.gbq-account-actions button:disabled{opacity:.45;cursor:not-allowed}
-.gbq-account-secondary{justify-self:start;background:transparent;color:#d2c4a8}
-.gbq-account-message{margin:14px 20px 0;padding:10px;border:1px solid #927448;background:#302719;color:#ffe2a3;font-size:12px}
+.gbq-account-step label,.gbq-account-field{display:grid;gap:4px;color:#a9a3b8;font-size:10px;letter-spacing:.12em}
+.gbq-account-step label:focus-within,.gbq-account-field:focus-within{color:#ffd875}
+.gbq-account-step input{width:100%;min-width:0;padding:7px 8px;border:1px solid #8a5a1c;border-radius:0;background:rgba(10,8,30,.9);color:#fff3d6;caret-color:#fff3d6;font:700 13px "Lucida Console",Consolas,"Courier New",monospace;letter-spacing:.04em;text-transform:none}
+.gbq-account-step input:focus{outline:none;border-color:#ffd875;background:#4a3410}
+.gbq-account-intro,.gbq-account-note,.gbq-account-realm-detail{margin:0;color:#a9a3b8;font-size:10px;font-weight:400;line-height:1.55}
+.gbq-account-intro{color:#e3deeb}
+.gbq-account-realm-detail{color:#ffe3a0}
+.gbq-account-actions{display:grid;gap:1px}
+.gbq-account-actions button,.gbq-account-secondary,.gbq-account-tabs button,.gbq-account-list button{position:relative;display:block;width:100%;padding:5px 8px 5px 24px;border:0;border-radius:0;background:transparent;color:#e3deeb;font:700 12px/1.4 "Lucida Console",Consolas,"Courier New",monospace;letter-spacing:.06em;text-align:left;text-transform:uppercase;cursor:pointer}
+.gbq-account-actions button:hover,.gbq-account-actions button:focus-visible,.gbq-account-secondary:hover,.gbq-account-secondary:focus-visible,.gbq-account-tabs button:hover,.gbq-account-tabs button:focus-visible,.gbq-account-tabs button[aria-selected="true"],.gbq-account-list button:hover,.gbq-account-list button:focus-visible,.gbq-account-list button[aria-selected="true"]{color:#fff0c2;background:rgba(201,149,46,.16);outline:none}
+.gbq-account-actions button:hover::before,.gbq-account-actions button:focus-visible::before,.gbq-account-secondary:hover::before,.gbq-account-secondary:focus-visible::before,.gbq-account-tabs button[aria-selected="true"]::before,.gbq-account-list button[aria-selected="true"]::before{content:">";position:absolute;left:9px;top:5px;color:#ffe3a0}
+.gbq-account-actions button:disabled,.gbq-account-list button:disabled{color:#5d5870;background:transparent;cursor:not-allowed}
+.gbq-account-actions button:disabled::before,.gbq-account-list button:disabled::before{content:none}
+.gbq-account-secondary{color:#a9a3b8;font-size:10px}
+.gbq-account-tabs{display:flex;flex-wrap:wrap;gap:2px}
+.gbq-account-tabs button{width:auto;padding:4px 10px 4px 22px;border:1px solid rgba(138,90,28,.6)}
+.gbq-account-tabs button[aria-selected="true"]{border-color:#ffd875}
+.gbq-account-list{display:grid;gap:1px;max-height:200px;overflow:auto;padding:2px;border:1px solid #8a5a1c;background:rgba(10,8,30,.9)}
+.gbq-account-list button{display:grid;gap:1px}
+.gbq-realm-name em{color:#9fd38a;font-style:normal;font-size:10px}
+.gbq-realm-meta{color:#a9a3b8;font-size:10px;font-weight:400}
+.gbq-account-list button:disabled .gbq-realm-meta{color:#4a4658}
+.gbq-account-message{margin:10px 18px 0;padding:7px 9px;border:1px solid #8a5a1c;background:rgba(74,52,16,.6);color:#ffe3a0;font-size:11px}
 .gbq-account-message[hidden]{display:none}
-.gbq-account-message.is-error{border-color:#a64b43;background:#351714;color:#ffc1b7}
-.gbq-account-window footer{padding:12px 20px;border-top:1px solid #51432f}
-@media(max-width:560px){.gbq-account-overlay{padding:5px}.gbq-account-window{max-height:98dvh}.gbq-account-window header,.gbq-account-step{padding:13px}.gbq-account-window h2{font-size:16px}}
+.gbq-account-message.is-error{border-color:#a64b43;background:#2a1014;color:#ffb3a8}
+.gbq-account-window footer{margin:0 6px 6px;padding:9px 12px;border-top:1px solid rgba(201,149,46,.3)}
+@media(max-width:560px){.gbq-account-overlay{padding:5px}.gbq-account-window{max-height:98dvh}.gbq-account-window header,.gbq-account-step{padding:10px 12px}.gbq-account-window h2{font-size:13px}}
 
 /* BOOT SPLASH — compiled into both the browser build and the itch.io one-file release. */
 #gbq-boot-screen{position:fixed;z-index:100000;inset:0;display:grid;place-items:center;overflow:hidden;padding:24px;color:#ead9b2;background:radial-gradient(ellipse at 50% 38%,rgba(91,47,28,.42),transparent 44%),radial-gradient(ellipse at 50% 110%,rgba(98,57,25,.2),transparent 52%),linear-gradient(145deg,#090707 0%,#160e0c 48%,#050607 100%);opacity:1;visibility:visible;transition:opacity .8s ease,visibility .8s ease;font-family:var(--san-title,Cinzel,Georgia,serif)}
@@ -522,7 +541,7 @@ body { background:radial-gradient(ellipse at 50% 0%,#26344a 0%,#0b111c 48%,#0507
 }
 .bezel { background:linear-gradient(145deg,#050a12,#101a29); border:1px solid rgba(218,184,116,.5);
   box-shadow:inset 0 0 0 1px #02050a,0 0 28px rgba(0,0,0,.55); }
-#lcd { image-rendering:auto; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
+#lcd { image-rendering:pixelated; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
 .brand { color:#f3e7ce; font:700 19px/1.2 Cinzel,Georgia,serif; letter-spacing:.16em; text-shadow:0 2px 18px #000; }
 .brand em { color:var(--citadel-gold); }
 .brand small { display:block; margin-top:4px; color:#aebbd0; font:600 9px Inter,sans-serif; letter-spacing:.34em; }
@@ -570,7 +589,7 @@ body.theme-shadows {
 .theme-shadows .bezel { background:linear-gradient(160deg,#090c0c,#1b211e 65%,#090b0c); border:1px solid rgba(200,173,118,.6); border-radius:8px; box-shadow:inset 0 0 0 1px #030405,0 0 22px rgba(0,0,0,.65); }
 .theme-shadows .bezel-top { color:var(--abyss-muted); }
 .theme-shadows .bezel-top span { background:linear-gradient(90deg,var(--abyss-gold),transparent); }
-.theme-shadows #lcd { image-rendering:auto; border:1px solid rgba(200,173,118,.55); box-shadow:0 0 0 2px #080a0b,0 0 22px rgba(113,134,106,.15); }
+.theme-shadows #lcd { image-rendering:pixelated; border:1px solid rgba(200,173,118,.55); box-shadow:0 0 0 2px #080a0b,0 0 22px rgba(113,134,106,.15); }
 .theme-shadows .brand { color:var(--abyss-gold-bright); font-family:Cinzel,Georgia,serif; letter-spacing:.13em; text-shadow:0 2px 16px #000,0 0 18px rgba(200,173,118,.18); }
 .theme-shadows .brand em { color:var(--abyss-gold); }
 .theme-shadows .brand small { color:var(--abyss-muted); }
@@ -1128,6 +1147,7 @@ body.chat-on .gbq-player-hud { right:300px; }
 <script src="src/necro_army.js"></script>
 <script src="src/towns.js"></script>
 <script src="src/buildings.js"></script>
+<script src="src/underworld.js"></script>
 <script src="src/npc_ai.js"></script>
 <script src="src/ui_dark.js"></script>
 <script src="src/ui_mmo.js"></script>
@@ -1148,6 +1168,7 @@ body.chat-on .gbq-player-hud { right:300px; }
 <script src="src/extras.js"></script>
 <script src="src/aspects_data.js"></script>
 <script src="src/d4_affixes.js"></script>
+<script src="src/fallen_legends.js"></script>
 <script src="src/d4_gear.js"></script>
 <script src="src/totems.js"></script>
 <script src="src/awakening.js"></script>
