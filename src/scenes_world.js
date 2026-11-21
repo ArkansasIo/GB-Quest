@@ -788,7 +788,8 @@ class Field {
     weatherTick(this.zone ? this.zone.biome : null, this.cam ? this.cam[0] : 0, this.cam ? this.cam[1] : 0);
     if (this.ox || this.oy) {
       const sp = G.mounted ? (typeof mountSpeed === 'function' ? mountSpeed() : 4) : 2;
-      this.ox -= Math.sign(this.ox) * sp; this.oy -= Math.sign(this.oy) * sp; this.walk += sp;
+      // never step past the tile: a speed that does not divide 16 (WOLF FORM runs at 5) would bounce forever
+      this.ox -= Math.sign(this.ox) * Math.min(sp, Math.abs(this.ox)); this.oy -= Math.sign(this.oy) * Math.min(sp, Math.abs(this.oy)); this.walk += sp;
       if (!this.ox && !this.oy) this.onStep();
       return;
     }

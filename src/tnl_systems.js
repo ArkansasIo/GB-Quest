@@ -209,7 +209,7 @@ if (typeof window !== 'undefined' && typeof Battle !== 'undefined' && typeof der
   // swim: a water line over the hero
   { const d0 = Field.prototype.draw; Field.prototype.draw = function () {
       d0.apply(this, arguments);
-      try { if (G && G.morph === 'swim' && this.cam && WATER.includes(this.chAt(G.x, G.y))) { const px = G.x * 16 - this.cam[0], py = G.y * 16 - this.cam[1]; ctx.globalAlpha = 0.75; fill(px, py + 8, 16, 6, '#3c78d8'); ctx.globalAlpha = 1; fill(px + 2 + ((frameN >> 3) % 4), py + 8, 4, 1, '#d8ecff'); } } catch (e) { /* drawing only */ }
+      try { if (G && G.morph === 'swim' && this.cam && WATER.includes(this.chAt(G.x, G.y))) { const px = G.x * 16 + (this.ox || 0) - this.cam[0], py = G.y * 16 + (this.oy || 0) - this.cam[1]; ctx.globalAlpha = 0.75; fill(px, py + 8, 16, 6, '#3c78d8'); ctx.globalAlpha = 1; fill(px + 2 + ((frameN >> 3) % 4), py + 8, 4, 1, '#d8ecff'); } } catch (e) { /* drawing only */ }
     }; }
   // ------------------------------------------------ main menu entries
   window.MENU_HELP_EXTRA = Object.assign(window.MENU_HELP_EXTRA || {}, { MASTERY: 'Weapon mastery levels.', AMITOI: 'Send pets on expeditions.', MORPH: 'Wolf or swim form.' });
