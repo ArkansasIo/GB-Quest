@@ -70,6 +70,7 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['REGIONS', [REGIONS.map(r => r.name).join(', ') + '.']],
       ['BIOMES', ['Each region has a biome with its own monsters, weather and trees: ' + Object.keys(BIOMES).map(b => b.toUpperCase()).join(', ') + '.']],
       ['DAY AND NIGHT', ['One game hour passes each real minute. Night runs from 21:00 to 5:00. NPCs keep a schedule: they open up at dawn, work by day, head home in the evening and sleep at night.']],
+      ['WORLD LEVEL', ['WORLD LEVEL 1-9 (MAIN MENU > WORLD LV) makes the open world tougher: higher monster levels, more XP, gold and loot. Reach the hero level, then beat the ASCENSION TRIAL to unlock the next. Pick any unlocked level. Not in instances.']],
       ['MORPHS', ['WOLF FORM (level 5) runs like a fast mount and scares off some encounters. SWIM FORM (level 10) crosses water. Not in instances.']],
       ['MOUNTS', [`${typeof MOUNTS !== 'undefined' ? MOUNTS.length : 'Many'} mounts from stables, reputation, dungeons, crafting and bosses. B mounts and dismounts.`]],
       ...(typeof GBQUnderworld !== 'undefined' && GBQUnderworld.kingdoms ? [
