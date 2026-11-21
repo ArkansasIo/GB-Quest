@@ -17,7 +17,7 @@ body { background:radial-gradient(ellipse at 50% 0%,#26344a 0%,#0b111c 48%,#0507
 }
 .bezel { background:linear-gradient(145deg,#050a12,#101a29); border:1px solid rgba(218,184,116,.5);
   box-shadow:inset 0 0 0 1px #02050a,0 0 28px rgba(0,0,0,.55); }
-#lcd { image-rendering:auto; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
+#lcd { image-rendering:pixelated; border:1px solid rgba(218,184,116,.42); box-shadow:0 0 0 3px #080d16,0 0 28px rgba(62,111,169,.22); }
 .brand { color:#f3e7ce; font:700 19px/1.2 Cinzel,Georgia,serif; letter-spacing:.16em; text-shadow:0 2px 18px #000; }
 .brand em { color:var(--citadel-gold); }
 .brand small { display:block; margin-top:4px; color:#aebbd0; font:600 9px Inter,sans-serif; letter-spacing:.34em; }
