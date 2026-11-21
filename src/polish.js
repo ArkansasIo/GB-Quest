@@ -127,6 +127,8 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof it
   // gear score and rested pool on the paper doll
   if (typeof PaperDoll !== 'undefined') { const d0 = PaperDoll.prototype.draw; PaperDoll.prototype.draw = function () {
       d0.apply(this, arguments);
+      // the item tooltip (inventory.js) covers the portrait and stats; keep it on top
+      if (this.tip && typeof this.slot === 'function' && G.eq[this.slot()]) return;
       // Small equipment markers on the central portrait; the full slot list remains around it.
       for (const visual of paperDollVisuals(G.eq)) {
         const icon = itemIcon(visual.item);
