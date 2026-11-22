@@ -10,7 +10,7 @@
 //   season, heirlooms, amitoi), NPCS (the NPC AI), and SETTINGS (themes, art modes, chat and accessibility).
 // The topic list is exported as GBQGuide for tests.
 
-const GUIDE_TOPICS = ['BASICS', 'CLASSES & JOBS', 'RACES', 'SPELLS', 'COMBAT', 'GEAR', 'GEAR TAXONOMY', 'SKILL CORES', 'AFFIX CODEX', 'ASPECT CODEX', 'WORLD', 'CONTENT', 'GUILD & CONQUEST', 'PROGRESSION', 'NPCS', 'SETTINGS'];
+const GUIDE_TOPICS = ['BASICS', 'CLASSES & JOBS', 'RACES', 'SPELLS', 'COMBAT', 'CITIES', 'GEAR', 'GEAR TAXONOMY', 'SKILL CORES', 'AFFIX CODEX', 'ASPECT CODEX', 'WORLD', 'CONTENT', 'GUILD & CONQUEST', 'PROGRESSION', 'NPCS', 'SETTINGS'];
 // split long text into dialogue pages of at most n lines of the wrapped text
 function guidePages(lines, width = 25, perPage = 3) {
   const flat = []; for (const l of lines) { const words = String(l).split(' '); let cur = ''; for (const w of words) { if ((cur + ' ' + w).trim().length > width) { flat.push(cur.trim()); cur = w; } else cur += ' ' + w; } if (cur.trim()) flat.push(cur.trim()); }
@@ -58,6 +58,17 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['DURABILITY', ['Battles wear gear down; at 0 an item gives no stats. Repair at a merchant or with a REPAIR KIT. Crafted gear rolls FINE, SUPERIOR or MASTERWORK quality.']],
       ['MASTERY', ['Each weapon family levels 1-30 from battles won with it. Ranks ADEPT (10), EXPERT (20) and MASTER (30) give bigger steps.']],
     ],
+    'CITIES': () => {
+      if (typeof GBQCities === 'undefined') return [['CITIES', ['Capitals are cities of several districts.']]];
+      const X = GBQCities, nm = id => (typeof ZONE_BY_ID !== 'undefined' && ZONE_BY_ID[id] ? ZONE_BY_ID[id].name : id);
+      const svc = { alchemist: 'ALCHEMIST: potions and elixirs.', jeweler: 'JEWELER: cut gems for your sockets.', tailor: 'TAILOR: commission a rare armour piece.', guild: 'GUILD HALL: the quest board.', library: 'LIBRARY: lore of the realm, and daily study XP.', arena: 'ARENA: fight a bout or a group.', barracks: 'BARRACKS: drills make your party MIGHTY or FOCUSED.', throne: 'THRONE ROOM: an audience, and a daily royal favour in gold.' };
+      return [
+        ['SIX DISTRICTS', [`Ardenhold and every kingdom capital (${(X.capitals || []).length} cities) are full cities. The capital itself is the MARKET; its CITY GATE opens into CRAFT ROW, which links to the TEMPLE QUARTER, NOBLE QUARTER, CASTLE and the HARBOR (coastal cities) or THE SLUMS. Districts are safe: no monsters.`]],
+        ['DISTRICTS', X.DISTRICTS.map(d => `${d.name}: ${d.buildings.filter(b => b[0] !== 'house').map(b => b[1]).join(', ')}.`)],
+        ['NEW BUILDINGS', X.NEW_SERVICES.map(k => svc[k])],
+        ['THE CITIES', [(X.capitals || []).map(nm).join(', ') + '.']],
+      ];
+    },
     'GEAR TAXONOMY': () => {
       if (typeof GBQTaxonomy === 'undefined') return [['TAXONOMY', ['Gear is sorted by class, subclass, type and subtype.']]];
       const X = GBQTaxonomy, nm = k => (typeof SUBSTATS !== 'undefined' && SUBSTATS[k] ? SUBSTATS[k].name : k.toUpperCase());

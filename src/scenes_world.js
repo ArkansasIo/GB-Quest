@@ -1987,6 +1987,7 @@ class WorldMap {
         for (const ic of this.icons(z)) this.drawIcon(ic.k, ox + ic.x * s + 2, oy + ic.y * s + 2, true, ic.dead);
         const nodes = G.nodes[z.id] || {}; m.nodes.forEach(([x, y, profession], i) => { if (!nodes[i] || G.stats.steps - nodes[i] > Math.round(250 * (1 - Math.min(0.8, perkVal(profession, 'respawn'))))) fill(ox + x * s + 1, oy + y * s + 1, 2, 2, 'green'); });
         for (const e in m.exits) { const ex = m.exits[e]; fill(ox + ex.x * s, oy + ex.y * s, s, s, 'gold'); }
+        for (const b of m.buildings || []) { fill(ox + b.x * s, oy + (b.y - 1) * s, 2 * s, 2 * s, 3); fill(ox + b.x * s + 1, oy + (b.y - 1) * s + 1, 2 * s - 2, 2 * s - 2, b.svc === 'house' ? 1 : 'red'); } // buildings: shops red, homes grey
       } else textC('UNEXPLORED', 80, oy + 44, 3);
       if (z.id === (G.inst ? G.inst.return.map : G.map) && (frameN >> 3) % 2) { const px = G.inst ? G.inst.return.x : G.x, py = G.inst ? G.inst.return.y : G.y; fill(ox + px * s - 1, oy + py * s - 1, s + 2, s + 2, 3); fill(ox + px * s, oy + py * s, s, s, 'red'); }
     }
@@ -1999,7 +2000,7 @@ class WorldMap {
       return;
     }
     const seen = G.visited[z.id] || G.waypoints[z.id];
-    text(seen ? z.name.slice(0, 18) : '??? UNEXPLORED', 6, 112, 3); textR(z.town ? 'SAFE' : `LV${z.lvl[0]}-${z.lvl[1]}`, 154, 112, 'gold');
+    text(seen ? z.name.slice(0, 18) : '??? UNEXPLORED', 6, 112, 3); textR(z.town || z.district ? 'SAFE' : `LV${z.lvl[0]}-${z.lvl[1]}`, 154, 112, 'gold');
     text(`${pin[2]}${seen ? ' - ' + z.sub : ''}`.slice(0, 24), 6, 122, 2);
     const hint = this.zoom < 2 ? 'A:ZOOM  B:BACK  START:KEY' : (G.waypoints[z.id] ? 'A:TRAVEL  B:BACK' : 'NO WAYPOINT  B:BACK');
     text(hint, 6, 132, this.zoom === 2 && G.waypoints[z.id] ? 'blue' : 1);
