@@ -96,6 +96,11 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['DAY AND NIGHT', ['One game hour passes each real minute. Night runs from 21:00 to 5:00. NPCs keep a schedule: they open up at dawn, work by day, head home in the evening and sleep at night.']],
       ['MORPHS', ['WOLF FORM (level 5) runs like a fast mount and scares off some encounters. SWIM FORM (level 10) crosses water. Not in instances.']],
       ['MOUNTS', [`${typeof MOUNTS !== 'undefined' ? MOUNTS.length : 'Many'} mounts from stables, reputation, dungeons, crafting and bosses. B mounts and dismounts.`]],
+      ...(typeof GBQUnderworld !== 'undefined' && GBQUnderworld.kingdoms ? [
+        ['KINGDOMS', [`${GBQUnderworld.kingdoms.length} realms rule Aelmoor. Each has a capital city and a ruler; crossing a border announces the realm.`, ...GBQUnderworld.kingdoms.map(k => `${k.name}: ${k.ruler}. ${k.desc}`)]],
+        ['SETTLEMENTS', ['CITIES (the capitals) have an inn, store, market hall, smithy, stable, post office, bank and temple. TOWNS have most of those; VILLAGES have an inn, store, shrine and mill. Many second zones of a region hold a village.']],
+        ['UNDERGROUND', [`${GBQUnderworld.under.length} cave zones lie beneath ${Object.keys(GBQUnderworld.entrances).length} regions. Face a CAVE MOUTH and press A to climb down; the cave below has a climb back up. Caves are a little tougher than the land above, with ore, relics and salvage to gather.`]],
+      ] : []),
     ],
     'CONTENT': () => [
       ['DUNGEONS', [`${DUNGEONS.length} dungeons, one per wild region. Rooms hang off a main path to the throne room; guardians seal the boss door until they fall.`]],

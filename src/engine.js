@@ -227,7 +227,23 @@ function scaled(img, w, h) {
   const smooth = S.video === 'hd64' || S.tiles === 'painted';
   x.imageSmoothingEnabled = smooth && (w !== img.width || h !== img.height);
   if (x.imageSmoothingEnabled) x.imageSmoothingQuality = 'high';
-  x.drawImage(img, 0, 0, w, h); return c;
+  x.drawImage(img, 0, 0, w, h);
+  // Smooth downscaling (e.g. 40px art into a 16px tile) averages detail into mush; restore edges with a sharpen pass.
+  if (x.imageSmoothingEnabled && (w < img.width || h < img.height)) sharpen(x, w, h);
+  return c;
+}
+// 3x3 unsharp kernel on colour channels only (alpha untouched); amount 0.5 keeps it crisp without halos.
+function sharpen(x, w, h, amount = 0.5) {
+  if (w < 3 || h < 3) return;
+  const id = x.getImageData(0, 0, w, h), d = id.data, s = new Uint8ClampedArray(d), k = 1 + 4 * amount;
+  for (let y = 1; y < h - 1; y++) for (let x0 = 1; x0 < w - 1; x0++) {
+    const i = (y * w + x0) * 4; if (!s[i + 3]) continue;
+    for (let ch = 0; ch < 3; ch++) {
+      const j = i + ch;
+      d[j] = s[j] * k - amount * (s[j - 4] + s[j + 4] + s[j - w * 4] + s[j + w * 4]);
+    }
+  }
+  x.putImageData(id, 0, 0);
 }
 const lum = (d, i) => d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
 function quantiles(datas, qs) {

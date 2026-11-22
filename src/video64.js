@@ -138,8 +138,8 @@ function present64(LCD, lctx, outW = W * 4, outH = H * 4) {
   brightPass(src, new Uint32Array(V64.bpd.data.buffer)); V64.bpx.putImageData(V64.bpd, 0, 0);
   const bx = V64.hx; bx.imageSmoothingEnabled = true; bx.clearRect(0, 0, W / 2, H / 2); bx.drawImage(V64.bp, 0, 0, W / 2, H / 2);
   V64.bloom = V64.half;
-  // 0.12 (was 0.24): a soft glow on bright pixels without a haze over the whole picture
-  screen.globalCompositeOperation = 'screen'; screen.globalAlpha = 0.12; screen.imageSmoothingEnabled = true; screen.drawImage(V64.bloom, 0, 0, BW, BH);
+  // 0.06 (was 0.24, then 0.12): a faint glow on bright pixels; higher values soften the whole picture
+  screen.globalCompositeOperation = 'screen'; screen.globalAlpha = 0.06; screen.imageSmoothingEnabled = true; screen.drawImage(V64.bloom, 0, 0, BW, BH);
   screen.globalAlpha = 1; screen.globalCompositeOperation = 'source-over';
   // 4. vignette
   if (!V64.vig) { V64.vig = mkCanvas(BW, BH); const vx = V64.vig.getContext('2d'), vg = vx.createRadialGradient(BW / 2, BH / 2, BH * 0.45, BW / 2, BH / 2, BH * 0.8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.2)'); /* 0.2 (was 0.38): edges darkened without dimming the text windows */ vx.fillStyle = vg; vx.fillRect(0, 0, BW, BH); }

@@ -114,27 +114,28 @@
     renderRealms();
   }
 
+  // region tabs and the realm list are drawn as in-game menu rows (gold ">" cursor on the selected row)
   function renderRegions() {
-    const select = overlay.querySelector('[data-region]');
-    select.innerHTML = directory.regions.map(region =>
-      '<option value="' + esc(region.id) + '">' + esc(region.name) + ' (' + esc(region.tag) + ')</option>'
+    const tabs = overlay.querySelector('[data-region]');
+    tabs.innerHTML = directory.regions.map(region =>
+      '<button type="button" role="tab" data-region-id="' + esc(region.id) + '" aria-selected="' + (region.id === selectedRegion) + '" title="' + esc(region.name) + '">' +
+        esc(region.tag || region.name) + '</button>'
     ).join('');
-    select.value = selectedRegion;
   }
 
   function renderRealms() {
-    const select = overlay.querySelector('[data-realm]');
+    const list = overlay.querySelector('[data-realm]');
     const realms = directory.realms.filter(realm => realm.regionId === selectedRegion);
     if (!realms.some(realm => realm.id === selectedRealm)) selectedRealm = (realms.find(realm => realm.status === 'online') || realms[0] || {}).id || '';
-    select.innerHTML = realms.map(realm => {
-      const load = realm.population + '/' + realm.maxPlayers;
+    list.innerHTML = realms.length ? realms.map(realm => {
       const status = String(realm.status || 'unknown').toUpperCase();
       const characters = Number(realm.characters || 0);
-      return '<option value="' + esc(realm.id) + '"' + (realm.status !== 'online' ? ' disabled' : '') + '>' +
-        esc(realm.name) + ' · ' + esc(realm.type) + ' · ' + status + ' · ' + esc(load) +
-        ' · ' + characters + ' hero(s)' + (realm.recommended ? ' · RECOMMENDED' : '') + '</option>';
-    }).join('');
-    select.value = selectedRealm;
+      return '<button type="button" role="option" data-realm-id="' + esc(realm.id) + '" aria-selected="' + (realm.id === selectedRealm) + '"' + (realm.status !== 'online' ? ' disabled' : '') + '>' +
+        '<span class="gbq-realm-name">' + esc(realm.name) + (realm.recommended ? ' <em>SUGGESTED</em>' : '') + '</span>' +
+        '<span class="gbq-realm-meta">' + esc(realm.type) + ' · ' + status + ' · ' + esc(realm.population + '/' + realm.maxPlayers) + ' · ' + characters + ' HERO' + (characters === 1 ? '' : 'ES') + '</span>' +
+        '</button>';
+    }).join('') : '<p class="gbq-account-note">No realms in this region.</p>';
+    overlay.querySelectorAll('[data-region-id]').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.regionId === selectedRegion)));
     const current = realms.find(realm => realm.id === selectedRealm);
     const detail = overlay.querySelector('[data-realm-detail]');
     detail.textContent = current
@@ -210,8 +211,8 @@
         '</section>' +
         '<section class="gbq-account-step" data-account-step="realm" hidden>' +
           '<p class="gbq-account-intro" data-account-identity></p>' +
-          '<label>REGION / DATA CENTER<select data-region></select></label>' +
-          '<label>REALM / WORLD<select data-realm></select></label>' +
+          '<div class="gbq-account-field"><span>REGION</span><div class="gbq-account-tabs" role="tablist" aria-label="Region" data-region></div></div>' +
+          '<div class="gbq-account-field"><span>REALM</span><div class="gbq-account-list" role="listbox" aria-label="Realm" data-realm></div></div>' +
           '<p class="gbq-account-realm-detail" data-realm-detail></p>' +
           '<div class="gbq-account-actions"><button type="button" data-enter-creation>CONTINUE TO CHARACTER CREATION</button>' +
           '<button type="button" data-back-account>BACK</button></div>' +
@@ -227,8 +228,31 @@
     overlay.querySelector('[data-register]').addEventListener('click', () => authenticate('register'));
     overlay.querySelector('[data-password]').addEventListener('keydown', event => { if (event.key === 'Enter') authenticate('login'); });
     overlay.querySelector('[data-offline]').addEventListener('click', () => { close(); options.onReady && options.onReady(null); });
-    overlay.querySelector('[data-region]').addEventListener('change', event => { selectedRegion = event.target.value; renderRealms(); });
-    overlay.querySelector('[data-realm]').addEventListener('change', event => { selectedRealm = event.target.value; renderRealms(); });
+    overlay.querySelector('[data-region]').addEventListener('click', event => {
+      const tab = event.target.closest('[data-region-id]'); if (!tab) return;
+      selectedRegion = tab.dataset.regionId; renderRealms();
+    });
+    overlay.querySelector('[data-realm]').addEventListener('click', event => {
+      const row = event.target.closest('[data-realm-id]'); if (!row || row.disabled) return;
+      selectedRealm = row.dataset.realmId; renderRealms();
+      const again = overlay.querySelector('[data-realm-id="' + CSS.escape(selectedRealm) + '"]'); if (again) again.focus();
+    });
+    // arrow keys move the cursor like an in-game menu: up/down between realms, left/right between regions
+    overlay.querySelector('[data-account-step="realm"]').addEventListener('keydown', event => {
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key) || !directory.realms.length) return;
+      event.preventDefault();
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        const ids = directory.regions.map(region => region.id), i = ids.indexOf(selectedRegion);
+        selectedRegion = ids[(i + (event.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length];
+      } else {
+        const open = directory.realms.filter(realm => realm.regionId === selectedRegion && realm.status === 'online').map(realm => realm.id);
+        if (!open.length) return;
+        const i = open.indexOf(selectedRealm);
+        selectedRealm = open[i < 0 ? 0 : (i + (event.key === 'ArrowDown' ? 1 : open.length - 1)) % open.length];
+      }
+      renderRealms();
+      const row = overlay.querySelector('[data-realm-id="' + CSS.escape(selectedRealm) + '"]'); if (row) row.focus();
+    });
     overlay.querySelector('[data-back-account]').addEventListener('click', () => showStep('auth'));
     overlay.querySelector('[data-logout]').addEventListener('click', () => { activeSession = null; showStep('auth'); });
     overlay.querySelector('[data-enter-creation]').addEventListener('click', () => {
