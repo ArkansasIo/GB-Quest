@@ -1881,6 +1881,18 @@ class WorldMap {
     else if (k === 'settlement_town') { fill(x - 2*s, y - 2*s, 5*s, 3*s, 'blue'); fill(x - s, y - 4*s, 3*s, 2*s, 'blue'); fill(x - s, y - s, 2*s, 3*s, 0); }
     else if (k === 'settlement_village') { fill(x - s, y - 2*s, 3*s, 3*s, 'green'); fill(x, y - 3*s, s, s, 'green'); fill(x, y, s, s, 0); }
   }
+  // overview (zoom 0) shows one marker per region at the region's painted place; the detail view shows every sub-zone
+  pinOf(o) { if (this.zoom !== 0) return zonePin(o); const first = ZONES.find(x => x.region === o.region && !x.under) || o; return zonePin(first); }
+  regionRoads() {
+    if (WorldMap._rroads) return WorldMap._rroads;
+    const out = [], seen = new Set();
+    for (const r of this.roads()) {
+      if (r.a.region === r.b.region) continue;
+      const k = [r.a.region, r.b.region].sort().join('|'); if (seen.has(k)) continue; seen.add(k);
+      out.push(Object.assign({}, r, { region: true }));
+    }
+    return (WorldMap._rroads = out);
+  }
   roads() {
     if (WorldMap._roads) return WorldMap._roads;
     const out = [], seen = new Set();
@@ -1895,46 +1907,58 @@ class WorldMap {
     return (WorldMap._roads = out);
   }
   drawRoads(img, ox, oy, scale) {
-    const P = o => { const [nx, ny] = zonePin(o); return [ox + nx * img.width * scale, oy + ny * img.height * scale]; };
+    const P = o => { const [nx, ny] = this.pinOf(o); return [ox + nx * img.width * scale, oy + ny * img.height * scale]; };
     const wn = worldOf(this.sel);
-    for (const r of this.roads()) {
+    const list = this.zoom === 0 ? this.regionRoads() : this.roads().filter(r => !r.sea).concat(this.regionRoads().filter(r => r.sea)); // one sea lane per region pair
+    for (const r of list) {
       if (worldOf(r.a) !== wn || worldOf(r.b) !== wn) continue;
+      if (r.a.region === r.b.region && this.zoom === 0) continue;
       const [x0, y0] = P(r.a), [x1, y1] = P(r.b);
       if (Math.max(x0, x1) < 0 || Math.min(x0, x1) > W || Math.max(y0, y1) < 12 || Math.min(y0, y1) > 110) continue;
-      const known = (G.visited[r.a.id] || G.waypoints[r.a.id]) && (G.visited[r.b.id] || G.waypoints[r.b.id]);
+      const seenRegion = o => ZONES.some(x => x.region === o.region && (G.visited[x.id] || G.waypoints[x.id]));
+      const known = this.zoom === 0 ? seenRegion(r.a) && seenRegion(r.b) : (G.visited[r.a.id] || G.waypoints[r.a.id]) && (G.visited[r.b.id] || G.waypoints[r.b.id]);
+      if (r.sea && (!known || this.zoom === 0)) continue; // sea lanes: detail view only, once both ends are explored (on the overview they speckle the painted map)
       const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0))), gap = r.sea ? (scale > 1 || this.zoom ? 4 : 6) : 2;
       const c = r.sea ? 'blue' : known ? 'gold' : 3;
       for (let i = 0; i <= n; i += gap) {
         const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n);
         if (y < 12 || y > 110) continue;
         fill(x, y, 1, 1, c);
+        if (r.sea && i + 1 <= n) { const x2 = Math.round(x0 + (x1 - x0) * (i + 1) / n), y2 = Math.round(y0 + (y1 - y0) * (i + 1) / n); if (y2 >= 12 && y2 <= 110) fill(x2, y2, 1, 1, c); } // sea lanes read as dashes
       }
     }
   }
   pinMarks(img, ox, oy, scale) {
     if (S.roads !== false) this.drawRoads(img, ox, oy, scale);
     const here = ZONE_BY_ID[G.inst ? G.inst.return.map : G.map], ch = chapterDef();
+    const drawn = new Set();
     for (const o of ZONES) {
-      if (worldOf(o) !== worldOf(this.sel)) continue;
-      const [nx, ny] = zonePin(o), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
+      if (worldOf(o) !== worldOf(this.sel) || o.under) continue;
+      if (this.zoom === 0) { if (drawn.has(o.region)) continue; drawn.add(o.region); }
+      const sibs = this.zoom === 0 ? ZONES.filter(x => x.region === o.region && !x.under) : [o];
+      const [nx, ny] = this.pinOf(o), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
       if (x < -4 || x > W + 4 || y < 10 || y > 110) continue;
-      const known = G.visited[o.id] || G.waypoints[o.id];
+      const known = sibs.some(q => G.visited[q.id] || G.waypoints[q.id]);
       const s = scale > 1 ? 2 : 1;
       fill(x - s, y - s, 2 * s + 1, 2 * s + 1, 3);
-      fill(x - s + 1, y - s + 1, 2 * s - 1, 2 * s - 1, o.town ? 'red' : G.waypoints[o.id] ? 'blue' : known ? 0 : 1);
+      fill(x - s + 1, y - s + 1, 2 * s - 1, 2 * s - 1, sibs.some(q => q.town) ? 'red' : sibs.some(q => G.waypoints[q.id]) ? 'blue' : known ? 0 : 1);
       if (ch && o.region === ch.region && o.last && (frameN >> 4) % 2) { fill(x - 1, y - 7, 3, 4, 'gold'); fill(x - 1, y - 2, 3, 1, 'gold'); }
     }
-    if (here && worldOf(here) === worldOf(this.sel) && (frameN >> 3) % 2) { const [nx, ny] = zonePin(here), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale); fill(x - 1, y - 6, 3, 3, 'red'); fill(x, y - 3, 1, 2, 'red'); }
-    const [nx, ny] = zonePin(this.sel), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
+    if (here && worldOf(here) === worldOf(this.sel) && (frameN >> 3) % 2) { const [nx, ny] = this.pinOf(here), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale); fill(x - 1, y - 6, 3, 3, 'red'); fill(x, y - 3, 1, 2, 'red'); }
+    const [nx, ny] = this.pinOf(this.sel), x = Math.round(ox + nx * img.width * scale), y = Math.round(oy + ny * img.height * scale);
     ctx.strokeStyle = col((frameN >> 3) % 2 ? 0 : 3); ctx.lineWidth = 1; ctx.strokeRect(x - 4.5, y - 4.5, 9, 9);
   }
   draw() {
     fill(0, 0, W, H, 0);
     // The map image and markers are quantized separately from atlas labels and controls.
     const z = this.sel, reg = REGIONS.find(r => r.id === z.region), pin = REGION_PINS[z.region] || [0, 0, ''];
-    // AELMOOR HD shows the base world on the Lanterns of Aelmoor key-art map (pins keep their relative positions)
-    const keyMap = S.art === 'aelmoor' && !worldOf(z) && IMG.ka_worldmap_01 ? 'ka_worldmap_01' : null;
-    if (this.zoom === 0) {
+    // Every art style uses the painted world maps: region pins are placed on their painted towns and labels.
+    // The Lanterns of Aelmoor key-art map (ka_worldmap_01) has a different coastline and no place names, so pins can't
+    // sit on it; in AELMOOR HD it is shown as a poster, without pins, while the legend (START: KEY) is open.
+    const keyMap = null;
+    const poster = this.legend && S.art === 'aelmoor' && !worldOf(z) && IMG.ka_worldmap_01;
+    if (poster) { blit(spr('ka_worldmap_01', W, 97, { clean: false }), 0, 12); }
+    else if (this.zoom === 0) {
       const wi = keyMap || (IMG[worldImg(worldOf(z), true)] ? worldImg(worldOf(z), true) : 'gm_dunia_s'), img = keyMap ? { width: W, height: 99 } : IMG[wi];
       if (!img) textC('LOADING MAP...', 80, 56, 3); // still streaming in after the title screen
       else { const m = spr(wi, img.width, img.height, keyMap ? { clean: false } : undefined); blit(m, 0, 12); this.pinMarks(img, 0, 12, 1); }
@@ -1970,7 +1994,7 @@ class WorldMap {
     fill(0, 0, W, 12, 3); textC(this.zoom === 2 ? z.name.slice(0, 24) : [worldName(worldOf(z)), worldOf(z) ? worldName(worldOf(z)) : 'VALENDRIA - ' + continentOf(z)][this.zoom].slice(0, 25), 80, 2, 0);
     frame(2, 109, 156, 33);
     if (this.legend) {
-      const L = [[0, 'red', 'TOWN'], [1, 'blue', 'WAYPOINT'], [2, 0, 'VISITED'], [3, 1, 'UNKNOWN'], [4, 'gold', 'STORY'], [5, 'red', 'YOU']];
+      const L = [[0, 'red', 'TOWN'], [1, 'blue', 'WAYPT'], [2, 0, 'VISITED'], [3, 1, 'UNSEEN'], [4, 'gold', 'STORY'], [5, 'red', 'YOU']]; // labels fit their 50px columns
       L.forEach(([i, c, n]) => { const x = 8 + (i % 3) * 50, y = 115 + Math.floor(i / 3) * 12; fill(x, y + 1, 5, 5, 3); fill(x + 1, y + 2, 3, 3, c); text(n, x + 8, y, 3); });
       return;
     }
