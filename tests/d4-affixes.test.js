@@ -57,6 +57,24 @@ test('rolling: distinct affixes from the slot pool, on the gen.js value curve, w
   assert.ok(res / 2000 < 1.2, `boots average under ~1 single resistance (${(res / 2000).toFixed(2)})`);
 });
 
+test('expansion: 18 more Diablo IV affixes, each defined, pooled and wired into the rules', () => {
+  const A = load();
+  assert.equal(A.EXPANSION_IDS.length, 18);
+  assert.equal(new Set(A.EXPANSION_IDS).size, 18);
+  for (const k of A.EXPANSION_IDS) {
+    assert.ok(A.AFFIXES[k], `${k} defined`);
+    assert.ok(Object.values(A.SLOT_GROUPS).some(g => g.pool.includes(k)), `${k} can roll`);
+  }
+  assert.ok(A.AFFIX_IDS.length >= 105, `full list now ${A.AFFIX_IDS.length}`);
+  assert.equal(A.outgoingPct({ dmgBoss: 30, dmgAfflicted: 10, dmgHurt: 5 }, { boss: true, afflicted: true }), 40);
+  assert.equal(A.outgoingPct({ dmgFortified: 20, dmgRaging: 15, dmgCrowds: 5, dmgHale: 7 }, { fortified: true, raging: true, crowd: true, hale: true }), 47);
+  assert.equal(A.reductionPct({ drBoss: 10, drControlled: 12 }, { boss: true, controlled: true }), 22);
+  assert.equal(A.reductionPct({ drBoss: 10 }, {}), 0);
+  assert.equal(A.lhRounds('lhFreeze', 0), 1); assert.equal(A.lhRounds('lhRoot', 0), 2);
+  assert.ok(A.LH_KEYS.includes('lhChain') && A.affixWeight('lhFear') < 1);
+  assert.ok(A.TOTAL_CAPS.unstoppable && A.TOTAL_CAPS.fortify && A.TOTAL_CAPS.reflect);
+});
+
 test('effect rules: reductions, resistances, conditional damage and core stats', () => {
   const A = load();
   assert.equal(A.reductionPct({ dr: 10, drElite: 15, drMelee: 5 }, { elite: true }), 25);

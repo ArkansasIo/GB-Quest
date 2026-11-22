@@ -15,6 +15,9 @@
 //   UTILITY         cooldown reduction, resource generation, movement speed, crowd control duration, lucky hit
 //                   chance, magic find, gold find, XP, healing
 //   LUCKY HIT       chance on hit to stun, chill, slow, make vulnerable, burn, poison, bleed, weaken, blind, heal or execute
+// Expansion (18 more): damage while fortified / raging / healthy / injured, vs crowds, bosses and afflicted foes,
+//   UNSTOPPABLE, FORTIFY, barrier on kill, reflect, damage reduction vs bosses and while controlled, and lucky hits
+//   that fear, root, knock down, freeze or chain lightning to another foe.
 // Old affixes keep their keys, so every existing save, gem, temper recipe and named item stays valid. Pure rules
 // are exported as GBQAffixes for tests; the browser build registers the new affixes in SUBSTATS and wires their effects.
 
@@ -61,6 +64,13 @@ const AFFIX_DEFS = [
   ['dmgAttack', 'ATTACK DMG', '%', 3, 300, 'OFFENSIVE', 'More damage with weapon attacks and skills.'],
   ['dmgSpell', 'SPELL DMG', '%', 3, 300, 'OFFENSIVE', 'More damage with spells.'],
   ['dmgDot', 'DMG OVER TIME', '%', 3.5, 300, 'OFFENSIVE', 'Burning, poison and bleeding on foes tick harder.'],
+  ['dmgFortified', 'DMG FORTIFIED', '%', 3.5, 300, 'OFFENSIVE', 'More damage while you have a barrier or are fortified.'],
+  ['dmgRaging', 'DMG RAGING', '%', 3.5, 300, 'OFFENSIVE', 'More damage while you are raging.'],
+  ['dmgHale', 'DMG WHEN HALE', '%', 3.5, 300, 'OFFENSIVE', 'More damage while you are over 80% HP.'],
+  ['dmgHurt', 'DMG WHEN HURT', '%', 3.5, 300, 'OFFENSIVE', 'More damage while you are under 35% HP.'],
+  ['dmgCrowds', 'VS CROWDS', '%', 3.5, 300, 'OFFENSIVE', 'More damage while 3 or more foes stand.'],
+  ['dmgBoss', 'VS BOSSES', '%', 3, 250, 'OFFENSIVE', 'More damage to bosses.'],
+  ['dmgAfflicted', 'VS AFFLICTED', '%', 3.5, 300, 'OFFENSIVE', 'More damage to foes with any harmful condition.'],
   // ---- defensive
   ['hp', 'MAX HP', '', 5, 99999, 'DEFENSIVE', 'More hit points.'],
   ['hpPct', 'MAX HP %', '%', 0.5, 40, 'DEFENSIVE', 'More hit points, as a percentage.'],
@@ -83,6 +93,12 @@ const AFFIX_DEFS = [
   ['healRecv', 'HEAL RECEIVED', '%', 1.2, 100, 'DEFENSIVE', 'Healing on you is stronger.'],
   ['barrierGen', 'BARRIER GEN', '%', 1.5, 150, 'DEFENSIVE', 'Barriers you gain are stronger.'],
   ['ccReduce', 'CC REDUCTION', '%', 0.8, 50, 'DEFENSIVE', 'Stuns, slows and other conditions on you end sooner.'],
+  ['unstoppable', 'UNSTOPPABLE', '%', 0.4, 25, 'DEFENSIVE', 'Chance at the start of your turn to break free of stuns, roots and other control.'],
+  ['fortify', 'FORTIFY', '%', 0.4, 25, 'DEFENSIVE', 'Start each battle with a barrier worth this much of your max HP.'],
+  ['barrierOnKill', 'BARRIER/KILL', '', 3, 99999, 'DEFENSIVE', 'Gain this much barrier each time you kill.'],
+  ['reflect', 'REFLECT DMG', '%', 0.5, 30, 'DEFENSIVE', 'Return part of the damage attackers deal to you.'],
+  ['drBoss', 'DR VS BOSSES', '%', 0.4, 20, 'DEFENSIVE', 'Take less damage from bosses.'],
+  ['drControlled', 'DR CONTROLLED', '%', 0.4, 20, 'DEFENSIVE', 'Take less damage while stunned, rooted or otherwise controlled.'],
   // ---- resistances
   ['resist', 'RESIST ALL', '%', 1.2, 60, 'RESISTANCE', 'Take less damage of every kind.'],
   ['resFire', 'FIRE RESIST', '%', 0.8, 40, 'RESISTANCE', 'Take less fire damage.'],
@@ -114,26 +130,32 @@ const AFFIX_DEFS = [
   ['lhBlind', 'LUCKY: BLIND', '%', 0.3, 20, 'LUCKY HIT', 'Chance on hit to blind the foe.'],
   ['lhHeal', 'LUCKY: HEAL', '%', 0.3, 20, 'LUCKY HIT', 'Chance on hit to heal 4% of your max HP.'],
   ['lhExecute', 'LUCKY: EXECUTE', '%', 0.15, 10, 'LUCKY HIT', 'Chance on hit to slay a non-boss foe under 20% HP.'],
+  ['lhFear', 'LUCKY: FEAR', '%', 0.3, 20, 'LUCKY HIT', 'Chance on hit to frighten the foe.'],
+  ['lhRoot', 'LUCKY: ROOT', '%', 0.3, 20, 'LUCKY HIT', 'Chance on hit to root (restrain) the foe.'],
+  ['lhKnock', 'LUCKY: KNOCK', '%', 0.3, 20, 'LUCKY HIT', 'Chance on hit to knock the foe prone.'],
+  ['lhFreeze', 'LUCKY: FREEZE', '%', 0.2, 12, 'LUCKY HIT', 'Chance on hit to freeze (paralyze) a non-boss foe for 1 round.'],
+  ['lhChain', 'LUCKY: CHAIN', '%', 0.3, 20, 'LUCKY HIT', 'Chance on hit to arc half the hit as lightning to another foe.'],
 ];
 const AFFIXES = Object.fromEntries(AFFIX_DEFS.map(([k, name, unit, kk, max, cat, desc]) => [k, { k, name, unit, kk, max, cat, desc }]));
 const AFFIX_IDS = AFFIX_DEFS.map(d => d[0]);
 const AFFIX_CATS = ['CORE', 'OFFENSIVE', 'DEFENSIVE', 'RESISTANCE', 'UTILITY', 'LUCKY HIT'];
 const RES_KEYS = ['resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane'];
-const LH_KEYS = ['lhStun', 'lhChill', 'lhSlow', 'lhVuln', 'lhBurn', 'lhPoison', 'lhBleed', 'lhWeaken', 'lhBlind', 'lhHeal', 'lhExecute'];
+const LH_KEYS = ['lhStun', 'lhChill', 'lhSlow', 'lhVuln', 'lhBurn', 'lhPoison', 'lhBleed', 'lhWeaken', 'lhBlind', 'lhHeal', 'lhExecute', 'lhFear', 'lhRoot', 'lhKnock', 'lhFreeze', 'lhChain'];
+const EXPANSION_IDS = ['dmgFortified', 'dmgRaging', 'dmgHale', 'dmgHurt', 'dmgCrowds', 'dmgBoss', 'dmgAfflicted', 'unstoppable', 'fortify', 'barrierOnKill', 'reflect', 'drBoss', 'drControlled', 'lhFear', 'lhRoot', 'lhKnock', 'lhFreeze', 'lhChain'];
 const CORE_ATTR = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT', wisdom: 'WIS', charisma: 'CHA', luck: 'LCK', willpower: 'WIL', speed: 'SPD' };
 
 // ---------------------------------------------------------------- slot pools (weapon, off-hand, 7 armour categories, jewelry)
 const SLOT_GROUPS = {
-  weapon: { name: 'WEAPON', pool: ['dmg', 'critdmg', 'crit', 'overpower', 'dmgElite', 'dmgInjured', 'dmgHealthy', 'dmgCC', 'dmgVuln', 'dmgBurning', 'dmgPoisoned', 'dmgBleeding', 'dmgChilled', 'dmgStunned', 'dmgDot', 'dmgMelee', 'dmgRanged', 'dmgAttack', 'dmgSpell', 'physDmg', 'poisonDmg', 'fire', 'cold', 'lightning', 'necrotic', 'radiant', 'strength', 'dexterity', 'intelligence', 'wisdom', 'charisma', 'allStats', 'haste', 'hit', 'leech', 'lifeOnKill', 'luckyHit', 'lhExecute', 'lhVuln', 'lhBurn', 'lhPoison', 'lhBleed'] },
-  offhand: { name: 'OFF-HAND', pool: ['block', 'dr', 'drElite', 'drMelee', 'drRanged', 'hp', 'hpPct', 'acb', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'barrierGen', 'cdr', 'luckyHit', 'lhStun', 'dmgElite', 'dmgCC', 'strength', 'constitution', 'intelligence', 'wisdom'] },
-  head: { name: 'HELM', pool: ['hp', 'hpPct', 'acb', 'cdr', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'barrierGen', 'healRecv', 'ccReduce', 'lifeRegen', 'intelligence', 'wisdom', 'willpower', 'allStats', 'crit', 'mf', 'xp'] },
-  back: { name: 'CLOAK', pool: ['dodge', 'hp', 'acb', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'drRanged', 'ccReduce', 'moveSpeed', 'dexterity', 'charisma', 'luck', 'mf', 'gf'] },
-  armor: { name: 'CHEST', pool: ['hp', 'hpPct', 'acb', 'dr', 'drElite', 'drMelee', 'drRanged', 'drBurning', 'drPoisoned', 'drInjured', 'drFortified', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'lifeRegen', 'healRecv', 'barrierGen', 'strength', 'constitution', 'allStats'] },
-  hands: { name: 'GLOVES', pool: ['crit', 'critdmg', 'haste', 'hit', 'overpower', 'dmgAttack', 'dmgSpell', 'dmgVuln', 'dmgCC', 'lifeOnHit', 'luckyHit', 'ccDur', 'lhStun', 'lhChill', 'lhSlow', 'lhVuln', 'lhBurn', 'lhPoison', 'lhBleed', 'lhWeaken', 'lhBlind', 'lhHeal', 'acb', 'strength', 'dexterity', 'intelligence'] },
-  waist: { name: 'BELT', pool: ['hp', 'hpPct', 'lifeRegen', 'lifeOnKill', 'healRecv', 'resGen', 'cdr', 'dmgDot', 'barrierGen', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'constitution', 'willpower', 'gf', 'xp'] },
-  legs: { name: 'LEGGINGS', pool: ['hp', 'acb', 'dr', 'drInjured', 'drMelee', 'drFortified', 'drPoisoned', 'drBurning', 'dodge', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'lifeRegen', 'constitution', 'strength', 'dexterity'] },
-  feet: { name: 'BOOTS', pool: ['moveSpeed', 'dodge', 'ccReduce', 'resGen', 'haste', 'hp', 'acb', 'drRanged', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'dexterity', 'speed', 'luck', 'mf', 'gf'] },
-  jewelry: { name: 'JEWELRY', pool: ['crit', 'critdmg', 'dmg', 'overpower', 'fire', 'cold', 'lightning', 'necrotic', 'radiant', 'physDmg', 'poisonDmg', 'dmgVuln', 'dmgCC', 'dmgElite', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'allStats', 'luckyHit', 'lifeOnHit', 'leech', 'cdr', 'resGen', 'hpPct', 'heal', 'mf', 'gf', 'xp'] },
+  weapon: { name: 'WEAPON', pool: ['dmg', 'critdmg', 'crit', 'overpower', 'dmgElite', 'dmgInjured', 'dmgHealthy', 'dmgCC', 'dmgVuln', 'dmgBurning', 'dmgPoisoned', 'dmgBleeding', 'dmgChilled', 'dmgStunned', 'dmgDot', 'dmgMelee', 'dmgRanged', 'dmgAttack', 'dmgSpell', 'physDmg', 'poisonDmg', 'fire', 'cold', 'lightning', 'necrotic', 'radiant', 'strength', 'dexterity', 'intelligence', 'wisdom', 'charisma', 'allStats', 'haste', 'hit', 'leech', 'lifeOnKill', 'luckyHit', 'lhExecute', 'lhVuln', 'lhBurn', 'lhPoison', 'lhBleed', 'dmgRaging', 'dmgCrowds', 'dmgBoss', 'dmgAfflicted', 'lhChain'] },
+  offhand: { name: 'OFF-HAND', pool: ['block', 'dr', 'drElite', 'drMelee', 'drRanged', 'hp', 'hpPct', 'acb', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'barrierGen', 'cdr', 'luckyHit', 'lhStun', 'dmgElite', 'dmgCC', 'strength', 'constitution', 'intelligence', 'wisdom', 'drBoss', 'fortify', 'reflect', 'unstoppable'] },
+  head: { name: 'HELM', pool: ['hp', 'hpPct', 'acb', 'cdr', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'barrierGen', 'healRecv', 'ccReduce', 'lifeRegen', 'intelligence', 'wisdom', 'willpower', 'allStats', 'crit', 'mf', 'xp', 'unstoppable', 'drControlled'] },
+  back: { name: 'CLOAK', pool: ['dodge', 'hp', 'acb', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'drRanged', 'ccReduce', 'moveSpeed', 'dexterity', 'charisma', 'luck', 'mf', 'gf', 'drControlled', 'reflect'] },
+  armor: { name: 'CHEST', pool: ['hp', 'hpPct', 'acb', 'dr', 'drElite', 'drMelee', 'drRanged', 'drBurning', 'drPoisoned', 'drInjured', 'drFortified', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'lifeRegen', 'healRecv', 'barrierGen', 'strength', 'constitution', 'allStats', 'fortify', 'reflect', 'drBoss', 'drControlled', 'barrierOnKill'] },
+  hands: { name: 'GLOVES', pool: ['crit', 'critdmg', 'haste', 'hit', 'overpower', 'dmgAttack', 'dmgSpell', 'dmgVuln', 'dmgCC', 'lifeOnHit', 'luckyHit', 'ccDur', 'lhStun', 'lhChill', 'lhSlow', 'lhVuln', 'lhBurn', 'lhPoison', 'lhBleed', 'lhWeaken', 'lhBlind', 'lhHeal', 'acb', 'strength', 'dexterity', 'intelligence', 'dmgHale', 'dmgHurt', 'lhFear', 'lhRoot', 'lhKnock', 'lhFreeze', 'lhChain'] },
+  waist: { name: 'BELT', pool: ['hp', 'hpPct', 'lifeRegen', 'lifeOnKill', 'healRecv', 'resGen', 'cdr', 'dmgDot', 'barrierGen', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'constitution', 'willpower', 'gf', 'xp', 'barrierOnKill', 'dmgFortified', 'dmgHurt'] },
+  legs: { name: 'LEGGINGS', pool: ['hp', 'acb', 'dr', 'drInjured', 'drMelee', 'drFortified', 'drPoisoned', 'drBurning', 'dodge', 'thorns', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'lifeRegen', 'constitution', 'strength', 'dexterity', 'unstoppable', 'fortify', 'drBoss'] },
+  feet: { name: 'BOOTS', pool: ['moveSpeed', 'dodge', 'ccReduce', 'resGen', 'haste', 'hp', 'acb', 'drRanged', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'dexterity', 'speed', 'luck', 'mf', 'gf', 'unstoppable', 'drControlled', 'dmgHale'] },
+  jewelry: { name: 'JEWELRY', pool: ['crit', 'critdmg', 'dmg', 'overpower', 'fire', 'cold', 'lightning', 'necrotic', 'radiant', 'physDmg', 'poisonDmg', 'dmgVuln', 'dmgCC', 'dmgElite', 'resist', 'resFire', 'resCold', 'resShock', 'resPoison', 'resShadow', 'resHoly', 'resArcane', 'allStats', 'luckyHit', 'lifeOnHit', 'leech', 'cdr', 'resGen', 'hpPct', 'heal', 'mf', 'gf', 'xp', 'dmgFortified', 'dmgRaging', 'dmgHale', 'dmgHurt', 'dmgCrowds', 'dmgBoss', 'dmgAfflicted', 'barrierOnKill'] },
 };
 // the 7 armour categories, as armory.js names them
 const ARMOUR_CATEGORY_GROUPS = ['head', 'back', 'armor', 'hands', 'waist', 'legs', 'feet'];
@@ -164,12 +186,13 @@ function rollSlotAffixes(group, n, ilvl, rarity, rng) {
   return out;
 }
 // caps on summed totals (per hero)
-const TOTAL_CAPS = { dr: 60, res: 75, ccReduce: 75, cdr: 50, core: 40, luckyHit: 100, moveSpeed: 100 };
+const TOTAL_CAPS = { dr: 60, res: 75, ccReduce: 75, cdr: 50, core: 40, luckyHit: 100, moveSpeed: 100, unstoppable: 50, fortify: 50, reflect: 50 };
 // summed damage-reduction percentage from a hero's substats, given which conditions hold
 function reductionPct(s, when) {
   let r = s.dr || 0;
   if (when.elite) r += s.drElite || 0; if (when.melee) r += s.drMelee || 0; if (when.ranged) r += s.drRanged || 0;
   if (when.burning) r += s.drBurning || 0; if (when.poisoned) r += s.drPoisoned || 0; if (when.injured) r += s.drInjured || 0; if (when.fortified) r += s.drFortified || 0;
+  if (when.boss) r += s.drBoss || 0; if (when.controlled) r += s.drControlled || 0;
   return Math.min(TOTAL_CAPS.dr, Math.max(0, r));
 }
 const RES_FOR_TYPE = { fire: 'resFire', cold: 'resCold', lightning: 'resShock', thunder: 'resShock', poison: 'resPoison', acid: 'resPoison', necrotic: 'resShadow', radiant: 'resHoly', force: 'resArcane', psychic: 'resArcane' };
@@ -182,6 +205,8 @@ function outgoingPct(s, when) {
   if (when.poisoned) m += s.dmgPoisoned || 0; if (when.bleeding) m += s.dmgBleeding || 0; if (when.chilled) m += s.dmgChilled || 0; if (when.stunned) m += s.dmgStunned || 0;
   if (when.melee) m += s.dmgMelee || 0; if (when.ranged) m += s.dmgRanged || 0; if (when.attack) m += s.dmgAttack || 0; if (when.spell) m += s.dmgSpell || 0;
   if (when.phys) m += s.physDmg || 0; if (when.poison) m += s.poisonDmg || 0;
+  if (when.fortified) m += s.dmgFortified || 0; if (when.raging) m += s.dmgRaging || 0; if (when.hale) m += s.dmgHale || 0; if (when.hurt) m += s.dmgHurt || 0;
+  if (when.crowd) m += s.dmgCrowds || 0; if (when.boss) m += s.dmgBoss || 0; if (when.afflicted) m += s.dmgAfflicted || 0;
   return m;
 }
 // ability score bonuses from substats (allStats adds to each), capped per ability
@@ -189,10 +214,10 @@ function coreBonus(s) {
   const out = {}; for (const [k, a] of Object.entries(CORE_ATTR)) { const v = (s[k] || 0) + (s.allStats || 0); if (v) out[a] = Math.min(TOTAL_CAPS.core, v); }
   return out;
 }
-const lhRounds = (k, ccDur) => (k === 'lhStun' ? 1 : 2) + Math.floor(Math.max(0, ccDur || 0) / 50);
+const lhRounds = (k, ccDur) => (k === 'lhStun' || k === 'lhFreeze' ? 1 : 2) + Math.floor(Math.max(0, ccDur || 0) / 50);
 const OVERPOWER_CHANCE = 5, OVERPOWER_MULT = 1.5;
 
-if (typeof globalThis !== 'undefined') globalThis.GBQAffixes = { AFFIXES, AFFIX_IDS, AFFIX_CATS, SLOT_GROUPS, ARMOUR_CATEGORY_GROUPS, RES_KEYS, LH_KEYS, CORE_ATTR, TOTAL_CAPS, groupForSlot, affixValue, affixWeight, rollSlotAffixes, reductionPct, resistFor, outgoingPct, coreBonus, lhRounds, OVERPOWER_CHANCE, OVERPOWER_MULT };
+if (typeof globalThis !== 'undefined') globalThis.GBQAffixes = { AFFIXES, AFFIX_IDS, AFFIX_CATS, SLOT_GROUPS, ARMOUR_CATEGORY_GROUPS, RES_KEYS, LH_KEYS, EXPANSION_IDS, CORE_ATTR, TOTAL_CAPS, groupForSlot, affixValue, affixWeight, rollSlotAffixes, reductionPct, resistFor, outgoingPct, coreBonus, lhRounds, OVERPOWER_CHANCE, OVERPOWER_MULT };
 
 // ================================================================ game wiring (browser build only)
 if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof SUBSTATS !== 'undefined' && typeof Battle !== 'undefined') {
@@ -228,7 +253,11 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof SU
   { const d0 = derive; derive = function (c) {
       if (!c || !c.eq || !c.ascAttr) return d0.apply(this, arguments);
       const s = {};
-      for (const slot of (typeof SLOTS !== 'undefined' ? SLOTS : Object.keys(c.eq))) { const it = c.eq[slot]; if (it && it.affixes) for (const [k, v] of it.affixes) if (CORE_ATTR[k] || k === 'allStats') s[k] = (s[k] || 0) + v; }
+      for (const slot of (typeof SLOTS !== 'undefined' ? SLOTS : Object.keys(c.eq))) {
+        const it = c.eq[slot]; if (!it) continue;
+        const lines = (it.affixes || []).concat(typeof tierImplicit === 'function' ? tierImplicit(it) : []); // rolled affixes and implicits (gear taxonomy attributes)
+        for (const [k, v] of lines) if (CORE_ATTR[k] || k === 'allStats') s[k] = (s[k] || 0) + v;
+      }
       const bonus = coreBonus(s), keys = Object.keys(bonus);
       let D;
       if (keys.length) {
@@ -252,6 +281,8 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof SU
               elite: !!(tgt.elite || tgt.boss), injured: f < 0.35, healthy: f >= 0.8, cc: has(tgt, ...CC_IDS), vuln: has(tgt, 'vulnerable', 'shocked'),
               burning: has(tgt, 'burning'), poisoned: has(tgt, 'venom', 'poisoned'), bleeding: has(tgt, 'bleeding'), chilled: has(tgt, 'frostbite', 'slowed'), stunned: has(tgt, 'stunned', 'paralyzed', 'asleep'),
               melee: !!opt.attack && !opt.ranged, ranged: !!opt.ranged, attack: !!opt.attack, spell: !!opt.magic && !opt.proc, phys: PHYS.includes(type), poison: type === 'poison' || type === 'acid',
+              fortified: has(src, 'barrier', 'fortify'), raging: has(src, 'rage'), hale: frac(src) >= 0.8, hurt: frac(src) < 0.35, crowd: (this.foes || []).filter(x => hpOf(x) > 0).length >= 3,
+              boss: !!tgt.boss, afflicted: (tgt.effects || []).some(x => !(BUFFS[x.id] && BUFFS[x.id].good)),
             };
             const m = outgoingPct(s, when); if (m) a = a * (1 + m / 100);
             if (!opt.proc && !opt.tick && R() * 100 < OVERPOWER_CHANCE) { a = a * (OVERPOWER_MULT + (s.overpower || 0) / 100); this.note(tgt, 'OVERPOWER'); }
@@ -261,7 +292,7 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof SU
           }
           if (isHero(tgt)) {
             const s = subOf(tgt);
-            const red = reductionPct(s, { elite: !!(src && (src.elite || src.boss)), melee: !!(src && opt.attack && !opt.ranged), ranged: !!(src && (opt.ranged || opt.magic)), burning: has(src, 'burning'), poisoned: has(src, 'venom', 'poisoned'), injured: frac(tgt) < 0.35, fortified: has(tgt, 'barrier', 'fortify') });
+            const red = reductionPct(s, { elite: !!(src && (src.elite || src.boss)), melee: !!(src && opt.attack && !opt.ranged), ranged: !!(src && (opt.ranged || opt.magic)), burning: has(src, 'burning'), poisoned: has(src, 'venom', 'poisoned'), injured: frac(tgt) < 0.35, fortified: has(tgt, 'barrier', 'fortify'), boss: !!(src && src.boss), controlled: has(tgt, ...CC_ON_HERO) });
             const res = resistFor(s, type);
             a = a * (1 - red / 100) * (1 - res / 100);
           }
@@ -275,17 +306,23 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof SU
           const s = subOf(src), mhp = Math.max(1, maxHpOf(src));
           if (s.lifeOnHit && hpOf(src) > 0) this.heal(src, s.lifeOnHit);
           const luck = 1 + Math.min(TOTAL_CAPS.luckyHit, s.luckyHit || 0) / 100;
-          const COND = { lhStun: 'stunned', lhChill: 'frostbite', lhSlow: 'slowed', lhVuln: 'vulnerable', lhBurn: 'burning', lhPoison: 'venom', lhBleed: 'bleeding', lhWeaken: 'weakened', lhBlind: 'blinded' };
+          const COND = { lhStun: 'stunned', lhChill: 'frostbite', lhSlow: 'slowed', lhVuln: 'vulnerable', lhBurn: 'burning', lhPoison: 'venom', lhBleed: 'bleeding', lhWeaken: 'weakened', lhBlind: 'blinded', lhFear: 'frightened', lhRoot: 'restrained', lhKnock: 'prone', lhFreeze: 'paralyzed' };
           for (const k of LH_KEYS) {
             const v = s[k]; if (!v || R() * 100 >= v * luck) continue;
-            if (COND[k]) { if (tgt.hp > 0 && !(tgt.condImm || []).includes(COND[k])) { addEffect(tgt, { id: COND[k], rounds: lhRounds(k, s.ccDur), lvl: src.ch.lvl || 1 }); this.note(tgt, (CONDITIONS[COND[k]] || BUFFS[COND[k]] || { name: COND[k] }).name); } }
+            if (COND[k]) { if (tgt.hp > 0 && !(k === 'lhFreeze' && tgt.boss) && !(tgt.condImm || []).includes(COND[k])) { addEffect(tgt, { id: COND[k], rounds: lhRounds(k, s.ccDur), lvl: src.ch.lvl || 1 }); this.note(tgt, (CONDITIONS[COND[k]] || BUFFS[COND[k]] || { name: COND[k] }).name); } }
             else if (k === 'lhHeal' && hpOf(src) > 0) this.heal(src, Math.max(1, Math.round(mhp * 0.04)));
             else if (k === 'lhExecute' && tgt.hp > 0 && !tgt.boss && frac(tgt) < 0.2) { this.note(tgt, 'EXECUTE'); this.applyDamage(src, tgt, hpOf(tgt), type, { proc: true }); }
+            else if (k === 'lhChain') { const others = (this.foes || []).filter(x => x !== tgt && hpOf(x) > 0); if (others.length) { const o = others[Math.floor(R() * others.length)]; this.note(o, 'CHAIN'); this.applyDamage(src, o, Math.max(1, Math.round(dealt * 0.5)), 'lightning', { proc: true }); } }
           }
+        }
+        if (dealt > 0 && isHero(tgt) && src && src.side === 'foe' && !opt.proc && !opt.tick && hpOf(src) > 0) {
+          const rf = Math.min(TOTAL_CAPS.reflect, subOf(tgt).reflect || 0);
+          if (rf) this.applyDamage(tgt, src, Math.max(1, Math.round(dealt * rf / 100)), 'force', { proc: true });
         }
         if (wasAlive && tgt && hpOf(tgt) <= 0 && isHero(src) && tgt.side === 'foe') {
           const s = subOf(src);
           if (s.lifeOnKill && hpOf(src) > 0) this.heal(src, s.lifeOnKill);
+          if (s.barrierOnKill && hpOf(src) > 0) { const cur = effOf(src, 'barrier'); addEffect(src, { id: 'barrier', rounds: 99, pool: ((cur && cur.pool) || 0) + s.barrierOnKill }); }
           if (s.resGen && R() * 100 < Math.min(100, s.resGen)) restoreResource(src.ch);
         }
       } catch (e) { /* the hit itself already landed */ }
@@ -322,7 +359,20 @@ if (typeof window !== 'undefined' && typeof makeItem === 'function' && typeof SU
     }; }
   // ------------------------------------------------ life per turn, and turn-based cooldown reduction
   { const st0 = Battle.prototype.startTurn; Battle.prototype.startTurn = function (u) {
+      let freed = false;
+      try {
+        if (isHero(u) && u.ch.hp > 0) {
+          const s = subOf(u);
+          // FORTIFY: a barrier on each hero's first turn of the battle
+          if (!this.d4Fortified) this.d4Fortified = new Set();
+          if (!this.d4Fortified.has(u.id)) { this.d4Fortified.add(u.id); const f = Math.min(TOTAL_CAPS.fortify, s.fortify || 0); if (f) { const cur = effOf(u, 'barrier'); addEffect(u, { id: 'barrier', rounds: 99, pool: ((cur && cur.pool) || 0) + Math.max(1, Math.round(maxHpOf(u) * f / 100)) }); } }
+          // UNSTOPPABLE: a chance to shake off every control effect before the turn checks for stuns
+          const un = Math.min(TOTAL_CAPS.unstoppable, s.unstoppable || 0), cc = (u.effects || []).filter(e => CC_ON_HERO.includes(e.id));
+          if (un && cc.length && R() * 100 < un) { cc.forEach(e => removeEffect(u, e.id)); freed = true; }
+        }
+      } catch (e) { /* turn goes on */ }
       const steps = st0.apply(this, arguments);
+      if (freed && Array.isArray(steps)) steps.unshift(this.say(`${u.name} is UNSTOPPABLE!`));
       try {
         if (Array.isArray(steps) && isHero(u) && u.ch.hp > 0) {
           const s = subOf(u);

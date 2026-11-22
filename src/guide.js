@@ -10,7 +10,7 @@
 //   season, heirlooms, amitoi), NPCS (the NPC AI), and SETTINGS (themes, art modes, chat and accessibility).
 // The topic list is exported as GBQGuide for tests.
 
-const GUIDE_TOPICS = ['BASICS', 'CLASSES & JOBS', 'RACES', 'SPELLS', 'COMBAT', 'GEAR', 'AFFIX CODEX', 'ASPECT CODEX', 'WORLD', 'CONTENT', 'GUILD & CONQUEST', 'PROGRESSION', 'NPCS', 'SETTINGS'];
+const GUIDE_TOPICS = ['BASICS', 'CLASSES & JOBS', 'RACES', 'SPELLS', 'COMBAT', 'GEAR', 'GEAR TAXONOMY', 'SKILL CORES', 'AFFIX CODEX', 'ASPECT CODEX', 'WORLD', 'CONTENT', 'GUILD & CONQUEST', 'PROGRESSION', 'NPCS', 'SETTINGS'];
 // split long text into dialogue pages of at most n lines of the wrapped text
 function guidePages(lines, width = 25, perPage = 3) {
   const flat = []; for (const l of lines) { const words = String(l).split(' '); let cur = ''; for (const w of words) { if ((cur + ' ' + w).trim().length > width) { flat.push(cur.trim()); cur = w; } else cur += ' ' + w; } if (cur.trim()) flat.push(cur.trim()); }
@@ -58,6 +58,30 @@ if (typeof window !== 'undefined' && typeof MainMenu !== 'undefined') {
       ['DURABILITY', ['Battles wear gear down; at 0 an item gives no stats. Repair at a merchant or with a REPAIR KIT. Crafted gear rolls FINE, SUPERIOR or MASTERWORK quality.']],
       ['MASTERY', ['Each weapon family levels 1-30 from battles won with it. Ranks ADEPT (10), EXPERT (20) and MASTER (30) give bigger steps.']],
     ],
+    'GEAR TAXONOMY': () => {
+      if (typeof GBQTaxonomy === 'undefined') return [['TAXONOMY', ['Gear is sorted by class, subclass, type and subtype.']]];
+      const X = GBQTaxonomy, nm = k => (typeof SUBSTATS !== 'undefined' && SUBSTATS[k] ? SUBSTATS[k].name : k.toUpperCase());
+      const tiers = typeof ITEM_RANKS !== 'undefined' ? ITEM_RANKS.map(r => `T${r.n} ${r.name} (LV${r.min})`).join(', ') : '23 tiers';
+      return [
+        ['FOUR LEVELS', ['Every weapon and armour piece reads CLASS > SUBCLASS > TYPE > SUBTYPE, shown at the top of its description. Each level adds stats that grow over the 23 gear tiers.']],
+        ['WEAPON CLASSES', Object.entries(X.TAX_WEAPON_CLASS).map(([k, c]) => `${k}: ${c.fams.map(f => f.toUpperCase()).join(', ')}. +${nm(c.attr)}, +${nm(c.stat)}.`)],
+        ['WEAPON TYPES', Object.entries(X.TAX_GRIPS).map(([k, g]) => `${k}: ${g.desc}`)],
+        ['ARMOUR CLASSES', Object.values(X.TAX_ARMOUR_CLASS).map(c => `${c.name}: +${nm(c.attr)}.`)],
+        ['ARMOUR SUBCLASSES', Object.values(X.TAX_CATEGORY).map(c => `${c.name}: +${nm(c.stat)}.`)],
+        ['ARMOUR TYPES', Object.entries(X.TAX_PIECE_TYPES).map(([k, t]) => `${k.toUpperCase()}: ${Object.values(t).join(', ')}.`).concat([`SHIELDS: ${X.TAX_SHIELD_SIZES.join(', ')}.`])],
+        ['SUBTYPES', ['The material the tier is made of: metal or wood for weapons, cloth fibre, hide or ore for armour. Fire, frost, storm, holy, shadow, arcane and venom materials add that element to weapons and that resistance to armour; the rest add physical damage or resist all.']],
+        ['THE 23 TIERS', [tiers + '.']],
+      ];
+    },
+    'SKILL CORES': () => {
+      if (typeof GBQSkillCores === 'undefined') return [['SKILL CORES', ['One core socket on every weapon and armour piece.']]];
+      const X = GBQSkillCores;
+      return [
+        ['HOW CORES WORK', ['Every weapon and armour piece has one CORE socket. Weapon cores add a battle skill with a cooldown; armour cores add a passive. A core in its own subclass or category RESONATES for +1 rank.', 'Cores drop from battles (elites and bosses more often), can be forged for gold, and 3 of one rank combine into the next (max R5). MAIN MENU > SKILL CORES, or SKILL CORE on a bag item.']],
+        ['WEAPON CORES', Object.entries(X.WEAPON_CORES).map(([k, c]) => `${c.name} (${k.toUpperCase()}): ${c.desc} CD${c.cd}.`)],
+        ['ARMOUR CORES', Object.values(X.ARMOUR_CORES).map(c => `${c.name} (${c.cat}): ${c.desc}`)],
+      ];
+    },
     'AFFIX CODEX': () => {
       if (typeof GBQAffixes === 'undefined') return [['AFFIXES', ['Affixes are bonuses rolled onto gear.']]];
       const X = GBQAffixes, slotsOf = k => Object.values(X.SLOT_GROUPS).filter(g => g.pool.includes(k)).map(g => g.name);
