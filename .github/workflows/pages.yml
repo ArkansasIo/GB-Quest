@@ -1,0 +1,74 @@
+name: Deploy GitHub Pages
+
+# Builds the self-contained browser game and publishes only the playable
+# files to GitHub Pages. The full repository (~1.6 GB) is over the Pages
+# 1 GB site limit, so the site is assembled in _site/ from dist/ outputs.
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source:
+# "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'client/**'
+      - 'assets/**'
+      - 'assets_hd64/**'
+      - 'assets_citadel/**'
+      - 'tools/build.cjs'
+      - 'tools/build_atlas.py'
+      - 'dist/atlas.html'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build standalone game
+        run: node tools/build.cjs
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/dist
+          cp dist/gbquest.html            _site/index.html
+          cp dist/gbquest-fullscreen.html _site/fullscreen.html
+          cp dist/atlas.html              _site/atlas.html
+          # The game falls back to fetching dist/atlas.html if the embedded copy is missing.
+          cp dist/atlas.html              _site/dist/atlas.html
+          touch _site/.nojekyll
+          du -sh _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
