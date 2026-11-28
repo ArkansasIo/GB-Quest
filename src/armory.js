@@ -207,13 +207,14 @@ class ArmoryScene {
     } else {
       const ids = Object.keys(LEGENDARY_SET_DEFS), counts = legendarySetCounts(G);
       this.i = Math.min(this.i, ids.length - 1);
-      ids.forEach((id, i) => { const set = LEGENDARY_SET_DEFS[id], y = 17 + i * 11; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(set.name, 5, y, 3); textR((counts[id] || 0) + '/3', 154, y, counts[id] >= 3 ? 'gold' : 2); });
+      ids.forEach((id, i) => { const set = LEGENDARY_SET_DEFS[id], y = 17 + i * 11; if (i === this.i) fill(2, y - 1, 156, 10, 1); text(set.name, 5, y, 3); textR((counts[id] || 0) + '/6', 154, y, counts[id] >= 6 ? 'gold' : 2); });
       const id = ids[this.i], set = LEGENDARY_SET_DEFS[id], n = counts[id] || 0;
       frame(2, 65, 156, 77);
-      text('EQUIPPED PIECES ' + n + '/3', 6, 69, n >= 2 ? 'gold' : 2);
+      text('EQUIPPED PIECES ' + n + '/6', 6, 69, n >= 2 ? 'gold' : 2);
       text('2 PIECES: ' + set.two.map(([s, v]) => s.toUpperCase() + '+' + v).join(' ').slice(0, 24), 6, 84, n >= 2 ? 'green' : 2);
       text('3 PIECES: ' + set.three.map(([s, v]) => s.toUpperCase() + '+' + v).join(' ').slice(0, 24), 6, 99, n >= 3 ? 'gold' : 2);
-      text('BOSS / RAID NAMED DROPS', 6, 119, 2); text('2-PIECE AND FULL SET BONUSES', 6, 130, 1);
+      if (set.six) text('6 PIECES: ' + set.six.map(([s, v]) => s.toUpperCase() + '+' + v).join(' ').slice(0, 24), 6, 114, n >= 6 ? 'gold' : 2);
+      text('BOSS / RAID NAMED DROPS', 6, 130, 2);
     }
   }
 }
