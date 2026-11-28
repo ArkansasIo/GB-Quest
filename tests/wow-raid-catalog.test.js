@@ -64,4 +64,9 @@ test('named raid weapons and armour are merged into the existing equipment regis
  }
  assert.ok(Object.keys(catalog.weapons).length>=10);
  assert.ok(Object.keys(catalog.armour).length>=8);
+ assert.equal(catalog.sets.length,8);
+ assert.ok(catalog.sets.every(set=>set.pieces.length===6&&set.bonus2&&set.bonus4));
+ assert.equal(catalog.items.length,12);
+ assert.ok(catalog.items.some(item=>item.id==='nyxara_moonwing'));
+ assert.ok(catalog.items.some(item=>item.id==='malgreth_voidling'));
 });
