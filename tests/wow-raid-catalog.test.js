@@ -131,3 +131,16 @@ test('interactive atlas is reachable from the main menu and exposes instance con
  assert.match(atlas,/instanceMenu\(kind/);
  assert.ok(html.includes('src/wow_raid_map.js'));
 });
+
+test('HTML build includes the raid catalog, reward runtime and clickable raid-map scene in dependency order',()=>{
+ const build=fs.readFileSync(new URL('../tools/build.cjs',import.meta.url),'utf8');
+ const catalog=build.indexOf("'wow_raid_catalog'");
+ const generator=build.indexOf("'gen'");
+ const armory=build.indexOf("'armory'");
+ const runtime=build.indexOf("'wow_raid_runtime'");
+ const menu=build.indexOf("'scenes_menu'");
+ const map=build.indexOf("'wow_raid_map'");
+ assert.ok(catalog>=0&&catalog<generator,'raid catalog must load before procedural generation');
+ assert.ok(armory>=0&&runtime>armory,'raid rewards must load after item and armour registries');
+ assert.ok(menu>=0&&map>menu,'raid map scene must load after ListScene is declared');
+});
