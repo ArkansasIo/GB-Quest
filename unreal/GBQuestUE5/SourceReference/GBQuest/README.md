@@ -1,7 +1,7 @@
 # Lost Kingdom of Shadowbane Chronicles
 
 **A Game Boy–style MMORPG with d20 rules — by ArkansasIo**
-Version 2.1.1 (build B2026.11.01) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
+Version 2.8.0 (build B2026.11.10) · [Changelog](CHANGELOG.md) · [Documentation](docs/README.md) · [Game design document](docs/GDD.md)
 
 A 160×144 handheld RPG running in the browser. **Lost Kingdom of Shadowbane Chronicles** is the base game; its expansion lineup is **Eternal Odyssey**, **Dragonfire Realm**, **Emberfell Saga**, **Wizard’s Dominion**, **Plagueborn Legacy**, **Crystalized Realms**, **Frostsong Dynasty**, **Arcane Ascension**, **Bloodmoon Conspiracy**, **Dragonspire Odyssey**, **Whispers of Valhalla**, **Nightshade Chronicles**, and **Mythical Meadowlands**. You can play in DMG green, Game Boy Color, Pocket or full colour palettes.
 
