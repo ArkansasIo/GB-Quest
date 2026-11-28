@@ -14,7 +14,7 @@ const gdd = read('docs/GDD.md');
 test('package, game metadata and runtime build identify the same release', () => {
   assert.equal(metadata.version, pkg.version);
   assert.ok(world.includes("version: '" + pkg.version + "'"));
-  const build = world.match(/build:\\s*'([^']+)'/);
+  const build = world.match(/build:\s*'([^']+)'/);
   assert.ok(build, 'runtime build identifier exists');
   assert.ok(readme.includes('Version ' + pkg.version + ' (build ' + build[1] + ')'));
   assert.ok(gdd.includes('**Version** | ' + pkg.version + ' (build ' + build[1] + ')'));
