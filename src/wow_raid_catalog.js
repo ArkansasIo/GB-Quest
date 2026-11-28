@@ -53,6 +53,31 @@ const GBQ_WOW_RAIDS = [
   {id:'wow_rd_dragonfire_nexus',name:'DRAGONFIRE NEXUS',theme:'lava',lvl:384,bosses:6,zone:'emberwaste',raidSize:12,description:'A rift-forge where elder drakes are chained to a furnace between worlds.',encounters:['The Chainflame Warden','Broodmother Vyrra','The Rift Furnace','The Twin Ember Drakes','Ashen Prophet Kaelor','Zyrath, Nexus Incarnate'].map((name,i)=>({id:'dragonfire_'+(i+1),name,wing:1,role:'raid-boss',mechanic:['Break the flame chains while avoiding the furnace pulses.','Rescue trapped hatchlings before the broodmother enrages.','Rotate the furnace valves to vent the active side.','Separate the drakes and interrupt their paired breath.','Dispel the prophecy marks in the order they appear.','Carry nexus sparks to the stabilizers during the final burn.'][i],loot:['Dragonfire Nexus Cache '+(i+1)]})),mobs:['Riftbound Drake','Chainflame Cultist','Emberwing Ravager','Nexus Flamecaller','Furnace Guardian'],map:{style:'winged-raid-atlas',wings:[{id:'dragonfire_wing',name:'THE RIFT-FORGE',nodes:[['Chain Gate',8,88],['Brood Vault',28,68],['Rift Furnace',48,50],['Twin Drake Roost',68,30],['Nexus Heart',90,10]]}]}}
 ];
 
+
+/* Normalize dungeon and raid map data for the shared interactive atlas. */
+for (const dungeon of GBQ_WOW_DUNGEONS) {
+  dungeon.encounters = dungeon.bosses.map((name, order) => ({
+    id:dungeon.id+'_boss_'+(order+1), name, order, wing:1,
+    role:order===dungeon.bosses.length-1?'final-guardian':'dungeon-boss',
+    mechanic:[
+      'Avoid the marked floor lanes and control the first add wave.',
+      'Interrupt the channel and move the party out of the danger ring.',
+      'Break the guardian ward, then finish the encounter during its exposed phase.'
+    ][order] || 'Resolve the boss telegraph, control adds and regroup after the attack.',
+    loot:[dungeon.loot[order] || dungeon.name+' Cache']
+  }));
+  const nodes=[['Entrance',8,88],...dungeon.encounters.map((boss,i)=>[
+    boss.name, 20+Math.round(i*65/Math.max(1,dungeon.encounters.length-1)),
+    70-Math.round(i*48/Math.max(1,dungeon.encounters.length-1))
+  ]),['Treasure Vault',90,12]];
+  dungeon.map={style:'winged-raid-atlas',wings:[{id:dungeon.id+'_wing',name:dungeon.name,nodes}]};
+  dungeon.mobNodes=(dungeon.mobs||[]).map((name,i)=>({name,x:18+(i%3)*28,y:82-Math.floor(i/3)*12}));
+}
+for (const raid of GBQ_WOW_RAIDS) {
+  raid.mobNodes=(raid.mobs||[]).map((name,i)=>({name,x:12+(i%4)*24,y:88-Math.floor(i/4)*13}));
+  for (const wing of raid.map?.wings||[]) wing.mobNodes=raid.mobNodes;
+}
+
 const GBQ_WOW_WEAPONS = {
   nyxara_last_light:{name:'NYXARA’S LAST LIGHT',dmg:'2d8',type:'radiant',cat:'martial',props:'v',fam:'sword',icon:'wi_sword_5',cost:98000},
   vorun_gatecrush:{name:'VORUN’S GATECRUSH',dmg:'2d10',type:'bludgeoning',cat:'martial',props:'h2',fam:'hammer',icon:'wi_hammer_4',cost:74000},
