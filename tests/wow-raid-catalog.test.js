@@ -82,7 +82,7 @@ test('wave-five generator creates named encounter bosses and a separate Citadel 
 
 test('runtime installs eight six-piece raid sets, encounter rewards and instance mobs',()=>{
  ctx.NAMED_ITEMS=[];ctx.NAMED_BY_ID={};ctx.LEGENDARY_SET_DEFS={};
- ctx.BESTIARY=[];ctx.BEAST_BY_ID={};
+ ctx.BESTIARY=[];ctx.BEAST_BY_ID={};ctx.FAMILIES={};
  vm.runInContext(fs.readFileSync(new URL('../src/wow_raid_runtime.js',import.meta.url),'utf8'),ctx,{filename:'wow_raid_runtime.js'});
  const runtime=get('GBQWowRaidRuntime');
  const defs=get('LEGENDARY_SET_DEFS'),named=get('NAMED_ITEMS'),best=get('BESTIARY');
@@ -97,10 +97,13 @@ test('runtime installs eight six-piece raid sets, encounter rewards and instance
 });
 
 test('all runtime raid reward templates reference declared item bases',()=>{
- const source=['data_rules.js','items.js','armory.js'].map(file=>fs.readFileSync(new URL('../src/'+file,import.meta.url),'utf8')).join('\\n');
+ const source=['data_rules.js','items.js','armory.js'].map(file=>fs.readFileSync(new URL('../src/'+file,import.meta.url),'utf8')).join('\n');
+ const escaped=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
  for(const item of get('NAMED_ITEMS')){
-  const key=item.kind==='wondrous' ? `id: '${item.base}'` : `\\n  ${item.base}:`;
-  assert.ok(source.includes(key),item.id+': missing base '+item.base);
+  const declared=item.kind==='wondrous'
+   ? new RegExp("id\\s*:\\s*['\"]"+escaped(item.base)+"['\"]").test(source)
+   : new RegExp('(?:^|[,\\n]\\s*)'+escaped(item.base)+'\\s*:').test(source);
+  assert.ok(declared,item.id+': missing base '+item.base);
  }
 });
 
