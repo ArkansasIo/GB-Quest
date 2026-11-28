@@ -87,18 +87,18 @@ for (const raid of GBQ_WOW_RAIDS) {
 }
 
 const GBQ_WOW_WEAPONS = {
-  nyxara_last_light:{name:'NYXARA’S LAST LIGHT',dmg:'2d8',type:'radiant',cat:'martial',props:'v',fam:'sword',icon:'wi_sword_5',cost:98000},
-  vorun_gatecrush:{name:'VORUN’S GATECRUSH',dmg:'2d10',type:'bludgeoning',cat:'martial',props:'h2',fam:'hammer',icon:'wi_hammer_4',cost:74000},
-  twin_eclipse_glaives:{name:'TWIN ECLIPSE GLAIVES',dmg:'1d10',type:'radiant',cat:'martial',props:'f',fam:'glaive',icon:'wi_glaive_3',cost:82000},
-  chainbreaker_maul:{name:'CHAINBREAKER MAUL',dmg:'2d8',type:'force',cat:'martial',props:'h2',fam:'hammer',icon:'wi_hammer_5',cost:79000},
-  sablethorn_rapier:{name:'SABLETHORN RAPIER',dmg:'1d10',type:'piercing',cat:'martial',props:'f',fam:'sword',icon:'wi_sword_4',cost:76000},
-  black_sun_codex:{name:'BLACK SUN CODEX',dmg:'1d10',type:'necrotic',cat:'simple',props:'l',fam:'grimoire',icon:'wi_grimoire_5',cost:88000},
-  kharvox_warbanner:{name:'KHARVOX’S WARBANNER',dmg:'1d8',type:'force',cat:'martial',props:'v',fam:'polearm',icon:'wi_polearm_4',cost:81000},
-  shardsunder_greatsword:{name:'SHARDSUNDER GREATSWORD',dmg:'2d10',type:'slashing',cat:'martial',props:'h2',fam:'sword',icon:'wi_sword_5',cost:92000},
-  embercrown_scepter:{name:'EMBERCROWN SCEPTER',dmg:'1d12',type:'fire',cat:'simple',props:'l',fam:'wand',icon:'wi_wand_4',cost:52000},
-  eirath_frostbite:{name:'EIRATH’S FROSTBITE',dmg:'2d8',type:'cold',cat:'martial',props:'v',fam:'sword',icon:'wi_sword_5',cost:61000},
-  thalassar_deepwake:{name:'THALASSAR’S DEEPWAKE',dmg:'2d8',type:'lightning',cat:'martial',props:'h2',fam:'trident',icon:'wi_trident_4',cost:69000},
-  astrael_starfall:{name:'ASTRAEL’S STARFALL',dmg:'2d10',type:'force',cat:'martial',props:'v',fam:'staff',icon:'wi_staff_5',cost:99000}
+  nyxara_last_light:{name:'NYXARA’S LAST LIGHT',dmg:'2d8',type:'radiant',cat:'martial',props:'v',fam:'sword',icon:'ne_sword_5',cost:98000},
+  vorun_gatecrush:{name:'VORUN’S GATECRUSH',dmg:'2d10',type:'bludgeoning',cat:'martial',props:'h2',fam:'hammer',icon:'px_hammer',cost:74000},
+  twin_eclipse_glaives:{name:'TWIN ECLIPSE GLAIVES',dmg:'1d10',type:'radiant',cat:'martial',props:'f',fam:'glaive',icon:'px_spear',cost:82000},
+  chainbreaker_maul:{name:'CHAINBREAKER MAUL',dmg:'2d8',type:'force',cat:'martial',props:'h2',fam:'hammer',icon:'px_hammer',cost:79000},
+  sablethorn_rapier:{name:'SABLETHORN RAPIER',dmg:'1d10',type:'piercing',cat:'martial',props:'f',fam:'sword',icon:'ne_sword_4',cost:76000},
+  black_sun_codex:{name:'BLACK SUN CODEX',dmg:'1d10',type:'necrotic',cat:'simple',props:'l',fam:'grimoire',icon:'px_staff',cost:88000},
+  kharvox_warbanner:{name:'KHARVOX’S WARBANNER',dmg:'1d8',type:'force',cat:'martial',props:'v',fam:'polearm',icon:'px_spear',cost:81000},
+  shardsunder_greatsword:{name:'SHARDSUNDER GREATSWORD',dmg:'2d10',type:'slashing',cat:'martial',props:'h2',fam:'sword',icon:'ne_sword_5',cost:92000},
+  embercrown_scepter:{name:'EMBERCROWN SCEPTER',dmg:'1d12',type:'fire',cat:'simple',props:'l',fam:'wand',icon:'px_staff',cost:52000},
+  eirath_frostbite:{name:'EIRATH’S FROSTBITE',dmg:'2d8',type:'cold',cat:'martial',props:'v',fam:'sword',icon:'ne_sword_5',cost:61000},
+  thalassar_deepwake:{name:'THALASSAR’S DEEPWAKE',dmg:'2d8',type:'lightning',cat:'martial',props:'h2',fam:'trident',icon:'px_spear',cost:69000},
+  astrael_starfall:{name:'ASTRAEL’S STARFALL',dmg:'2d10',type:'force',cat:'martial',props:'v',fam:'staff',icon:'px_staff',cost:99000}
 };
 const GBQ_WOW_ARMOUR = {
   lantern_queen_plate:{name:'LANTERN QUEEN PLATE',ac:18,dexMax:0,type:'heavy',icon:'ne_heavyarmor_5',cost:95000},
