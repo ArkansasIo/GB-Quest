@@ -83,7 +83,7 @@
   }
   const arc = GBQWowRaidCatalog.raids.find(r=>r.arcBoss);
   if(arc){
-    const entry={id:'n_malgreth_voidcrown',name:'MALGReTH’S VOIDCROWN',kind:'wondrous',base:'great_helm',rarity:9,
+    const entry={id:'n_malgreth_voidcrown',name:'MALGRETH’S VOIDCROWN',kind:'wondrous',base:'great_helm',rarity:9,
       affixes:[['necrotic',55],['resist',25],['hp',250],['dmg',35]],lore:'The last light in the Citadel was extinguished here.',
       src:{raid:arc.id,order:arc.bosses}};
     if(!NAMED_BY_ID[entry.id]){NAMED_ITEMS.push(entry);NAMED_BY_ID[entry.id]=entry;}
