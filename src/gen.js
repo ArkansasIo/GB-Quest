@@ -108,6 +108,24 @@ const BOSSES = [];
   RAIDS.filter(d => d.v === 4).forEach(raidBosses);
   const wild4 = ZONES.filter(z => !z.town && z.v === 4);
   for (let i = 0; i < wild4.length * 2; i++) { const z = wild4[i % wild4.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild4.length) }); }
+  // expansion wave 5: fully authored encounter names and mechanics for the WoW-style catalogue.
+  r = RNG('bosses-v5');
+  for (const d of DUNGEONS.filter(x => x.v === 5)) {
+    const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0];
+    (Array.isArray(d.bosses) ? d.bosses : []).forEach((name, order) =>
+      add('dungeon', d.id, d.lvl + order * 2, pickBase(z.biome), { name, order, encounterId: d.id + '_boss_' + (order + 1), authored: true }));
+  }
+  for (const d of RAIDS.filter(x => x.v === 5)) {
+    const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0];
+    (d.encounters || []).forEach((encounter, order) =>
+      add('raid', d.id, d.lvl + order * 2, pickBase(z.biome), {
+        name: encounter.name, order, wing: encounter.wing || 1, role: encounter.role || 'raid-boss',
+        mechanic: encounter.mechanic || '', encounterId: encounter.id, loot: encounter.loot || [], authored: true
+      }));
+    if (d.arcBoss) add('arc', d.id, d.lvl + d.bosses * 2 + 10, pickBase(z.biome), {
+      name: d.arcBoss, title: 'SEALED APEX ENCOUNTER', order: d.bosses, raidArc: true, raidId: d.id, authored: true
+    });
+  }
 })();
 const BOSS_BY_ID = Object.fromEntries(BOSSES.map(b => [b.id, b]));
 
