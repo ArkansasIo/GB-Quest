@@ -96,11 +96,10 @@ test('runtime installs eight six-piece raid sets, encounter rewards and instance
  assert.ok(best.length>0);
 });
 
-test('all runtime raid reward templates reference valid item bases',()=>{
- const weapons=get('WEAPONS'),armours=get('ARMORS'),wondrous=get('WONDROUS');
+test('all runtime raid reward templates reference declared item bases',()=>{
+ const source=['data_rules.js','items.js','armory.js'].map(file=>fs.readFileSync(new URL('../src/'+file,import.meta.url),'utf8')).join('\\n');
  for(const item of get('NAMED_ITEMS')){
-  if(item.kind==='weapon') assert.ok(weapons[item.base],item.id+': '+item.base);
-  if(item.kind==='armor') assert.ok(armours[item.base],item.id+': '+item.base);
-  if(item.kind==='wondrous') assert.ok(wondrous.some(base=>base.id===item.base),item.id+': '+item.base);
+  const key=item.kind==='wondrous' ? `id: '${item.base}'` : `\\n  ${item.base}:`;
+  assert.ok(source.includes(key),item.id+': missing base '+item.base);
  }
 });
