@@ -34,9 +34,17 @@ class WowRaidMapScene extends ListScene {
     drawOrnatePanel(2,12,156,130,'INSTANCE ATLAS');
     const entry=this.current(), wing=this.currentWing(), encounters=this.encounters();
     textC(this.category===1?'RAID ROUTES':'DUNGEON ROUTES',80,14,'#ffe3a0');
-    fill(5,23,43,101,'rgba(5,8,20,.92)');
-    fill(51,23,104,72,'rgba(5,8,20,.92)');
-    fill(51,98,104,40,'rgba(5,8,20,.92)');
+    // Use warm stone and parchment instead of the previous blue-black map well.
+    fill(5,23,43,101,'#17130f');
+    fill(51,23,104,72,'#211b13');
+    fill(51,98,104,40,'#17130f');
+    ctx.save();
+    ctx.fillStyle='#302719';ctx.fillRect(53,29,100,59);
+    ctx.strokeStyle='#9b7844';ctx.lineWidth=1;ctx.strokeRect(53.5,29.5,99,58);
+    ctx.strokeStyle='rgba(210,177,119,.22)';ctx.lineWidth=.45;
+    for(let gx=58;gx<153;gx+=10){ctx.beginPath();ctx.moveTo(gx,30);ctx.lineTo(gx,87);ctx.stroke();}
+    for(let gy=35;gy<88;gy+=10){ctx.beginPath();ctx.moveTo(54,gy);ctx.lineTo(152,gy);ctx.stroke();}
+    ctx.restore();
     const list=this.items();
     list.slice(this.top,this.top+7).forEach((item,j)=>{
       const index=this.top+j,y=27+j*13,selected=index===this.i;
@@ -49,26 +57,32 @@ class WowRaidMapScene extends ListScene {
     text(wing.name.slice(0,18),55,25,'#ffe3a0');
     const nodes=wing.nodes||[];
     const px=n=>56+n[1]*0.93, py=n=>31+(100-n[2])*0.54;
-    // Dungeon corridors and raid wing routes.
+    // High-contrast route: bright stone corridors, distinct room nodes and non-blue markers.
     if(typeof ctx!=='undefined'){
-      ctx.save();ctx.strokeStyle='rgba(172,147,198,.78)';ctx.lineWidth=1.4;ctx.beginPath();
+      ctx.save();
+      ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=2;
+      ctx.strokeStyle='#e2c58d';ctx.lineWidth=3.2;ctx.beginPath();
       nodes.forEach((n,i)=>{if(i===0)ctx.moveTo(px(n),py(n));else ctx.lineTo(px(n),py(n));});ctx.stroke();
-      // Mob packs are smaller amber diamond markers; boss skulls are larger crimson pins.
+      ctx.shadowBlur=0;
+      // Mob packs are amber diamonds; bosses are large red seals; entrance is green.
       for(const mob of wing.mobNodes||entry.mobNodes||[]){
         const x=56+mob.x*.93,y=31+(100-mob.y)*.54;
-        ctx.fillStyle='#d69b42';ctx.beginPath();ctx.moveTo(x,y-2);ctx.lineTo(x+2,y);ctx.lineTo(x,y+2);ctx.lineTo(x-2,y);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#ffb83f';ctx.strokeStyle='#24190c';ctx.lineWidth=.8;
+        ctx.beginPath();ctx.moveTo(x,y-2.8);ctx.lineTo(x+2.8,y);ctx.lineTo(x,y+2.8);ctx.lineTo(x-2.8,y);ctx.closePath();ctx.fill();ctx.stroke();
       }
       nodes.forEach((n,i)=>{
         const x=px(n),y=py(n),boss=encounters.some(b=>b.name===n[0]);
-        ctx.fillStyle=boss?'#d65c66':'#c5b7d9';
-        ctx.beginPath();ctx.arc(x,y,boss?3.1:2,0,Math.PI*2);ctx.fill();
-        if(boss){ctx.strokeStyle='#ffe3a0';ctx.lineWidth=0.8;ctx.stroke();}
-        if(i===0){ctx.fillStyle='#63d6ed';ctx.fillRect(x-2,y-2,4,4);}
+        ctx.fillStyle=boss?'#ef5148':'#f2e6c9';
+        ctx.strokeStyle=boss?'#fff0c4':'#59432a';ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.arc(x,y,boss?4.1:3.1,0,Math.PI*2);ctx.fill();ctx.stroke();
+        if(boss){ctx.fillStyle='#fff0c4';ctx.font='bold 5px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('B',x,y+.2);}
+        if(i===0){ctx.fillStyle='#65d36e';ctx.fillRect(x-2.5,y-2.5,5,5);ctx.strokeStyle='#17351c';ctx.strokeRect(x-2.5,y-2.5,5,5);}
       });
       ctx.restore();
     }
-    text('P: ENTRANCE',55,88,'#63d6ed');
-    text('B: BACK  SEL: TYPE',55,93,1);
+    text('■ ENTRY  ● BOSS  ◆ MOBS',55,89,'#e8d3a8');
+    text('B: BACK  SEL: TYPE',55,95,'#d8c49e');
     const boss=encounters[this.dossier%Math.max(1,encounters.length)];
     if(boss){
       text((boss.name||'BOSS').slice(0,23),55,101,'#ffe3a0');
