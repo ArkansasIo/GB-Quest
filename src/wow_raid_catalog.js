@@ -81,7 +81,31 @@ if (typeof WEAPONS !== 'undefined') Object.assign(WEAPONS, GBQ_WOW_WEAPONS);
 if (typeof ARMORS !== 'undefined') Object.assign(ARMORS, GBQ_WOW_ARMOUR);
 for (const d of GBQ_WOW_DUNGEONS) DUNGEONS.push({...d,v:5,source:'wow_style_expansion'});
 for (const r of GBQ_WOW_RAIDS) RAIDS.push({...r,v:5,source:'wow_style_expansion'});
+const GBQ_WOW_SETS = [
+  {id:'set_lantern_queen',name:'LANTERN QUEEN REGALIA',pieces:['Lantern Queen Helm','Lantern Queen Shoulders','Lantern Queen Breastplate','Lantern Queen Gauntlets','Lantern Queen Legguards','Lantern Queen Greaves'],bonus2:'+5% radiant damage and healing.',bonus4:'When a raid ally falls below 30% health, grant them a brief lantern ward. Internal cooldown: 60 seconds.'},
+  {id:'set_eclipse_reaver',name:'ECLIPSE REAVER PANOPLY',pieces:['Eclipse Reaver Hood','Eclipse Reaver Mantle','Eclipse Reaver Tunic','Eclipse Reaver Gloves','Eclipse Reaver Leggings','Eclipse Reaver Boots'],bonus2:'+4% critical chance against marked targets.',bonus4:'Critical hits extend your active eclipse mark by 1 second, up to 5 seconds.'},
+  {id:'set_dread_marshal',name:'DREAD MARSHAL BATTLEPLATE',pieces:['Dread Marshal Helm','Dread Marshal Pauldrons','Dread Marshal Cuirass','Dread Marshal Vambraces','Dread Marshal Legplates','Dread Marshal Sabatons'],bonus2:'+6% block effectiveness.',bonus4:'Blocking a boss strike empowers your next taunt and grants nearby allies damage reduction.'},
+  {id:'set_black_sun',name:'BLACK SUN VESTMENTS',pieces:['Black Sun Cowl','Black Sun Mantle','Black Sun Robe','Black Sun Handwraps','Black Sun Leggings','Black Sun Slippers'],bonus2:'+5% spell haste.',bonus4:'Spending your primary resource on a boss grants a stacking void charge; at 5 charges your next spell creates a safe-zone ward.'},
+  {id:'set_frostveil',name:'FROSTVEIL REGALIA',pieces:['Frostveil Crown','Frostveil Mantle','Frostveil Hauberk','Frostveil Grips','Frostveil Legguards','Frostveil Treads'],bonus2:'+8% frost resistance.',bonus4:'Avoiding a frost mechanic grants a short-lived haste bonus.'},
+  {id:'set_worldroot',name:'WORLDROOT BARKMAIL',pieces:['Worldroot Circlet','Worldroot Shoulders','Worldroot Chestguard','Worldroot Bracers','Worldroot Legguards','Worldroot Boots'],bonus2:'+5% healing received.',bonus4:'Healing an ally below 40% health causes roots to absorb a portion of the next hit.'},
+  {id:'set_starwoven',name:'STARWOVEN VESTMENTS',pieces:['Starwoven Hood','Starwoven Shoulders','Starwoven Robe','Starwoven Gloves','Starwoven Leggings','Starwoven Boots'],bonus2:'+5% force damage.',bonus4:'Your fourth spell hit on the same boss target calls a star shard for bonus force damage.'},
+  {id:'set_embercrown',name:'EMBERCROWN WARPLATE',pieces:['Embercrown Helm','Embercrown Pauldrons','Embercrown Breastplate','Embercrown Gauntlets','Embercrown Legplates','Embercrown Boots'],bonus2:'+8% fire resistance.',bonus4:'Taking fire damage builds heat; at maximum heat your next weapon skill releases a controlled flame burst.'}
+];
+const GBQ_WOW_ITEMS = [
+  {id:'eclipse_sigil',name:'AELMOOR’S ECLIPSE SIGIL',type:'raid-token',source:'Shadowbane Citadel',desc:'A weekly token exchanged for one piece of Citadel raid equipment.'},
+  {id:'citadel_seal',name:'CITADEL GUARDIAN SEAL',type:'progression-key',source:'Shadowbane Citadel',desc:'One seal is awarded for each guardian defeated; all twelve unlock the arc-boss gate.'},
+  {id:'black_sun_hourglass',name:'BLACK SUN HOURGLASS',type:'trinket',source:'Archivist of the Black Sun',desc:'An on-use burst of haste followed by a brief defensive ward.'},
+  {id:'heart_of_caldera',name:'HEART OF THE CALDERA',type:'trinket',source:'Embercrown Caldera',desc:'Absorbs a portion of the next fire hit and returns the energy as fire damage.'},
+  {id:'tideglass_compass',name:'TIDEGLASS COMPASS',type:'trinket',source:'Tidebreaker Abyss',desc:'Reveals the safe current lane and increases movement speed during raid hazards.'},
+  {id:'rootheart_seed',name:'ROOTHEART SEED',type:'relic',source:'Greenwake Worldroot',desc:'A living relic that periodically shields the lowest-health party member.'},
+  {id:'chronarch_dial',name:'CHRONARCH DIAL',type:'relic',source:'The Clockwork Sovereignty',desc:'Stores a portion of haste gained during a boss encounter and releases it after a mechanic resolves.'},
+  {id:'starfall_prism',name:'STARFALL PRISM',type:'gem',source:'Starfall Astral Archive',desc:'A socketable prism that increases force damage and resistance to void effects.'},
+  {id:'first_age_sand',name:'SANDS OF THE FIRST AGE',type:'crafting-material',source:'Sands of the First Age',desc:'A time-worn reagent used to craft high-tier chronal enchants.'},
+  {id:'iron_legion_standard',name:'IRON LEGION STANDARD',type:'banner-cosmetic',source:'Iron Legion Siege',desc:'A guild hall banner commemorating a completed siege.'},
+  {id:'nyxara_moonwing',name:'NYXARA’S MOONWING',type:'mount',source:'Shadowbane Citadel - Arc Boss',desc:'A rare spectral winged mount awarded by the sealed apex encounter.'},
+  {id:'malgreth_voidling',name:'MALGRETH’S VOIDLING',type:'companion',source:'Shadowbane Citadel - Arc Boss',desc:'A miniature void companion with a lantern-shaped core.'}
+];
 if (typeof globalThis !== 'undefined') globalThis.GBQWowRaidCatalog = Object.freeze({
-  dungeons:GBQ_WOW_DUNGEONS,raids:GBQ_WOW_RAIDS,weapons:GBQ_WOW_WEAPONS,armour:GBQ_WOW_ARMOUR,
-  counts:{dungeons:GBQ_WOW_DUNGEONS.length,raids:GBQ_WOW_RAIDS.length,shadowbaneCitadelBosses:12,shadowbaneCitadelArcBoss:1}
+  dungeons:GBQ_WOW_DUNGEONS,raids:GBQ_WOW_RAIDS,weapons:GBQ_WOW_WEAPONS,armour:GBQ_WOW_ARMOUR,sets:GBQ_WOW_SETS,items:GBQ_WOW_ITEMS,
+  counts:{dungeons:GBQ_WOW_DUNGEONS.length,raids:GBQ_WOW_RAIDS.length,shadowbaneCitadelBosses:12,shadowbaneCitadelArcBoss:1,sets:GBQ_WOW_SETS.length,items:GBQ_WOW_ITEMS.length}
 });
