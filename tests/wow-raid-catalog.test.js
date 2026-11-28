@@ -103,3 +103,26 @@ test('all runtime raid reward templates reference declared item bases',()=>{
   assert.ok(source.includes(key),item.id+': missing base '+item.base);
  }
 });
+
+test('every dungeon and raid has a navigable map, boss pins and mob-pack markers',()=>{
+ for(const dungeon of catalog.dungeons){
+  assert.ok(dungeon.map.wings.length>0,dungeon.id);
+  assert.equal(dungeon.encounters.length,dungeon.bosses.length,dungeon.id);
+  assert.ok(dungeon.mobNodes.length>0,dungeon.id);
+ }
+ for(const raid of catalog.raids){
+  assert.ok(raid.map.wings.length>0,raid.id);
+  assert.equal(raid.encounters.length,raid.bosses,raid.id);
+  assert.ok(raid.mobNodes.length>0,raid.id);
+ }
+});
+
+test('interactive atlas is reachable from the main menu and exposes instance controls',()=>{
+ const menu=fs.readFileSync(new URL('../src/scenes_menu.js',import.meta.url),'utf8');
+ const atlas=fs.readFileSync(new URL('../src/wow_raid_map.js',import.meta.url),'utf8');
+ const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(menu,/'RAID MAP': \(\) => new WowRaidMapScene\(\)/);
+ assert.match(atlas,/class WowRaidMapScene extends ListScene/);
+ assert.match(atlas,/instanceMenu\(kind/);
+ assert.ok(html.includes('src/wow_raid_map.js'));
+});
