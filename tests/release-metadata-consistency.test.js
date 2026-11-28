@@ -13,15 +13,15 @@ const gdd = read('docs/GDD.md');
 
 test('package, game metadata and runtime build identify the same release', () => {
   assert.equal(metadata.version, pkg.version);
-  assert.match(world, new RegExp("version:\\s*'" + pkg.version.replaceAll('.', '\\\\.') + "'"));
+  assert.ok(world.includes("version: '" + pkg.version + "'"));
   const build = world.match(/build:\\s*'([^']+)'/);
   assert.ok(build, 'runtime build identifier exists');
-  assert.match(readme, new RegExp('Version ' + pkg.version.replaceAll('.', '\\\\.') + ' \\(build ' + build[1] + '\\)'));
+  assert.ok(readme.includes('Version ' + pkg.version + ' (build ' + build[1] + ')'));
   assert.ok(gdd.includes('**Version** | ' + pkg.version + ' (build ' + build[1] + ')'));
 });
 
 test('development and source-shell UI display the current game version', () => {
-  const versionLabel = new RegExp('CHRONICLES</strong> v' + pkg.version.replaceAll('.', '\\\\.') + '</span>');
-  assert.match(shell, versionLabel);
-  assert.match(entry, versionLabel);
+  const versionLabel = 'CHRONICLES</strong> v' + pkg.version + '</span>';
+  assert.ok(shell.includes(versionLabel), 'source shell displays current version');
+  assert.ok(entry.includes(versionLabel), 'development entry point displays current version');
 });
