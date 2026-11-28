@@ -1532,9 +1532,10 @@ class HomeInteriorScene extends ListScene {
 class SettingsScene extends ListScene {
   constructor() { super(11); }
   navList() { const n = this.items().length; if (nav('up')) { this.i = (this.i + n - 1) % n; SFX.cursor(); } if (nav('down')) { this.i = (this.i + 1) % n; SFX.cursor(); } }
-  items() { return ['GRAPHICS', 'CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS']; }
+  items() { return ['GRAPHICS', 'CHAT SETTINGS', 'UI THEME', 'BATTLE BG', 'NETWORK', 'PALETTE', 'VIDEO', 'HD RESOLUTION', 'FRAME RATE', 'TILES', 'ART', 'CITADEL ART', 'AUDIO', 'SFX VOLUME', 'MUSIC VOLUME', 'BRIGHTNESS', 'CONTRAST', 'TEXT SPEED', 'WEATHER', 'AUTO BATTLE', 'COMBAT MODE', 'SWAP A/B', 'DIFFICULTY', 'SOUND TEST', 'ABOUT', 'DISPLAY MODE', 'KEY BINDINGS', 'HOVER TOOLTIPS', 'RIGHT-CLICK TOOLTIPS', 'MOBILE CONTROLS', 'PS5 CONTROLLER']; }
   values() { // one value per items() entry (CHAT SETTINGS and ABOUT open sub-screens, shown as '>')
     const v = ['OPEN', ({ mmo: '8-BIT MMO', classic: 'CLASSIC', sanctum: 'SANCTUM', blackbird: 'BLACKBIRD', quest: 'QUEST WINDOWS', aelmoor: 'AELMOOR' })[S.uiTheme] || 'CLASSIC', (S.battleBg || 'clean').toUpperCase(), NET.offline ? 'OFFLINE' : 'ONLINE', PALS[S.palette].name, S.video === 'hd64' ? '64-BIT' : 'GAME BOY', ({ native: 'NATIVE', '2k': '2K UPSCALE', '4k': '4K UPSCALE' })[S.hdRes] || 'NATIVE', `${S.fps} FPS`, S.tiles === 'painted' ? 'PAINTED' : 'PIXEL', S.art === 'classic' ? 'CLASSIC' : S.art === 'packs' ? 'FULL DETAIL' : S.art === 'retro' ? 'RETRO 8-BIT' : S.art === 'aelmoor' ? 'AELMOOR HD' : 'NES', S.citadelArt === false ? 'OFF' : 'ON', S.audio === 'hd64' ? '64-BIT' : 'CHIP 4CH', S.vol, S.music, S.bright, S.contrast, ['SLOW', 'NORMAL', 'FAST', 'INSTANT'][S.textSpeed], S.weather ? 'ON' : 'OFF', S.autoBattle ? 'ON' : 'OFF', S.combatMode === 'realtime' ? 'REAL-TIME' : 'TURN-BASED', S.swap ? 'ON' : 'OFF', G ? diffOf().name : '-', '>', ({ windowed: 'WINDOWED', 'full-window': 'FULL WINDOW', borderless: 'BORDERLESS', fullscreen: 'FULL SCREEN' })[S.displayMode] || 'WINDOWED', '>', S.tooltipHover === false ? 'OFF' : 'ON', S.tooltipRightClick === false ? 'OFF' : 'ON'];
+    v.push(S.touchControls || 'auto', S.gamepadEnabled === false ? 'OFF' : (window.GBQ_GAMEPAD_STATUS || 'SEARCH'));
     v.splice(1, 0, '>'); v.splice(this.items().indexOf('ABOUT'), 0, '>');
     return v;
   }
@@ -1552,6 +1553,17 @@ class SettingsScene extends ListScene {
     }
     if (o === 'HOVER TOOLTIPS') S.tooltipHover = S.tooltipHover !== false ? false : true;
     if (o === 'RIGHT-CLICK TOOLTIPS') S.tooltipRightClick = S.tooltipRightClick !== false ? false : true;
+    if (o === 'MOBILE CONTROLS') {
+      const modes = ['auto', 'on', 'off'], k = modes.indexOf(S.touchControls || 'auto');
+      S.touchControls = modes[(k + (d > 0 ? 1 : modes.length - 1)) % modes.length];
+      if (typeof applyInputPreferences === 'function') applyInputPreferences();
+      saveSettings(); SFX.toggle(); return;
+    }
+    if (o === 'PS5 CONTROLLER') {
+      S.gamepadEnabled = S.gamepadEnabled === false;
+      if (typeof pollGamepads === 'function') pollGamepads();
+      saveSettings(); SFX.toggle(); return;
+    }
     if (o === 'BATTLE BG') { S.battleBg = typeof nextBattleBg === 'function' ? nextBattleBg(S.battleBg || 'clean') : S.battleBg === 'painted' ? 'clean' : 'painted'; }
     if (o === 'UI THEME') { if (typeof nextUiTheme === 'function') S.uiTheme = nextUiTheme(S.uiTheme, d); else { const themes = ['classic', 'sanctum']; const k = themes.indexOf(S.uiTheme || 'classic'); S.uiTheme = themes[(k + (d > 0 ? 1 : themes.length - 1)) % themes.length]; } clearCaches(); }
     if (o === 'PALETTE') { const k = PAL_ORDER.indexOf(S.palette); S.palette = PAL_ORDER[(k + (d > 0 ? 1 : PAL_ORDER.length - 1)) % PAL_ORDER.length]; UI = PALS[S.palette]; clearCaches(); }
