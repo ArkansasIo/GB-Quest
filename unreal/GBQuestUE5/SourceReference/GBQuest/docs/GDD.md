@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Studio** | ArkansasIo |
-| **Version** | 2.0.0 (build B2026.11.01) |
+| **Version** | 2.8.0 (build B2026.11.10) |
 | **Genre** | Handheld-style MMORPG with d20 tabletop rules |
 | **Platforms** | Web (single HTML file, windowed or full screen), desktop port (C++23/SDL2, in progress), Game Boy Color ROM (RGBDS, planned core) |
 | **Players** | 1 (with AI companions), 4 (dungeon party), 12 (raid) |
