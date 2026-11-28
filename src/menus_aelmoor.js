@@ -215,7 +215,7 @@ const AEL_TABS = [
   ['GAMEPLAY', [['HARDNESS', 'DIFFICULTY'], ['AUTOPLAY', 'AUTO BATTLE'], ['COMBAT', 'COMBAT MODE'], ['TEXT SPD', 'TEXT SPEED'], ['WEATHER', 'WEATHER']]],
   ['GRAPHICS', [['VIDEO', 'VIDEO'], ['RES', 'HD RESOLUTION'], ['DISPLAY', 'DISPLAY MODE'], ['FPS', 'FRAME RATE'], ['ART', 'ART'], ['UI THEME', 'UI THEME'], ['PALETTE', 'PALETTE'], ['BRIGHT', 'BRIGHTNESS', 'slider']]],
   ['AUDIO', [['ENGINE', 'AUDIO'], ['SOUND', 'SFX VOLUME', 'slider'], ['MUSIC', 'MUSIC VOLUME', 'slider'], ['SND TEST', 'SOUND TEST']]],
-  ['CONTROLS', [['SWAP A/B', 'SWAP A/B'], ['KEYS', 'KEY BINDINGS', 'open']]],
+  ['CONTROLS', [['SWAP A/B', 'SWAP A/B'], ['MOBILE', 'MOBILE CONTROLS'], ['DUALSENSE', 'PS5 CONTROLLER'], ['KEYS', 'KEY BINDINGS', 'open']]],
   ['ACCESS', [['CONTRAST', 'CONTRAST', 'slider'], ['HOVER', 'HOVER TOOLTIPS'], ['R-CLICK', 'RIGHT-CLICK TOOLTIPS'], ['CHAT', 'CHAT SETTINGS', 'open']]],
   ['LANGUAGE', [['LANGUAGE', null]]],
 ];
@@ -225,6 +225,8 @@ class AelOptions {
   rows() { return AEL_TABS[this.tab][1]; }
   value(key) {
     if (!key) return 'ENGLISH';
+    if (key === 'MOBILE CONTROLS') return String(S.touchControls || 'auto').toUpperCase();
+    if (key === 'PS5 CONTROLLER') return S.gamepadEnabled === false ? 'OFF' : (window.GBQ_GAMEPAD_STATUS || 'SEARCH');
     const items = this.core.items(), k = items.indexOf(key);
     let v = k >= 0 ? this.core.values()[k] : '';
     if (key === 'DIFFICULTY' && !G) v = 'NORMAL';
@@ -232,6 +234,19 @@ class AelOptions {
   }
   change(key, d) {
     if (!key) return;
+    if (key === 'MOBILE CONTROLS') {
+      const modes = ['auto', 'on', 'off'], k = modes.indexOf(S.touchControls || 'auto');
+      S.touchControls = modes[(k + (d > 0 ? 1 : modes.length - 1)) % modes.length];
+      if (typeof applyInputPreferences === 'function') applyInputPreferences();
+      if (typeof saveSettings === 'function') saveSettings();
+      SFX.toggle(); return;
+    }
+    if (key === 'PS5 CONTROLLER') {
+      S.gamepadEnabled = S.gamepadEnabled === false;
+      if (typeof pollGamepads === 'function') pollGamepads();
+      if (typeof saveSettings === 'function') saveSettings();
+      SFX.toggle(); return;
+    }
     if (key === 'DIFFICULTY' && !G) { SFX.error(); return; }
     // let SettingsScene apply it with its own side effects: aim its cursor at the row, then run its update this frame
     const items = this.core.items(); this.core.i = items.indexOf(key); if (this.core.i < 0) return;
