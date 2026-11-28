@@ -114,6 +114,8 @@ test('every dungeon and raid has a navigable map, boss pins and mob-pack markers
   assert.ok(raid.map.wings.length>0,raid.id);
   assert.equal(raid.encounters.length,raid.bosses,raid.id);
   assert.ok(raid.mobNodes.length>0,raid.id);
+  const mapBossNames=raid.map.wings.flatMap(wing=>wing.nodes.map(node=>node[0]));
+  for(const boss of raid.encounters) assert.ok(mapBossNames.includes(boss.name),raid.id+': '+boss.name);
  }
 });
 
