@@ -78,7 +78,7 @@ test('asset repair workflow persists generated HD64 character frames and equipme
 
 test('generated 6,000-image HD64 source pack is preserved in the CI art artifact', () => {
   const workflow = read('.github/workflows/test.yml');
-  assert.match(workflow, /assets_hd64\\/gbq_6000\\/\\*\\*/);
+  assert.ok(workflow.includes('assets_hd64/gbq_6000/**'));
   assert.match(workflow, /name: gb-quest-generated-art/);
 });
 
