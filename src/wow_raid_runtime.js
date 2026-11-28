@@ -26,7 +26,7 @@
       two:[['fire',16],['hp',70]], three:[['resist',10],['thorns',18]], six:[['fire',38],['hp',200],['thorns',45]] }
   ];
   const bases = [
-    ['helm','wondrous','great_helm'], ['cloak','wondrous','cloak'], ['chest','armor','maximilian_plate'],
+    ['helm','wondrous','great_helm'], ['cloak','wondrous','surcoat'], ['chest','armor','maximilian_plate'],
     ['gloves','wondrous','vambraces'], ['legs','wondrous','chausses'], ['boots','wondrous','riding_boots']
   ];
   const statAffixes = [
@@ -58,17 +58,17 @@
     ['citadel_07','ADMIRALS_UNDERTOW','weapon','trident',[['cold',20],['leech',5]]],
     ['citadel_08','BLACK_SUN_CODEX','weapon','voidcodex',[['necrotic',28],['dmg',12]]],
     ['citadel_09','UNHALLOWED_GEARBLADE','weapon','bastard_sword',[['lightning',20],['haste',8]]],
-    ['citadel_10','KHARVOXS_WARBANNER','wondrous','banner',[['hp',120],['block',6]]],
+    ['citadel_10','KHARVOXS_WARBANNER','wondrous','tabard',[['hp',120],['block',6]]],
     ['citadel_11','SHARDSUNDER_GREATSWORD','weapon','zweihander',[['critdmg',55],['dmg',20]]],
     ['citadel_12','NYXARAS_LAST_LIGHT','weapon','longsword',[['radiant',35],['heal',12],['crit',5]]],
     ['embercrown_6','RHAZUL_CROWN_OF_FLAME','weapon','dane_axe',[['fire',38],['critdmg',50]]],
     ['frostveil_7','EIRATH_WINTERS_END','weapon','katana',[['cold',40],['crit',7]]],
     ['tidebreaker_5','THALASSAR_DEEP_SOVEREIGN','weapon','trident',[['lightning',30],['cold',20]]],
     ['greenwake_6','VERDRAS_WORLDROOT_HEART','wondrous','torc',[['heal',20],['hp',160]]],
-    ['clockwork_8','EVERLASTING_MINUTE','wondrous','circlet',[['haste',15],['crit',6]]],
+    ['clockwork_8','EVERLASTING_MINUTE','wondrous','great_helm',[['haste',15],['crit',6]]],
     ['starfall_7','ASTRAELS_LAST_CONSTELLATION','weapon','quarterstaff',[['radiant',30],['force',30]]],
-    ['sandsage_5','AKH_RAS_LAST_HOUR','wondrous','pendant',[['haste',12],['resist',15]]],
-    ['ironlegion_8','VALKORS_LEGION_ETERNAL','weapon','greatsword',[['hp',150],['dmg',25]]],
+    ['sandsage_5','AKH_RAS_LAST_HOUR','wondrous','torc',[['haste',12],['resist',15]]],
+    ['ironlegion_8','VALKORS_LEGION_ETERNAL','weapon','zweihander',[['hp',150],['dmg',25]]],
     ['twilight_9','AURELION_WORLD_ENDER','weapon','zweihander',[['radiant',35],['necrotic',35],['critdmg',70]]],
     ['dragonfire_6','ZYRATH_NEXUS_INCARNATE','weapon','bastard_sword',[['fire',35],['force',25],['critdmg',55]]]
   ];
@@ -83,7 +83,7 @@
   }
   const arc = GBQWowRaidCatalog.raids.find(r=>r.arcBoss);
   if(arc){
-    const entry={id:'n_malgreth_voidcrown',name:'MALGReTH’S VOIDCROWN',kind:'wondrous',base:'circlet',rarity:9,
+    const entry={id:'n_malgreth_voidcrown',name:'MALGReTH’S VOIDCROWN',kind:'wondrous',base:'great_helm',rarity:9,
       affixes:[['necrotic',55],['resist',25],['hp',250],['dmg',35]],lore:'The last light in the Citadel was extinguished here.',
       src:{raid:arc.id,order:arc.bosses}};
     if(!NAMED_BY_ID[entry.id]){NAMED_ITEMS.push(entry);NAMED_BY_ID[entry.id]=entry;}
