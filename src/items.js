@@ -347,7 +347,7 @@ function namedPoolFor(f) {
   return NAMED_ITEMS.filter(n => {
     const s = n.src; if (s.minLvl && f.lvl < s.minLvl) return false;
     if (s.act && B.cat === 'arc') return B.act === s.act;
-    if (s.raid) return B.where === s.raid;
+    if (s.raid) return B.where === s.raid && (s.order == null || B.order === s.order);
     if (s.tower) return B.cat === 'tower' && B.floor === s.tower;
     return s.cat === B.cat;
   });
