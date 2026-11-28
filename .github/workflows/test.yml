@@ -109,6 +109,7 @@ jobs:
             assets/*.png
             assets_hd64/*.png
             assets_hd64/*.json
+            assets_hd64/gbq_6000/**
             assets_hd/gbtiles/**
             assets/index.json
             dist/gbquest.html
