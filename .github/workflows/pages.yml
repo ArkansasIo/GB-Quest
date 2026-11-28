@@ -1,11 +1,8 @@
 name: Deploy GitHub Pages
 
-# Builds the self-contained browser game and publishes only the playable
-# files to GitHub Pages. The full repository (~1.6 GB) is over the Pages
-# 1 GB site limit, so the site is assembled in _site/ from dist/ outputs.
-#
-# One-time setup: Settings -> Pages -> Build and deployment -> Source:
-# "GitHub Actions".
+# Publish only the playable browser build. The repository contains large source
+# and art archives, so Pages is assembled from the standalone dist outputs.
+# Configure Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
 
 on:
   push:
@@ -14,6 +11,7 @@ on:
       - 'src/**'
       - 'client/**'
       - 'assets/**'
+      - 'assets_hd/**'
       - 'assets_hd64/**'
       - 'assets_citadel/**'
       - 'tools/build.cjs'
@@ -46,16 +44,46 @@ jobs:
       - name: Build standalone game
         run: node tools/build.cjs
 
-      - name: Assemble site
+      - name: Assemble and verify site
+        shell: bash
         run: |
+          set -euo pipefail
+          test -s dist/gbquest.html
+          test -s dist/gbquest-fullscreen.html
+          test -s dist/atlas.html
           mkdir -p _site/dist
           cp dist/gbquest.html            _site/index.html
           cp dist/gbquest-fullscreen.html _site/fullscreen.html
           cp dist/atlas.html              _site/atlas.html
-          # The game falls back to fetching dist/atlas.html if the embedded copy is missing.
+          # Keep the atlas fallback path available under the project Pages URL.
           cp dist/atlas.html              _site/dist/atlas.html
+          cp 404.html                     _site/404.html
           touch _site/.nojekyll
+
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('_site/index.html', 'utf8');
+          const full = fs.readFileSync('_site/fullscreen.html', 'utf8');
+          const atlas = fs.readFileSync('_site/atlas.html', 'utf8');
+          for (const [name, content] of [['index', html], ['fullscreen', full], ['atlas', atlas]]) {
+            if (!content.includes('Lost Kingdom of Shadowbane Chronicles') && name !== 'atlas') {
+              throw new Error(`Pages ${name}.html is missing the game title`);
+            }
+          }
+          for (const marker of ['window.GB_ASSETS=', 'window.GBQ_HD64_ATLASES=', 'wow_raid_map']) {
+            if (!html.includes(marker)) throw new Error(`Pages game build is missing ${marker}`);
+          }
+          if (!fs.existsSync('_site/dist/atlas.html')) throw new Error('Pages atlas fallback is missing');
+          if (!fs.existsSync('_site/404.html')) throw new Error('Pages 404 document is missing');
+          console.log('Pages smoke check passed: game bundle, HD64 atlases, raid map, fullscreen, atlas and 404 are present.');
+          NODE
+
           du -sh _site
+          size=$(du -sb _site | cut -f1)
+          if [ "$size" -ge 1000000000 ]; then
+            echo "Pages site exceeds GitHub Pages 1 GB limit: $size bytes" >&2
+            exit 1
+          fi
 
       - uses: actions/configure-pages@v5
 
