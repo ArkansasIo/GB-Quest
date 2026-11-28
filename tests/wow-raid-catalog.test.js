@@ -122,6 +122,14 @@ test('every dungeon and raid has a navigable map, boss pins and mob-pack markers
  }
 });
 
+
+test('mouse clicks on the visible RAID MAP menu row select and activate that row',()=>{
+ const menu=fs.readFileSync(new URL('../src/scenes_menu.js',import.meta.url),'utf8');
+ const engine=fs.readFileSync(new URL('../src/engine.js',import.meta.url),'utf8');
+ assert.match(menu,/pointerClick\(x, y\).*this\.i = index/);
+ assert.match(engine,/scene\.pointerClick\(x, y\).*bDown\(mapBtn\('a'\)\)/);
+});
+
 test('interactive atlas is reachable from the main menu and exposes instance controls',()=>{
  const menu=fs.readFileSync(new URL('../src/scenes_menu.js',import.meta.url),'utf8');
  const atlas=fs.readFileSync(new URL('../src/wow_raid_map.js',import.meta.url),'utf8');
