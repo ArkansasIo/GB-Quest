@@ -74,8 +74,16 @@ for (const dungeon of GBQ_WOW_DUNGEONS) {
   dungeon.mobNodes=(dungeon.mobs||[]).map((name,i)=>({name,x:18+(i%3)*28,y:82-Math.floor(i/3)*12}));
 }
 for (const raid of GBQ_WOW_RAIDS) {
+  const wings=raid.map?.wings||[];
+  for (const [i,boss] of (raid.encounters||[]).entries()) {
+    const target=wings[Math.max(0,Math.min(wings.length-1,(boss.wing||1)-1))]||wings[0];
+    if(target && !(target.nodes||[]).some(node=>node[0]===boss.name)) {
+      const lane=i%4, row=Math.floor(i/4);
+      target.nodes.push([boss.name,12+lane*24,76-row*16]);
+    }
+  }
   raid.mobNodes=(raid.mobs||[]).map((name,i)=>({name,x:12+(i%4)*24,y:88-Math.floor(i/4)*13}));
-  for (const wing of raid.map?.wings||[]) wing.mobNodes=raid.mobNodes;
+  for (const wing of wings) wing.mobNodes=raid.mobNodes;
 }
 
 const GBQ_WOW_WEAPONS = {
