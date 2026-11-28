@@ -101,7 +101,7 @@ function armorSetBonus(c) {
   const out = [], n = armorSetCounts(c);
   for (const k of ACLASS_ORDER) for (const need of [4, 7]) if (n[k] >= need) out.push(...ARMOR_SETS[k][need]);
   const legendary = legendarySetCounts(c);
-  for (const [id, count] of Object.entries(legendary)) { const set = LEGENDARY_SET_DEFS[id]; if (count >= 2) out.push(...set.two); if (count >= 3) out.push(...set.three); }
+  for (const [id, count] of Object.entries(legendary)) { const set = LEGENDARY_SET_DEFS[id]; if (count >= 2) out.push(...(set.two || [])); if (count >= 3) out.push(...(set.three || [])); if (count >= 6) out.push(...(set.six || [])); }
   return out;
 }
 function legendarySetPreview(c, candidate = null) {
@@ -114,8 +114,9 @@ function legendarySetPreview(c, candidate = null) {
     return {
       setId, name: definition.name, currentPieces: before, projectedPieces: after,
       thresholds: [
-        { pieces: 2, active: after >= 2, newlyUnlocked: newlyUnlocked.includes(2), stats: definition.two },
-        { pieces: 3, active: after >= 3, newlyUnlocked: newlyUnlocked.includes(3), stats: definition.three }
+        { pieces: 2, active: after >= 2, newlyUnlocked: newlyUnlocked.includes(2), stats: definition.two || [] },
+        { pieces: 3, active: after >= 3, newlyUnlocked: newlyUnlocked.includes(3), stats: definition.three || [] },
+        ...(definition.six ? [{ pieces: 6, active: after >= 6, newlyUnlocked: newlyUnlocked.includes(6), stats: definition.six }] : [])
       ],
       newlyUnlocked
     };
