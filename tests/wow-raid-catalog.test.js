@@ -70,3 +70,37 @@ test('named raid weapons and armour are merged into the existing equipment regis
  assert.ok(catalog.items.some(item=>item.id==='nyxara_moonwing'));
  assert.ok(catalog.items.some(item=>item.id==='malgreth_voidling'));
 });
+
+test('wave-five generator creates named encounter bosses and a separate Citadel arc boss',()=>{
+ const source=fs.readFileSync(new URL('../src/gen.js',import.meta.url),'utf8');
+ assert.match(source,/DUNGEONS\.filter\(x => x\.v === 5\)/);
+ assert.match(source,/RAIDS\.filter\(x => x\.v === 5\)/);
+ assert.match(source,/encounterId: encounter\.id/);
+ assert.match(source,/raidArc: true/);
+ assert.match(source,/name: encounter\.name/);
+});
+
+test('runtime installs eight six-piece raid sets, encounter rewards and instance mobs',()=>{
+ ctx.NAMED_ITEMS=[];ctx.NAMED_BY_ID={};ctx.LEGENDARY_SET_DEFS={};
+ ctx.BESTIARY=[];ctx.BEAST_BY_ID={};
+ vm.runInContext(fs.readFileSync(new URL('../src/wow_raid_runtime.js',import.meta.url),'utf8'),ctx,{filename:'wow_raid_runtime.js'});
+ const runtime=get('GBQWowRaidRuntime');
+ const defs=get('LEGENDARY_SET_DEFS'),named=get('NAMED_ITEMS'),best=get('BESTIARY');
+ assert.equal(runtime.sets.length,8);
+ for(const set of runtime.sets){
+  assert.equal(defs[set.id].pieces.length,6,set.id);
+  assert.ok(defs[set.id].six.length>0,set.id);
+ }
+ assert.ok(runtime.rewardCount>=20);
+ assert.ok(named.some(item=>item.id==='n_malgreth_voidcrown'));
+ assert.ok(best.length>0);
+});
+
+test('all runtime raid reward templates reference valid item bases',()=>{
+ const weapons=get('WEAPONS'),armours=get('ARMORS'),wondrous=get('WONDROUS');
+ for(const item of get('NAMED_ITEMS')){
+  if(item.kind==='weapon') assert.ok(weapons[item.base],item.id+': '+item.base);
+  if(item.kind==='armor') assert.ok(armours[item.base],item.id+': '+item.base);
+  if(item.kind==='wondrous') assert.ok(wondrous.some(base=>base.id===item.base),item.id+': '+item.base);
+ }
+});
