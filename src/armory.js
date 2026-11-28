@@ -110,7 +110,7 @@ function legendarySetPreview(c, candidate = null) {
   const projected = legendarySetCounts({ eq: projectedEq });
   return Object.entries(LEGENDARY_SET_DEFS).map(([setId, definition]) => {
     const before = current[setId] || 0, after = projected[setId] || 0;
-    const newlyUnlocked = [2, 3].filter(threshold => before < threshold && after >= threshold);
+    const newlyUnlocked = [2, 3, 6].filter(threshold => before < threshold && after >= threshold);
     return {
       setId, name: definition.name, currentPieces: before, projectedPieces: after,
       thresholds: [
