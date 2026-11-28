@@ -12,7 +12,7 @@ test('legendary set preview compares current and projected equipment counts', ()
   const end = armory.indexOf('\nconst canWearClass', start);
   assert.ok(start >= 0 && end > start, 'set preview helper exists');
   const helper = armory.slice(start, end);
-  for (const marker of ['legendarySetCounts(c)', 'projectedEq', 'itemSlot(candidate)', 'currentPieces', 'projectedPieces', 'newlyUnlocked', '[2, 3]', 'definition.two', 'definition.three']) {
+  for (const marker of ['legendarySetCounts(c)', 'projectedEq', 'itemSlot(candidate)', 'currentPieces', 'projectedPieces', '[2, 3, 6]', 'definition.two', 'definition.three', 'definition.six']) {
     assert.ok(helper.includes(marker), 'set preview includes ' + marker);
   }
 });
