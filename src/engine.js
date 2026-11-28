@@ -14,8 +14,10 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
-const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'hd64', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'full', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native' },
+const S = Object.assign({ netMode: 'online', audio: 'chip', video: 'hd64', tiles: 'pixel', vol: 3, music: 3, bright: 3, contrast: 3, palette: 'full', swap: false, textSpeed: 2, diceLog: true, weather: true, autoBattle: false, combatMode: 'turn-based', battleBg: 'scenes', citadelArt: true, fullscreen: false, fps: 60, hdRes: 'native', touchControls: 'auto', gamepadEnabled: true },
   store.get('gbq2_settings') || {});
+if (!['auto', 'on', 'off'].includes(S.touchControls)) S.touchControls = 'auto';
+S.gamepadEnabled = S.gamepadEnabled !== false;
 const applySmoothArtDefaults = !S.smoothArtDefaultsApplied;
 if (applySmoothArtDefaults) { S.video = 'hd64'; S.palette = 'full'; S.smoothArtDefaultsApplied = true; }
 // The former 8K option was capped at 1080p and wasted memory. Keep saved users
@@ -658,6 +660,69 @@ document.querySelectorAll('[data-btn]').forEach(el => {
   dpad.addEventListener('pointermove', e => { if (e.buttons || e.pointerType === 'touch') set(at(e)); });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => dpad.addEventListener(t, () => set(null)));
 })();
+// Device preferences: touch controls are automatic on touch-first devices unless overridden in Options.
+const touchControlsElement = document.querySelector('.controls');
+const touchFootElement = document.querySelector('.foot');
+function applyInputPreferences() {
+  const coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  const enabled = S.touchControls === 'on' || (S.touchControls === 'auto' && coarsePointer);
+  document.body.classList.toggle('gbq-touch-controls', enabled);
+  if (touchControlsElement) touchControlsElement.style.display = enabled ? 'grid' : 'none';
+  if (touchFootElement) touchFootElement.style.display = enabled ? 'flex' : 'none';
+}
+applyInputPreferences();
+if (window.matchMedia) {
+  const touchMedia = window.matchMedia('(pointer: coarse)');
+  if (touchMedia.addEventListener) touchMedia.addEventListener('change', applyInputPreferences);
+  else if (touchMedia.addListener) touchMedia.addListener(applyInputPreferences);
+}
+
+// Standard Gamepad API mapping. DualSense reports the standard layout in current browsers:
+// Cross=A, Circle=B, Square=Select, Options=Start; D-pad and left stick navigate.
+const gamepadHeldButtons = new Set();
+function releaseGamepadButtons() {
+  for (const button of gamepadHeldButtons) bUp(button);
+  gamepadHeldButtons.clear();
+}
+function pollGamepads() {
+  let pads = [];
+  try { pads = navigator.getGamepads ? Array.from(navigator.getGamepads() || []) : []; } catch (error) { /* Gamepad API unavailable */ }
+  const pad = pads.find(candidate => candidate && candidate.connected);
+  if (!pad || S.gamepadEnabled === false) {
+    releaseGamepadButtons();
+    window.GBQ_GAMEPAD_CONNECTED = false;
+    window.GBQ_GAMEPAD_STATUS = S.gamepadEnabled === false ? 'OFF' : 'SEARCH';
+    window.GBQ_GAMEPAD_LABEL = '';
+    return;
+  }
+  const label = String(pad.id || 'Controller');
+  const dualSense = /dualsense|054c|sony|wireless controller/i.test(label);
+  window.GBQ_GAMEPAD_CONNECTED = true;
+  window.GBQ_GAMEPAD_LABEL = dualSense ? 'DUALSENSE' : 'GAMEPAD';
+  window.GBQ_GAMEPAD_STATUS = pad.mapping === 'standard' || dualSense ? 'FOUND' : 'MAP?';
+  const standard = pad.mapping === 'standard' || dualSense;
+  const buttons = pad.buttons || [];
+  const down = index => !!(buttons[index] && (buttons[index].pressed || buttons[index].value > 0.55));
+  const axes = pad.axes || [];
+  const states = {
+    a: standard && down(0),
+    b: standard && down(1),
+    select: standard && down(8),
+    start: standard && down(9),
+    up: standard && (down(12) || Number(axes[1]) < -0.45),
+    down: standard && (down(13) || Number(axes[1]) > 0.45),
+    left: standard && (down(14) || Number(axes[0]) < -0.45),
+    right: standard && (down(15) || Number(axes[0]) > 0.45),
+  };
+  const next = new Set(BTNS.filter(button => states[button]).map(mapBtn));
+  for (const button of gamepadHeldButtons) if (!next.has(button)) bUp(button);
+  for (const button of next) if (!gamepadHeldButtons.has(button)) bDown(button);
+  gamepadHeldButtons.clear();
+  for (const button of next) gamepadHeldButtons.add(button);
+}
+addEventListener('gamepadconnected', () => { pollGamepads(); if (!typing()) focusGame(); });
+addEventListener('gamepaddisconnected', pollGamepads);
+setInterval(pollGamepads, 40);
 const P = b => pressed[b];
 const nav = b => pressed[b] || (held[b] && rep[b] > 16 && rep[b] % 4 === 0);
 
