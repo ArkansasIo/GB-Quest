@@ -110,20 +110,26 @@ const BOSSES = [];
   for (let i = 0; i < wild4.length * 2; i++) { const z = wild4[i % wild4.length]; add('world', z.id, z.lvl[1] + 2, pickBase(z.biome), { order: Math.floor(i / wild4.length) }); }
   // expansion wave 5: fully authored encounter names and mechanics for the WoW-style catalogue.
   r = RNG('bosses-v5');
+  const authoredMechs = { 'tank-check':['enrage','phase','aoe'], 'split-target':['summon','shield','phase'], interrupt:['curse','shield','aoe'],
+    'add-control':['summon','aoe','frenzy'], 'healer-check':['drain','curse','regen'], movement:['aoe','frenzy','phase'], memory:['curse','summon','phase'],
+    formation:['summon','shield','aoe'], 'multi-phase':['phase','shield','enrage'], 'final-guardian':['phase','shield','enrage'], 'raid-boss':['phase','aoe','frenzy'], positioning:['aoe','shield','phase'] };
   for (const d of DUNGEONS.filter(x => x.v === 5)) {
     const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0];
     (Array.isArray(d.bosses) ? d.bosses : []).forEach((name, order) =>
-      add('dungeon', d.id, d.lvl + order * 2, pickBase(z.biome), { name, order, encounterId: d.id + '_boss_' + (order + 1), authored: true }));
+      add('dungeon', d.id, d.lvl + order * 2, pickBase(z.biome), { name, order, mechs: order === 2 ? ['phase','shield','enrage'] : ['summon','aoe'], encounterId: d.id + '_boss_' + (order + 1), authored: true,
+        phasePlan:[{at:1,label:'Opening'},{at:0.65,label:'Escalation'},{at:0.3,label:'Final stand'}] }));
   }
   for (const d of RAIDS.filter(x => x.v === 5)) {
     const z = REGIONS.find(zz => zz.id === d.zone) || REGIONS[0];
     (d.encounters || []).forEach((encounter, order) =>
       add('raid', d.id, d.lvl + order * 2, pickBase(z.biome), {
         name: encounter.name, order, wing: encounter.wing || 1, role: encounter.role || 'raid-boss',
-        mechanic: encounter.mechanic || '', encounterId: encounter.id, loot: encounter.loot || [], authored: true
+        mechs: authoredMechs[encounter.role] || ['phase','aoe','enrage'], mechanic: encounter.mechanic || '', encounterId: encounter.id, loot: encounter.loot || [], authored: true,
+        phasePlan:[{at:1,label:'Opening',mechanic:encounter.mechanic||''},{at:0.65,label:'Escalation',mechanic:'The boss intensifies its signature attack.'},{at:0.3,label:'Final stand',mechanic:'Enrage and resolve the final raid mechanic.'}]
       }));
     if (d.arcBoss) add('arc', d.id, d.lvl + d.bosses * 2 + 10, pickBase(z.biome), {
-      name: d.arcBoss, title: 'SEALED APEX ENCOUNTER', order: d.bosses, raidArc: true, raidId: d.id, authored: true
+      name: d.arcBoss, title: 'SEALED APEX ENCOUNTER', order: d.bosses, mechs:['phase','shield','enrage'], raidArc: true, raidId: d.id, authored: true,
+      phasePlan:[{at:1,label:'The Sealed King'},{at:0.65,label:'Citadel Eclipse'},{at:0.3,label:'World-Ender'}]
     });
   }
 })();
