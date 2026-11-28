@@ -1,5 +1,7 @@
 # Feature status
 
+> **Historical snapshot:** This inventory was last refreshed at commit `43cefdf` and is not a live statement of current feature completeness. Since then, the repository has added further runtime systems and automated build coverage. For current verification, see the [main-branch GitHub Actions runs](https://github.com/ArkansasIo/GB-Quest/actions/workflows/test.yml).
+
 What is in the game today, what is still missing, and the trade-offs of building each missing piece. Last updated with commit `43cefdf`.
 
 ## In the game
