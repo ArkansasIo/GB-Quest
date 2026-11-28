@@ -17,6 +17,7 @@ on:
       - 'tools/build.cjs'
       - 'tools/build_atlas.py'
       - 'dist/atlas.html'
+      - '404.html'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -70,7 +71,7 @@ jobs:
               throw new Error(`Pages ${name}.html is missing the game title`);
             }
           }
-          for (const marker of ['window.GB_ASSETS=', 'window.GBQ_HD64_ATLASES=', 'wow_raid_map']) {
+          for (const marker of ['window.GB_ASSETS=', 'window.GBQ_HD64_ATLASES=', 'class WowRaidMapScene']) {
             if (!html.includes(marker)) throw new Error(`Pages game build is missing ${marker}`);
           }
           if (!fs.existsSync('_site/dist/atlas.html')) throw new Error('Pages atlas fallback is missing');
